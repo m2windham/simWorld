@@ -1,0 +1,46 @@
+name: docs-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: "**/*.md"
+
+  check-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress "**/*.md"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  validate-mermaid:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Render every mermaid diagram (fails on invalid syntax)
+        run: |
+          set -e
+          echo '{"args":["--no-sandbox","--disable-setuid-sandbox"]}' > /tmp/puppeteer-config.json
+          shopt -s globstar nullglob
+          status=0
+          for f in **/*.md; do
+            if grep -q '```mermaid' "$f"; then
+              echo "Validating mermaid in $f"
+              npx -y @mermaid-js/mermaid-cli -i "$f" -o /tmp/mermaid-out.svg -p /tmp/puppeteer-config.json || status=1
+            fi
+          done
+          exit $status
