@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Node (docs tooling: markdownlint/mermaid CI)
+node_modules/
+npm-debug.log*
+
+# Python (tooling scripts, if any)
+__pycache__/
+*.pyc
+.venv/
+
+# Build output (placeholder for future game project)
+/build/
+/dist/
+*.log

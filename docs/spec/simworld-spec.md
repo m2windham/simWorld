@@ -270,7 +270,7 @@ flowchart TD
 ## 12. Module Checklist / Roadmap
 
 | Milestone | Systems |
-|---|---|
+| --- | --- |
 | MVP | Data layer, sim core (tick+save), map gen, actor gen, needs, basic AI/jobs, building |
 | Alpha | Health/capacities, skills+work priorities, economy/crafting, power+climate |
 | Beta | Combat, director/incidents, social/opinion, quests |

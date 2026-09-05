@@ -1,0 +1,11 @@
+{
+  "config": {
+    "default": true,
+    "MD013": false, // line length: docs have long table/diagram lines
+    "MD033": false, // inline HTML: not currently used, but not worth blocking on
+    "MD024": false, // duplicate headings: numbered sections repeat generic titles across files
+    "MD041": false  // first line must be top-level heading: not always true for templates
+  },
+  "globs": ["**/*.md"],
+  "ignores": ["node_modules"]
+}
