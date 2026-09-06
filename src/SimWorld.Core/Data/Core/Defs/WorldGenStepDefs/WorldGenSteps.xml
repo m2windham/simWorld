@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    World generation pipeline (RimWorld: WorldGenStepDefs), run in ascending order by WorldGenerator.
+    Roads runs after Factions because it connects settlements the Factions step places. Factions itself is
+    excluded from regeneration-on-load: settlements/factions are saved directly instead of being
+    recomputed from the seed (see World.RegenerateGrid) — Roads stays included, since it only needs the
+    (already-loaded) settlements and the freshly regenerated terrain, and uses no randomness of its own.
+  -->
+
+  <WorldGenStepDef>
+    <defName>Terrain</defName>
+    <order>100</order>
+    <workerClass>SimWorld.World.Gen.WorldGenStep_Terrain</workerClass>
+  </WorldGenStepDef>
+
+  <WorldGenStepDef>
+    <defName>Biomes</defName>
+    <order>200</order>
+    <workerClass>SimWorld.World.Gen.WorldGenStep_Biomes</workerClass>
+  </WorldGenStepDef>
+
+  <WorldGenStepDef>
+    <defName>Rivers</defName>
+    <order>300</order>
+    <workerClass>SimWorld.World.Gen.WorldGenStep_Rivers</workerClass>
+  </WorldGenStepDef>
+
+  <WorldGenStepDef>
+    <defName>Factions</defName>
+    <order>400</order>
+    <workerClass>SimWorld.World.Gen.WorldGenStep_Factions</workerClass>
+    <regenerateOnLoad>false</regenerateOnLoad>
+  </WorldGenStepDef>
+
+  <WorldGenStepDef>
+    <defName>Roads</defName>
+    <order>500</order>
+    <workerClass>SimWorld.World.Gen.WorldGenStep_Roads</workerClass>
+  </WorldGenStepDef>
+
+</Defs>
