@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Animal parts (RimWorld: BodyParts_Animal); organs are shared with humanlikes. -->
+
+  <BodyPartDef>
+    <defName>Body</defName>
+    <label>body</label>
+    <hitPoints>40</hitPoints>
+    <skinCovered>true</skinCovered>
+    <destroyableByDamage>false</destroyableByDamage>
+  </BodyPartDef>
+
+  <BodyPartDef>
+    <defName>AnimalNeck</defName>
+    <label>neck</label>
+    <hitPoints>25</hitPoints>
+    <skinCovered>true</skinCovered>
+    <destroyableByDamage>false</destroyableByDamage>
+    <tags>
+      <li>EatingPathway</li>
+      <li>BreathingPathway</li>
+    </tags>
+  </BodyPartDef>
+
+  <BodyPartDef>
+    <defName>AnimalHead</defName>
+    <label>head</label>
+    <hitPoints>25</hitPoints>
+    <skinCovered>true</skinCovered>
+    <destroyableByDamage>false</destroyableByDamage>
+  </BodyPartDef>
+
+  <BodyPartDef>
+    <defName>AnimalSkull</defName>
+    <label>skull</label>
+    <hitPoints>25</hitPoints>
+    <solid>true</solid>
+    <canSuggestAmputation>false</canSuggestAmputation>
+    <destroyableByDamage>false</destroyableByDamage>
+  </BodyPartDef>
+
+  <BodyPartDef>
+    <defName>AnimalJaw</defName>
+    <label>jaw</label>
+    <hitPoints>20</hitPoints>
+    <solid>true</solid>
+    <tags>
+      <li>EatingSource</li>
+    </tags>
+  </BodyPartDef>
+
+  <BodyPartDef>
+    <defName>AnimalLeg</defName>
+    <label>leg</label>
+    <hitPoints>30</hitPoints>
+    <skinCovered>true</skinCovered>
+    <tags>
+      <li>MovingLimbCore</li>
+    </tags>
+  </BodyPartDef>
+
+  <BodyPartDef>
+    <defName>AnimalPaw</defName>
+    <label>paw</label>
+    <hitPoints>20</hitPoints>
+    <skinCovered>true</skinCovered>
+    <tags>
+      <li>MovingLimbSegment</li>
+    </tags>
+  </BodyPartDef>
+
+  <BodyPartDef>
+    <defName>AnimalTail</defName>
+    <label>tail</label>
+    <hitPoints>10</hitPoints>
+    <skinCovered>true</skinCovered>
+  </BodyPartDef>
+
+</Defs>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Diseases the body fights (RimWorld: Hediffs_Diseases_Infectious). Severity climbs until immunity reaches 1,
+    then falls; tending slows the climb by severityPerDayTended × tend quality. An untended infection or plague
+    outruns immunity; flu does not.
+  -->
+
+  <HediffDef Name="DiseaseBase" Abstract="True">
+    <hediffClass>SimWorld.Health.Hediff</hediffClass>
+    <tendable>true</tendable>
+    <makesSickThought>true</makesSickThought>
+    <lethalSeverity>1</lethalSeverity>
+  </HediffDef>
+
+  <HediffDef ParentName="DiseaseBase">
+    <defName>WoundInfection</defName>
+    <label>infection</label>
+    <initialSeverity>0.001</initialSeverity>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration">
+        <baseTendDurationHours>24</baseTendDurationHours>
+        <severityPerDayTended>-0.53</severityPerDayTended>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_Immunizable">
+        <immunityPerDaySick>0.7</immunityPerDaySick>
+        <severityPerDayNotImmune>0.84</severityPerDayNotImmune>
+        <immunityPerDayNotSick>-0.3</immunityPerDayNotSick>
+        <severityPerDayImmune>-0.7</severityPerDayImmune>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>minor</label>
+      </li>
+      <li>
+        <minSeverity>0.33</minSeverity>
+        <label>major</label>
+        <painOffset>0.05</painOffset>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.05</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.62</minSeverity>
+        <label>extreme</label>
+        <lifeThreatening>true</lifeThreatening>
+        <painOffset>0.1</painOffset>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.2</offset>
+          </li>
+        </capMods>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef ParentName="DiseaseBase">
+    <defName>Flu</defName>
+    <label>flu</label>
+    <initialSeverity>0.1</initialSeverity>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration">
+        <baseTendDurationHours>24</baseTendDurationHours>
+        <severityPerDayTended>-0.62</severityPerDayTended>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_Immunizable">
+        <immunityPerDaySick>0.7</immunityPerDaySick>
+        <severityPerDayNotImmune>0.5</severityPerDayNotImmune>
+        <immunityPerDayNotSick>-0.3</immunityPerDayNotSick>
+        <severityPerDayImmune>-0.8</severityPerDayImmune>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>minor</label>
+        <painOffset>0.02</painOffset>
+      </li>
+      <li>
+        <minSeverity>0.4</minSeverity>
+        <label>major</label>
+        <painOffset>0.05</painOffset>
+        <hungerRateFactor>1.2</hungerRateFactor>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.1</offset>
+          </li>
+          <li>
+            <capacity>Manipulation</capacity>
+            <offset>-0.1</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.85</minSeverity>
+        <label>extreme</label>
+        <lifeThreatening>true</lifeThreatening>
+        <painOffset>0.1</painOffset>
+        <hungerRateFactor>1.2</hungerRateFactor>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.3</offset>
+          </li>
+          <li>
+            <capacity>Manipulation</capacity>
+            <offset>-0.2</offset>
+          </li>
+        </capMods>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef ParentName="DiseaseBase">
+    <defName>Plague</defName>
+    <label>plague</label>
+    <initialSeverity>0.1</initialSeverity>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration">
+        <baseTendDurationHours>24</baseTendDurationHours>
+        <severityPerDayTended>-0.53</severityPerDayTended>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_Immunizable">
+        <immunityPerDaySick>0.62</immunityPerDaySick>
+        <severityPerDayNotImmune>0.84</severityPerDayNotImmune>
+        <immunityPerDayNotSick>-0.3</immunityPerDayNotSick>
+        <severityPerDayImmune>-0.8</severityPerDayImmune>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>minor</label>
+        <painOffset>0.03</painOffset>
+      </li>
+      <li>
+        <minSeverity>0.4</minSeverity>
+        <label>major</label>
+        <painOffset>0.08</painOffset>
+        <restFallFactor>1.2</restFallFactor>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.1</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.1</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.8</minSeverity>
+        <label>extreme</label>
+        <lifeThreatening>true</lifeThreatening>
+        <painOffset>0.15</painOffset>
+        <restFallFactor>1.2</restFallFactor>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.3</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.3</offset>
+          </li>
+        </capMods>
+      </li>
+    </stages>
+  </HediffDef>
+
+</Defs>

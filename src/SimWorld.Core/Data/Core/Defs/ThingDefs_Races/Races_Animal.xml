@@ -7,6 +7,8 @@
     <description>A large, hardy working dog.</description>
     <race>
       <intelligence>Animal</intelligence>
+      <body>QuadrupedAnimalWithPaws</body>
+      <baseHealthScale>1</baseHealthScale>
       <baseBodySize>0.86</baseBodySize>
       <baseHungerRate>0.5</baseHungerRate>
       <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>

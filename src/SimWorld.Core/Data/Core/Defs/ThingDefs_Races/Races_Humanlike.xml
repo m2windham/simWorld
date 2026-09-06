@@ -13,6 +13,8 @@
     <description>A member of the species Homo sapiens.</description>
     <race>
       <intelligence>Humanlike</intelligence>
+      <body>Human</body>
+      <baseHealthScale>1</baseHealthScale>
       <baseBodySize>1</baseBodySize>
       <baseHungerRate>1</baseHungerRate>
       <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>

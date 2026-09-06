@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Targeting and armour coverage groups. -->
+
+  <BodyPartGroupDef>
+    <defName>Torso</defName>
+    <label>torso</label>
+    <listOrder>10</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>Neck</defName>
+    <label>neck</label>
+    <listOrder>20</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>FullHead</defName>
+    <label>head</label>
+    <listOrder>30</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>UpperHead</defName>
+    <label>upper head</label>
+    <listOrder>31</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>Eyes</defName>
+    <label>eyes</label>
+    <listOrder>32</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>Mouth</defName>
+    <label>mouth</label>
+    <listOrder>33</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>Shoulders</defName>
+    <label>shoulders</label>
+    <listOrder>40</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>Arms</defName>
+    <label>arms</label>
+    <listOrder>41</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>Hands</defName>
+    <label>hands</label>
+    <listOrder>42</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>LeftHand</defName>
+    <label>left hand</label>
+    <listOrder>43</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>RightHand</defName>
+    <label>right hand</label>
+    <listOrder>44</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>Legs</defName>
+    <label>legs</label>
+    <listOrder>50</listOrder>
+  </BodyPartGroupDef>
+
+  <BodyPartGroupDef>
+    <defName>Feet</defName>
+    <label>feet</label>
+    <listOrder>51</listOrder>
+  </BodyPartGroupDef>
+
+</Defs>

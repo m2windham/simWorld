@@ -137,14 +137,14 @@ namespace SimWorld.Tests.MindState
 
             p.Asleep = false;
             p.mindState.mentalStateHandler.TryStartMentalState(State("Catatonic"));
-            p.Downed = true;
+            p.health.ForceDowned = true;
             RunTicks(1, p);
             Assert.True(p.InMentalState);
             p.mindState.mentalStateHandler.ClearMentalStateDirect();
-            p.Downed = false;
+            p.health.ForceDowned = false;
 
             p.mindState.mentalStateHandler.TryStartMentalState(State("Berserk"));
-            p.Downed = true;
+            p.health.ForceDowned = true;
             RunTicks(1, p);
             Assert.False(p.InMentalState);
         }
@@ -153,7 +153,7 @@ namespace SimWorld.Tests.MindState
         public void Downed_or_dead_pawns_cannot_start_unforced_states()
         {
             Pawn p = NewHuman();
-            p.Downed = true;
+            p.health.ForceDowned = true;
             Assert.False(p.mindState.mentalStateHandler.TryStartMentalState(State("Wander_Sad")));
             Assert.True(p.mindState.mentalStateHandler.TryStartMentalState(State("Wander_Sad"), forced: true));
         }
