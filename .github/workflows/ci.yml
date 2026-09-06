@@ -1,4 +1,4 @@
-name: docs-ci
+name: ci
 
 on:
   push:
@@ -6,6 +6,37 @@ on:
   pull_request:
 
 jobs:
+  dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet restore
+      - run: dotnet build --no-restore --configuration Release
+      - run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=results.trx"
+      - name: Report test count
+        if: always()
+        run: |
+          total=$(grep -o 'total="[0-9]*"' artifacts/**/results.trx 2>/dev/null | head -1 || true)
+          echo "trx counters: ${total:-not found}"
+
+  blueprint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: tools/blueprint/package-lock.json
+      - run: npm ci
+        working-directory: tools/blueprint
+      - name: Validate status.json and build the Blueprint page
+        run: npm run build
+        working-directory: tools/blueprint
+
   lint-markdown:
     runs-on: ubuntu-latest
     steps:

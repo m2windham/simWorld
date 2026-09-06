@@ -1,0 +1,12 @@
+{
+  "name": "simworld-blueprint",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Builds the SimWorld Blueprint page (research, spec, build tracker) from docs/*.md and docs/status.json.",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "marked": "18.0.11"
+  }
+}

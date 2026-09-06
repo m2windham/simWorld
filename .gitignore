@@ -6,17 +6,39 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+.vs/
+*.user
+*.suo
 
-# Node (docs tooling: markdownlint/mermaid CI)
+# Node (docs tooling: markdownlint/mermaid CI, blueprint generator)
 node_modules/
 npm-debug.log*
+tools/blueprint/dist/
 
 # Python (tooling scripts, if any)
 __pycache__/
 *.pyc
 .venv/
 
-# Build output (placeholder for future game project)
+# .NET (all bin/obj are redirected here by Directory.Build.props)
+/artifacts/
+bin/
+obj/
+*.binlog
+TestResults/
+
+# Unity host project (added when there is something to render)
+/unity/**/Library/
+/unity/**/Temp/
+/unity/**/Logs/
+/unity/**/UserSettings/
+/unity/**/Obj/
+/unity/**/Build/
+/unity/**/Builds/
+/unity/**/*.csproj
+/unity/**/*.sln
+
+# Build output
 /build/
 /dist/
 *.log
