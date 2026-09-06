@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Body-driven situational thoughts (RimWorld: Thoughts_Situation_Health). -->
+
+  <ThoughtDef>
+    <defName>Pain</defName>
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_Pain</workerClass>
+    <stages>
+      <li>
+        <label>in a little pain</label>
+        <description>Something hurts a bit.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+      <li>
+        <label>in pain</label>
+        <description>It hurts.</description>
+        <baseMoodEffect>-10</baseMoodEffect>
+      </li>
+      <li>
+        <label>in serious pain</label>
+        <description>The pain is hard to bear.</description>
+        <baseMoodEffect>-15</baseMoodEffect>
+      </li>
+      <li>
+        <label>in extreme pain</label>
+        <description>Every moment is agony.</description>
+        <baseMoodEffect>-20</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>Sick</defName>
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_Sick</workerClass>
+    <stages>
+      <li>
+        <label>sick</label>
+        <description>I feel awful.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

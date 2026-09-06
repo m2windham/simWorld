@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-06",
-  "testsTotal": 173,
+  "testsTotal": 203,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -27,16 +27,76 @@
     "verified": "Exercised in a playable build"
   },
   "decisions": [
-    { "id": "lang", "date": "2026-09-06", "state": "decided", "title": "C# with Unity as the host", "note": "Core is an engine-free netstandard2.1 library (C# 9) so it builds and tests in CI without Unity; Unity references it as a local package." },
-    { "id": "scope", "date": "2026-09-06", "state": "decided", "title": "Step 1 = isolated modules, no game loop", "note": "Each of the 17 researched systems becomes a module with its own tests before any loop or renderer." },
-    { "id": "depth", "date": "2026-09-06", "state": "decided", "title": "Every citizen is a full agent", "note": "RimWorld-depth needs/mood/health/skills/jobs per person at civilization scale. Population target: as large as we can; the performance ceiling is a later bridge." },
-    { "id": "tech", "date": "2026-09-06", "state": "decided", "title": "Large authored tech tree of societal evolution", "note": "Endless/procedural tech comes later; the research module's data model must not preclude it." },
-    { "id": "director", "date": "2026-09-06", "state": "open", "title": "Director persona name", "note": "RimWorld's storyteller is translated into a chronicle-style narrator targeting YOUR civilization. Working candidates: Scribe, Historian, The Chronicle. Code module stays 'Director' until chosen." },
-    { "id": "launch", "date": "2026-09-06", "state": "decided", "title": "Launch only when it makes sense", "note": "Tracker shows launch disabled with the reason until a playable loop exists." },
-    { "id": "tracker", "date": "2026-09-06", "state": "decided", "title": "Living tracker", "note": "Third tab in the Blueprint, generated from docs/status.json; repo-verified items are locked, remaining items are tick-able and persisted for everyone who opens the page." },
-    { "id": "dupes", "date": "2026-09-06", "state": "decided", "title": "Duplicate defName policy: later pack wins", "note": "Implementation choice mirroring mod load-order semantics (DefLoadOptions.DuplicatePolicy is switchable). Revisit when mod patching lands." },
-    { "id": "automerge", "date": "2026-09-06", "state": "decided", "title": "Auto-merge green PRs", "note": "PRs are merged as soon as CI is green; no manual merge step." },
-    { "id": "threadstatic", "date": "2026-09-06", "state": "decided", "title": "RimWorld's static Rand and Scribe stay static, but per thread", "note": "Ported call sites (Rand.Value, Scribe_Values.Look) keep their shape; state is [ThreadStatic] so tests and worker threads never share a sequence or a save session. Explicit RandomStream instances are the preferred form for new systems." }
+    {
+      "id": "lang",
+      "date": "2026-09-06",
+      "state": "decided",
+      "title": "C# with Unity as the host",
+      "note": "Core is an engine-free netstandard2.1 library (C# 9) so it builds and tests in CI without Unity; Unity references it as a local package."
+    },
+    {
+      "id": "scope",
+      "date": "2026-09-06",
+      "state": "decided",
+      "title": "Step 1 = isolated modules, no game loop",
+      "note": "Each of the 17 researched systems becomes a module with its own tests before any loop or renderer."
+    },
+    {
+      "id": "depth",
+      "date": "2026-09-06",
+      "state": "decided",
+      "title": "Every citizen is a full agent",
+      "note": "RimWorld-depth needs/mood/health/skills/jobs per person at civilization scale. Population target: as large as we can; the performance ceiling is a later bridge."
+    },
+    {
+      "id": "tech",
+      "date": "2026-09-06",
+      "state": "decided",
+      "title": "Large authored tech tree of societal evolution",
+      "note": "Endless/procedural tech comes later; the research module's data model must not preclude it."
+    },
+    {
+      "id": "director",
+      "date": "2026-09-06",
+      "state": "open",
+      "title": "Director persona name",
+      "note": "RimWorld's storyteller is translated into a chronicle-style narrator targeting YOUR civilization. Working candidates: Scribe, Historian, The Chronicle. Code module stays 'Director' until chosen."
+    },
+    {
+      "id": "launch",
+      "date": "2026-09-06",
+      "state": "decided",
+      "title": "Launch only when it makes sense",
+      "note": "Tracker shows launch disabled with the reason until a playable loop exists."
+    },
+    {
+      "id": "tracker",
+      "date": "2026-09-06",
+      "state": "decided",
+      "title": "Living tracker",
+      "note": "Third tab in the Blueprint, generated from docs/status.json; repo-verified items are locked, remaining items are tick-able and persisted for everyone who opens the page."
+    },
+    {
+      "id": "dupes",
+      "date": "2026-09-06",
+      "state": "decided",
+      "title": "Duplicate defName policy: later pack wins",
+      "note": "Implementation choice mirroring mod load-order semantics (DefLoadOptions.DuplicatePolicy is switchable). Revisit when mod patching lands."
+    },
+    {
+      "id": "automerge",
+      "date": "2026-09-06",
+      "state": "decided",
+      "title": "Auto-merge green PRs",
+      "note": "PRs are merged as soon as CI is green; no manual merge step."
+    },
+    {
+      "id": "threadstatic",
+      "date": "2026-09-06",
+      "state": "decided",
+      "title": "RimWorld's static Rand and Scribe stay static, but per thread",
+      "note": "Ported call sites (Rand.Value, Scribe_Values.Look) keep their shape; state is [ThreadStatic] so tests and worker threads never share a sequence or a save session. Explicit RandomStream instances are the preferred form for new systems."
+    }
   ],
   "systems": [
     {
@@ -49,21 +109,81 @@
       "status": "in-progress",
       "tests": 62,
       "items": [
-        { "id": "defs.xml", "label": "XML Defs loading: <Defs> root, Def type resolved from element name", "done": true },
-        { "id": "defs.mapping", "label": "Reflection field mapping: primitives, enums, nested objects, lists, dictionaries", "done": true },
-        { "id": "defs.inherit", "label": "Name / ParentName / Abstract inheritance with Inherit=\"False\" and list append", "done": true },
-        { "id": "defs.class", "label": "Class=\"…\" polymorphism and Type-valued fields (thingClass, compClass)", "done": true },
-        { "id": "defs.crossref", "label": "Deferred cross-references across files (fields, lists, dictionary values)", "done": true },
-        { "id": "defs.database", "label": "DefDatabase: typed registries incl. subclasses, duplicate policy, RimWorld-style static facade", "done": true },
-        { "id": "defs.defof", "label": "DefOf static binding with DefAlias", "done": true },
-        { "id": "defs.lifecycle", "label": "Lifecycle order: PostLoad → cross-refs → ResolveReferences → ConfigErrors", "done": true },
-        { "id": "defs.comps", "label": "CompProperties (data half of the Comp pattern) as a Class= list on ThingDef", "done": true },
-        { "id": "defs.stats", "label": "StatDef / StatModifier with the element-name-as-stat idiom", "done": true },
-        { "id": "defs.custom", "label": "IXmlCustomLoad hook, LoadAlias, Unsaved, IsNull", "done": true },
-        { "id": "defs.parse", "label": "Culture-invariant ParseHelper incl. IntRange, FloatRange, CurvePoint/SimpleCurve", "done": true },
-        { "id": "defs.thingcomp", "label": "ThingComp runtime half (ThingWithComps.InitializeComps) — lands with the Things module", "done": false },
-        { "id": "defs.patches", "label": "Mod content packs + PatchOperations (XPath patching)", "done": false },
-        { "id": "defs.loadorder", "label": "Mod load order and dependency resolution", "done": false }
+        {
+          "id": "defs.xml",
+          "label": "XML Defs loading: <Defs> root, Def type resolved from element name",
+          "done": true
+        },
+        {
+          "id": "defs.mapping",
+          "label": "Reflection field mapping: primitives, enums, nested objects, lists, dictionaries",
+          "done": true
+        },
+        {
+          "id": "defs.inherit",
+          "label": "Name / ParentName / Abstract inheritance with Inherit=\"False\" and list append",
+          "done": true
+        },
+        {
+          "id": "defs.class",
+          "label": "Class=\"…\" polymorphism and Type-valued fields (thingClass, compClass)",
+          "done": true
+        },
+        {
+          "id": "defs.crossref",
+          "label": "Deferred cross-references across files (fields, lists, dictionary values)",
+          "done": true
+        },
+        {
+          "id": "defs.database",
+          "label": "DefDatabase: typed registries incl. subclasses, duplicate policy, RimWorld-style static facade",
+          "done": true
+        },
+        {
+          "id": "defs.defof",
+          "label": "DefOf static binding with DefAlias",
+          "done": true
+        },
+        {
+          "id": "defs.lifecycle",
+          "label": "Lifecycle order: PostLoad → cross-refs → ResolveReferences → ConfigErrors",
+          "done": true
+        },
+        {
+          "id": "defs.comps",
+          "label": "CompProperties (data half of the Comp pattern) as a Class= list on ThingDef",
+          "done": true
+        },
+        {
+          "id": "defs.stats",
+          "label": "StatDef / StatModifier with the element-name-as-stat idiom",
+          "done": true
+        },
+        {
+          "id": "defs.custom",
+          "label": "IXmlCustomLoad hook, LoadAlias, Unsaved, IsNull",
+          "done": true
+        },
+        {
+          "id": "defs.parse",
+          "label": "Culture-invariant ParseHelper incl. IntRange, FloatRange, CurvePoint/SimpleCurve",
+          "done": true
+        },
+        {
+          "id": "defs.thingcomp",
+          "label": "ThingComp runtime half (ThingWithComps.InitializeComps) — lands with the Things module",
+          "done": false
+        },
+        {
+          "id": "defs.patches",
+          "label": "Mod content packs + PatchOperations (XPath patching)",
+          "done": false
+        },
+        {
+          "id": "defs.loadorder",
+          "label": "Mod load order and dependency resolution",
+          "done": false
+        }
       ]
     },
     {
@@ -76,12 +196,36 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "worldgen.tiles", "label": "Tile grid on a sphere-like projection with configurable coverage", "done": false },
-        { "id": "worldgen.noise", "label": "Seeded noise fields: elevation, rainfall, temperature, swampiness", "done": false },
-        { "id": "worldgen.biomes", "label": "Biome assignment from noise + BiomeDef tables (flora, fauna, disease, temperature curve)", "done": false },
-        { "id": "worldgen.rivers", "label": "Rivers and roads as tile-graph edges affecting travel and trade", "done": false },
-        { "id": "worldgen.factions", "label": "Faction/settlement placement rules (count, min distance, biome affinity)", "done": false },
-        { "id": "worldgen.relations", "label": "Initial faction relations and tech levels", "done": false }
+        {
+          "id": "worldgen.tiles",
+          "label": "Tile grid on a sphere-like projection with configurable coverage",
+          "done": false
+        },
+        {
+          "id": "worldgen.noise",
+          "label": "Seeded noise fields: elevation, rainfall, temperature, swampiness",
+          "done": false
+        },
+        {
+          "id": "worldgen.biomes",
+          "label": "Biome assignment from noise + BiomeDef tables (flora, fauna, disease, temperature curve)",
+          "done": false
+        },
+        {
+          "id": "worldgen.rivers",
+          "label": "Rivers and roads as tile-graph edges affecting travel and trade",
+          "done": false
+        },
+        {
+          "id": "worldgen.factions",
+          "label": "Faction/settlement placement rules (count, min distance, biome affinity)",
+          "done": false
+        },
+        {
+          "id": "worldgen.relations",
+          "label": "Initial faction relations and tech levels",
+          "done": false
+        }
       ]
     },
     {
@@ -94,10 +238,26 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "mapgen.terrain", "label": "Terrain layer from tile biome + hilliness", "done": false },
-        { "id": "mapgen.elevation", "label": "Elevation → mountains, caves, water bodies; roads carried in", "done": false },
-        { "id": "mapgen.scatter", "label": "Scatterers: resource deposits, ruins, ancient structures, plant density", "done": false },
-        { "id": "mapgen.caves", "label": "Cave systems and minable rock with mineral yield tables", "done": false }
+        {
+          "id": "mapgen.terrain",
+          "label": "Terrain layer from tile biome + hilliness",
+          "done": false
+        },
+        {
+          "id": "mapgen.elevation",
+          "label": "Elevation → mountains, caves, water bodies; roads carried in",
+          "done": false
+        },
+        {
+          "id": "mapgen.scatter",
+          "label": "Scatterers: resource deposits, ruins, ancient structures, plant density",
+          "done": false
+        },
+        {
+          "id": "mapgen.caves",
+          "label": "Cave systems and minable rock with mineral yield tables",
+          "done": false
+        }
       ]
     },
     {
@@ -110,12 +270,36 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "pawngen.backstory", "label": "Backstory pairs → skill offsets, disabled work types, forced traits", "done": false },
-        { "id": "pawngen.traits", "label": "Trait pool with exclusion groups and weighted degrees", "done": false },
-        { "id": "pawngen.skills", "label": "Skills = base + offsets + passion roll", "done": false },
-        { "id": "pawngen.appearance", "label": "Appearance and name generation from culture-tagged banks", "done": false },
-        { "id": "pawngen.gear", "label": "Gear from faction tech level + PawnKindDef loadouts", "done": false },
-        { "id": "pawngen.genes", "label": "Genes / xenotypes with inheritance (Biotech)", "done": false }
+        {
+          "id": "pawngen.backstory",
+          "label": "Backstory pairs → skill offsets, disabled work types, forced traits",
+          "done": false
+        },
+        {
+          "id": "pawngen.traits",
+          "label": "Trait pool with exclusion groups and weighted degrees",
+          "done": false
+        },
+        {
+          "id": "pawngen.skills",
+          "label": "Skills = base + offsets + passion roll",
+          "done": false
+        },
+        {
+          "id": "pawngen.appearance",
+          "label": "Appearance and name generation from culture-tagged banks",
+          "done": false
+        },
+        {
+          "id": "pawngen.gear",
+          "label": "Gear from faction tech level + PawnKindDef loadouts",
+          "done": false
+        },
+        {
+          "id": "pawngen.genes",
+          "label": "Genes / xenotypes with inheritance (Biotech)",
+          "done": false
+        }
       ]
     },
     {
@@ -128,15 +312,51 @@
       "status": "ported",
       "tests": 65,
       "items": [
-        { "id": "simcore.tick", "label": "TickManager: 60 ticks/s clock, TimeSpeed multipliers (1/3/6/15), pause/toggle, danger-forced normal speed", "done": true },
-        { "id": "simcore.buckets", "label": "TickList buckets: normal / rare (250) / long (2000) with deferred register/deregister", "done": true },
-        { "id": "simcore.order", "label": "Tick order: pre-tickers (world, map) → normal → rare → long → post-tickers; per-frame tick cap drops backlog", "done": true },
-        { "id": "simcore.rng", "label": "MurmurHash-based RandomStream per system + thread-safe static Rand facade (Range/Chance/Gaussian/MTB/PushState)", "done": true },
-        { "id": "simcore.calendar", "label": "GenTicks / GenDate: 60,000-tick days, quadrums, years, longitude-local time, seasons by latitude", "done": true },
-        { "id": "simcore.scribe", "label": "Scribe: IExposable save/load in three passes (LoadingVars → ResolvingCrossRefs → PostLoadInit)", "done": true },
-        { "id": "simcore.scribe-modes", "label": "Scribe_Values / Defs / Deep (polymorphic Class=) / References (forward + cyclic) / Collections (list, set, dictionary)", "done": true },
-        { "id": "simcore.autosave", "label": "Autosave cadence — lands with the game loop", "done": false },
-        { "id": "simcore.scribe-stream", "label": "Streaming XmlWriter save path for very large worlds (current writer builds the document in memory)", "done": false }
+        {
+          "id": "simcore.tick",
+          "label": "TickManager: 60 ticks/s clock, TimeSpeed multipliers (1/3/6/15), pause/toggle, danger-forced normal speed",
+          "done": true
+        },
+        {
+          "id": "simcore.buckets",
+          "label": "TickList buckets: normal / rare (250) / long (2000) with deferred register/deregister",
+          "done": true
+        },
+        {
+          "id": "simcore.order",
+          "label": "Tick order: pre-tickers (world, map) → normal → rare → long → post-tickers; per-frame tick cap drops backlog",
+          "done": true
+        },
+        {
+          "id": "simcore.rng",
+          "label": "MurmurHash-based RandomStream per system + thread-safe static Rand facade (Range/Chance/Gaussian/MTB/PushState)",
+          "done": true
+        },
+        {
+          "id": "simcore.calendar",
+          "label": "GenTicks / GenDate: 60,000-tick days, quadrums, years, longitude-local time, seasons by latitude",
+          "done": true
+        },
+        {
+          "id": "simcore.scribe",
+          "label": "Scribe: IExposable save/load in three passes (LoadingVars → ResolvingCrossRefs → PostLoadInit)",
+          "done": true
+        },
+        {
+          "id": "simcore.scribe-modes",
+          "label": "Scribe_Values / Defs / Deep (polymorphic Class=) / References (forward + cyclic) / Collections (list, set, dictionary)",
+          "done": true
+        },
+        {
+          "id": "simcore.autosave",
+          "label": "Autosave cadence — lands with the game loop",
+          "done": false
+        },
+        {
+          "id": "simcore.scribe-stream",
+          "label": "Streaming XmlWriter save path for very large worlds (current writer builds the document in memory)",
+          "done": false
+        }
       ]
     },
     {
@@ -149,16 +369,56 @@
       "status": "ported",
       "tests": 34,
       "items": [
-        { "id": "needs.pawn", "label": "Pawn skeleton + RaceProperties: needs/story/mind trackers, hash-interval ticking, Scribe round-trip", "done": true },
-        { "id": "needs.defs", "label": "NeedDef set: Food, Rest, Joy, Mood, Beauty, Comfort, Outdoors, RoomSize (intelligence-gated)", "done": true },
-        { "id": "needs.decay", "label": "Decay rules: food 1.6/day slowing when hungry, rest fall/gain with fatigue factors, joy tolerance, seekers", "done": true },
-        { "id": "needs.thoughts", "label": "Thoughts: timed memories (stack limit, renew-oldest) + situational workers, trait nullifying/required", "done": true },
-        { "id": "needs.mood", "label": "Mood = 50% + grouped thought total with RimWorld's geometric stacking rule; seeker rates", "done": true },
-        { "id": "needs.breaks", "label": "MentalBreaker bands (0.35/0.20/0.05), 2000-tick grace, MTB rolls, weighted trait-filtered break table, state lifecycle + Catharsis", "done": true },
-        { "id": "needs.traits", "label": "TraitDef/Trait/TraitSet with degrees, conflicts and exclusion tags", "done": true },
-        { "id": "needs.content", "label": "Core XML: Human/Husky races, needs, joy kinds, traits, thoughts, mental states and breaks", "done": true },
-        { "id": "needs.social", "label": "Social/opinion thoughts and social fights — lands with the Social module", "done": false },
-        { "id": "needs.rollup", "label": "Translation: population mood rollups for the god view", "done": false }
+        {
+          "id": "needs.pawn",
+          "label": "Pawn skeleton + RaceProperties: needs/story/mind trackers, hash-interval ticking, Scribe round-trip",
+          "done": true
+        },
+        {
+          "id": "needs.defs",
+          "label": "NeedDef set: Food, Rest, Joy, Mood, Beauty, Comfort, Outdoors, RoomSize (intelligence-gated)",
+          "done": true
+        },
+        {
+          "id": "needs.decay",
+          "label": "Decay rules: food 1.6/day slowing when hungry, rest fall/gain with fatigue factors, joy tolerance, seekers",
+          "done": true
+        },
+        {
+          "id": "needs.thoughts",
+          "label": "Thoughts: timed memories (stack limit, renew-oldest) + situational workers, trait nullifying/required",
+          "done": true
+        },
+        {
+          "id": "needs.mood",
+          "label": "Mood = 50% + grouped thought total with RimWorld's geometric stacking rule; seeker rates",
+          "done": true
+        },
+        {
+          "id": "needs.breaks",
+          "label": "MentalBreaker bands (0.35/0.20/0.05), 2000-tick grace, MTB rolls, weighted trait-filtered break table, state lifecycle + Catharsis",
+          "done": true
+        },
+        {
+          "id": "needs.traits",
+          "label": "TraitDef/Trait/TraitSet with degrees, conflicts and exclusion tags",
+          "done": true
+        },
+        {
+          "id": "needs.content",
+          "label": "Core XML: Human/Husky races, needs, joy kinds, traits, thoughts, mental states and breaks",
+          "done": true
+        },
+        {
+          "id": "needs.social",
+          "label": "Social/opinion thoughts and social fights — lands with the Social module",
+          "done": false
+        },
+        {
+          "id": "needs.rollup",
+          "label": "Translation: population mood rollups for the god view",
+          "done": false
+        }
       ]
     },
     {
@@ -167,16 +427,60 @@
       "rimworld": "Health System",
       "translation": "Unchanged.",
       "translationState": "decided",
-      "module": "src/SimWorld.Core/Health",
-      "status": "planned",
-      "tests": 0,
+      "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
+      "status": "ported",
+      "tests": 30,
       "items": [
-        { "id": "health.body", "label": "BodyDef part tree with size weights for hit chance and coverage", "done": false },
-        { "id": "health.hediffs", "label": "Hediffs: injuries, staged diseases, addictions, implants, chronic", "done": false },
-        { "id": "health.capacities", "label": "Capacities from part efficiency; downed/dead thresholds", "done": false },
-        { "id": "health.pain", "label": "Pain aggregate → consciousness penalty", "done": false },
-        { "id": "health.immunity", "label": "Disease severity vs immunity race; tend quality", "done": false },
-        { "id": "health.surgery", "label": "Surgery bills with skill-rolled outcomes", "done": false }
+        {
+          "id": "health.body",
+          "label": "BodyDef part tree: tags, groups, height/depth, coverage → absolute coverage for hit selection (Human + quadruped)",
+          "done": true
+        },
+        {
+          "id": "health.hediffs",
+          "label": "Hediffs: severity-staged conditions with comps (immunizable, tend duration, severity/day, disappears, gets-permanent, infecter); injuries, missing parts, added parts",
+          "done": true
+        },
+        {
+          "id": "health.capacities",
+          "label": "11 capacities from part efficiency (tag averages, limb products, cap mods); downed = pain shock / unconscious / no legs, dead = lethal capacity, core part, lethal severity or 150 total damage",
+          "done": true
+        },
+        {
+          "id": "health.damage",
+          "label": "DamageDef → worker → injury on a coverage-weighted part; solid parts crack, skin bruises; part destruction removes the subtree",
+          "done": true
+        },
+        {
+          "id": "health.pain",
+          "label": "Pain aggregate (Σ offsets × Π factors) → consciousness penalty, pain shock, Pain/Sick thoughts",
+          "done": true
+        },
+        {
+          "id": "health.healing",
+          "label": "Bleeding → blood loss (lethal at 1), natural healing 8/day (+4 lying, +22×quality tended), scars, infection rolls, tending priority",
+          "done": true
+        },
+        {
+          "id": "health.immunity",
+          "label": "Immunity vs severity race per disease (flu survivable, plague/infection lethal untended); malnutrition from starvation; hediff hunger/rest factors",
+          "done": true
+        },
+        {
+          "id": "health.content",
+          "label": "Core XML: 23 part tags, 13 groups, 38 part defs, 2 bodies, 11 capacities, 16 hediffs, 6 damages, health thoughts",
+          "done": true
+        },
+        {
+          "id": "health.addictions",
+          "label": "Addictions and drug tolerance — lands with the Drugs/Items content",
+          "done": false
+        },
+        {
+          "id": "health.surgery",
+          "label": "Surgery bills with skill-rolled outcomes — lands with Skills & Work",
+          "done": false
+        }
       ]
     },
     {
@@ -189,11 +493,31 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "work.skills", "label": "Skill levels 0–20, XP curve, passion multipliers", "done": false },
-        { "id": "work.decay", "label": "Unused-skill decay", "done": false },
-        { "id": "work.priorities", "label": "Work priority grid per work type", "done": false },
-        { "id": "work.givers", "label": "WorkGivers scanning for jobs ordered by priority then urgency", "done": false },
-        { "id": "work.policy", "label": "Translation: policy/role-driven priorities at civ scale", "done": false }
+        {
+          "id": "work.skills",
+          "label": "Skill levels 0–20, XP curve, passion multipliers",
+          "done": false
+        },
+        {
+          "id": "work.decay",
+          "label": "Unused-skill decay",
+          "done": false
+        },
+        {
+          "id": "work.priorities",
+          "label": "Work priority grid per work type",
+          "done": false
+        },
+        {
+          "id": "work.givers",
+          "label": "WorkGivers scanning for jobs ordered by priority then urgency",
+          "done": false
+        },
+        {
+          "id": "work.policy",
+          "label": "Translation: policy/role-driven priorities at civ scale",
+          "done": false
+        }
       ]
     },
     {
@@ -206,13 +530,41 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "ai.thinktree", "label": "ThinkTree priority nodes (conditionals + JobGivers)", "done": false },
-        { "id": "ai.jobs", "label": "Job + JobDriver Toil state machine", "done": false },
-        { "id": "ai.reservations", "label": "Reservation manager for things and cells", "done": false },
-        { "id": "ai.regions", "label": "Region / RegionLink graph for reachability", "done": false },
-        { "id": "ai.pathing", "label": "A* on per-cell cost grid; hierarchical/flow-field path sharing", "done": false },
-        { "id": "ai.animals", "label": "Animal think tree, taming, training", "done": false },
-        { "id": "ai.edicts", "label": "Translation: god edicts/goals as high-priority think nodes", "done": false }
+        {
+          "id": "ai.thinktree",
+          "label": "ThinkTree priority nodes (conditionals + JobGivers)",
+          "done": false
+        },
+        {
+          "id": "ai.jobs",
+          "label": "Job + JobDriver Toil state machine",
+          "done": false
+        },
+        {
+          "id": "ai.reservations",
+          "label": "Reservation manager for things and cells",
+          "done": false
+        },
+        {
+          "id": "ai.regions",
+          "label": "Region / RegionLink graph for reachability",
+          "done": false
+        },
+        {
+          "id": "ai.pathing",
+          "label": "A* on per-cell cost grid; hierarchical/flow-field path sharing",
+          "done": false
+        },
+        {
+          "id": "ai.animals",
+          "label": "Animal think tree, taming, training",
+          "done": false
+        },
+        {
+          "id": "ai.edicts",
+          "label": "Translation: god edicts/goals as high-priority think nodes",
+          "done": false
+        }
       ]
     },
     {
@@ -225,11 +577,31 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "director.personality", "label": "Storyteller personality curves (rising / steady-low / random)", "done": false },
-        { "id": "director.points", "label": "Threat points from wealth + population + age", "done": false },
-        { "id": "director.incidents", "label": "Weighted incident categories with cooldowns and fire conditions", "done": false },
-        { "id": "director.raids", "label": "Raid squad generator: composition + tactic by points and tech", "done": false },
-        { "id": "director.civ", "label": "Translation: civilization-scale targeting and era-based scaling", "done": false }
+        {
+          "id": "director.personality",
+          "label": "Storyteller personality curves (rising / steady-low / random)",
+          "done": false
+        },
+        {
+          "id": "director.points",
+          "label": "Threat points from wealth + population + age",
+          "done": false
+        },
+        {
+          "id": "director.incidents",
+          "label": "Weighted incident categories with cooldowns and fire conditions",
+          "done": false
+        },
+        {
+          "id": "director.raids",
+          "label": "Raid squad generator: composition + tactic by points and tech",
+          "done": false
+        },
+        {
+          "id": "director.civ",
+          "label": "Translation: civilization-scale targeting and era-based scaling",
+          "done": false
+        }
       ]
     },
     {
@@ -242,11 +614,31 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "combat.verbs", "label": "Verb system: ranged hit-chance formula, melee hit/dodge", "done": false },
-        { "id": "combat.damage", "label": "Damage types vs armor per type; penetration vs deflect", "done": false },
-        { "id": "combat.cover", "label": "Cover via line-of-fire sampling", "done": false },
-        { "id": "combat.structures", "label": "Turrets, traps, explosions", "done": false },
-        { "id": "combat.capture", "label": "Downed / capture / prisoner loop", "done": false }
+        {
+          "id": "combat.verbs",
+          "label": "Verb system: ranged hit-chance formula, melee hit/dodge",
+          "done": false
+        },
+        {
+          "id": "combat.damage",
+          "label": "Damage types vs armor per type; penetration vs deflect",
+          "done": false
+        },
+        {
+          "id": "combat.cover",
+          "label": "Cover via line-of-fire sampling",
+          "done": false
+        },
+        {
+          "id": "combat.structures",
+          "label": "Turrets, traps, explosions",
+          "done": false
+        },
+        {
+          "id": "combat.capture",
+          "label": "Downed / capture / prisoner loop",
+          "done": false
+        }
       ]
     },
     {
@@ -259,11 +651,31 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "crafting.bills", "label": "Bill queue: recipe + ingredient filter + repeat mode", "done": false },
-        { "id": "crafting.ingredients", "label": "Ingredient search radius over stockpiles", "done": false },
-        { "id": "crafting.quality", "label": "Skill-weighted quality roll with inspiration", "done": false },
-        { "id": "crafting.cooking", "label": "Cooking: meal tiers, food poisoning", "done": false },
-        { "id": "crafting.animals", "label": "Animal husbandry: taming, training, produce cycles, butchering", "done": false }
+        {
+          "id": "crafting.bills",
+          "label": "Bill queue: recipe + ingredient filter + repeat mode",
+          "done": false
+        },
+        {
+          "id": "crafting.ingredients",
+          "label": "Ingredient search radius over stockpiles",
+          "done": false
+        },
+        {
+          "id": "crafting.quality",
+          "label": "Skill-weighted quality roll with inspiration",
+          "done": false
+        },
+        {
+          "id": "crafting.cooking",
+          "label": "Cooking: meal tiers, food poisoning",
+          "done": false
+        },
+        {
+          "id": "crafting.animals",
+          "label": "Animal husbandry: taming, training, produce cycles, butchering",
+          "done": false
+        }
       ]
     },
     {
@@ -276,11 +688,31 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "research.dag", "label": "ResearchProjectDef prerequisite DAG", "done": false },
-        { "id": "research.progress", "label": "Points per tick from researcher skill × bench quality", "done": false },
-        { "id": "research.unlocks", "label": "Unlocks gate recipes, buildings, apparel; tech-level gates", "done": false },
-        { "id": "research.eras", "label": "Translation: era structure for societal evolution", "done": false },
-        { "id": "research.endless", "label": "Translation: extension point for procedural tech beyond the authored tree", "done": false }
+        {
+          "id": "research.dag",
+          "label": "ResearchProjectDef prerequisite DAG",
+          "done": false
+        },
+        {
+          "id": "research.progress",
+          "label": "Points per tick from researcher skill × bench quality",
+          "done": false
+        },
+        {
+          "id": "research.unlocks",
+          "label": "Unlocks gate recipes, buildings, apparel; tech-level gates",
+          "done": false
+        },
+        {
+          "id": "research.eras",
+          "label": "Translation: era structure for societal evolution",
+          "done": false
+        },
+        {
+          "id": "research.endless",
+          "label": "Translation: extension point for procedural tech beyond the authored tree",
+          "done": false
+        }
       ]
     },
     {
@@ -293,11 +725,31 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "economy.currency", "label": "Silver as abstract barter unit; market value", "done": false },
-        { "id": "economy.pricing", "label": "Price = base × market fluctuation × relation × stock category", "done": false },
-        { "id": "economy.caravans", "label": "Caravans on the world tile graph with time/supply cost", "done": false },
-        { "id": "economy.goodwill", "label": "Faction goodwill thresholds → hostile / neutral / ally", "done": false },
-        { "id": "economy.diplomacy", "label": "Translation: civilization diplomacy and trade routes", "done": false }
+        {
+          "id": "economy.currency",
+          "label": "Silver as abstract barter unit; market value",
+          "done": false
+        },
+        {
+          "id": "economy.pricing",
+          "label": "Price = base × market fluctuation × relation × stock category",
+          "done": false
+        },
+        {
+          "id": "economy.caravans",
+          "label": "Caravans on the world tile graph with time/supply cost",
+          "done": false
+        },
+        {
+          "id": "economy.goodwill",
+          "label": "Faction goodwill thresholds → hostile / neutral / ally",
+          "done": false
+        },
+        {
+          "id": "economy.diplomacy",
+          "label": "Translation: civilization diplomacy and trade routes",
+          "done": false
+        }
       ]
     },
     {
@@ -310,13 +762,41 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "building.zones", "label": "Zones: stockpile, growing, home area", "done": false },
-        { "id": "building.construction", "label": "Blueprint → frame → building; materials from stock", "done": false },
-        { "id": "building.roof", "label": "Roof support flood-fill and collapse", "done": false },
-        { "id": "building.power", "label": "Power grid graph with brownout policy", "done": false },
-        { "id": "building.temperature", "label": "Per-room heat diffusion; biome/season modulation", "done": false },
-        { "id": "building.plants", "label": "Plant growth from fertility × light × temperature", "done": false },
-        { "id": "building.initiative", "label": "Translation: citizen-initiated construction under edicts", "done": false }
+        {
+          "id": "building.zones",
+          "label": "Zones: stockpile, growing, home area",
+          "done": false
+        },
+        {
+          "id": "building.construction",
+          "label": "Blueprint → frame → building; materials from stock",
+          "done": false
+        },
+        {
+          "id": "building.roof",
+          "label": "Roof support flood-fill and collapse",
+          "done": false
+        },
+        {
+          "id": "building.power",
+          "label": "Power grid graph with brownout policy",
+          "done": false
+        },
+        {
+          "id": "building.temperature",
+          "label": "Per-room heat diffusion; biome/season modulation",
+          "done": false
+        },
+        {
+          "id": "building.plants",
+          "label": "Plant growth from fertility × light × temperature",
+          "done": false
+        },
+        {
+          "id": "building.initiative",
+          "label": "Translation: citizen-initiated construction under edicts",
+          "done": false
+        }
       ]
     },
     {
@@ -329,11 +809,31 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "social.opinion", "label": "Opinion score from traits, history, interactions, alignment", "done": false },
-        { "id": "social.interactions", "label": "Periodic interaction rolls (chitchat, insult, social fight)", "done": false },
-        { "id": "social.romance", "label": "Romance / rivalry thresholds; marriage and breakup", "done": false },
-        { "id": "social.ideology", "label": "Memes + precepts feeding thoughts; rituals; roles", "done": false },
-        { "id": "social.dlc", "label": "Genes, mechanitor bandwidth, psycasts, containment — evaluated per era", "done": false }
+        {
+          "id": "social.opinion",
+          "label": "Opinion score from traits, history, interactions, alignment",
+          "done": false
+        },
+        {
+          "id": "social.interactions",
+          "label": "Periodic interaction rolls (chitchat, insult, social fight)",
+          "done": false
+        },
+        {
+          "id": "social.romance",
+          "label": "Romance / rivalry thresholds; marriage and breakup",
+          "done": false
+        },
+        {
+          "id": "social.ideology",
+          "label": "Memes + precepts feeding thoughts; rituals; roles",
+          "done": false
+        },
+        {
+          "id": "social.dlc",
+          "label": "Genes, mechanitor bandwidth, psycasts, containment — evaluated per era",
+          "done": false
+        }
       ]
     },
     {
@@ -346,10 +846,26 @@
       "status": "planned",
       "tests": 0,
       "items": [
-        { "id": "quests.scenario", "label": "ScenarioDef: starting conditions and rule modifiers", "done": false },
-        { "id": "quests.scripts", "label": "QuestScriptDef node graphs (trigger → branches → reward/threat)", "done": false },
-        { "id": "quests.delivery", "label": "Delivery via letters with accept/expire timers", "done": false },
-        { "id": "quests.moments", "label": "Translation: narrator-issued historical moments", "done": false }
+        {
+          "id": "quests.scenario",
+          "label": "ScenarioDef: starting conditions and rule modifiers",
+          "done": false
+        },
+        {
+          "id": "quests.scripts",
+          "label": "QuestScriptDef node graphs (trigger → branches → reward/threat)",
+          "done": false
+        },
+        {
+          "id": "quests.delivery",
+          "label": "Delivery via letters with accept/expire timers",
+          "done": false
+        },
+        {
+          "id": "quests.moments",
+          "label": "Translation: narrator-issued historical moments",
+          "done": false
+        }
       ]
     }
   ]

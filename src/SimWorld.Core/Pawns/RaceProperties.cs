@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SimWorld.Health;
 
 namespace SimWorld.Pawns
 {
@@ -17,6 +18,12 @@ namespace SimWorld.Pawns
     public class RaceProperties
     {
         public Intelligence intelligence = Intelligence.Humanlike;
+
+        /// <summary>The part tree this race is built from; every race needs one.</summary>
+        public BodyDef? body;
+
+        /// <summary>Multiplies every part's hit points.</summary>
+        public float baseHealthScale = 1f;
 
         /// <summary>Scales food capacity, hit points and more.</summary>
         public float baseBodySize = 1f;
@@ -47,7 +54,9 @@ namespace SimWorld.Pawns
 
         public virtual IEnumerable<string> ConfigErrors()
         {
+            if (body == null) yield return "race has no body.";
             if (baseBodySize <= 0f) yield return "baseBodySize must be positive.";
+            if (baseHealthScale <= 0f) yield return "baseHealthScale must be positive.";
             if (foodLevelPercentageWantEat <= 0f || foodLevelPercentageWantEat > 1f) yield return "foodLevelPercentageWantEat must be in (0, 1].";
         }
     }

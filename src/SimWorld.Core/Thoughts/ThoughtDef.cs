@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SimWorld.Defs;
+using SimWorld.Health;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 
@@ -36,8 +37,11 @@ namespace SimWorld.Thoughts
         public List<TraitDef>? requiredTraits;
         public int requiredTraitsDegree = int.MinValue;
 
-        /// <summary>Hediff Defs that suppress this thought; resolved by the health system.</summary>
-        public List<Def>? nullifyingHediffs;
+        /// <summary>Hediffs that suppress this thought.</summary>
+        public List<HediffDef>? nullifyingHediffs;
+
+        /// <summary>For <see cref="ThoughtWorker_Hediff"/>: the hediff whose stage drives this thought.</summary>
+        public HediffDef? hediff;
 
         private ThoughtWorker? workerInt;
 

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Wounds left by damage (RimWorld: Hediffs_Local_Injuries). Severity is the damage amount; pain and bleeding scale with it. -->
+
+  <HediffDef Name="InjuryBase" Abstract="True">
+    <hediffClass>SimWorld.Health.Hediff_Injury</hediffClass>
+    <tendable>true</tendable>
+    <displayWound>true</displayWound>
+    <initialSeverity>1</initialSeverity>
+  </HediffDef>
+
+  <HediffDef ParentName="InjuryBase">
+    <defName>Cut</defName>
+    <label>cut</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
+      <li Class="SimWorld.Health.HediffCompProperties_Infecter">
+        <infectionChance>0.4</infectionChance>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
+        <permanentLabel>cut scar</permanentLabel>
+      </li>
+    </comps>
+    <injuryProps>
+      <painPerSeverity>0.0125</painPerSeverity>
+      <averagePainPerSeverityPermanent>0.00625</averagePainPerSeverityPermanent>
+      <bleedRate>0.06</bleedRate>
+      <canMerge>false</canMerge>
+      <destroyedLabel>cut off</destroyedLabel>
+    </injuryProps>
+  </HediffDef>
+
+  <HediffDef ParentName="InjuryBase">
+    <defName>Scratch</defName>
+    <label>scratch</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
+      <li Class="SimWorld.Health.HediffCompProperties_Infecter">
+        <infectionChance>0.4</infectionChance>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
+        <permanentLabel>scratch scar</permanentLabel>
+      </li>
+    </comps>
+    <injuryProps>
+      <painPerSeverity>0.0125</painPerSeverity>
+      <averagePainPerSeverityPermanent>0.00625</averagePainPerSeverityPermanent>
+      <bleedRate>0.04</bleedRate>
+      <canMerge>false</canMerge>
+      <destroyedLabel>torn off</destroyedLabel>
+    </injuryProps>
+  </HediffDef>
+
+  <HediffDef ParentName="InjuryBase">
+    <defName>Stab</defName>
+    <label>stab</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
+      <li Class="SimWorld.Health.HediffCompProperties_Infecter">
+        <infectionChance>0.4</infectionChance>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
+        <permanentLabel>stab scar</permanentLabel>
+      </li>
+    </comps>
+    <injuryProps>
+      <painPerSeverity>0.0125</painPerSeverity>
+      <averagePainPerSeverityPermanent>0.00625</averagePainPerSeverityPermanent>
+      <bleedRate>0.06</bleedRate>
+      <canMerge>false</canMerge>
+      <destroyedLabel>cut off</destroyedLabel>
+    </injuryProps>
+  </HediffDef>
+
+  <HediffDef ParentName="InjuryBase">
+    <defName>Bite</defName>
+    <label>bite</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
+      <li Class="SimWorld.Health.HediffCompProperties_Infecter">
+        <infectionChance>0.5</infectionChance>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
+        <permanentLabel>bite scar</permanentLabel>
+      </li>
+    </comps>
+    <injuryProps>
+      <painPerSeverity>0.0125</painPerSeverity>
+      <averagePainPerSeverityPermanent>0.00625</averagePainPerSeverityPermanent>
+      <bleedRate>0.06</bleedRate>
+      <canMerge>false</canMerge>
+      <destroyedLabel>bitten off</destroyedLabel>
+    </injuryProps>
+  </HediffDef>
+
+  <HediffDef ParentName="InjuryBase">
+    <defName>Gunshot</defName>
+    <label>gunshot</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
+      <li Class="SimWorld.Health.HediffCompProperties_Infecter">
+        <infectionChance>0.4</infectionChance>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
+        <permanentLabel>old gunshot</permanentLabel>
+      </li>
+    </comps>
+    <injuryProps>
+      <painPerSeverity>0.0125</painPerSeverity>
+      <averagePainPerSeverityPermanent>0.00625</averagePainPerSeverityPermanent>
+      <bleedRate>0.06</bleedRate>
+      <canMerge>false</canMerge>
+      <destroyedLabel>shot off</destroyedLabel>
+    </injuryProps>
+  </HediffDef>
+
+  <HediffDef ParentName="InjuryBase">
+    <defName>Crush</defName>
+    <label>crush</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
+      <li Class="SimWorld.Health.HediffCompProperties_Infecter">
+        <infectionChance>0.3</infectionChance>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
+        <permanentLabel>crush scar</permanentLabel>
+      </li>
+    </comps>
+    <injuryProps>
+      <painPerSeverity>0.0125</painPerSeverity>
+      <averagePainPerSeverityPermanent>0.00625</averagePainPerSeverityPermanent>
+      <bleedRate>0.03</bleedRate>
+      <canMerge>false</canMerge>
+      <destroyedLabel>crushed</destroyedLabel>
+    </injuryProps>
+  </HediffDef>
+
+  <!-- Skin stays whole: no bleeding, no infection, no scar. -->
+  <HediffDef ParentName="InjuryBase">
+    <defName>Bruise</defName>
+    <label>bruise</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
+    </comps>
+    <injuryProps>
+      <painPerSeverity>0.0125</painPerSeverity>
+      <averagePainPerSeverityPermanent>0.00625</averagePainPerSeverityPermanent>
+      <bleedRate>0</bleedRate>
+      <canMerge>true</canMerge>
+      <destroyedLabel>crushed</destroyedLabel>
+    </injuryProps>
+  </HediffDef>
+
+  <!-- Bone damage: solid parts take cracks instead of cuts. -->
+  <HediffDef ParentName="InjuryBase">
+    <defName>Crack</defName>
+    <label>crack</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
+      <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
+        <permanentLabel>old crack</permanentLabel>
+        <becomePermanentChanceFactor>2</becomePermanentChanceFactor>
+      </li>
+    </comps>
+    <injuryProps>
+      <painPerSeverity>0.0125</painPerSeverity>
+      <averagePainPerSeverityPermanent>0.00625</averagePainPerSeverityPermanent>
+      <bleedRate>0.01</bleedRate>
+      <canMerge>false</canMerge>
+      <destroyedLabel>shattered</destroyedLabel>
+    </injuryProps>
+  </HediffDef>
+
+  <HediffDef ParentName="InjuryBase">
+    <defName>Burn</defName>
+    <label>burn</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
+      <li Class="SimWorld.Health.HediffCompProperties_Infecter">
+        <infectionChance>0.3</infectionChance>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
+        <permanentLabel>burn scar</permanentLabel>
+      </li>
+    </comps>
+    <injuryProps>
+      <painPerSeverity>0.02</painPerSeverity>
+      <averagePainPerSeverityPermanent>0.00625</averagePainPerSeverityPermanent>
+      <bleedRate>0</bleedRate>
+      <canMerge>false</canMerge>
+      <destroyedLabel>burned off</destroyedLabel>
+    </injuryProps>
+  </HediffDef>
+
+</Defs>

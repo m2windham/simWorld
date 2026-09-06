@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Kinds of harm and the wound each leaves (RimWorld: Damages_Misc / Damages_Weapon). Solid parts crack; skin bruises under blunt force. -->
+
+  <DamageDef>
+    <defName>Cut</defName>
+    <label>cut</label>
+    <hediff>Cut</hediff>
+    <hediffSolid>Crack</hediffSolid>
+    <deathMessage>{0} has been cut to death.</deathMessage>
+  </DamageDef>
+
+  <DamageDef>
+    <defName>Stab</defName>
+    <label>stab</label>
+    <hediff>Stab</hediff>
+    <hediffSolid>Crack</hediffSolid>
+    <deathMessage>{0} has been stabbed to death.</deathMessage>
+  </DamageDef>
+
+  <DamageDef>
+    <defName>Blunt</defName>
+    <label>blunt</label>
+    <hediff>Crush</hediff>
+    <hediffSkin>Bruise</hediffSkin>
+    <hediffSolid>Crack</hediffSolid>
+    <deathMessage>{0} has been beaten to death.</deathMessage>
+  </DamageDef>
+
+  <DamageDef>
+    <defName>Bullet</defName>
+    <label>bullet</label>
+    <hediff>Gunshot</hediff>
+    <hediffSolid>Crack</hediffSolid>
+    <isRanged>true</isRanged>
+    <deathMessage>{0} has been shot to death.</deathMessage>
+  </DamageDef>
+
+  <DamageDef>
+    <defName>Bite</defName>
+    <label>bite</label>
+    <hediff>Bite</hediff>
+    <hediffSolid>Crack</hediffSolid>
+    <deathMessage>{0} has been bitten to death.</deathMessage>
+  </DamageDef>
+
+  <DamageDef>
+    <defName>Burn</defName>
+    <label>burn</label>
+    <hediff>Burn</hediff>
+    <makesBlood>false</makesBlood>
+    <hasForcefulImpact>false</hasForcefulImpact>
+    <deathMessage>{0} has burned to death.</deathMessage>
+  </DamageDef>
+
+</Defs>

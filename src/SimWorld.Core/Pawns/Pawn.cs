@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using SimWorld.Defs;
+using SimWorld.Health;
 using SimWorld.MindState;
 using SimWorld.Needs;
 using SimWorld.Sim;
@@ -9,8 +10,8 @@ namespace SimWorld.Pawns
 {
     /// <summary>
     /// A person or creature (RimWorld: <c>Verse.Pawn</c>). Every citizen is one of these — the trackers hung
-    /// off it are the per-agent systems (needs, story, mind; health arrives with system 7). This is the
-    /// agent skeleton the remaining systems attach to; map presence, jobs and combat come with their modules.
+    /// off it are the per-agent systems (health, needs, story, mind). This is the agent skeleton the remaining
+    /// systems attach to; map presence, jobs and combat come with their modules.
     /// </summary>
     public class Pawn : IExposable, ILoadReferenceable, ITickable
     {
@@ -20,6 +21,7 @@ namespace SimWorld.Pawns
         public int thingIDNumber = -1;
         public string? name;
 
+        public Pawn_HealthTracker health = null!;
         public Pawn_NeedsTracker needs = null!;
         public Pawn_StoryTracker story = null!;
         public Pawn_MindState mindState = null!;
@@ -59,10 +61,10 @@ namespace SimWorld.Pawns
         /// <summary>Set by the job system while the pawn is in bed asleep.</summary>
         public bool Asleep { get; set; }
 
-        /// <summary>Set by the health system when the pawn cannot act.</summary>
-        public bool Downed { get; set; }
+        /// <summary>The body cannot act: pain shock, unconsciousness, no working legs, or forced (see <see cref="Pawn_HealthTracker.ForceDowned"/>).</summary>
+        public bool Downed => health != null && health.Downed;
 
-        public bool Dead { get; set; }
+        public bool Dead => health != null && health.Dead;
 
         /// <summary>In a caravan or a pod: needs freeze.</summary>
         public bool Suspended { get; set; }
@@ -75,30 +77,54 @@ namespace SimWorld.Pawns
 
         public bool Awake() => !Asleep && !Dead;
 
+        /// <summary>Not standing: in bed or downed. Speeds healing (RimWorld posture).</summary>
+        public bool Lying => Asleep || Downed;
+
         public float BodySize => RaceProps.baseBodySize;
 
-        /// <summary>Species hunger rate × health modifiers (health hooks in when system 7 lands).</summary>
+        /// <summary>Multiplies every body part's hit points (RimWorld: <c>Pawn.HealthScale</c>); life stages scale it later.</summary>
+        public virtual float HealthScale => RaceProps.baseHealthScale;
+
+        /// <summary>Species hunger rate × hediff hunger factors.</summary>
         public virtual float HungerRate => RaceProps.baseHungerRate * HungerRateFactorFromHealth;
 
-        public virtual float HungerRateFactorFromHealth => 1f;
+        public virtual float HungerRateFactorFromHealth => health.hediffSet.HungerRateFactor;
 
-        public virtual float RestFallFactorFromHealth => 1f;
+        public virtual float RestFallFactorFromHealth => health.hediffSet.RestFallFactor;
 
+        /// <summary>Rest gain multiplier; the stats module supplies bed and trait effects later.</summary>
         public virtual float RestRateMultiplier => 1f;
+
+        /// <summary>Immunity gain multiplier while sick; beds and traits raise it later.</summary>
+        public virtual float ImmunityGainSpeed => 1f;
+
+        /// <summary>Pain level that downs the pawn.</summary>
+        public virtual float PainShockThreshold => HealthTuning.DefaultPainShockThreshold;
 
         /// <summary>Mood level under which minor breaks become possible; traits and stats adjust it later.</summary>
         public virtual float MentalBreakThreshold => RaceProps.mentalBreakThreshold;
 
-        /// <summary>Health-system hook: true when the pawn carries the given hediff. System 7 overrides.</summary>
-        public virtual bool HasHediff(Def hediffDef) => false;
+        public bool HasHediff(HediffDef hediffDef) => health.hediffSet.HasHediff(hediffDef);
 
-        /// <summary>Health-system hook for starvation damage; system 7 wires malnutrition to it.</summary>
+        /// <summary>Starvation builds malnutrition each food interval; eating again lets it fade at the same pace.</summary>
         public virtual void Notify_StarvationInterval(bool starving)
         {
+            if (Dead || HediffDefOf.Malnutrition == null) return;
+            float delta = starving ? HealthTuning.MalnutritionSeverityPerInterval : -HealthTuning.MalnutritionSeverityPerInterval;
+            HealthUtility.AdjustSeverity(this, HediffDefOf.Malnutrition, delta);
         }
 
         public virtual void Notify_TraitsChanged()
         {
+        }
+
+        public virtual void Notify_Downed()
+        {
+        }
+
+        public virtual void Notify_Died()
+        {
+            mindState?.mentalStateHandler.ClearMentalStateDirect();
         }
 
         /// <summary>Spreads per-pawn periodic work across ticks (RimWorld: <c>Gen.IsHashIntervalTick</c>).</summary>
@@ -116,6 +142,7 @@ namespace SimWorld.Pawns
 
         protected virtual void InitializeTrackers()
         {
+            health ??= new Pawn_HealthTracker(this);
             needs ??= new Pawn_NeedsTracker(this);
             story ??= new Pawn_StoryTracker(this);
             mindState ??= new Pawn_MindState(this);
@@ -129,6 +156,8 @@ namespace SimWorld.Pawns
         public virtual void Tick()
         {
             if (Dead || Suspended) return;
+            health.HealthTick();
+            if (Dead) return;
             needs.NeedsTrackerTick();
             mindState.MindStateTick();
         }
@@ -152,18 +181,19 @@ namespace SimWorld.Pawns
             def = d!;
             Scribe_Values.Look(ref thingIDNumber, "id", -1);
             Scribe_Values.Look(ref name, "name");
-            bool asleep = Asleep, downed = Downed, dead = Dead, suspended = Suspended;
+            bool asleep = Asleep, suspended = Suspended;
             Scribe_Values.Look(ref asleep, "asleep");
-            Scribe_Values.Look(ref downed, "downed");
-            Scribe_Values.Look(ref dead, "dead");
             Scribe_Values.Look(ref suspended, "suspended");
-            Asleep = asleep; Downed = downed; Dead = dead; Suspended = suspended;
+            Asleep = asleep; Suspended = suspended;
 
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
                 InitializeTrackers();
                 if (thingIDNumber >= nextThingId) nextThingId = thingIDNumber + 1;
             }
+            Pawn_HealthTracker? h = health;
+            Scribe_Deep.Look(ref h, "healthTracker", this);
+            health = h ?? new Pawn_HealthTracker(this);
             Pawn_NeedsTracker? n = needs;
             Scribe_Deep.Look(ref n, "needs", this);
             needs = n ?? new Pawn_NeedsTracker(this);
