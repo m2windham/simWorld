@@ -52,6 +52,7 @@ jobs:
       - uses: lycheeverse/lychee-action@v2
         with:
           args: --no-progress "**/*.md"
+          failIfEmpty: false # a docs set with no links is valid, not a misconfiguration
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
