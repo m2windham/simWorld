@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <MentalStateDef Name="MoodBreakBase" Abstract="True">
+    <moodRecoveryThought>Catharsis</moodRecoveryThought>
+    <recoverFromSleep>false</recoverFromSleep>
+    <recoverFromDowned>true</recoverFromDowned>
+    <blockNormalThoughts>true</blockNormalThoughts>
+  </MentalStateDef>
+
+  <!-- Minor -->
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>Wander_Sad</defName>
+    <label>sad wander</label>
+    <category>Misc</category>
+    <minTicksBeforeRecovery>20000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>60000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.6</recoveryMtbDays>
+    <recoverFromSleep>true</recoverFromSleep>
+    <baseInspectLine>Mental state: Sad wander</baseInspectLine>
+  </MentalStateDef>
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>Wander_OwnRoom</defName>
+    <label>hiding in room</label>
+    <category>Misc</category>
+    <minTicksBeforeRecovery>20000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>60000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.6</recoveryMtbDays>
+    <recoverFromSleep>true</recoverFromSleep>
+    <baseInspectLine>Mental state: Hiding in room</baseInspectLine>
+  </MentalStateDef>
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>Binging_Food</defName>
+    <label>food binge</label>
+    <category>Indulgent</category>
+    <minTicksBeforeRecovery>15000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.5</recoveryMtbDays>
+    <baseInspectLine>Mental state: Food binge</baseInspectLine>
+  </MentalStateDef>
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>InsultingSpree</defName>
+    <label>insulting spree</label>
+    <category>Malicious</category>
+    <minTicksBeforeRecovery>15000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.5</recoveryMtbDays>
+    <baseInspectLine>Mental state: Insulting spree</baseInspectLine>
+  </MentalStateDef>
+
+  <!-- Major -->
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>Tantrum</defName>
+    <label>tantrum</label>
+    <category>Malicious</category>
+    <minTicksBeforeRecovery>15000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.6</recoveryMtbDays>
+    <baseInspectLine>Mental state: Tantrum</baseInspectLine>
+  </MentalStateDef>
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>SadisticRage</defName>
+    <label>sadistic rage</label>
+    <category>Aggro</category>
+    <minTicksBeforeRecovery>15000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.6</recoveryMtbDays>
+    <baseInspectLine>Mental state: Sadistic rage</baseInspectLine>
+  </MentalStateDef>
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>FireStartingSpree</defName>
+    <label>fire starting spree</label>
+    <category>Malicious</category>
+    <minTicksBeforeRecovery>15000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.5</recoveryMtbDays>
+    <baseInspectLine>Mental state: Fire starting spree</baseInspectLine>
+  </MentalStateDef>
+
+  <!-- Extreme -->
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>Berserk</defName>
+    <label>berserk</label>
+    <category>Aggro</category>
+    <minTicksBeforeRecovery>25000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>60000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.7</recoveryMtbDays>
+    <baseInspectLine>Mental state: Berserk</baseInspectLine>
+  </MentalStateDef>
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>MurderousRage</defName>
+    <label>murderous rage</label>
+    <category>Aggro</category>
+    <minTicksBeforeRecovery>25000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>60000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.7</recoveryMtbDays>
+    <baseInspectLine>Mental state: Murderous rage</baseInspectLine>
+  </MentalStateDef>
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>Catatonic</defName>
+    <label>catatonic breakdown</label>
+    <category>Misc</category>
+    <minTicksBeforeRecovery>60000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>240000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>2</recoveryMtbDays>
+    <recoverFromDowned>false</recoverFromDowned>
+    <baseInspectLine>Mental state: Catatonic breakdown</baseInspectLine>
+  </MentalStateDef>
+
+  <MentalStateDef ParentName="MoodBreakBase">
+    <defName>GiveUpExit</defName>
+    <label>giving up</label>
+    <category>Misc</category>
+    <minTicksBeforeRecovery>60000</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>120000</maxTicksBeforeRecovery>
+    <recoveryMtbDays>1</recoveryMtbDays>
+    <baseInspectLine>Mental state: Giving up</baseInspectLine>
+  </MentalStateDef>
+
+</Defs>

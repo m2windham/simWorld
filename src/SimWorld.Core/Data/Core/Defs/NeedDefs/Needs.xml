@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <NeedDef>
+    <defName>Food</defName>
+    <label>food</label>
+    <description>Nutrition. Falls while awake and asleep; hunger slows as it empties.</description>
+    <needClass>SimWorld.Needs.Need_Food</needClass>
+    <listPriority>100</listPriority>
+    <major>true</major>
+    <minIntelligence>Animal</minIntelligence>
+    <threshPercents>
+      <li>0.3</li>
+      <li>0.15</li>
+    </threshPercents>
+  </NeedDef>
+
+  <NeedDef>
+    <defName>Rest</defName>
+    <label>rest</label>
+    <description>Sleep. Falls while awake, rises in bed.</description>
+    <needClass>SimWorld.Needs.Need_Rest</needClass>
+    <listPriority>95</listPriority>
+    <major>true</major>
+    <minIntelligence>Animal</minIntelligence>
+    <threshPercents>
+      <li>0.28</li>
+      <li>0.14</li>
+    </threshPercents>
+  </NeedDef>
+
+  <NeedDef>
+    <defName>Joy</defName>
+    <label>recreation</label>
+    <description>Recreation. Falls steadily; restored by varied activities, each with its own tolerance.</description>
+    <needClass>SimWorld.Needs.Need_Joy</needClass>
+    <listPriority>90</listPriority>
+    <major>true</major>
+    <minIntelligence>Humanlike</minIntelligence>
+    <freezeWhileSleeping>true</freezeWhileSleeping>
+    <threshPercents>
+      <li>0.15</li>
+      <li>0.3</li>
+      <li>0.7</li>
+      <li>0.85</li>
+    </threshPercents>
+  </NeedDef>
+
+  <NeedDef>
+    <defName>Mood</defName>
+    <label>mood</label>
+    <description>Overall mood: 50% plus the sum of all active thoughts. Drives mental breaks.</description>
+    <needClass>SimWorld.Needs.Need_Mood</needClass>
+    <listPriority>1000</listPriority>
+    <major>true</major>
+    <minIntelligence>Humanlike</minIntelligence>
+    <seekerRisePerHour>0.05</seekerRisePerHour>
+    <seekerFallPerHour>0.06</seekerFallPerHour>
+    <threshPercents>
+      <li>0.35</li>
+      <li>0.2</li>
+      <li>0.05</li>
+    </threshPercents>
+  </NeedDef>
+
+  <NeedDef Name="EnvironmentNeedBase" Abstract="True">
+    <needClass>SimWorld.Needs.Need_Environment</needClass>
+    <minIntelligence>Humanlike</minIntelligence>
+    <baseLevel>0.5</baseLevel>
+    <seekerRisePerHour>0.3</seekerRisePerHour>
+    <seekerFallPerHour>0.3</seekerFallPerHour>
+    <freezeWhileSleeping>true</freezeWhileSleeping>
+    <showOnNeedList>true</showOnNeedList>
+  </NeedDef>
+
+  <NeedDef ParentName="EnvironmentNeedBase">
+    <defName>Beauty</defName>
+    <label>beauty</label>
+    <description>How pleasant the surroundings look.</description>
+    <listPriority>80</listPriority>
+  </NeedDef>
+
+  <NeedDef ParentName="EnvironmentNeedBase">
+    <defName>Comfort</defName>
+    <label>comfort</label>
+    <description>Comfort from furniture used recently.</description>
+    <listPriority>75</listPriority>
+    <seekerRisePerHour>0.5</seekerRisePerHour>
+    <seekerFallPerHour>0.2</seekerFallPerHour>
+  </NeedDef>
+
+  <NeedDef ParentName="EnvironmentNeedBase">
+    <defName>Outdoors</defName>
+    <label>outdoors</label>
+    <description>Time spent under open sky.</description>
+    <listPriority>70</listPriority>
+    <seekerRisePerHour>0.25</seekerRisePerHour>
+    <seekerFallPerHour>0.08</seekerFallPerHour>
+  </NeedDef>
+
+  <NeedDef ParentName="EnvironmentNeedBase">
+    <defName>RoomSize</defName>
+    <label>space</label>
+    <description>How spacious the current room feels.</description>
+    <listPriority>65</listPriority>
+  </NeedDef>
+
+</Defs>

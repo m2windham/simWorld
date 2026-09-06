@@ -17,4 +17,9 @@
     <None Remove="SimWorld.Core.asmdef" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Core content ships beside the assembly (and inside the Unity package folder). -->
+    <None Update="Data\**\*.xml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

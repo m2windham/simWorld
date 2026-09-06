@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <ThoughtDef>
+    <defName>Hungry</defName>
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_NeedFood</workerClass>
+    <stages>
+      <li>
+        <label>hungry</label>
+        <description>I'm hungry.</description>
+        <baseMoodEffect>-6</baseMoodEffect>
+      </li>
+      <li>
+        <label>ravenously hungry</label>
+        <description>I need to eat now.</description>
+        <baseMoodEffect>-12</baseMoodEffect>
+      </li>
+      <li>
+        <label>starving</label>
+        <description>I'm starving to death.</description>
+        <baseMoodEffect>-20</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>Tired</defName>
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_NeedRest</workerClass>
+    <stages>
+      <li>
+        <label>tired</label>
+        <description>I could use some sleep.</description>
+        <baseMoodEffect>-6</baseMoodEffect>
+      </li>
+      <li>
+        <label>very tired</label>
+        <description>I can barely keep my eyes open.</description>
+        <baseMoodEffect>-12</baseMoodEffect>
+      </li>
+      <li>
+        <label>exhausted</label>
+        <description>I'm about to collapse.</description>
+        <baseMoodEffect>-20</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>NeedJoy</defName>
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_NeedJoy</workerClass>
+    <stages>
+      <li>
+        <label>recreation-starved</label>
+        <description>I haven't had a moment to myself in ages.</description>
+        <baseMoodEffect>-20</baseMoodEffect>
+      </li>
+      <li>
+        <label>recreation-deprived</label>
+        <description>All work and no play.</description>
+        <baseMoodEffect>-12</baseMoodEffect>
+      </li>
+      <li>
+        <label>recreation-poor</label>
+        <description>I could use a break.</description>
+        <baseMoodEffect>-6</baseMoodEffect>
+      </li>
+      <li>
+        <label>recreation-satisfied</label>
+        <description>I've been having a good time lately.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+      <li>
+        <label>recreation-fulfilled</label>
+        <description>Life is fun.</description>
+        <baseMoodEffect>6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>MentalState</defName>
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_MentalState</workerClass>
+    <stages>
+      <li>
+        <label>losing it</label>
+        <description>I can't hold it together.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+        <visible>false</visible>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

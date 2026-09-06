@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <ThingDef ParentName="BasePawn">
+    <defName>Husky</defName>
+    <label>husky</label>
+    <description>A large, hardy working dog.</description>
+    <race>
+      <intelligence>Animal</intelligence>
+      <baseBodySize>0.86</baseBodySize>
+      <baseHungerRate>0.5</baseHungerRate>
+      <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>
+      <needsRest>true</needsRest>
+      <lifeExpectancy>12</lifeExpectancy>
+    </race>
+  </ThingDef>
+
+</Defs>

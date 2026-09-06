@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <TraitDef>
+    <defName>NaturalMood</defName>
+    <label>natural mood</label>
+    <commonality>1.5</commonality>
+    <degreeDatas>
+      <li>
+        <label>sanguine</label>
+        <description>Has a permanently uplifted mood.</description>
+        <degree>2</degree>
+        <commonality>0.6</commonality>
+      </li>
+      <li>
+        <label>optimist</label>
+        <description>Sees the bright side of things.</description>
+        <degree>1</degree>
+        <commonality>1</commonality>
+      </li>
+      <li>
+        <label>pessimist</label>
+        <description>Expects the worst.</description>
+        <degree>-1</degree>
+        <commonality>1</commonality>
+      </li>
+      <li>
+        <label>depressive</label>
+        <description>Has a permanently lowered mood.</description>
+        <degree>-2</degree>
+        <commonality>0.6</commonality>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Nerves</defName>
+    <label>nerves</label>
+    <commonality>1.2</commonality>
+    <degreeDatas>
+      <li>
+        <label>iron-willed</label>
+        <description>Very hard to break.</description>
+        <degree>2</degree>
+        <commonality>0.5</commonality>
+      </li>
+      <li>
+        <label>steadfast</label>
+        <description>Harder to break than most.</description>
+        <degree>1</degree>
+      </li>
+      <li>
+        <label>nervous</label>
+        <description>Breaks more easily than most.</description>
+        <degree>-1</degree>
+      </li>
+      <li>
+        <label>volatile</label>
+        <description>Very easy to break.</description>
+        <degree>-2</degree>
+        <commonality>0.5</commonality>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+</Defs>
