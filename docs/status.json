@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-06",
-  "testsTotal": 74,
+  "testsTotal": 139,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -34,7 +34,9 @@
     { "id": "director", "date": "2026-09-06", "state": "open", "title": "Director persona name", "note": "RimWorld's storyteller is translated into a chronicle-style narrator targeting YOUR civilization. Working candidates: Scribe, Historian, The Chronicle. Code module stays 'Director' until chosen." },
     { "id": "launch", "date": "2026-09-06", "state": "decided", "title": "Launch only when it makes sense", "note": "Tracker shows launch disabled with the reason until a playable loop exists." },
     { "id": "tracker", "date": "2026-09-06", "state": "decided", "title": "Living tracker", "note": "Third tab in the Blueprint, generated from docs/status.json; repo-verified items are locked, remaining items are tick-able and persisted for everyone who opens the page." },
-    { "id": "dupes", "date": "2026-09-06", "state": "decided", "title": "Duplicate defName policy: later pack wins", "note": "Implementation choice mirroring mod load-order semantics (DefLoadOptions.DuplicatePolicy is switchable). Revisit when mod patching lands." }
+    { "id": "dupes", "date": "2026-09-06", "state": "decided", "title": "Duplicate defName policy: later pack wins", "note": "Implementation choice mirroring mod load-order semantics (DefLoadOptions.DuplicatePolicy is switchable). Revisit when mod patching lands." },
+    { "id": "automerge", "date": "2026-09-06", "state": "decided", "title": "Auto-merge green PRs", "note": "PRs are merged as soon as CI is green; no manual merge step." },
+    { "id": "threadstatic", "date": "2026-09-06", "state": "decided", "title": "RimWorld's static Rand and Scribe stay static, but per thread", "note": "Ported call sites (Rand.Value, Scribe_Values.Look) keep their shape; state is [ThreadStatic] so tests and worker threads never share a sequence or a save session. Explicit RandomStream instances are the preferred form for new systems." }
   ],
   "systems": [
     {
@@ -123,14 +125,18 @@
       "translation": "Unchanged. Tick engine, rare/long tick buckets, deterministic RNG streams, Scribe-style save/load. Bucket sizing scales with population.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
-      "status": "planned",
-      "tests": 0,
+      "status": "ported",
+      "tests": 65,
       "items": [
-        { "id": "simcore.tick", "label": "Fixed-tick engine (60 ticks/s) with speed multiplier and pause", "done": false },
-        { "id": "simcore.buckets", "label": "TickList buckets: normal / rare (250) / long (2000)", "done": false },
-        { "id": "simcore.order", "label": "Tick order: world → map → things → jobs", "done": false },
-        { "id": "simcore.rng", "label": "Seeded, per-system RNG streams (deterministic replay)", "done": false },
-        { "id": "simcore.scribe", "label": "Scribe: reflection-based save/load of the object graph", "done": false }
+        { "id": "simcore.tick", "label": "TickManager: 60 ticks/s clock, TimeSpeed multipliers (1/3/6/15), pause/toggle, danger-forced normal speed", "done": true },
+        { "id": "simcore.buckets", "label": "TickList buckets: normal / rare (250) / long (2000) with deferred register/deregister", "done": true },
+        { "id": "simcore.order", "label": "Tick order: pre-tickers (world, map) → normal → rare → long → post-tickers; per-frame tick cap drops backlog", "done": true },
+        { "id": "simcore.rng", "label": "MurmurHash-based RandomStream per system + thread-safe static Rand facade (Range/Chance/Gaussian/MTB/PushState)", "done": true },
+        { "id": "simcore.calendar", "label": "GenTicks / GenDate: 60,000-tick days, quadrums, years, longitude-local time, seasons by latitude", "done": true },
+        { "id": "simcore.scribe", "label": "Scribe: IExposable save/load in three passes (LoadingVars → ResolvingCrossRefs → PostLoadInit)", "done": true },
+        { "id": "simcore.scribe-modes", "label": "Scribe_Values / Defs / Deep (polymorphic Class=) / References (forward + cyclic) / Collections (list, set, dictionary)", "done": true },
+        { "id": "simcore.autosave", "label": "Autosave cadence — lands with the game loop", "done": false },
+        { "id": "simcore.scribe-stream", "label": "Streaming XmlWriter save path for very large worlds (current writer builds the document in memory)", "done": false }
       ]
     },
     {
