@@ -1,0 +1,346 @@
+{
+  "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
+  "project": "SimWorld",
+  "updated": "2026-09-06",
+  "testsTotal": 74,
+  "stack": {
+    "language": "C#",
+    "host": "Unity (renderer / UI host, added when there is something to render)",
+    "core": "src/SimWorld.Core — netstandard2.1 class library, no UnityEngine references, consumable as a local UPM package",
+    "tests": "xUnit via dotnet test (tests/SimWorld.Core.Tests)",
+    "ci": "GitHub Actions: dotnet build+test, blueprint build, markdown lint, link check, mermaid validation"
+  },
+  "phase": {
+    "id": 1,
+    "name": "Systems as isolated modules",
+    "summary": "Port each RimWorld system as a separately tested module. No game loop, no renderer, no god layer yet.",
+    "launch": {
+      "available": false,
+      "reason": "Nothing to launch yet — phase 1 ships modules and tests only. A launch link appears here once a playable loop exists."
+    }
+  },
+  "statusLegend": {
+    "planned": "Not started",
+    "in-progress": "Being ported",
+    "ported": "RimWorld behaviour implemented and tested",
+    "translated": "Re-targeted for the god-game on top of the port",
+    "verified": "Exercised in a playable build"
+  },
+  "decisions": [
+    { "id": "lang", "date": "2026-09-06", "state": "decided", "title": "C# with Unity as the host", "note": "Core is an engine-free netstandard2.1 library (C# 9) so it builds and tests in CI without Unity; Unity references it as a local package." },
+    { "id": "scope", "date": "2026-09-06", "state": "decided", "title": "Step 1 = isolated modules, no game loop", "note": "Each of the 17 researched systems becomes a module with its own tests before any loop or renderer." },
+    { "id": "depth", "date": "2026-09-06", "state": "decided", "title": "Every citizen is a full agent", "note": "RimWorld-depth needs/mood/health/skills/jobs per person at civilization scale. Population target: as large as we can; the performance ceiling is a later bridge." },
+    { "id": "tech", "date": "2026-09-06", "state": "decided", "title": "Large authored tech tree of societal evolution", "note": "Endless/procedural tech comes later; the research module's data model must not preclude it." },
+    { "id": "director", "date": "2026-09-06", "state": "open", "title": "Director persona name", "note": "RimWorld's storyteller is translated into a chronicle-style narrator targeting YOUR civilization. Working candidates: Scribe, Historian, The Chronicle. Code module stays 'Director' until chosen." },
+    { "id": "launch", "date": "2026-09-06", "state": "decided", "title": "Launch only when it makes sense", "note": "Tracker shows launch disabled with the reason until a playable loop exists." },
+    { "id": "tracker", "date": "2026-09-06", "state": "decided", "title": "Living tracker", "note": "Third tab in the Blueprint, generated from docs/status.json; repo-verified items are locked, remaining items are tick-able and persisted for everyone who opens the page." },
+    { "id": "dupes", "date": "2026-09-06", "state": "decided", "title": "Duplicate defName policy: later pack wins", "note": "Implementation choice mirroring mod load-order semantics (DefLoadOptions.DuplicatePolicy is switchable). Revisit when mod patching lands." }
+  ],
+  "systems": [
+    {
+      "id": "defs",
+      "n": 1,
+      "rimworld": "Data & Modding Architecture",
+      "translation": "Unchanged. Defs, Comps and patching are engine-neutral; every later module is data-driven through this layer.",
+      "translationState": "decided",
+      "module": "src/SimWorld.Core/Defs",
+      "status": "in-progress",
+      "tests": 62,
+      "items": [
+        { "id": "defs.xml", "label": "XML Defs loading: <Defs> root, Def type resolved from element name", "done": true },
+        { "id": "defs.mapping", "label": "Reflection field mapping: primitives, enums, nested objects, lists, dictionaries", "done": true },
+        { "id": "defs.inherit", "label": "Name / ParentName / Abstract inheritance with Inherit=\"False\" and list append", "done": true },
+        { "id": "defs.class", "label": "Class=\"…\" polymorphism and Type-valued fields (thingClass, compClass)", "done": true },
+        { "id": "defs.crossref", "label": "Deferred cross-references across files (fields, lists, dictionary values)", "done": true },
+        { "id": "defs.database", "label": "DefDatabase: typed registries incl. subclasses, duplicate policy, RimWorld-style static facade", "done": true },
+        { "id": "defs.defof", "label": "DefOf static binding with DefAlias", "done": true },
+        { "id": "defs.lifecycle", "label": "Lifecycle order: PostLoad → cross-refs → ResolveReferences → ConfigErrors", "done": true },
+        { "id": "defs.comps", "label": "CompProperties (data half of the Comp pattern) as a Class= list on ThingDef", "done": true },
+        { "id": "defs.stats", "label": "StatDef / StatModifier with the element-name-as-stat idiom", "done": true },
+        { "id": "defs.custom", "label": "IXmlCustomLoad hook, LoadAlias, Unsaved, IsNull", "done": true },
+        { "id": "defs.parse", "label": "Culture-invariant ParseHelper incl. IntRange, FloatRange, CurvePoint/SimpleCurve", "done": true },
+        { "id": "defs.thingcomp", "label": "ThingComp runtime half (ThingWithComps.InitializeComps) — lands with the Things module", "done": false },
+        { "id": "defs.patches", "label": "Mod content packs + PatchOperations (XPath patching)", "done": false },
+        { "id": "defs.loadorder", "label": "Mod load order and dependency resolution", "done": false }
+      ]
+    },
+    {
+      "id": "worldgen",
+      "n": 2,
+      "rimworld": "World Generation",
+      "translation": "Proposed: planet generation at civilization scale — biomes, rivers and roads unchanged; many rival civilizations seeded instead of a handful of faction bases.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/World",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "worldgen.tiles", "label": "Tile grid on a sphere-like projection with configurable coverage", "done": false },
+        { "id": "worldgen.noise", "label": "Seeded noise fields: elevation, rainfall, temperature, swampiness", "done": false },
+        { "id": "worldgen.biomes", "label": "Biome assignment from noise + BiomeDef tables (flora, fauna, disease, temperature curve)", "done": false },
+        { "id": "worldgen.rivers", "label": "Rivers and roads as tile-graph edges affecting travel and trade", "done": false },
+        { "id": "worldgen.factions", "label": "Faction/settlement placement rules (count, min distance, biome affinity)", "done": false },
+        { "id": "worldgen.relations", "label": "Initial faction relations and tech levels", "done": false }
+      ]
+    },
+    {
+      "id": "mapgen",
+      "n": 3,
+      "rimworld": "Local Map Generation",
+      "translation": "Proposed: settlement-site maps, many per civilization, generated on demand from the world tile.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/MapGen",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "mapgen.terrain", "label": "Terrain layer from tile biome + hilliness", "done": false },
+        { "id": "mapgen.elevation", "label": "Elevation → mountains, caves, water bodies; roads carried in", "done": false },
+        { "id": "mapgen.scatter", "label": "Scatterers: resource deposits, ruins, ancient structures, plant density", "done": false },
+        { "id": "mapgen.caves", "label": "Cave systems and minable rock with mineral yield tables", "done": false }
+      ]
+    },
+    {
+      "id": "pawngen",
+      "n": 4,
+      "rimworld": "Pawn Generation",
+      "translation": "Proposed: citizen generation. Birth and lineage drive most generation instead of 'wanderer joins'; backstories become life histories written by the sim.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/Pawns/Generation",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "pawngen.backstory", "label": "Backstory pairs → skill offsets, disabled work types, forced traits", "done": false },
+        { "id": "pawngen.traits", "label": "Trait pool with exclusion groups and weighted degrees", "done": false },
+        { "id": "pawngen.skills", "label": "Skills = base + offsets + passion roll", "done": false },
+        { "id": "pawngen.appearance", "label": "Appearance and name generation from culture-tagged banks", "done": false },
+        { "id": "pawngen.gear", "label": "Gear from faction tech level + PawnKindDef loadouts", "done": false },
+        { "id": "pawngen.genes", "label": "Genes / xenotypes with inheritance (Biotech)", "done": false }
+      ]
+    },
+    {
+      "id": "simcore",
+      "n": 5,
+      "rimworld": "Simulation Core / Game Loop",
+      "translation": "Unchanged. Tick engine, rare/long tick buckets, deterministic RNG streams, Scribe-style save/load. Bucket sizing scales with population.",
+      "translationState": "decided",
+      "module": "src/SimWorld.Core/Sim",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "simcore.tick", "label": "Fixed-tick engine (60 ticks/s) with speed multiplier and pause", "done": false },
+        { "id": "simcore.buckets", "label": "TickList buckets: normal / rare (250) / long (2000)", "done": false },
+        { "id": "simcore.order", "label": "Tick order: world → map → things → jobs", "done": false },
+        { "id": "simcore.rng", "label": "Seeded, per-system RNG streams (deterministic replay)", "done": false },
+        { "id": "simcore.scribe", "label": "Scribe: reflection-based save/load of the object graph", "done": false }
+      ]
+    },
+    {
+      "id": "needs",
+      "n": 6,
+      "rimworld": "Needs & Mood",
+      "translation": "Unchanged per citizen. Adds aggregate 'public mood' rollups so the god view can read a city without opening every person.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/Needs",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "needs.defs", "label": "NeedDef set: Food, Rest, Joy, Beauty, Comfort, Room, Outdoors, Social…", "done": false },
+        { "id": "needs.decay", "label": "Decay curves scaled by traits/hediffs; threshold crossings", "done": false },
+        { "id": "needs.thoughts", "label": "Thoughts: timed memories + live situational, with stacking rules", "done": false },
+        { "id": "needs.mood", "label": "Mood aggregate from active thoughts", "done": false },
+        { "id": "needs.breaks", "label": "Break-risk bands (minor/major/extreme) and weighted, trait-filtered break table", "done": false },
+        { "id": "needs.rollup", "label": "Translation: population mood rollups for the god view", "done": false }
+      ]
+    },
+    {
+      "id": "health",
+      "n": 7,
+      "rimworld": "Health System",
+      "translation": "Unchanged.",
+      "translationState": "decided",
+      "module": "src/SimWorld.Core/Health",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "health.body", "label": "BodyDef part tree with size weights for hit chance and coverage", "done": false },
+        { "id": "health.hediffs", "label": "Hediffs: injuries, staged diseases, addictions, implants, chronic", "done": false },
+        { "id": "health.capacities", "label": "Capacities from part efficiency; downed/dead thresholds", "done": false },
+        { "id": "health.pain", "label": "Pain aggregate → consciousness penalty", "done": false },
+        { "id": "health.immunity", "label": "Disease severity vs immunity race; tend quality", "done": false },
+        { "id": "health.surgery", "label": "Surgery bills with skill-rolled outcomes", "done": false }
+      ]
+    },
+    {
+      "id": "work",
+      "n": 8,
+      "rimworld": "Skills & Work",
+      "translation": "Proposed: skills unchanged; work priorities set by civ policy and roles (guilds, castes, laws) rather than a per-person grid.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/Work",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "work.skills", "label": "Skill levels 0–20, XP curve, passion multipliers", "done": false },
+        { "id": "work.decay", "label": "Unused-skill decay", "done": false },
+        { "id": "work.priorities", "label": "Work priority grid per work type", "done": false },
+        { "id": "work.givers", "label": "WorkGivers scanning for jobs ordered by priority then urgency", "done": false },
+        { "id": "work.policy", "label": "Translation: policy/role-driven priorities at civ scale", "done": false }
+      ]
+    },
+    {
+      "id": "ai",
+      "n": 9,
+      "rimworld": "AI: Think Tree / Job System",
+      "translation": "Proposed: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding must be shared (hierarchical / flow fields) to survive full-agent populations.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/AI",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "ai.thinktree", "label": "ThinkTree priority nodes (conditionals + JobGivers)", "done": false },
+        { "id": "ai.jobs", "label": "Job + JobDriver Toil state machine", "done": false },
+        { "id": "ai.reservations", "label": "Reservation manager for things and cells", "done": false },
+        { "id": "ai.regions", "label": "Region / RegionLink graph for reachability", "done": false },
+        { "id": "ai.pathing", "label": "A* on per-cell cost grid; hierarchical/flow-field path sharing", "done": false },
+        { "id": "ai.animals", "label": "Animal think tree, taming, training", "done": false },
+        { "id": "ai.edicts", "label": "Translation: god edicts/goals as high-priority think nodes", "done": false }
+      ]
+    },
+    {
+      "id": "director",
+      "n": 10,
+      "rimworld": "Storyteller / Threat Director",
+      "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth, population and era instead of one colony.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/Director",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "director.personality", "label": "Storyteller personality curves (rising / steady-low / random)", "done": false },
+        { "id": "director.points", "label": "Threat points from wealth + population + age", "done": false },
+        { "id": "director.incidents", "label": "Weighted incident categories with cooldowns and fire conditions", "done": false },
+        { "id": "director.raids", "label": "Raid squad generator: composition + tactic by points and tech", "done": false },
+        { "id": "director.civ", "label": "Translation: civilization-scale targeting and era-based scaling", "done": false }
+      ]
+    },
+    {
+      "id": "combat",
+      "n": 11,
+      "rimworld": "Combat",
+      "translation": "Unchanged mechanics; armies are groups of full agents.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/Combat",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "combat.verbs", "label": "Verb system: ranged hit-chance formula, melee hit/dodge", "done": false },
+        { "id": "combat.damage", "label": "Damage types vs armor per type; penetration vs deflect", "done": false },
+        { "id": "combat.cover", "label": "Cover via line-of-fire sampling", "done": false },
+        { "id": "combat.structures", "label": "Turrets, traps, explosions", "done": false },
+        { "id": "combat.capture", "label": "Downed / capture / prisoner loop", "done": false }
+      ]
+    },
+    {
+      "id": "crafting",
+      "n": 12,
+      "rimworld": "Crafting & Production",
+      "translation": "Proposed: bills unchanged; guilds and industries act as bill queues at scale.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/Production",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "crafting.bills", "label": "Bill queue: recipe + ingredient filter + repeat mode", "done": false },
+        { "id": "crafting.ingredients", "label": "Ingredient search radius over stockpiles", "done": false },
+        { "id": "crafting.quality", "label": "Skill-weighted quality roll with inspiration", "done": false },
+        { "id": "crafting.cooking", "label": "Cooking: meal tiers, food poisoning", "done": false },
+        { "id": "crafting.animals", "label": "Animal husbandry: taming, training, produce cycles, butchering", "done": false }
+      ]
+    },
+    {
+      "id": "research",
+      "n": 13,
+      "rimworld": "Research & Tech",
+      "translation": "Translated: a large authored tech tree detailing societal evolution across eras. Data model leaves room for procedural/endless tech later.",
+      "translationState": "decided",
+      "module": "src/SimWorld.Core/Research",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "research.dag", "label": "ResearchProjectDef prerequisite DAG", "done": false },
+        { "id": "research.progress", "label": "Points per tick from researcher skill × bench quality", "done": false },
+        { "id": "research.unlocks", "label": "Unlocks gate recipes, buildings, apparel; tech-level gates", "done": false },
+        { "id": "research.eras", "label": "Translation: era structure for societal evolution", "done": false },
+        { "id": "research.endless", "label": "Translation: extension point for procedural tech beyond the authored tree", "done": false }
+      ]
+    },
+    {
+      "id": "economy",
+      "n": 14,
+      "rimworld": "Economy, Trade & Factions",
+      "translation": "Proposed: other civilizations are the factions; trade routes replace orbital traders; goodwill becomes diplomacy.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/Economy",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "economy.currency", "label": "Silver as abstract barter unit; market value", "done": false },
+        { "id": "economy.pricing", "label": "Price = base × market fluctuation × relation × stock category", "done": false },
+        { "id": "economy.caravans", "label": "Caravans on the world tile graph with time/supply cost", "done": false },
+        { "id": "economy.goodwill", "label": "Faction goodwill thresholds → hostile / neutral / ally", "done": false },
+        { "id": "economy.diplomacy", "label": "Translation: civilization diplomacy and trade routes", "done": false }
+      ]
+    },
+    {
+      "id": "building",
+      "n": 15,
+      "rimworld": "Colony Building & Environment",
+      "translation": "Proposed: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/Building",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "building.zones", "label": "Zones: stockpile, growing, home area", "done": false },
+        { "id": "building.construction", "label": "Blueprint → frame → building; materials from stock", "done": false },
+        { "id": "building.roof", "label": "Roof support flood-fill and collapse", "done": false },
+        { "id": "building.power", "label": "Power grid graph with brownout policy", "done": false },
+        { "id": "building.temperature", "label": "Per-room heat diffusion; biome/season modulation", "done": false },
+        { "id": "building.plants", "label": "Plant growth from fertility × light × temperature", "done": false },
+        { "id": "building.initiative", "label": "Translation: citizen-initiated construction under edicts", "done": false }
+      ]
+    },
+    {
+      "id": "social",
+      "n": 16,
+      "rimworld": "Social, Ideoligion & DLC Systems",
+      "translation": "Proposed: opinions and interactions unchanged; ideoligions become the religions and ideologies of your civilization; DLC systems (genes, psycasts, anomalies) evaluated per era.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/Social",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "social.opinion", "label": "Opinion score from traits, history, interactions, alignment", "done": false },
+        { "id": "social.interactions", "label": "Periodic interaction rolls (chitchat, insult, social fight)", "done": false },
+        { "id": "social.romance", "label": "Romance / rivalry thresholds; marriage and breakup", "done": false },
+        { "id": "social.ideology", "label": "Memes + precepts feeding thoughts; rituals; roles", "done": false },
+        { "id": "social.dlc", "label": "Genes, mechanitor bandwidth, psycasts, containment — evaluated per era", "done": false }
+      ]
+    },
+    {
+      "id": "quests",
+      "n": 17,
+      "rimworld": "Quests & Scenario",
+      "translation": "Proposed: scenarios become civilization starts (era, biome, rivals); quests become narrator-issued historical moments.",
+      "translationState": "proposed",
+      "module": "src/SimWorld.Core/Quests",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        { "id": "quests.scenario", "label": "ScenarioDef: starting conditions and rule modifiers", "done": false },
+        { "id": "quests.scripts", "label": "QuestScriptDef node graphs (trigger → branches → reward/threat)", "done": false },
+        { "id": "quests.delivery", "label": "Delivery via letters with accept/expire timers", "done": false },
+        { "id": "quests.moments", "label": "Translation: narrator-issued historical moments", "done": false }
+      ]
+    }
+  ]
+}

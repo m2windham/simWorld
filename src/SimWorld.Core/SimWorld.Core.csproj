@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>SimWorld</RootNamespace>
+    <AssemblyName>SimWorld.Core</AssemblyName>
+    <Description>SimWorld simulation core. Engine-free; the Unity host references this as a local package.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SimWorld.Core.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Unity package metadata lives beside the sources; keep it out of the .NET build. -->
+    <None Remove="package.json" />
+    <None Remove="SimWorld.Core.asmdef" />
+  </ItemGroup>
+
+</Project>

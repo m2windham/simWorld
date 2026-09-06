@@ -1,0 +1,7 @@
+{
+  "name": "com.simworld.core",
+  "version": "0.1.0",
+  "displayName": "SimWorld Core",
+  "description": "Engine-free simulation core for SimWorld. Add to a Unity project via Package Manager > Add package from disk.",
+  "unity": "2022.3"
+}

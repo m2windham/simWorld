@@ -1,0 +1,21 @@
+<Project>
+  <!--
+    Shared build settings for every project in the solution.
+
+    - LangVersion 9 + netstandard2.1 keep SimWorld.Core consumable by Unity
+      (2021.2 through Unity 6) without a separate build.
+    - UseArtifactsOutput moves every bin/obj under ./artifacts so the Unity host
+      can reference src/SimWorld.Core as a local package without importing
+      intermediate files.
+  -->
+  <PropertyGroup>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+</Project>

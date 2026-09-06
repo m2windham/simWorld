@@ -7,5 +7,5 @@
     "MD041": false  // first line must be top-level heading: not always true for templates
   },
   "globs": ["**/*.md"],
-  "ignores": ["node_modules"]
+  "ignores": ["**/node_modules/**", "artifacts/**"]
 }
