@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Seed tech tree: ~30 projects forming a DAG across the first four eras (SticksAndStones through
+    Classical, bridging into Medieval for Iron -> Steel), illustrating the shape the full authored tree will
+    take. This is a seed, not the final content — the large authored tree of societal evolution across all
+    eight eras is a later content task (see docs/status.json tracker item "tree").
+  -->
+
+  <ResearchProjectDef>
+    <defName>Fire</defName>
+    <label>fire</label>
+    <description>Tamed flame: warmth, light, and the first tool that is not held in the hand.</description>
+    <baseCost>100</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>SticksAndStones</era>
+    <tags><li>SticksAndStones</li></tags>
+    <researchViewX>0</researchViewX>
+    <researchViewY>0</researchViewY>
+    <discoveredLetterTitle>Fire</discoveredLetterTitle>
+    <discoveredLetterText>Your people have learned to keep a flame burning. Cooking, warmth, and a hundred crafts follow from it.</discoveredLetterText>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>StoneTools</defName>
+    <label>stone tools</label>
+    <description>Knapped edges: the first tools harder than bone or wood.</description>
+    <baseCost>100</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>SticksAndStones</era>
+    <tags><li>SticksAndStones</li></tags>
+    <researchViewX>0</researchViewX>
+    <researchViewY>1</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Language</defName>
+    <label>language</label>
+    <description>Shared words: the first technology that lives entirely between people.</description>
+    <baseCost>100</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>SticksAndStones</era>
+    <tags><li>SticksAndStones</li></tags>
+    <researchViewX>0</researchViewX>
+    <researchViewY>2</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Cooking</defName>
+    <label>cooking</label>
+    <description>Fire turns raw food safe and food scraps into meals.</description>
+    <baseCost>150</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>SticksAndStones</era>
+    <tags><li>SticksAndStones</li></tags>
+    <prerequisites><li>Fire</li></prerequisites>
+    <researchViewX>1</researchViewX>
+    <researchViewY>0</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Hunting</defName>
+    <label>hunting</label>
+    <description>Stone points on spears: the hunt reaches farther and hits harder.</description>
+    <baseCost>150</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>SticksAndStones</era>
+    <tags><li>SticksAndStones</li></tags>
+    <prerequisites><li>StoneTools</li></prerequisites>
+    <researchViewX>1</researchViewX>
+    <researchViewY>1</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Woodworking</defName>
+    <label>woodworking</label>
+    <description>Stone axes and adzes turn timber into shaped lumber.</description>
+    <baseCost>150</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>SticksAndStones</era>
+    <tags><li>SticksAndStones</li></tags>
+    <prerequisites><li>StoneTools</li></prerequisites>
+    <researchViewX>1</researchViewX>
+    <researchViewY>2</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Storytelling</defName>
+    <label>storytelling</label>
+    <description>Spoken history: knowledge that outlives the person who learned it.</description>
+    <baseCost>150</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>SticksAndStones</era>
+    <tags><li>SticksAndStones</li></tags>
+    <prerequisites><li>Language</li></prerequisites>
+    <researchViewX>1</researchViewX>
+    <researchViewY>3</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Trapping</defName>
+    <label>trapping</label>
+    <description>Snares and deadfalls hunt while the hunter does something else.</description>
+    <baseCost>250</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>Agrarian</era>
+    <tags><li>Agrarian</li></tags>
+    <prerequisites><li>Hunting</li></prerequisites>
+    <researchViewX>2</researchViewX>
+    <researchViewY>1</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Shelter</defName>
+    <label>shelter</label>
+    <description>Framed walls and a roof: the first buildings meant to last.</description>
+    <baseCost>250</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>Agrarian</era>
+    <tags><li>Agrarian</li></tags>
+    <prerequisites><li>Woodworking</li></prerequisites>
+    <researchViewX>2</researchViewX>
+    <researchViewY>2</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Writing</defName>
+    <label>writing</label>
+    <description>Marks that hold speech: a story no longer needs a storyteller to survive.</description>
+    <baseCost>300</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>Agrarian</era>
+    <tags><li>Agrarian</li></tags>
+    <prerequisites><li>Storytelling</li></prerequisites>
+    <researchViewX>2</researchViewX>
+    <researchViewY>3</researchViewY>
+    <discoveredLetterTitle>Writing</discoveredLetterTitle>
+    <discoveredLetterText>Your people can now set words down. Law, ledgers, and lasting knowledge become possible.</discoveredLetterText>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Agriculture</defName>
+    <label>agriculture</label>
+    <description>Deliberate planting turns foraging into farming.</description>
+    <baseCost>300</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>Agrarian</era>
+    <tags><li>Agrarian</li></tags>
+    <prerequisites><li>StoneTools</li></prerequisites>
+    <researchViewX>2</researchViewX>
+    <researchViewY>0</researchViewY>
+    <discoveredLetterTitle>Agriculture</discoveredLetterTitle>
+    <discoveredLetterText>Your people have learned to farm. A settlement can now feed more people than it could ever hunt or gather for.</discoveredLetterText>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Irrigation</defName>
+    <label>irrigation</label>
+    <description>Channeled water turns dry ground into farmland.</description>
+    <baseCost>350</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>Agrarian</era>
+    <tags><li>Agrarian</li></tags>
+    <prerequisites><li>Agriculture</li></prerequisites>
+    <researchViewX>3</researchViewX>
+    <researchViewY>0</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Pottery</defName>
+    <label>pottery</label>
+    <description>Fired clay: vessels that hold water, grain, and food through the seasons.</description>
+    <baseCost>300</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>Agrarian</era>
+    <tags><li>Agrarian</li></tags>
+    <prerequisites><li>Agriculture</li></prerequisites>
+    <researchViewX>3</researchViewX>
+    <researchViewY>1</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Weaving</defName>
+    <label>weaving</label>
+    <description>Fiber turned to thread, thread turned to cloth.</description>
+    <baseCost>300</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>Agrarian</era>
+    <tags><li>Agrarian</li></tags>
+    <prerequisites><li>Agriculture</li></prerequisites>
+    <researchViewX>3</researchViewX>
+    <researchViewY>2</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>AnimalHusbandry</defName>
+    <label>animal husbandry</label>
+    <description>Herds kept and bred, rather than only hunted.</description>
+    <baseCost>350</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>Agrarian</era>
+    <tags><li>Agrarian</li></tags>
+    <prerequisites><li>Agriculture</li></prerequisites>
+    <researchViewX>3</researchViewX>
+    <researchViewY>3</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Copper</defName>
+    <label>copper</label>
+    <description>The first worked metal: soft, but no longer stone.</description>
+    <baseCost>600</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags><li>Bronze</li></tags>
+    <prerequisites><li>Agriculture</li></prerequisites>
+    <researchViewX>4</researchViewX>
+    <researchViewY>0</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Bronze</defName>
+    <label>bronze</label>
+    <description>Copper alloyed with tin: an age takes its name from it.</description>
+    <baseCost>700</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags><li>Bronze</li></tags>
+    <prerequisites><li>Copper</li></prerequisites>
+    <researchViewX>5</researchViewX>
+    <researchViewY>0</researchViewY>
+    <discoveredLetterTitle>Bronze</discoveredLetterTitle>
+    <discoveredLetterText>Your smiths can now cast bronze. Tools and weapons alike hold an edge stone never could.</discoveredLetterText>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Wheel</defName>
+    <label>wheel</label>
+    <description>A rolling load moves for a fraction of the effort of a dragged one.</description>
+    <baseCost>700</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags><li>Bronze</li></tags>
+    <prerequisites><li>Bronze</li></prerequisites>
+    <researchViewX>6</researchViewX>
+    <researchViewY>0</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Cart</defName>
+    <label>cart</label>
+    <description>A wheeled frame: goods move by animal power instead of by back.</description>
+    <baseCost>750</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags><li>Bronze</li></tags>
+    <prerequisites><li>Wheel</li></prerequisites>
+    <researchViewX>7</researchViewX>
+    <researchViewY>0</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Masonry</defName>
+    <label>masonry</label>
+    <description>Cut and fitted stone: walls that outlast the people who raised them.</description>
+    <baseCost>700</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags><li>Bronze</li></tags>
+    <prerequisites><li>Wheel</li></prerequisites>
+    <researchViewX>7</researchViewX>
+    <researchViewY>1</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Mathematics</defName>
+    <label>mathematics</label>
+    <description>Written numbers: measurement, accounting, and the geometry that follows.</description>
+    <baseCost>800</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags><li>Bronze</li></tags>
+    <prerequisites><li>Writing</li></prerequisites>
+    <researchViewX>5</researchViewX>
+    <researchViewY>2</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Sailing</defName>
+    <label>sailing</label>
+    <description>Wind-driven hulls: rivers and coastlines become roads.</description>
+    <baseCost>800</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags><li>Bronze</li></tags>
+    <prerequisites>
+      <li>Woodworking</li>
+      <li>Bronze</li>
+    </prerequisites>
+    <researchViewX>6</researchViewX>
+    <researchViewY>2</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Astronomy</defName>
+    <label>astronomy</label>
+    <description>Tracking the sky: calendars, navigation, and the shape of the year.</description>
+    <baseCost>1300</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Classical</era>
+    <tags><li>Classical</li></tags>
+    <prerequisites><li>Mathematics</li></prerequisites>
+    <researchViewX>8</researchViewX>
+    <researchViewY>2</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Currency</defName>
+    <label>currency</label>
+    <description>Standard coin replaces barter as the measure of a trade.</description>
+    <baseCost>1200</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Classical</era>
+    <tags><li>Classical</li></tags>
+    <prerequisites>
+      <li>Bronze</li>
+      <li>Writing</li>
+    </prerequisites>
+    <researchViewX>8</researchViewX>
+    <researchViewY>0</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Roadbuilding</defName>
+    <label>roadbuilding</label>
+    <description>Paved roads: a cart moves as fast in the rain as in the sun.</description>
+    <baseCost>1300</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Classical</era>
+    <tags><li>Classical</li></tags>
+    <prerequisites>
+      <li>Masonry</li>
+      <li>Cart</li>
+    </prerequisites>
+    <researchViewX>9</researchViewX>
+    <researchViewY>1</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Philosophy</defName>
+    <label>philosophy</label>
+    <description>Written argument turns storytelling into systematic thought.</description>
+    <baseCost>1400</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Classical</era>
+    <tags><li>Classical</li></tags>
+    <prerequisites>
+      <li>Writing</li>
+      <li>Storytelling</li>
+    </prerequisites>
+    <researchViewX>8</researchViewX>
+    <researchViewY>3</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Iron</defName>
+    <label>iron</label>
+    <description>Smelted iron: harder and more common than bronze ever was.</description>
+    <baseCost>1500</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Classical</era>
+    <tags><li>Classical</li></tags>
+    <prerequisites>
+      <li>Bronze</li>
+      <li>Masonry</li>
+    </prerequisites>
+    <researchViewX>8</researchViewX>
+    <researchViewY>1</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Aqueduct</defName>
+    <label>aqueduct</label>
+    <description>Carried water: a city can grow far past what its own wells could support.</description>
+    <baseCost>1400</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Classical</era>
+    <tags><li>Classical</li></tags>
+    <prerequisites>
+      <li>Masonry</li>
+      <li>Irrigation</li>
+    </prerequisites>
+    <researchViewX>9</researchViewX>
+    <researchViewY>0</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Medicine</defName>
+    <label>medicine</label>
+    <description>Written case and remedy: healing becomes knowledge passed on, not just skill.</description>
+    <baseCost>1500</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Classical</era>
+    <tags><li>Classical</li></tags>
+    <prerequisites>
+      <li>Writing</li>
+      <li>Philosophy</li>
+    </prerequisites>
+    <researchViewX>9</researchViewX>
+    <researchViewY>3</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Steel</defName>
+    <label>steel</label>
+    <description>Iron refined further still: the backbone of the medieval world.</description>
+    <baseCost>1800</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Medieval</era>
+    <tags><li>Medieval</li></tags>
+    <prerequisites><li>Iron</li></prerequisites>
+    <researchViewX>11</researchViewX>
+    <researchViewY>1</researchViewY>
+    <discoveredLetterTitle>Steel</discoveredLetterTitle>
+    <discoveredLetterText>Your smiths can now make steel. It will remain the backbone of tools and arms until the industrial age.</discoveredLetterText>
+  </ResearchProjectDef>
+
+</Defs>
