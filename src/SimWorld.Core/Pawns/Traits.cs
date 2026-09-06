@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using SimWorld.Defs;
 using SimWorld.MindState;
 using SimWorld.Sim;
+using SimWorld.Work;
 
 namespace SimWorld.Pawns
 {
@@ -16,6 +17,9 @@ namespace SimWorld.Pawns
         public List<StatModifier>? statOffsets;
         public List<StatModifier>? statFactors;
         public float socialFightChanceFactor = 1f;
+
+        /// <summary>Overrides <see cref="TraitDef.disabledWorkTags"/> for this degree when non-<see cref="WorkTags.None"/>.</summary>
+        public WorkTags disabledWorkTags = WorkTags.None;
 
         /// <summary>When set, a pawn with this degree can only have these mood breaks.</summary>
         public List<MentalBreakDef>? theOnlyAllowedMentalBreaks;
@@ -35,6 +39,16 @@ namespace SimWorld.Pawns
         public float commonality = 1f;
         public float commonalityFemale = -1f;
         public bool allowOnHostileSpawn = true;
+
+        /// <summary>Work tags a pawn with this trait can never do, at every degree unless a degree overrides it.</summary>
+        public WorkTags disabledWorkTags = WorkTags.None;
+
+        /// <summary>Effective disabled tags for one degree: the degree's own tags if set, else the trait's.</summary>
+        public WorkTags DisabledWorkTagsAtDegree(int degree)
+        {
+            TraitDegreeData data = DataAtDegree(degree);
+            return data.disabledWorkTags != WorkTags.None ? data.disabledWorkTags : disabledWorkTags;
+        }
 
         public TraitDegreeData DataAtDegree(int degree)
         {
@@ -187,10 +201,31 @@ namespace SimWorld.Pawns
         private readonly Pawn pawn;
         public TraitSet traits;
 
+        /// <summary>
+        /// Hook for the future Pawn Generation module: work tags the pawn's backstory bars outright. OR'ed
+        /// into <see cref="DisabledWorkTagsBackstoryAndTraits"/> alongside traits; nothing sets it yet.
+        /// </summary>
+        public WorkTags disabledWorkTagsFromBackstory = WorkTags.None;
+
         public Pawn_StoryTracker(Pawn pawn)
         {
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
             traits = new TraitSet(pawn);
+        }
+
+        /// <summary>Every work tag barred by the pawn's backstory or any of its traits, OR'ed together.</summary>
+        public WorkTags DisabledWorkTagsBackstoryAndTraits
+        {
+            get
+            {
+                WorkTags combined = disabledWorkTagsFromBackstory;
+                for (int i = 0; i < traits.allTraits.Count; i++)
+                {
+                    Trait trait = traits.allTraits[i];
+                    combined |= trait.def.DisabledWorkTagsAtDegree(trait.degree);
+                }
+                return combined;
+            }
         }
 
         public void ExposeData()
@@ -198,6 +233,7 @@ namespace SimWorld.Pawns
             TraitSet? t = traits;
             Scribe_Deep.Look(ref t, "traits", pawn);
             traits = t ?? new TraitSet(pawn);
+            Scribe_Values.Look(ref disabledWorkTagsFromBackstory, "disabledWorkTagsFromBackstory", WorkTags.None);
         }
     }
 }

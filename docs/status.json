@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-06",
-  "testsTotal": 203,
+  "testsTotal": 229,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -489,28 +489,53 @@
       "rimworld": "Skills & Work",
       "translation": "Proposed: skills unchanged; work priorities set by civ policy and roles (guilds, castes, laws) rather than a per-person grid.",
       "translationState": "proposed",
-      "module": "src/SimWorld.Core/Work",
-      "status": "planned",
-      "tests": 0,
+      "module": "src/SimWorld.Core/Work · Pawns",
+      "status": "ported",
+      "tests": 26,
       "items": [
         {
           "id": "work.skills",
-          "label": "Skill levels 0–20, XP curve, passion multipliers",
-          "done": false
+          "label": "SkillDef/SkillRecord/Pawn_SkillTracker: levels 0–20, per-pawn records in listOrder, daily xpSinceMidnight reset",
+          "done": true
+        },
+        {
+          "id": "work.xp",
+          "label": "XP curve 1000→30000, passion 0.35/1/1.5, 4000 xp/day saturation, level up/down",
+          "done": true
         },
         {
           "id": "work.decay",
-          "label": "Unused-skill decay",
-          "done": false
+          "label": "Unused-skill decay: levels 10+ lose 0.1–8.0 XP per 200-tick interval; below 10 never decays",
+          "done": true
+        },
+        {
+          "id": "work.disable",
+          "label": "Work tags from traits disable skills and work types; backstory hook",
+          "done": true
         },
         {
           "id": "work.priorities",
-          "label": "Work priority grid per work type",
-          "done": false
+          "label": "Pawn_WorkSettings: priority grid per work type, 0–4, useWorkPriorities on/off collapse, disabled types forced to 0",
+          "done": true
         },
         {
           "id": "work.givers",
-          "label": "WorkGivers scanning for jobs ordered by priority then urgency",
+          "label": "WorkGiverDef ordering: emergency first, priority → naturalPriority → priorityInType; scanning/jobs land with system 9",
+          "done": true
+        },
+        {
+          "id": "work.content",
+          "label": "Core XML: 12 SkillDefs, 20 WorkTypeDefs, 27 WorkGiverDefs, Pyromaniac disables Firefighting",
+          "done": true
+        },
+        {
+          "id": "work.stats",
+          "label": "Skill-driven stats (WorkSpeedGlobal, MedicalTendQuality…) — lands with the Stats module",
+          "done": false
+        },
+        {
+          "id": "work.backstory",
+          "label": "Backstory-disabled work — lands with Pawn Generation",
           "done": false
         },
         {

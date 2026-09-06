@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using SimWorld.Defs;
 using SimWorld.Health;
 using SimWorld.MindState;
 using SimWorld.Needs;
 using SimWorld.Sim;
+using SimWorld.Work;
 
 namespace SimWorld.Pawns
 {
@@ -25,6 +27,8 @@ namespace SimWorld.Pawns
         public Pawn_NeedsTracker needs = null!;
         public Pawn_StoryTracker story = null!;
         public Pawn_MindState mindState = null!;
+        public Pawn_SkillTracker skills = null!;
+        public Pawn_WorkSettings workSettings = null!;
 
         /// <summary>Environment sampler for seeker needs (beauty, comfort, outdoors, room); the map supplies it later.</summary>
         public IEnvironmentSampler? environment;
@@ -43,6 +47,7 @@ namespace SimWorld.Pawns
             thingIDNumber = AllocateThingId();
             InitializeTrackers();
             needs.AddOrRemoveNeedsAsAppropriate();
+            if (RaceProps.Humanlike) workSettings.EnableAndInitialize();
         }
 
         public static int AllocateThingId() => nextThingId++;
@@ -104,6 +109,36 @@ namespace SimWorld.Pawns
         /// <summary>Mood level under which minor breaks become possible; traits and stats adjust it later.</summary>
         public virtual float MentalBreakThreshold => RaceProps.mentalBreakThreshold;
 
+        /// <summary>Scales indirect (learning-by-doing) skill XP; stats and conditions adjust it later.</summary>
+        public virtual float GlobalLearningFactor => 1f;
+
+        /// <summary>
+        /// Work tags disabled by traits and, later, backstories. RimWorld also folds in genes and health
+        /// (e.g. a missing arm barring Violent-tagged work); those join here once their systems land.
+        /// </summary>
+        public virtual WorkTags CombinedDisabledWorkTags => story.DisabledWorkTagsBackstoryAndTraits;
+
+        public bool WorkTagIsDisabled(WorkTags tags) => (CombinedDisabledWorkTags & tags) != WorkTags.None;
+
+        /// <summary>True for every non-Humanlike pawn, or when the combined disabled tags hit this work type's
+        /// own tags or <see cref="WorkTags.AllWork"/>.</summary>
+        public bool WorkTypeIsDisabled(WorkTypeDef workType)
+        {
+            if (workType == null) throw new ArgumentNullException(nameof(workType));
+            if (!RaceProps.Humanlike) return true;
+            WorkTags combined = CombinedDisabledWorkTags;
+            if ((combined & WorkTags.AllWork) != WorkTags.None) return true;
+            return (workType.workTags & combined) != WorkTags.None;
+        }
+
+        public IEnumerable<WorkTypeDef> GetDisabledWorkTypes()
+        {
+            foreach (WorkTypeDef workType in DefDatabase<WorkTypeDef>.AllDefsListForReading)
+            {
+                if (WorkTypeIsDisabled(workType)) yield return workType;
+            }
+        }
+
         public bool HasHediff(HediffDef hediffDef) => health.hediffSet.HasHediff(hediffDef);
 
         /// <summary>Starvation builds malnutrition each food interval; eating again lets it fade at the same pace.</summary>
@@ -116,6 +151,8 @@ namespace SimWorld.Pawns
 
         public virtual void Notify_TraitsChanged()
         {
+            skills?.Notify_SkillDisablesChanged();
+            workSettings?.Notify_DisabledWorkTypesChanged();
         }
 
         public virtual void Notify_Downed()
@@ -146,6 +183,8 @@ namespace SimWorld.Pawns
             needs ??= new Pawn_NeedsTracker(this);
             story ??= new Pawn_StoryTracker(this);
             mindState ??= new Pawn_MindState(this);
+            skills ??= new Pawn_SkillTracker(this);
+            workSettings ??= new Pawn_WorkSettings(this);
         }
 
         // ---- ITickable ----
@@ -160,6 +199,7 @@ namespace SimWorld.Pawns
             if (Dead) return;
             needs.NeedsTrackerTick();
             mindState.MindStateTick();
+            skills.SkillsTick();
         }
 
         public virtual void TickRare()
@@ -203,6 +243,12 @@ namespace SimWorld.Pawns
             Pawn_MindState? m = mindState;
             Scribe_Deep.Look(ref m, "mindState", this);
             mindState = m ?? new Pawn_MindState(this);
+            Pawn_SkillTracker? sk = skills;
+            Scribe_Deep.Look(ref sk, "skills", this);
+            skills = sk ?? new Pawn_SkillTracker(this);
+            Pawn_WorkSettings? ws = workSettings;
+            Scribe_Deep.Look(ref ws, "workSettings", this);
+            workSettings = ws ?? new Pawn_WorkSettings(this);
         }
 
         public override string ToString() => Label + " (" + ThingID + ")";

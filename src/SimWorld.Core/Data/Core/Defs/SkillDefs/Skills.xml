@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- The 12 core skills (RimWorld: SkillDefs). Shooting and Melee are barred outright by the Violent work
+       tag; every other skill is disabled only when every work type it feeds into is disabled. -->
+
+  <SkillDef>
+    <defName>Shooting</defName>
+    <label>shooting</label>
+    <skillLabel>shooting</skillLabel>
+    <pawnLabel>Shooter</pawnLabel>
+    <listOrder>0</listOrder>
+    <disablingWorkTags>Violent</disablingWorkTags>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Melee</defName>
+    <label>melee</label>
+    <skillLabel>melee</skillLabel>
+    <pawnLabel>Fighter</pawnLabel>
+    <listOrder>100</listOrder>
+    <disablingWorkTags>Violent</disablingWorkTags>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Construction</defName>
+    <label>construction</label>
+    <skillLabel>construction</skillLabel>
+    <pawnLabel>Builder</pawnLabel>
+    <listOrder>200</listOrder>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Mining</defName>
+    <label>mining</label>
+    <skillLabel>mining</skillLabel>
+    <pawnLabel>Miner</pawnLabel>
+    <listOrder>300</listOrder>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Cooking</defName>
+    <label>cooking</label>
+    <skillLabel>cooking</skillLabel>
+    <pawnLabel>Cook</pawnLabel>
+    <listOrder>400</listOrder>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Plants</defName>
+    <label>plants</label>
+    <skillLabel>plants</skillLabel>
+    <pawnLabel>Grower</pawnLabel>
+    <listOrder>500</listOrder>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Animals</defName>
+    <label>animals</label>
+    <skillLabel>animals</skillLabel>
+    <pawnLabel>Handler</pawnLabel>
+    <listOrder>600</listOrder>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Crafting</defName>
+    <label>crafting</label>
+    <skillLabel>crafting</skillLabel>
+    <pawnLabel>Crafter</pawnLabel>
+    <listOrder>700</listOrder>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Artistic</defName>
+    <label>artistic</label>
+    <skillLabel>artistic</skillLabel>
+    <pawnLabel>Artist</pawnLabel>
+    <listOrder>800</listOrder>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Medicine</defName>
+    <label>medicine</label>
+    <skillLabel>medicine</skillLabel>
+    <pawnLabel>Doctor</pawnLabel>
+    <listOrder>900</listOrder>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Social</defName>
+    <label>social</label>
+    <skillLabel>social</skillLabel>
+    <pawnLabel>Socialite</pawnLabel>
+    <listOrder>1000</listOrder>
+  </SkillDef>
+
+  <SkillDef>
+    <defName>Intellectual</defName>
+    <label>intellectual</label>
+    <skillLabel>intellectual</skillLabel>
+    <pawnLabel>Professor</pawnLabel>
+    <listOrder>1100</listOrder>
+  </SkillDef>
+
+</Defs>
