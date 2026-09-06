@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- A representative RimWorld work-giver set. giverClass is left to its code default (WorkGiver_Pending) —
+       scanning the map for jobs lands with the job system (system 9). -->
+
+  <WorkGiverDef>
+    <defName>FightFires</defName>
+    <label>fight fires</label>
+    <verb>Fight fire</verb>
+    <gerund>fighting fire</gerund>
+    <workType>Firefighter</workType>
+    <priorityInType>100</priorityInType>
+    <emergency>true</emergency>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>DoctorTendEmergency</defName>
+    <label>tend patients (emergency)</label>
+    <verb>Tend</verb>
+    <gerund>tending to</gerund>
+    <workType>Doctor</workType>
+    <priorityInType>100</priorityInType>
+    <emergency>true</emergency>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>DoctorTend</defName>
+    <label>tend patients</label>
+    <verb>Tend</verb>
+    <gerund>tending to</gerund>
+    <workType>Doctor</workType>
+    <priorityInType>90</priorityInType>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>DoctorFeedHumanlikes</defName>
+    <label>feed patients</label>
+    <verb>Feed</verb>
+    <gerund>feeding</gerund>
+    <workType>Doctor</workType>
+    <priorityInType>80</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>DoctorRescue</defName>
+    <label>rescue downed pawns</label>
+    <verb>Rescue</verb>
+    <gerund>rescuing</gerund>
+    <workType>Doctor</workType>
+    <priorityInType>70</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>WardenFeed</defName>
+    <label>feed prisoners</label>
+    <verb>Feed</verb>
+    <gerund>feeding</gerund>
+    <workType>Warden</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>WardenDeliverFood</defName>
+    <label>deliver food to prisoners</label>
+    <verb>Deliver food</verb>
+    <gerund>delivering food</gerund>
+    <workType>Warden</workType>
+    <priorityInType>90</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>TrainAnimals</defName>
+    <label>train animals</label>
+    <verb>Train</verb>
+    <gerund>training</gerund>
+    <workType>Handling</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>TameAnimals</defName>
+    <label>tame animals</label>
+    <verb>Tame</verb>
+    <gerund>taming</gerund>
+    <workType>Handling</workType>
+    <priorityInType>80</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>CookMeals</defName>
+    <label>cook meals</label>
+    <verb>Cook</verb>
+    <gerund>cooking</gerund>
+    <workType>Cooking</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>Hunt</defName>
+    <label>hunt</label>
+    <verb>Hunt</verb>
+    <gerund>hunting</gerund>
+    <workType>Hunting</workType>
+    <priorityInType>100</priorityInType>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>Repair</defName>
+    <label>repair</label>
+    <verb>Repair</verb>
+    <gerund>repairing</gerund>
+    <workType>Construction</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>ConstructFinishFrames</defName>
+    <label>finish frames</label>
+    <verb>Finish</verb>
+    <gerund>finishing</gerund>
+    <workType>Construction</workType>
+    <priorityInType>95</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>ConstructDeliverResourcesToFrames</defName>
+    <label>haul resources to frames</label>
+    <verb>Haul resources</verb>
+    <gerund>hauling resources</gerund>
+    <workType>Construction</workType>
+    <priorityInType>90</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>ConstructDeliverResourcesToBlueprints</defName>
+    <label>haul resources to blueprints</label>
+    <verb>Haul resources</verb>
+    <gerund>hauling resources</gerund>
+    <workType>Construction</workType>
+    <priorityInType>85</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>GrowerHarvest</defName>
+    <label>harvest</label>
+    <verb>Harvest</verb>
+    <gerund>harvesting</gerund>
+    <workType>Growing</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>GrowerSow</defName>
+    <label>sow</label>
+    <verb>Sow</verb>
+    <gerund>sowing</gerund>
+    <workType>Growing</workType>
+    <priorityInType>90</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>Mine</defName>
+    <label>mine</label>
+    <verb>Mine</verb>
+    <gerund>mining</gerund>
+    <workType>Mining</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>PlantsCut</defName>
+    <label>cut plants</label>
+    <verb>Cut</verb>
+    <gerund>cutting</gerund>
+    <workType>PlantCutting</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>DoBillsSmith</defName>
+    <label>smith bills</label>
+    <verb>Smith</verb>
+    <gerund>smithing</gerund>
+    <workType>Smithing</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>DoBillsTailor</defName>
+    <label>tailor bills</label>
+    <verb>Tailor</verb>
+    <gerund>tailoring</gerund>
+    <workType>Tailoring</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>DoBillsArt</defName>
+    <label>art bills</label>
+    <verb>Make art</verb>
+    <gerund>making art</gerund>
+    <workType>Art</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>DoBillsCraft</defName>
+    <label>craft bills</label>
+    <verb>Craft</verb>
+    <gerund>crafting</gerund>
+    <workType>Crafting</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>HaulGeneral</defName>
+    <label>haul</label>
+    <verb>Haul</verb>
+    <gerund>hauling</gerund>
+    <workType>Hauling</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>HaulCorpses</defName>
+    <label>haul corpses</label>
+    <verb>Haul</verb>
+    <gerund>hauling</gerund>
+    <workType>Hauling</workType>
+    <priorityInType>90</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>CleanFilth</defName>
+    <label>clean filth</label>
+    <verb>Clean</verb>
+    <gerund>cleaning</gerund>
+    <workType>Cleaning</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>Research</defName>
+    <label>research</label>
+    <verb>Research</verb>
+    <gerund>researching</gerund>
+    <workType>Research</workType>
+    <priorityInType>100</priorityInType>
+  </WorkGiverDef>
+
+</Defs>

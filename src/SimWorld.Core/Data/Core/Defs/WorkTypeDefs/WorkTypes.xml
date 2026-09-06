@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- The 20 core work types (RimWorld: WorkTypeDefs), naturalPriority descending in RimWorld's own order. -->
+
+  <WorkTypeDef>
+    <defName>Firefighter</defName>
+    <label>firefighting</label>
+    <labelShort>Firefight</labelShort>
+    <gerundLabel>firefighting</gerundLabel>
+    <verb>Firefight</verb>
+    <naturalPriority>1400</naturalPriority>
+    <workTags>Firefighting</workTags>
+    <alwaysStartActive>true</alwaysStartActive>
+    <requireCapableColonist>false</requireCapableColonist>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Patient</defName>
+    <label>patient</label>
+    <labelShort>Patient</labelShort>
+    <gerundLabel>getting treatment</gerundLabel>
+    <verb>Treat</verb>
+    <naturalPriority>1300</naturalPriority>
+    <alwaysStartActive>true</alwaysStartActive>
+    <requireCapableColonist>false</requireCapableColonist>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Doctor</defName>
+    <label>doctoring</label>
+    <labelShort>Doctor</labelShort>
+    <gerundLabel>doctoring</gerundLabel>
+    <verb>Treat</verb>
+    <naturalPriority>1200</naturalPriority>
+    <workTags>Caring</workTags>
+    <relevantSkills>
+      <li>Medicine</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>PatientBedRest</defName>
+    <label>bed rest</label>
+    <labelShort>Bed rest</labelShort>
+    <gerundLabel>resting in bed</gerundLabel>
+    <verb>Rest</verb>
+    <naturalPriority>1150</naturalPriority>
+    <alwaysStartActive>true</alwaysStartActive>
+    <requireCapableColonist>false</requireCapableColonist>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>BasicWorker</defName>
+    <label>basic work</label>
+    <labelShort>Basic</labelShort>
+    <gerundLabel>doing basic labor</gerundLabel>
+    <verb>Do basic labor</verb>
+    <naturalPriority>1100</naturalPriority>
+    <workTags>ManualDumb</workTags>
+    <alwaysStartActive>true</alwaysStartActive>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Warden</defName>
+    <label>warden</label>
+    <labelShort>Warden</labelShort>
+    <gerundLabel>doing warden work</gerundLabel>
+    <verb>Warden</verb>
+    <naturalPriority>1000</naturalPriority>
+    <workTags>Social</workTags>
+    <relevantSkills>
+      <li>Social</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Handling</defName>
+    <label>handling</label>
+    <labelShort>Handling</labelShort>
+    <gerundLabel>handling animals</gerundLabel>
+    <verb>Handle</verb>
+    <naturalPriority>950</naturalPriority>
+    <workTags>Animals</workTags>
+    <relevantSkills>
+      <li>Animals</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Cooking</defName>
+    <label>cooking</label>
+    <labelShort>Cooking</labelShort>
+    <gerundLabel>cooking</gerundLabel>
+    <verb>Cook</verb>
+    <naturalPriority>900</naturalPriority>
+    <workTags>Cooking</workTags>
+    <relevantSkills>
+      <li>Cooking</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Hunting</defName>
+    <label>hunting</label>
+    <labelShort>Hunting</labelShort>
+    <gerundLabel>hunting</gerundLabel>
+    <verb>Hunt</verb>
+    <naturalPriority>850</naturalPriority>
+    <workTags>Violent, Hunting, Shooting</workTags>
+    <relevantSkills>
+      <li>Shooting</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Construction</defName>
+    <label>construction</label>
+    <labelShort>Constr.</labelShort>
+    <gerundLabel>constructing</gerundLabel>
+    <verb>Construct</verb>
+    <naturalPriority>800</naturalPriority>
+    <workTags>Constructing, ManualSkilled</workTags>
+    <relevantSkills>
+      <li>Construction</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Growing</defName>
+    <label>growing</label>
+    <labelShort>Growing</labelShort>
+    <gerundLabel>growing</gerundLabel>
+    <verb>Grow</verb>
+    <naturalPriority>750</naturalPriority>
+    <workTags>PlantWork</workTags>
+    <relevantSkills>
+      <li>Plants</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Mining</defName>
+    <label>mining</label>
+    <labelShort>Mining</labelShort>
+    <gerundLabel>mining</gerundLabel>
+    <verb>Mine</verb>
+    <naturalPriority>700</naturalPriority>
+    <workTags>Mining, ManualSkilled</workTags>
+    <relevantSkills>
+      <li>Mining</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>PlantCutting</defName>
+    <label>plant cutting</label>
+    <labelShort>Plants</labelShort>
+    <gerundLabel>cutting plants</gerundLabel>
+    <verb>Cut plants</verb>
+    <naturalPriority>650</naturalPriority>
+    <workTags>PlantWork, ManualDumb</workTags>
+    <relevantSkills>
+      <li>Plants</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Smithing</defName>
+    <label>smithing</label>
+    <labelShort>Smith</labelShort>
+    <gerundLabel>smithing</gerundLabel>
+    <verb>Smith</verb>
+    <naturalPriority>600</naturalPriority>
+    <workTags>Crafting, ManualSkilled</workTags>
+    <relevantSkills>
+      <li>Crafting</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Tailoring</defName>
+    <label>tailoring</label>
+    <labelShort>Tailor</labelShort>
+    <gerundLabel>tailoring</gerundLabel>
+    <verb>Tailor</verb>
+    <naturalPriority>550</naturalPriority>
+    <workTags>Crafting, ManualSkilled</workTags>
+    <relevantSkills>
+      <li>Crafting</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Art</defName>
+    <label>art</label>
+    <labelShort>Art</labelShort>
+    <gerundLabel>doing art</gerundLabel>
+    <verb>Make art</verb>
+    <naturalPriority>500</naturalPriority>
+    <workTags>Artistic</workTags>
+    <relevantSkills>
+      <li>Artistic</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Crafting</defName>
+    <label>crafting</label>
+    <labelShort>Craft</labelShort>
+    <gerundLabel>crafting</gerundLabel>
+    <verb>Craft</verb>
+    <naturalPriority>450</naturalPriority>
+    <workTags>Crafting, ManualSkilled</workTags>
+    <relevantSkills>
+      <li>Crafting</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Hauling</defName>
+    <label>hauling</label>
+    <labelShort>Hauling</labelShort>
+    <gerundLabel>hauling</gerundLabel>
+    <verb>Haul</verb>
+    <naturalPriority>400</naturalPriority>
+    <workTags>ManualDumb, Hauling</workTags>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Cleaning</defName>
+    <label>cleaning</label>
+    <labelShort>Cleaning</labelShort>
+    <gerundLabel>cleaning</gerundLabel>
+    <verb>Clean</verb>
+    <naturalPriority>350</naturalPriority>
+    <workTags>ManualDumb, Cleaning</workTags>
+  </WorkTypeDef>
+
+  <WorkTypeDef>
+    <defName>Research</defName>
+    <label>research</label>
+    <labelShort>Research</labelShort>
+    <gerundLabel>researching</gerundLabel>
+    <verb>Research</verb>
+    <naturalPriority>300</naturalPriority>
+    <workTags>Intellectual</workTags>
+    <relevantSkills>
+      <li>Intellectual</li>
+    </relevantSkills>
+  </WorkTypeDef>
+
+</Defs>

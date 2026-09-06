@@ -5,6 +5,7 @@
     <defName>Pyromaniac</defName>
     <label>pyromaniac</label>
     <commonality>0.6</commonality>
+    <disabledWorkTags>Firefighting</disabledWorkTags>
     <degreeDatas>
       <li>
         <label>pyromaniac</label>
