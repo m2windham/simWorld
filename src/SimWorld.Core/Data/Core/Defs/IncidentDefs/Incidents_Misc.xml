@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Everyday incidents. Most use IncidentWorker_Placeholder: they validate and record that they fired, but
+    their real effect (spawning a wanderer pawn, an actual trade caravan, weather changing the map) belongs
+    to systems that don't exist yet (see IncidentWorker_Placeholder's doc comment).
+  -->
+
+  <IncidentDef>
+    <defName>WandererJoin</defName>
+    <label>wanderer joins</label>
+    <description>A wanderer asks to join the civilization.</description>
+    <category>Misc</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_WandererJoin</workerClass>
+    <baseChance>1.0</baseChance>
+    <minRefireDays>12</minRefireDays>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>TraderCaravanArrival</defName>
+    <label>trade caravan arrives</label>
+    <description>A trade caravan arrives to do business.</description>
+    <category>FactionArrival</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <baseChance>1.0</baseChance>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>VisitorGroup</defName>
+    <label>visitors arrive</label>
+    <description>A group of visitors arrives.</description>
+    <category>FactionArrival</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <baseChance>0.5</baseChance>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>Eclipse</defName>
+    <label>eclipse</label>
+    <description>An eclipse darkens the sky.</description>
+    <category>Misc</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <baseChance>0.3</baseChance>
+    <earliestDay>15</earliestDay>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>ToxicFallout</defName>
+    <label>toxic fallout</label>
+    <description>Toxic fallout blankets the area.</description>
+    <category>Misc</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <baseChance>0.3</baseChance>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>HeatWave</defName>
+    <label>heat wave</label>
+    <description>A heat wave raises the temperature.</description>
+    <category>Misc</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <baseChance>0.5</baseChance>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>ColdSnap</defName>
+    <label>cold snap</label>
+    <description>A cold snap drops the temperature.</description>
+    <category>Misc</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <baseChance>0.5</baseChance>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>Flashstorm</defName>
+    <label>flashstorm</label>
+    <description>A flashstorm brings sudden lightning.</description>
+    <category>Misc</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <baseChance>0.3</baseChance>
+  </IncidentDef>
+
+</Defs>
