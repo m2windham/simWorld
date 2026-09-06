@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Eras are SimWorld's translation of RimWorld's TechLevel ladder into "civilization through the ages": a
+    civilization-wide age that completes once every research project tagged to it (ResearchProjectDef.era)
+    is finished. order is the ladder position (0 = earliest); techLevel is the TechLevel band the era
+    occupies for CostFactor and, later, faction/settlement generation. Exotic's techLevel is Archotech, the
+    top of RimWorld's ladder, standing in for both "Ultra" and "Archotech" until SimWorld's own translation
+    of that end of the ladder is designed.
+  -->
+
+  <EraDef>
+    <defName>SticksAndStones</defName>
+    <label>sticks and stones</label>
+    <description>Fire, stone tools, and the first words spoken around a hearth.</description>
+    <order>0</order>
+    <techLevel>Neolithic</techLevel>
+  </EraDef>
+
+  <EraDef>
+    <defName>Agrarian</defName>
+    <label>agrarian</label>
+    <description>Farming, storage, and permanent settlement replace the hunt and the chase.</description>
+    <order>1</order>
+    <techLevel>Neolithic</techLevel>
+  </EraDef>
+
+  <EraDef>
+    <defName>Bronze</defName>
+    <label>bronze age</label>
+    <description>Smelting and alloying open the door to tools and weapons stone cannot match.</description>
+    <order>2</order>
+    <techLevel>Medieval</techLevel>
+  </EraDef>
+
+  <EraDef>
+    <defName>Classical</defName>
+    <label>classical</label>
+    <description>Law, mathematics, and monumental building organize a civilization at scale.</description>
+    <order>3</order>
+    <techLevel>Medieval</techLevel>
+  </EraDef>
+
+  <EraDef>
+    <defName>Medieval</defName>
+    <label>medieval</label>
+    <description>Iron and steel, castles and cathedrals, and the long road toward gunpowder.</description>
+    <order>4</order>
+    <techLevel>Medieval</techLevel>
+  </EraDef>
+
+  <EraDef>
+    <defName>Industrial</defName>
+    <label>industrial</label>
+    <description>Steam, steel mills, and the factory line remake how a civilization builds.</description>
+    <order>5</order>
+    <techLevel>Industrial</techLevel>
+  </EraDef>
+
+  <EraDef>
+    <defName>Information</defName>
+    <label>information</label>
+    <description>Electronics, computing, and orbit turn a civilization's knowledge outward.</description>
+    <order>6</order>
+    <techLevel>Spacer</techLevel>
+  </EraDef>
+
+  <EraDef>
+    <defName>Exotic</defName>
+    <label>exotic</label>
+    <description>Beyond the authored tree: the far end of the ladder, where SimWorld's later procedural extension picks up.</description>
+    <order>7</order>
+    <techLevel>Archotech</techLevel>
+  </EraDef>
+
+</Defs>

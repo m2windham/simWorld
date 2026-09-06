@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Tabs group projects in the research UI (RimWorld: ResearchTabDefs). One tab for the seed tree. -->
+
+  <ResearchTabDef>
+    <defName>Main</defName>
+    <label>main</label>
+    <listOrder>0</listOrder>
+    <generalTitle>Research</generalTitle>
+    <generalDescription>The path of a civilization's knowledge, from the first fire to the stars.</generalDescription>
+  </ResearchTabDef>
+
+</Defs>
