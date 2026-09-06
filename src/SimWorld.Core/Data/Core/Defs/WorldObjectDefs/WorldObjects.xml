@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <WorldObjectDef>
+    <defName>Settlement</defName>
+    <label>settlement</label>
+    <worldObjectClass>SimWorld.World.WorldObject</worldObjectClass>
+  </WorldObjectDef>
+
+</Defs>
