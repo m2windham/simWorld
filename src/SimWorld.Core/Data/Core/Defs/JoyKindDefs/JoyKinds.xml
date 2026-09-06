@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <JoyKindDef>
+    <defName>Social</defName>
+    <label>social</label>
+  </JoyKindDef>
+
+  <JoyKindDef>
+    <defName>Meditative</defName>
+    <label>meditative</label>
+  </JoyKindDef>
+
+  <JoyKindDef>
+    <defName>Gaming_Cerebral</defName>
+    <label>cerebral gaming</label>
+  </JoyKindDef>
+
+  <JoyKindDef>
+    <defName>Gaming_Dexterity</defName>
+    <label>dexterity gaming</label>
+  </JoyKindDef>
+
+  <JoyKindDef>
+    <defName>Gluttonous</defName>
+    <label>gluttonous</label>
+  </JoyKindDef>
+
+  <JoyKindDef>
+    <defName>Chemical</defName>
+    <label>chemical</label>
+  </JoyKindDef>
+
+</Defs>

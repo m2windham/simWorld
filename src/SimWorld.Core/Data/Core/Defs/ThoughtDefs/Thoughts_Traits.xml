@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <ThoughtDef Name="NaturalMoodThoughtBase" Abstract="True">
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_AlwaysActive</workerClass>
+    <requiredTraits>
+      <li>NaturalMood</li>
+    </requiredTraits>
+  </ThoughtDef>
+
+  <ThoughtDef ParentName="NaturalMoodThoughtBase">
+    <defName>Sanguine</defName>
+    <requiredTraitsDegree>2</requiredTraitsDegree>
+    <stages>
+      <li>
+        <label>sanguine</label>
+        <description>Life is good.</description>
+        <baseMoodEffect>12</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef ParentName="NaturalMoodThoughtBase">
+    <defName>Optimist</defName>
+    <requiredTraitsDegree>1</requiredTraitsDegree>
+    <stages>
+      <li>
+        <label>optimist</label>
+        <description>Things will work out.</description>
+        <baseMoodEffect>6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef ParentName="NaturalMoodThoughtBase">
+    <defName>Pessimist</defName>
+    <requiredTraitsDegree>-1</requiredTraitsDegree>
+    <stages>
+      <li>
+        <label>pessimist</label>
+        <description>Something will go wrong.</description>
+        <baseMoodEffect>-6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef ParentName="NaturalMoodThoughtBase">
+    <defName>Depressive</defName>
+    <requiredTraitsDegree>-2</requiredTraitsDegree>
+    <stages>
+      <li>
+        <label>depressive</label>
+        <description>Nothing matters.</description>
+        <baseMoodEffect>-12</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

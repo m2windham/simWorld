@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Minor -->
+
+  <MentalBreakDef>
+    <defName>Wander_Sad</defName>
+    <label>sad wander</label>
+    <mentalState>Wander_Sad</mentalState>
+    <intensity>Minor</intensity>
+    <baseCommonality>5</baseCommonality>
+  </MentalBreakDef>
+
+  <MentalBreakDef>
+    <defName>Wander_OwnRoom</defName>
+    <label>hide in room</label>
+    <mentalState>Wander_OwnRoom</mentalState>
+    <intensity>Minor</intensity>
+    <baseCommonality>4</baseCommonality>
+  </MentalBreakDef>
+
+  <MentalBreakDef>
+    <defName>Binging_Food</defName>
+    <label>food binge</label>
+    <mentalState>Binging_Food</mentalState>
+    <intensity>Minor</intensity>
+    <baseCommonality>3</baseCommonality>
+  </MentalBreakDef>
+
+  <MentalBreakDef>
+    <defName>InsultingSpree</defName>
+    <label>insulting spree</label>
+    <mentalState>InsultingSpree</mentalState>
+    <intensity>Minor</intensity>
+    <baseCommonality>3</baseCommonality>
+  </MentalBreakDef>
+
+  <!-- Major -->
+
+  <MentalBreakDef>
+    <defName>Tantrum</defName>
+    <label>tantrum</label>
+    <mentalState>Tantrum</mentalState>
+    <intensity>Major</intensity>
+    <baseCommonality>6</baseCommonality>
+  </MentalBreakDef>
+
+  <MentalBreakDef>
+    <defName>SadisticRage</defName>
+    <label>sadistic rage</label>
+    <mentalState>SadisticRage</mentalState>
+    <intensity>Major</intensity>
+    <baseCommonality>1</baseCommonality>
+    <requiredTrait>Bloodlust</requiredTrait>
+  </MentalBreakDef>
+
+  <MentalBreakDef>
+    <defName>FireStartingSpree</defName>
+    <label>fire starting spree</label>
+    <mentalState>FireStartingSpree</mentalState>
+    <intensity>Major</intensity>
+    <baseCommonality>10</baseCommonality>
+    <requiredTrait>Pyromaniac</requiredTrait>
+  </MentalBreakDef>
+
+  <!-- Extreme -->
+
+  <MentalBreakDef>
+    <defName>Berserk</defName>
+    <label>berserk</label>
+    <mentalState>Berserk</mentalState>
+    <intensity>Extreme</intensity>
+    <baseCommonality>2</baseCommonality>
+  </MentalBreakDef>
+
+  <MentalBreakDef>
+    <defName>MurderousRage</defName>
+    <label>murderous rage</label>
+    <mentalState>MurderousRage</mentalState>
+    <intensity>Extreme</intensity>
+    <baseCommonality>1</baseCommonality>
+  </MentalBreakDef>
+
+  <MentalBreakDef>
+    <defName>Catatonic</defName>
+    <label>catatonic breakdown</label>
+    <mentalState>Catatonic</mentalState>
+    <intensity>Extreme</intensity>
+    <baseCommonality>2</baseCommonality>
+  </MentalBreakDef>
+
+  <MentalBreakDef>
+    <defName>GiveUpExit</defName>
+    <label>give up and leave</label>
+    <mentalState>GiveUpExit</mentalState>
+    <intensity>Extreme</intensity>
+    <baseCommonality>1</baseCommonality>
+  </MentalBreakDef>
+
+</Defs>

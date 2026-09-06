@@ -131,7 +131,8 @@ namespace SimWorld.Tests.Defs
         }
     }
 
-    /// <summary>Only this class touches <see cref="DefDatabase.Global"/>; xUnit keeps a class's tests sequential.</summary>
+    /// <summary>Swaps <see cref="DefDatabase.Global"/>, so it shares the collection that serialises Global users.</summary>
+    [Collection("GlobalDefs")]
     public class DefDatabaseFacadeTests
     {
         public DefDatabaseFacadeTests()

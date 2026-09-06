@@ -34,6 +34,9 @@ namespace SimWorld.Defs
         /// <summary>Which tick list instances of this Def join; see <see cref="Sim.TickManager"/>.</summary>
         public Sim.TickerType tickerType = Sim.TickerType.Never;
 
+        /// <summary>Species properties; present on pawn Defs only.</summary>
+        public Pawns.RaceProperties? race;
+
         /// <summary>Base stat values, keyed by StatDef. See <see cref="StatModifier"/> for the XML idiom.</summary>
         public List<StatModifier>? statBases;
 

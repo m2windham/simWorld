@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <TraitDef>
+    <defName>Pyromaniac</defName>
+    <label>pyromaniac</label>
+    <commonality>0.6</commonality>
+    <degreeDatas>
+      <li>
+        <label>pyromaniac</label>
+        <description>Loves fire and is prone to starting it.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Bloodlust</defName>
+    <label>bloodlust</label>
+    <commonality>0.6</commonality>
+    <degreeDatas>
+      <li>
+        <label>bloodlust</label>
+        <description>Enjoys violence and is not disturbed by death.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Psychopath</defName>
+    <label>psychopath</label>
+    <commonality>0.6</commonality>
+    <conflictingTraits>
+      <li>Kind</li>
+    </conflictingTraits>
+    <degreeDatas>
+      <li>
+        <label>psychopath</label>
+        <description>Feels nothing for others.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Kind</defName>
+    <label>kind</label>
+    <commonality>1</commonality>
+    <degreeDatas>
+      <li>
+        <label>kind</label>
+        <description>Warm and considerate to others.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Ascetic</defName>
+    <label>ascetic</label>
+    <commonality>0.8</commonality>
+    <degreeDatas>
+      <li>
+        <label>ascetic</label>
+        <description>Prefers a spartan life; fine food and rich surroundings hold no appeal.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+</Defs>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <ThoughtDef>
+    <defName>AteWithoutTable</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>ate without table</label>
+        <description>I had to eat sitting on the ground.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>AteRawFood</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>ate raw food</label>
+        <description>Raw food is disgusting.</description>
+        <baseMoodEffect>-7</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>AteFineMeal</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <nullifyingTraits>
+      <li>Ascetic</li>
+    </nullifyingTraits>
+    <stages>
+      <li>
+        <label>ate fine meal</label>
+        <description>That meal was really good.</description>
+        <baseMoodEffect>5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>SleptOnGround</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>slept on ground</label>
+        <description>I slept on the cold ground.</description>
+        <baseMoodEffect>-4</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>SleptOutside</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>slept outside</label>
+        <description>I slept out in the open.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>Catharsis</defName>
+    <durationDays>2.5</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>catharsis</label>
+        <description>Letting it out felt good. I feel much better now.</description>
+        <baseMoodEffect>40</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>Insulted</defName>
+    <durationDays>0.5</durationDays>
+    <stackLimit>5</stackLimit>
+    <stackedEffectMultiplier>0.75</stackedEffectMultiplier>
+    <stackLimitForSameOtherPawn>3</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>insulted</label>
+        <description>Someone insulted me.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>WitnessedDeathAlly</defName>
+    <durationDays>4</durationDays>
+    <stackLimit>5</stackLimit>
+    <stackedEffectMultiplier>0.5</stackedEffectMultiplier>
+    <nullifyingTraits>
+      <li>Psychopath</li>
+      <li>Bloodlust</li>
+    </nullifyingTraits>
+    <stages>
+      <li>
+        <label>witnessed ally's death</label>
+        <description>I saw someone I cared about die.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

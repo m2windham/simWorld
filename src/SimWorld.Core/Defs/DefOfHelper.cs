@@ -42,8 +42,9 @@ namespace SimWorld.Defs
                 Def? def = database.GetNamed(field.FieldType, defName);
                 if (def == null)
                 {
+                    // Report and leave the field as it is: a partial content set (tests, tools) must not
+                    // unbind what a full load already wired.
                     errors.Add(new DefLoadError("DefOf: no " + field.FieldType.Name + " named '" + defName + "' for " + defOfType.Name + "." + field.Name + "."));
-                    field.SetValue(null, null);
                     continue;
                 }
                 field.SetValue(null, def);
