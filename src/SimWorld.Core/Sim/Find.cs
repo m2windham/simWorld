@@ -1,4 +1,5 @@
 using System;
+using SimWorld.Director;
 
 namespace SimWorld.Sim
 {
@@ -10,6 +11,7 @@ namespace SimWorld.Sim
     public static class Find
     {
         [ThreadStatic] private static TickManager? tickManager;
+        [ThreadStatic] private static Storyteller? storyteller;
 
         public static TickManager TickManager
         {
@@ -17,10 +19,18 @@ namespace SimWorld.Sim
             set => tickManager = value ?? throw new ArgumentNullException(nameof(value));
         }
 
+        /// <summary>The active threat director. Assign explicitly with a real StorytellerDef/DifficultyDef when constructing a game.</summary>
+        public static Storyteller Storyteller
+        {
+            get => storyteller ??= new Storyteller();
+            set => storyteller = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
         /// <summary>Drops the thread's services so the next access starts fresh (tests).</summary>
         public static void Reset()
         {
             tickManager = null;
+            storyteller = null;
         }
     }
 }

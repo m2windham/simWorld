@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Difficulty presets (RimWorld: DifficultyDef). threatScale values follow RimWorld's built-in presets;
+    the yield/mood/disease factors are documented approximations of RimWorld's tuning rather than exact
+    ports, since this port only carries a subset of RimWorld's real difficulty knobs (see DifficultyDef).
+  -->
+
+  <DifficultyDef>
+    <defName>Peaceful</defName>
+    <label>peaceful</label>
+    <description>No real threats. For building and storytelling without danger.</description>
+    <threatScale>0</threatScale>
+    <allowBigThreats>false</allowBigThreats>
+    <allowIntroThreats>false</allowIntroThreats>
+    <colonistMoodOffset>6</colonistMoodOffset>
+    <diseaseIntervalFactor>2</diseaseIntervalFactor>
+  </DifficultyDef>
+
+  <DifficultyDef>
+    <defName>Easy</defName>
+    <label>easy</label>
+    <description>Gentler threats and better yields for a relaxed game.</description>
+    <threatScale>0.65</threatScale>
+    <colonistMoodOffset>6</colonistMoodOffset>
+    <diseaseIntervalFactor>1.5</diseaseIntervalFactor>
+  </DifficultyDef>
+
+  <DifficultyDef>
+    <defName>Medium</defName>
+    <label>medium</label>
+    <description>The default, balanced experience.</description>
+    <threatScale>1.0</threatScale>
+  </DifficultyDef>
+
+  <DifficultyDef>
+    <defName>Rough</defName>
+    <label>rough</label>
+    <description>Harder threats and worse yields for an experienced player.</description>
+    <threatScale>1.5</threatScale>
+    <colonistMoodOffset>-6</colonistMoodOffset>
+    <cropYieldFactor>0.85</cropYieldFactor>
+    <mineYieldFactor>0.85</mineYieldFactor>
+    <diseaseIntervalFactor>0.8</diseaseIntervalFactor>
+  </DifficultyDef>
+
+  <DifficultyDef>
+    <defName>Extreme</defName>
+    <label>extreme</label>
+    <description>Severe threats and poor yields. Only for the very experienced.</description>
+    <threatScale>2.2</threatScale>
+    <colonistMoodOffset>-12</colonistMoodOffset>
+    <cropYieldFactor>0.7</cropYieldFactor>
+    <mineYieldFactor>0.7</mineYieldFactor>
+    <diseaseIntervalFactor>0.6</diseaseIntervalFactor>
+    <questRewardValueFactor>1.15</questRewardValueFactor>
+  </DifficultyDef>
+
+</Defs>

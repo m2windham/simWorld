@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Human diseases; IncidentWorker_Disease picks a random candidate pawn and gives it diseaseIncident. -->
+
+  <IncidentDef>
+    <defName>Disease_Flu</defName>
+    <label>flu outbreak</label>
+    <description>A pawn catches the flu.</description>
+    <category>DiseaseHuman</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_Disease</workerClass>
+    <diseaseIncident>Flu</diseaseIncident>
+    <baseChance>1.5</baseChance>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>Disease_Plague</defName>
+    <label>plague outbreak</label>
+    <description>A pawn catches the plague.</description>
+    <category>DiseaseHuman</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_Disease</workerClass>
+    <diseaseIncident>Plague</diseaseIncident>
+    <baseChance>1.0</baseChance>
+  </IncidentDef>
+
+</Defs>
