@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Era-weighted site-scoring advantages (spec §5b.2), one SiteWeightDef per EraDef on the ladder already
+    authored in Data/Core/Defs/EraDefs/Eras.xml. RimWorld has nothing to source these numbers from; every
+    weight here is this port's own judgement call, shaped to read the way the spec itself describes each
+    age ("a neolithic founding reads water, game and flint... an industrial one reads coal and navigable
+    water") rather than tuned against any real data. SiteScorer.NecessityMultiplier (fresh water, food,
+    survivable climate) is NOT era-weighted — only these advantage weights are.
+  -->
+
+  <SiteWeightDef>
+    <defName>SiteWeights_SticksAndStones</defName>
+    <era>SticksAndStones</era>
+    <depositWeights>
+      <li><deposit>FreshWater</deposit><weight>3.0</weight></li>
+      <li><deposit>Game</deposit><weight>3.0</weight></li>
+      <li><deposit>Flint</deposit><weight>2.0</weight></li>
+      <li><deposit>Timber</deposit><weight>1.5</weight></li>
+      <li><deposit>ArableSoil</deposit><weight>0.5</weight></li>
+      <li><deposit>Clay</deposit><weight>0.3</weight></li>
+      <li><deposit>Stone</deposit><weight>0.3</weight></li>
+      <li><deposit>Ford</deposit><weight>0.3</weight></li>
+      <li><deposit>Salt</deposit><weight>0.5</weight></li>
+      <li><deposit>DefensibleGround</deposit><weight>0.2</weight></li>
+      <li><deposit>Ore</deposit><weight>0.0</weight></li>
+    </depositWeights>
+    <tradePositionWeight>0.1</tradePositionWeight>
+  </SiteWeightDef>
+
+  <SiteWeightDef>
+    <defName>SiteWeights_Agrarian</defName>
+    <era>Agrarian</era>
+    <depositWeights>
+      <li><deposit>ArableSoil</deposit><weight>3.0</weight></li>
+      <li><deposit>FreshWater</deposit><weight>2.5</weight></li>
+      <li><deposit>Timber</deposit><weight>1.5</weight></li>
+      <li><deposit>Game</deposit><weight>1.5</weight></li>
+      <li><deposit>Clay</deposit><weight>1.0</weight></li>
+      <li><deposit>Flint</deposit><weight>1.0</weight></li>
+      <li><deposit>Salt</deposit><weight>0.7</weight></li>
+      <li><deposit>Ford</deposit><weight>0.5</weight></li>
+      <li><deposit>Stone</deposit><weight>0.5</weight></li>
+      <li><deposit>DefensibleGround</deposit><weight>0.5</weight></li>
+      <li><deposit>Ore</deposit><weight>0.2</weight></li>
+    </depositWeights>
+    <tradePositionWeight>0.3</tradePositionWeight>
+  </SiteWeightDef>
+
+  <SiteWeightDef>
+    <defName>SiteWeights_Bronze</defName>
+    <era>Bronze</era>
+    <depositWeights>
+      <li><deposit>Ore</deposit><weight>2.5</weight></li>
+      <li><deposit>ArableSoil</deposit><weight>2.0</weight></li>
+      <li><deposit>FreshWater</deposit><weight>2.0</weight></li>
+      <li><deposit>Stone</deposit><weight>1.5</weight></li>
+      <li><deposit>DefensibleGround</deposit><weight>1.2</weight></li>
+      <li><deposit>Ford</deposit><weight>1.0</weight></li>
+      <li><deposit>Clay</deposit><weight>1.0</weight></li>
+      <li><deposit>Salt</deposit><weight>1.0</weight></li>
+      <li><deposit>Timber</deposit><weight>1.0</weight></li>
+      <li><deposit>Game</deposit><weight>0.7</weight></li>
+      <li><deposit>Flint</deposit><weight>0.3</weight></li>
+    </depositWeights>
+    <tradePositionWeight>0.8</tradePositionWeight>
+  </SiteWeightDef>
+
+  <SiteWeightDef>
+    <defName>SiteWeights_Classical</defName>
+    <era>Classical</era>
+    <depositWeights>
+      <li><deposit>ArableSoil</deposit><weight>2.0</weight></li>
+      <li><deposit>DefensibleGround</deposit><weight>1.5</weight></li>
+      <li><deposit>Ore</deposit><weight>1.5</weight></li>
+      <li><deposit>Stone</deposit><weight>1.5</weight></li>
+      <li><deposit>FreshWater</deposit><weight>1.5</weight></li>
+      <li><deposit>Ford</deposit><weight>1.2</weight></li>
+      <li><deposit>Salt</deposit><weight>1.0</weight></li>
+      <li><deposit>Clay</deposit><weight>0.6</weight></li>
+      <li><deposit>Timber</deposit><weight>0.8</weight></li>
+      <li><deposit>Game</deposit><weight>0.4</weight></li>
+      <li><deposit>Flint</deposit><weight>0.2</weight></li>
+    </depositWeights>
+    <tradePositionWeight>1.5</tradePositionWeight>
+  </SiteWeightDef>
+
+  <SiteWeightDef>
+    <defName>SiteWeights_Medieval</defName>
+    <era>Medieval</era>
+    <depositWeights>
+      <li><deposit>DefensibleGround</deposit><weight>2.5</weight></li>
+      <li><deposit>Ore</deposit><weight>1.8</weight></li>
+      <li><deposit>Stone</deposit><weight>1.8</weight></li>
+      <li><deposit>ArableSoil</deposit><weight>1.8</weight></li>
+      <li><deposit>Ford</deposit><weight>1.5</weight></li>
+      <li><deposit>FreshWater</deposit><weight>1.3</weight></li>
+      <li><deposit>Salt</deposit><weight>1.0</weight></li>
+      <li><deposit>Timber</deposit><weight>0.7</weight></li>
+      <li><deposit>Clay</deposit><weight>0.5</weight></li>
+      <li><deposit>Game</deposit><weight>0.3</weight></li>
+      <li><deposit>Flint</deposit><weight>0.2</weight></li>
+    </depositWeights>
+    <tradePositionWeight>1.2</tradePositionWeight>
+  </SiteWeightDef>
+
+  <SiteWeightDef>
+    <defName>SiteWeights_Industrial</defName>
+    <era>Industrial</era>
+    <depositWeights>
+      <li><deposit>Ore</deposit><weight>3.0</weight></li>
+      <li><deposit>FreshWater</deposit><weight>1.5</weight></li>
+      <li><deposit>ArableSoil</deposit><weight>1.2</weight></li>
+      <li><deposit>Stone</deposit><weight>1.0</weight></li>
+      <li><deposit>Salt</deposit><weight>0.8</weight></li>
+      <li><deposit>Ford</deposit><weight>0.5</weight></li>
+      <li><deposit>Timber</deposit><weight>0.5</weight></li>
+      <li><deposit>DefensibleGround</deposit><weight>0.3</weight></li>
+      <li><deposit>Clay</deposit><weight>0.2</weight></li>
+      <li><deposit>Game</deposit><weight>0.1</weight></li>
+      <li><deposit>Flint</deposit><weight>0.05</weight></li>
+    </depositWeights>
+    <tradePositionWeight>3.0</tradePositionWeight>
+  </SiteWeightDef>
+
+  <SiteWeightDef>
+    <defName>SiteWeights_Information</defName>
+    <era>Information</era>
+    <depositWeights>
+      <li><deposit>Ore</deposit><weight>1.5</weight></li>
+      <li><deposit>FreshWater</deposit><weight>1.0</weight></li>
+      <li><deposit>ArableSoil</deposit><weight>1.0</weight></li>
+      <li><deposit>Stone</deposit><weight>0.6</weight></li>
+      <li><deposit>Salt</deposit><weight>0.5</weight></li>
+      <li><deposit>Ford</deposit><weight>0.3</weight></li>
+      <li><deposit>Timber</deposit><weight>0.2</weight></li>
+      <li><deposit>DefensibleGround</deposit><weight>0.1</weight></li>
+      <li><deposit>Clay</deposit><weight>0.1</weight></li>
+      <li><deposit>Game</deposit><weight>0.05</weight></li>
+      <li><deposit>Flint</deposit><weight>0.02</weight></li>
+    </depositWeights>
+    <tradePositionWeight>3.5</tradePositionWeight>
+  </SiteWeightDef>
+
+  <SiteWeightDef>
+    <defName>SiteWeights_Exotic</defName>
+    <era>Exotic</era>
+    <depositWeights>
+      <li><deposit>Ore</deposit><weight>1.2</weight></li>
+      <li><deposit>FreshWater</deposit><weight>1.0</weight></li>
+      <li><deposit>ArableSoil</deposit><weight>0.8</weight></li>
+      <li><deposit>Stone</deposit><weight>0.5</weight></li>
+      <li><deposit>Salt</deposit><weight>0.4</weight></li>
+      <li><deposit>Ford</deposit><weight>0.2</weight></li>
+      <li><deposit>Timber</deposit><weight>0.1</weight></li>
+      <li><deposit>DefensibleGround</deposit><weight>0.1</weight></li>
+      <li><deposit>Clay</deposit><weight>0.05</weight></li>
+      <li><deposit>Game</deposit><weight>0.02</weight></li>
+      <li><deposit>Flint</deposit><weight>0.01</weight></li>
+    </depositWeights>
+    <tradePositionWeight>3.5</tradePositionWeight>
+  </SiteWeightDef>
+
+</Defs>

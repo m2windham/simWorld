@@ -27,6 +27,14 @@ namespace SimWorld.World
         /// <summary>The icosphere subdivision level actually used; saved verbatim so a reload reproduces the exact same grid regardless of any later change to the coverage→subdivision mapping.</summary>
         public int subdivisionLevel = 6;
 
+        /// <summary>
+        /// Spec §5b.4: when true, <c>Gen.WorldGenStep_Factions</c> (via <c>Factions.FactionGenerator</c>)
+        /// creates only the player's faction and places no rival settlements — "the truer sticks-and-stones
+        /// arc" where rival civilizations emerge from play instead of existing at time zero. Defaults to
+        /// false so every existing multi-faction world keeps its current meaning.
+        /// </summary>
+        public bool soloStart;
+
         public void ExposeData()
         {
             Scribe_Values.Look(ref name, "name", "World");
@@ -37,6 +45,7 @@ namespace SimWorld.World
             Scribe_Values.Look(ref overallTemperature, "overallTemperature", OverallTemperature.Normal);
             Scribe_Values.Look(ref overallPopulation, "overallPopulation", OverallPopulation.Normal);
             Scribe_Values.Look(ref subdivisionLevel, "subdivisionLevel", 6);
+            Scribe_Values.Look(ref soloStart, "soloStart", false);
         }
     }
 }

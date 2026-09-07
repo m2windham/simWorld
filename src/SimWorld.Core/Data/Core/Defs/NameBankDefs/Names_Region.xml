@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    World.RegionNameMaker draws one prefix and one suffix and concatenates them into a single place name
+    (e.g. "Ashmere", "Stonevale"). gender is irrelevant for these two slots and left at its default (None).
+  -->
+
+  <NameBankDef>
+    <defName>RegionNamePrefixes</defName>
+    <slot>RegionPrefix</slot>
+    <names>
+      <li>Ash</li>
+      <li>Stone</li>
+      <li>Green</li>
+      <li>Red</li>
+      <li>Wolf</li>
+      <li>River</li>
+      <li>Thorn</li>
+      <li>Storm</li>
+      <li>Oak</li>
+      <li>Fen</li>
+      <li>Black</li>
+      <li>Silver</li>
+      <li>Iron</li>
+      <li>Copper</li>
+      <li>Salt</li>
+      <li>Elm</li>
+      <li>Bramble</li>
+      <li>Hazel</li>
+      <li>Wren</li>
+      <li>Marsh</li>
+      <li>Fox</li>
+      <li>Hart</li>
+      <li>Raven</li>
+      <li>Wind</li>
+      <li>Brook</li>
+      <li>Long</li>
+      <li>White</li>
+      <li>Grey</li>
+      <li>Deer</li>
+      <li>Elder</li>
+    </names>
+  </NameBankDef>
+
+  <NameBankDef>
+    <defName>RegionNameSuffixes</defName>
+    <slot>RegionSuffix</slot>
+    <names>
+      <li>mere</li>
+      <li>vale</li>
+      <li>wood</li>
+      <li>ford</li>
+      <li>moor</li>
+      <li>holt</li>
+      <li>brook</li>
+      <li>dale</li>
+      <li>ridge</li>
+      <li>fell</li>
+      <li>marsh</li>
+      <li>haven</li>
+      <li>stead</li>
+      <li>wick</li>
+      <li>burn</li>
+      <li>glen</li>
+      <li>shire</li>
+      <li>moore</li>
+      <li>land</li>
+      <li>reach</li>
+      <li>hollow</li>
+      <li>crest</li>
+      <li>field</li>
+      <li>gate</li>
+      <li>watch</li>
+      <li>bury</li>
+      <li>combe</li>
+      <li>fold</li>
+      <li>span</li>
+      <li>rest</li>
+    </names>
+  </NameBankDef>
+
+</Defs>

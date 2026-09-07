@@ -36,6 +36,9 @@ namespace SimWorld.Factions
             foreach (FactionDef def in DefDatabase<FactionDef>.AllDefsListForReading)
             {
                 if (def.hidden) continue;
+                // Solo start (spec §5b.4): only the player's own faction exists at world generation; rival
+                // civilizations emerge from play instead of being placed at time zero.
+                if (world.info.soloStart && !def.isPlayer) continue;
 
                 int factionCount = WorldGenStep_Factions.FactionCountFor(def, popMultiplier);
                 for (int f = 0; f < factionCount; f++)
