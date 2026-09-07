@@ -8,6 +8,7 @@
     <label>cut</label>
     <hediff>Cut</hediff>
     <hediffSolid>Crack</hediffSolid>
+    <armorCategory>Sharp</armorCategory>
     <deathMessage>{0} has been cut to death.</deathMessage>
   </DamageDef>
 
@@ -16,6 +17,7 @@
     <label>stab</label>
     <hediff>Stab</hediff>
     <hediffSolid>Crack</hediffSolid>
+    <armorCategory>Sharp</armorCategory>
     <deathMessage>{0} has been stabbed to death.</deathMessage>
   </DamageDef>
 
@@ -25,6 +27,7 @@
     <hediff>Crush</hediff>
     <hediffSkin>Bruise</hediffSkin>
     <hediffSolid>Crack</hediffSolid>
+    <armorCategory>Blunt</armorCategory>
     <deathMessage>{0} has been beaten to death.</deathMessage>
   </DamageDef>
 
@@ -34,6 +37,7 @@
     <hediff>Gunshot</hediff>
     <hediffSolid>Crack</hediffSolid>
     <isRanged>true</isRanged>
+    <armorCategory>Sharp</armorCategory>
     <deathMessage>{0} has been shot to death.</deathMessage>
   </DamageDef>
 
@@ -42,6 +46,7 @@
     <label>bite</label>
     <hediff>Bite</hediff>
     <hediffSolid>Crack</hediffSolid>
+    <armorCategory>Sharp</armorCategory>
     <deathMessage>{0} has been bitten to death.</deathMessage>
   </DamageDef>
 
@@ -51,6 +56,7 @@
     <hediff>Burn</hediff>
     <makesBlood>false</makesBlood>
     <hasForcefulImpact>false</hasForcefulImpact>
+    <armorCategory>Heat</armorCategory>
     <deathMessage>{0} has burned to death.</deathMessage>
   </DamageDef>
 

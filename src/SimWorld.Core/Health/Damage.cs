@@ -1,11 +1,27 @@
 using System;
 using System.Collections.Generic;
+using SimWorld.Combat;
 using SimWorld.Defs;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 
 namespace SimWorld.Health
 {
+    /// <summary>
+    /// Armor stat family a DamageDef's hits roll against (RimWorld: <c>Verse.DamageArmorCategoryDef</c>):
+    /// Sharp, Blunt or Heat, each backed by its own <c>ArmorRating_*</c> StatDef.
+    /// </summary>
+    public class DamageArmorCategoryDef : Def
+    {
+        public StatDef armorRatingStat = null!;
+
+        public override IEnumerable<string> ConfigErrors()
+        {
+            foreach (string error in base.ConfigErrors()) yield return error;
+            if (armorRatingStat == null) yield return "armor category has no armorRatingStat.";
+        }
+    }
+
     /// <summary>A kind of harm (RimWorld: <c>Verse.DamageDef</c>); maps to the injury hediff it leaves.</summary>
     public class DamageDef : Def
     {
@@ -21,6 +37,15 @@ namespace SimWorld.Health
         public bool externalViolence = true;
         public bool consideredHelpful;
         public string? deathMessage;
+
+        /// <summary>Armor stat this damage rolls against, via <see cref="ArmorUtility"/>; null skips armor entirely.</summary>
+        public DamageArmorCategoryDef? armorCategory;
+
+        /// <summary>Armor penetration used when the hit doesn't supply its own (RimWorld default -1: "use the weapon's").</summary>
+        public float defaultArmorPenetration = -1f;
+
+        /// <summary>Explosions punch through every apparel layer down to the skin; data only until apparel exists.</summary>
+        public bool harmAllLayersUntilOutside;
 
         private DamageWorker? workerInt;
 
@@ -76,6 +101,9 @@ namespace SimWorld.Health
         public BodyPartRecord? lastHitPart;
         public bool wounded;
         public bool deflected;
+
+        /// <summary>Armor halved a Sharp hit and converted it to Blunt (RimWorld: the "diminished" armor outcome).</summary>
+        public bool diminished;
     }
 
     /// <summary>Applies a DamageDef to a target (RimWorld: <c>Verse.DamageWorker</c>).</summary>
@@ -111,23 +139,36 @@ namespace SimWorld.Health
             if (part == null) return;
             if (pawn.health.hediffSet.PartIsMissing(part)) return;
 
-            HediffDef hediffDef = ChooseHediffDef(part);
+            // Armor may reduce the amount, deflect the hit outright, or turn a Sharp hit into a Blunt one;
+            // with no armor sources at all this is a no-op and behaves exactly as before armor existed.
+            DamageDef damageDef = def;
+            float armorPenetration = dinfo.ArmorPenetration > 0f ? dinfo.ArmorPenetration : Math.Max(0f, def.defaultArmorPenetration);
+            float amount = ArmorUtility.GetPostArmorDamage(pawn, dinfo.Amount, armorPenetration, part, ref damageDef, out bool deflected, out bool diminished);
+            if (deflected)
+            {
+                result.deflected = true;
+                return;
+            }
+            if (amount <= 0f) return;
+
+            HediffDef hediffDef = ChooseHediffDef(damageDef, part);
             var injury = (Hediff_Injury)HediffMaker.MakeHediff(hediffDef, pawn, part);
-            injury.Severity = dinfo.Amount;
+            injury.Severity = amount;
             injury.TryGetComp<HediffComp_GetsPermanent>()?.PreFinalizeInjury();
 
             pawn.health.AddHediff(injury, part, dinfo);
             result.hediffs.Add(injury);
-            result.totalDamageDealt += dinfo.Amount;
+            result.totalDamageDealt += amount;
             result.lastHitPart = part;
             result.wounded = true;
+            result.diminished = diminished;
         }
 
-        protected virtual HediffDef ChooseHediffDef(BodyPartRecord part)
+        protected virtual HediffDef ChooseHediffDef(DamageDef damageDef, BodyPartRecord part)
         {
-            if (part.def.solid && def.hediffSolid != null) return def.hediffSolid;
-            if (part.def.skinCovered && part.depth == BodyPartDepth.Outside && def.hediffSkin != null) return def.hediffSkin;
-            return def.hediff!;
+            if (part.def.solid && damageDef.hediffSolid != null) return damageDef.hediffSolid;
+            if (part.def.skinCovered && part.depth == BodyPartDepth.Outside && damageDef.hediffSkin != null) return damageDef.hediffSkin;
+            return damageDef.hediff!;
         }
     }
 }
