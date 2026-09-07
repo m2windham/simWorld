@@ -96,6 +96,41 @@
       "state": "decided",
       "title": "RimWorld's static Rand and Scribe stay static, but per thread",
       "note": "Ported call sites (Rand.Value, Scribe_Values.Look) keep their shape; state is [ThreadStatic] so tests and worker threads never share a sequence or a save session. Explicit RandomStream instances are the preferred form for new systems."
+    },
+    {
+      "id": "timescale",
+      "date": "2026-09-07",
+      "state": "decided",
+      "title": "Two clocks; time never causes progression",
+      "note": "The ported 60-tick clock stays authoritative. An abstracted clock above it exists only to skip, and may only do what the real clock would have done — every process it advances needs a sampled equivalent that agrees with ticking. A century of abstract time with no people, food or research advances nothing. Spec section 11.1."
+    },
+    {
+      "id": "attention",
+      "date": "2026-09-07",
+      "state": "decided",
+      "title": "Civilization-wide sight, settlement-deep touch",
+      "note": "Attention follows RimWorld's world-map/colony-map split, which World/ and Map/ already mirror. Global sight and indirect verbs at civilization scope; any citizen openable at settlement scope. The missing seam is the settlement interior. Spec section 11.2."
+    },
+    {
+      "id": "lod",
+      "date": "2026-09-07",
+      "state": "decided",
+      "title": "Citizens tier by significance, and the tier is the historical record",
+      "note": "Full / Interval / Statistical, promoted by attention, role, chronicle mention or relation — never by distance or elapsed time; identity survives demotion. Fidelity is written at the tier lived and never upgraded, so the deep past is thin because it was thin. One mechanism pays for both performance and the fiction. Spec section 11.3-11.4."
+    },
+    {
+      "id": "gamestart",
+      "date": "2026-09-07",
+      "state": "decided",
+      "title": "A game opens region first, then site, Manor Lords style",
+      "note": "The world map is browsed by region; inside the chosen region, markers show water, soil, timber, stone, clay, flint, ore, salt, game, fords and high ground, and the player places the settlement centre. Deposits are derived from existing terrain rather than sprinkled. Founding band is 20-40 people in several households. Spec section 5b."
+    },
+    {
+      "id": "solostart",
+      "date": "2026-09-07",
+      "state": "decided",
+      "title": "One civilization at world generation; rivals emerge later",
+      "note": "World gen places the player's faction alone. Other civilizations emerge from the simulation over time rather than existing at time zero. The cost — factions, trade and diplomacy idle through the opening — is accepted for the truer sticks-and-stones arc. Spec section 5b.4."
     }
   ],
   "systems": [
@@ -1058,6 +1093,63 @@
         {
           "id": "demography.migration",
           "label": "Migration and household founding by immigration — FoundHousehold already accepts a single founder, but nothing generates arrivals yet",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "settlements",
+      "n": 20,
+      "rimworld": "Settlements & Game Start",
+      "translation": "The opening of the game and what a settlement is once it has an interior. Region-then-site founding, deposits derived from terrain, era-weighted site scoring, and a settlement that is an entity rather than a def plus a tile.",
+      "translationState": "decided",
+      "module": "src/SimWorld.Core/World — planned",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        {
+          "id": "settlements.regions",
+          "label": "Region partition over the icosphere: contiguous tile groups cut on coastline, ridges and major rivers, each with a name, dominant biome, climate and summarised resource profile",
+          "done": false
+        },
+        {
+          "id": "settlements.deposits",
+          "label": "Resource and landmark deposits derived from existing terrain — clay in floodplains, flint in chalk lowland, ore in hills, salt at coasts and springs, deep soil in valleys, timber by biome, fords and defensible high ground from elevation",
+          "done": false
+        },
+        {
+          "id": "settlements.siting",
+          "label": "Site score: hard necessities (fresh water, land that feeds the band, survivable climate) times era-weighted advantages (defensibility, transport, materials, trade position); advisory for the player, decisive for emergent foundings",
+          "done": false
+        },
+        {
+          "id": "settlements.trade-position",
+          "label": "Trade position scored by inverting the road pather — how many cheap routes would pass through a tile",
+          "done": false
+        },
+        {
+          "id": "settlements.founding",
+          "label": "Founding band of 20-40 in several households, all Full-tier, with a founding chronicle entry",
+          "done": false
+        },
+        {
+          "id": "settlements.entity",
+          "label": "Settlement as an entity: population by tier, stores, works, age, name and growth — today it is a def, a tile and a faction",
+          "done": false
+        },
+        {
+          "id": "settlements.solo",
+          "label": "Solo-start world generation: the player's faction alone at time zero",
+          "done": false
+        },
+        {
+          "id": "settlements.interior",
+          "label": "Settlement interior map generated on entry at settlement scope and persisted after — the seam between the ported World and Map layers",
+          "done": false
+        },
+        {
+          "id": "settlements.emergence",
+          "label": "Rival civilizations emerging from the simulation over time rather than being placed at world gen",
           "done": false
         }
       ]

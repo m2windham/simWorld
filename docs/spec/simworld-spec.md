@@ -199,6 +199,95 @@ flowchart TD
   Map --> Listers[ListerThings, MapPawns]
 ```
 
+## 5b. Regions, Sites & Settlement Founding — _planned_
+
+**Design, not built.** A game opens with a two-stage choice modelled on Manor
+Lords and Nova Roma: pick a region on the world map, then place the settlement
+inside that region against markers showing what is actually there.
+
+### 5b.1 Stage one — the world map, by region
+
+A raw icosphere tile is a lottery ticket, not a place, so the first choice is
+made at a coarser grain. A **region** is a contiguous group of tiles with an
+identity: a name, a dominant biome, a climate, and a summarised resource
+profile.
+
+- The partition floods out from seed tiles and is cut on natural boundaries —
+  coastline, ridge lines, major rivers — so region edges fall roughly where real
+  frontiers fall, rather than on an arbitrary grid.
+- At this stage the player reads climate, terrain character, a coarse resource
+  profile and what lies adjacent. Not exact deposits: a region promises a _kind_
+  of place, and the specifics are stage two.
+
+### 5b.2 Stage two — the site, by what is visibly there
+
+Inside the chosen region the map shows what a scouting party would see: markers
+for fresh water, arable soil, timber, stone, clay, flint, ore, salt, game,
+fords and defensible high ground. The player places the settlement centre
+against them.
+
+- Deposits are **derived from the terrain that already exists**, not sprinkled
+  at random: clay in floodplains and river bends, flint in chalk lowland, ore in
+  hills and mountains, salt at coasts and springs, deep soil in valleys and on
+  floodplains, timber from the biome. A player who learns to read the land is
+  reading something real.
+- Site scoring still exists — hard necessities (fresh water in reach, land that
+  feeds the group at this era's technology, survivable climate) times weighted
+  advantages (defensibility, transport, materials, trade position) — but for the
+  player's own founding it is **advisory**: it shades the markers rather than
+  deciding for them. The same score is what emergent and NPC foundings use, and
+  there it is decisive.
+- The advantage weights are era-dependent, which is where the historical
+  accuracy lives. A neolithic founding reads water, game and flint and does not
+  care about defensibility; an iron-age one reads the ford and the ridge; an
+  industrial one reads coal and navigable water. The era ladder in the research
+  module already supplies the gradient.
+- Trade position comes almost free: the road generator already paths by terrain
+  cost, so scoring a tile by how many cheap routes would pass through it is the
+  same computation, inverted.
+
+### 5b.3 The founding band
+
+Twenty to forty people in several households — the archaeological range for a
+neolithic founding group, and the smallest number at which demography works
+unaided: enough unrelated adults for marriage to have real choices, and enough
+households for lineages to diverge instead of collapsing into one (§7.5). Every
+founder is Full-tier from the first tick (§11.3).
+
+### 5b.4 Alone at the start
+
+The player's civilization is the only one placed at world generation. The
+faction step gains a solo mode that creates the player's faction and nothing
+else; rival civilizations **emerge** from the simulation later rather than
+existing at time zero. This is the truer sticks-and-stones arc, and its cost is
+accepted deliberately: factions, trade and diplomacy sit idle through the
+opening hours. Emergence is its own system and is not designed here.
+
+### 5b.5 What this requires that does not exist
+
+| Piece | Today |
+| --- | --- |
+| Region partition over the icosphere, with names and profiles | missing |
+| Resource and landmark deposits derived from terrain | missing — tiles carry climate and elevation only |
+| Site scoring: necessities × era-weighted advantages | missing — placement is a biome lottery with spacing |
+| Settlement as an entity: population, stores, age, name, growth | missing — a def, a tile and a faction |
+| Solo-start world generation | a flag on an existing step |
+| A settlement interior when the player enters it | the §11.2 seam |
+
+```mermaid
+flowchart TD
+  W[World map · regions with name, climate, resource profile] -->|player picks a region| R[Region view]
+  R --> Markers[Markers: water, soil, timber, stone, clay, flint, ore, salt, game, ford, high ground]
+  Terrain[Existing tile data: elevation, rainfall, rivers, biome] -->|deposits derived, not sprinkled| Markers
+  Era[Era ladder] -->|weights which advantages matter| Score
+  Markers --> Score[Site score · advisory for the player, decisive for emergent foundings]
+  Score -.shades.-> Markers
+  Markers -->|player places the centre| Found[Founding: 20-40 people, several households, all Full-tier]
+  Found --> Chron[Founding chronicle entry]
+  Found --> Settle[Settlement entity: population, stores, age, name]
+  Settle -->|player enters at settlement scope| Map[Interior map generated and persisted]
+```
+
 ## 6. Cross-System Contracts
 
 There is no pub/sub event bus. Modules connect the way RimWorld's do, and the
