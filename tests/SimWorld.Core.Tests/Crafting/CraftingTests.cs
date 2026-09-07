@@ -38,7 +38,11 @@ namespace SimWorld.Tests.Crafting
             Assert.Equal(5, DefDatabase<StuffCategoryDef>.DefCount);
             Assert.True(DefDatabase<ThingDef>.AllDefsListForReading.Count(d => d.category == ThingCategory.Item) >= 10);
             Assert.True(DefDatabase<RecipeDef>.DefCount >= 5);
-            Assert.Equal(3, DefDatabase<ThingDef>.AllDefsListForReading.Count(d => d.category == ThingCategory.Building));
+            // Assert the production benches this module ships, not a count of every building def:
+            // other modules (natural rock from Map core, and later Building) add their own.
+            Assert.All(
+                new[] { "FueledStove", "TableButcher", "TableStonecutter" },
+                name => Assert.Equal(ThingCategory.Building, Def(name).category));
         }
 
         [Fact]
