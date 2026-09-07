@@ -5,9 +5,17 @@
     Raw foodstuffs and cooked meals (RimWorld: ThingDefs_Items/Items_Food), trimmed to what
     Recipes_Food needs; produce variety, meat cuts and animal products land with the Plants and
     Animals modules. Meals intentionally carry no quality (RimWorld: meals have no CompQuality either).
+
+    thingClass is added here by the AI module (system 9): a job giver that finds and eats food needs a
+    real spawnable Thing on the map, not only the ItemStack record Crafting's bills use — none of these
+    Defs set one before, so nothing could ever spawn one.
   -->
 
-  <ThingDef>
+  <ThingDef Name="BaseFoodItem" Abstract="True">
+    <thingClass>SimWorld.Things.Thing</thingClass>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseFoodItem">
     <defName>RawPotatoes</defName>
     <label>potatoes</label>
     <description>Raw potatoes. Won't fill you up much unless cooked into a proper meal.</description>
@@ -22,7 +30,7 @@
     </ingestible>
   </ThingDef>
 
-  <ThingDef>
+  <ThingDef ParentName="BaseFoodItem">
     <defName>RawRice</defName>
     <label>rice</label>
     <description>Raw rice grains. Won't fill you up much unless cooked into a proper meal.</description>
@@ -37,7 +45,7 @@
     </ingestible>
   </ThingDef>
 
-  <ThingDef>
+  <ThingDef ParentName="BaseFoodItem">
     <defName>Meat_Generic</defName>
     <label>raw meat</label>
     <description>A raw cut of meat. Edible, but much better cooked into a proper meal.</description>
@@ -52,7 +60,7 @@
     </ingestible>
   </ThingDef>
 
-  <ThingDef>
+  <ThingDef ParentName="BaseFoodItem">
     <defName>MealSimple</defName>
     <label>simple meal</label>
     <description>A meal cooked from raw ingredients. Not fancy, but nutritious and won't upset anyone.</description>
@@ -67,7 +75,7 @@
     </ingestible>
   </ThingDef>
 
-  <ThingDef>
+  <ThingDef ParentName="BaseFoodItem">
     <defName>MealFine</defName>
     <label>fine meal</label>
     <description>A meal cooked with a bit more care, from separate portions of meat and vegetables.</description>
@@ -82,7 +90,7 @@
     </ingestible>
   </ThingDef>
 
-  <ThingDef>
+  <ThingDef ParentName="BaseFoodItem">
     <defName>MealLavish</defName>
     <label>lavish meal</label>
     <description>An elaborate, generous meal. A treat for anyone who eats it.</description>
@@ -97,7 +105,7 @@
     </ingestible>
   </ThingDef>
 
-  <ThingDef>
+  <ThingDef ParentName="BaseFoodItem">
     <defName>Pemmican</defName>
     <label>pemmican</label>
     <description>A dense, long-lasting ration of pounded meat and fat mixed with dried plant food. Bland, but keeps almost forever.</description>

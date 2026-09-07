@@ -19,6 +19,10 @@ namespace SimWorld.Map
         private readonly Map map;
         private readonly int[] perceivedPathCost;
 
+        /// <summary>Bumped every time any cell's cost changes; <see cref="AI.Reachability"/> uses this to
+        /// know when its cached region ids need recomputing instead of checking on every query.</summary>
+        public int Version { get; private set; }
+
         public PathGrid(Map map)
         {
             this.map = map ?? throw new ArgumentNullException(nameof(map));
@@ -50,6 +54,7 @@ namespace SimWorld.Map
         {
             if (!GenGrid.InBounds(c, map)) return;
             perceivedPathCost[map.cellIndices.CellToIndex(c)] = CalculatedCostAt(c);
+            Version++;
         }
 
         public void RecalculateAllPerceivedPathCosts()
@@ -58,6 +63,7 @@ namespace SimWorld.Map
             {
                 perceivedPathCost[map.cellIndices.CellToIndex(c)] = CalculatedCostAt(c);
             }
+            Version++;
         }
 
         public bool Walkable(IntVec3 c) => GenGrid.InBounds(c, map) && PerceivedPathCostAt(c) < ImpassableCost;

@@ -45,11 +45,60 @@ namespace SimWorld.Things
 
         // ---- map presence ----
 
-        /// <summary>Set by <see cref="GenSpawn.Spawn"/> before <see cref="SpawnSetup"/> registers the Thing.</summary>
+        /// <summary>
+        /// Set by <see cref="GenSpawn.Spawn"/> before <see cref="SpawnSetup"/> registers the Thing — at that
+        /// point <see cref="Spawned"/> is still false, so this is a plain field write. Once spawned (a
+        /// pawn walking, from the AI module's <c>Pawn_PathFollower</c>), the setter keeps the map's grids
+        /// and path costs in step with the move instead of leaving them pointing at the old cell.
+        /// </summary>
         public IntVec3 Position
         {
             get => position;
-            internal set => position = value;
+            internal set
+            {
+                if (value == position) return;
+                if (!Spawned)
+                {
+                    position = value;
+                    return;
+                }
+
+                Map.Map m = map!;
+
+                // Fast path: every pawn and every item is a single cell, and a pawn walking is the only
+                // thing that calls this setter on an already-spawned Thing anywhere near every tick — see
+                // ThingGrid.MoveSingleCell's own comment for why that rules out CellRect.Cells' iterator here.
+                if (def.size.x == 1 && def.size.z == 1)
+                {
+                    IntVec3 oldCell = position;
+                    m.thingGrid.MoveSingleCell(this, oldCell, value);
+                    if (def.IsEdifice) m.edificeGrid.DeRegister(this);
+                    position = value;
+                    if (def.IsEdifice) m.edificeGrid.Register(this);
+
+                    // A pawn's own presence never contributes to path cost (PathGrid.CalculatedCostAt skips
+                    // ThingCategory.Pawn outright), so recalculating either cell here would only churn
+                    // PathGrid.Version for nothing — and every pawn doing that on every step would defeat
+                    // AI.Reachability's whole cache, which recomputes in full whenever that version changes.
+                    if (def.category != ThingCategory.Pawn)
+                    {
+                        m.pathGrid.RecalculatePerceivedPathCostAt(oldCell);
+                        m.pathGrid.RecalculatePerceivedPathCostAt(value);
+                    }
+                    return;
+                }
+
+                CellRect oldRect = OccupiedRect();
+                m.thingGrid.Deregister(this);
+                if (def.IsEdifice) m.edificeGrid.DeRegister(this);
+
+                position = value;
+
+                m.thingGrid.Register(this);
+                if (def.IsEdifice) m.edificeGrid.Register(this);
+                foreach (IntVec3 c in oldRect.Cells) m.pathGrid.RecalculatePerceivedPathCostAt(c);
+                foreach (IntVec3 c in OccupiedRect().Cells) m.pathGrid.RecalculatePerceivedPathCostAt(c);
+            }
         }
 
         public Rot4 Rotation

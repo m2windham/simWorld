@@ -175,6 +175,10 @@
     <gerund>mining</gerund>
     <workType>Mining</workType>
     <priorityInType>100</priorityInType>
+    <!-- The one WorkGiverDef this pass wires to a real scanner (system 9: AI) — proof that JobGiver_Work's
+         scan-by-priority actually drives a WorkGiver_Scanner end to end. Every other giver above keeps the
+         WorkGiver_Pending default; JobGiver_Work simply finds no job from those and moves on. -->
+    <giverClass>SimWorld.AI.WorkGiver_Miner</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>

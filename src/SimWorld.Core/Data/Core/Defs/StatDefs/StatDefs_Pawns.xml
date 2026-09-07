@@ -67,4 +67,20 @@
     <minValue>0.01</minValue>
   </StatDef>
 
+  <!--
+    Added with the AI module (system 9): Pawn_PathFollower reads this to convert one cell of movement into
+    ticks. 4.6 is RimWorld's own vanilla base human move speed (cells/second). No capacityFactors yet:
+    RimWorld's real stat likely bends this with the Moving capacity (a limping pawn should walk slower), but
+    the exact weight isn't sourced and nothing in this pass depends on it, so it is left a flat per-race
+    value rather than guessed.
+  -->
+  <StatDef>
+    <defName>MoveSpeed</defName>
+    <label>move speed</label>
+    <description>How many cells a pawn crosses per second while walking.</description>
+    <category>BasicsPawn</category>
+    <defaultBaseValue>4.6</defaultBaseValue>
+    <minValue>0.1</minValue>
+  </StatDef>
+
 </Defs>

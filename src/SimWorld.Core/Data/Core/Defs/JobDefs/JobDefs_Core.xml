@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- The JobDefs this pass's job givers issue (system 9: AI). -->
+
+  <JobDef>
+    <defName>Ingest</defName>
+    <driverClass>SimWorld.AI.JobDriver_Ingest</driverClass>
+    <reportString>eating.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>LayDown</defName>
+    <driverClass>SimWorld.AI.JobDriver_LayDown</driverClass>
+    <reportString>lying down.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>GotoWander</defName>
+    <driverClass>SimWorld.AI.JobDriver_GotoWander</driverClass>
+    <reportString>wandering.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>Mine</defName>
+    <driverClass>SimWorld.AI.JobDriver_Mine</driverClass>
+    <reportString>mining.</reportString>
+  </JobDef>
+
+</Defs>

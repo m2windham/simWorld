@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The humanlike priority think tree (system 9: AI), matching simworld-spec.md §7.4's diagram order:
+    danger/mental-state overrides needs, needs override directed orders, directed orders override routine
+    work — a final wander tier keeps an otherwise-idle pawn doing *something*.
+  -->
+
+  <ThinkTreeDef>
+    <defName>Humanlike</defName>
+    <thinkRoot Class="SimWorld.AI.ThinkNode_Priority">
+      <subNodes>
+
+        <!--
+          A mental state pre-empts everything below it entirely, rather than contributing (or not) a job of
+          its own and letting the tree fall through — see ThinkNode_ConditionalInMentalState's own comment.
+          Its one subnode (wandering) stands in for real per-mental-state behaviour, which this pass does
+          not build; combat AI beyond fleeing is explicitly out of scope, and none of the eleven existing
+          MentalStateDefs get a bespoke JobGiver here.
+        -->
+        <li Class="SimWorld.AI.ThinkNode_ConditionalInMentalState">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_WanderAnywhere" />
+          </subNodes>
+        </li>
+
+        <li Class="SimWorld.AI.ThinkNode_ConditionalHungry">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_GetFood" />
+          </subNodes>
+        </li>
+
+        <li Class="SimWorld.AI.ThinkNode_ConditionalTired">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_GetRest" />
+          </subNodes>
+        </li>
+
+        <li Class="SimWorld.AI.JobGiver_DirectedOrder" />
+
+        <li Class="SimWorld.AI.JobGiver_Work" />
+
+        <li Class="SimWorld.AI.JobGiver_WanderAnywhere" />
+
+      </subNodes>
+    </thinkRoot>
+  </ThinkTreeDef>
+
+</Defs>
