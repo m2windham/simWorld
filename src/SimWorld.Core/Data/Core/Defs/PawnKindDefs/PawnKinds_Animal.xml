@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <PawnKindDef>
+    <defName>Husky</defName>
+    <label>husky</label>
+    <race>Husky</race>
+    <combatPower>30</combatPower>
+  </PawnKindDef>
+
+</Defs>

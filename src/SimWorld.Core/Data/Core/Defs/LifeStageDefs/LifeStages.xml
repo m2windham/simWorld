@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Humanlike life stages. Ages themselves (0, 3, 13, 18) live on Human's race entry, not here, so other
+       races can reuse or skip these stages at different thresholds. -->
+
+  <LifeStageDef>
+    <defName>HumanlikeBaby</defName>
+    <label>baby</label>
+    <reproductive>false</reproductive>
+    <bodySizeFactor>0.2</bodySizeFactor>
+    <healthScaleFactor>0.2</healthScaleFactor>
+    <hungerRateFactor>0.3</hungerRateFactor>
+    <foodMaxFactor>0.3</foodMaxFactor>
+    <marketValueFactor>0.5</marketValueFactor>
+    <alwaysDowned>true</alwaysDowned>
+    <developmentalStage>Baby</developmentalStage>
+  </LifeStageDef>
+
+  <LifeStageDef>
+    <defName>HumanlikeChild</defName>
+    <label>child</label>
+    <reproductive>false</reproductive>
+    <bodySizeFactor>0.5</bodySizeFactor>
+    <healthScaleFactor>0.6</healthScaleFactor>
+    <hungerRateFactor>0.7</hungerRateFactor>
+    <foodMaxFactor>0.7</foodMaxFactor>
+    <marketValueFactor>0.7</marketValueFactor>
+    <developmentalStage>Child</developmentalStage>
+  </LifeStageDef>
+
+  <LifeStageDef>
+    <defName>HumanlikeTeenager</defName>
+    <label>teenager</label>
+    <reproductive>true</reproductive>
+    <bodySizeFactor>0.9</bodySizeFactor>
+    <healthScaleFactor>0.9</healthScaleFactor>
+    <hungerRateFactor>0.9</hungerRateFactor>
+    <foodMaxFactor>0.9</foodMaxFactor>
+    <marketValueFactor>0.9</marketValueFactor>
+    <developmentalStage>Child</developmentalStage>
+  </LifeStageDef>
+
+  <LifeStageDef>
+    <defName>HumanlikeAdult</defName>
+    <label>adult</label>
+    <reproductive>true</reproductive>
+    <bodySizeFactor>1</bodySizeFactor>
+    <healthScaleFactor>1</healthScaleFactor>
+    <hungerRateFactor>1</hungerRateFactor>
+    <foodMaxFactor>1</foodMaxFactor>
+    <marketValueFactor>1</marketValueFactor>
+    <developmentalStage>Adult</developmentalStage>
+  </LifeStageDef>
+
+  <!-- Animal life stages, reused across every non-humanlike race that opts in. -->
+
+  <LifeStageDef>
+    <defName>AnimalBaby</defName>
+    <label>baby</label>
+    <reproductive>false</reproductive>
+    <bodySizeFactor>0.4</bodySizeFactor>
+    <healthScaleFactor>0.4</healthScaleFactor>
+    <hungerRateFactor>0.5</hungerRateFactor>
+    <foodMaxFactor>0.5</foodMaxFactor>
+    <marketValueFactor>0.6</marketValueFactor>
+    <developmentalStage>Baby</developmentalStage>
+  </LifeStageDef>
+
+  <LifeStageDef>
+    <defName>AnimalJuvenile</defName>
+    <label>juvenile</label>
+    <reproductive>false</reproductive>
+    <bodySizeFactor>0.7</bodySizeFactor>
+    <healthScaleFactor>0.7</healthScaleFactor>
+    <hungerRateFactor>0.8</hungerRateFactor>
+    <foodMaxFactor>0.8</foodMaxFactor>
+    <marketValueFactor>0.8</marketValueFactor>
+    <developmentalStage>Child</developmentalStage>
+  </LifeStageDef>
+
+  <LifeStageDef>
+    <defName>AnimalAdult</defName>
+    <label>adult</label>
+    <reproductive>true</reproductive>
+    <bodySizeFactor>1</bodySizeFactor>
+    <healthScaleFactor>1</healthScaleFactor>
+    <hungerRateFactor>1</hungerRateFactor>
+    <foodMaxFactor>1</foodMaxFactor>
+    <marketValueFactor>1</marketValueFactor>
+    <developmentalStage>Adult</developmentalStage>
+  </LifeStageDef>
+
+</Defs>

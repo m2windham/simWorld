@@ -133,6 +133,73 @@ namespace SimWorld.Sim
             return (float)(exponent < 0.0001 ? exponent : 1.0 - Math.Pow(0.5, exponent));
         }
 
+        /// <summary>
+        /// Weighted sample across a curve's points (RimWorld: <c>Rand.ByCurve</c>): treats <c>y</c> as a
+        /// (possibly non-uniform) density over <c>x</c>, integrates the piecewise-linear area under it, draws
+        /// uniformly within that area, then inverts back to the <c>x</c> that area boundary falls at. Points
+        /// with negative y contribute no density (clamped to 0) but never make the result invalid.
+        /// </summary>
+        public float ByCurve(SimpleCurve curve)
+        {
+            if (curve == null) throw new ArgumentNullException(nameof(curve));
+            int count = curve.PointsCount;
+            if (count == 0) return 0f;
+            if (count == 1) return curve[0].x;
+
+            var segmentAreas = new float[count - 1];
+            float totalArea = 0f;
+            for (int i = 0; i < count - 1; i++)
+            {
+                CurvePoint a = curve[i];
+                CurvePoint b = curve[i + 1];
+                float width = b.x - a.x;
+                float area = width > 0f ? (Math.Max(a.y, 0f) + Math.Max(b.y, 0f)) * 0.5f * width : 0f;
+                segmentAreas[i] = area;
+                totalArea += area;
+            }
+            if (totalArea <= 0f) return curve[0].x;
+
+            float pick = Value * totalArea;
+            float acc = 0f;
+            for (int i = 0; i < count - 1; i++)
+            {
+                float area = segmentAreas[i];
+                if (pick <= acc + area || i == count - 2)
+                {
+                    return InvertSegmentArea(curve[i], curve[i + 1], pick - acc, area);
+                }
+                acc += area;
+            }
+            return curve[count - 1].x;
+        }
+
+        /// <summary>Finds the x within [a.x, b.x] at which the area under the a→b trapezoid, from a.x up to
+        /// that x, equals <paramref name="areaWithin"/> (of the segment's total <paramref name="segmentArea"/>).</summary>
+        private static float InvertSegmentArea(CurvePoint a, CurvePoint b, float areaWithin, float segmentArea)
+        {
+            float width = b.x - a.x;
+            if (width <= 0f || segmentArea <= 0f) return a.x;
+
+            float ya = Math.Max(a.y, 0f);
+            float yb = Math.Max(b.y, 0f);
+            if (Math.Abs(yb - ya) < 1e-6f)
+            {
+                float t0 = ya > 0f ? areaWithin / (ya * width) : 0f;
+                return a.x + GenMath.Clamp01(t0) * width;
+            }
+
+            // area(t) = width * (ya * t + (yb - ya) * t^2 / 2) for t in [0, 1]; solve the quadratic for t.
+            float coefA = 0.5f * (yb - ya) * width;
+            float coefB = ya * width;
+            float coefC = -areaWithin;
+            float discriminant = Math.Max(coefB * coefB - 4f * coefA * coefC, 0f);
+            float sqrtDiscriminant = (float)Math.Sqrt(discriminant);
+            float t1 = (-coefB + sqrtDiscriminant) / (2f * coefA);
+            float t2 = (-coefB - sqrtDiscriminant) / (2f * coefA);
+            float t = t1 >= 0f && t1 <= 1f ? t1 : t2;
+            return a.x + GenMath.Clamp01(t) * width;
+        }
+
         /// <summary>A value that depends only on <paramref name="seed"/>; does not advance this stream.</summary>
         public static float ValueSeeded(int seed) => (float)(((double)MurmurHash.GetInt((uint)seed, 0u) - int.MinValue) / 4294967296.0);
 

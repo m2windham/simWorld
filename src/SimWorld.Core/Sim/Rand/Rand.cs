@@ -41,6 +41,7 @@ namespace SimWorld.Sim
         public static T Element<T>(IReadOnlyList<T> list) => Current.Element(list);
         public static float Gaussian(float centerX = 0f, float widthFactor = 1f) => Current.Gaussian(centerX, widthFactor);
         public static bool MTBEventOccurs(float mtb, float mtbUnit, float checkDuration) => Current.MTBEventOccurs(mtb, mtbUnit, checkDuration);
+        public static float ByCurve(SimpleCurve curve) => Current.ByCurve(curve);
 
         public static float ValueSeeded(int seed) => RandomStream.ValueSeeded(seed);
         public static int RangeSeeded(int min, int max, int seed) => RandomStream.RangeSeeded(min, max, seed);
