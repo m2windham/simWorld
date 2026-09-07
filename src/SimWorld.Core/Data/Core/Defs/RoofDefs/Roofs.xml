@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <RoofDef>
+    <defName>RoofConstructed</defName>
+    <label>constructed roof</label>
+  </RoofDef>
+
+  <RoofDef>
+    <defName>RoofRockThin</defName>
+    <label>thin rock roof</label>
+    <isNatural>true</isNatural>
+  </RoofDef>
+
+  <RoofDef>
+    <defName>RoofRockThick</defName>
+    <label>thick rock roof</label>
+    <isNatural>true</isNatural>
+    <isThickRoof>true</isThickRoof>
+  </RoofDef>
+
+</Defs>

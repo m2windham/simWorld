@@ -1,26 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using SimWorld.Defs;
 using SimWorld.Health;
 using SimWorld.MindState;
 using SimWorld.Needs;
 using SimWorld.Sim;
+using SimWorld.Things;
 using SimWorld.Work;
 
 namespace SimWorld.Pawns
 {
     /// <summary>
     /// A person or creature (RimWorld: <c>Verse.Pawn</c>). Every citizen is one of these — the trackers hung
-    /// off it are the per-agent systems (health, needs, story, mind). This is the agent skeleton the remaining
-    /// systems attach to; map presence, jobs and combat come with their modules.
+    /// off it are the per-agent systems (health, needs, story, mind). Map presence, hit points and ids are
+    /// inherited from <see cref="Thing"/>/<see cref="ThingWithComps"/>; jobs and combat come with their modules.
     /// </summary>
-    public class Pawn : IExposable, ILoadReferenceable, ITickable
+    public class Pawn : ThingWithComps
     {
-        private static int nextThingId;
-
-        public ThingDef def = null!;
-        public int thingIDNumber = -1;
         public string? name;
 
         public Pawn_HealthTracker health = null!;
@@ -33,8 +29,6 @@ namespace SimWorld.Pawns
         /// <summary>Environment sampler for seeker needs (beauty, comfort, outdoors, room); the map supplies it later.</summary>
         public IEnvironmentSampler? environment;
 
-        private bool destroyed;
-
         public Pawn()
         {
         }
@@ -45,21 +39,15 @@ namespace SimWorld.Pawns
             if (def.race == null) throw new ArgumentException("ThingDef " + def.defName + " has no race properties.", nameof(def));
             this.name = name;
             thingIDNumber = AllocateThingId();
+            PostMake();
             InitializeTrackers();
             needs.AddOrRemoveNeedsAsAppropriate();
             if (RaceProps.Humanlike) workSettings.EnableAndInitialize();
         }
 
-        public static int AllocateThingId() => nextThingId++;
-
-        /// <summary>Tests and loaders that mint ids elsewhere reset the counter with this.</summary>
-        public static void ResetThingIdCounter(int next = 0) => nextThingId = next;
-
         public RaceProperties RaceProps => def.race!;
 
-        public string Label => name ?? def.label ?? def.defName;
-
-        public string ThingID => def.defName + thingIDNumber.ToString(CultureInfo.InvariantCulture);
+        public override string Label => name ?? def.label ?? def.defName;
 
         // ---- state other systems set; kept as plain flags until those systems land ----
 
@@ -73,8 +61,6 @@ namespace SimWorld.Pawns
 
         /// <summary>In a caravan or a pod: needs freeze.</summary>
         public bool Suspended { get; set; }
-
-        public bool Destroyed => destroyed;
 
         public bool InMentalState => mindState.mentalStateHandler.InMentalState;
 
@@ -172,11 +158,6 @@ namespace SimWorld.Pawns
 
         public int HashOffsetTicks() => thingIDNumber * 3;
 
-        public void Destroy()
-        {
-            destroyed = true;
-        }
-
         protected virtual void InitializeTrackers()
         {
             health ??= new Pawn_HealthTracker(this);
@@ -189,11 +170,9 @@ namespace SimWorld.Pawns
 
         // ---- ITickable ----
 
-        int ITickable.TickId => thingIDNumber;
-        TickerType ITickable.TickerType => def.tickerType;
-
-        public virtual void Tick()
+        public override void Tick()
         {
+            base.Tick();
             if (Dead || Suspended) return;
             health.HealthTick();
             if (Dead) return;
@@ -202,24 +181,11 @@ namespace SimWorld.Pawns
             skills.SkillsTick();
         }
 
-        public virtual void TickRare()
-        {
-        }
-
-        public virtual void TickLong()
-        {
-        }
-
         // ---- Scribe ----
 
-        public string GetUniqueLoadID() => "Thing_" + ThingID;
-
-        public virtual void ExposeData()
+        public override void ExposeData()
         {
-            ThingDef? d = def;
-            Scribe_Defs.Look(ref d, "def");
-            def = d!;
-            Scribe_Values.Look(ref thingIDNumber, "id", -1);
+            base.ExposeData();
             Scribe_Values.Look(ref name, "name");
             bool asleep = Asleep, suspended = Suspended;
             Scribe_Values.Look(ref asleep, "asleep");
@@ -229,7 +195,6 @@ namespace SimWorld.Pawns
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
                 InitializeTrackers();
-                if (thingIDNumber >= nextThingId) nextThingId = thingIDNumber + 1;
             }
             Pawn_HealthTracker? h = health;
             Scribe_Deep.Look(ref h, "healthTracker", this);
@@ -250,8 +215,6 @@ namespace SimWorld.Pawns
             Scribe_Deep.Look(ref ws, "workSettings", this);
             workSettings = ws ?? new Pawn_WorkSettings(this);
         }
-
-        public override string ToString() => Label + " (" + ThingID + ")";
     }
 
     /// <summary>What the surroundings offer a seeker need; the map supplies real values later.</summary>
