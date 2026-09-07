@@ -11,6 +11,11 @@
     <defName>Human</defName>
     <label>human</label>
     <description>A member of the species Homo sapiens.</description>
+    <statBases>
+      <!-- The stats module's own default already matches this; set explicitly so a future non-Human
+           statBases override reads as deliberate, not an oversight. -->
+      <MentalBreakThreshold>0.35</MentalBreakThreshold>
+    </statBases>
     <race>
       <intelligence>Humanlike</intelligence>
       <body>Human</body>
@@ -21,7 +26,6 @@
       <needsRest>true</needsRest>
       <isFlesh>true</isFlesh>
       <lifeExpectancy>80</lifeExpectancy>
-      <mentalBreakThreshold>0.35</mentalBreakThreshold>
       <lifeStageAges>
         <li>
           <def>HumanlikeBaby</def>

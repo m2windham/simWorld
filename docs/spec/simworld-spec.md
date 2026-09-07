@@ -105,6 +105,43 @@ flowchart LR
   Comps -->|paired at runtime| Comp[Comp instance on the thing]
 ```
 
+## 3a. Stat Pipeline
+
+RimWorld's stat resolution, ported whole (`src/SimWorld.Core/Stats/`). `ThingDef.GetStatValueAbstract` —
+§3's bare `statBases` lookup — stays for the handful of callers with no pawn, trait, hediff or capacity
+concerns (`BaseMaxHitPoints`, `BaseMarketValue`); everything that reads a pawn's health, traits or hediffs
+goes through this pipeline instead.
+
+- `StatRequest` addresses either a live `Thing`, or an abstract `(ThingDef, ThingDef? stuff)` pair with no
+  Thing at all. RimWorld addresses a `BuildableDef` — the base of `ThingDef` and `TerrainDef` — but this port
+  has no such base yet and `TerrainDef` carries no stats, so the abstract mode narrows to `ThingDef`.
+- `StatWorker.GetValue` runs `GetValueUnfinalized` (base value → pawn offsets → pawn and stuff factors →
+  capacity factors) then `FinalizeValue` (stat parts → post-process curve → min/max clamp).
+- `StatDef.capacityFactors` reads the Health module's `PawnCapacityDef` levels — the joint that lets a
+  wounded pawn's stats degrade and recover with the body. `RestRateMultiplier`'s BloodPumping, Metabolism and
+  Breathing (weight 0.3 each) are the shipped example: hurt the pawn's heart and it rests slower; heal it and
+  the multiplier recovers.
+- `StatPart` (`TransformValue(StatRequest, ref float)`) is real and tested but ships no concrete subclass yet.
+  RimWorld's own quality and stuff-derived StatParts need a live `CompQuality`/apparel-stuff on a spawned
+  Thing; Crafting's `QualityCategory` exists only on `ItemStack` today, so those parts would read nothing.
+- `Thing.GetStatValue(stat)` and `ThingDef.GetStatValue(stat, stuff)` are the call-site sugar (`StatExtension`),
+  reading like RimWorld's `GetStatValue`/`GetStatValueAbstract` — named identically on the Thing side, but the
+  def-side overload keeps the `GetStatValue` name (rather than RimWorld's `GetStatValueAbstract`) so it cannot
+  collide with the pre-existing `ThingDef.GetStatValueAbstract` above.
+
+```mermaid
+flowchart TD
+  Base["Base value: statBases entry, else defaultBaseValue"] --> Off1["+ trait statOffsets"]
+  Off1 --> Off2["+ hediff-stage statOffsets"]
+  Off2 --> Fac1["x trait statFactors"]
+  Fac1 --> Fac2["x hediff-stage statFactors"]
+  Fac2 --> Stuff["x stuff statFactors, then + stuff statOffsets"]
+  Stuff --> Cap["Capacity factors: lerp(value, value x factor, weight) per PawnCapacityDef"]
+  Cap --> Parts["Stat parts: TransformValue"]
+  Parts --> Curve["Post-process curve"]
+  Curve --> Clamp["Clamp to minValue / maxValue"]
+```
+
 ## 4. Simulation Core
 
 - Fixed tick: 60 ticks/second, decoupled from frame rate. `TimeSpeed`

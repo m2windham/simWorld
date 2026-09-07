@@ -1,5 +1,6 @@
 using System;
 using SimWorld.Defs;
+using SimWorld.Stats;
 
 namespace SimWorld.Economy
 {
@@ -25,7 +26,7 @@ namespace SimWorld.Economy
         public static float BaseMarketValue(ThingDef def)
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
-            return def.GetStatValueAbstract(EconomyDefOf.MarketValue);
+            return def.GetStatValueAbstract(StatDefOf.MarketValue);
         }
 
         /// <summary>

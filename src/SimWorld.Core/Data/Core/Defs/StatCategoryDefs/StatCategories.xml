@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Display groupings for stats (RimWorld: StatCategoryDefs). No stats UI reads these yet — see
+    StatWorker.ShouldShowFor — but every stat still names a real RimWorld category so that UI has authored
+    data to read once it exists, rather than every stat sitting uncategorised.
+  -->
+
+  <StatCategoryDef>
+    <defName>Basics</defName>
+    <label>basics</label>
+  </StatCategoryDef>
+
+  <StatCategoryDef>
+    <defName>BasicsPawn</defName>
+    <label>basics (pawns)</label>
+  </StatCategoryDef>
+
+</Defs>

@@ -5,6 +5,7 @@ using SimWorld.Crafting;
 using SimWorld.Defs;
 using SimWorld.Pawns;
 using SimWorld.Sim;
+using SimWorld.Stats;
 using SimWorld.Tests.Content;
 using SimWorld.Work;
 using Xunit;

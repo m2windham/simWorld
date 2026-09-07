@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-07",
-  "testsTotal": 519,
+  "testsTotal": 532,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -639,7 +639,7 @@
         },
         {
           "id": "work.stats",
-          "label": "Skill-driven stats (WorkSpeedGlobal, MedicalTendQuality…) — lands with the Stats module",
+          "label": "Skill-driven stats (WorkSpeedGlobal, MedicalTendQuality...): StatDef.skillNeedOffsets/skillNeedFactors (SkillDef-scaled curves) are not part of the Stats module's first pass (see docs/spec/simworld-spec.md 3a) -- still needs its own follow-up",
           "done": false
         },
         {
@@ -1177,6 +1177,43 @@
         {
           "id": "settlements.emergence",
           "label": "Rival civilizations emerging from the simulation over time rather than being placed at world gen",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "stats",
+      "n": 21,
+      "rimworld": "Stat System",
+      "translation": "Unchanged.",
+      "translationState": "decided",
+      "module": "src/SimWorld.Core/Stats · Data/Core/Defs (StatDefs, StatCategoryDefs)",
+      "status": "ported",
+      "tests": 13,
+      "items": [
+        {
+          "id": "stats.pipeline",
+          "label": "StatRequest (Thing, or def+stuff with no Thing) -> StatWorker.GetValue: base value (statBases, else defaultBaseValue) -> trait and hediff-stage offsets -> trait, hediff-stage and stuff factors -> capacity factors -> stat parts -> post-process curve -> min/max clamp",
+          "done": true
+        },
+        {
+          "id": "stats.capacityFactors",
+          "label": "StatDef.capacityFactors reads the Health module's PawnCapacityDef levels (RestRateMultiplier: BloodPumping/Metabolism/Breathing at weight 0.3 each) so a wounded pawn's stats degrade and recover with the body",
+          "done": true
+        },
+        {
+          "id": "stats.retired-workarounds",
+          "label": "Pawn.RestRateMultiplier/ImmunityGainSpeed/PainShockThreshold/GlobalLearningFactor/MentalBreakThreshold and Armor.NaturalArmor.ArmorRating now read the pipeline instead of a hard-coded constant or a bare statBases lookup; the two duplicate StatDefOf classes (Crafting, Economy) are retired into one SimWorld.Stats.StatDefOf",
+          "done": true
+        },
+        {
+          "id": "stats.content",
+          "label": "Core XML: RestRateMultiplier, ImmunityGainSpeed, PainShockThreshold, GlobalLearningFactor, MentalBreakThreshold StatDefs (every default sourced from RimWorld's own vanilla values), BasicsPawn/Basics StatCategoryDefs, Human's MentalBreakThreshold moved from a RaceProperties field to a statBases entry",
+          "done": true
+        },
+        {
+          "id": "stats.stuff-quality-parts",
+          "label": "StatPart hook and def+stuff factor/offset resolution are real and tested, but no concrete StatPart ships - quality needs a live CompQuality on a spawned Thing (Crafting's QualityCategory exists only on ItemStack today) - lands with Items/Apparel",
           "done": false
         }
       ]

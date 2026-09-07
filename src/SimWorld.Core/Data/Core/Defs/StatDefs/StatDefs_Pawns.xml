@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Pawn stats the Stats module's pipeline replaces hard-coded Pawn properties with (RimWorld: part of
+    Stats_Pawns_General). Every default here is RimWorld's own vanilla base value, not a guess: sourced from
+    RimWorld's own core StatDefs content (defaultBaseValue, minValue/maxValue, capacityFactors) rather than
+    reverse-engineered from behaviour, since these five are read straight off the pawn with no other module
+    reproducing their raw numbers first.
+  -->
+
+  <StatDef>
+    <defName>RestRateMultiplier</defName>
+    <label>rest rate multiplier</label>
+    <description>A multiplier on how quickly a pawn rests while sleeping.</description>
+    <category>BasicsPawn</category>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0.05</minValue>
+    <capacityFactors>
+      <li>
+        <capacity>BloodPumping</capacity>
+        <weight>0.3</weight>
+      </li>
+      <li>
+        <capacity>Metabolism</capacity>
+        <weight>0.3</weight>
+      </li>
+      <li>
+        <capacity>Breathing</capacity>
+        <weight>0.3</weight>
+      </li>
+    </capacityFactors>
+  </StatDef>
+
+  <StatDef>
+    <defName>ImmunityGainSpeed</defName>
+    <label>immunity gain speed</label>
+    <description>A multiplier on how quickly a sick pawn develops immunity to a disease.</description>
+    <category>BasicsPawn</category>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+  <StatDef>
+    <defName>PainShockThreshold</defName>
+    <label>pain shock threshold</label>
+    <description>How much pain a pawn can handle before collapsing.</description>
+    <category>BasicsPawn</category>
+    <defaultBaseValue>0.8</defaultBaseValue>
+    <maxValue>0.99</maxValue>
+  </StatDef>
+
+  <StatDef>
+    <defName>GlobalLearningFactor</defName>
+    <label>global learning factor</label>
+    <description>A multiplier on passive, learning-by-doing skill experience gain.</description>
+    <category>BasicsPawn</category>
+    <defaultBaseValue>1</defaultBaseValue>
+  </StatDef>
+
+  <StatDef>
+    <defName>MentalBreakThreshold</defName>
+    <label>mental break threshold</label>
+    <description>As long as a pawn's mood is below this level, they are in danger of having a mental break.</description>
+    <category>BasicsPawn</category>
+    <defaultBaseValue>0.35</defaultBaseValue>
+    <minValue>0.01</minValue>
+  </StatDef>
+
+</Defs>
