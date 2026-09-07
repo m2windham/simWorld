@@ -8,6 +8,9 @@
 
   <RecipeDef>
     <defName>Make_Blocks_Sandstone</defName>
+    <researchPrerequisites>
+      <li>Masonry</li>
+    </researchPrerequisites>
     <label>cut sandstone blocks</label>
     <jobString>Cutting sandstone blocks.</jobString>
     <workAmount>1600</workAmount>

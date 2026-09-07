@@ -12,6 +12,9 @@
 
   <RecipeDef>
     <defName>CookMealSimple</defName>
+    <researchPrerequisites>
+      <li>Cooking</li>
+    </researchPrerequisites>
     <label>cook simple meal</label>
     <jobString>Cooking a simple meal.</jobString>
     <workAmount>300</workAmount>
@@ -31,6 +34,9 @@
 
   <RecipeDef>
     <defName>CookMealFine</defName>
+    <researchPrerequisites>
+      <li>Cooking</li>
+    </researchPrerequisites>
     <label>cook fine meal</label>
     <jobString>Cooking a fine meal.</jobString>
     <workAmount>450</workAmount>
@@ -52,6 +58,9 @@
 
   <RecipeDef>
     <defName>CookMealLavish</defName>
+    <researchPrerequisites>
+      <li>FoodScience</li>
+    </researchPrerequisites>
     <label>cook lavish meal</label>
     <jobString>Cooking a lavish meal.</jobString>
     <workAmount>600</workAmount>
@@ -73,6 +82,9 @@
 
   <RecipeDef>
     <defName>MakePemmican</defName>
+    <researchPrerequisites>
+      <li>FoodPreservation</li>
+    </researchPrerequisites>
     <label>make pemmican</label>
     <jobString>Making pemmican.</jobString>
     <workAmount>500</workAmount>
