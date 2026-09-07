@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Family relations: derived from Pawn_RelationsTracker's own spouseId/parentIdA/parentIdB/childIds, never
+    stored a second time. See PawnRelationWorker_Spouse/_Parent/_Child/_Sibling.
+  -->
+
+  <PawnRelationDef>
+    <defName>Spouse</defName>
+    <label>spouse</label>
+    <familial>true</familial>
+    <workerClass>SimWorld.Social.PawnRelationWorker_Spouse</workerClass>
+    <opinionOffset>25</opinionOffset>
+  </PawnRelationDef>
+
+  <PawnRelationDef>
+    <defName>Parent</defName>
+    <label>parent</label>
+    <familial>true</familial>
+    <workerClass>SimWorld.Social.PawnRelationWorker_Parent</workerClass>
+    <opinionOffset>15</opinionOffset>
+  </PawnRelationDef>
+
+  <PawnRelationDef>
+    <defName>Child</defName>
+    <label>child</label>
+    <familial>true</familial>
+    <workerClass>SimWorld.Social.PawnRelationWorker_Child</workerClass>
+    <opinionOffset>15</opinionOffset>
+  </PawnRelationDef>
+
+  <PawnRelationDef>
+    <defName>Sibling</defName>
+    <label>sibling</label>
+    <familial>true</familial>
+    <workerClass>SimWorld.Social.PawnRelationWorker_Sibling</workerClass>
+    <opinionOffset>10</opinionOffset>
+  </PawnRelationDef>
+
+  <!--
+    Non-family relations: stored as DirectPawnRelation on both pawns (see SocialUtility.AddMutualRelation).
+    workerClass is omitted — PawnRelationWorker's own default already reads directRelations.
+  -->
+
+  <PawnRelationDef>
+    <defName>Friend</defName>
+    <label>friend</label>
+    <opinionOffset>12</opinionOffset>
+  </PawnRelationDef>
+
+  <PawnRelationDef>
+    <defName>Rival</defName>
+    <label>rival</label>
+    <opinionOffset>-18</opinionOffset>
+  </PawnRelationDef>
+
+  <PawnRelationDef>
+    <defName>Lover</defName>
+    <label>lover</label>
+    <opinionOffset>20</opinionOffset>
+  </PawnRelationDef>
+
+  <PawnRelationDef>
+    <defName>ExSpouse</defName>
+    <label>ex-spouse</label>
+    <opinionOffset>-8</opinionOffset>
+  </PawnRelationDef>
+
+</Defs>

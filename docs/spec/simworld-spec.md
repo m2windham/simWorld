@@ -507,10 +507,29 @@ flowchart LR
   blunt.
 - Downed and dead come from the health system, never from combat directly.
 
-### 8.4 Social & Belief — _planned_
+### 8.4 Social & Belief
 
-- Opinion from traits, shared history, interactions and belief alignment.
-- Belief system feeding the thought system; group rituals with quality outcome.
+- **Opinion** (`Pawn_RelationsTracker.OpinionOf`): relation type, social memories
+  about that specific pawn, personality traits, and a stable compatibility factor
+  hashed from the two pawns' ids — RimWorld's own mechanic, so a given pair just
+  naturally gets on or doesn't, cheaply and deterministically.
+- **Relations** (`PawnRelationDef`): family kinds (spouse, parent, child, sibling)
+  are derived on demand from demography's own ids (`spouseId`/`parentIdA`/
+  `parentIdB`/`childIds`) rather than stored a second time; friend, rival, lover
+  and ex-spouse are stored as a `DirectPawnRelation` on both pawns.
+- **Interactions** (`InteractionDef` + `InteractionWorker`): chitchat, deep talk,
+  insult and slight, selected by weight per pair on a population-wide sweep every
+  2,500 ticks — a rare-tick manager sweep (`SocialInteractionManager`), not
+  per-pawn-per-tick work. A sufficiently bad opinion and mood can escalate an
+  insult into a social fight, reusing the existing `MentalStateDef` machinery
+  rather than a parallel system.
+- **Social thoughts** are ordinary memory thoughts with `otherPawn` set (the mood
+  system's own stack, not a separate one), feeding both mood and opinion
+  (`ThoughtStage.baseOpinionOffset`).
+
+**Belief — _planned_.** Ideology, precepts, memes, rituals and roles are out of
+scope for this pass: belief is a separate, much larger design the god layer will
+want to own (see `docs/status.json` system 17's `social.ideology` item).
 
 ## 9. Director Layer
 

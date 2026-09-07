@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <InteractionDef>
+    <defName>Chitchat</defName>
+    <label>chitchat</label>
+    <workerClass>SimWorld.Social.InteractionWorker_Chitchat</workerClass>
+  </InteractionDef>
+
+  <InteractionDef>
+    <defName>DeepTalk</defName>
+    <label>deep talk</label>
+    <workerClass>SimWorld.Social.InteractionWorker_DeepTalk</workerClass>
+  </InteractionDef>
+
+  <InteractionDef>
+    <defName>Insult</defName>
+    <label>insult</label>
+    <workerClass>SimWorld.Social.InteractionWorker_Insult</workerClass>
+  </InteractionDef>
+
+  <InteractionDef>
+    <defName>Slight</defName>
+    <label>slight</label>
+    <workerClass>SimWorld.Social.InteractionWorker_Slight</workerClass>
+  </InteractionDef>
+
+</Defs>

@@ -94,6 +94,10 @@
         <label>abrasive</label>
         <description>Blunt to the point of rudeness, whether it means to be or not.</description>
         <degree>0</degree>
+        <!-- Recalled as RimWorld's own constant (a flat -15 to how everyone else sees this pawn) but not
+             checked against decompiled source in this environment; pinned by a test asserting the sign and
+             that it beats a plain compatibility swing, not the literal value. -->
+        <opinionOffset>-15</opinionOffset>
       </li>
     </degreeDatas>
   </TraitDef>

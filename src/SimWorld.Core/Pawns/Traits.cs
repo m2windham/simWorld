@@ -18,6 +18,15 @@ namespace SimWorld.Pawns
         public List<StatModifier>? statFactors;
         public float socialFightChanceFactor = 1f;
 
+        /// <summary>
+        /// Flat offset to how every other pawn sees the pawn holding this trait/degree, regardless of who is
+        /// looking (RimWorld: e.g. Abrasive's constant "-15 opinion of me"). Read by
+        /// <see cref="Social.SocialUtility.OpinionOf"/> from the *other* pawn's traits — distinct from
+        /// <see cref="PawnRelationDef.opinionOffset"/>, which comes from the relationship between the pair
+        /// rather than either pawn's personality alone.
+        /// </summary>
+        public float opinionOffset;
+
         /// <summary>Overrides <see cref="TraitDef.disabledWorkTags"/> for this degree when non-<see cref="WorkTags.None"/>.</summary>
         public WorkTags disabledWorkTags = WorkTags.None;
 
@@ -193,6 +202,25 @@ namespace SimWorld.Pawns
         }
 
         public int DegreeOfTrait(TraitDef def) => GetTrait(def)?.degree ?? 0;
+
+        /// <summary>Sum of every held trait/degree's <see cref="TraitDegreeData.opinionOffset"/> — how this
+        /// pawn's personality alone shifts everyone else's opinion of it, before relations or shared history
+        /// (see <see cref="Social.SocialUtility.OpinionOf"/>).</summary>
+        public float ConstantOpinionOffset()
+        {
+            float total = 0f;
+            for (int i = 0; i < allTraits.Count; i++) total += allTraits[i].CurrentData.opinionOffset;
+            return total;
+        }
+
+        /// <summary>Every held trait/degree's <see cref="TraitDegreeData.socialFightChanceFactor"/> multiplied
+        /// together (RimWorld's own idiom for combining independent per-trait chance factors).</summary>
+        public float SocialFightChanceFactor()
+        {
+            float factor = 1f;
+            for (int i = 0; i < allTraits.Count; i++) factor *= allTraits[i].CurrentData.socialFightChanceFactor;
+            return factor;
+        }
 
         public void ExposeData()
         {

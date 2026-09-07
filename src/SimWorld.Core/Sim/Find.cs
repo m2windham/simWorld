@@ -19,6 +19,7 @@ namespace SimWorld.Sim
         [ThreadStatic] private static SimWorld.Quests.QuestManager? questManager;
         [ThreadStatic] private static SimWorld.Scenario.Scenario? scenario;
         [ThreadStatic] private static SimWorld.Pawns.FamilyManager? familyManager;
+        [ThreadStatic] private static SimWorld.Social.SocialInteractionManager? socialInteractionManager;
 
         public static TickManager TickManager
         {
@@ -80,6 +81,13 @@ namespace SimWorld.Sim
         /// Drops the thread's services so the next access starts fresh (tests). Every service above must be
         /// cleared here: a missed one leaks state between tests that call this expecting a clean slate.
         /// </summary>
+        /// <summary>Every household's periodic chitchat/insult/social-fight sweep (RimWorld: <c>Pawn_InteractionsTracker</c>, folded into one population-wide manager — see <see cref="SimWorld.Social.SocialInteractionManager"/>).</summary>
+        public static SimWorld.Social.SocialInteractionManager SocialInteractionManager
+        {
+            get => socialInteractionManager ??= new SimWorld.Social.SocialInteractionManager();
+            set => socialInteractionManager = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
         public static void Reset()
         {
             tickManager = null;
@@ -90,6 +98,7 @@ namespace SimWorld.Sim
             questManager = null;
             scenario = null;
             familyManager = null;
+            socialInteractionManager = null;
         }
     }
 }

@@ -53,6 +53,10 @@
         <label>kind</label>
         <description>Warm and considerate to others.</description>
         <degree>0</degree>
+        <!-- Not sourced from RimWorld (vanilla's Kind trait has no direct opinion number); SimWorld's own
+             choice, a positive counterpart to Abrasive's -15 sized to matter without dominating a relation or
+             memory. Pinned by a test asserting Kind beats a plain pawn's opinion score, not the literal value. -->
+        <opinionOffset>10</opinionOffset>
       </li>
     </degreeDatas>
   </TraitDef>
