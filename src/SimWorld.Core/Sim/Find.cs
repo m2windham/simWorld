@@ -14,6 +14,9 @@ namespace SimWorld.Sim
         [ThreadStatic] private static TickManager? tickManager;
         [ThreadStatic] private static SimWorld.Research.ResearchManager? researchManager;
         [ThreadStatic] private static Storyteller? storyteller;
+        [ThreadStatic] private static SimWorld.Letters.LetterStack? letterStack;
+        [ThreadStatic] private static SimWorld.Quests.QuestManager? questManager;
+        [ThreadStatic] private static SimWorld.Scenario.Scenario? scenario;
 
         public static TickManager TickManager
         {
@@ -33,6 +36,27 @@ namespace SimWorld.Sim
         {
             get => storyteller ??= new Storyteller();
             set => storyteller = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>Every letter waiting for the player (RimWorld: <c>Verse.Find.LetterStack</c>).</summary>
+        public static SimWorld.Letters.LetterStack LetterStack
+        {
+            get => letterStack ??= new SimWorld.Letters.LetterStack();
+            set => letterStack = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>Every generated quest (RimWorld: <c>RimWorld.Find.QuestManager</c>).</summary>
+        public static SimWorld.Quests.QuestManager QuestManager
+        {
+            get => questManager ??= new SimWorld.Quests.QuestManager();
+            set => questManager = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>The scenario the running game started from (RimWorld: <c>Verse.Find.Scenario</c>).</summary>
+        public static SimWorld.Scenario.Scenario Scenario
+        {
+            get => scenario ??= new SimWorld.Scenario.Scenario();
+            set => scenario = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>Drops the thread's services so the next access starts fresh (tests).</summary>
