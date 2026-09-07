@@ -138,6 +138,13 @@
       "state": "open",
       "title": "How long is a playthrough?",
       "note": "Nothing in the repo states an intended length, and every further tech-tree tuning decision depends on it. Measured: the authored tree holds about 50 years of a two-researcher civilization and is exhausted for good on day 3,074; at a 10-year horizon only 52% is reachable, at 50 years 98.4%, and past that every playstyle ends in an identical state. See docs/research/tech-reachability.md."
+    },
+    {
+      "id": "perf",
+      "date": "2026-09-07",
+      "state": "open",
+      "title": "The population ceiling is health-tracker cost",
+      "note": "Measured: 14 microseconds per pawn-day at N<=500, and 15x speed holds to roughly 2,500-5,000 healthy pawns. HealthTick is 75.4% of all per-pawn tick cost. One unconditional per-tick capacity check was 86.5% of all allocation; making it non-allocating cut garbage 31x (4,232 MB to 138 MB per 1,000 pawn-days, 33 Gen0 collections to 1) but wall clock only 10% — so the ceiling is per-tick CPU, not GC. Sick pawns are far worse: 3 untended injuries measured 24.8x, and adding one disease did not finish a single day at N=1,000. See docs/perf/baseline.md."
     }
   ],
   "systems": [

@@ -185,10 +185,14 @@ namespace SimWorld.Health
         private void TryNaturalHealing()
         {
             bool healed = false;
+            // Indexed loops rather than GetHediffs<T>(): that helper is a `yield return` iterator and
+            // allocates an enumerator per call even when the pawn has no injuries at all. This runs on
+            // every heal interval for every pawn regardless (docs/perf/baseline.md §4).
             tmpInjuries.Clear();
-            foreach (Hediff_Injury injury in hediffSet.GetHediffs<Hediff_Injury>())
+            List<Hediff> all = hediffSet.hediffs;
+            for (int i = 0; i < all.Count; i++)
             {
-                if (injury.CanHealNaturally()) tmpInjuries.Add(injury);
+                if (all[i] is Hediff_Injury injury && injury.CanHealNaturally()) tmpInjuries.Add(injury);
             }
             if (tmpInjuries.Count > 0)
             {
@@ -204,9 +208,9 @@ namespace SimWorld.Health
             if (!starving)
             {
                 tmpInjuries.Clear();
-                foreach (Hediff_Injury injury in hediffSet.GetHediffs<Hediff_Injury>())
+                for (int i = 0; i < all.Count; i++)
                 {
-                    if (injury.IsTended && !injury.IsPermanent) tmpInjuries.Add(injury);
+                    if (all[i] is Hediff_Injury injury && injury.IsTended && !injury.IsPermanent) tmpInjuries.Add(injury);
                 }
                 if (tmpInjuries.Count > 0)
                 {
