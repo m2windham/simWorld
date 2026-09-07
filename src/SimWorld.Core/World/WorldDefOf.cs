@@ -18,5 +18,6 @@ namespace SimWorld.World
     public static class WorldObjectDefOf
     {
         public static WorldObjectDef Settlement = null!;
+        public static WorldObjectDef Caravan = null!;
     }
 }

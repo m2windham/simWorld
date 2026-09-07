@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Economy pricing (RimWorld: StatDefs). TradeUtility reads MarketValue off a ThingDef's statBases to
+    price it; a ThingDef that sets none prices at 0 (this stat's own defaultBaseValue), not some silently
+    assumed value.
+  -->
+
+  <StatDef>
+    <defName>MarketValue</defName>
+    <label>market value</label>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+</Defs>

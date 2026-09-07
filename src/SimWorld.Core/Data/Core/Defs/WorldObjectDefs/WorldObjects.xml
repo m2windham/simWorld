@@ -7,4 +7,10 @@
     <worldObjectClass>SimWorld.World.WorldObject</worldObjectClass>
   </WorldObjectDef>
 
+  <WorldObjectDef>
+    <defName>Caravan</defName>
+    <label>caravan</label>
+    <worldObjectClass>SimWorld.Caravans.Caravan</worldObjectClass>
+  </WorldObjectDef>
+
 </Defs>

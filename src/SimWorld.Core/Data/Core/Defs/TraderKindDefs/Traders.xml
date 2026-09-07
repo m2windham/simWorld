@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Trader kinds (RimWorld: TraderKindDefs). Stock generation (stockGenerators) is a placeholder shape
+    here — it needs real Things to fill in, which land with the Things/Crafting systems.
+  -->
+
+  <TraderKindDef>
+    <defName>Caravan_Tribal_BulkGoods</defName>
+    <label>tribal bulk goods caravan</label>
+    <commonality>1.0</commonality>
+    <orbital>false</orbital>
+    <requestable>true</requestable>
+    <tradeCurrency>Silver</tradeCurrency>
+  </TraderKindDef>
+
+  <TraderKindDef>
+    <defName>Caravan_Outlander_BulkGoods</defName>
+    <label>outlander bulk goods caravan</label>
+    <commonality>1.0</commonality>
+    <orbital>false</orbital>
+    <requestable>true</requestable>
+    <tradeCurrency>Silver</tradeCurrency>
+  </TraderKindDef>
+
+  <TraderKindDef>
+    <defName>Orbital_BulkGoods</defName>
+    <label>orbital bulk goods trader</label>
+    <commonality>0.5</commonality>
+    <orbital>true</orbital>
+    <requestable>true</requestable>
+    <tradeCurrency>Silver</tradeCurrency>
+  </TraderKindDef>
+
+</Defs>

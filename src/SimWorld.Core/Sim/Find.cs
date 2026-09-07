@@ -14,6 +14,7 @@ namespace SimWorld.Sim
         [ThreadStatic] private static TickManager? tickManager;
         [ThreadStatic] private static SimWorld.Research.ResearchManager? researchManager;
         [ThreadStatic] private static Storyteller? storyteller;
+        [ThreadStatic] private static SimWorld.Factions.FactionManager? factionManager;
         [ThreadStatic] private static SimWorld.Letters.LetterStack? letterStack;
         [ThreadStatic] private static SimWorld.Quests.QuestManager? questManager;
         [ThreadStatic] private static SimWorld.Scenario.Scenario? scenario;
@@ -38,6 +39,13 @@ namespace SimWorld.Sim
             set => storyteller = value ?? throw new ArgumentNullException(nameof(value));
         }
 
+        /// <summary>Every civilization and its diplomatic relations (RimWorld: <c>Verse.Find.FactionManager</c>).</summary>
+        public static SimWorld.Factions.FactionManager FactionManager
+        {
+            get => factionManager ??= new SimWorld.Factions.FactionManager();
+            set => factionManager = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
         /// <summary>Every letter waiting for the player (RimWorld: <c>Verse.Find.LetterStack</c>).</summary>
         public static SimWorld.Letters.LetterStack LetterStack
         {
@@ -59,12 +67,19 @@ namespace SimWorld.Sim
             set => scenario = value ?? throw new ArgumentNullException(nameof(value));
         }
 
-        /// <summary>Drops the thread's services so the next access starts fresh (tests).</summary>
+        /// <summary>
+        /// Drops the thread's services so the next access starts fresh (tests). Every service above must be
+        /// cleared here: a missed one leaks state between tests that call this expecting a clean slate.
+        /// </summary>
         public static void Reset()
         {
             tickManager = null;
             researchManager = null;
             storyteller = null;
+            factionManager = null;
+            letterStack = null;
+            questManager = null;
+            scenario = null;
         }
     }
 }

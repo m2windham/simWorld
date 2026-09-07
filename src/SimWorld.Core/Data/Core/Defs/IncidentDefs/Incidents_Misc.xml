@@ -3,8 +3,10 @@
 
   <!--
     Everyday incidents. Most use IncidentWorker_Placeholder: they validate and record that they fired, but
-    their real effect (spawning a wanderer pawn, an actual trade caravan, weather changing the map) belongs
-    to systems that don't exist yet (see IncidentWorker_Placeholder's doc comment).
+    their real effect (spawning a wanderer pawn, weather changing the map) belongs to systems that don't
+    exist yet (see IncidentWorker_Placeholder's doc comment). TraderCaravanArrival now picks a real,
+    non-hostile faction (see IncidentWorker_TraderCaravanArrival) — actually spawning that trader's goods
+    and pawns on a map still needs the Things/Crafting and Pawn Generation systems.
   -->
 
   <IncidentDef>
@@ -24,7 +26,7 @@
     <description>A trade caravan arrives to do business.</description>
     <category>FactionArrival</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
-    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <workerClass>SimWorld.Director.IncidentWorker_TraderCaravanArrival</workerClass>
     <baseChance>1.0</baseChance>
   </IncidentDef>
 

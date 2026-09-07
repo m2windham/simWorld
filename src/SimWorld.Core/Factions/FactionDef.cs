@@ -1,11 +1,15 @@
+using System.Collections.Generic;
 using SimWorld.Defs;
 
 namespace SimWorld.Factions
 {
     /// <summary>
-    /// A kind of civilization (RimWorld: <c>RimWorld.FactionDef</c>). This is the minimal slice world
-    /// generation needs to seed rival civilizations and place their settlements; diplomacy, goodwill and
-    /// raid behaviour land with the full Factions system.
+    /// A kind of civilization (RimWorld: <c>RimWorld.FactionDef</c>). World generation uses it to seed rival
+    /// civilizations and place their settlements; this also carries the diplomacy tuning
+    /// <see cref="Faction"/>/<see cref="FactionGenerator"/> use for initial relations and goodwill drift.
+    /// Raid squad composition and caravan traveler kinds (RimWorld's <c>pawnGroupMakers</c>/
+    /// <c>caravanTravelerKinds</c>) are out of scope here — they need pawn kinds from the Pawn Generation
+    /// system, so this only carries the commonality weight a future raid-composition system would read.
     /// </summary>
     public class FactionDef : Def
     {
@@ -34,5 +38,57 @@ namespace SimWorld.Factions
 
         /// <summary>Lower bound on settlements for one instance of this faction once created; null = no extra floor beyond 1.</summary>
         public int? minSettlements;
+
+        // ---- diplomacy (RimWorld: RimWorld.FactionDef's goodwill/relation tuning) ----
+
+        /// <summary>Equilibrium goodwill this faction's relation with the player naturally drifts toward via <see cref="Faction.FactionTick"/>.</summary>
+        public IntRange naturalColonyGoodwill = IntRange.Zero;
+
+        /// <summary>Goodwill gained per day while below <see cref="naturalColonyGoodwill"/>.</summary>
+        public float goodwillDailyGain;
+
+        /// <summary>Goodwill lost per day while above <see cref="naturalColonyGoodwill"/>.</summary>
+        public float goodwillDailyFall;
+
+        /// <summary>Range the initial goodwill with the player is drawn from at world generation (see <see cref="Faction.TryMakeInitialRelationsWith"/>).</summary>
+        public IntRange startingGoodwill = IntRange.Zero;
+
+        /// <summary>
+        /// Set on the player's own def: world generation (<see cref="FactionGenerator"/>) guarantees at
+        /// least one other faction starts Hostile to a faction whose def has this set, even if none rolled
+        /// hostile naturally.
+        /// </summary>
+        public bool mustStartOneEnemy;
+
+        /// <summary>Relative weight this faction is picked to raid with, versus other hostile factions. Not yet consumed — raid squad selection lands with the Combat/Director systems.</summary>
+        public float raidCommonality = 1f;
+
+        /// <summary>This faction's ruler's title (e.g. "chief", "governor"). Flavor text only so far.</summary>
+        public string? leaderTitle;
+
+        /// <summary>
+        /// Prefix bank <see cref="FactionNameMaker"/> draws from when naming an instance of this faction;
+        /// falls back to a bank keyed by <see cref="techLevel"/> when empty.
+        /// </summary>
+        public List<string>? settlementNamePrefixes;
+
+        /// <summary>Ambient temperature band a caravan/trader of this faction will travel in. Not yet consumed — no weather/temperature system exists to gate arrivals against it.</summary>
+        public FloatRange allowedArrivalTemperatureRange = new FloatRange(-1000f, 1000f);
+
+        /// <summary>False for non-sapient factions (insect hives, mechanoid clusters); affects nothing yet, kept for parity with content that may set it.</summary>
+        public bool humanlikeFaction = true;
+
+        /// <summary>Whether this faction is naturally hostile to humanlike pawns with no faction of their own. Not yet consumed — no factionless-pawn population exists.</summary>
+        public bool hostileToFactionlessHumanlikes;
+
+        /// <summary>Whether this faction's raiders retreat once critically wounded/outmatched. Not yet consumed — raid AI lands with Combat.</summary>
+        public bool autoFlee = true;
+
+        public string? pawnSingular;
+
+        public string? pawnsPlural;
+
+        /// <summary>Days after world start before this faction may raid. Not yet consumed — raid incidents don't yet key off the originating faction.</summary>
+        public int earliestRaidDays;
     }
 }
