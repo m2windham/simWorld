@@ -9,9 +9,11 @@ god-game layer comes after.
 | Path | What |
 | --- | --- |
 | `src/SimWorld.Core/` | Engine-free simulation core (C# 9, `netstandard2.1`). No `UnityEngine` references; Unity consumes it as a local package. |
+| `src/SimWorld.Core/Data/Core/Defs/` | Shipped content: XML Defs, one directory per Def type. |
 | `tests/SimWorld.Core.Tests/` | xUnit suite (`dotnet test`). |
+| `CLAUDE.md` | Conventions for adding modules, content and tests. Read before contributing. |
 | `docs/research/rimworld-mechanics.md` | RimWorld systems reference with diagrams per system. |
-| `docs/spec/simworld-spec.md` | SimWorld layered-architecture spec. |
+| `docs/spec/simworld-spec.md` | SimWorld architecture as built, plus the civilization translation. |
 | `docs/status.json` | Single source of truth for the build tracker: systems, translations, checklists, decisions. |
 | `tools/blueprint/` | Generates the SimWorld Blueprint page (research, spec, tracker) from the docs above. |
 
