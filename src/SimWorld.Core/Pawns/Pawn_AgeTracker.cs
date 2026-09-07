@@ -157,6 +157,11 @@ namespace SimWorld.Pawns
             if (race == null) throw new ArgumentNullException(nameof(race));
             float rolledAgeYears = race.lifeExpectancy - DemographyTuning.LifespanSpreadYears
                 + Rand.Value * (2f * DemographyTuning.LifespanSpreadYears);
+
+            // The era hook: medical knowledge the civilization holds *at the moment of birth* shifts what this
+            // life can expect. Evaluated here rather than at death on purpose — curing disease later cannot
+            // retroactively have given someone a healthier childhood.
+            rolledAgeYears += MedicineFactor() * DemographyTuning.MedicineLifespanBonusYears;
             float minAgeYears = AgeBiologicalYearsFloat + 1f;
             if (rolledAgeYears < minAgeYears) rolledAgeYears = minAgeYears;
             deathAgeBudgetTicks = (long)(rolledAgeYears * GenDate.TicksPerYear);
@@ -180,6 +185,32 @@ namespace SimWorld.Pawns
         /// budget was never rolled (nothing to adjust). Internal: only <c>SimWorld.Core</c> systems (health,
         /// research, this module) call it — never a UI, never outside code.
         /// </summary>
+        /// <summary>
+        /// Fraction of the civilization's medical research completed, in [0, 1]; 0 when no medical projects
+        /// exist or none are done. Reads <see cref="Sim.Find.ResearchManager"/>, so it reflects whatever
+        /// civilization the running game belongs to.
+        /// </summary>
+        private static float MedicineFactor()
+        {
+            int total = 0, done = 0;
+            foreach (Research.ResearchProjectDef project in Defs.DefDatabase<Research.ResearchProjectDef>.AllDefsListForReading)
+            {
+                if (project.tags == null || !project.tags.Contains(DemographyTuning.MedicineTrackTag)) continue;
+                total++;
+                if (Sim.Find.ResearchManager.IsFinished(project)) done++;
+            }
+            return total == 0 ? 0f : (float)done / total;
+        }
+
+        /// <summary>
+        /// Test-only view of the hidden budget, in years. Deliberately <c>internal</c>, not public: tests must
+        /// be able to prove that medicine lengthens a life and that hunger shortens one, but no game or render
+        /// code may branch on a pawn's death age. If this ever needs to become public, the hiding rule above
+        /// has been abandoned — reread it first.
+        /// </summary>
+        internal float DebugDeathAgeYears =>
+            deathAgeBudgetTicks == long.MaxValue ? float.PositiveInfinity : (float)deathAgeBudgetTicks / GenDate.TicksPerYear;
+
         internal void AdjustLifespan(float days, string reason)
         {
             if (deathAgeBudgetTicks == long.MaxValue) return;

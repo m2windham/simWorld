@@ -53,8 +53,7 @@ namespace SimWorld.Pawns
                 livingCount = founderB == null ? 1 : 2,
                 totalCount = founderB == null ? 1 : 2,
                 lastBirthTick = foundingTick - DemographyTuning.MinBirthIntervalTicks,
-                surnameSeedA = Rand.Value,
-                surnameSeedB = Rand.Value,
+                surname = PawnBioAndNameGenerator.GenerateSurname(),
             };
             families.Add(family);
 

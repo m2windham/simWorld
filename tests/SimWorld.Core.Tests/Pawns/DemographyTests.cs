@@ -550,8 +550,8 @@ namespace SimWorld.Tests.Pawns
             Assert.Equal(family.generation, loadedFamily.generation);
             Assert.Equal(family.livingCount, loadedFamily.livingCount);
             Assert.Equal(family.totalCount, loadedFamily.totalCount);
-            Assert.Equal(family.surnameSeedA, loadedFamily.surnameSeedA);
-            Assert.Equal(family.surnameSeedB, loadedFamily.surnameSeedB);
+            Assert.Equal(family.surname, loadedFamily.surname);
+            Assert.NotEmpty(loadedFamily.surname);
         }
 
         [Fact]
@@ -659,5 +659,58 @@ namespace SimWorld.Tests.Pawns
             Assert.Equal(family.id, founder.relations.familyId);
             Assert.False(founder.relations.IsMarried);
         }
+        // ---- lifespan modifiers: the budget is a living thing, not a verdict ----
+
+        [Fact]
+        public void Medical_research_lengthens_the_lives_of_those_born_after_it()
+        {
+            // Same seed either side, so the only difference is what the civilization knows at the moment of birth.
+            float Average(bool withMedicine)
+            {
+                Find.ResearchManager = new global::SimWorld.Research.ResearchManager();
+                if (withMedicine)
+                {
+                    foreach (var project in global::SimWorld.Defs.DefDatabase<global::SimWorld.Research.ResearchProjectDef>.AllDefsListForReading)
+                    {
+                        if (project.tags != null && project.tags.Contains(DemographyTuning.MedicineTrackTag))
+                        {
+                            Find.ResearchManager.FinishProject(project);
+                        }
+                    }
+                }
+                Rand.Current = new RandomStream(90210);
+                float total = 0f;
+                const int n = 60;
+                for (int i = 0; i < n; i++)
+                {
+                    Pawn p = global::SimWorld.Pawns.Generation.PawnGenerator.GeneratePawn(
+                        new global::SimWorld.Pawns.Generation.PawnGenerationRequest(PawnKindDefOf.Colonist));
+                    total += p.ageTracker.DebugDeathAgeYears;
+                }
+                return total / n;
+            }
+
+            float without = Average(false);
+            float with = Average(true);
+            Assert.True(with > without, $"medicine should lengthen life: {with} vs {without}");
+            Assert.InRange(with - without, 1f, DemographyTuning.MedicineLifespanBonusYears + 1f);
+        }
+
+        [Fact]
+        public void Starving_spends_the_lifespan_budget()
+        {
+            Pawn p = global::SimWorld.Pawns.Generation.PawnGenerator.GeneratePawn(
+                new global::SimWorld.Pawns.Generation.PawnGenerationRequest(PawnKindDefOf.Colonist));
+            float before = p.ageTracker.DebugDeathAgeYears;
+
+            for (int i = 0; i < 20; i++) p.Notify_StarvationInterval(true);
+            float starved = p.ageTracker.DebugDeathAgeYears;
+            Assert.True(starved < before, "hunger should shorten the budget");
+
+            // Being fed stops the bleeding; it does not give the years back.
+            for (int i = 0; i < 20; i++) p.Notify_StarvationInterval(false);
+            Assert.Equal(starved, p.ageTracker.DebugDeathAgeYears, 3);
+        }
+
     }
 }

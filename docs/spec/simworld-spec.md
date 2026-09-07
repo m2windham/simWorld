@@ -268,6 +268,61 @@ flowchart TD
   Toils --> Path[Region graph A*]
 ```
 
+### 7.5 Demography, Lineage & Lifespan
+
+RimWorld has no equivalent to port: a colony of twelve never needs generations.
+A civilization does, so this module is SimWorld's own, built on the ported
+`Pawn_AgeTracker` clock (`GenDate.TicksPerYear` = 3,600,000 ticks, life stages
+at 3 / 13 / 18) rather than on a compressed one.
+
+- **Household as the unit of lineage.** `Family` records one or two founders,
+  a surname drawn from the same `NameBankDef` `Last` pools individual pawn
+  names come from, its members, generation depth, and living vs. total counts.
+  `Pawn_RelationsTracker` carries the back-references: `familyId`, `spouseId`,
+  `motherId`, `fatherId`.
+- **Marriage founds a new household; it never merges two.** Each couple
+  starts a household of its own. The alternative — attaching the couple to one
+  partner's existing house — concentrates a civilization into a single dynasty:
+  measured at 90% of the population in one household in Epoch
+  (`docs/research/epoch-inspiration.md` §5). Under the founding rule, a
+  120-year regression run ends with 1,240 living descendants across 284
+  households and the largest holding 0.8% of them.
+- **Births** roll once per demographic interval per eligible couple, gated by
+  the fertility window, a minimum interval since the last child, and food
+  security. Only the _shape_ of Epoch's formula is carried over
+  (base × mood × food security × doctrine); every constant is SimWorld's own
+  and documented at its declaration in `DemographyTuning`.
+- **Death from age is a hidden budget, not a curve.** Each pawn rolls a private
+  death age at generation — its race's `lifeExpectancy` ± `LifespanSpreadYears`
+  — and dies when it reaches it. The budget is deliberately unreadable: no
+  public accessor exists, only an `internal` one for tests. The player is never
+  shown how long a citizen has left.
+- **The budget moves with the civilization.** Medical research completed
+  _before_ a pawn is born lengthens it, scaled by the fraction of the
+  `MedicineHealth` track finished; starvation intervals spend it, and eating
+  again stops the loss without refunding it. Medicine is read at birth on
+  purpose — curing a disease in 1650 cannot retroactively have given someone
+  born in 1600 a healthier childhood. That is the same write-time rule the
+  chronicle's fidelity model needs (§10).
+- **The sweep** runs on `FamilyManager.DemographyTick` once per simulated year:
+  marriages, then births, then deaths from age, then chronicle entries for each.
+
+```mermaid
+flowchart TD
+  Tick[DemographyTick · once per simulated year] --> M[Marriages: pair eligible unmarried adults]
+  M --> F[FoundHousehold · new family, new surname]
+  Tick --> B[Births: per couple, per interval]
+  B --> Gate{Fertile age · interval elapsed · food secure?}
+  Gate -->|yes| Child[Newborn joins the household]
+  Child --> Roll[Roll hidden lifespan budget]
+  Med[Completed MedicineHealth research at birth] --> Roll
+  Tick --> D[Deaths from age: age >= budget]
+  Hunger[Starvation interval] -->|spends budget| D
+  D --> Chron[Chronicle: birth, marriage, death]
+  Child --> Chron
+  F --> Chron
+```
+
 ## 8. World Simulation Layer
 
 ### 8.1 Crafting, Economy & Factions

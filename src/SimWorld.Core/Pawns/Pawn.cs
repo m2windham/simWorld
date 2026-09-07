@@ -134,12 +134,20 @@ namespace SimWorld.Pawns
 
         public bool HasHediff(HediffDef hediffDef) => health.hediffSet.HasHediff(hediffDef);
 
-        /// <summary>Starvation builds malnutrition each food interval; eating again lets it fade at the same pace.</summary>
+        /// <summary>
+        /// Starvation builds malnutrition each food interval; eating again lets it fade at the same pace.
+        /// Hunger also spends the pawn's hidden lifespan budget: malnutrition is survivable and still costs
+        /// years, so a civilization that starves its people repeatedly buries them younger.
+        /// </summary>
         public virtual void Notify_StarvationInterval(bool starving)
         {
             if (Dead || HediffDefOf.Malnutrition == null) return;
             float delta = starving ? HealthTuning.MalnutritionSeverityPerInterval : -HealthTuning.MalnutritionSeverityPerInterval;
             HealthUtility.AdjustSeverity(this, HediffDefOf.Malnutrition, delta);
+            if (starving)
+            {
+                ageTracker?.AdjustLifespan(-DemographyTuning.StarvationLifespanPenaltyDays, "hunger");
+            }
         }
 
         public virtual void Notify_TraitsChanged()

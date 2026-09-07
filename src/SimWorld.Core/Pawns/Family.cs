@@ -40,15 +40,12 @@ namespace SimWorld.Pawns
         public int lastBirthTick;
 
         /// <summary>
-        /// Two RNG draws captured once at founding (Epoch: <c>name_seed: [f64; 2]</c>, §5) so a future render
-        /// layer can compose this household's display surname deterministically without the core holding or
-        /// emitting the string itself — the same discipline <see cref="PawnBioAndNameGenerator"/> already
-        /// follows for individual names. Deliberately not resolved to a string here: nothing in
-        /// <c>SimWorld.Core</c> should hold prose the render layer owns.
+        /// This household's surname, drawn from the shared <see cref="NameBankDef"/> pools at founding — the
+        /// same source individual pawn names come from. SimWorld's core is defName- and content-driven rather
+        /// than string-free, so resolving the name here (as <see cref="PawnBioAndNameGenerator"/> already does)
+        /// keeps one naming path instead of leaving the render layer to reinvent it from seeds.
         /// </summary>
-        public float surnameSeedA;
-
-        public float surnameSeedB;
+        public string surname = string.Empty;
 
         public void ExposeData()
         {
@@ -60,10 +57,9 @@ namespace SimWorld.Pawns
             Scribe_Values.Look(ref livingCount, "livingCount");
             Scribe_Values.Look(ref totalCount, "totalCount");
             Scribe_Values.Look(ref lastBirthTick, "lastBirthTick");
-            Scribe_Values.Look(ref surnameSeedA, "surnameSeedA");
-            Scribe_Values.Look(ref surnameSeedB, "surnameSeedB");
+            Scribe_Values.Look(ref surname, "surname", string.Empty);
         }
 
-        public override string ToString() => "Family" + id + " (living " + livingCount + "/" + totalCount + ", gen " + generation + ")";
+        public override string ToString() => (surname.Length > 0 ? surname : "Family" + id.ToString(System.Globalization.CultureInfo.InvariantCulture)) + " (living " + livingCount + "/" + totalCount + ", gen " + generation + ")";
     }
 }

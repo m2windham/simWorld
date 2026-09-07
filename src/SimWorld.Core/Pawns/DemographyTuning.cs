@@ -40,6 +40,27 @@ namespace SimWorld.Pawns
         public const float LifespanSpreadYears = 15f;
 
         /// <summary>
+        /// Track tag whose completed research stands for a civilization's medical knowledge. Read at birth to
+        /// shift the newborn's hidden lifespan budget: a child born into a civilization that understands
+        /// medicine can expect to live longer than one born before it did.
+        /// </summary>
+        public const string MedicineTrackTag = "MedicineHealth";
+
+        /// <summary>
+        /// Years added to a newborn's expected lifespan when its civilization has completed _all_ medical
+        /// research, scaled linearly by the fraction completed. Chosen to be meaningful without dominating the
+        /// +/-15-year natural spread: full medicine is worth about two thirds of that band.
+        /// </summary>
+        public const float MedicineLifespanBonusYears = 10f;
+
+        /// <summary>
+        /// Days removed from the lifespan budget per food interval spent starving. Over a season of famine
+        /// (~15 in-game days at this interval) that is roughly a year off the end of a life — enough that
+        /// repeated hunger shortens a generation, without a single bad winter being a death sentence.
+        /// </summary>
+        public const float StarvationLifespanPenaltyDays = 4f;
+
+        /// <summary>
         /// Minimum years between successive births from the same household. Approximates historical,
         /// pre-modern, breastfeeding-mediated human birth spacing (roughly two years) rather than Epoch's
         /// 330-compressed-day cooldown, which was tuned for a lifespan a fifth as long as ours.

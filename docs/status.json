@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-09-06",
-  "testsTotal": 487,
+  "updated": "2026-09-07",
+  "testsTotal": 516,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1006,6 +1006,58 @@
         {
           "id": "quests.orchestrator",
           "label": "Game-start orchestrator to run Scenario.PostGameStart and the quest tick loop — lands with the game loop",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "demography",
+      "n": 19,
+      "rimworld": "Demography & Lineage",
+      "translation": "SimWorld original — RimWorld has no equivalent to port. A colony of twelve never needs generations; a civilization does. Built on the ported age/life-stage clock rather than a compressed one.",
+      "translationState": "implemented",
+      "module": "src/SimWorld.Core/Pawns — Family · FamilyManager · Pawn_RelationsTracker · DemographyTuning",
+      "status": "translated",
+      "tests": 29,
+      "items": [
+        {
+          "id": "demography.households",
+          "label": "Family as the unit of lineage: founders, surname drawn from the shared name banks, members, generation depth, living vs total counts; Pawn_RelationsTracker carries familyId, spouseId, motherId, fatherId",
+          "done": true
+        },
+        {
+          "id": "demography.marriage",
+          "label": "Marriage founds a new household rather than merging into an existing one — the rule that keeps a civilization from collapsing into one dynasty (Epoch measured 90% in a single household; SimWorld's 120-year regression ends at 0.8% across 284 households)",
+          "done": true
+        },
+        {
+          "id": "demography.births",
+          "label": "Birth roll per couple per interval, gated by fertility window, minimum birth interval and food security; only the shape of Epoch's formula is reused, every constant is SimWorld's own",
+          "done": true
+        },
+        {
+          "id": "demography.lifespan",
+          "label": "Death from age as a hidden pre-rolled budget (lifeExpectancy ± spread) with no public accessor — the player never sees how long a citizen has left",
+          "done": true
+        },
+        {
+          "id": "demography.modifiers",
+          "label": "The budget moves with the civilization: completed MedicineHealth research read at birth lengthens it; starvation intervals spend it and being fed again does not refund it",
+          "done": true
+        },
+        {
+          "id": "demography.chronicle",
+          "label": "Births, marriages and deaths recorded to the chronicle through the storyteller",
+          "done": true
+        },
+        {
+          "id": "demography.lod",
+          "label": "Population level-of-detail: tiering citizens by significance so a civilization-scale population is affordable, with the sim's own record fidelity doubling as what history remembers",
+          "done": false
+        },
+        {
+          "id": "demography.migration",
+          "label": "Migration and household founding by immigration — FoundHousehold already accepts a single founder, but nothing generates arrivals yet",
           "done": false
         }
       ]
