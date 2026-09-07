@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <ThingDef>
+    <defName>Bow_Short</defName>
+    <label>short bow</label>
+    <category>Item</category>
+    <verbs>
+      <li>
+        <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
+        <label>shoot</label>
+        <range>25.9</range>
+        <warmupTime>1.2</warmupTime>
+        <defaultCooldownTime>1.5</defaultCooldownTime>
+        <accuracyTouch>0.65</accuracyTouch>
+        <accuracyShort>0.65</accuracyShort>
+        <accuracyMedium>0.6</accuracyMedium>
+        <accuracyLong>0.5</accuracyLong>
+        <defaultProjectile>Arrow_Short</defaultProjectile>
+      </li>
+    </verbs>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Gun_Revolver</defName>
+    <label>revolver</label>
+    <category>Item</category>
+    <verbs>
+      <li>
+        <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
+        <label>shoot</label>
+        <range>25.9</range>
+        <warmupTime>0.3</warmupTime>
+        <defaultCooldownTime>1.6</defaultCooldownTime>
+        <accuracyTouch>0.8</accuracyTouch>
+        <accuracyShort>0.75</accuracyShort>
+        <accuracyMedium>0.55</accuracyMedium>
+        <accuracyLong>0.45</accuracyLong>
+        <burstShotCount>1</burstShotCount>
+        <defaultProjectile>Bullet_Revolver</defaultProjectile>
+      </li>
+    </verbs>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Gun_AssaultRifle</defName>
+    <label>assault rifle</label>
+    <category>Item</category>
+    <verbs>
+      <li>
+        <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
+        <label>shoot</label>
+        <range>27.5</range>
+        <warmupTime>0.35</warmupTime>
+        <defaultCooldownTime>1.8</defaultCooldownTime>
+        <accuracyTouch>0.7</accuracyTouch>
+        <accuracyShort>0.65</accuracyShort>
+        <accuracyMedium>0.55</accuracyMedium>
+        <accuracyLong>0.4</accuracyLong>
+        <burstShotCount>3</burstShotCount>
+        <ticksBetweenBurstShots>10</ticksBetweenBurstShots>
+        <defaultProjectile>Bullet_AssaultRifle</defaultProjectile>
+      </li>
+    </verbs>
+  </ThingDef>
+
+</Defs>

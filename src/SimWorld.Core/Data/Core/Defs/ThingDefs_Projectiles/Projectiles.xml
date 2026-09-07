@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- What a ranged weapon actually fires; a hit resolves instantly against the target, no flight simulated. -->
+
+  <ThingDef>
+    <defName>Arrow_Short</defName>
+    <label>short arrow</label>
+    <category>Projectile</category>
+    <projectile>
+      <damageDef>Cut</damageDef>
+      <damageAmountBase>11</damageAmountBase>
+      <armorPenetrationBase>0.16</armorPenetrationBase>
+      <speed>34</speed>
+    </projectile>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Bullet_Revolver</defName>
+    <label>revolver bullet</label>
+    <category>Projectile</category>
+    <projectile>
+      <damageDef>Bullet</damageDef>
+      <damageAmountBase>12</damageAmountBase>
+      <armorPenetrationBase>0.18</armorPenetrationBase>
+      <speed>58</speed>
+      <stoppingPower>1.4</stoppingPower>
+    </projectile>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Bullet_AssaultRifle</defName>
+    <label>assault rifle bullet</label>
+    <category>Projectile</category>
+    <projectile>
+      <damageDef>Bullet</damageDef>
+      <damageAmountBase>11</damageAmountBase>
+      <armorPenetrationBase>0.16</armorPenetrationBase>
+      <speed>90</speed>
+    </projectile>
+  </ThingDef>
+
+</Defs>

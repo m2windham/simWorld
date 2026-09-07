@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Armor stat families a hit rolls against (RimWorld: DamageArmorCategoryDefs). -->
+
+  <DamageArmorCategoryDef>
+    <defName>Sharp</defName>
+    <label>sharp</label>
+    <armorRatingStat>ArmorRating_Sharp</armorRatingStat>
+  </DamageArmorCategoryDef>
+
+  <DamageArmorCategoryDef>
+    <defName>Blunt</defName>
+    <label>blunt</label>
+    <armorRatingStat>ArmorRating_Blunt</armorRatingStat>
+  </DamageArmorCategoryDef>
+
+  <DamageArmorCategoryDef>
+    <defName>Heat</defName>
+    <label>heat</label>
+    <armorRatingStat>ArmorRating_Heat</armorRatingStat>
+  </DamageArmorCategoryDef>
+
+</Defs>

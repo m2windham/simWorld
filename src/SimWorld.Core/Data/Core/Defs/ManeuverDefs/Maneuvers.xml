@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Links a tool capacity to the melee attack it produces (RimWorld: ManeuverDefs). "verb" is a template:
+    MeleeVerbUtility.MakeVerb clones it per Tool, filling in that tool's power, penetration and cooldown.
+    Scratch maps to Cut (not RimWorld's separate Scratch DamageDef) since this port's DamageDef set is
+    fixed at six (Cut/Stab/Blunt/Bullet/Bite/Burn) and HealthTests pins that count.
+  -->
+
+  <ManeuverDef>
+    <defName>Smash</defName>
+    <requiredCapacity>Blunt</requiredCapacity>
+    <verb>
+      <label>smash</label>
+      <meleeDamageDef>Blunt</meleeDamageDef>
+    </verb>
+  </ManeuverDef>
+
+  <ManeuverDef>
+    <defName>Slash</defName>
+    <requiredCapacity>Cut</requiredCapacity>
+    <verb>
+      <label>cut</label>
+      <meleeDamageDef>Cut</meleeDamageDef>
+    </verb>
+  </ManeuverDef>
+
+  <ManeuverDef>
+    <defName>Stab</defName>
+    <requiredCapacity>Stab</requiredCapacity>
+    <verb>
+      <label>stab</label>
+      <meleeDamageDef>Stab</meleeDamageDef>
+    </verb>
+  </ManeuverDef>
+
+  <ManeuverDef>
+    <defName>Poke</defName>
+    <requiredCapacity>Poke</requiredCapacity>
+    <verb>
+      <label>poke</label>
+      <meleeDamageDef>Blunt</meleeDamageDef>
+    </verb>
+  </ManeuverDef>
+
+  <ManeuverDef>
+    <defName>Scratch</defName>
+    <requiredCapacity>Scratch</requiredCapacity>
+    <verb>
+      <label>scratch</label>
+      <meleeDamageDef>Cut</meleeDamageDef>
+    </verb>
+  </ManeuverDef>
+
+  <ManeuverDef>
+    <defName>Bite</defName>
+    <requiredCapacity>Bite</requiredCapacity>
+    <verb>
+      <label>bite</label>
+      <meleeDamageDef>Bite</meleeDamageDef>
+    </verb>
+  </ManeuverDef>
+
+</Defs>

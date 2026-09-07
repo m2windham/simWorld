@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SimWorld.Combat;
 
 namespace SimWorld.Defs
 {
@@ -42,6 +43,15 @@ namespace SimWorld.Defs
 
         /// <summary>Composable behaviour; each entry becomes one runtime component per Thing.</summary>
         public List<CompProperties>? comps;
+
+        /// <summary>Flight and impact tunables; present on projectile ThingDefs.</summary>
+        public ProjectileProperties? projectile;
+
+        /// <summary>Ranged attacks this Thing performs when wielded (RimWorld: a weapon's <c>verbs</c>).</summary>
+        public List<VerbProperties>? verbs;
+
+        /// <summary>Melee attack options this Thing (or a pawn's natural body) offers (RimWorld: <c>tools</c>).</summary>
+        public List<Tool>? tools;
 
         /// <summary>Base value of <paramref name="stat"/> from <see cref="statBases"/>, else the stat's default.</summary>
         public float GetStatValueAbstract(StatDef stat)
@@ -133,6 +143,33 @@ namespace SimWorld.Defs
                 foreach (CompProperties comp in comps)
                 {
                     foreach (string error in comp.ConfigErrors(this))
+                    {
+                        yield return error;
+                    }
+                }
+            }
+            if (projectile != null)
+            {
+                foreach (string error in projectile.ConfigErrors())
+                {
+                    yield return error;
+                }
+            }
+            if (verbs != null)
+            {
+                foreach (VerbProperties verb in verbs)
+                {
+                    foreach (string error in verb.ConfigErrors())
+                    {
+                        yield return error;
+                    }
+                }
+            }
+            if (tools != null)
+            {
+                foreach (Tool tool in tools)
+                {
+                    foreach (string error in tool.ConfigErrors())
                     {
                         yield return error;
                     }

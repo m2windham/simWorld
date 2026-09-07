@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Road quality classes (RimWorld: RoadDefs). WorldGenStep_Roads picks the highest-priority class whose
+    minTechLevel the connecting settlements' factions meet. AncientAsphaltRoad's minTechLevel (Ultra) is
+    above every generated FactionDef, so it is defined for completeness but never produced by generation —
+    in RimWorld it is map-decoration on ancient ruins, not something world gen lays down fresh.
+  -->
+
+  <RoadDef>
+    <defName>DirtPath</defName>
+    <label>dirt path</label>
+    <priority>10</priority>
+    <movementCostMultiplier>0.85</movementCostMultiplier>
+    <worldTransitionSameRoadPriority>1</worldTransitionSameRoadPriority>
+    <minTechLevel>Animal</minTechLevel>
+  </RoadDef>
+
+  <RoadDef>
+    <defName>DirtRoad</defName>
+    <label>dirt road</label>
+    <priority>20</priority>
+    <movementCostMultiplier>0.7</movementCostMultiplier>
+    <worldTransitionSameRoadPriority>2</worldTransitionSameRoadPriority>
+    <minTechLevel>Medieval</minTechLevel>
+  </RoadDef>
+
+  <RoadDef>
+    <defName>StoneRoad</defName>
+    <label>stone road</label>
+    <priority>30</priority>
+    <movementCostMultiplier>0.5</movementCostMultiplier>
+    <worldTransitionSameRoadPriority>3</worldTransitionSameRoadPriority>
+    <minTechLevel>Industrial</minTechLevel>
+  </RoadDef>
+
+  <RoadDef>
+    <defName>AncientAsphaltRoad</defName>
+    <label>ancient asphalt road</label>
+    <priority>40</priority>
+    <movementCostMultiplier>0.35</movementCostMultiplier>
+    <worldTransitionSameRoadPriority>4</worldTransitionSameRoadPriority>
+    <minTechLevel>Ultra</minTechLevel>
+  </RoadDef>
+
+</Defs>

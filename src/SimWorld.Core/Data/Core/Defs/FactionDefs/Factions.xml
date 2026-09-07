@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Civilizations (RimWorld: FactionDefs). Minimal slice for world generation only — diplomacy, goodwill
+    and raid behaviour land with the full Factions system.
+
+    SimWorld translation note: RimWorld's world gen seeds a handful of NPC faction bases around the
+    player's one starting colony. This is a civilization-scale god game instead, so there is no single
+    colony to seed around — WorldGenStep_Factions instead seeds many rival civilizations at once
+    (including "PlayerCivilization", which here names an existing settled nation the player takes the
+    reins of, not an empty starting outpost).
+  -->
+
+  <FactionDef>
+    <defName>PlayerCivilization</defName>
+    <label>player civilization</label>
+    <techLevel>Industrial</techLevel>
+    <isPlayer>true</isPlayer>
+    <canMakeRandomly>false</canMakeRandomly>
+    <requiredCountAtGameStart>1</requiredCountAtGameStart>
+    <maxCountAtGameStart>1</maxCountAtGameStart>
+    <minSettlements>2</minSettlements>
+    <settlementGenerationWeight>1.0</settlementGenerationWeight>
+  </FactionDef>
+
+  <FactionDef>
+    <defName>TribalCivilization</defName>
+    <label>tribal civilization</label>
+    <techLevel>Neolithic</techLevel>
+    <requiredCountAtGameStart>1</requiredCountAtGameStart>
+    <maxCountAtGameStart>6</maxCountAtGameStart>
+    <minSettlements>1</minSettlements>
+    <settlementGenerationWeight>1.2</settlementGenerationWeight>
+  </FactionDef>
+
+  <FactionDef>
+    <defName>OutlanderCivilization</defName>
+    <label>outlander civilization</label>
+    <techLevel>Industrial</techLevel>
+    <requiredCountAtGameStart>1</requiredCountAtGameStart>
+    <maxCountAtGameStart>5</maxCountAtGameStart>
+    <minSettlements>1</minSettlements>
+    <settlementGenerationWeight>1.0</settlementGenerationWeight>
+  </FactionDef>
+
+  <FactionDef>
+    <defName>RoughOutlanders</defName>
+    <label>rough outlanders</label>
+    <techLevel>Medieval</techLevel>
+    <permanentEnemy>true</permanentEnemy>
+    <requiredCountAtGameStart>0</requiredCountAtGameStart>
+    <maxCountAtGameStart>3</maxCountAtGameStart>
+    <minSettlements>1</minSettlements>
+    <settlementGenerationWeight>0.6</settlementGenerationWeight>
+  </FactionDef>
+
+</Defs>
