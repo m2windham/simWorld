@@ -516,52 +516,32 @@ ERA_INFORMATION = [
 ]
 
 ERA_EXOTIC = [
-    dict(defName="SyntheticProtein", label="synthetic protein", track="SurvivalFood", prereqs=["FoodScience", "Biochemistry"],
-         desc="Cultured cells grown in a vat, not raised on a farm, yield meat protein without an animal at all."),
     dict(defName="Nanomaterials", label="nanomaterials", track="MaterialsCrafts", prereqs=["CompositeMaterials"],
          desc="Structure engineered atom by atom gives a material strength-to-weight ratios no bulk alloy can reach."),
-    dict(defName="Metamaterials", label="metamaterials", track="MaterialsCrafts", prereqs=["Nanomaterials"],
-         desc="A nanoscale lattice bends light and sound in ways the bulk material it is built from never could."),
     dict(defName="OrbitalHabitats", label="orbital habitats", track="ConstructionSettlement", prereqs=["Megacities"],
          desc="A rotating station-sized ring simulates gravity well enough to house a city's worth of people off-world."),
     dict(defName="Arcologies", label="arcologies", track="ConstructionSettlement", prereqs=["Megacities", "CompositeMaterials"],
          desc="A single self-contained structure, built to composite tolerances, houses what once took a whole megacity."),
-    dict(defName="ClosedEcosystems", label="closed ecosystems", track="AgricultureAnimals", prereqs=["Hydroponics"],
-         desc="A sealed hydroponic loop recycles its own air, water, and waste well enough to feed a crew with no resupply."),
     dict(defName="Xenobotany", label="xenobotany", track="AgricultureAnimals", prereqs=["GeneticSelection"],
          desc="Genetic tools built for earthly crops get turned on organisms suited to soils and skies not our own."),
-    dict(defName="PostScarcityGovernance", label="post-scarcity governance", track="SocietyGovernance", prereqs=["WelfareState"],
-         desc="When automation and abundance outrun need, a welfare state's guarantees stop being a limited resource to ration."),
     dict(defName="AIAdministration", label="AI administration", track="SocietyGovernance", prereqs=["WelfareState", "Computers"],
          desc="Automated systems apply policy at a scale and consistency no human civil service ever matched."),
-    dict(defName="PostLinguisticCommunication", label="post-linguistic communication", track="KnowledgeWriting", prereqs=["MassEducation"],
-         desc="Direct transfer of thought and sensation bypasses the bottleneck that spoken and written language always was."),
-    dict(defName="PosthumanEthics", label="posthuman ethics", track="BeliefCulture", prereqs=["SecularEthics"],
-         desc="Minds that can be copied, merged, or engineered force secular ethics to answer questions it never had to before."),
     dict(defName="MemeticCulture", label="memetic culture", track="BeliefCulture", prereqs=["MassMedia"],
          desc="Culture spread instantly across a networked population evolves and mutates faster than any broadcast era allowed."),
     dict(defName="DirectedEnergyWeapons", label="directed energy weapons", track="Warfare", prereqs=["Airpower", "FusionPower"],
          desc="A fusion-fed beam weapon strikes at the speed of light, with no shell or bullet to intercept."),
     dict(defName="AutonomousDrones", label="autonomous drones", track="Warfare", prereqs=["Airpower", "Computers"],
          desc="A computer-piloted aircraft flies and decides without a person aboard to risk or to hesitate."),
-    dict(defName="PostScarcityEconomics", label="post-scarcity economics", track="TradeEconomy", prereqs=["GlobalMarkets"],
-         desc="When production costs approach zero, a global market's core problem stops being scarcity at all."),
-    dict(defName="AutomatedMarkets", label="automated markets", track="TradeEconomy", prereqs=["Corporations", "Computers"],
-         desc="Trading algorithms run a corporation's markets faster and more continuously than any trading floor could."),
     dict(defName="Genomics", label="genomics", track="MedicineHealth", prereqs=["Biochemistry"],
          desc="Reading and editing a whole genome turns inherited disease from a diagnosis into a fixable defect."),
     dict(defName="LifeExtension", label="life extension", track="MedicineHealth", prereqs=["Genomics"],
          desc="Genomic repair of the mechanisms behind aging itself pushes a natural lifespan well past its old limit."),
     dict(defName="FusionPower", label="fusion power", track="EnergyIndustry", prereqs=["NuclearFission"],
          desc="Fusing light nuclei, rather than splitting heavy ones, releases more energy with far less waste."),
-    dict(defName="AntimatterContainment", label="antimatter containment", track="EnergyIndustry", prereqs=["FusionPower"],
-         desc="A magnetically suspended trap holds antimatter clear of any wall, storing the densest energy matter allows."),
     dict(defName="DysonSwarmEngineering", label="dyson swarm engineering", track="EnergyIndustry", prereqs=["FusionPower"],
          desc="A swarm of orbital collectors captures a star's output directly, at a scale no planetary grid approaches."),
     dict(defName="InterplanetaryTravel", label="interplanetary travel", track="TransportExploration", prereqs=["SpaceRocketry", "FusionPower"],
          desc="A fusion-driven engine cuts a months-long transfer orbit down to a trip worth actually making."),
-    dict(defName="InterstellarPropulsion", label="interstellar propulsion", track="TransportExploration", prereqs=["InterplanetaryTravel"],
-         desc="Sustained near-light acceleration turns another star's planets from a telescope's target into a destination."),
     dict(defName="ArtificialIntelligence", label="artificial intelligence", track="InformationComputation", prereqs=["TheInternet", "Semiconductors"],
          desc="A network-scale learning system reasons and decides without being told each answer in advance."),
     dict(defName="NeuralInterfaces", label="neural interfaces", track="InformationComputation", prereqs=["ArtificialIntelligence", "Biochemistry"],
@@ -580,6 +560,12 @@ ERA_EXOTIC = [
          desc="Quantum computation stable enough to model exotic spacetime finally puts a traversable shortcut within theoretical reach."),
     dict(defName="MindUploading", label="mind uploading", track="FrontierExotic", prereqs=["NeuralLace", "ArchotechSeeds"],
          desc="A neural lace fine enough to read a mind, and an archotech vast enough to hold it, make a person's continuity a software problem."),
+    dict(defName="TranscendentIntelligence", label="transcendent intelligence", track="FrontierExotic", prereqs=["MindUploading"],
+         desc="A mind uploaded, copied, and run past every biological limit stops being describable as human at all."),
+    dict(defName="PostSingularityCivilization", label="post-singularity civilization", track="FrontierExotic", prereqs=["TranscendentIntelligence"],
+         desc="A civilization built by and for transcendent minds no longer resembles anything the authored ladder set out to describe."),
+    dict(defName="OpenEndedFrontier", label="the open-ended frontier", track="FrontierExotic", prereqs=["PostSingularityCivilization"],
+         desc="Beyond this point the authored ladder ends, and whatever comes next has to be discovered rather than written down."),
 ]
 
 PROJECTS_BY_ERA = {
@@ -785,7 +771,7 @@ def render_era_xml(era_name, names_in_era, projects_by_name, costs, coords):
     lines.append("<Defs>")
     lines.append("")
     lines.append(
-        f"  <!-- Generated by tools/content/gen_techtree.py -- do not hand-edit. Era: {era_name} "
+        f"  <!-- Generated by tools/content/gen_techtree.py; do not hand-edit. Era: {era_name} "
         f"(order {order}, techLevel {tech_level}). Edit the PROJECTS_BY_ERA table and re-run the script instead. -->"
     )
     lines.append("")
