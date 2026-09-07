@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-07",
-  "testsTotal": 516,
+  "testsTotal": 519,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -131,6 +131,13 @@
       "state": "decided",
       "title": "One civilization at world generation; rivals emerge later",
       "note": "World gen places the player's faction alone. Other civilizations emerge from the simulation over time rather than existing at time zero. The cost — factions, trade and diplomacy idle through the opening — is accepted for the truer sticks-and-stones arc. Spec section 5b.4."
+    },
+    {
+      "id": "horizon",
+      "date": "2026-09-07",
+      "state": "open",
+      "title": "How long is a playthrough?",
+      "note": "Nothing in the repo states an intended length, and every further tech-tree tuning decision depends on it. Measured: the authored tree holds about 50 years of a two-researcher civilization and is exhausted for good on day 3,074; at a 10-year horizon only 52% is reachable, at 50 years 98.4%, and past that every playstyle ends in an identical state. See docs/research/tech-reachability.md."
     }
   ],
   "systems": [
@@ -838,7 +845,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects)",
       "status": "ported",
-      "tests": 31,
+      "tests": 34,
       "items": [
         {
           "id": "research.dag",
@@ -852,8 +859,28 @@
         },
         {
           "id": "research.unlocks",
-          "label": "IResearchUnlockable: what a project unlocks, computed from every def that names it",
+          "label": "IResearchUnlockable and ResearchProjectDef.UnlockedDefs: the mechanism that computes what a project unlocks from every def that names it",
           "done": true
+        },
+        {
+          "id": "research.unlocks-content",
+          "label": "Content actually wired to it: no def implements IResearchUnlockable today, so all 232 projects unlock nothing and research has no consequence — measured in docs/research/tech-reachability.md §5.3",
+          "done": false
+        },
+        {
+          "id": "research.era-spine",
+          "label": "Eras turn on their spine (the projects something else depends on) rather than on 100% of their content, so a dead-end flavour project cannot bar the next age",
+          "done": true
+        },
+        {
+          "id": "research.techlevel",
+          "label": "ResearcherTechLevel rises with the era instead of being set once at scenario start — it was silently taxing the whole tree 2.5x from a tribal start",
+          "done": true
+        },
+        {
+          "id": "research.horizon",
+          "label": "Price the tree to an intended playthrough length: measured, 2-3x cost is where a 50-year civilization visibly cannot have everything and playstyles diverge, with nothing unreachable. Blocked on the horizon decision and on research having consequences first",
+          "done": false
         },
         {
           "id": "research.eras",

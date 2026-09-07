@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using SimWorld.Defs;
 using SimWorld.Sim;
 using SimWorld.Tests.Content;
@@ -268,6 +269,61 @@ namespace SimWorld.Tests.Research
             foreach (ResearchProjectDef project in agrarian.Projects) manager.FinishProject(project);
 
             Assert.Equal(agrarian, manager.CurrentEra);
+        }
+
+        [Fact]
+        public void An_era_turns_on_its_spine_without_every_dead_end_being_researched()
+        {
+            EraDef sticksAndStones = DefDatabase<EraDef>.GetNamed("SticksAndStones");
+            IReadOnlyList<ResearchProjectDef> spine = sticksAndStones.SpineProjects;
+
+            // The rule is only interesting if the era actually has leaves; the shipped tree does.
+            Assert.True(spine.Count > 0, "the first era has no spine.");
+            Assert.True(spine.Count < sticksAndStones.Projects.Count,
+                "the first era is all spine, so this test would prove nothing.");
+
+            foreach (ResearchProjectDef project in spine) manager.FinishProject(project);
+
+            Assert.True(sticksAndStones.IsComplete);
+            Assert.True(sticksAndStones.Progress < 1f, "the leaves should still be unresearched.");
+        }
+
+        [Fact]
+        public void A_project_nothing_depends_on_is_not_on_the_spine()
+        {
+            EraDef sticksAndStones = DefDatabase<EraDef>.GetNamed("SticksAndStones");
+            var dependedUpon = new HashSet<ResearchProjectDef>();
+            foreach (ResearchProjectDef project in DefDatabase<ResearchProjectDef>.AllDefsListForReading)
+            {
+                if (project.prerequisites != null) dependedUpon.UnionWith(project.prerequisites);
+                if (project.hiddenPrerequisites != null) dependedUpon.UnionWith(project.hiddenPrerequisites);
+            }
+
+            foreach (ResearchProjectDef project in sticksAndStones.Projects)
+            {
+                Assert.Equal(dependedUpon.Contains(project), sticksAndStones.SpineProjects.Contains(project));
+            }
+        }
+
+        [Fact]
+        public void The_researcher_tech_level_rises_with_the_era_and_never_falls()
+        {
+            EraDef sticksAndStones = DefDatabase<EraDef>.GetNamed("SticksAndStones");
+            EraDef agrarian = DefDatabase<EraDef>.GetNamed("Agrarian");
+            manager.ResearcherTechLevel = TechLevel.Neolithic;
+
+            foreach (ResearchProjectDef project in sticksAndStones.SpineProjects) manager.FinishProject(project);
+            Assert.Equal(sticksAndStones, manager.CurrentEra);
+
+            foreach (ResearchProjectDef project in agrarian.SpineProjects) manager.FinishProject(project);
+            Assert.Equal(agrarian, manager.CurrentEra);
+            Assert.True(manager.ResearcherTechLevel >= agrarian.techLevel,
+                $"tech level {manager.ResearcherTechLevel} did not follow the era to {agrarian.techLevel}.");
+
+            // A scenario that starts a civilization above its era keeps that floor: knowledge is not forgotten.
+            manager.ResearcherTechLevel = TechLevel.Spacer;
+            manager.AdvanceTechLevelToEra();
+            Assert.Equal(TechLevel.Spacer, manager.ResearcherTechLevel);
         }
 
         [Fact]

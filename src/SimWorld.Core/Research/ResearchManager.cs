@@ -30,7 +30,10 @@ namespace SimWorld.Research
 
         /// <summary>
         /// Tech level the current researcher(s) work at, feeding <see cref="ResearchProjectDef.CostFactor"/>.
-        /// Defaults to Neolithic; a faction or civilization system sets this as it advances.
+        /// Defaults to Neolithic. A scenario sets the starting floor
+        /// (<c>ScenPart_StartingEra</c>); after that it rises on its own as the era ladder advances — see
+        /// <see cref="AdvanceTechLevelToEra"/>. It is never lowered, so a civilization that has learned to
+        /// work at an age does not forget how.
         /// </summary>
         public TechLevel ResearcherTechLevel
         {
@@ -102,6 +105,23 @@ namespace SimWorld.Research
         /// <summary>Hook for subclasses or later systems to react to a finished project without subscribing to the event.</summary>
         protected virtual void Notify_ResearchProjectFinished(ResearchProjectDef def)
         {
+            AdvanceTechLevelToEra();
+        }
+
+        /// <summary>
+        /// Raises <see cref="ResearcherTechLevel"/> to the tech level of the era the civilization has actually
+        /// reached, never lowering it.
+        ///
+        /// Without this the level was set once at scenario start and never again, so a civilization that
+        /// climbed from a tribal start went on paying <see cref="ResearchProjectDef.CostFactor"/>'s
+        /// above-your-level penalty — measured at 2.5x across the whole authored tree — for research it was by
+        /// then entirely capable of (<c>docs/research/tech-reachability.md</c> §5.5). That tax was doing pacing
+        /// work by accident; the honest lever for pacing is project cost, not a stale wire.
+        /// </summary>
+        public void AdvanceTechLevelToEra()
+        {
+            TechLevel eraLevel = CurrentEra?.techLevel ?? TechLevel.Undefined;
+            if (eraLevel > researcherTechLevel) researcherTechLevel = eraLevel;
         }
 
         /// <summary>Debug/testing: instantly finishes every loaded project.</summary>
