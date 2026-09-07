@@ -1185,6 +1185,11 @@
           "id": "settlements.emergence",
           "label": "Rival civilizations emerging from the simulation over time rather than being placed at world gen — lands with the civilization-emergence module",
           "done": false
+        },
+        {
+          "id": "settlements.coal",
+          "label": "Open: whether coal deserves its own deposit category rather than Ore standing in for industrial mineral wealth — coal-versus-metal is a real historical distinction in where industrial cities went",
+          "done": false
         }
       ]
     }
