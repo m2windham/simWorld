@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-07",
-  "testsTotal": 554,
+  "testsTotal": 560,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -852,7 +852,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects)",
       "status": "ported",
-      "tests": 34,
+      "tests": 40,
       "items": [
         {
           "id": "research.dag",
@@ -871,8 +871,8 @@
         },
         {
           "id": "research.unlocks-content",
-          "label": "Content actually wired to it: no def implements IResearchUnlockable today, so all 232 projects unlock nothing and research has no consequence — measured in docs/research/tech-reachability.md §5.3",
-          "done": false
+          "label": "Content wired to it: ThingDef and RecipeDef implement IResearchUnlockable, and the buildings, weapons and recipes that exist are gated on projects that exist — a stove on Cooking, a stonecutter's table and sandstone blocks on Masonry, a bow on Bows, pemmican on FoodPreservation. A club stays ungated: a stick is not a technology.",
+          "done": true
         },
         {
           "id": "research.era-spine",

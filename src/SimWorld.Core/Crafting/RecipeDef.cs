@@ -64,7 +64,7 @@ namespace SimWorld.Crafting
     /// can work it. <see cref="Bill"/>s queue instances of a recipe on a workbench; ingredient selection and
     /// product creation are <see cref="BillIngredientsFinder"/> and <see cref="GenRecipe"/>.
     /// </summary>
-    public class RecipeDef : Def
+    public class RecipeDef : Def, Research.IResearchUnlockable
     {
         public string? jobString;
         public float workAmount;
@@ -114,8 +114,27 @@ namespace SimWorld.Crafting
 
         public IEnumerable<ThingDef> AllRecipeUsers => recipeUsers ?? Enumerable.Empty<ThingDef>();
 
-        /// <summary>Always true for now; research gating joins here once the Research module exposes it per-recipe.</summary>
-        public bool AvailableNow => true;
+        /// <summary>Projects that must be finished before this recipe can be run.</summary>
+        public List<Research.ResearchProjectDef>? researchPrerequisites;
+
+        IReadOnlyList<Research.ResearchProjectDef>? Research.IResearchUnlockable.ResearchPrerequisites => researchPrerequisites;
+
+        /// <summary>
+        /// True when the civilization knows every project this recipe requires. This is the gate the stub that
+        /// stood here promised: a bill for a recipe whose research is unfinished must not be startable.
+        /// </summary>
+        public bool AvailableNow
+        {
+            get
+            {
+                if (researchPrerequisites == null) return true;
+                for (int i = 0; i < researchPrerequisites.Count; i++)
+                {
+                    if (!Sim.Find.ResearchManager.IsFinished(researchPrerequisites[i])) return false;
+                }
+                return true;
+            }
+        }
 
         public ThingDef? ProducedThingDef => products != null && products.Count > 0 ? products[0].thingDef : null;
 

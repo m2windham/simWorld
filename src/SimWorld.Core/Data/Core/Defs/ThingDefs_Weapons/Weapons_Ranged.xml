@@ -3,6 +3,9 @@
 
   <ThingDef>
     <defName>Bow_Short</defName>
+    <researchPrerequisites>
+      <li>Bows</li>
+    </researchPrerequisites>
     <label>short bow</label>
     <category>Item</category>
     <verbs>
@@ -23,6 +26,9 @@
 
   <ThingDef>
     <defName>Gun_Revolver</defName>
+    <researchPrerequisites>
+      <li>Firearms</li>
+    </researchPrerequisites>
     <label>revolver</label>
     <category>Item</category>
     <verbs>
@@ -44,6 +50,9 @@
 
   <ThingDef>
     <defName>Gun_AssaultRifle</defName>
+    <researchPrerequisites>
+      <li>MachineGuns</li>
+    </researchPrerequisites>
     <label>assault rifle</label>
     <category>Item</category>
     <verbs>

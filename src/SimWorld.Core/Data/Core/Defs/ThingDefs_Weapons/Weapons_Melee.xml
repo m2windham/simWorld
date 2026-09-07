@@ -3,6 +3,9 @@
 
   <ThingDef>
     <defName>MeleeWeapon_Knife</defName>
+    <researchPrerequisites>
+      <li>StoneTools</li>
+    </researchPrerequisites>
     <label>knife</label>
     <category>Item</category>
     <tools>

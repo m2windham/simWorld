@@ -8,6 +8,9 @@
 
   <ThingDef>
     <defName>FueledStove</defName>
+    <researchPrerequisites>
+      <li>Cooking</li>
+    </researchPrerequisites>
     <label>fueled stove</label>
     <description>A wood-fueled stove for cooking meals.</description>
     <category>Building</category>
@@ -16,6 +19,9 @@
 
   <ThingDef>
     <defName>TableButcher</defName>
+    <researchPrerequisites>
+      <li>StoneTools</li>
+    </researchPrerequisites>
     <label>butcher table</label>
     <description>A table for butchering carcasses into meat and other resources.</description>
     <category>Building</category>
@@ -24,6 +30,9 @@
 
   <ThingDef>
     <defName>TableStonecutter</defName>
+    <researchPrerequisites>
+      <li>Masonry</li>
+    </researchPrerequisites>
     <label>stonecutter's table</label>
     <description>A table for cutting stone chunks into blocks suitable for construction.</description>
     <category>Building</category>
