@@ -24,9 +24,6 @@ namespace SimWorld.Defs
         public List<ThingDefCountClass>? costList;
         public int costStuffCount;
 
-        /// <summary>Most units one ItemStack of this def holds (RimWorld: <c>ThingDef.stackLimit</c>).</summary>
-        public int stackLimit = 1;
-
         /// <summary>Present when pawns can eat this (RimWorld: <c>ThingDef.ingestible</c>).</summary>
         public IngestibleProperties? ingestible;
 

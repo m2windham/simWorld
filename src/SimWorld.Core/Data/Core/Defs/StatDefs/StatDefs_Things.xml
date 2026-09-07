@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Read by ThingDef.BaseMaxHitPoints; a Thing with no statBases entry for this falls back to 100. -->
+  <StatDef>
+    <defName>MaxHitPoints</defName>
+    <label>max hit points</label>
+    <defaultBaseValue>100</defaultBaseValue>
+    <minValue>1</minValue>
+  </StatDef>
+
+</Defs>

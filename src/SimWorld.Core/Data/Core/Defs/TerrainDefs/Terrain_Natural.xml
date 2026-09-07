@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <TerrainDef>
+    <defName>Soil</defName>
+    <label>soil</label>
+    <pathCost>0</pathCost>
+    <fertility>1.4</fertility>
+    <layerable>true</layerable>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+      <li>Heavy</li>
+      <li>GrowSoil</li>
+      <li>Diggable</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>SoilRich</defName>
+    <label>rich soil</label>
+    <pathCost>0</pathCost>
+    <fertility>2.8</fertility>
+    <layerable>true</layerable>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+      <li>Heavy</li>
+      <li>GrowSoil</li>
+      <li>Diggable</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>Gravel</defName>
+    <label>gravel</label>
+    <pathCost>0</pathCost>
+    <fertility>0</fertility>
+    <layerable>true</layerable>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+      <li>Heavy</li>
+      <li>Diggable</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>Sand</defName>
+    <label>sand</label>
+    <pathCost>0</pathCost>
+    <fertility>0.6</fertility>
+    <layerable>true</layerable>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+      <li>Heavy</li>
+      <li>GrowSoil</li>
+      <li>Diggable</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>MarshyTerrain</defName>
+    <label>marshy soil</label>
+    <pathCost>4</pathCost>
+    <fertility>1.1</fertility>
+    <takeFootprints>true</takeFootprints>
+    <affordances>
+      <li>Light</li>
+      <li>GrowSoil</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>Mud</defName>
+    <label>mud</label>
+    <pathCost>3</pathCost>
+    <fertility>0</fertility>
+    <takeFootprints>true</takeFootprints>
+    <affordances>
+      <li>Light</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>WaterShallow</defName>
+    <label>shallow water</label>
+    <pathCost>30</pathCost>
+    <fertility>0</fertility>
+    <passability>Standable</passability>
+    <water>true</water>
+    <affordances>
+      <li>Bridgeable</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>WaterDeep</defName>
+    <label>deep water</label>
+    <fertility>0</fertility>
+    <passability>Impassable</passability>
+    <water>true</water>
+    <affordances>
+      <li>Bridgeable</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>WaterMovingShallow</defName>
+    <label>shallow moving water</label>
+    <pathCost>40</pathCost>
+    <fertility>0</fertility>
+    <passability>Standable</passability>
+    <water>true</water>
+    <affordances>
+      <li>Bridgeable</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>WaterMovingChestDeep</defName>
+    <label>chest-deep moving water</label>
+    <fertility>0</fertility>
+    <passability>Impassable</passability>
+    <water>true</water>
+    <affordances>
+      <li>Bridgeable</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>Ice</defName>
+    <label>ice</label>
+    <pathCost>1</pathCost>
+    <fertility>0</fertility>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>Marsh</defName>
+    <label>marsh</label>
+    <pathCost>6</pathCost>
+    <fertility>0.9</fertility>
+    <takeFootprints>true</takeFootprints>
+    <affordances>
+      <li>Light</li>
+    </affordances>
+  </TerrainDef>
+
+</Defs>

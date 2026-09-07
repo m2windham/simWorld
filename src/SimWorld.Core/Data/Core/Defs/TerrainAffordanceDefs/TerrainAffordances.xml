@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- What a terrain offers building/planting on top of it (RimWorld: TerrainAffordanceDefs). -->
+
+  <TerrainAffordanceDef>
+    <defName>Light</defName>
+    <label>light</label>
+  </TerrainAffordanceDef>
+
+  <TerrainAffordanceDef>
+    <defName>Medium</defName>
+    <label>medium</label>
+  </TerrainAffordanceDef>
+
+  <TerrainAffordanceDef>
+    <defName>Heavy</defName>
+    <label>heavy</label>
+  </TerrainAffordanceDef>
+
+  <TerrainAffordanceDef>
+    <defName>GrowSoil</defName>
+    <label>grow soil</label>
+  </TerrainAffordanceDef>
+
+  <TerrainAffordanceDef>
+    <defName>Diggable</defName>
+    <label>diggable</label>
+  </TerrainAffordanceDef>
+
+  <TerrainAffordanceDef>
+    <defName>Bridgeable</defName>
+    <label>bridgeable</label>
+  </TerrainAffordanceDef>
+
+</Defs>
