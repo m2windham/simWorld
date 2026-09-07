@@ -81,7 +81,7 @@ namespace SimWorld.Tests.Content
         {
             Assert.Equal(8, DefDatabase<global::SimWorld.Needs.NeedDef>.DefCount);
             Assert.Equal(11, DefDatabase<global::SimWorld.MindState.MentalBreakDef>.DefCount);
-            Assert.Equal(11, DefDatabase<global::SimWorld.MindState.MentalStateDef>.DefCount);
+            Assert.Equal(12, DefDatabase<global::SimWorld.MindState.MentalStateDef>.DefCount);
             Assert.True(DefDatabase<global::SimWorld.Thoughts.ThoughtDef>.DefCount >= 15);
             Assert.NotNull(global::SimWorld.Needs.NeedDefOf.Mood);
             Assert.Equal("Mood", global::SimWorld.Needs.NeedDefOf.Mood.defName);

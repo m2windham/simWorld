@@ -38,12 +38,13 @@ flowchart TB
     Health[Health and Capacities]
     Skills[Skills and Work]
     AI[AI: think tree, jobs, pathing]
+    Social[Social: opinion, relations, interactions]
   end
   subgraph L4[Layer 4 — World Simulation]
     Economy[Crafting, trade, factions]
     Building[Construction, power, climate]
     Combat[Combat]
-    Social[Social and belief]
+    Belief[Belief: ideology, precepts, rituals]
   end
   subgraph L5[Layer 5 — Director]
     Director[Threat director and Chronicle]
@@ -58,6 +59,13 @@ flowchart TB
 ```
 
 - Dependencies point downward only. A module never references a layer above it.
+  Social sits in Layer 3 rather than beside belief in Layer 4, and that placement
+  is deliberate: opinion, relations and interactions are per-pawn state of
+  exactly the same kind as needs and mood, which is why `Pawn_RelationsTracker`
+  can own them without reaching upward. Belief — ideology, precepts, rituals — is
+  genuinely world-scale and stays in Layer 4 for the god layer to own. An earlier
+  draft lumped the two together as one Layer 4 box, which made the perfectly
+  correct `Pawns -> Social` reference look like a violation of this rule.
 - Layer 6 is one-way: the host reads simulation state and never mutates it, so
   the core stays headless-testable.
 
@@ -507,10 +515,29 @@ flowchart LR
   blunt.
 - Downed and dead come from the health system, never from combat directly.
 
-### 8.4 Social & Belief — _planned_
+### 8.4 Social & Belief
 
-- Opinion from traits, shared history, interactions and belief alignment.
-- Belief system feeding the thought system; group rituals with quality outcome.
+- **Opinion** (`Pawn_RelationsTracker.OpinionOf`): relation type, social memories
+  about that specific pawn, personality traits, and a stable compatibility factor
+  hashed from the two pawns' ids — RimWorld's own mechanic, so a given pair just
+  naturally gets on or doesn't, cheaply and deterministically.
+- **Relations** (`PawnRelationDef`): family kinds (spouse, parent, child, sibling)
+  are derived on demand from demography's own ids (`spouseId`/`parentIdA`/
+  `parentIdB`/`childIds`) rather than stored a second time; friend, rival, lover
+  and ex-spouse are stored as a `DirectPawnRelation` on both pawns.
+- **Interactions** (`InteractionDef` + `InteractionWorker`): chitchat, deep talk,
+  insult and slight, selected by weight per pair on a population-wide sweep every
+  2,500 ticks — a rare-tick manager sweep (`SocialInteractionManager`), not
+  per-pawn-per-tick work. A sufficiently bad opinion and mood can escalate an
+  insult into a social fight, reusing the existing `MentalStateDef` machinery
+  rather than a parallel system.
+- **Social thoughts** are ordinary memory thoughts with `otherPawn` set (the mood
+  system's own stack, not a separate one), feeding both mood and opinion
+  (`ThoughtStage.baseOpinionOffset`).
+
+**Belief — _planned_.** Ideology, precepts, memes, rituals and roles are out of
+scope for this pass: belief is a separate, much larger design the god layer will
+want to own (see `docs/status.json` system 17's `social.ideology` item).
 
 ## 9. Director Layer
 

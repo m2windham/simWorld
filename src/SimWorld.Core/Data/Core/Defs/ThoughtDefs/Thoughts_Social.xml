@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Social memories about a specific other pawn (RimWorld's social thought stack), gained by
+       SimWorld.Social's InteractionWorkers. "Insulted" reuses Thoughts_Memories.xml's existing thought
+       rather than duplicating it here. -->
+
+  <ThoughtDef>
+    <defName>HadChitchat</defName>
+    <durationDays>0.25</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackLimitForSameOtherPawn>2</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>had a nice chat</label>
+        <description>We chatted for a bit. Pleasant enough.</description>
+        <baseMoodEffect>2</baseMoodEffect>
+        <baseOpinionOffset>2</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>HadDeepTalk</defName>
+    <durationDays>1.5</durationDays>
+    <stackLimit>2</stackLimit>
+    <stackLimitForSameOtherPawn>1</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>had a deep talk</label>
+        <description>We really talked. I feel closer to them.</description>
+        <baseMoodEffect>5</baseMoodEffect>
+        <baseOpinionOffset>6</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>WasSlighted</defName>
+    <durationDays>0.5</durationDays>
+    <stackLimit>4</stackLimit>
+    <stackLimitForSameOtherPawn>2</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>was slighted</label>
+        <description>That was a bit rude.</description>
+        <baseMoodEffect>-2</baseMoodEffect>
+        <baseOpinionOffset>-3</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>
