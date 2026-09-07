@@ -213,8 +213,11 @@ identity: a name, a dominant biome, a climate, and a summarised resource
 profile.
 
 - The partition floods out from seed tiles and is cut on natural boundaries —
-  coastline, ridge lines, major rivers — so region edges fall roughly where real
-  frontiers fall, rather than on an arbitrary grid.
+  ridge lines, major rivers, and the coast — so region edges fall roughly where
+  real frontiers fall, rather than on an arbitrary grid. Growth never crosses
+  water at all, so the coast is expressed as a cost between two _land_ tiles
+  that disagree about whether they touch the sea: a shoreline tile and an inland
+  one belong to different places.
 - At this stage the player reads climate, terrain character, a coarse resource
   profile and what lies adjacent. Not exact deposits: a region promises a _kind_
   of place, and the specifics are stage two.
@@ -231,17 +234,29 @@ against them.
   hills and mountains, salt at coasts and springs, deep soil in valleys and on
   floodplains, timber from the biome. A player who learns to read the land is
   reading something real.
-- Site scoring still exists — hard necessities (fresh water in reach, land that
-  feeds the group at this era's technology, survivable climate) times weighted
-  advantages (defensibility, transport, materials, trade position) — but for the
-  player's own founding it is **advisory**: it shades the markers rather than
-  deciding for them. The same score is what emergent and NPC foundings use, and
-  there it is decisive.
-- The advantage weights are era-dependent, which is where the historical
-  accuracy lives. A neolithic founding reads water, game and flint and does not
-  care about defensibility; an iron-age one reads the ford and the ridge; an
-  industrial one reads coal and navigable water. The era ladder in the research
-  module already supplies the gradient.
+- Site scoring still exists — hard necessities times weighted advantages — but
+  for the player's own founding it is **advisory**: it shades the markers rather
+  than deciding for them. The same score is what emergent and NPC foundings use,
+  and there it is decisive.
+- **The necessities are era-independent and the advantages are not.** A
+  necessity is a flat gate: fresh water in reach, _some_ food source in reach
+  (arable soil, game or timber), a survivable climate. No people of any era
+  settle where there is no water. Which food source a civilization prefers, and
+  what else it values, is era-dependent — and that belongs entirely to the
+  advantage weights. (An earlier draft made "land that feeds the group at this
+  era's technology" a necessity, which contradicted the split in the same
+  breath and would have needed a farming-technology model that does not exist.)
+- The advantage weights are where the historical accuracy lives, and they are
+  keyed to the eras that actually exist on the authored ladder — Sticks & Stones
+  through Exotic — rather than to loose period names. A Sticks & Stones founding
+  reads water, game and flint and is indifferent to defensibility; by Bronze and
+  Medieval the ford and the defensible ridge carry real weight, along with ore;
+  by Industrial it is mineral wealth and navigable water, scored through trade
+  position.
+- _Open:_ there is no Coal deposit — Ore stands in for industrial mineral
+  wealth. Whether coal deserves its own category is worth deciding before this
+  is player-facing, since coal-versus-metal is a real historical distinction in
+  where industrial cities went.
 - Trade position comes almost free: the road generator already paths by terrain
   cost, so scoring a tile by how many cheap routes would pass through it is the
   same computation, inverted.

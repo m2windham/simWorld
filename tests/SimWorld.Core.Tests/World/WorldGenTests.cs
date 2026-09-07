@@ -362,9 +362,11 @@ namespace SimWorld.Tests.World
             Assert.Equal(14, DefDatabase<BiomeDef>.DefCount);
             Assert.Equal(4, DefDatabase<RiverDef>.DefCount);
             Assert.Equal(4, DefDatabase<RoadDef>.DefCount);
-            Assert.Equal(5, DefDatabase<WorldGenStepDef>.DefCount);
+            Assert.Equal(7, DefDatabase<WorldGenStepDef>.DefCount);
             Assert.Equal(4, DefDatabase<FactionDef>.DefCount);
             Assert.True(DefDatabase<WorldObjectDef>.DefCount >= 1);
+            Assert.Equal(11, DefDatabase<DepositDef>.DefCount);
+            Assert.Equal(8, DefDatabase<global::SimWorld.World.Siting.SiteWeightDef>.DefCount);
 
             Assert.NotNull(BiomeDefOf.Ocean);
             Assert.NotNull(BiomeDefOf.Lake);
@@ -375,6 +377,18 @@ namespace SimWorld.Tests.World
             Assert.NotNull(WorldObjectDefOf.Settlement);
             Assert.NotNull(FactionDefOf.PlayerCivilization);
             Assert.True(FactionDefOf.PlayerCivilization.isPlayer);
+
+            Assert.NotNull(DepositDefOf.FreshWater);
+            Assert.NotNull(DepositDefOf.ArableSoil);
+            Assert.NotNull(DepositDefOf.Clay);
+            Assert.NotNull(DepositDefOf.Flint);
+            Assert.NotNull(DepositDefOf.Stone);
+            Assert.NotNull(DepositDefOf.Ore);
+            Assert.NotNull(DepositDefOf.Salt);
+            Assert.NotNull(DepositDefOf.Timber);
+            Assert.NotNull(DepositDefOf.Game);
+            Assert.NotNull(DepositDefOf.Ford);
+            Assert.NotNull(DepositDefOf.DefensibleGround);
         }
 
         // ----- Scribe -----

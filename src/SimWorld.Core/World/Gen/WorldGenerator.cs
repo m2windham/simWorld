@@ -23,7 +23,8 @@ namespace SimWorld.World.Gen
             OverallTemperature temperature,
             OverallPopulation population,
             string name = "World",
-            int? subdivisionOverride = null)
+            int? subdivisionOverride = null,
+            bool soloStart = false)
         {
             if (seedString == null) throw new ArgumentNullException(nameof(seedString));
             int subdivision = subdivisionOverride ?? SubdivisionForCoverage(planetCoverage);
@@ -38,6 +39,7 @@ namespace SimWorld.World.Gen
                 overallTemperature = temperature,
                 overallPopulation = population,
                 subdivisionLevel = subdivision,
+                soloStart = soloStart,
             };
 
             var world = new World(info, WorldGrid.Generate(subdivision));

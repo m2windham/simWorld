@@ -22,6 +22,12 @@ namespace SimWorld.World
         public List<Faction> factions = new List<Faction>();
         public List<WorldObject> worldObjects = new List<WorldObject>();
 
+        /// <summary>
+        /// The region partition (spec §5b.1), rebuilt by <c>Gen.WorldGenStep_Regions</c>/<c>Gen.WorldGenStep_Deposits</c>
+        /// exactly like <see cref="grid"/>'s own tile data — a pure function of <see cref="info"/>, never saved.
+        /// </summary>
+        public List<WorldRegion> regions = new List<WorldRegion>();
+
         private int nextObjectId = 1;
 
         /// <summary>For Scribe's deep-load construction.</summary>
