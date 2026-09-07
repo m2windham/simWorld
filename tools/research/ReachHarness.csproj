@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tech-tree reachability harness. Deliberately NOT in SimWorld.sln and NOT in CI: it is a research
+    instrument, not shipped code, and it is the only project in the repo allowed to poke at the loaded
+    Defs in memory (see Modifiers.cs). It takes no NuGet dependencies so it restores offline.
+
+    Run: see tools/research/README.md.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>SimWorld.ReachHarness</RootNamespace>
+    <AssemblyName>ReachHarness</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/SimWorld.Core/SimWorld.Core.csproj" />
+  </ItemGroup>
+
+</Project>
