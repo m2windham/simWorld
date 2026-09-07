@@ -26,6 +26,7 @@ namespace SimWorld.Pawns
         public Pawn_SkillTracker skills = null!;
         public Pawn_WorkSettings workSettings = null!;
         public Pawn_AgeTracker ageTracker = null!;
+        public Pawn_RelationsTracker relations = null!;
 
         public Gender gender;
         public PawnKindDef? kindDef;
@@ -173,6 +174,7 @@ namespace SimWorld.Pawns
             skills ??= new Pawn_SkillTracker(this);
             workSettings ??= new Pawn_WorkSettings(this);
             ageTracker ??= new Pawn_AgeTracker(this);
+            relations ??= new Pawn_RelationsTracker(this);
         }
 
         // ---- ITickable ----
@@ -225,6 +227,9 @@ namespace SimWorld.Pawns
             Pawn_AgeTracker? at = ageTracker;
             Scribe_Deep.Look(ref at, "ageTracker", this);
             ageTracker = at ?? new Pawn_AgeTracker(this);
+            Pawn_RelationsTracker? rel = relations;
+            Scribe_Deep.Look(ref rel, "relations", this);
+            relations = rel ?? new Pawn_RelationsTracker(this);
             Scribe_Values.Look(ref gender, "gender", Gender.None);
             PawnKindDef? kd = kindDef;
             Scribe_Defs.Look(ref kd, "kindDef");
