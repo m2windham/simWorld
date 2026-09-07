@@ -16,8 +16,11 @@ namespace SimWorld.World.Gen
     /// </summary>
     public class WorldGenStep_Factions : WorldGenStep
     {
-        /// <summary>RimWorld's world-gen "overall population" setting as a count multiplier (this port's own invention — see <see cref="OverallPopulation"/>).</summary>
-        private static readonly Dictionary<OverallPopulation, float> PopulationMultiplier = new Dictionary<OverallPopulation, float>
+        /// <summary>
+        /// RimWorld's world-gen "overall population" setting as a count multiplier (this port's own invention — see <see cref="OverallPopulation"/>).
+        /// Public so <see cref="Factions.FactionGenerator"/> scales faction counts the same way this step scales settlement counts.
+        /// </summary>
+        public static readonly Dictionary<OverallPopulation, float> PopulationMultiplier = new Dictionary<OverallPopulation, float>
         {
             [OverallPopulation.AlmostNone] = 0.15f,
             [OverallPopulation.Little] = 0.4f,
@@ -50,25 +53,19 @@ namespace SimWorld.World.Gen
 
             var placedTiles = new List<int>();
 
-            foreach (FactionDef def in DefDatabase<FactionDef>.AllDefsListForReading)
+            // Factions (identity, naming, initial relations) are created by FactionGenerator; this step
+            // only places their settlements, exactly as before the Factions system existed.
+            List<Faction> factions = FactionGenerator.GenerateFactionsIntoWorld(world, Find.FactionManager, rand);
+
+            foreach (Faction faction in factions)
             {
-                if (def.hidden) continue;
-
-                int factionCount = FactionCountFor(def, popMultiplier);
-                for (int f = 0; f < factionCount; f++)
+                int settlementCount = SettlementCountFor(faction.def, popMultiplier, rand);
+                for (int s = 0; s < settlementCount; s++)
                 {
-                    string name = factionCount == 1 ? def.LabelCap : def.LabelCap + " " + (f + 1);
-                    var faction = new Faction(def, name, world.NextLoadId("Faction"));
-                    world.factions.Add(faction);
-
-                    int settlementCount = SettlementCountFor(def, popMultiplier, rand);
-                    for (int s = 0; s < settlementCount; s++)
-                    {
-                        int? tile = PickSettlementTile(grid, candidateTiles, placedTiles, minDistance, rand);
-                        if (tile == null) break;
-                        placedTiles.Add(tile.Value);
-                        world.worldObjects.Add(new WorldObject(WorldObjectDefOf.Settlement, tile.Value, faction));
-                    }
+                    int? tile = PickSettlementTile(grid, candidateTiles, placedTiles, minDistance, rand);
+                    if (tile == null) break;
+                    placedTiles.Add(tile.Value);
+                    world.worldObjects.Add(new WorldObject(WorldObjectDefOf.Settlement, tile.Value, faction));
                 }
             }
         }
@@ -80,7 +77,8 @@ namespace SimWorld.World.Gen
             return Math.Max(2, (int)Math.Round(scaled));
         }
 
-        private static int FactionCountFor(FactionDef def, float popMultiplier)
+        /// <summary>Public so <see cref="Factions.FactionGenerator"/> uses the same required/max/population-scaling rule this step used to apply inline.</summary>
+        public static int FactionCountFor(FactionDef def, float popMultiplier)
         {
             if (def.maxCountAtGameStart <= def.requiredCountAtGameStart)
             {

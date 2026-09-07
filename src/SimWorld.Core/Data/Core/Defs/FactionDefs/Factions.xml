@@ -2,8 +2,9 @@
 <Defs>
 
   <!--
-    Civilizations (RimWorld: FactionDefs). Minimal slice for world generation only — diplomacy, goodwill
-    and raid behaviour land with the full Factions system.
+    Civilizations (RimWorld: FactionDefs). World generation seeding lives in WorldGenStep_Factions;
+    diplomacy tuning (goodwill drift, initial relations, raid weighting) lives on Faction/FactionGenerator
+    and is read from the fields below.
 
     SimWorld translation note: RimWorld's world gen seeds a handful of NPC faction bases around the
     player's one starting colony. This is a civilization-scale god game instead, so there is no single
@@ -22,6 +23,11 @@
     <maxCountAtGameStart>1</maxCountAtGameStart>
     <minSettlements>2</minSettlements>
     <settlementGenerationWeight>1.0</settlementGenerationWeight>
+    <humanlikeFaction>true</humanlikeFaction>
+    <mustStartOneEnemy>true</mustStartOneEnemy>
+    <leaderTitle>president</leaderTitle>
+    <pawnSingular>citizen</pawnSingular>
+    <pawnsPlural>citizens</pawnsPlural>
   </FactionDef>
 
   <FactionDef>
@@ -32,6 +38,22 @@
     <maxCountAtGameStart>6</maxCountAtGameStart>
     <minSettlements>1</minSettlements>
     <settlementGenerationWeight>1.2</settlementGenerationWeight>
+    <humanlikeFaction>true</humanlikeFaction>
+    <naturalColonyGoodwill>0~40</naturalColonyGoodwill>
+    <goodwillDailyGain>0.5</goodwillDailyGain>
+    <goodwillDailyFall>0.5</goodwillDailyFall>
+    <startingGoodwill>-30~30</startingGoodwill>
+    <raidCommonality>1.0</raidCommonality>
+    <leaderTitle>chief</leaderTitle>
+    <pawnSingular>tribesperson</pawnSingular>
+    <pawnsPlural>tribespeople</pawnsPlural>
+    <earliestRaidDays>3</earliestRaidDays>
+    <settlementNamePrefixes>
+      <li>Ash</li>
+      <li>Stone</li>
+      <li>Red</li>
+      <li>Bone</li>
+    </settlementNamePrefixes>
   </FactionDef>
 
   <FactionDef>
@@ -42,6 +64,16 @@
     <maxCountAtGameStart>5</maxCountAtGameStart>
     <minSettlements>1</minSettlements>
     <settlementGenerationWeight>1.0</settlementGenerationWeight>
+    <humanlikeFaction>true</humanlikeFaction>
+    <naturalColonyGoodwill>0~40</naturalColonyGoodwill>
+    <goodwillDailyGain>0.5</goodwillDailyGain>
+    <goodwillDailyFall>0.5</goodwillDailyFall>
+    <startingGoodwill>-20~40</startingGoodwill>
+    <raidCommonality>0.8</raidCommonality>
+    <leaderTitle>governor</leaderTitle>
+    <pawnSingular>outlander</pawnSingular>
+    <pawnsPlural>outlanders</pawnsPlural>
+    <earliestRaidDays>5</earliestRaidDays>
   </FactionDef>
 
   <FactionDef>
@@ -53,6 +85,14 @@
     <maxCountAtGameStart>3</maxCountAtGameStart>
     <minSettlements>1</minSettlements>
     <settlementGenerationWeight>0.6</settlementGenerationWeight>
+    <humanlikeFaction>true</humanlikeFaction>
+    <hostileToFactionlessHumanlikes>true</hostileToFactionlessHumanlikes>
+    <autoFlee>false</autoFlee>
+    <raidCommonality>1.5</raidCommonality>
+    <leaderTitle>warlord</leaderTitle>
+    <pawnSingular>raider</pawnSingular>
+    <pawnsPlural>raiders</pawnsPlural>
+    <earliestRaidDays>0</earliestRaidDays>
   </FactionDef>
 
 </Defs>

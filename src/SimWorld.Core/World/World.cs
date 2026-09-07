@@ -37,6 +37,15 @@ namespace SimWorld.World
 
         public IEnumerable<WorldObject> Settlements => worldObjects.Where(o => o.def == WorldObjectDefOf.Settlement);
 
+        /// <summary>Call once per game tick: advances every world object (RimWorld: <c>Verse.WorldObjectsHolder.WorldObjectsHolderTick</c>, folded into <c>World</c> here). Caravans use this to step along their path and consume food.</summary>
+        public void WorldTick()
+        {
+            for (int i = 0; i < worldObjects.Count; i++)
+            {
+                worldObjects[i].Tick(this);
+            }
+        }
+
         /// <summary>Hands out a unique, deterministic-per-world id for a newly created <see cref="Faction"/> or <see cref="WorldObject"/>.</summary>
         public string NextLoadId(string prefix) => prefix + "_" + nextObjectId++;
 

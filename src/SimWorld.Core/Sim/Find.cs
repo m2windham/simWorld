@@ -14,6 +14,7 @@ namespace SimWorld.Sim
         [ThreadStatic] private static TickManager? tickManager;
         [ThreadStatic] private static SimWorld.Research.ResearchManager? researchManager;
         [ThreadStatic] private static Storyteller? storyteller;
+        [ThreadStatic] private static SimWorld.Factions.FactionManager? factionManager;
 
         public static TickManager TickManager
         {
@@ -35,12 +36,20 @@ namespace SimWorld.Sim
             set => storyteller = value ?? throw new ArgumentNullException(nameof(value));
         }
 
+        /// <summary>Every civilization and its diplomatic relations (RimWorld: <c>Verse.Find.FactionManager</c>).</summary>
+        public static SimWorld.Factions.FactionManager FactionManager
+        {
+            get => factionManager ??= new SimWorld.Factions.FactionManager();
+            set => factionManager = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
         /// <summary>Drops the thread's services so the next access starts fresh (tests).</summary>
         public static void Reset()
         {
             tickManager = null;
             researchManager = null;
             storyteller = null;
+            factionManager = null;
         }
     }
 }

@@ -27,7 +27,12 @@ namespace SimWorld.World
             this.faction = faction;
         }
 
-        public void ExposeData()
+        /// <summary>Called once per game tick by <see cref="World.WorldTick"/>. Base does nothing; <c>Caravan</c> advances its journey.</summary>
+        public virtual void Tick(World world)
+        {
+        }
+
+        public virtual void ExposeData()
         {
             WorldObjectDef? d = def;
             Scribe_Defs.Look(ref d, "def");
