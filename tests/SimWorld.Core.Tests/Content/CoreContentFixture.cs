@@ -38,6 +38,13 @@ namespace SimWorld.Tests.Content
         {
             Content = content;
             DefDatabase.Global = content.Database;
+
+            // Drop every thread-static service before rebuilding the ones each test needs. Without this,
+            // anything a previous test left behind leaks into the next one on the same thread — finished
+            // research being the one that bit: a test asserting a thing is NOT yet researchable passed alone
+            // and failed in a subset, purely on ordering. Find.Reset() exists for exactly this, and using it
+            // means a new service can never be forgotten here the way ResearchManager was.
+            Find.Reset();
             Find.TickManager = new TickManager();
             Rand.Current = new RandomStream(seed);
             Pawn.ResetThingIdCounter();

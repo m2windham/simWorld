@@ -404,14 +404,30 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
 - Per-pawn priority grid; work givers order by priority, then natural priority,
   then priority within type, with emergency givers first.
 
-### 7.4 AI (Think Tree / Jobs / Pathing) — _planned_
+### 7.4 AI (Think Tree / Jobs / Pathing)
 
-- Priority tree evaluated top-down per job request; danger, needs and directed
-  orders outrank routine work.
-- Jobs run as toil state machines; a reservation system prevents two pawns
-  claiming the same target.
-- Pathing: region graph for reachability plus a per-cell cost grid feeding A*.
-  Full-agent populations will need shared paths (hierarchical or flow field).
+- `ThinkNode_Priority` evaluated top-down per job request: the humanlike
+  `ThinkTreeDef` runs a mental-state guard, then the hunger/rest needs guards,
+  then queued directed orders, then `JobGiver_Work`'s priority-grid scan, then
+  an idle-wander fallback — the first tier to hand back a job wins, so danger
+  and mental state override needs, needs override directed orders, and
+  directed orders override routine work.
+- Jobs run as `JobDriver` toil state machines (`Toils_General`/`Goto`/`Reserve`
+  plus `FailOn...` conditions so a vanished target ends the job cleanly, not
+  with an exception); `ReservationManager` (one per map) stops two pawns
+  claiming the same target, released automatically when a job ends.
+- Pathing: `PathFinder` runs `A*` over `PathGrid`'s per-cell cost (terrain cost
+  plus impassable edifices, already modelled by §5a) with an array-backed
+  binary min-heap open list and diagonal corner-cutting rules;
+  `Pawn_PathFollower` then walks the returned `PawnPath` cell by cell at a
+  speed derived from the `MoveSpeed` stat. `Reachability` answers "can A reach
+  B" from a flat flood-fill cache (one connected-component id per walkable
+  cell, recomputed only when the path grid actually changes) rather than the
+  region/region-link graph a large, well-subdivided map would eventually want
+  — an O(1) cached query today, at the cost of an O(map) recompute on _any_
+  path-grid change anywhere, however small. Full-agent populations still need
+  shared paths (hierarchical or flow field); today's `PathFinder` runs one
+  `A*` search per pawn per path request.
 
 ```mermaid
 flowchart TD
@@ -422,7 +438,7 @@ flowchart TD
   Work --> Job
   Job --> Toils[Toil state machine]
   Toils --> Reserve[Reservation check]
-  Toils --> Path[Region graph A*]
+  Toils --> Path[Flood-fill reachability + A*]
 ```
 
 ### 7.5 Demography, Lineage & Lifespan
