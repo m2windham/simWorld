@@ -3,8 +3,12 @@ using System.Xml.Linq;
 
 namespace SimWorld.Defs
 {
-    /// <summary>A named numeric quality Things and Pawns can have (RimWorld: <c>RimWorld.StatDef</c>).</summary>
-    public class StatDef : Def
+    /// <summary>
+    /// A named numeric quality Things and Pawns can have (RimWorld: <c>RimWorld.StatDef</c>). Split into two
+    /// files like <c>ThingDef</c>/<c>ThingDef.Things.cs</c>: this one is Defs-layer only (the base value and
+    /// its bounds); <c>Stats/StatDef.Stats.cs</c> adds the pipeline (worker, parts, capacity factors, category).
+    /// </summary>
+    public partial class StatDef : Def
     {
         public float defaultBaseValue;
         public float minValue;

@@ -5,6 +5,7 @@ using SimWorld.Defs;
 using SimWorld.Health;
 using SimWorld.Pawns;
 using SimWorld.Sim;
+using SimWorld.Stats;
 
 namespace SimWorld.Combat
 {
@@ -22,9 +23,10 @@ namespace SimWorld.Combat
     }
 
     /// <summary>
-    /// A pawn's own hide, read straight off its ThingDef's <c>statBases</c> (RimWorld: the race's
-    /// <c>ArmorRating_*</c> stat, before any apparel). Covers every part; reports 0 when the ThingDef sets
-    /// nothing, which is every pawn shipped so far.
+    /// A pawn's own hide (RimWorld: the race's <c>ArmorRating_*</c> stat, before any apparel). Routed through
+    /// the stat pipeline (<see cref="StatExtension"/>'s <c>Thing.GetStatValue</c>) rather than the bare
+    /// <c>statBases</c> lookup, so a hediff's <c>statOffsets</c>/<c>statFactors</c> — and, later, worn gear —
+    /// can move it. Covers every part; reports 0 when nothing raises it, which is every pawn shipped so far.
     /// </summary>
     public sealed class NaturalArmor : IArmorSource
     {
@@ -35,7 +37,7 @@ namespace SimWorld.Combat
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
         }
 
-        public float ArmorRating(StatDef armorStat, BodyPartRecord part) => pawn.def.GetStatValueAbstract(armorStat);
+        public float ArmorRating(StatDef armorStat, BodyPartRecord part) => pawn.GetStatValue(armorStat);
 
         public bool Covers(BodyPartRecord part) => true;
     }

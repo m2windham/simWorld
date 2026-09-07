@@ -28,6 +28,13 @@ namespace SimWorld
 
         public static float Lerp(float a, float b, float t) => a + (b - a) * t;
 
+        /// <summary>Where <paramref name="value"/> sits between <paramref name="a"/> and <paramref name="b"/>, clamped to [0, 1].</summary>
+        public static float InverseLerp(float a, float b, float value)
+        {
+            if (a == b) return 0f;
+            return Clamp01((value - a) / (b - a));
+        }
+
         public static float Clamp01(float v) => v < 0f ? 0f : (v > 1f ? 1f : v);
 
         public static float Clamp(float v, float min, float max) => v < min ? min : (v > max ? max : v);

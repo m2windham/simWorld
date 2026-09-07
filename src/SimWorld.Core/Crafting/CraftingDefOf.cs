@@ -3,13 +3,6 @@ using SimWorld.Health;
 
 namespace SimWorld.Crafting
 {
-    /// <summary>Bare economic stat every ThingDef can carry. Defined here since no Stats module owns a shared StatDefOf yet.</summary>
-    [DefOf]
-    public static class StatDefOf
-    {
-        public static StatDef MarketValue = null!;
-    }
-
     [DefOf]
     public static class ThingCategoryDefOf
     {
