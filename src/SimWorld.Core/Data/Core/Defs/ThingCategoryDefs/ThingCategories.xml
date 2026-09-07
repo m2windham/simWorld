@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Item category tree (RimWorld: ThingCategoryDefs), trimmed to what Crafting & Production's first
+    recipes need. Later modules add their own branches under Root.
+  -->
+
+  <ThingCategoryDef>
+    <defName>Root</defName>
+    <label>all</label>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>Items</defName>
+    <label>items</label>
+    <parent>Root</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>Foods</defName>
+    <label>food</label>
+    <parent>Root</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>Meat</defName>
+    <label>raw meat</label>
+    <parent>Foods</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>PlantFoodRaw</defName>
+    <label>raw plant food</label>
+    <parent>Foods</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>FoodMeals</defName>
+    <label>meals</label>
+    <parent>Foods</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>AnimalProductRaw</defName>
+    <label>raw animal products</label>
+    <parent>Foods</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>Manufactured</defName>
+    <label>manufactured</label>
+    <parent>Root</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>Textiles</defName>
+    <label>textiles</label>
+    <parent>Manufactured</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>ResourcesRaw</defName>
+    <label>raw resources</label>
+    <parent>Root</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>StoneBlocks</defName>
+    <label>stone blocks</label>
+    <parent>ResourcesRaw</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>Metals</defName>
+    <label>metals</label>
+    <parent>ResourcesRaw</parent>
+  </ThingCategoryDef>
+
+</Defs>

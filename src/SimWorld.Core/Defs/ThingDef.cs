@@ -25,7 +25,7 @@ namespace SimWorld.Defs
     /// this stage: the Things module extends it. What is here is the Def-layer contract every later
     /// module builds on — stat bases and the Comp list.
     /// </summary>
-    public class ThingDef : Def
+    public partial class ThingDef : Def
     {
         /// <summary>Runtime class spawned for this Def; resolved by name from XML.</summary>
         public Type? thingClass;

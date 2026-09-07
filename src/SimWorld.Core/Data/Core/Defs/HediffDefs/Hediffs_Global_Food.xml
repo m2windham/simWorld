@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Food poisoning, rolled by GenRecipe.PostProcessProduct against FoodUtility.FoodPoisonChanceFromCook
+    (RimWorld: part of Hediffs_Global_Misc, split into its own file here since Health/ is read-only for
+    the Crafting & Production module). Falls at 0.8/day from an initial severity of 1, so it clears in a
+    bit over a day, same shape as BloodLoss/Malnutrition.
+  -->
+
+  <HediffDef>
+    <defName>FoodPoisoning</defName>
+    <label>food poisoning</label>
+    <initialSeverity>1</initialSeverity>
+    <maxSeverity>1</maxSeverity>
+    <tendable>false</tendable>
+    <makesSickThought>true</makesSickThought>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_SeverityPerDay">
+        <severityPerDay>-0.8</severityPerDay>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>recovering</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.1</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.5</minSeverity>
+        <label>active</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.3</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.3</offset>
+          </li>
+        </capMods>
+      </li>
+    </stages>
+  </HediffDef>
+
+</Defs>
