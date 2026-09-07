@@ -58,11 +58,29 @@ namespace SimWorld.World
         public List<RiverLink> potentialRivers = new List<RiverLink>();
         public List<RoadLink> potentialRoads = new List<RoadLink>();
 
+        /// <summary>
+        /// Resource/landmark deposits derived from this tile's own terrain by <c>Gen.WorldGenStep_Deposits</c>
+        /// (spec §5b.2). Only non-zero magnitudes are stored; always empty for a water tile.
+        /// </summary>
+        public List<TileDeposit> deposits = new List<TileDeposit>();
+
         /// <summary>RimWorld's rule: sea level is elevation 0; at or below it, the tile is water.</summary>
         public bool WaterCovered => elevation <= 0f;
 
         public IReadOnlyList<RiverLink> Rivers => potentialRivers;
 
         public IReadOnlyList<RoadLink> Roads => potentialRoads;
+
+        public IReadOnlyList<TileDeposit> Deposits => deposits;
+
+        /// <summary>This tile's magnitude for <paramref name="def"/>, in [0,1]; 0 when the deposit is absent.</summary>
+        public float DepositMagnitude(DepositDef def)
+        {
+            for (int i = 0; i < deposits.Count; i++)
+            {
+                if (deposits[i].def == def) return deposits[i].magnitude;
+            }
+            return 0f;
+        }
     }
 }

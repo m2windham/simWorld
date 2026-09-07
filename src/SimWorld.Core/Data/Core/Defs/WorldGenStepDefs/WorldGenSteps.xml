@@ -3,10 +3,14 @@
 
   <!--
     World generation pipeline (RimWorld: WorldGenStepDefs), run in ascending order by WorldGenerator.
-    Roads runs after Factions because it connects settlements the Factions step places. Factions itself is
-    excluded from regeneration-on-load: settlements/factions are saved directly instead of being
-    recomputed from the seed (see World.RegenerateGrid) — Roads stays included, since it only needs the
-    (already-loaded) settlements and the freshly regenerated terrain, and uses no randomness of its own.
+    Regions runs after Rivers because region edges read biome/elevation/river data; Deposits runs after
+    Regions because it aggregates per-tile deposits into each region's resource profile. Roads runs after
+    Factions because it connects settlements the Factions step places. Factions itself is excluded from
+    regeneration-on-load: settlements/factions are saved directly instead of being recomputed from the seed
+    (see World.RegenerateGrid) — every other step stays included, since each needs only the
+    already-regenerated terrain (and, for Roads, the already-loaded settlements) and uses no randomness
+    that would disagree with the original generation (Deposits uses none at all; Regions reseeds its own
+    stream from the world seed exactly like every other step).
   -->
 
   <WorldGenStepDef>
@@ -25,6 +29,18 @@
     <defName>Rivers</defName>
     <order>300</order>
     <workerClass>SimWorld.World.Gen.WorldGenStep_Rivers</workerClass>
+  </WorldGenStepDef>
+
+  <WorldGenStepDef>
+    <defName>Regions</defName>
+    <order>320</order>
+    <workerClass>SimWorld.World.Gen.WorldGenStep_Regions</workerClass>
+  </WorldGenStepDef>
+
+  <WorldGenStepDef>
+    <defName>Deposits</defName>
+    <order>340</order>
+    <workerClass>SimWorld.World.Gen.WorldGenStep_Deposits</workerClass>
   </WorldGenStepDef>
 
   <WorldGenStepDef>

@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-07",
-  "testsTotal": 519,
+  "testsTotal": 541,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1130,44 +1130,44 @@
       "rimworld": "Settlements & Game Start",
       "translation": "The opening of the game and what a settlement is once it has an interior. Region-then-site founding, deposits derived from terrain, era-weighted site scoring, and a settlement that is an entity rather than a def plus a tile.",
       "translationState": "decided",
-      "module": "src/SimWorld.Core/World — planned",
-      "status": "planned",
-      "tests": 0,
+      "module": "src/SimWorld.Core/World (regions, deposits, siting, solo start)",
+      "status": "in-progress",
+      "tests": 22,
       "items": [
         {
           "id": "settlements.regions",
           "label": "Region partition over the icosphere: contiguous tile groups cut on coastline, ridges and major rivers, each with a name, dominant biome, climate and summarised resource profile",
-          "done": false
+          "done": true
         },
         {
           "id": "settlements.deposits",
           "label": "Resource and landmark deposits derived from existing terrain — clay in floodplains, flint in chalk lowland, ore in hills, salt at coasts and springs, deep soil in valleys, timber by biome, fords and defensible high ground from elevation",
-          "done": false
+          "done": true
         },
         {
           "id": "settlements.siting",
           "label": "Site score: hard necessities (fresh water, land that feeds the band, survivable climate) times era-weighted advantages (defensibility, transport, materials, trade position); advisory for the player, decisive for emergent foundings",
-          "done": false
+          "done": true
         },
         {
           "id": "settlements.trade-position",
           "label": "Trade position scored by inverting the road pather — how many cheap routes would pass through a tile",
-          "done": false
+          "done": true
         },
         {
           "id": "settlements.founding",
-          "label": "Founding band of 20-40 in several households, all Full-tier, with a founding chronicle entry",
+          "label": "Founding band of 20-40 in several households, all Full-tier, with a founding chronicle entry — lands with the founding-flow module",
           "done": false
         },
         {
           "id": "settlements.entity",
-          "label": "Settlement as an entity: population by tier, stores, works, age, name and growth — today it is a def, a tile and a faction",
+          "label": "Settlement as an entity: population by tier, stores, works, age, name and growth — today it is a def, a tile and a faction — lands with the Settlement-entity module",
           "done": false
         },
         {
           "id": "settlements.solo",
           "label": "Solo-start world generation: the player's faction alone at time zero",
-          "done": false
+          "done": true
         },
         {
           "id": "settlements.interior",
@@ -1176,7 +1176,7 @@
         },
         {
           "id": "settlements.emergence",
-          "label": "Rival civilizations emerging from the simulation over time rather than being placed at world gen",
+          "label": "Rival civilizations emerging from the simulation over time rather than being placed at world gen — lands with the civilization-emergence module",
           "done": false
         }
       ]

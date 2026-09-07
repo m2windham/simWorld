@@ -20,4 +20,21 @@ namespace SimWorld.World
         public static WorldObjectDef Settlement = null!;
         public static WorldObjectDef Caravan = null!;
     }
+
+    /// <summary>Every deposit category <c>Gen.WorldGenStep_Deposits</c> derives from terrain (spec §5b.2).</summary>
+    [DefOf]
+    public static class DepositDefOf
+    {
+        public static DepositDef FreshWater = null!;
+        public static DepositDef ArableSoil = null!;
+        public static DepositDef Clay = null!;
+        public static DepositDef Flint = null!;
+        public static DepositDef Stone = null!;
+        public static DepositDef Ore = null!;
+        public static DepositDef Salt = null!;
+        public static DepositDef Timber = null!;
+        public static DepositDef Game = null!;
+        public static DepositDef Ford = null!;
+        public static DepositDef DefensibleGround = null!;
+    }
 }

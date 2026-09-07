@@ -3,12 +3,19 @@ using SimWorld.Defs;
 
 namespace SimWorld.Pawns
 {
-    /// <summary>Which part of a <see cref="NameTriple"/> a <see cref="NameBankDef"/> supplies.</summary>
+    /// <summary>
+    /// Which part of a <see cref="NameTriple"/> a <see cref="NameBankDef"/> supplies. <see cref="RegionPrefix"/>
+    /// and <see cref="RegionSuffix"/> are not pawn name parts at all — <c>World.RegionNameMaker</c> reuses the
+    /// same bank mechanism to name world regions (spec §5b.1) rather than inventing a second, code-side naming
+    /// scheme; <see cref="NameBankDef.gender"/> is ignored for both.
+    /// </summary>
     public enum NameSlot
     {
         First,
         Nick,
         Last,
+        RegionPrefix,
+        RegionSuffix,
     }
 
     /// <summary>

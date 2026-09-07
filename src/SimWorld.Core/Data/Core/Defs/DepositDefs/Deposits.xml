@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Deposit categories a scouting party would notice on the land (spec §5b.2). No tuning lives here: every
+    threshold that decides where and how strongly one of these appears is in World.DepositTuning, read by
+    Gen.WorldGenStep_Deposits. These defs are identity only, so SiteWeightDefs and DepositDefOf have
+    something stable to reference.
+  -->
+
+  <DepositDef>
+    <defName>FreshWater</defName>
+    <label>fresh water</label>
+    <description>A river, a lake shore, or reliable rainfall close enough to draw on daily.</description>
+  </DepositDef>
+
+  <DepositDef>
+    <defName>ArableSoil</defName>
+    <label>deep soil</label>
+    <description>Low, well-watered valley ground that breaks easily and holds a crop.</description>
+  </DepositDef>
+
+  <DepositDef>
+    <defName>Clay</defName>
+    <label>clay</label>
+    <description>Fine river-laid silt from a floodplain or a meander bend, good for pottery and daub.</description>
+  </DepositDef>
+
+  <DepositDef>
+    <defName>Flint</defName>
+    <label>flint</label>
+    <description>Nodules in dry lowland ground, knapped for blades and strike-a-lights.</description>
+  </DepositDef>
+
+  <DepositDef>
+    <defName>Stone</defName>
+    <label>stone</label>
+    <description>Rock close enough to the surface to quarry for walls and foundations.</description>
+  </DepositDef>
+
+  <DepositDef>
+    <defName>Ore</defName>
+    <label>ore</label>
+    <description>Metal-bearing rock in the hills and mountains, rarer the gentler the slope.</description>
+  </DepositDef>
+
+  <DepositDef>
+    <defName>Salt</defName>
+    <label>salt</label>
+    <description>Panned from a coastline, or rarely drawn from a mineral spring far inland.</description>
+  </DepositDef>
+
+  <DepositDef>
+    <defName>Timber</defName>
+    <label>timber</label>
+    <description>Standing wood, as thick as the local biome's own plant growth allows.</description>
+  </DepositDef>
+
+  <DepositDef>
+    <defName>Game</defName>
+    <label>game</label>
+    <description>Huntable animal life, as plentiful as the local biome's own fauna allows.</description>
+  </DepositDef>
+
+  <DepositDef>
+    <defName>Ford</defName>
+    <label>ford</label>
+    <description>A shallow, low-lying river reach a band can cross on foot without a boat.</description>
+  </DepositDef>
+
+  <DepositDef>
+    <defName>DefensibleGround</defName>
+    <label>defensible ground</label>
+    <description>High ground over its surroundings, or a river bend that guards most sides at once.</description>
+  </DepositDef>
+
+</Defs>
