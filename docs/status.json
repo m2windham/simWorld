@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-09-06",
-  "testsTotal": 487,
+  "updated": "2026-09-07",
+  "testsTotal": 516,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -96,6 +96,41 @@
       "state": "decided",
       "title": "RimWorld's static Rand and Scribe stay static, but per thread",
       "note": "Ported call sites (Rand.Value, Scribe_Values.Look) keep their shape; state is [ThreadStatic] so tests and worker threads never share a sequence or a save session. Explicit RandomStream instances are the preferred form for new systems."
+    },
+    {
+      "id": "timescale",
+      "date": "2026-09-07",
+      "state": "decided",
+      "title": "Two clocks; time never causes progression",
+      "note": "The ported 60-tick clock stays authoritative. An abstracted clock above it exists only to skip, and may only do what the real clock would have done — every process it advances needs a sampled equivalent that agrees with ticking. A century of abstract time with no people, food or research advances nothing. Spec section 11.1."
+    },
+    {
+      "id": "attention",
+      "date": "2026-09-07",
+      "state": "decided",
+      "title": "Civilization-wide sight, settlement-deep touch",
+      "note": "Attention follows RimWorld's world-map/colony-map split, which World/ and Map/ already mirror. Global sight and indirect verbs at civilization scope; any citizen openable at settlement scope. The missing seam is the settlement interior. Spec section 11.2."
+    },
+    {
+      "id": "lod",
+      "date": "2026-09-07",
+      "state": "decided",
+      "title": "Citizens tier by significance, and the tier is the historical record",
+      "note": "Full / Interval / Statistical, promoted by attention, role, chronicle mention or relation — never by distance or elapsed time; identity survives demotion. Fidelity is written at the tier lived and never upgraded, so the deep past is thin because it was thin. One mechanism pays for both performance and the fiction. Spec section 11.3-11.4."
+    },
+    {
+      "id": "gamestart",
+      "date": "2026-09-07",
+      "state": "decided",
+      "title": "A game opens region first, then site, Manor Lords style",
+      "note": "The world map is browsed by region; inside the chosen region, markers show water, soil, timber, stone, clay, flint, ore, salt, game, fords and high ground, and the player places the settlement centre. Deposits are derived from existing terrain rather than sprinkled. Founding band is 20-40 people in several households. Spec section 5b."
+    },
+    {
+      "id": "solostart",
+      "date": "2026-09-07",
+      "state": "decided",
+      "title": "One civilization at world generation; rivals emerge later",
+      "note": "World gen places the player's faction alone. Other civilizations emerge from the simulation over time rather than existing at time zero. The cost — factions, trade and diplomacy idle through the opening — is accepted for the truer sticks-and-stones arc. Spec section 5b.4."
     }
   ],
   "systems": [
@@ -1006,6 +1041,115 @@
         {
           "id": "quests.orchestrator",
           "label": "Game-start orchestrator to run Scenario.PostGameStart and the quest tick loop — lands with the game loop",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "demography",
+      "n": 19,
+      "rimworld": "Demography & Lineage",
+      "translation": "SimWorld original — RimWorld has no equivalent to port. A colony of twelve never needs generations; a civilization does. Built on the ported age/life-stage clock rather than a compressed one.",
+      "translationState": "implemented",
+      "module": "src/SimWorld.Core/Pawns — Family · FamilyManager · Pawn_RelationsTracker · DemographyTuning",
+      "status": "translated",
+      "tests": 29,
+      "items": [
+        {
+          "id": "demography.households",
+          "label": "Family as the unit of lineage: founders, surname drawn from the shared name banks, members, generation depth, living vs total counts; Pawn_RelationsTracker carries familyId, spouseId, motherId, fatherId",
+          "done": true
+        },
+        {
+          "id": "demography.marriage",
+          "label": "Marriage founds a new household rather than merging into an existing one — the rule that keeps a civilization from collapsing into one dynasty (Epoch measured 90% in a single household; SimWorld's 120-year regression ends at 0.8% across 284 households)",
+          "done": true
+        },
+        {
+          "id": "demography.births",
+          "label": "Birth roll per couple per interval, gated by fertility window, minimum birth interval and food security; only the shape of Epoch's formula is reused, every constant is SimWorld's own",
+          "done": true
+        },
+        {
+          "id": "demography.lifespan",
+          "label": "Death from age as a hidden pre-rolled budget (lifeExpectancy ± spread) with no public accessor — the player never sees how long a citizen has left",
+          "done": true
+        },
+        {
+          "id": "demography.modifiers",
+          "label": "The budget moves with the civilization: completed MedicineHealth research read at birth lengthens it; starvation intervals spend it and being fed again does not refund it",
+          "done": true
+        },
+        {
+          "id": "demography.chronicle",
+          "label": "Births, marriages and deaths recorded to the chronicle through the storyteller",
+          "done": true
+        },
+        {
+          "id": "demography.lod",
+          "label": "Population level-of-detail: tiering citizens by significance so a civilization-scale population is affordable, with the sim's own record fidelity doubling as what history remembers",
+          "done": false
+        },
+        {
+          "id": "demography.migration",
+          "label": "Migration and household founding by immigration — FoundHousehold already accepts a single founder, but nothing generates arrivals yet",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "settlements",
+      "n": 20,
+      "rimworld": "Settlements & Game Start",
+      "translation": "The opening of the game and what a settlement is once it has an interior. Region-then-site founding, deposits derived from terrain, era-weighted site scoring, and a settlement that is an entity rather than a def plus a tile.",
+      "translationState": "decided",
+      "module": "src/SimWorld.Core/World — planned",
+      "status": "planned",
+      "tests": 0,
+      "items": [
+        {
+          "id": "settlements.regions",
+          "label": "Region partition over the icosphere: contiguous tile groups cut on coastline, ridges and major rivers, each with a name, dominant biome, climate and summarised resource profile",
+          "done": false
+        },
+        {
+          "id": "settlements.deposits",
+          "label": "Resource and landmark deposits derived from existing terrain — clay in floodplains, flint in chalk lowland, ore in hills, salt at coasts and springs, deep soil in valleys, timber by biome, fords and defensible high ground from elevation",
+          "done": false
+        },
+        {
+          "id": "settlements.siting",
+          "label": "Site score: hard necessities (fresh water, land that feeds the band, survivable climate) times era-weighted advantages (defensibility, transport, materials, trade position); advisory for the player, decisive for emergent foundings",
+          "done": false
+        },
+        {
+          "id": "settlements.trade-position",
+          "label": "Trade position scored by inverting the road pather — how many cheap routes would pass through a tile",
+          "done": false
+        },
+        {
+          "id": "settlements.founding",
+          "label": "Founding band of 20-40 in several households, all Full-tier, with a founding chronicle entry",
+          "done": false
+        },
+        {
+          "id": "settlements.entity",
+          "label": "Settlement as an entity: population by tier, stores, works, age, name and growth — today it is a def, a tile and a faction",
+          "done": false
+        },
+        {
+          "id": "settlements.solo",
+          "label": "Solo-start world generation: the player's faction alone at time zero",
+          "done": false
+        },
+        {
+          "id": "settlements.interior",
+          "label": "Settlement interior map generated on entry at settlement scope and persisted after — the seam between the ported World and Map layers",
+          "done": false
+        },
+        {
+          "id": "settlements.emergence",
+          "label": "Rival civilizations emerging from the simulation over time rather than being placed at world gen",
           "done": false
         }
       ]

@@ -26,6 +26,7 @@ namespace SimWorld.Pawns
         public Pawn_SkillTracker skills = null!;
         public Pawn_WorkSettings workSettings = null!;
         public Pawn_AgeTracker ageTracker = null!;
+        public Pawn_RelationsTracker relations = null!;
 
         public Gender gender;
         public PawnKindDef? kindDef;
@@ -133,12 +134,20 @@ namespace SimWorld.Pawns
 
         public bool HasHediff(HediffDef hediffDef) => health.hediffSet.HasHediff(hediffDef);
 
-        /// <summary>Starvation builds malnutrition each food interval; eating again lets it fade at the same pace.</summary>
+        /// <summary>
+        /// Starvation builds malnutrition each food interval; eating again lets it fade at the same pace.
+        /// Hunger also spends the pawn's hidden lifespan budget: malnutrition is survivable and still costs
+        /// years, so a civilization that starves its people repeatedly buries them younger.
+        /// </summary>
         public virtual void Notify_StarvationInterval(bool starving)
         {
             if (Dead || HediffDefOf.Malnutrition == null) return;
             float delta = starving ? HealthTuning.MalnutritionSeverityPerInterval : -HealthTuning.MalnutritionSeverityPerInterval;
             HealthUtility.AdjustSeverity(this, HediffDefOf.Malnutrition, delta);
+            if (starving)
+            {
+                ageTracker?.AdjustLifespan(-DemographyTuning.StarvationLifespanPenaltyDays, "hunger");
+            }
         }
 
         public virtual void Notify_TraitsChanged()
@@ -173,6 +182,7 @@ namespace SimWorld.Pawns
             skills ??= new Pawn_SkillTracker(this);
             workSettings ??= new Pawn_WorkSettings(this);
             ageTracker ??= new Pawn_AgeTracker(this);
+            relations ??= new Pawn_RelationsTracker(this);
         }
 
         // ---- ITickable ----
@@ -225,6 +235,9 @@ namespace SimWorld.Pawns
             Pawn_AgeTracker? at = ageTracker;
             Scribe_Deep.Look(ref at, "ageTracker", this);
             ageTracker = at ?? new Pawn_AgeTracker(this);
+            Pawn_RelationsTracker? rel = relations;
+            Scribe_Deep.Look(ref rel, "relations", this);
+            relations = rel ?? new Pawn_RelationsTracker(this);
             Scribe_Values.Look(ref gender, "gender", Gender.None);
             PawnKindDef? kd = kindDef;
             Scribe_Defs.Look(ref kd, "kindDef");

@@ -99,6 +99,14 @@ namespace SimWorld.Pawns.Generation
                 pawn.story.RecordLifeEvent("Born", pawn.Label + " was born.");
             }
 
+            // Rolled once here, for every humanlike pawn this generator produces (newborn or not) — see
+            // Pawn_AgeTracker's "Hidden lifespan budget" section for why it stays hidden. Last step, so it
+            // never perturbs the RNG stream any of the generation steps above already depend on.
+            if (humanlike)
+            {
+                pawn.ageTracker.RollLifespanBudget(race);
+            }
+
             return pawn;
         }
 

@@ -88,6 +88,16 @@ namespace SimWorld.Pawns
             return new NameSingle(candidate);
         }
 
+        /// <summary>
+        /// A household surname, drawn from the same <see cref="NameSlot.Last"/> pools individual pawns use.
+        /// Households are named at founding (<see cref="FamilyManager"/>); unlike pawn names these are not
+        /// forced unique, because two unrelated houses sharing a name is ordinary rather than a bug.
+        /// </summary>
+        public static string GenerateSurname()
+        {
+            return RandomNameFromBank(Gender.None, NameSlot.Last) ?? "Nameless";
+        }
+
         private static string? RandomNameFromBank(Gender gender, NameSlot slot)
         {
             List<string> pool = DefDatabase<NameBankDef>.AllDefsListForReading

@@ -17,6 +17,27 @@ namespace SimWorld.Pawns
         public long ageBiologicalTicks;
         public long ageChronologicalTicks;
 
+        // ---- Hidden lifespan budget (death from age) ----
+        //
+        // Deliberate design, not an oversight: this pawn's age of death is rolled once (RollLifespanBudget,
+        // called from PawnGenerator — cheaper than a per-tick mortality roll across a large population, and
+        // trivially save-compatible) and lives ONLY here, as a private field. Nothing above this tracker may
+        // read it: no DiesOnTick, no YearsRemaining, no public accessor of any kind — only the boolean
+        // ShouldDieOfAge(), which FamilyManager's demography sweep evaluates periodically, and the mutator
+        // AdjustLifespan(), which nutrition, injury, disease and (the era hook) medical-technology research can
+        // call. A player who could read "this pawn dies on tick N" would experience mortality as a countdown;
+        // hiding it is what keeps it emergent instead — see docs/research/epoch-inspiration.md §5 and the task
+        // brief this module was built from. long.MaxValue is the "never rolled" sentinel: a pawn built directly
+        // (`new Pawn(def, name)`, not through PawnGenerator — most of this codebase's own tests do this) never
+        // dies of age, since it never opted into the roll.
+        private long deathAgeBudgetTicks = long.MaxValue;
+
+        /// <summary>Short log of what nudged the budget and by how much, for <see cref="DescribeLifespanForChronicle"/>
+        /// to summarize when the pawn actually dies — never exposed as raw data, only as that one summary string.</summary>
+        private readonly List<string> lifespanAdjustmentReasons = new List<string>();
+
+        private const int MaxLifespanAdjustmentReasonsKept = 8;
+
         public Pawn_AgeTracker(Pawn pawn)
         {
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
@@ -119,10 +140,109 @@ namespace SimWorld.Pawns
             ageChronologicalTicks = ticks;
         }
 
+        // ---- Hidden lifespan budget (death from age) ----
+
+        /// <summary>
+        /// Rolls this pawn's hidden death-age budget once (RimWorld: no equivalent; SimWorld's own — see the
+        /// class doc's "Hidden lifespan budget" section for why it is hidden). Called from
+        /// <see cref="Generation.PawnGenerator"/> after age generation finalizes, for every humanlike pawn
+        /// (regular generation and newborns alike) — never re-rolled afterward, only nudged by
+        /// <see cref="AdjustLifespan"/>. The budget lands in
+        /// [lifeExpectancy - <see cref="DemographyTuning.LifespanSpreadYears"/>, lifeExpectancy + spread]
+        /// (humans: [65, 95] against an 80-year lifeExpectancy), floored at one year past the pawn's current
+        /// age so a colonist generated old is never immediately overdue.
+        /// </summary>
+        internal void RollLifespanBudget(RaceProperties race)
+        {
+            if (race == null) throw new ArgumentNullException(nameof(race));
+            float rolledAgeYears = race.lifeExpectancy - DemographyTuning.LifespanSpreadYears
+                + Rand.Value * (2f * DemographyTuning.LifespanSpreadYears);
+
+            // The era hook: medical knowledge the civilization holds *at the moment of birth* shifts what this
+            // life can expect. Evaluated here rather than at death on purpose — curing disease later cannot
+            // retroactively have given someone a healthier childhood.
+            rolledAgeYears += MedicineFactor() * DemographyTuning.MedicineLifespanBonusYears;
+            float minAgeYears = AgeBiologicalYearsFloat + 1f;
+            if (rolledAgeYears < minAgeYears) rolledAgeYears = minAgeYears;
+            deathAgeBudgetTicks = (long)(rolledAgeYears * GenDate.TicksPerYear);
+            lifespanAdjustmentReasons.Clear();
+        }
+
+        /// <summary>
+        /// The only behaviour the hidden budget exposes: whether this pawn's current biological age has
+        /// reached it. Returns false for a pawn whose budget was never rolled (see the "never rolled" sentinel
+        /// on <c>deathAgeBudgetTicks</c>) — most pawns built directly rather than through
+        /// <see cref="Generation.PawnGenerator"/> never die of age, by the same logic a pawn that never got a
+        /// birthday never has one.
+        /// </summary>
+        public bool ShouldDieOfAge() => ageBiologicalTicks >= deathAgeBudgetTicks;
+
+        /// <summary>
+        /// Moves the hidden budget by <paramref name="days"/> (positive extends life, negative shortens it) and
+        /// records why — nutrition/malnutrition history, a serious or permanent injury, chronic disease, or (the
+        /// era hook) the civilization's medical technology all call this over a pawn's life, so the budget is a
+        /// living figure shaped by circumstance rather than a verdict handed down at birth. No-op on a pawn whose
+        /// budget was never rolled (nothing to adjust). Internal: only <c>SimWorld.Core</c> systems (health,
+        /// research, this module) call it — never a UI, never outside code.
+        /// </summary>
+        /// <summary>
+        /// Fraction of the civilization's medical research completed, in [0, 1]; 0 when no medical projects
+        /// exist or none are done. Reads <see cref="Sim.Find.ResearchManager"/>, so it reflects whatever
+        /// civilization the running game belongs to.
+        /// </summary>
+        private static float MedicineFactor()
+        {
+            int total = 0, done = 0;
+            foreach (Research.ResearchProjectDef project in Defs.DefDatabase<Research.ResearchProjectDef>.AllDefsListForReading)
+            {
+                if (project.tags == null || !project.tags.Contains(DemographyTuning.MedicineTrackTag)) continue;
+                total++;
+                if (Sim.Find.ResearchManager.IsFinished(project)) done++;
+            }
+            return total == 0 ? 0f : (float)done / total;
+        }
+
+        /// <summary>
+        /// Test-only view of the hidden budget, in years. Deliberately <c>internal</c>, not public: tests must
+        /// be able to prove that medicine lengthens a life and that hunger shortens one, but no game or render
+        /// code may branch on a pawn's death age. If this ever needs to become public, the hiding rule above
+        /// has been abandoned — reread it first.
+        /// </summary>
+        internal float DebugDeathAgeYears =>
+            deathAgeBudgetTicks == long.MaxValue ? float.PositiveInfinity : (float)deathAgeBudgetTicks / GenDate.TicksPerYear;
+
+        internal void AdjustLifespan(float days, string reason)
+        {
+            if (deathAgeBudgetTicks == long.MaxValue) return;
+            long deltaTicks = (long)(days * GenDate.TicksPerDay);
+            deathAgeBudgetTicks = Math.Max(deathAgeBudgetTicks + deltaTicks, ageBiologicalTicks);
+
+            lifespanAdjustmentReasons.Add((reason ?? "unspecified") + " (" + days.ToString("+0.#;-0.#;0", System.Globalization.CultureInfo.InvariantCulture) + "d)");
+            if (lifespanAdjustmentReasons.Count > MaxLifespanAdjustmentReasonsKept)
+            {
+                lifespanAdjustmentReasons.RemoveAt(0);
+            }
+        }
+
+        /// <summary>A short, human-readable summary of what shaped this pawn's lifespan — for the Chronicle to
+        /// say why someone lived long or died young at the moment they actually die, never before. Empty when
+        /// nothing ever adjusted the budget (the common case), so a plain death reads as a plain death rather
+        /// than manufacturing commentary. Internal: the raw log itself is never exposed, only this rolled-up
+        /// string, and only to callers inside Core.</summary>
+        internal string DescribeLifespanForChronicle()
+        {
+            return lifespanAdjustmentReasons.Count == 0 ? "" : string.Join("; ", lifespanAdjustmentReasons);
+        }
+
         public void ExposeData()
         {
             Scribe_Values.Look(ref ageBiologicalTicks, "ageBiologicalTicks", 0L);
             Scribe_Values.Look(ref ageChronologicalTicks, "ageChronologicalTicks", 0L);
+            Scribe_Values.Look(ref deathAgeBudgetTicks, "deathAgeBudgetTicks", long.MaxValue);
+            List<string>? reasons = lifespanAdjustmentReasons;
+            Scribe_Collections.Look(ref reasons, "lifespanAdjustmentReasons", LookMode.Value);
+            lifespanAdjustmentReasons.Clear();
+            if (reasons != null) lifespanAdjustmentReasons.AddRange(reasons);
         }
     }
 }

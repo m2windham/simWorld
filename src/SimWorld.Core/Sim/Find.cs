@@ -18,6 +18,7 @@ namespace SimWorld.Sim
         [ThreadStatic] private static SimWorld.Letters.LetterStack? letterStack;
         [ThreadStatic] private static SimWorld.Quests.QuestManager? questManager;
         [ThreadStatic] private static SimWorld.Scenario.Scenario? scenario;
+        [ThreadStatic] private static SimWorld.Pawns.FamilyManager? familyManager;
 
         public static TickManager TickManager
         {
@@ -67,6 +68,14 @@ namespace SimWorld.Sim
             set => scenario = value ?? throw new ArgumentNullException(nameof(value));
         }
 
+        /// <summary>Every household and the marriage/birth/death-from-age sweep that grows or shrinks them
+        /// (SimWorld's own; RimWorld has no equivalent to port).</summary>
+        public static SimWorld.Pawns.FamilyManager FamilyManager
+        {
+            get => familyManager ??= new SimWorld.Pawns.FamilyManager();
+            set => familyManager = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
         /// <summary>
         /// Drops the thread's services so the next access starts fresh (tests). Every service above must be
         /// cleared here: a missed one leaks state between tests that call this expecting a clean slate.
@@ -80,6 +89,7 @@ namespace SimWorld.Sim
             letterStack = null;
             questManager = null;
             scenario = null;
+            familyManager = null;
         }
     }
 }
