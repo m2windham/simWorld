@@ -156,7 +156,9 @@ sequenceDiagram
 - Tiles live on a subdivided icosahedron (10·4ⁿ+2 tiles, 5 or 6 neighbours).
 - Saves store the seed and world objects; the grid regenerates on load.
 - **Pawn gen**: backstory pair → trait roll (exclusion-aware) → skill and
-  passion roll → name → age and life stage. _In progress._
+  passion roll → name → age and life stage. Life stages scale body size, health
+  and hunger; newborns record a life event, the seed of lineage-driven
+  generation.
 - **Map gen**: terrain, elevation, scatterers, caves. _Planned_, on the map core.
 - Every generation step takes an explicit seed → reproducible.
 

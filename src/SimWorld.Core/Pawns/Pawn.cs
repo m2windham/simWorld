@@ -29,6 +29,11 @@ namespace SimWorld.Pawns
         public Pawn_MindState mindState = null!;
         public Pawn_SkillTracker skills = null!;
         public Pawn_WorkSettings workSettings = null!;
+        public Pawn_AgeTracker ageTracker = null!;
+
+        public Gender gender;
+        public PawnKindDef? kindDef;
+        public Name? Name;
 
         /// <summary>Environment sampler for seeker needs (beauty, comfort, outdoors, room); the map supplies it later.</summary>
         public IEnvironmentSampler? environment;
@@ -57,7 +62,7 @@ namespace SimWorld.Pawns
 
         public RaceProperties RaceProps => def.race!;
 
-        public string Label => name ?? def.label ?? def.defName;
+        public string Label => Name?.ToStringShort ?? name ?? def.label ?? def.defName;
 
         public string ThingID => def.defName + thingIDNumber.ToString(CultureInfo.InvariantCulture);
 
@@ -85,13 +90,13 @@ namespace SimWorld.Pawns
         /// <summary>Not standing: in bed or downed. Speeds healing (RimWorld posture).</summary>
         public bool Lying => Asleep || Downed;
 
-        public float BodySize => RaceProps.baseBodySize;
+        public float BodySize => RaceProps.baseBodySize * (ageTracker?.CurLifeStage?.bodySizeFactor ?? 1f);
 
-        /// <summary>Multiplies every body part's hit points (RimWorld: <c>Pawn.HealthScale</c>); life stages scale it later.</summary>
-        public virtual float HealthScale => RaceProps.baseHealthScale;
+        /// <summary>Multiplies every body part's hit points (RimWorld: <c>Pawn.HealthScale</c>), scaled by the current life stage.</summary>
+        public virtual float HealthScale => RaceProps.baseHealthScale * (ageTracker?.CurLifeStage?.healthScaleFactor ?? 1f);
 
-        /// <summary>Species hunger rate × hediff hunger factors.</summary>
-        public virtual float HungerRate => RaceProps.baseHungerRate * HungerRateFactorFromHealth;
+        /// <summary>Species hunger rate × hediff hunger factors × the current life stage's hunger factor.</summary>
+        public virtual float HungerRate => RaceProps.baseHungerRate * HungerRateFactorFromHealth * (ageTracker?.CurLifeStage?.hungerRateFactor ?? 1f);
 
         public virtual float HungerRateFactorFromHealth => health.hediffSet.HungerRateFactor;
 
@@ -185,6 +190,7 @@ namespace SimWorld.Pawns
             mindState ??= new Pawn_MindState(this);
             skills ??= new Pawn_SkillTracker(this);
             workSettings ??= new Pawn_WorkSettings(this);
+            ageTracker ??= new Pawn_AgeTracker(this);
         }
 
         // ---- ITickable ----
@@ -200,6 +206,7 @@ namespace SimWorld.Pawns
             needs.NeedsTrackerTick();
             mindState.MindStateTick();
             skills.SkillsTick();
+            ageTracker.AgeTick();
         }
 
         public virtual void TickRare()
@@ -249,6 +256,16 @@ namespace SimWorld.Pawns
             Pawn_WorkSettings? ws = workSettings;
             Scribe_Deep.Look(ref ws, "workSettings", this);
             workSettings = ws ?? new Pawn_WorkSettings(this);
+            Pawn_AgeTracker? at = ageTracker;
+            Scribe_Deep.Look(ref at, "ageTracker", this);
+            ageTracker = at ?? new Pawn_AgeTracker(this);
+            Scribe_Values.Look(ref gender, "gender", Gender.None);
+            PawnKindDef? kd = kindDef;
+            Scribe_Defs.Look(ref kd, "kindDef");
+            kindDef = kd;
+            Name? nm = Name;
+            Scribe_Deep.Look(ref nm, "fullName");
+            Name = nm;
         }
 
         public override string ToString() => Label + " (" + ThingID + ")";

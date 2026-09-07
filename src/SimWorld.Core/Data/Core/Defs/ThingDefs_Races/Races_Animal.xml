@@ -14,6 +14,20 @@
       <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>
       <needsRest>true</needsRest>
       <lifeExpectancy>12</lifeExpectancy>
+      <lifeStageAges>
+        <li>
+          <def>AnimalBaby</def>
+          <minAge>0</minAge>
+        </li>
+        <li>
+          <def>AnimalJuvenile</def>
+          <minAge>0.25</minAge>
+        </li>
+        <li>
+          <def>AnimalAdult</def>
+          <minAge>0.5</minAge>
+        </li>
+      </lifeStageAges>
     </race>
   </ThingDef>
 

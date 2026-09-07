@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Childhoods -->
+
+  <BackstoryDef>
+    <defName>TribalChild</defName>
+    <title>tribal child</title>
+    <titleShort>Tribal child</titleShort>
+    <baseDesc>Grew up learning the tribe's ways: gathering, tracking, and getting along with everyone in a small camp.</baseDesc>
+    <slot>Childhood</slot>
+    <skillGains>
+      <li><skill>Plants</skill><amount>2</amount></li>
+      <li><skill>Social</skill><amount>1</amount></li>
+    </skillGains>
+    <spawnCategories><li>Tribal</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>HunterChild</defName>
+    <title>hunter's child</title>
+    <titleShort>Young hunter</titleShort>
+    <baseDesc>Followed the tribe's hunters from a young age, learning to track and throw before anything else.</baseDesc>
+    <slot>Childhood</slot>
+    <skillGains>
+      <li><skill>Animals</skill><amount>2</amount></li>
+      <li><skill>Melee</skill><amount>1</amount></li>
+    </skillGains>
+    <spawnCategories><li>Tribal</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>GathererChild</defName>
+    <title>gatherer's child</title>
+    <titleShort>Gatherer</titleShort>
+    <baseDesc>Spent childhood learning which plants fed the tribe and which ones didn't.</baseDesc>
+    <slot>Childhood</slot>
+    <skillGains>
+      <li><skill>Plants</skill><amount>3</amount></li>
+    </skillGains>
+    <spawnCategories><li>Tribal</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>ShamanChild</defName>
+    <title>shaman's apprentice</title>
+    <titleShort>Apprentice</titleShort>
+    <baseDesc>Apprenticed young to the tribe's shaman, learning remedies, rites, and how to hold a crowd's attention.</baseDesc>
+    <slot>Childhood</slot>
+    <skillGains>
+      <li><skill>Intellectual</skill><amount>2</amount></li>
+      <li><skill>Social</skill><amount>1</amount></li>
+    </skillGains>
+    <spawnCategories><li>Tribal</li></spawnCategories>
+  </BackstoryDef>
+
+  <!-- Adulthoods -->
+
+  <BackstoryDef>
+    <defName>TribalHunter</defName>
+    <title>tribal hunter</title>
+    <titleShort>Hunter</titleShort>
+    <baseDesc>Fed the tribe with a bow and a steady hand, tracking game across every kind of ground.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Shooting</skill><amount>4</amount></li>
+      <li><skill>Animals</skill><amount>2</amount></li>
+    </skillGains>
+    <requiredWorkTags>Violent</requiredWorkTags>
+    <spawnCategories><li>Tribal</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>TribalWarrior</defName>
+    <title>tribal warrior</title>
+    <titleShort>Warrior</titleShort>
+    <baseDesc>Defended the tribe's camp with blade and spear, and was good at it.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Melee</skill><amount>5</amount></li>
+      <li><skill>Shooting</skill><amount>2</amount></li>
+    </skillGains>
+    <requiredWorkTags>Violent</requiredWorkTags>
+    <spawnCategories><li>Tribal</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>TribalShaman</defName>
+    <title>shaman</title>
+    <titleShort>Shaman</titleShort>
+    <baseDesc>Kept the tribe's remedies and rites, half healer and half storyteller.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Intellectual</skill><amount>3</amount></li>
+      <li><skill>Social</skill><amount>3</amount></li>
+    </skillGains>
+    <spawnCategories><li>Tribal</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>TribalElder</defName>
+    <title>tribal elder</title>
+    <titleShort>Elder</titleShort>
+    <baseDesc>Spent decades settling disputes and holding the tribe together through hard seasons.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Social</skill><amount>5</amount></li>
+    </skillGains>
+    <workDisables>Violent</workDisables>
+    <spawnCategories><li>Tribal</li></spawnCategories>
+  </BackstoryDef>
+
+</Defs>

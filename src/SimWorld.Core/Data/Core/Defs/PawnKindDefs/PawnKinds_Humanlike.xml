@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <PawnKindDef>
+    <defName>Colonist</defName>
+    <label>colonist</label>
+    <race>Human</race>
+    <backstoryCategories>
+      <li>Civil</li>
+    </backstoryCategories>
+    <combatPower>60</combatPower>
+    <isFighter>true</isFighter>
+  </PawnKindDef>
+
+  <PawnKindDef>
+    <defName>Villager</defName>
+    <label>villager</label>
+    <race>Human</race>
+    <backstoryCategories>
+      <li>Civil</li>
+    </backstoryCategories>
+    <combatPower>40</combatPower>
+  </PawnKindDef>
+
+  <PawnKindDef>
+    <defName>Tribesperson</defName>
+    <label>tribesperson</label>
+    <race>Human</race>
+    <backstoryCategories>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>50</combatPower>
+    <isFighter>true</isFighter>
+  </PawnKindDef>
+
+  <PawnKindDef>
+    <defName>Drifter</defName>
+    <label>drifter</label>
+    <race>Human</race>
+    <backstoryCategories>
+      <li>Civil</li>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>45</combatPower>
+  </PawnKindDef>
+
+</Defs>

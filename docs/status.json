@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-06",
-  "testsTotal": 332,
+  "testsTotal": 354,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -271,33 +271,48 @@
       "rimworld": "Pawn Generation",
       "translation": "Proposed: citizen generation. Birth and lineage drive most generation instead of 'wanderer joins'; backstories become life histories written by the sim.",
       "translationState": "proposed",
-      "module": "src/SimWorld.Core/Pawns/Generation",
-      "status": "planned",
-      "tests": 0,
+      "module": "src/SimWorld.Core/Pawns · Pawns/Generation",
+      "status": "ported",
+      "tests": 22,
       "items": [
         {
           "id": "pawngen.backstory",
-          "label": "Backstory pairs → skill offsets, disabled work types, forced traits",
-          "done": false
+          "label": "Backstory pairs (childhood/adulthood): skill gains, disabled work tags, forced traits",
+          "done": true
         },
         {
           "id": "pawngen.traits",
-          "label": "Trait pool with exclusion groups and weighted degrees",
-          "done": false
+          "label": "Trait rolls by commonality with degrees, conflicts and required work tags",
+          "done": true
         },
         {
           "id": "pawngen.skills",
-          "label": "Skills = base + offsets + passion roll",
-          "done": false
+          "label": "Skill levels from age-scaled curves plus backstory and trait gains; passion rolls",
+          "done": true
+        },
+        {
+          "id": "pawngen.names",
+          "label": "NameTriple/NameSingle from gendered name banks, unique across a population",
+          "done": true
+        },
+        {
+          "id": "pawngen.ages",
+          "label": "Life stages and age tracker: biological/chronological ticks, body size, health scale and hunger factors per stage",
+          "done": true
         },
         {
           "id": "pawngen.appearance",
-          "label": "Appearance and name generation from culture-tagged banks",
-          "done": false
+          "label": "Appearance: melanin and body type only — hair and palette land with the renderer",
+          "done": true
+        },
+        {
+          "id": "pawngen.lineage",
+          "label": "Translation: newborn generation and life events — birth and lineage as the main source of citizens is still open",
+          "done": true
         },
         {
           "id": "pawngen.gear",
-          "label": "Gear from faction tech level + PawnKindDef loadouts",
+          "label": "Gear from faction tech level + PawnKindDef loadouts — lands with Items/Combat",
           "done": false
         },
         {

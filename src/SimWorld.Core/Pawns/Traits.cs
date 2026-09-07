@@ -21,6 +21,9 @@ namespace SimWorld.Pawns
         /// <summary>Overrides <see cref="TraitDef.disabledWorkTags"/> for this degree when non-<see cref="WorkTags.None"/>.</summary>
         public WorkTags disabledWorkTags = WorkTags.None;
 
+        /// <summary>Skill points <see cref="Generation.PawnGenerator"/> adds for a pawn with this degree.</summary>
+        public List<SkillGain>? skillGains;
+
         /// <summary>When set, a pawn with this degree can only have these mood breaks.</summary>
         public List<MentalBreakDef>? theOnlyAllowedMentalBreaks;
 
@@ -42,6 +45,10 @@ namespace SimWorld.Pawns
 
         /// <summary>Work tags a pawn with this trait can never do, at every degree unless a degree overrides it.</summary>
         public WorkTags disabledWorkTags = WorkTags.None;
+
+        /// <summary>Work tags the pawn must still be able to do for <see cref="Generation.PawnGenerator"/> to
+        /// consider rolling this trait at all (e.g. a bloodthirsty trait requiring <see cref="WorkTags.Violent"/>).</summary>
+        public WorkTags requiredWorkTags = WorkTags.None;
 
         /// <summary>Effective disabled tags for one degree: the degree's own tags if set, else the trait's.</summary>
         public WorkTags DisabledWorkTagsAtDegree(int degree)
@@ -195,17 +202,29 @@ namespace SimWorld.Pawns
         }
     }
 
-    /// <summary>Backstory, traits and biography (RimWorld: <c>RimWorld.Pawn_StoryTracker</c>); traits only for now.</summary>
+    /// <summary>Biography, traits and life history (RimWorld: <c>RimWorld.Pawn_StoryTracker</c>).</summary>
     public class Pawn_StoryTracker : IExposable
     {
         private readonly Pawn pawn;
         public TraitSet traits;
 
+        /// <summary>Backstory for <see cref="BackstorySlot.Childhood"/>; every generated humanlike pawn has one.</summary>
+        public BackstoryDef? childhood;
+
+        /// <summary>Backstory for <see cref="BackstorySlot.Adulthood"/>; only pawns generated old enough get one.</summary>
+        public BackstoryDef? adulthood;
+
+        /// <summary>Skin tone in [0, 1]; nothing derives a palette from it yet.</summary>
+        public float melanin;
+
+        /// <summary>Coarse build ("Male"/"Female"/"Thin"/"Fat"/"Hulk"); appearance only, nothing mechanical yet.</summary>
+        public string? bodyType;
+
         /// <summary>
-        /// Hook for the future Pawn Generation module: work tags the pawn's backstory bars outright. OR'ed
-        /// into <see cref="DisabledWorkTagsBackstoryAndTraits"/> alongside traits; nothing sets it yet.
+        /// Life history entries — SimWorld's stand-in for RimWorld's hand-written backstory flavor text: the
+        /// sim records its own as things happen (birth today, more later). See <see cref="RecordLifeEvent"/>.
         /// </summary>
-        public WorkTags disabledWorkTagsFromBackstory = WorkTags.None;
+        public List<LifeEvent> lifeEvents = new List<LifeEvent>();
 
         public Pawn_StoryTracker(Pawn pawn)
         {
@@ -213,12 +232,28 @@ namespace SimWorld.Pawns
             traits = new TraitSet(pawn);
         }
 
-        /// <summary>Every work tag barred by the pawn's backstory or any of its traits, OR'ed together.</summary>
+        public BackstoryDef? GetBackstory(BackstorySlot slot) => slot == BackstorySlot.Childhood ? childhood : adulthood;
+
+        public IEnumerable<BackstoryDef> AllBackstories
+        {
+            get
+            {
+                if (childhood != null) yield return childhood;
+                if (adulthood != null) yield return adulthood;
+            }
+        }
+
+        /// <summary>The pawn-info-card readout: adulthood's short title, falling back to childhood's.</summary>
+        public string TitleShort => adulthood?.titleShort ?? adulthood?.title ?? childhood?.titleShort ?? childhood?.title ?? "";
+
+        /// <summary>Every work tag barred by the pawn's backstories or any of its traits, OR'ed together.</summary>
         public WorkTags DisabledWorkTagsBackstoryAndTraits
         {
             get
             {
-                WorkTags combined = disabledWorkTagsFromBackstory;
+                WorkTags combined = WorkTags.None;
+                if (childhood != null) combined |= childhood.workDisables;
+                if (adulthood != null) combined |= adulthood.workDisables;
                 for (int i = 0; i < traits.allTraits.Count; i++)
                 {
                     Trait trait = traits.allTraits[i];
@@ -228,12 +263,57 @@ namespace SimWorld.Pawns
             }
         }
 
+        /// <summary>Appends a life event stamped with the current tick; pure history, nothing reacts to it.</summary>
+        public void RecordLifeEvent(string kind, string text)
+        {
+            lifeEvents.Add(new LifeEvent(kind, text, Find.TickManager.TicksGame));
+        }
+
         public void ExposeData()
         {
             TraitSet? t = traits;
             Scribe_Deep.Look(ref t, "traits", pawn);
             traits = t ?? new TraitSet(pawn);
-            Scribe_Values.Look(ref disabledWorkTagsFromBackstory, "disabledWorkTagsFromBackstory", WorkTags.None);
+            BackstoryDef? c = childhood;
+            Scribe_Defs.Look(ref c, "childhood");
+            childhood = c;
+            BackstoryDef? a = adulthood;
+            Scribe_Defs.Look(ref a, "adulthood");
+            adulthood = a;
+            Scribe_Values.Look(ref melanin, "melanin");
+            Scribe_Values.Look(ref bodyType, "bodyType");
+            List<LifeEvent>? events = lifeEvents;
+            Scribe_Collections.Look(ref events, "lifeEvents", LookMode.Deep);
+            lifeEvents = events ?? new List<LifeEvent>();
         }
+    }
+
+    /// <summary>One recorded moment in a pawn's history (SimWorld: no separate backstory-text database, so the
+    /// sim writes its own life events as things happen — birth today, more later).</summary>
+    public class LifeEvent : IExposable
+    {
+        public string kind = "";
+        public string text = "";
+        public int tick;
+
+        public LifeEvent()
+        {
+        }
+
+        public LifeEvent(string kind, string text, int tick)
+        {
+            this.kind = kind ?? "";
+            this.text = text ?? "";
+            this.tick = tick;
+        }
+
+        public void ExposeData()
+        {
+            Scribe_Values.Look(ref kind, "kind", "");
+            Scribe_Values.Look(ref text, "text", "");
+            Scribe_Values.Look(ref tick, "tick", 0);
+        }
+
+        public override string ToString() => kind + " @" + tick.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 }

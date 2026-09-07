@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Childhoods -->
+
+  <BackstoryDef>
+    <defName>NobleChild</defName>
+    <title>young noble</title>
+    <titleShort>Noble</titleShort>
+    <baseDesc>Raised in comfort, tutored in manners and conversation rather than manual labor.</baseDesc>
+    <slot>Childhood</slot>
+    <skillGains>
+      <li><skill>Social</skill><amount>3</amount></li>
+      <li><skill>Intellectual</skill><amount>2</amount></li>
+    </skillGains>
+    <workDisables>ManualDumb</workDisables>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>FarmKid</defName>
+    <title>farm kid</title>
+    <titleShort>Farm kid</titleShort>
+    <baseDesc>Grew up working the fields and tending livestock before school was even out.</baseDesc>
+    <slot>Childhood</slot>
+    <skillGains>
+      <li><skill>Plants</skill><amount>3</amount></li>
+      <li><skill>Animals</skill><amount>2</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>StreetKid</defName>
+    <title>street kid</title>
+    <titleShort>Street kid</titleShort>
+    <baseDesc>Learned to read people and throw a punch long before anything else.</baseDesc>
+    <slot>Childhood</slot>
+    <skillGains>
+      <li><skill>Social</skill><amount>2</amount></li>
+      <li><skill>Melee</skill><amount>1</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>BookwormChild</defName>
+    <title>bookworm</title>
+    <titleShort>Bookworm</titleShort>
+    <baseDesc>Spent every spare hour buried in a book instead of outside.</baseDesc>
+    <slot>Childhood</slot>
+    <skillGains>
+      <li><skill>Intellectual</skill><amount>4</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>TinkererChild</defName>
+    <title>tinkerer</title>
+    <titleShort>Tinkerer</titleShort>
+    <baseDesc>Took apart every gadget in the house to see how it worked, and usually got it back together.</baseDesc>
+    <slot>Childhood</slot>
+    <skillGains>
+      <li><skill>Crafting</skill><amount>3</amount></li>
+      <li><skill>Construction</skill><amount>1</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>OrphanChild</defName>
+    <title>orphan</title>
+    <titleShort>Orphan</titleShort>
+    <baseDesc>Raised in a crowded shelter, learning early how to look after itself and pull its weight.</baseDesc>
+    <slot>Childhood</slot>
+    <skillGains>
+      <li><skill>Cooking</skill><amount>1</amount></li>
+      <li><skill>Social</skill><amount>1</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <!-- Adulthoods -->
+
+  <BackstoryDef>
+    <defName>Scientist</defName>
+    <title>scientist</title>
+    <titleShort>Scientist</titleShort>
+    <baseDesc>Spent years in a lab, more comfortable with data than with a wrench or a rifle.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Intellectual</skill><amount>6</amount></li>
+    </skillGains>
+    <workDisables>ManualSkilled, Violent</workDisables>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>Soldier</defName>
+    <title>soldier</title>
+    <titleShort>Soldier</titleShort>
+    <baseDesc>Served years under arms, drilled until aiming and fighting were second nature.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Shooting</skill><amount>5</amount></li>
+      <li><skill>Melee</skill><amount>3</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>Cook</defName>
+    <title>cook</title>
+    <titleShort>Cook</titleShort>
+    <baseDesc>Ran a kitchen for years, feeding more mouths than could ever be thanked properly.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Cooking</skill><amount>5</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>Medic</defName>
+    <title>medic</title>
+    <titleShort>Medic</titleShort>
+    <baseDesc>Trained to patch people up under pressure, with steady hands and steadier nerves.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Medicine</skill><amount>5</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>Artist</defName>
+    <title>artist</title>
+    <titleShort>Artist</titleShort>
+    <baseDesc>Made a living, however thin, chasing a personal vision through paint and sculpture.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Artistic</skill><amount>5</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>Miner</defName>
+    <title>miner</title>
+    <titleShort>Miner</titleShort>
+    <baseDesc>Spent years underground, breaking rock for a living and learning to shore up what it left behind.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Mining</skill><amount>5</amount></li>
+      <li><skill>Construction</skill><amount>2</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>Builder</defName>
+    <title>builder</title>
+    <titleShort>Builder</titleShort>
+    <baseDesc>Raised buildings for a living, from the foundation up.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Construction</skill><amount>5</amount></li>
+      <li><skill>Mining</skill><amount>2</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>Thief</defName>
+    <title>thief</title>
+    <titleShort>Thief</titleShort>
+    <baseDesc>Made a living taking what wasn't offered, talking fast when caught and fighting when talk failed.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Social</skill><amount>2</amount></li>
+      <li><skill>Melee</skill><amount>3</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CultLeader</defName>
+    <title>cult leader</title>
+    <titleShort>Cult leader</titleShort>
+    <baseDesc>Built a following out of nothing but words and conviction, and learned to keep it.</baseDesc>
+    <slot>Adulthood</slot>
+    <skillGains>
+      <li><skill>Social</skill><amount>4</amount></li>
+      <li><skill>Intellectual</skill><amount>2</amount></li>
+    </skillGains>
+    <spawnCategories><li>Civil</li></spawnCategories>
+  </BackstoryDef>
+
+</Defs>

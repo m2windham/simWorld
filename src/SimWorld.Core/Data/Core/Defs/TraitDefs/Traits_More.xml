@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <TraitDef>
+    <defName>Industriousness</defName>
+    <label>industriousness</label>
+    <commonality>1</commonality>
+    <degreeDatas>
+      <li>
+        <label>very industrious</label>
+        <description>Works fast and tirelessly, throwing itself at whatever needs doing.</description>
+        <degree>2</degree>
+        <commonality>0.3</commonality>
+      </li>
+      <li>
+        <label>industrious</label>
+        <description>Gets more done than most, without complaint.</description>
+        <degree>1</degree>
+        <commonality>0.7</commonality>
+      </li>
+      <li>
+        <label>lazy</label>
+        <description>Drags its feet through every chore.</description>
+        <degree>-1</degree>
+        <commonality>0.6</commonality>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Brawler</defName>
+    <label>brawler</label>
+    <commonality>0.3</commonality>
+    <degreeDatas>
+      <li>
+        <label>brawler</label>
+        <description>Would much rather settle things with fists and blades than at range.</description>
+        <degree>0</degree>
+        <skillGains>
+          <li>
+            <skill>Melee</skill>
+            <amount>4</amount>
+          </li>
+        </skillGains>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Tough</defName>
+    <label>tough</label>
+    <commonality>0.4</commonality>
+    <degreeDatas>
+      <li>
+        <label>tough</label>
+        <description>Shrugs off injuries that would floor most people.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Jealous</defName>
+    <label>jealous</label>
+    <commonality>0.5</commonality>
+    <degreeDatas>
+      <li>
+        <label>jealous</label>
+        <description>Keeps a close eye on what everyone else has, and resents it.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Greedy</defName>
+    <label>greedy</label>
+    <commonality>0.5</commonality>
+    <degreeDatas>
+      <li>
+        <label>greedy</label>
+        <description>Wants more of everything, and is not shy about saying so.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Abrasive</defName>
+    <label>abrasive</label>
+    <commonality>0.6</commonality>
+    <degreeDatas>
+      <li>
+        <label>abrasive</label>
+        <description>Blunt to the point of rudeness, whether it means to be or not.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Nimble</defName>
+    <label>nimble</label>
+    <commonality>0.35</commonality>
+    <degreeDatas>
+      <li>
+        <label>nimble</label>
+        <description>Light on its feet; slips out of the way of attacks more often than most.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>FastLearner</defName>
+    <label>fast learner</label>
+    <commonality>0.4</commonality>
+    <exclusionTags>
+      <li>learningSpeed</li>
+    </exclusionTags>
+    <degreeDatas>
+      <li>
+        <label>fast learner</label>
+        <description>Picks up new skills faster than most people manage.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>SlowLearner</defName>
+    <label>slow learner</label>
+    <commonality>0.4</commonality>
+    <exclusionTags>
+      <li>learningSpeed</li>
+    </exclusionTags>
+    <degreeDatas>
+      <li>
+        <label>slow learner</label>
+        <description>Takes longer than most to get the hang of anything new.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>TooSmart</defName>
+    <label>too smart</label>
+    <commonality>0.3</commonality>
+    <degreeDatas>
+      <li>
+        <label>too smart</label>
+        <description>Sharp enough to learn quickly, and insufferable enough to mention it.</description>
+        <degree>0</degree>
+        <skillGains>
+          <li>
+            <skill>Intellectual</skill>
+            <amount>3</amount>
+          </li>
+        </skillGains>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>Gourmand</defName>
+    <label>gourmand</label>
+    <commonality>0.4</commonality>
+    <degreeDatas>
+      <li>
+        <label>gourmand</label>
+        <description>Lives to eat well, and has picked up real skill in the kitchen along the way.</description>
+        <degree>0</degree>
+        <skillGains>
+          <li>
+            <skill>Cooking</skill>
+            <amount>2</amount>
+          </li>
+        </skillGains>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+</Defs>

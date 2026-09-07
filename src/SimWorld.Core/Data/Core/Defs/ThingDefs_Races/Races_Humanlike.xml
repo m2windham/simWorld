@@ -22,6 +22,37 @@
       <isFlesh>true</isFlesh>
       <lifeExpectancy>80</lifeExpectancy>
       <mentalBreakThreshold>0.35</mentalBreakThreshold>
+      <lifeStageAges>
+        <li>
+          <def>HumanlikeBaby</def>
+          <minAge>0</minAge>
+        </li>
+        <li>
+          <def>HumanlikeChild</def>
+          <minAge>3</minAge>
+        </li>
+        <li>
+          <def>HumanlikeTeenager</def>
+          <minAge>13</minAge>
+        </li>
+        <li>
+          <def>HumanlikeAdult</def>
+          <minAge>18</minAge>
+        </li>
+      </lifeStageAges>
+      <ageGenerationCurve>
+        <points>
+          <li>(14, 0)</li>
+          <li>(16, 100)</li>
+          <li>(20, 100)</li>
+          <li>(30, 100)</li>
+          <li>(50, 30)</li>
+          <li>(60, 10)</li>
+          <li>(65, 3)</li>
+          <li>(70, 1)</li>
+          <li>(80, 0)</li>
+        </points>
+      </ageGenerationCurve>
     </race>
   </ThingDef>
 

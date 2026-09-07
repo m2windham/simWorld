@@ -44,6 +44,12 @@ namespace SimWorld.Pawns
         /// <summary>Base mood level below which minor mental breaks become possible.</summary>
         public float mentalBreakThreshold = 0.35f;
 
+        /// <summary>This race's life stages by minimum biological age (years), ascending; see <see cref="Pawn_AgeTracker.CurLifeStage"/>.</summary>
+        public List<LifeStageAge>? lifeStageAges;
+
+        /// <summary>Distribution <see cref="Generation.PawnGenerator"/> samples a humanlike pawn's biological age from.</summary>
+        public SimpleCurve? ageGenerationCurve;
+
         public bool Humanlike => intelligence >= Intelligence.Humanlike;
 
         public bool ToolUser => intelligence >= Intelligence.ToolUser;
