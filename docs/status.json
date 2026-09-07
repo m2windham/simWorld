@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-06",
-  "testsTotal": 419,
+  "testsTotal": 443,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -969,28 +969,38 @@
       "rimworld": "Quests & Scenario",
       "translation": "Proposed: scenarios become civilization starts (era, biome, rivals); quests become narrator-issued historical moments.",
       "translationState": "proposed",
-      "module": "src/SimWorld.Core/Quests",
-      "status": "planned",
-      "tests": 0,
+      "module": "src/SimWorld.Core/Quests · Scenario · Letters",
+      "status": "ported",
+      "tests": 24,
       "items": [
         {
           "id": "quests.scenario",
-          "label": "ScenarioDef: starting conditions and rule modifiers",
-          "done": false
+          "label": "ScenarioDef and ScenPart: starting conditions, forced traits, starting research and things",
+          "done": true
         },
         {
           "id": "quests.scripts",
-          "label": "QuestScriptDef node graphs (trigger → branches → reward/threat)",
-          "done": false
+          "label": "QuestScriptDef node graphs over a Slate: sequence, set, branch, delay, letter, reward, end — compiled into quest parts with unique signals",
+          "done": true
         },
         {
           "id": "quests.delivery",
-          "label": "Delivery via letters with accept/expire timers",
-          "done": false
+          "label": "Letters and LetterStack with accept/expire timers; the director's GiveQuest incident offers by points, weight and refire days",
+          "done": true
+        },
+        {
+          "id": "quests.starts",
+          "label": "Translation: civilization starts — era, rival-civilization count and biome scenario parts",
+          "done": true
         },
         {
           "id": "quests.moments",
-          "label": "Translation: narrator-issued historical moments",
+          "label": "Translation: narrator-issued historical moments — chronicle entries are recorded on quest events, but there is no dedicated moment or lore system yet",
+          "done": false
+        },
+        {
+          "id": "quests.orchestrator",
+          "label": "Game-start orchestrator to run Scenario.PostGameStart and the quest tick loop — lands with the game loop",
           "done": false
         }
       ]

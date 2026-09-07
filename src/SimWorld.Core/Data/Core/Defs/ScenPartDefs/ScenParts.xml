@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    One ScenPartDef per ScenPart_* class (RimWorld: ScenPartDef). StartingEra, RivalCivilizations and
+    StartingBiome are SimWorld's own translation parts — see their doc comments in ScenParts.cs.
+    ScenPart_StatFactor/ScenPart_PermaGameCondition are intentionally not ported (see ScenParts.cs).
+  -->
+
+  <ScenPartDef>
+    <defName>ConfigPage_ConfigureStartingPawns</defName>
+    <label>starting pawns</label>
+    <category>Fixed</category>
+    <scenPartClass>SimWorld.Scenario.ScenPart_ConfigPage_ConfigureStartingPawns</scenPartClass>
+    <summaryPriority>100</summaryPriority>
+  </ScenPartDef>
+
+  <ScenPartDef>
+    <defName>PlayerFaction</defName>
+    <label>player faction</label>
+    <category>Fixed</category>
+    <scenPartClass>SimWorld.Scenario.ScenPart_PlayerFaction</scenPartClass>
+    <summaryPriority>95</summaryPriority>
+  </ScenPartDef>
+
+  <ScenPartDef>
+    <defName>StartingEra</defName>
+    <label>starting era</label>
+    <category>StartingImportant</category>
+    <scenPartClass>SimWorld.Scenario.ScenPart_StartingEra</scenPartClass>
+    <summaryPriority>90</summaryPriority>
+  </ScenPartDef>
+
+  <ScenPartDef>
+    <defName>StartingResearch</defName>
+    <label>starting research</label>
+    <category>StartingImportant</category>
+    <scenPartClass>SimWorld.Scenario.ScenPart_StartingResearch</scenPartClass>
+    <summaryPriority>80</summaryPriority>
+  </ScenPartDef>
+
+  <ScenPartDef>
+    <defName>StartingThing_Defined</defName>
+    <label>starting item</label>
+    <category>StartingItem</category>
+    <scenPartClass>SimWorld.Scenario.ScenPart_StartingThing_Defined</scenPartClass>
+    <summaryPriority>70</summaryPriority>
+  </ScenPartDef>
+
+  <ScenPartDef>
+    <defName>ForcedTrait</defName>
+    <label>forced trait</label>
+    <category>PlayerPawnModifier</category>
+    <scenPartClass>SimWorld.Scenario.ScenPart_ForcedTrait</scenPartClass>
+    <summaryPriority>60</summaryPriority>
+  </ScenPartDef>
+
+  <ScenPartDef>
+    <defName>RivalCivilizations</defName>
+    <label>rival civilizations</label>
+    <category>WorldThing</category>
+    <scenPartClass>SimWorld.Scenario.ScenPart_RivalCivilizations</scenPartClass>
+    <summaryPriority>50</summaryPriority>
+  </ScenPartDef>
+
+  <ScenPartDef>
+    <defName>StartingBiome</defName>
+    <label>starting biome</label>
+    <category>WorldThing</category>
+    <scenPartClass>SimWorld.Scenario.ScenPart_StartingBiome</scenPartClass>
+    <summaryPriority>40</summaryPriority>
+  </ScenPartDef>
+
+  <ScenPartDef>
+    <defName>GameStartDialog</defName>
+    <label>game start dialog</label>
+    <category>Misc</category>
+    <scenPartClass>SimWorld.Scenario.ScenPart_GameStartDialog</scenPartClass>
+    <summaryPriority>10</summaryPriority>
+  </ScenPartDef>
+
+</Defs>
