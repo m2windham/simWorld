@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SimWorld.Pawns;
 using SimWorld.Sim;
 
 namespace SimWorld.Director
@@ -11,6 +12,10 @@ namespace SimWorld.Director
         public string incidentDefName = "";
         public string targetLabel = "";
         public float points;
+
+        /// <summary>Set only on a death entry (see <see cref="Storyteller.RecordDeath"/>); null otherwise. A
+        /// small enum, never a string — see <see cref="Pawns.DeathCause"/>.</summary>
+        public DeathCause? deathCause;
 
         public ChronicleEntry()
         {
@@ -30,6 +35,7 @@ namespace SimWorld.Director
             Scribe_Values.Look(ref incidentDefName, "incidentDefName", "");
             Scribe_Values.Look(ref targetLabel, "targetLabel", "");
             Scribe_Values.Look(ref points, "points");
+            Scribe_Values.Look(ref deathCause, "deathCause");
         }
     }
 
@@ -147,6 +153,25 @@ namespace SimWorld.Director
         public void RecordChronicle(string text)
         {
             chronicle.Add(new ChronicleEntry(Find.TickManager.TicksGame, text, "", 0f));
+            while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
+        }
+
+        /// <summary>
+        /// Minimal, dedicated extension of the chronicle for a pawn's death (SimWorld hook, called by
+        /// <see cref="FamilyManager.HandleDeath"/>): reuses <see cref="ChronicleEntry.incidentDefName"/> for a
+        /// stable headline ("Death") and <see cref="ChronicleEntry.targetLabel"/> for who, the same way
+        /// <see cref="RecordChronicle(string)"/> already reuses those fields for free-form lines, and adds only
+        /// the one new field a death genuinely needs: <see cref="ChronicleEntry.deathCause"/>.
+        /// <paramref name="detail"/> is the pawn's hidden-lifespan-budget history in one short string (see
+        /// <see cref="Pawn_AgeTracker.AdjustLifespan"/>) — how the Chronicle ends up able to say *why* someone
+        /// lived long or died young — appended to the label only when there is one; a plain death (no
+        /// adjustments ever recorded) reads as a plain death.
+        /// </summary>
+        public void RecordDeath(Pawn pawn, DeathCause cause, string detail = "")
+        {
+            if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+            string label = string.IsNullOrEmpty(detail) ? pawn.Label : pawn.Label + " (" + detail + ")";
+            chronicle.Add(new ChronicleEntry(Find.TickManager.TicksGame, "Death", label, 0f) { deathCause = cause });
             while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
         }
 
