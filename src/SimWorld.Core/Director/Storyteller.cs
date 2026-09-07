@@ -138,6 +138,18 @@ namespace SimWorld.Director
             while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
         }
 
+        /// <summary>
+        /// SimWorld hook: lets a system without its own <see cref="IncidentDef"/> firing (the quest system,
+        /// so far) append a free-form line to the chronicle. Reuses <see cref="ChronicleEntry.incidentDefName"/>
+        /// to hold the text rather than adding a field, since every consumer already treats that field as the
+        /// entry's headline.
+        /// </summary>
+        public void RecordChronicle(string text)
+        {
+            chronicle.Add(new ChronicleEntry(Find.TickManager.TicksGame, text, "", 0f));
+            while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
+        }
+
         private static string DescribeTarget(IIncidentTarget target) =>
             target is CivilizationTarget ? "the civilization" : target?.GetUniqueLoadID() ?? "?";
 

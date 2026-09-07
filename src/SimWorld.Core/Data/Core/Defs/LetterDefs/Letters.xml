@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Notification kinds (RimWorld: LetterDef). letterClass is the only field that survives the port — the
+    visual knobs RimWorld carries (bounce/flash animation, arriveSound) have no UI/audio layer to serve yet
+    (see LetterDef's doc comment). AcceptQuest is the one ChoiceLetter-typed def, used by
+    IncidentWorker_GiveQuest to offer a non-autoAccept quest.
+  -->
+
+  <LetterDef>
+    <defName>ThreatBig</defName>
+    <label>threat</label>
+    <description>A major danger has arrived.</description>
+  </LetterDef>
+
+  <LetterDef>
+    <defName>ThreatSmall</defName>
+    <label>minor threat</label>
+    <description>A minor danger has arrived.</description>
+  </LetterDef>
+
+  <LetterDef>
+    <defName>NegativeEvent</defName>
+    <label>negative event</label>
+    <description>Something unwelcome has happened.</description>
+  </LetterDef>
+
+  <LetterDef>
+    <defName>NeutralEvent</defName>
+    <label>neutral event</label>
+    <description>Something noteworthy, neither good nor bad, has happened.</description>
+  </LetterDef>
+
+  <LetterDef>
+    <defName>PositiveEvent</defName>
+    <label>positive event</label>
+    <description>Something welcome has happened.</description>
+  </LetterDef>
+
+  <LetterDef>
+    <defName>Death</defName>
+    <label>death</label>
+    <description>Someone has died.</description>
+  </LetterDef>
+
+  <LetterDef>
+    <defName>AcceptQuest</defName>
+    <label>quest offer</label>
+    <description>A quest is offered and awaits a decision.</description>
+    <letterClass>SimWorld.Letters.ChoiceLetter</letterClass>
+  </LetterDef>
+
+</Defs>

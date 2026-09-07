@@ -77,7 +77,7 @@ namespace SimWorld.Tests.Director
             Assert.Equal(6, DefDatabase<IncidentTargetTagDef>.DefCount);
             Assert.Equal(5, DefDatabase<DifficultyDef>.DefCount);
             Assert.Equal(3, DefDatabase<StorytellerDef>.DefCount);
-            Assert.Equal(12, DefDatabase<IncidentDef>.DefCount);
+            Assert.Equal(13, DefDatabase<IncidentDef>.DefCount); // +1: GiveQuest_Random (Quests & Scenario port)
 
             Assert.NotNull(IncidentCategoryDefOf.ThreatBig);
             Assert.NotNull(IncidentCategoryDefOf.ThreatSmall);

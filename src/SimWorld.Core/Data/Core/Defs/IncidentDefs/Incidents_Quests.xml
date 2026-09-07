@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Bridges the storyteller's GiveQuest category (see IncidentCategoryDefs) to the quest system. -->
+
+  <IncidentDef>
+    <defName>GiveQuest_Random</defName>
+    <label>quest offer</label>
+    <description>A quest becomes available to the civilization.</description>
+    <category>GiveQuest</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_GiveQuest</workerClass>
+    <baseChance>3.0</baseChance>
+  </IncidentDef>
+
+</Defs>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Three built-in scenarios (RimWorld: ScenarioDef). Each <parts><li Class="..."><def>...</def>...</li></parts>
+    entry's Class picks the ScenPart implementation; its <def> cross-references the matching ScenPartDef
+    above by defName.
+  -->
+
+  <ScenarioDef>
+    <defName>Landfall</defName>
+    <label>landfall</label>
+    <description>The default start: an industrial-era landing party makes do with what survived the trip.</description>
+    <isScenarioDefault>true</isScenarioDefault>
+    <scenario>
+      <name>Landfall</name>
+      <summary>Three settlers make landfall with the tools of the industrial age already in hand.</summary>
+      <description>Three settlers make landfall with the tools of the industrial age already in hand.</description>
+      <parts>
+        <li Class="SimWorld.Scenario.ScenPart_ConfigPage_ConfigureStartingPawns">
+          <def>ConfigPage_ConfigureStartingPawns</def>
+          <pawnCount>3</pawnCount>
+          <pawnChoiceCount>5</pawnChoiceCount>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_PlayerFaction">
+          <def>PlayerFaction</def>
+          <factionDef>PlayerCivilization</factionDef>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingEra">
+          <def>StartingEra</def>
+          <era>Industrial</era>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingThing_Defined">
+          <def>StartingThing_Defined</def>
+          <thingDef>Gun_Revolver</thingDef>
+          <count>1</count>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_RivalCivilizations">
+          <def>RivalCivilizations</def>
+          <count>2~4</count>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingBiome">
+          <def>StartingBiome</def>
+          <biome>TemperateForest</biome>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_GameStartDialog">
+          <def>GameStartDialog</def>
+          <text>Your ship went down offshore, but your people made it to dry land with what they could carry.</text>
+        </li>
+      </parts>
+    </scenario>
+  </ScenarioDef>
+
+  <ScenarioDef>
+    <defName>TribalStart</defName>
+    <label>tribal start</label>
+    <description>Five tribespeople start with nothing but sticks and stones.</description>
+    <scenario>
+      <name>Tribal Start</name>
+      <summary>Five tribespeople start with nothing but sticks and stones.</summary>
+      <description>Five tribespeople start with nothing but sticks and stones.</description>
+      <parts>
+        <li Class="SimWorld.Scenario.ScenPart_ConfigPage_ConfigureStartingPawns">
+          <def>ConfigPage_ConfigureStartingPawns</def>
+          <pawnCount>5</pawnCount>
+          <pawnChoiceCount>8</pawnChoiceCount>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_PlayerFaction">
+          <def>PlayerFaction</def>
+          <factionDef>PlayerCivilization</factionDef>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingEra">
+          <def>StartingEra</def>
+          <era>SticksAndStones</era>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingThing_Defined">
+          <def>StartingThing_Defined</def>
+          <thingDef>MeleeWeapon_Knife</thingDef>
+          <count>2</count>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_ForcedTrait">
+          <def>ForcedTrait</def>
+          <trait>Kind</trait>
+          <degree>0</degree>
+          <chance>0.5</chance>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_RivalCivilizations">
+          <def>RivalCivilizations</def>
+          <count>1~3</count>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_GameStartDialog">
+          <def>GameStartDialog</def>
+          <text>Your tribe has walked for days. Here, at last, you make camp.</text>
+        </li>
+      </parts>
+    </scenario>
+  </ScenarioDef>
+
+  <ScenarioDef>
+    <defName>AgrarianVillage</defName>
+    <label>agrarian village</label>
+    <description>Eight villagers found a farming settlement, with an early edge in metalworking.</description>
+    <scenario>
+      <name>Agrarian Village</name>
+      <summary>Eight villagers found a farming settlement, with an early edge in metalworking.</summary>
+      <description>Eight villagers found a farming settlement, with an early edge in metalworking.</description>
+      <parts>
+        <li Class="SimWorld.Scenario.ScenPart_ConfigPage_ConfigureStartingPawns">
+          <def>ConfigPage_ConfigureStartingPawns</def>
+          <pawnCount>8</pawnCount>
+          <pawnChoiceCount>12</pawnChoiceCount>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_PlayerFaction">
+          <def>PlayerFaction</def>
+          <factionDef>PlayerCivilization</factionDef>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingEra">
+          <def>StartingEra</def>
+          <era>Agrarian</era>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingResearch">
+          <def>StartingResearch</def>
+          <project>Copper</project>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingThing_Defined">
+          <def>StartingThing_Defined</def>
+          <thingDef>Bow_Short</thingDef>
+          <count>2</count>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_RivalCivilizations">
+          <def>RivalCivilizations</def>
+          <count>3~6</count>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_GameStartDialog">
+          <def>GameStartDialog</def>
+          <text>The fields are cleared and the first seeds are in the ground.</text>
+        </li>
+      </parts>
+    </scenario>
+  </ScenarioDef>
+
+</Defs>
