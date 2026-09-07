@@ -337,6 +337,13 @@ flowchart TD
   Worker --> Chronicle[Chronicle entry]
 ```
 
+- Quest layer: `QuestScriptDef` node graphs compile over a `Slate` into quest
+  parts wired by signals — delay, letter, reward, end — delivered as letters
+  with accept and expire timers.
+- Scenarios set the start: forced traits, starting research and things, plus
+  the civilization parts (era, rival count, biome). Running them needs a
+  game-start orchestrator, which lands with the game loop.
+
 ## 10. God Layer & Civilization Translation
 
 The re-focus from RimWorld: the player is not a colony overseer but a god
