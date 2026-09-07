@@ -159,7 +159,7 @@ sequenceDiagram
   passion roll → name → age and life stage. Life stages scale body size, health
   and hunger; newborns record a life event, the seed of lineage-driven
   generation.
-- **Map gen**: terrain, elevation, scatterers, caves. _Planned_, on the map core.
+- **Map gen**: terrain, elevation, scatterers and caves onto the map core. _Planned_.
 - Every generation step takes an explicit seed → reproducible.
 
 ```mermaid
@@ -170,6 +170,33 @@ flowchart TD
   Biomes --> Factions[Factions and settlements]
   Factions --> Roads[Roads by cheapest path]
   Terrain --> Rivers[Rivers flow downhill]
+```
+
+## 5a. Map Core & Thing Runtime
+
+The object layer every later system stands on, ported from RimWorld's `Thing`.
+
+- **Geometry**: `IntVec3`/`IntVec2`, `Rot4`, `CellRect`, adjacency and radial
+  cell patterns, cell/index conversion.
+- **Things**: `Thing` → `ThingWithComps` → `Pawn`. A Thing owns its def,
+  identity, position, rotation, stack count and hit points, and ticks through
+  the same buckets as everything else. `ThingComp` is the runtime half of the
+  Comp pattern whose data half §3 describes.
+- **Grids** per map: terrain, roof, things by cell, edifices, and a path-cost
+  grid recomputed when terrain or occupancy changes.
+- **Listers**: `ListerThings` by def and group, `MapPawns` per map.
+- **Save/load**: run-length terrain and roof grids plus a polymorphic list of
+  spawned Things, re-spawned at their saved positions on load.
+
+```mermaid
+flowchart TD
+  Def[ThingDef] -->|ThingMaker| Thing
+  Thing --> WithComps[ThingWithComps]
+  WithComps --> Pawn
+  Thing -->|SpawnSetup| Map
+  Map --> Grids[Terrain, roof, thing, edifice grids]
+  Grids --> Path[Path cost grid]
+  Map --> Listers[ListerThings, MapPawns]
 ```
 
 ## 6. Cross-System Contracts
@@ -245,8 +272,13 @@ flowchart TD
 
 ### 8.1 Crafting, Economy & Factions
 
-- Bills: recipe + ingredient filter + repeat mode; ingredients chosen by value
-  getter; quality rolled from skill.
+- Bills: recipe + ingredient filter + repeat mode (count, target with
+  hysteresis, forever); ingredients chosen by a value getter over candidate
+  stacks; quality rolled from skill, with inspiration reaching Legendary.
+- Items sit in a `ThingCategoryDef` tree that `ThingFilter` selects over, by
+  category, stuff, quality and hit points.
+- Cooking carries a skill-driven food-poisoning chance; eating feeds the
+  nutrition need.
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.
