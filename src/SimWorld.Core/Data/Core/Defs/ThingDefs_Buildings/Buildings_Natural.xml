@@ -44,4 +44,20 @@
     </statBases>
   </ThingDef>
 
+  <!--
+    A mineable ore vein (RimWorld: e.g. Verse.ThingDefOf.MineableSteel), placed by MapGen.GenStep_RocksAndMountains
+    proportional to the world tile's Ore deposit magnitude, so a tile the world map promised ore on always
+    produces a map with ore in it.
+  -->
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineableSteel</defName>
+    <label>steel ore vein</label>
+    <description>A vein of metal-bearing rock, ready to be mined for steel.</description>
+    <mineableThing>Steel</mineableThing>
+    <mineableYield>60</mineableYield>
+    <statBases>
+      <MaxHitPoints>300</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
 </Defs>

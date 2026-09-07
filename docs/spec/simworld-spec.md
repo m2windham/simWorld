@@ -196,7 +196,15 @@ sequenceDiagram
   passion roll → name → age and life stage. Life stages scale body size, health
   and hunger; newborns record a life event, the seed of lineage-driven
   generation.
-- **Map gen**: terrain, elevation, scatterers and caves onto the map core. _Planned_.
+- **Map gen**: elevation/fertility noise → terrain by biome, fertility and
+  rainfall, plus a carved river channel where the tile carries one → rocky
+  outcrops and mountains as natural edifices, scaled by hilliness and the
+  tile's Stone/Ore deposits → caves cut through mountain by a directional
+  random walk → roofs over mountain and cave cells → chunks and wild plants
+  scattered by biome density. `MapGen.MapGenerator.GenerateMapFor(worldTile)`
+  is the §11.2 seam: a settlement's interior is generated from the world tile
+  it sits on, so a tile the world map promised ore or a river on produces a
+  map with ore or a river crossing it.
 - Every generation step takes an explicit seed → reproducible.
 
 ```mermaid
@@ -604,11 +612,17 @@ Taken from RimWorld, whose split this codebase already mirrors structurally:
 | --- | --- | --- |
 | World map: tiles, factions, settlements, caravans — nothing at colony depth | `World/` (§5) | ported |
 | Colony map: cells, things, pawns with jobs and needs at full depth | `Map/` (§5a) | ported |
-| Entering a settlement generates its map | — | **missing** |
+| A settlement's world tile generates its interior map | `MapGen/` (§5) | ported |
+| Entering a settlement (at settlement scope) triggers that generation and persists the result | — | **missing** |
 
-The two halves exist; the seam between them does not. A settlement today is a
-world object with no interior, and nothing generates a map for one. That seam is
-the next substantial piece of work.
+The two halves now have a seam between them: `MapGen.MapGenerator.GenerateMapFor`
+takes the world tile a settlement sits on — its biome, elevation, hilliness,
+rainfall, rivers and deposits — and generates the interior that tile promised.
+What is still missing is the game-loop half: nothing yet calls
+`GenerateMapFor` when the player opens a settlement, and a generated map isn't
+yet attached to its `WorldObject` and carried across a save. That is the next
+piece of work, and it is now a game-loop/scope-switching problem rather than a
+map-generation one.
 
 The player's verbs follow the same split. At civilization scope the player sees
 everything and acts through edicts, research direction and policy — indirect and

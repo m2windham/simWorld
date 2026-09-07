@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- The only local map generator so far: a settlement's ordinary interior (spec §5b.5). -->
+
+  <MapGeneratorDef>
+    <defName>Base</defName>
+    <genSteps>
+      <li>ElevationFertility</li>
+      <li>MapTerrain</li>
+      <li>RocksAndMountains</li>
+      <li>Caves</li>
+      <li>Roofs</li>
+      <li>Scatterers</li>
+    </genSteps>
+  </MapGeneratorDef>
+
+</Defs>
