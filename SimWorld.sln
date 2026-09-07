@@ -11,6 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{934DBDEA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimWorld.Core.Tests", "tests\SimWorld.Core.Tests\SimWorld.Core.Tests.csproj", "{E439ABF9-9D76-426B-BE82-6EA2A4EE2EE9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{6FF8D091-0C1F-4DC6-9A86-3F51CE2BC7C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimWorld.Bench", "tools\bench\SimWorld.Bench\SimWorld.Bench.csproj", "{77891BCE-90F2-4D58-B8D8-31512129B71C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,9 +32,14 @@ Global
 		{E439ABF9-9D76-426B-BE82-6EA2A4EE2EE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E439ABF9-9D76-426B-BE82-6EA2A4EE2EE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E439ABF9-9D76-426B-BE82-6EA2A4EE2EE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77891BCE-90F2-4D58-B8D8-31512129B71C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77891BCE-90F2-4D58-B8D8-31512129B71C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77891BCE-90F2-4D58-B8D8-31512129B71C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77891BCE-90F2-4D58-B8D8-31512129B71C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3A132ECA-F53C-434C-94C0-6C7954B3C875} = {9017A501-5DDB-46B8-9F70-8E77E0D2328C}
 		{E439ABF9-9D76-426B-BE82-6EA2A4EE2EE9} = {934DBDEA-D3DE-4972-97A4-9F64973196A6}
+		{77891BCE-90F2-4D58-B8D8-31512129B71C} = {6FF8D091-0C1F-4DC6-9A86-3F51CE2BC7C6}
 	EndGlobalSection
 EndGlobal

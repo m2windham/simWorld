@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>SimWorld.Bench</RootNamespace>
+    <AssemblyName>SimWorld.Bench</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <Description>
+      Stopwatch-based performance harness for the SimWorld simulation core. Plain console app —
+      no BenchmarkDotNet, no package restore beyond the core project. Not a test project: it is not run by
+      `dotnet test` and is not invoked from any CI workflow.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/SimWorld.Core/SimWorld.Core.csproj" />
+  </ItemGroup>
+
+</Project>
