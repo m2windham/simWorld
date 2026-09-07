@@ -303,7 +303,7 @@ at 3 / 13 / 18) rather than on a compressed one.
   again stops the loss without refunding it. Medicine is read at birth on
   purpose — curing a disease in 1650 cannot retroactively have given someone
   born in 1600 a healthier childhood. That is the same write-time rule the
-  chronicle's fidelity model needs (§10).
+  chronicle's fidelity model needs (§11.4).
 - **The sweep** runs on `FamilyManager.DemographyTick` once per simulated year:
   marriages, then births, then deaths from age, then chronicle entries for each.
 
@@ -379,7 +379,7 @@ flowchart LR
   single MTB, disease) choose which incident category fires each interval.
 - Incidents gate on earliest day, population, points and refire days.
 - **The Chronicle** (SimWorld translation): every fired incident appends a
-  narrator record. The persona name is still open — see §12.
+  narrator record. The persona name is still open — see §15.
 
 ```mermaid
 flowchart TD
@@ -428,7 +428,134 @@ flowchart LR
   Rollup --> Chronicle[Chronicle narrates the era]
 ```
 
-## 11. Presentation & Host
+## 11. Scale: Time, Attention & Level of Detail
+
+**Design, not built.** Nothing in this section has code yet. It records
+decisions taken up front, because the modules landing next — settlements, the
+game loop, the chronicle — are cheap to build against them and expensive to
+retrofit.
+
+### 11.1 Two clocks
+
+- The ported clock stays authoritative: 60 ticks/second, 60,000-tick days,
+  3,600,000-tick years (§4). Every pawn, job, hediff and research project runs
+  on it. It is the only clock that decides anything.
+- Above it sits an **abstracted clock** whose only job is to skip. The player
+  hands the sim a span of years; the sim consumes it rather than ticking every
+  tick of it.
+- Time does not itself cause progression. A century of abstracted time with no
+  people, no food and no research advances nothing. Progression comes from
+  timers, work and events — whichever clock happens to retire them.
+- The rule that keeps the two honest: **the abstract clock may only do what the
+  real clock would have done.** Every process it advances needs a closed-form or
+  sampled equivalent that agrees with ticking, and — where the span is short
+  enough to afford it — a test that runs both ways and asserts the same end
+  state. Interval-shaped systems satisfy this naturally: demography's yearly
+  sweep (§7.5) is already written as a sweep rather than a per-tick trickle.
+- Skipping stays deterministic because the abstract step draws from the same
+  seeded streams (§4). A skipped century is reproducible.
+
+### 11.2 Attention: civilization-wide sight, settlement-deep touch
+
+Taken from RimWorld, whose split this codebase already mirrors structurally:
+
+| RimWorld | SimWorld | State |
+| --- | --- | --- |
+| World map: tiles, factions, settlements, caravans — nothing at colony depth | `World/` (§5) | ported |
+| Colony map: cells, things, pawns with jobs and needs at full depth | `Map/` (§5a) | ported |
+| Entering a settlement generates its map | — | **missing** |
+
+The two halves exist; the seam between them does not. A settlement today is a
+world object with no interior, and nothing generates a map for one. That seam is
+the next substantial piece of work.
+
+The player's verbs follow the same split. At civilization scope the player sees
+everything and acts through edicts, research direction and policy — indirect and
+aggregate. At settlement scope the player can open any citizen and act on
+particulars. **Sight is global, touch is local.**
+
+### 11.3 Citizens: tiered by significance, not by distance or clock
+
+Every citizen is a real agent record with a real identity. What varies is how
+much of that record is _computed per tick_.
+
+- **Full** — ticked exactly as ported: needs, mood, health, skills, jobs. The
+  settlement under the player's attention, plus anyone promoted into it.
+- **Interval** — the full state exists, but advances only on the rare/long
+  buckets and the yearly sweeps, never per tick. Behaviour is drawn from
+  aggregates instead of being run job by job.
+- **Statistical** — the citizen is a member of a cohort: identity, family, age
+  and participation in demography are real; needs and health are sampled from
+  the cohort's distribution rather than tracked individually.
+
+Promotion is by **significance, not proximity or elapsed time**: the player
+looks at their settlement, they take a role (leader, founder, great worker), the
+chronicle names them, or a relationship attaches them to someone already
+promoted. Demotion is the reverse and must be lossless in identity — a demoted
+citizen is still exactly who they were; only their minute-by-minute existence
+stops being computed.
+
+### 11.4 Fidelity: the level of detail _is_ the historical record
+
+The observation this design turns on: **what the simulation did not record is
+what history forgot.** The tier a citizen lived at bounds what the chronicle can
+ever say about them. A Full-tier life leaves a detailed record; a Statistical
+one leaves a name, a family and two dates — which is precisely what the deep
+past leaves in reality.
+
+One hard constraint follows: **fidelity is decided at write time, never at read
+time.** The chronicle stores what was knowable when the event happened. Resolve
+detail lazily against present knowledge instead, and researching Paper in 1600
+retroactively remembers what a peasant ate in 1200.
+
+So a single mechanism does two jobs, which is the reason to build it carefully
+rather than as a performance hack:
+
+- **Performance** — cheap citizens cost less, which is what makes civilization
+  scale affordable at RimWorld depth.
+- **Fiction** — the deep past is thin because it _was_ thin, not because a UI
+  filter hid it.
+
+The consequences are the interesting part. Writing, record-keeping and archives
+become real technologies with a real effect. Losing them — to collapse, fire or
+conquest — genuinely loses history. And the player's own attention shapes what
+the civilization is able to remember about itself.
+
+```mermaid
+flowchart TB
+  subgraph Scope[Player attention]
+    Civ[Civilization scope · sight everywhere · edicts and policy]
+    Set[Settlement scope · touch particulars · any citizen openable]
+  end
+  Civ -->|open a settlement| Set
+  Set -->|step back| Civ
+
+  subgraph Tiers[Citizen simulation tiers]
+    Full[Full · per-tick needs, health, jobs]
+    Interval[Interval · sweeps only, aggregate behaviour]
+    Stat[Statistical · cohort sampling, identity kept]
+  end
+  Set --> Full
+  Full -->|attention leaves, no role| Interval
+  Interval -->|role, chronicle mention, relation| Full
+  Interval --> Stat
+  Stat --> Interval
+
+  Full -->|detailed entries| Rec[Chronicle · written at the tier lived]
+  Interval -->|sparse entries| Rec
+  Stat -->|name, family, dates| Rec
+  Rec --> Past[The deep past is thin because it was thin]
+```
+
+### 11.5 What this section deliberately does not decide
+
+- **Tier budgets.** How many citizens each tier can afford comes from
+  measurement, not guesswork; the benchmark harness exists to set those numbers.
+- Whether Interval and Statistical are two tiers or samples of a continuum.
+- How the abstract clock and the director interact — a skipped century still
+  needs incidents, and they cannot all fire at the seam.
+
+## 12. Presentation & Host
 
 - `SimWorld.Core` is `netstandard2.1` with no engine reference and an asmdef
   marked `noEngineReferences`; Unity consumes it as a local package.
@@ -436,7 +563,7 @@ flowchart LR
 - A launch path appears only once a playable loop exists — the Blueprint
   tracker shows the launch control disabled with its reason until then.
 
-## 12. Determinism & Testing
+## 13. Determinism & Testing
 
 - All randomness routes through seeded streams, so tests assert exact outcomes.
 - Thread-static `Rand`, `Scribe` and `Find` state keeps xUnit's parallel
@@ -448,17 +575,22 @@ flowchart LR
 - CI runs build and test, the Blueprint build (which validates `status.json`),
   markdown lint, link check and mermaid validation.
 
-## 13. Roadmap
+## 14. Roadmap
 
 Per-system state, checklists and translation decisions live in
 `docs/status.json` and render in the Blueprint tracker. Phase 1 ships every
 system as an isolated tested module; the god layer and a playable loop follow.
 
-## 14. Open Questions
+## 15. Open Questions
 
 - **Narrator name**: Scribe, Historian, or The Chronicle. Code module stays
   `Director` until chosen.
-- Population ceiling: full-agent depth at civilization scale needs a pathing and
-  tick-budget pass before a real target can be set.
+- Population ceiling: the tiering design (§11.3) fixes the shape; the actual
+  per-tier budgets wait on measurement from the benchmark harness, plus a
+  pathing pass once AI lands.
 - Endless tech beyond the authored era ladder: procedural generation shape.
 - Multiplayer determinism, which would constrain RNG stream design.
+- Director behaviour across an abstracted-time skip (§11.5): a skipped century
+  still needs incidents, and they cannot all fire at the seam.
+- Settlement generation and the opening state of a game — how a founding band
+  picks a site, and what a settlement _is_ once it has an interior.

@@ -4,6 +4,9 @@
  *   docs/research/rimworld-mechanics.md   (tab 01)
  *   docs/spec/simworld-spec.md            (tab 02)
  *   docs/status.json                      (tab 03, the build tracker)
+ *   docs/research/epoch-inspiration.md    (tab 04)
+ *
+ * Doc tabs come from the DOCS table near the bottom; add a row to add a tab.
  *
  * The page is published as a claude.ai Artifact with the `db` capability so the
  * tracker's unlocked checklist items can be ticked in-page and persist for every viewer.
@@ -236,7 +239,7 @@ function coverHtml(doc) {
 </div>`;
 }
 
-function buildPage(research, spec, tracker, status) {
+function buildPage(docs, tracker, status) {
   return `<title>SimWorld Blueprint</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -392,20 +395,16 @@ function buildPage(research, spec, tracker, status) {
     </div>
     <div class="doc-tabs" role="tablist">
       <button class="doc-tab" role="tab" data-doc="t" aria-selected="true"><span class="num">03</span>Tracker — Build</button>
-      <button class="doc-tab" role="tab" data-doc="r" aria-selected="false"><span class="num">01</span>Research — RimWorld</button>
-      <button class="doc-tab" role="tab" data-doc="s" aria-selected="false"><span class="num">02</span>Spec — SimWorld</button>
+${docs.map((d) => `<button class="doc-tab" role="tab" data-doc="${d.prefix}" aria-selected="false"><span class="num">${d.num}</span>${d.label}</button>`).join('\n      ')}
     </div>
     <div>
       <p class="toc-label">Contents</p>
       <nav class="toc" data-doc="t">
 ${tocHtml(tracker.toc)}
       </nav>
-      <nav class="toc" data-doc="r" hidden>
-${tocHtml(research.toc)}
-      </nav>
-      <nav class="toc" data-doc="s" hidden>
-${tocHtml(spec.toc)}
-      </nav>
+${docs.map((d) => `<nav class="toc" data-doc="${d.prefix}" hidden>
+${tocHtml(d.doc.toc)}
+      </nav>`).join('\n      ')}
     </div>
   </aside>
 
@@ -413,14 +412,10 @@ ${tocHtml(spec.toc)}
     <section class="doc-panel content-col" data-doc="t">
       ${tracker.html}
     </section>
-    <section class="doc-panel content-col" data-doc="r" hidden>
-      ${coverHtml(research)}
-      ${research.body}
-    </section>
-    <section class="doc-panel content-col" data-doc="s" hidden>
-      ${coverHtml(spec)}
-      ${spec.body}
-    </section>
+${docs.map((d) => `<section class="doc-panel content-col" data-doc="${d.prefix}" hidden>
+      ${coverHtml(d.doc)}
+      ${d.doc.body}
+    </section>`).join('\n    ')}
   </main>
 </div>
 
@@ -528,13 +523,21 @@ ${tocHtml(spec.toc)}
 
 // ---------------------------------------------------------------- main
 
+// Every prose doc that gets a tab. The tracker is tab 03 and is built separately;
+// these numbers are stable labels, so a new doc appends rather than renumbering.
+const DOCS = [
+  { prefix: 'r', num: '01', label: 'Research — RimWorld', path: 'docs/research/rimworld-mechanics.md' },
+  { prefix: 's', num: '02', label: 'Spec — SimWorld', path: 'docs/spec/simworld-spec.md' },
+  { prefix: 'e', num: '04', label: 'Research — Epoch', path: 'docs/research/epoch-inspiration.md' },
+];
+
 const status = loadStatus();
-const research = renderDoc('docs/research/rimworld-mechanics.md', 'r');
-const spec = renderDoc('docs/spec/simworld-spec.md', 's');
+const docs = DOCS.map((d) => ({ ...d, doc: renderDoc(d.path, d.prefix) }));
 const tracker = renderTracker(status);
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
-fs.writeFileSync(OUT_FILE, buildPage(research, spec, tracker, status));
+fs.writeFileSync(OUT_FILE, buildPage(docs, tracker, status));
 
 const s = tracker.stats;
-console.log(`blueprint: wrote ${path.relative(ROOT, OUT_FILE)} — ${s.systems} systems, ${s.done}/${s.items} items in repo (${s.pct}%), ${s.tests} tests, ${research.diagramCount + spec.diagramCount} diagrams`);
+const diagrams = docs.reduce((n, d) => n + d.doc.diagramCount, 0);
+console.log(`blueprint: wrote ${path.relative(ROOT, OUT_FILE)} — ${s.systems} systems, ${s.done}/${s.items} items in repo (${s.pct}%), ${s.tests} tests, ${diagrams} diagrams across ${docs.length} docs`);
