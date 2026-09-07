@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Crafting;
+using SimWorld.Stats;
 
 namespace SimWorld.Defs
 {

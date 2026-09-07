@@ -41,9 +41,6 @@ namespace SimWorld.Pawns
 
         public float lifeExpectancy = 80f;
 
-        /// <summary>Base mood level below which minor mental breaks become possible.</summary>
-        public float mentalBreakThreshold = 0.35f;
-
         /// <summary>This race's life stages by minimum biological age (years), ascending; see <see cref="Pawn_AgeTracker.CurLifeStage"/>.</summary>
         public List<LifeStageAge>? lifeStageAges;
 

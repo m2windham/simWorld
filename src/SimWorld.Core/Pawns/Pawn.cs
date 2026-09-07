@@ -5,6 +5,7 @@ using SimWorld.Health;
 using SimWorld.MindState;
 using SimWorld.Needs;
 using SimWorld.Sim;
+using SimWorld.Stats;
 using SimWorld.Things;
 using SimWorld.Work;
 
@@ -90,20 +91,25 @@ namespace SimWorld.Pawns
 
         public virtual float RestFallFactorFromHealth => health.hediffSet.RestFallFactor;
 
-        /// <summary>Rest gain multiplier; the stats module supplies bed and trait effects later.</summary>
-        public virtual float RestRateMultiplier => 1f;
+        /// <summary>Rest gain multiplier (RimWorld: <c>StatDefOf.RestRateMultiplier</c>) — capacity-factored by
+        /// BloodPumping/Metabolism/Breathing, so a wounded heart or lungs slow rest gain; beds raise it later
+        /// through <see cref="Need_Rest.lastRestEffectiveness"/>, which this stat does not carry (RimWorld
+        /// applies bed effectiveness as a separate multiplier alongside the stat, not through it).</summary>
+        public virtual float RestRateMultiplier => this.GetStatValue(StatDefOf.RestRateMultiplier);
 
-        /// <summary>Immunity gain multiplier while sick; beds and traits raise it later.</summary>
-        public virtual float ImmunityGainSpeed => 1f;
+        /// <summary>Immunity gain multiplier while sick (RimWorld: <c>StatDefOf.ImmunityGainSpeed</c>).</summary>
+        public virtual float ImmunityGainSpeed => this.GetStatValue(StatDefOf.ImmunityGainSpeed);
 
-        /// <summary>Pain level that downs the pawn.</summary>
-        public virtual float PainShockThreshold => HealthTuning.DefaultPainShockThreshold;
+        /// <summary>Pain level that downs the pawn (RimWorld: <c>StatDefOf.PainShockThreshold</c>).</summary>
+        public virtual float PainShockThreshold => this.GetStatValue(StatDefOf.PainShockThreshold);
 
-        /// <summary>Mood level under which minor breaks become possible; traits and stats adjust it later.</summary>
-        public virtual float MentalBreakThreshold => RaceProps.mentalBreakThreshold;
+        /// <summary>Mood level under which minor breaks become possible (RimWorld: <c>StatDefOf.MentalBreakThreshold</c>,
+        /// a race's own <c>statBases</c> entry rather than a <see cref="RaceProperties"/> field — see the Human
+        /// ThingDef's content).</summary>
+        public virtual float MentalBreakThreshold => this.GetStatValue(StatDefOf.MentalBreakThreshold);
 
-        /// <summary>Scales indirect (learning-by-doing) skill XP; stats and conditions adjust it later.</summary>
-        public virtual float GlobalLearningFactor => 1f;
+        /// <summary>Scales indirect (learning-by-doing) skill XP (RimWorld: <c>StatDefOf.GlobalLearningFactor</c>).</summary>
+        public virtual float GlobalLearningFactor => this.GetStatValue(StatDefOf.GlobalLearningFactor);
 
         /// <summary>
         /// Work tags disabled by traits and, later, backstories. RimWorld also folds in genes and health

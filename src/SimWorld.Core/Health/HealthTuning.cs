@@ -3,9 +3,6 @@ namespace SimWorld.Health
     /// <summary>Health constants (RimWorld: <c>Verse.HealthTuning</c>). Content-independent knobs live here.</summary>
     public static class HealthTuning
     {
-        /// <summary>Pain at or above this downs a flesh pawn ("pain shock").</summary>
-        public const float DefaultPainShockThreshold = 0.8f;
-
         /// <summary>Consciousness below this cannot stay awake: the pawn is downed.</summary>
         public const float ConsciousnessAwakeThreshold = 0.3f;
 

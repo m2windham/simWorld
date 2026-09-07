@@ -3,6 +3,7 @@ using SimWorld.Defs;
 using SimWorld.Economy;
 using SimWorld.Factions;
 using SimWorld.Pawns;
+using SimWorld.Stats;
 using SimWorld.Tests.Content;
 using SimWorld.Work;
 using Xunit;
@@ -18,7 +19,7 @@ namespace SimWorld.Tests.Economy
         private static ThingDef GoodsDef(float marketValue) => new ThingDef
         {
             defName = "TestGoods",
-            statBases = new List<StatModifier> { new StatModifier(EconomyDefOf.MarketValue, marketValue) },
+            statBases = new List<StatModifier> { new StatModifier(StatDefOf.MarketValue, marketValue) },
         };
 
         // ---- MarketValue / BaseMarketValue ----
