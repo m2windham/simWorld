@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using SimWorld.AI;
 using SimWorld.Defs;
 using SimWorld.Sim;
 using SimWorld.Things;
@@ -33,6 +34,15 @@ namespace SimWorld.Map
         public ListerThings listerThings = null!;
         public MapPawns mapPawns = null!;
 
+        /// <summary>Who has claimed what, so two pawns never act on the same target (system 9 / AI).</summary>
+        public ReservationManager reservationManager = null!;
+
+        /// <summary>Cached region-reachability for this map (system 9 / AI); rebuilt lazily off <see cref="PathGrid.Version"/>.</summary>
+        public Reachability reachability = null!;
+
+        /// <summary>This map's A* search (system 9 / AI); one instance, its working arrays reused across searches.</summary>
+        public PathFinder pathFinder = null!;
+
         /// <summary>Things read from a save but not yet re-spawned; consumed by <see cref="FinalizeLoading"/>.</summary>
         private List<Thing>? loadedThings;
 
@@ -47,6 +57,7 @@ namespace SimWorld.Map
             uniqueID = AllocateMapId();
             InitializeGridsExceptPath(sizeX, sizeZ, fill);
             pathGrid = new PathGrid(this);
+            InitializeAIManagers();
         }
 
         public static int AllocateMapId() => nextMapId++;
@@ -84,6 +95,16 @@ namespace SimWorld.Map
             mapPawns = new MapPawns();
         }
 
+        /// <summary>Constructed after <see cref="pathGrid"/> exists so <see cref="Reachability"/>/<see cref="PathFinder"/>
+        /// can size their working arrays off the map's own cell count; <see cref="reservationManager"/> is
+        /// fresh state that a load overwrites via <see cref="ExposeData"/> right after this runs.</summary>
+        private void InitializeAIManagers()
+        {
+            reservationManager = new ReservationManager();
+            reachability = new Reachability(this);
+            pathFinder = new PathFinder(this);
+        }
+
         // ---- Scribe ----
 
         /// <summary>
@@ -117,6 +138,7 @@ namespace SimWorld.Map
                 DecodeTerrainInto(terrainString ?? "");
                 DecodeRoofInto(roofString ?? "");
                 pathGrid = new PathGrid(this);
+                InitializeAIManagers();
             }
 
             List<Thing>? things = Scribe.mode == LoadSaveMode.Saving ? new List<Thing>(listerThings.AllThings) : loadedThings;
@@ -125,6 +147,10 @@ namespace SimWorld.Map
             {
                 loadedThings = things;
             }
+
+            ReservationManager? rm = reservationManager;
+            Scribe_Deep.Look(ref rm, "reservationManager");
+            reservationManager = rm ?? new ReservationManager();
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 FinalizeLoading();

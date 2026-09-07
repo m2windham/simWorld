@@ -45,6 +45,21 @@ namespace SimWorld.Map
             }
         }
 
+        /// <summary>
+        /// Moves a single-cell Thing (every pawn, every item) from one cell to another without walking
+        /// <see cref="CellRect.Cells"/>'s iterator — <see cref="Thing.Position"/>'s setter uses this for its
+        /// fast path. A pawn's own move is the only thing in this codebase that calls the Position setter
+        /// on an already-spawned Thing repeatedly (system 9's <c>Pawn_PathFollower</c>, roughly every dozen
+        /// ticks per pawn); the general <see cref="Deregister"/>/<see cref="Register"/> pair remains for
+        /// anything with a multi-cell footprint, which nothing moves today.
+        /// </summary>
+        public void MoveSingleCell(Thing thing, IntVec3 oldCell, IntVec3 newCell)
+        {
+            if (thing == null) throw new ArgumentNullException(nameof(thing));
+            if (GenGrid.InBounds(oldCell, map)) grid[map.cellIndices.CellToIndex(oldCell)].Remove(thing);
+            if (GenGrid.InBounds(newCell, map)) grid[map.cellIndices.CellToIndex(newCell)].Add(thing);
+        }
+
         public IReadOnlyList<Thing> ThingsListAt(IntVec3 c) => grid[map.cellIndices.CellToIndex(c)];
 
         public IEnumerable<Thing> ThingsAt(IntVec3 c) => ThingsListAt(c);

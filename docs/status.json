@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-07",
-  "testsTotal": 605,
+  "testsTotal": 629,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -661,7 +661,7 @@
         },
         {
           "id": "work.givers",
-          "label": "WorkGiverDef ordering: emergency first, priority → naturalPriority → priorityInType; scanning/jobs land with system 9",
+          "label": "WorkGiverDef ordering: emergency first, priority → naturalPriority → priorityInType; scanning wired to real WorkGiver_Scanner subclasses by the AI module (system 9)",
           "done": true
         },
         {
@@ -690,35 +690,40 @@
       "id": "ai",
       "n": 10,
       "rimworld": "AI: Think Tree / Job System",
-      "translation": "Proposed: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding must be shared (hierarchical / flow fields) to survive full-agent populations.",
+      "translation": "Proposed: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding must be shared (hierarchical / flow fields) to survive full-agent populations — this pass ships a single-agent A* plus a flood-fill reachability cache, not that sharing.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/AI",
-      "status": "planned",
-      "tests": 0,
+      "status": "ported",
+      "tests": 24,
       "items": [
         {
           "id": "ai.thinktree",
-          "label": "ThinkTree priority nodes (conditionals + JobGivers)",
-          "done": false
+          "label": "ThinkTree priority nodes (ThinkNode_Priority, ThinkNode_Conditional guards, ThinkNode_JobGiver leaves) + a real Humanlike ThinkTreeDef: danger/mental-state > needs > directed orders > routine work > idle wander",
+          "done": true
         },
         {
           "id": "ai.jobs",
-          "label": "Job + JobDriver Toil state machine",
-          "done": false
+          "label": "Job + JobDriver toil state machine (Toil, ToilCompleteMode, Toils_General/Goto/Reserve, FailOn conditions) with Pawn_JobTracker driving it from Pawn.Tick",
+          "done": true
         },
         {
           "id": "ai.reservations",
-          "label": "Reservation manager for things and cells",
-          "done": false
+          "label": "ReservationManager per map: claim/release/CanReserve, released automatically on job end, Scribe round-trip",
+          "done": true
         },
         {
           "id": "ai.regions",
-          "label": "Region / RegionLink graph for reachability",
+          "label": "Region / RegionLink graph for reachability — this pass ships a flat flood-fill cache (AI.Reachability) instead: O(1) cached queries, but a full-map recompute on any path-grid change anywhere, however small; a real region graph can replace it without changing its public shape",
           "done": false
         },
         {
           "id": "ai.pathing",
-          "label": "A* on per-cell cost grid; hierarchical/flow-field path sharing",
+          "label": "A* (PathFinder) on the per-cell cost grid: array-backed binary min-heap open list, generation-stamped node info (no per-search clear), diagonal move with corner-cutting rules, pooled PawnPath, Pawn_PathFollower driving pawn movement at zero per-tick steady-state allocation",
+          "done": true
+        },
+        {
+          "id": "ai.pathing.sharing",
+          "label": "Hierarchical / flow-field path sharing for full-agent populations — not built; today's PathFinder is one A* search per pawn per path request",
           "done": false
         },
         {

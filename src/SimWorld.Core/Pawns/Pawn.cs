@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SimWorld.AI;
 using SimWorld.Defs;
 using SimWorld.Health;
 using SimWorld.MindState;
@@ -28,6 +29,12 @@ namespace SimWorld.Pawns
         public Pawn_WorkSettings workSettings = null!;
         public Pawn_AgeTracker ageTracker = null!;
         public Pawn_RelationsTracker relations = null!;
+
+        /// <summary>Current job, its driver and the directed-order queue (system 9: AI).</summary>
+        public Pawn_JobTracker jobs = null!;
+
+        /// <summary>Cell-to-cell movement along whatever path the current job asked for (system 9: AI).</summary>
+        public Pawn_PathFollower pather = null!;
 
         public Gender gender;
         public PawnKindDef? kindDef;
@@ -164,6 +171,9 @@ namespace SimWorld.Pawns
 
         public virtual void Notify_Downed()
         {
+            // A downed pawn cannot walk (CapableOf(Moving) fails), but a job with no pathing step left
+            // (already-arrived toils, an in-progress wait) would otherwise keep ticking to completion.
+            if (jobs?.curJob != null) jobs.EndCurrentJob(JobCondition.Incompletable, startNewJob: false);
         }
 
         public virtual void Notify_Died()
@@ -189,6 +199,8 @@ namespace SimWorld.Pawns
             workSettings ??= new Pawn_WorkSettings(this);
             ageTracker ??= new Pawn_AgeTracker(this);
             relations ??= new Pawn_RelationsTracker(this);
+            jobs ??= new Pawn_JobTracker(this);
+            pather ??= new Pawn_PathFollower(this);
         }
 
         // ---- ITickable ----
@@ -203,6 +215,10 @@ namespace SimWorld.Pawns
             mindState.MindStateTick();
             skills.SkillsTick();
             ageTracker.AgeTick();
+            // Jobs run last: a job's think-tree choice and its toils' FailOn checks should see this tick's
+            // fresh needs/health/mind-state numbers rather than last tick's, and nothing else this tick
+            // reacts to a job starting, ending, or a pawn moving, so nothing needs to run after it.
+            jobs.JobTrackerTick();
         }
 
         // ---- Scribe ----
@@ -244,6 +260,12 @@ namespace SimWorld.Pawns
             Pawn_RelationsTracker? rel = relations;
             Scribe_Deep.Look(ref rel, "relations", this);
             relations = rel ?? new Pawn_RelationsTracker(this);
+            Pawn_JobTracker? j = jobs;
+            Scribe_Deep.Look(ref j, "jobs", this);
+            jobs = j ?? new Pawn_JobTracker(this);
+            Pawn_PathFollower? pf = pather;
+            Scribe_Deep.Look(ref pf, "pather", this);
+            pather = pf ?? new Pawn_PathFollower(this);
             Scribe_Values.Look(ref gender, "gender", Gender.None);
             PawnKindDef? kd = kindDef;
             Scribe_Defs.Look(ref kd, "kindDef");

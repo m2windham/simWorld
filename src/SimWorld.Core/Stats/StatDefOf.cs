@@ -27,5 +27,8 @@ namespace SimWorld.Stats
 
         /// <summary>Mood level under which minor mental breaks become possible (RimWorld: <c>MentalBreaker</c>).</summary>
         public static StatDef MentalBreakThreshold = null!;
+
+        /// <summary>Cells per second a pawn walks at (RimWorld: <c>Pawn_PathFollower</c>'s speed stat).</summary>
+        public static StatDef MoveSpeed = null!;
     }
 }
