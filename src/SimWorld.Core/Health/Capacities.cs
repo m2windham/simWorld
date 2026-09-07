@@ -258,9 +258,16 @@ namespace SimWorld.Health
                 float max = part.def.GetMaxHealth(diffSet.pawn);
                 efficiency = max <= 0f ? 1f : GenMath.Clamp01(diffSet.GetPartHealth(part) / max);
             }
-            foreach (Hediff hediff in diffSet.GetHediffsOnPart(part))
+            // Indexed loop rather than GetHediffsOnPart: that helper is a `yield return` iterator, so every
+            // call heap-allocates an enumerator even when the part carries no hediffs at all. Ordinarily not
+            // worth minding — but Pawn_HealthTracker.ShouldBeDead calls this once per pawn per tick
+            // unconditionally, and at 64 bytes a call that was 86.5% of the entire simulation's allocation
+            // (docs/perf/baseline.md §4). Same traversal, same order, no enumerator.
+            List<Hediff> all = diffSet.hediffs;
+            for (int i = 0; i < all.Count; i++)
             {
-                HediffStage? stage = hediff.CurStage;
+                if (!ReferenceEquals(all[i].Part, part)) continue;
+                HediffStage? stage = all[i].CurStage;
                 if (stage != null) efficiency += stage.partEfficiencyOffset;
             }
             return Math.Max(efficiency, 0f);

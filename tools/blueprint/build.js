@@ -6,6 +6,7 @@
  *   docs/status.json                      (tab 03, the build tracker)
  *   docs/research/epoch-inspiration.md    (tab 04)
  *   docs/research/tech-reachability.md    (tab 05)
+ *   docs/perf/baseline.md                 (tab 06)
  *
  * Doc tabs come from the DOCS table near the bottom; add a row to add a tab.
  *
@@ -531,6 +532,7 @@ const DOCS = [
   { prefix: 's', num: '02', label: 'Spec — SimWorld', path: 'docs/spec/simworld-spec.md' },
   { prefix: 'e', num: '04', label: 'Research — Epoch', path: 'docs/research/epoch-inspiration.md' },
   { prefix: 'x', num: '05', label: 'Research — Tech reach', path: 'docs/research/tech-reachability.md' },
+  { prefix: 'p', num: '06', label: 'Perf — Baseline', path: 'docs/perf/baseline.md' },
 ];
 
 const status = loadStatus();
