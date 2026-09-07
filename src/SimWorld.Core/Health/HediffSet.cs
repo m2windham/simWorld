@@ -16,6 +16,8 @@ namespace SimWorld.Health
 
         private float cachedPain = -1f;
         private float cachedBleedRate = -1f;
+        private float cachedCorePartEfficiency = -1f;
+        private float cachedTotalInjurySeverity = -1f;
 
         public HediffSet(Pawn pawn)
         {
@@ -30,6 +32,41 @@ namespace SimWorld.Health
             {
                 if (cachedPain < 0f) cachedPain = CalculatePain();
                 return cachedPain;
+            }
+        }
+
+        /// <summary>
+        /// Efficiency of the body's core part, cached. <see cref="Pawn_HealthTracker.ShouldBeDead"/> reads this
+        /// once per pawn per tick, and recomputing it walks the part's ancestors, its added parts, its hediffs
+        /// and its max health every time — the dominant cost in the whole simulation
+        /// (<c>docs/perf/baseline.md</c> §2, §7).
+        ///
+        /// Every mutation of <see cref="hediffs"/> calls <see cref="DirtyCache"/> — audited, all of them — and
+        /// so does <see cref="Pawn_AgeTracker"/> when a life stage changes, which is the other input
+        /// (max health scales with the stage). Those are the only two things this value depends on.
+        /// </summary>
+        public float CorePartEfficiency
+        {
+            get
+            {
+                if (cachedCorePartEfficiency < 0f)
+                {
+                    BodyPartRecord? core = pawn.RaceProps.body?.corePart;
+                    cachedCorePartEfficiency = core == null
+                        ? 1f
+                        : PawnCapacityUtility.CalculatePartEfficiency(this, core);
+                }
+                return cachedCorePartEfficiency;
+            }
+        }
+
+        /// <summary>Summed severity of every injury, cached; the other per-tick death check.</summary>
+        public float TotalInjurySeverityCached
+        {
+            get
+            {
+                if (cachedTotalInjurySeverity < 0f) cachedTotalInjurySeverity = TotalInjurySeverity();
+                return cachedTotalInjurySeverity;
             }
         }
 
@@ -371,6 +408,8 @@ namespace SimWorld.Health
         {
             cachedPain = -1f;
             cachedBleedRate = -1f;
+            cachedCorePartEfficiency = -1f;
+            cachedTotalInjurySeverity = -1f;
             pawn.health?.Notify_HediffSetChanged();
         }
 

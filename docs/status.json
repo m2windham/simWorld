@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-07",
-  "testsTotal": 560,
+  "testsTotal": 565,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -144,7 +144,7 @@
       "date": "2026-09-07",
       "state": "open",
       "title": "The population ceiling is health-tracker cost",
-      "note": "Measured: 14 microseconds per pawn-day at N<=500, and 15x speed holds to roughly 2,500-5,000 healthy pawns. HealthTick is 75.4% of all per-pawn tick cost. One unconditional per-tick capacity check was 86.5% of all allocation; making it non-allocating cut garbage 31x (4,232 MB to 138 MB per 1,000 pawn-days, 33 Gen0 collections to 1) but wall clock only 10% — so the ceiling is per-tick CPU, not GC. Sick pawns are far worse: 3 untended injuries measured 24.8x, and adding one disease did not finish a single day at N=1,000. See docs/perf/baseline.md."
+      "note": "Measured: 14 microseconds per pawn-day at N<=500, 15x speed holds to roughly 2,500-5,000 healthy pawns, and HealthTick is 75.4% of all per-pawn tick cost. Two fixes landed: making the hot capacity path non-allocating cut garbage 31x (4,232 MB to 138 MB per 1,000 pawn-days, 33 Gen0 collections to 1), and caching the per-tick death check behind the existing dirty flag took a further 7-12% (measured A/B, same box same minute). The remaining cost is spread rather than concentrated, so the next real lever for population scale is the citizen tiering in spec section 11.3, not another micro-optimization. Sick pawns remain far worse: 3 untended injuries measured 24.8x. See docs/perf/baseline.md."
     }
   ],
   "systems": [

@@ -17,6 +17,17 @@ namespace SimWorld.Pawns
         public long ageBiologicalTicks;
         public long ageChronologicalTicks;
 
+        // ---- Life stage cache ----
+        //
+        // CurLifeStageIndex used to scan the race's life-stage list on every read, and it is read constantly:
+        // Pawn.HealthScale reads it, so the per-tick death check in Pawn_HealthTracker.ShouldBeDead paid for a
+        // list scan on every pawn on every tick (docs/perf/baseline.md §2 — health is 75.4% of per-pawn cost).
+        // Cached here with the exact tick the next stage begins, so the steady state is one long comparison.
+        // Not serialized: it is derived from ageBiologicalTicks and rebuilt on demand after load.
+        private int cachedLifeStageIndex = -2;          // -2 = not computed; -1 = race defines no stages
+        private long lifeStageValidFromTicks = long.MaxValue;
+        private long lifeStageValidUntilTicks = long.MinValue;
+
         // ---- Hidden lifespan budget (death from age) ----
         //
         // Deliberate design, not an oversight: this pawn's age of death is rolled once (RollLifespanBudget,
@@ -71,8 +82,41 @@ namespace SimWorld.Pawns
         {
             get
             {
-                List<LifeStageAge>? stages = RaceLifeStages;
-                if (stages == null || stages.Count == 0) return -1;
+                // Both bounds, deliberately. Age does not only move forward: DebugSetAge and mothballed
+                // catch-up can set it anywhere, and a cache keyed on the upper bound alone happily keeps an
+                // adult stage for a pawn just set back to age five.
+                if (cachedLifeStageIndex != -2
+                    && ageBiologicalTicks >= lifeStageValidFromTicks
+                    && ageBiologicalTicks < lifeStageValidUntilTicks)
+                {
+                    return cachedLifeStageIndex;
+                }
+                return RecomputeLifeStage();
+            }
+        }
+
+        /// <summary>
+        /// Rescans the race's life stages and records when the next one begins. Called only when the pawn has
+        /// actually aged past the stage it was in, so the scan happens a handful of times in a whole life
+        /// rather than 60,000 times a day.
+        ///
+        /// Crossing a stage changes <see cref="Pawn.HealthScale"/>, and part max health is
+        /// <c>hitPoints * HealthScale</c> — so an injured pawn's part efficiency changes at the boundary
+        /// without any hediff changing. Anything cached off that has to be told, or a child who grows up
+        /// carrying an old wound keeps a stale efficiency forever.
+        /// </summary>
+        private int RecomputeLifeStage()
+        {
+            List<LifeStageAge>? stages = RaceLifeStages;
+            int previous = cachedLifeStageIndex;
+            if (stages == null || stages.Count == 0)
+            {
+                cachedLifeStageIndex = -1;
+                lifeStageValidFromTicks = long.MinValue;
+                lifeStageValidUntilTicks = long.MaxValue;
+            }
+            else
+            {
                 float ageYears = AgeBiologicalYearsFloat;
                 int best = 0;
                 for (int i = 0; i < stages.Count; i++)
@@ -80,8 +124,18 @@ namespace SimWorld.Pawns
                     if (stages[i].minAge <= ageYears) best = i;
                     else break; // lifeStageAges is ascending by minAge
                 }
-                return best;
+                cachedLifeStageIndex = best;
+                lifeStageValidFromTicks = (long)(stages[best].minAge * GenDate.TicksPerYear);
+                lifeStageValidUntilTicks = best + 1 < stages.Count
+                    ? (long)(stages[best + 1].minAge * GenDate.TicksPerYear)
+                    : long.MaxValue;
             }
+
+            if (previous != -2 && previous != cachedLifeStageIndex)
+            {
+                pawn.health?.hediffSet?.DirtyCache();
+            }
+            return cachedLifeStageIndex;
         }
 
         public LifeStageDef? CurLifeStage
