@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SimWorld.Sim;
+using SimWorld.Social;
 
 namespace SimWorld.Pawns
 {
@@ -41,6 +42,16 @@ namespace SimWorld.Pawns
 
         public DeathCause? bereavementCause;
 
+        /// <summary>
+        /// Stored, non-family relations (friend, rival, lover, ex-spouse — see <see cref="PawnRelationDef"/>).
+        /// Family relations (spouse, parent, child, sibling) are never stored here: they are derived on demand
+        /// from <see cref="spouseId"/>/<see cref="parentIdA"/>/<see cref="parentIdB"/>/<see cref="childIds"/>
+        /// by the matching <c>PawnRelationWorker</c>, so there is exactly one place either kind of relation can
+        /// disagree with itself. SimWorld's own addition, mirroring RimWorld's own
+        /// <c>Pawn_RelationsTracker.DirectRelations</c> shape.
+        /// </summary>
+        public List<DirectPawnRelation> directRelations = new List<DirectPawnRelation>();
+
         public Pawn_RelationsTracker(Pawn pawn)
         {
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
@@ -73,6 +84,51 @@ namespace SimWorld.Pawns
             bereavementCause = cause;
         }
 
+        // ---- Social layer (SimWorld.Social) ----
+
+        public bool HasDirectRelation(PawnRelationDef def, int otherPawnId)
+        {
+            for (int i = 0; i < directRelations.Count; i++)
+            {
+                if (directRelations[i].def == def && directRelations[i].otherPawnId == otherPawnId) return true;
+            }
+            return false;
+        }
+
+        public void AddDirectRelation(PawnRelationDef def, int otherPawnId)
+        {
+            if (def == null) throw new ArgumentNullException(nameof(def));
+            if (HasDirectRelation(def, otherPawnId)) return;
+            directRelations.Add(new DirectPawnRelation(def, otherPawnId, Find.TickManager.TicksGame));
+        }
+
+        public void RemoveDirectRelation(PawnRelationDef def, int otherPawnId)
+        {
+            directRelations.RemoveAll(r => r.def == def && r.otherPawnId == otherPawnId);
+        }
+
+        /// <summary>Every stored relation with <paramref name="otherPawnId"/>, family relations excluded (those never appear here — see <see cref="directRelations"/>).</summary>
+        public IEnumerable<DirectPawnRelation> DirectRelationsWith(int otherPawnId)
+        {
+            foreach (DirectPawnRelation r in directRelations)
+            {
+                if (r.otherPawnId == otherPawnId) yield return r;
+            }
+        }
+
+        /// <summary>
+        /// This pawn's opinion of <paramref name="other"/> (RimWorld: <c>Pawn_RelationsTracker.OpinionOf</c>):
+        /// relation type (family, derived from demography's ids, plus any stored <see cref="DirectPawnRelation"/>),
+        /// social memories about that specific pawn, personality traits, and a stable per-pair compatibility
+        /// factor — see <see cref="SocialUtility.OpinionOf"/> for the composition. Clamped to
+        /// [<see cref="SocialTuning.MinOpinion"/>, <see cref="SocialTuning.MaxOpinion"/>].
+        /// </summary>
+        public int OpinionOf(Pawn other)
+        {
+            if (other == null) throw new ArgumentNullException(nameof(other));
+            return other == pawn ? 0 : SocialUtility.OpinionOf(pawn, other);
+        }
+
         public void ExposeData()
         {
             Scribe_Values.Look(ref familyId, "familyId", None);
@@ -85,6 +141,9 @@ namespace SimWorld.Pawns
             Scribe_Values.Look(ref generation, "generation");
             Scribe_Values.Look(ref bereavementTick, "bereavementTick", -1);
             Scribe_Values.Look(ref bereavementCause, "bereavementCause");
+            List<DirectPawnRelation>? relations = directRelations;
+            Scribe_Collections.Look(ref relations, "directRelations", LookMode.Deep);
+            directRelations = relations ?? new List<DirectPawnRelation>();
         }
     }
 }

@@ -93,6 +93,7 @@
         <label>insulted</label>
         <description>Someone insulted me.</description>
         <baseMoodEffect>-5</baseMoodEffect>
+        <baseOpinionOffset>-8</baseOpinionOffset>
       </li>
     </stages>
   </ThoughtDef>

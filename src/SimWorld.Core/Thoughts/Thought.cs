@@ -28,6 +28,19 @@ namespace SimWorld.Thoughts
             return BaseMoodOffset;
         }
 
+        /// <summary>How this thought's current stage moves <see cref="pawn"/>'s opinion of <see cref="Thought_Memory.otherPawn"/>
+        /// (RimWorld: <c>Thought.OpinionOffset</c>). Only memory thoughts carry an <c>otherPawn</c>, so only
+        /// they are meaningful inputs to <see cref="Social.SocialUtility.OpinionOf"/>; a situational thought's
+        /// offset is never read there.</summary>
+        public virtual float BaseOpinionOffset => CurStage.baseOpinionOffset;
+
+        public virtual float OpinionOffset()
+        {
+            if (def.stages.Count == 0) return 0f;
+            if (ThoughtUtility.ThoughtNullified(pawn, def)) return 0f;
+            return BaseOpinionOffset;
+        }
+
         /// <summary>Thoughts that group together stack in the mood total.</summary>
         public virtual bool GroupsWith(Thought other) => other != null && def == other.def;
 
@@ -57,6 +70,8 @@ namespace SimWorld.Thoughts
         public virtual bool ShouldDiscard => age > def.DurationTicks;
 
         public override float MoodOffset() => base.MoodOffset() * moodPowerFactor;
+
+        public override float OpinionOffset() => base.OpinionOffset() * moodPowerFactor;
 
         public virtual void ThoughtInterval()
         {

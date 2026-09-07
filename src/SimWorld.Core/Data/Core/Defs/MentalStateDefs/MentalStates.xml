@@ -52,6 +52,24 @@
     <baseInspectLine>Mental state: Insulting spree</baseInspectLine>
   </MentalStateDef>
 
+  <!-- Social (SimWorld.Social, system 17): a brief mutual scuffle an insult can escalate into
+       (see SocialFightUtility.TryStartSocialFight), not a mood-caused break — it does not derive from
+       MoodBreakBase, gets no Catharsis on recovery, and does not block normal thoughts. Durations are
+       SimWorld's own (not sourced from RimWorld's real constant): short enough to read as a scuffle rather
+       than a sustained state. -->
+
+  <MentalStateDef>
+    <defName>SocialFighting</defName>
+    <label>social fighting</label>
+    <category>Aggro</category>
+    <minTicksBeforeRecovery>100</minTicksBeforeRecovery>
+    <maxTicksBeforeRecovery>1200</maxTicksBeforeRecovery>
+    <recoveryMtbDays>0.02</recoveryMtbDays>
+    <recoverFromSleep>true</recoverFromSleep>
+    <recoverFromDowned>true</recoverFromDowned>
+    <baseInspectLine>Mental state: Social fighting</baseInspectLine>
+  </MentalStateDef>
+
   <!-- Major -->
 
   <MentalStateDef ParentName="MoodBreakBase">
