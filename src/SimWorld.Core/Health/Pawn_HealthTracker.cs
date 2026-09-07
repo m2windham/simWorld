@@ -264,8 +264,7 @@ namespace SimWorld.Health
                 if (hediffs[i].CauseDeathNow()) return true;
             }
             if (ShouldBeDeadFromRequiredCapacity() != null) return true;
-            BodyPartRecord? core = pawn.RaceProps.body?.corePart;
-            if (core != null && PawnCapacityUtility.CalculatePartEfficiency(hediffSet, core) <= HealthTuning.MinCapableLevel) return true;
+            if (hediffSet.CorePartEfficiency <= HealthTuning.MinCapableLevel) return true;
             return ShouldBeDeadFromLethalDamageThreshold();
         }
 
@@ -282,7 +281,7 @@ namespace SimWorld.Health
             return null;
         }
 
-        public bool ShouldBeDeadFromLethalDamageThreshold() => hediffSet.TotalInjurySeverity() >= HealthTuning.LethalDamageThreshold;
+        public bool ShouldBeDeadFromLethalDamageThreshold() => hediffSet.TotalInjurySeverityCached >= HealthTuning.LethalDamageThreshold;
 
         public bool ShouldBeDowned()
         {

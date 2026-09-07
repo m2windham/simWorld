@@ -212,21 +212,75 @@ is not GC pressure, it is that `ShouldBeDead` recomputes core-part efficiency,
 required-capacity checks and total injury severity from scratch every tick for
 every pawn, whether or not anything about that pawn changed.
 
-### The next step, and why it was not taken here
+### The next step, and why it was deferred
 
 The natural follow-up is to cache core-part efficiency and total injury severity
 on `HediffSet` behind the existing `DirtyCache()` flag, exactly as `cachedPain`
 and `cachedBleedRate` already are. That would make the healthy-pawn per-tick
-path O(1) instead of several list walks.
+path O(1) instead of several list walks. It was deferred one pass pending an
+audit of the invariant every such cache depends on. §8 is that audit and its
+result.
 
-It was not done in the same pass because it needs an audit first. `hediffs` is
-mutated at eleven sites, two of them outside `HediffSet` itself
-(`Hediff.cs` and `Damage.cs` both `Add` to the list directly). A cache is only
-as correct as the invariant that every mutation calls `DirtyCache()`, and a
-missed site there does not produce a stale cosmetic number — it produces a pawn
-that fails to die when it should. Pain and bleed rate already ride on that
-invariant and would only go slightly stale; death detection is a different
-class of consequence. The audit is the prerequisite, not the optimization.
+## 8. Caching the per-tick death check
+
+### The audit, and a correction to §7
+
+**§7's count was wrong.** It said `hediffs` is mutated at eleven sites, "two of
+them outside `HediffSet` itself (`Hediff.cs` and `Damage.cs` both `Add` to the
+list directly)", and used that as the reason to defer. Reading all of them:
+
+- `Damage.cs:160` does not touch the hediff set at all. It appends to
+  `DamageResult.hediffs`, the damage worker's own bookkeeping list, which merely
+  shares a field name. It was never a mutation site.
+- `Hediff.cs:616` does add directly, and calls `DirtyCache()` immediately after
+  its loop.
+- All six sites inside `HediffSet` and all three in `Pawn_HealthTracker` dirty
+  the cache.
+
+So the invariant holds everywhere, and the risk §7 named was overstated by a
+grep rather than a reading. Recorded here rather than quietly corrected, because
+a wrong reason for deferring work is worth the same scrutiny as a wrong number.
+
+### What the audit did find
+
+A dependency neither §7 nor the original report considered: **core-part
+efficiency depends on the pawn's age, not only on its hediffs.** Part max health
+is `hitPoints × HealthScale` (`BodyDefs.cs`), and `HealthScale` scales with the
+current life stage. An injured pawn crossing a life-stage boundary changes its
+core efficiency with no hediff changing at all, so a cache dirtied only by
+hediff mutations keeps a child's value for the rest of that pawn's life.
+
+`Pawn_AgeTracker` therefore caches its life-stage index with the exact tick
+bounds it is valid between, and dirties the health cache when a crossing
+actually happens. That removes a second cost as a side effect: `CurLifeStageIndex`
+previously rescanned the race's life-stage list on every read, and `HealthScale`
+reads it — so the per-tick death check was paying for that scan on every pawn on
+every tick.
+
+The bounds are deliberately two-sided. A first attempt guarded only "when does
+the next stage begin", which happily keeps an adult stage for a pawn whose age
+is set backwards — `DebugSetAge` and mothballed catch-up both do that. Two
+existing tests caught it; `HealthCacheTests` now pins it directly.
+
+### Measured
+
+Wall-clock comparisons against §1–§7 are **not valid**: those were taken on an
+otherwise-idle box, and this machine was running three build agents. Absolute
+numbers here are roughly 60% higher for that reason alone. So this was measured
+as an A/B instead — same box, same minute, same load, alternating builds:
+
+| run | N=1000, ms/in-game-day |
+| --- | --- |
+| with caching | 24,571.7 |
+| without (HEAD) | 27,846.2 |
+| with caching again | 25,931.8 |
+
+**Roughly 7–12% faster.** Real, and modest — which is itself the finding. The
+remaining per-tick cost is not one dominant call any more; it is spread across
+`ShouldBeDeadFromRequiredCapacity` walking every lethal capacity, the hediff
+tick loop, and the needs and mind-state trackers. There is no third obvious
+single-call win here, and the next honest step for population scale is the
+tiering in spec §11.3, not another micro-optimization.
 
 ## Where the ceiling is
 
