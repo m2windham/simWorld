@@ -62,11 +62,41 @@
     </stuffProps>
   </ThingDef>
 
+  <!--
+    Loose rock chunks (RimWorld: ThingDefs_Items/Items_Resource "Chunk*"), one per natural rock type, scattered
+    onto a generated map by MapGen.GenStep_Scatterers. thingClass is set explicitly here (it wasn't before)
+    since ThingMaker.MakeThing needs a concrete runtime type to instantiate; nothing constructed one of these
+    before MapGen landed, so the gap was latent rather than caught by a test.
+  -->
+
   <ThingDef>
     <defName>ChunkSandstone</defName>
     <label>chunk of sandstone</label>
     <description>A chunk of sandstone, ready to be cut into blocks at a stonecutter's table.</description>
     <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <stackLimit>25</stackLimit>
+    <statBases><MarketValue>0</MarketValue></statBases>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>ChunkGranite</defName>
+    <label>chunk of granite</label>
+    <description>A chunk of granite, ready to be cut into blocks at a stonecutter's table.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <stackLimit>25</stackLimit>
+    <statBases><MarketValue>0</MarketValue></statBases>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>ChunkLimestone</defName>
+    <label>chunk of limestone</label>
+    <description>A chunk of limestone, ready to be cut into blocks at a stonecutter's table.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>
     <stackLimit>25</stackLimit>
     <statBases><MarketValue>0</MarketValue></statBases>

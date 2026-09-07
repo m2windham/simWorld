@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Placeholder wild vegetation, scattered onto a generated map by MapGen.GenStep_Scatterers (spec §5).
+    RimWorld's real Plant carries growth stages, a harvest yield and a species-specific look, none of which
+    exist in the Defs layer yet (no PlantProperties, no growth simulation) — that is a future Plants module's
+    job. Until it lands this is a single flavor/occupancy marker: it reads the tile's biome plant density and
+    Timber deposit so a lush biome's map looks lush, but it does not grow, spread or yield anything.
+  -->
+
+  <ThingDef>
+    <defName>WildPlant</defName>
+    <label>wild plant growth</label>
+    <description>Undergrowth and scrub, as thick as the local biome allows. Not yet a farmable or harvestable plant — that waits on a dedicated Plants module.</description>
+    <category>Plant</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <tickerType>Never</tickerType>
+    <passability>Standable</passability>
+    <useHitPoints>false</useHitPoints>
+    <destroyable>true</destroyable>
+    <selectable>false</selectable>
+  </ThingDef>
+
+</Defs>

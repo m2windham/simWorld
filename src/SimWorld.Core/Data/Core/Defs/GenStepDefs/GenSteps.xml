@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Local map generation pipeline (RimWorld: GenStepDefs), run in ascending order by MapGenerator.
+    RocksAndMountains runs before Caves so there is rock to carve through; Caves before Roofs so roofing
+    reads the mountain's final, cave-riddled shape; Roofs before Scatterers so plants and chunks never land
+    on ground that turned out to be roofed (no sunlight reaches a mountain's interior, cave passages included).
+  -->
+
+  <GenStepDef>
+    <defName>ElevationFertility</defName>
+    <order>100</order>
+    <workerClass>SimWorld.MapGen.GenStep_ElevationFertility</workerClass>
+  </GenStepDef>
+
+  <GenStepDef>
+    <defName>MapTerrain</defName>
+    <order>200</order>
+    <workerClass>SimWorld.MapGen.GenStep_Terrain</workerClass>
+  </GenStepDef>
+
+  <GenStepDef>
+    <defName>RocksAndMountains</defName>
+    <order>300</order>
+    <workerClass>SimWorld.MapGen.GenStep_RocksAndMountains</workerClass>
+  </GenStepDef>
+
+  <GenStepDef>
+    <defName>Caves</defName>
+    <order>400</order>
+    <workerClass>SimWorld.MapGen.GenStep_Caves</workerClass>
+  </GenStepDef>
+
+  <GenStepDef>
+    <defName>Roofs</defName>
+    <order>500</order>
+    <workerClass>SimWorld.MapGen.GenStep_Roofs</workerClass>
+  </GenStepDef>
+
+  <GenStepDef>
+    <defName>Scatterers</defName>
+    <order>600</order>
+    <workerClass>SimWorld.MapGen.GenStep_Scatterers</workerClass>
+  </GenStepDef>
+
+</Defs>

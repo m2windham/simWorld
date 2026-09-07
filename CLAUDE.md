@@ -54,6 +54,15 @@ label saying which module they land with.
 - Every `[DefOf]` field must exist in content — the content test asserts the load
   produces zero config and zero DefOf errors.
 
+## Namespaces that shadow their own types
+
+`SimWorld.Map` is both a namespace and, inside it, the class `Map`. Same for
+`SimWorld.World`. From any other namespace a bare `Map` or `World` resolves to
+the **namespace**, not the type — even with `using SimWorld.Map;` present — and
+fails with CS0118. Write `Map.Map` and `World.World`, as `Thing.cs` and
+`GenSpawn.cs` already do. It costs a confusing build error every time someone
+touches these types from outside, so reach for the qualified form first.
+
 ## Tests
 
 - Derive from `ContentTestBase` (`tests/…/Content/CoreContentFixture.cs`). It
