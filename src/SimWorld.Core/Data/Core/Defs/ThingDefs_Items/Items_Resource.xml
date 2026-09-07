@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Raw crafting resources (RimWorld: ThingDefs_Items/Items_Resource). Stuff-capable resources (wood,
+    steel, cloth, stone blocks) double as building materials once Buildings model stuff selection.
+  -->
+
+  <ThingDef>
+    <defName>WoodLog</defName>
+    <label>wood</label>
+    <description>A stack of logs harvested from a tree.</description>
+    <category>Item</category>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>1.2</MarketValue></statBases>
+    <stuffProps>
+      <categories><li>Woody</li></categories>
+      <commonality>1.2</commonality>
+    </stuffProps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Steel</defName>
+    <label>steel</label>
+    <description>An alloy of iron and other metals, used for most basic construction and crafting.</description>
+    <category>Item</category>
+    <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>1.9</MarketValue></statBases>
+    <stuffProps>
+      <categories><li>Metallic</li></categories>
+      <commonality>1</commonality>
+    </stuffProps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Cloth</defName>
+    <label>cloth</label>
+    <description>A woven fabric made from plant fibers.</description>
+    <category>Item</category>
+    <thingCategories><li>Textiles</li></thingCategories>
+    <stackLimit>100</stackLimit>
+    <statBases><MarketValue>1.5</MarketValue></statBases>
+    <stuffProps>
+      <categories><li>Fabric</li></categories>
+      <commonality>1</commonality>
+    </stuffProps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>BlocksSandstone</defName>
+    <label>sandstone blocks</label>
+    <description>Sandstone cut into blocks, ready for construction.</description>
+    <category>Item</category>
+    <thingCategories><li>StoneBlocks</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>0.9</MarketValue></statBases>
+    <stuffProps>
+      <categories><li>Stony</li></categories>
+      <commonality>1</commonality>
+    </stuffProps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>ChunkSandstone</defName>
+    <label>chunk of sandstone</label>
+    <description>A chunk of sandstone, ready to be cut into blocks at a stonecutter's table.</description>
+    <category>Item</category>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <stackLimit>25</stackLimit>
+    <statBases><MarketValue>0</MarketValue></statBases>
+  </ThingDef>
+
+</Defs>

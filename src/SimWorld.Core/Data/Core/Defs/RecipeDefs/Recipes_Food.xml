@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Cooking recipes (RimWorld: RecipeDefs/Recipes_Food). Ingredient amounts are expressed in nutrition
+    (IngredientValueGetter_Nutrition), matching RimWorld's own cooking recipes. CookMealSimple accepts
+    either food group from one combined slot ("meat OR veg"); the others require a separate minimum
+    from meat AND from plant food, same as RimWorld's real Fine/Lavish/Pemmican recipes. None of these
+    carry a skillRequirement — RimWorld's meal recipes don't either; skill only shapes poison chance and
+    (once quality-capable products exist) quality, not eligibility.
+  -->
+
+  <RecipeDef>
+    <defName>CookMealSimple</defName>
+    <label>cook simple meal</label>
+    <jobString>Cooking a simple meal.</jobString>
+    <workAmount>300</workAmount>
+    <workSkill>Cooking</workSkill>
+    <ingredientValueGetterClass>SimWorld.Crafting.IngredientValueGetter_Nutrition</ingredientValueGetterClass>
+    <ingredients>
+      <li>
+        <filter>
+          <categories><li>Meat</li><li>PlantFoodRaw</li></categories>
+        </filter>
+        <count>0.5</count>
+      </li>
+    </ingredients>
+    <products><MealSimple>1</MealSimple></products>
+    <recipeUsers><li>FueledStove</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>CookMealFine</defName>
+    <label>cook fine meal</label>
+    <jobString>Cooking a fine meal.</jobString>
+    <workAmount>450</workAmount>
+    <workSkill>Cooking</workSkill>
+    <ingredientValueGetterClass>SimWorld.Crafting.IngredientValueGetter_Nutrition</ingredientValueGetterClass>
+    <ingredients>
+      <li>
+        <filter><categories><li>Meat</li></categories></filter>
+        <count>0.25</count>
+      </li>
+      <li>
+        <filter><categories><li>PlantFoodRaw</li></categories></filter>
+        <count>0.25</count>
+      </li>
+    </ingredients>
+    <products><MealFine>1</MealFine></products>
+    <recipeUsers><li>FueledStove</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>CookMealLavish</defName>
+    <label>cook lavish meal</label>
+    <jobString>Cooking a lavish meal.</jobString>
+    <workAmount>600</workAmount>
+    <workSkill>Cooking</workSkill>
+    <ingredientValueGetterClass>SimWorld.Crafting.IngredientValueGetter_Nutrition</ingredientValueGetterClass>
+    <ingredients>
+      <li>
+        <filter><categories><li>Meat</li></categories></filter>
+        <count>0.25</count>
+      </li>
+      <li>
+        <filter><categories><li>PlantFoodRaw</li></categories></filter>
+        <count>0.25</count>
+      </li>
+    </ingredients>
+    <products><MealLavish>1</MealLavish></products>
+    <recipeUsers><li>FueledStove</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>MakePemmican</defName>
+    <label>make pemmican</label>
+    <jobString>Making pemmican.</jobString>
+    <workAmount>500</workAmount>
+    <workSkill>Cooking</workSkill>
+    <ingredientValueGetterClass>SimWorld.Crafting.IngredientValueGetter_Nutrition</ingredientValueGetterClass>
+    <ingredients>
+      <li>
+        <filter><categories><li>Meat</li></categories></filter>
+        <count>0.35</count>
+      </li>
+      <li>
+        <filter><categories><li>PlantFoodRaw</li></categories></filter>
+        <count>0.35</count>
+      </li>
+    </ingredients>
+    <products><Pemmican>16</Pemmican></products>
+    <recipeUsers><li>FueledStove</li></recipeUsers>
+  </RecipeDef>
+
+</Defs>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Stone-cutting (RimWorld: RecipeDefs/Recipes_Production), trimmed to one recipe until quarrying and
+    chunk-yielding mining exist. No workSkill: RimWorld's stonecutting has none either.
+  -->
+
+  <RecipeDef>
+    <defName>Make_Blocks_Sandstone</defName>
+    <label>cut sandstone blocks</label>
+    <jobString>Cutting sandstone blocks.</jobString>
+    <workAmount>1600</workAmount>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>ChunkSandstone</li></thingDefs></filter>
+        <count>1</count>
+      </li>
+    </ingredients>
+    <products><BlocksSandstone>20</BlocksSandstone></products>
+    <recipeUsers><li>TableStonecutter</li></recipeUsers>
+  </RecipeDef>
+
+</Defs>

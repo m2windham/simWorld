@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Crafting workbenches (RimWorld: ThingDefs_Buildings/Buildings_Production) — the recipeUsers our
+    first recipes reference. Placement, power draw and furniture stats land with the Buildings module.
+  -->
+
+  <ThingDef>
+    <defName>FueledStove</defName>
+    <label>fueled stove</label>
+    <description>A wood-fueled stove for cooking meals.</description>
+    <category>Building</category>
+    <statBases><MarketValue>240</MarketValue></statBases>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>TableButcher</defName>
+    <label>butcher table</label>
+    <description>A table for butchering carcasses into meat and other resources.</description>
+    <category>Building</category>
+    <statBases><MarketValue>150</MarketValue></statBases>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>TableStonecutter</defName>
+    <label>stonecutter's table</label>
+    <description>A table for cutting stone chunks into blocks suitable for construction.</description>
+    <category>Building</category>
+    <statBases><MarketValue>180</MarketValue></statBases>
+  </ThingDef>
+
+</Defs>
