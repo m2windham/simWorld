@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Natural rock (RimWorld: mineable ThingDefs on the Mountain layer). Not destroyable by ordinary damage —
+    real RimWorld removes it only through mining, a dedicated job the Building module adds later — so
+    destroyable stays false here; Things/tests exercise TakeDamage-destroys with a hand-built ThingDef instead.
+  -->
+
+  <ThingDef Name="BaseNaturalRock" Abstract="True">
+    <category>Building</category>
+    <tickerType>Never</tickerType>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <altitudeLayer>Building</altitudeLayer>
+    <useHitPoints>true</useHitPoints>
+    <destroyable>false</destroyable>
+    <selectable>true</selectable>
+    <mineable>true</mineable>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>Sandstone</defName>
+    <label>sandstone</label>
+    <statBases>
+      <MaxHitPoints>400</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>Granite</defName>
+    <label>granite</label>
+    <statBases>
+      <MaxHitPoints>900</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>Limestone</defName>
+    <label>limestone</label>
+    <statBases>
+      <MaxHitPoints>700</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+</Defs>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Baseline economic stat every ThingDef can carry (RimWorld: part of StatDefs_Basic). Trimmed to what
+    pricing and crafting need right now; the rest of RimWorld's stat sheet arrives with its own module.
+  -->
+
+  <StatDef>
+    <defName>MarketValue</defName>
+    <label>market value</label>
+    <description>How much this is worth, in silver.</description>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+</Defs>

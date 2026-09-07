@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-06",
-  "testsTotal": 354,
+  "testsTotal": 419,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -171,8 +171,8 @@
         },
         {
           "id": "defs.thingcomp",
-          "label": "ThingComp runtime half (ThingWithComps.InitializeComps) — lands with the Things module",
-          "done": false
+          "label": "ThingComp runtime half (ThingWithComps.InitializeComps)",
+          "done": true
         },
         {
           "id": "defs.patches",
@@ -266,8 +266,55 @@
       ]
     },
     {
-      "id": "pawngen",
+      "id": "mapcore",
       "n": 4,
+      "rimworld": "Map Core & Thing Runtime",
+      "translation": "Unchanged. The Thing/Comp runtime and map grids every later system stands on; settlement maps are generated onto it.",
+      "translationState": "decided",
+      "module": "src/SimWorld.Core/Map · Things",
+      "status": "ported",
+      "tests": 26,
+      "items": [
+        {
+          "id": "mapcore.geometry",
+          "label": "Geometry: IntVec3/IntVec2, Rot4, CellRect, GenAdj, GenRadial, CellIndices",
+          "done": true
+        },
+        {
+          "id": "mapcore.things",
+          "label": "Thing / ThingWithComps / ThingComp / ThingMaker: the map-aware Thing runtime and the Comp pattern's runtime half",
+          "done": true
+        },
+        {
+          "id": "mapcore.pawnthing",
+          "label": "Pawn is a Thing: identity, map presence, hit points and ticking move onto ThingWithComps",
+          "done": true
+        },
+        {
+          "id": "mapcore.grids",
+          "label": "Terrain, roof, thing, edifice and path grids with path-cost recalculation",
+          "done": true
+        },
+        {
+          "id": "mapcore.lister",
+          "label": "ListerThings and MapPawns: per-def, per-group and per-map bookkeeping",
+          "done": true
+        },
+        {
+          "id": "mapcore.scribe",
+          "label": "Map save/load: run-length terrain and roof grids plus a polymorphic spawned-Thing list",
+          "done": true
+        },
+        {
+          "id": "mapcore.regions",
+          "label": "Region / RegionLink graph for reachability — lands with AI",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "pawngen",
+      "n": 5,
       "rimworld": "Pawn Generation",
       "translation": "Proposed: citizen generation. Birth and lineage drive most generation instead of 'wanderer joins'; backstories become life histories written by the sim.",
       "translationState": "proposed",
@@ -324,7 +371,7 @@
     },
     {
       "id": "simcore",
-      "n": 5,
+      "n": 6,
       "rimworld": "Simulation Core / Game Loop",
       "translation": "Unchanged. Tick engine, rare/long tick buckets, deterministic RNG streams, Scribe-style save/load. Bucket sizing scales with population.",
       "translationState": "decided",
@@ -381,7 +428,7 @@
     },
     {
       "id": "needs",
-      "n": 6,
+      "n": 7,
       "rimworld": "Needs & Mood",
       "translation": "Unchanged per citizen. Adds aggregate 'public mood' rollups so the god view can read a city without opening every person.",
       "translationState": "proposed",
@@ -443,7 +490,7 @@
     },
     {
       "id": "health",
-      "n": 7,
+      "n": 8,
       "rimworld": "Health System",
       "translation": "Unchanged.",
       "translationState": "decided",
@@ -505,7 +552,7 @@
     },
     {
       "id": "work",
-      "n": 8,
+      "n": 9,
       "rimworld": "Skills & Work",
       "translation": "Proposed: skills unchanged; work priorities set by civ policy and roles (guilds, castes, laws) rather than a per-person grid.",
       "translationState": "proposed",
@@ -567,7 +614,7 @@
     },
     {
       "id": "ai",
-      "n": 9,
+      "n": 10,
       "rimworld": "AI: Think Tree / Job System",
       "translation": "Proposed: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding must be shared (hierarchical / flow fields) to survive full-agent populations.",
       "translationState": "proposed",
@@ -614,7 +661,7 @@
     },
     {
       "id": "director",
-      "n": 10,
+      "n": 11,
       "rimworld": "Storyteller / Threat Director",
       "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth, population and era instead of one colony.",
       "translationState": "proposed",
@@ -661,7 +708,7 @@
     },
     {
       "id": "combat",
-      "n": 11,
+      "n": 12,
       "rimworld": "Combat",
       "translation": "Unchanged mechanics; armies are groups of full agents.",
       "translationState": "proposed",
@@ -703,50 +750,60 @@
     },
     {
       "id": "crafting",
-      "n": 12,
+      "n": 13,
       "rimworld": "Crafting & Production",
       "translation": "Proposed: bills unchanged; guilds and industries act as bill queues at scale.",
       "translationState": "proposed",
-      "module": "src/SimWorld.Core/Production",
-      "status": "planned",
-      "tests": 0,
+      "module": "src/SimWorld.Core/Crafting",
+      "status": "ported",
+      "tests": 28,
       "items": [
         {
           "id": "crafting.bills",
-          "label": "Bill queue: recipe + ingredient filter + repeat mode",
-          "done": false
+          "label": "Bills and BillStack: repeat modes (count, target with hysteresis, forever), skill gating, suspend, ordering",
+          "done": true
         },
         {
           "id": "crafting.ingredients",
-          "label": "Ingredient search radius over stockpiles",
-          "done": false
+          "label": "Ingredient selection by value getter over candidate stacks, splitting and mixing rules — stockpile scanning lands with AI",
+          "done": true
         },
         {
           "id": "crafting.quality",
-          "label": "Skill-weighted quality roll with inspiration",
-          "done": false
+          "label": "Skill-driven quality generation with inspiration; trader and base-gen rolls",
+          "done": true
         },
         {
           "id": "crafting.cooking",
-          "label": "Cooking: meal tiers, food poisoning",
-          "done": false
+          "label": "Cooking recipes, skill-driven food poisoning, eating and nutrition",
+          "done": true
+        },
+        {
+          "id": "crafting.filters",
+          "label": "ThingFilter over a ThingCategoryDef tree, with stuff categories, quality and hit-point ranges",
+          "done": true
         },
         {
           "id": "crafting.animals",
-          "label": "Animal husbandry: taming, training, produce cycles, butchering",
+          "label": "Animal husbandry: taming, training, produce cycles, butchering — lands with the Animals module",
+          "done": false
+        },
+        {
+          "id": "crafting.guilds",
+          "label": "Translation: guilds and industries as bill queues at civilization scale",
           "done": false
         }
       ]
     },
     {
       "id": "research",
-      "n": 13,
+      "n": 14,
       "rimworld": "Research & Tech",
       "translation": "Translated: a large authored tech tree detailing societal evolution across eras. Data model leaves room for procedural/endless tech later.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects)",
       "status": "ported",
-      "tests": 20,
+      "tests": 31,
       "items": [
         {
           "id": "research.dag",
@@ -775,8 +832,8 @@
         },
         {
           "id": "research.tree",
-          "label": "Large authored tech tree of societal evolution — content task on the landed schema",
-          "done": false
+          "label": "Authored tech tree of societal evolution: 232 projects across 8 eras and 14 tracks, generated from tools/content/gen_techtree.py",
+          "done": true
         },
         {
           "id": "research.endless",
@@ -787,7 +844,7 @@
     },
     {
       "id": "economy",
-      "n": 14,
+      "n": 15,
       "rimworld": "Economy, Trade & Factions",
       "translation": "Proposed: other civilizations are the factions; trade routes replace orbital traders; goodwill becomes diplomacy.",
       "translationState": "proposed",
@@ -824,7 +881,7 @@
     },
     {
       "id": "building",
-      "n": 15,
+      "n": 16,
       "rimworld": "Colony Building & Environment",
       "translation": "Proposed: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall.",
       "translationState": "proposed",
@@ -871,7 +928,7 @@
     },
     {
       "id": "social",
-      "n": 16,
+      "n": 17,
       "rimworld": "Social, Ideoligion & DLC Systems",
       "translation": "Proposed: opinions and interactions unchanged; ideoligions become the religions and ideologies of your civilization; DLC systems (genes, psycasts, anomalies) evaluated per era.",
       "translationState": "proposed",
@@ -908,7 +965,7 @@
     },
     {
       "id": "quests",
-      "n": 17,
+      "n": 18,
       "rimworld": "Quests & Scenario",
       "translation": "Proposed: scenarios become civilization starts (era, biome, rivals); quests become narrator-issued historical moments.",
       "translationState": "proposed",

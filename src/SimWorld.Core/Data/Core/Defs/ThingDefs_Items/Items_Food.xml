@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Raw foodstuffs and cooked meals (RimWorld: ThingDefs_Items/Items_Food), trimmed to what
+    Recipes_Food needs; produce variety, meat cuts and animal products land with the Plants and
+    Animals modules. Meals intentionally carry no quality (RimWorld: meals have no CompQuality either).
+  -->
+
+  <ThingDef>
+    <defName>RawPotatoes</defName>
+    <label>potatoes</label>
+    <description>Raw potatoes. Won't fill you up much unless cooked into a proper meal.</description>
+    <category>Item</category>
+    <thingCategories><li>PlantFoodRaw</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>0.25</MarketValue></statBases>
+    <ingestible>
+      <nutrition>0.05</nutrition>
+      <preferability>RawBad</preferability>
+      <foodType>VegetableOrFruit</foodType>
+    </ingestible>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>RawRice</defName>
+    <label>rice</label>
+    <description>Raw rice grains. Won't fill you up much unless cooked into a proper meal.</description>
+    <category>Item</category>
+    <thingCategories><li>PlantFoodRaw</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>0.25</MarketValue></statBases>
+    <ingestible>
+      <nutrition>0.05</nutrition>
+      <preferability>RawBad</preferability>
+      <foodType>VegetableOrFruit</foodType>
+    </ingestible>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Meat_Generic</defName>
+    <label>raw meat</label>
+    <description>A raw cut of meat. Edible, but much better cooked into a proper meal.</description>
+    <category>Item</category>
+    <thingCategories><li>Meat</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>0.4</MarketValue></statBases>
+    <ingestible>
+      <nutrition>0.05</nutrition>
+      <preferability>RawBad</preferability>
+      <foodType>Meat</foodType>
+    </ingestible>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>MealSimple</defName>
+    <label>simple meal</label>
+    <description>A meal cooked from raw ingredients. Not fancy, but nutritious and won't upset anyone.</description>
+    <category>Item</category>
+    <thingCategories><li>FoodMeals</li></thingCategories>
+    <stackLimit>10</stackLimit>
+    <statBases><MarketValue>1.1</MarketValue></statBases>
+    <ingestible>
+      <nutrition>0.9</nutrition>
+      <preferability>MealSimple</preferability>
+      <foodType>Meal, Processed</foodType>
+    </ingestible>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>MealFine</defName>
+    <label>fine meal</label>
+    <description>A meal cooked with a bit more care, from separate portions of meat and vegetables.</description>
+    <category>Item</category>
+    <thingCategories><li>FoodMeals</li></thingCategories>
+    <stackLimit>10</stackLimit>
+    <statBases><MarketValue>1.6</MarketValue></statBases>
+    <ingestible>
+      <nutrition>0.9</nutrition>
+      <preferability>MealFine</preferability>
+      <foodType>Meal, Processed</foodType>
+    </ingestible>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>MealLavish</defName>
+    <label>lavish meal</label>
+    <description>An elaborate, generous meal. A treat for anyone who eats it.</description>
+    <category>Item</category>
+    <thingCategories><li>FoodMeals</li></thingCategories>
+    <stackLimit>10</stackLimit>
+    <statBases><MarketValue>2.6</MarketValue></statBases>
+    <ingestible>
+      <nutrition>0.9</nutrition>
+      <preferability>MealLavish</preferability>
+      <foodType>Meal, Processed</foodType>
+    </ingestible>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Pemmican</defName>
+    <label>pemmican</label>
+    <description>A dense, long-lasting ration of pounded meat and fat mixed with dried plant food. Bland, but keeps almost forever.</description>
+    <category>Item</category>
+    <thingCategories><li>Foods</li></thingCategories>
+    <stackLimit>200</stackLimit>
+    <statBases><MarketValue>0.8</MarketValue></statBases>
+    <ingestible>
+      <nutrition>0.2</nutrition>
+      <preferability>RawTasty</preferability>
+      <foodType>Processed</foodType>
+    </ingestible>
+  </ThingDef>
+
+</Defs>
