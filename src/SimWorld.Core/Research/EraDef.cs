@@ -7,7 +7,7 @@ namespace SimWorld.Research
     /// A civilization-wide age of technological development — SimWorld's translation of RimWorld's
     /// <see cref="TechLevel"/> ladder into "civilization through the ages". Every <see cref="ResearchProjectDef"/>
     /// tags itself with the era it belongs to (<see cref="ResearchProjectDef.era"/>); an era is complete once
-    /// every project tagged with it is finished. This is a fixed, authored ladder for now — see the
+    /// its <see cref="SpineProjects"/> are finished. This is a fixed, authored ladder for now — see the
     /// "endless"/"translation" tracker items for the later procedural extension beyond it.
     /// </summary>
     public class EraDef : Def
@@ -19,6 +19,7 @@ namespace SimWorld.Research
         public TechLevel techLevel = TechLevel.Undefined;
 
         private List<ResearchProjectDef>? projectsCache;
+        private List<ResearchProjectDef>? spineCache;
 
         /// <summary>Every loaded project tagged with this era, in Def registration order. Cached after first use.</summary>
         public IReadOnlyList<ResearchProjectDef> Projects
@@ -56,13 +57,71 @@ namespace SimWorld.Research
             }
         }
 
-        /// <summary>True once every project tagged with this era is finished (or it has none).</summary>
-        public bool IsComplete => Progress >= 1f;
+        /// <summary>
+        /// This era's structural spine: the projects tagged with it that some other project lists as a
+        /// prerequisite. A project nothing depends on is a leaf — flavour, or a dead end — and holds nothing
+        /// up behind it. Cached after first use.
+        /// </summary>
+        public IReadOnlyList<ResearchProjectDef> SpineProjects
+        {
+            get
+            {
+                if (spineCache == null)
+                {
+                    var dependedUpon = new HashSet<ResearchProjectDef>();
+                    foreach (ResearchProjectDef project in DefDatabase<ResearchProjectDef>.AllDefsListForReading)
+                    {
+                        AddPrerequisites(project.prerequisites, dependedUpon);
+                        AddPrerequisites(project.hiddenPrerequisites, dependedUpon);
+                    }
+                    spineCache = new List<ResearchProjectDef>();
+                    foreach (ResearchProjectDef project in Projects)
+                    {
+                        if (dependedUpon.Contains(project)) spineCache.Add(project);
+                    }
+                }
+                return spineCache;
+            }
+        }
+
+        private static void AddPrerequisites(List<ResearchProjectDef>? prerequisites, HashSet<ResearchProjectDef> into)
+        {
+            if (prerequisites == null) return;
+            for (int i = 0; i < prerequisites.Count; i++)
+            {
+                if (prerequisites[i] != null) into.Add(prerequisites[i]);
+            }
+        }
+
+        /// <summary>
+        /// True once every project on this era's <see cref="SpineProjects"/> is finished — a structural rule
+        /// rather than a tuned percentage. Requiring 100% of an era instead (the rule this replaces) let a
+        /// single unresearched piece of dead-end flavour bar the way to the next age indefinitely; measured
+        /// over a 21-archetype panel it held the mean highest era reached at 5.63 where the spine rule reaches
+        /// 6.18, at no other measured cost (<c>docs/research/tech-reachability.md</c> §6, §7.2).
+        ///
+        /// An era whose projects are all leaves has no spine, and falls back to requiring all of them: an era
+        /// of pure flavour still has to be finished to be finished.
+        /// </summary>
+        public bool IsComplete
+        {
+            get
+            {
+                IReadOnlyList<ResearchProjectDef> spine = SpineProjects;
+                if (spine.Count == 0) return Progress >= 1f;
+                for (int i = 0; i < spine.Count; i++)
+                {
+                    if (!spine[i].IsFinished) return false;
+                }
+                return true;
+            }
+        }
 
         public override void ClearCachedData()
         {
             base.ClearCachedData();
             projectsCache = null;
+            spineCache = null;
         }
 
         public override IEnumerable<string> ConfigErrors()
