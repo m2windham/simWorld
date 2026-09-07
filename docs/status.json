@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-06",
-  "testsTotal": 443,
+  "testsTotal": 487,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -223,8 +223,8 @@
         },
         {
           "id": "worldgen.relations",
-          "label": "Initial faction relations and tech levels — lands with Factions",
-          "done": false
+          "label": "Faction relations and tech levels seeded at world generation",
+          "done": true
         },
         {
           "id": "worldgen.civscale",
@@ -848,33 +848,38 @@
       "rimworld": "Economy, Trade & Factions",
       "translation": "Proposed: other civilizations are the factions; trade routes replace orbital traders; goodwill becomes diplomacy.",
       "translationState": "proposed",
-      "module": "src/SimWorld.Core/Economy",
-      "status": "planned",
-      "tests": 0,
+      "module": "src/SimWorld.Core/Factions · Economy · Caravans",
+      "status": "ported",
+      "tests": 44,
       "items": [
         {
+          "id": "economy.goodwill",
+          "label": "Faction relations: goodwill clamped to ±100, hostile/neutral/ally thresholds, permanent enemies, initial relations and natural drift",
+          "done": true
+        },
+        {
           "id": "economy.currency",
-          "label": "Silver as abstract barter unit; market value",
-          "done": false
+          "label": "Market value as the trade unit with PriceType tiers",
+          "done": true
         },
         {
           "id": "economy.pricing",
-          "label": "Price = base × market fluctuation × relation × stock category",
-          "done": false
+          "label": "Buy and sell pricing with a negotiator Social-skill gain curve",
+          "done": true
         },
         {
           "id": "economy.caravans",
-          "label": "Caravans on the world tile graph with time/supply cost",
-          "done": false
+          "label": "Caravans: world path grid and finder over hilliness, biome and roads; ticks per move from the slowest pawn; food drain and arrival",
+          "done": true
         },
         {
-          "id": "economy.goodwill",
-          "label": "Faction goodwill thresholds → hostile / neutral / ally",
+          "id": "economy.traders",
+          "label": "Traders: TraderKindDef with trade sessions and deals — stock generation and visiting traders land with Things/AI",
           "done": false
         },
         {
           "id": "economy.diplomacy",
-          "label": "Translation: civilization diplomacy and trade routes",
+          "label": "Translation: civilization diplomacy — treaties, wars and trade routes between civilizations",
           "done": false
         }
       ]
