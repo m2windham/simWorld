@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <ThingDef>
+    <defName>MeleeWeapon_Knife</defName>
+    <label>knife</label>
+    <category>Item</category>
+    <tools>
+      <li>
+        <label>blade</label>
+        <capacities><li>Cut</li></capacities>
+        <power>10</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.15</armorPenetration>
+      </li>
+      <li>
+        <label>tip</label>
+        <capacities><li>Stab</li></capacities>
+        <power>10</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.2</armorPenetration>
+      </li>
+    </tools>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>MeleeWeapon_Club</defName>
+    <label>club</label>
+    <category>Item</category>
+    <tools>
+      <li>
+        <label>head</label>
+        <capacities><li>Blunt</li></capacities>
+        <power>12</power>
+        <cooldownTime>2.3</cooldownTime>
+        <armorPenetration>0.1</armorPenetration>
+      </li>
+    </tools>
+  </ThingDef>
+
+</Defs>

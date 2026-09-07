@@ -1,0 +1,128 @@
+using System;
+using System.Collections.Generic;
+using SimWorld.Defs;
+using SimWorld.Factions;
+using SimWorld.Sim;
+
+namespace SimWorld.World.Gen
+{
+    /// <summary>
+    /// Creates every civilization and places its settlements (RimWorld: <c>Verse.WorldGenStep_Populate</c> +
+    /// <c>RimWorld.Faction</c> generation, combined and simplified here). Every <see cref="FactionDef"/> not
+    /// marked <see cref="FactionDef.hidden"/> gets between <see cref="FactionDef.requiredCountAtGameStart"/>
+    /// and <see cref="FactionDef.maxCountAtGameStart"/> instances, scaled by <see cref="OverallPopulation"/>;
+    /// each instance's settlements land on weighted-random <see cref="BiomeDef.canBuildBase"/> land tiles,
+    /// rejecting any candidate closer than <see cref="MinSettlementDistance"/> tiles to one already placed.
+    /// </summary>
+    public class WorldGenStep_Factions : WorldGenStep
+    {
+        /// <summary>RimWorld's world-gen "overall population" setting as a count multiplier (this port's own invention — see <see cref="OverallPopulation"/>).</summary>
+        private static readonly Dictionary<OverallPopulation, float> PopulationMultiplier = new Dictionary<OverallPopulation, float>
+        {
+            [OverallPopulation.AlmostNone] = 0.15f,
+            [OverallPopulation.Little] = 0.4f,
+            [OverallPopulation.LittleBitLess] = 0.7f,
+            [OverallPopulation.Normal] = 1.0f,
+            [OverallPopulation.LittleBitMore] = 1.3f,
+            [OverallPopulation.High] = 1.6f,
+            [OverallPopulation.VeryHigh] = 2.2f,
+        };
+
+        /// <summary>Settlements per faction instance before the population multiplier and <see cref="FactionDef.minSettlements"/> floor apply.</summary>
+        public static readonly IntRange SettlementsPerFactionRange = new IntRange(1, 4);
+
+        public override void GenerateFresh(string seed, World world)
+        {
+            RandomStream rand = SeededStream(seed);
+            WorldGrid grid = world.grid;
+            float popMultiplier = PopulationMultiplier[world.info.overallPopulation];
+            int minDistance = MinSettlementDistance(grid.TilesCount);
+
+            var candidateTiles = new List<int>();
+            for (int i = 0; i < grid.TilesCount; i++)
+            {
+                Tile tile = grid.Tiles[i];
+                if (!tile.WaterCovered && tile.biome != null && tile.biome.canBuildBase)
+                {
+                    candidateTiles.Add(i);
+                }
+            }
+
+            var placedTiles = new List<int>();
+
+            foreach (FactionDef def in DefDatabase<FactionDef>.AllDefsListForReading)
+            {
+                if (def.hidden) continue;
+
+                int factionCount = FactionCountFor(def, popMultiplier);
+                for (int f = 0; f < factionCount; f++)
+                {
+                    string name = factionCount == 1 ? def.LabelCap : def.LabelCap + " " + (f + 1);
+                    var faction = new Faction(def, name, world.NextLoadId("Faction"));
+                    world.factions.Add(faction);
+
+                    int settlementCount = SettlementCountFor(def, popMultiplier, rand);
+                    for (int s = 0; s < settlementCount; s++)
+                    {
+                        int? tile = PickSettlementTile(grid, candidateTiles, placedTiles, minDistance, rand);
+                        if (tile == null) break;
+                        placedTiles.Add(tile.Value);
+                        world.worldObjects.Add(new WorldObject(WorldObjectDefOf.Settlement, tile.Value, faction));
+                    }
+                }
+            }
+        }
+
+        /// <summary>RimWorld: ~20 tiles apart at full (100k+ tile) size; scaled down for smaller grids, floored at 2 so tiny test worlds can still place several settlements.</summary>
+        private static int MinSettlementDistance(int tilesCount)
+        {
+            double scaled = 20.0 * Math.Sqrt(tilesCount / 100000.0);
+            return Math.Max(2, (int)Math.Round(scaled));
+        }
+
+        private static int FactionCountFor(FactionDef def, float popMultiplier)
+        {
+            if (def.maxCountAtGameStart <= def.requiredCountAtGameStart)
+            {
+                return Math.Max(def.requiredCountAtGameStart, 0);
+            }
+            float desired = def.requiredCountAtGameStart + (def.maxCountAtGameStart - def.requiredCountAtGameStart) * popMultiplier;
+            return GenMath.Clamp((int)Math.Round(desired), def.requiredCountAtGameStart, def.maxCountAtGameStart);
+        }
+
+        private static int SettlementCountFor(FactionDef def, float popMultiplier, RandomStream rand)
+        {
+            int min = SettlementsPerFactionRange.min;
+            int max = SettlementsPerFactionRange.max;
+            int floor = Math.Max(1, def.minSettlements ?? min);
+            float desired = GenMath.Lerp(min, max, rand.Value) * popMultiplier;
+            int count = GenMath.Clamp((int)Math.Round(desired), floor, max);
+            return Math.Max(1, count);
+        }
+
+        private static int? PickSettlementTile(WorldGrid grid, List<int> candidates, List<int> placed, int minDistance, RandomStream rand)
+        {
+            const int MaxAttempts = 200;
+            for (int attempt = 0; attempt < MaxAttempts; attempt++)
+            {
+                if (!GenCollection.TryRandomElementByWeight(candidates, t => Weight(grid, t), rand, out int candidate))
+                {
+                    return null;
+                }
+                bool tooClose = false;
+                foreach (int p in placed)
+                {
+                    if (grid.ApproxDistanceInTiles(candidate, p) < minDistance)
+                    {
+                        tooClose = true;
+                        break;
+                    }
+                }
+                if (!tooClose) return candidate;
+            }
+            return null;
+        }
+
+        private static float Weight(WorldGrid grid, int tileId) => grid.Tiles[tileId].biome?.settlementSelectionWeight ?? 0f;
+    }
+}

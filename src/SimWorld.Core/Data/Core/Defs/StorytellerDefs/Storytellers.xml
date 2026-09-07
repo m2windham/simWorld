@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The three built-in personalities. Cadence numbers (onDays/offDays/mtbDays/category weights) are chosen
+    close to RimWorld's real Cassandra/Phoebe/Randy tuning rather than copied verbatim from the decompiled
+    source, and are documented as approximations in the Director port's final report. persona is a SimWorld
+    hook for the narrator's in-fiction name; the name itself is still open (Scribe/Historian/The Chronicle),
+    so every storyteller currently uses the same placeholder.
+  -->
+
+  <StorytellerDef>
+    <defName>Cassandra_Classic</defName>
+    <label>Cassandra Classic</label>
+    <description>A balanced storyteller: rising tension with a fair, escalating rhythm.</description>
+    <listOrder>0</listOrder>
+    <persona>The Chronicle</persona>
+    <pointsFactorFromDaysPassed>
+      <points>
+        <li>(0, 1)</li>
+        <li>(20, 2)</li>
+        <li>(100, 4)</li>
+      </points>
+    </pointsFactorFromDaysPassed>
+    <comps>
+      <li Class="SimWorld.Director.StorytellerCompProperties_ClassicIntro">
+        <incident>ManhunterPack</incident>
+        <day>4</day>
+      </li>
+      <li Class="SimWorld.Director.StorytellerCompProperties_OnOffCycle">
+        <category>ThreatBig</category>
+        <onDays>6.8</onDays>
+        <offDays>1.5</offDays>
+        <minDaysPassed>6</minDaysPassed>
+        <minSpacingDays>1.5</minSpacingDays>
+        <numIncidentsRange>1~1</numIncidentsRange>
+      </li>
+      <li Class="SimWorld.Director.StorytellerCompProperties_OnOffCycle">
+        <category>ThreatSmall</category>
+        <onDays>4</onDays>
+        <offDays>2</offDays>
+        <numIncidentsRange>1~1</numIncidentsRange>
+      </li>
+      <li Class="SimWorld.Director.StorytellerCompProperties_RandomMain">
+        <mtbDays>3.0</mtbDays>
+        <maxThreatBigIntervalDays>0</maxThreatBigIntervalDays>
+        <randomPointsFactorRange>0.9~1.1</randomPointsFactorRange>
+        <categoryWeights>
+          <li><category>Misc</category><weight>40</weight></li>
+          <li><category>FactionArrival</category><weight>20</weight></li>
+          <li><category>OrbitalVisitor</category><weight>5</weight></li>
+          <li><category>AllyAssistance</category><weight>5</weight></li>
+          <li><category>GiveQuest</category><weight>5</weight></li>
+          <li><category>ShipChunkDrop</category><weight>5</weight></li>
+        </categoryWeights>
+      </li>
+      <li Class="SimWorld.Director.StorytellerCompProperties_Disease">
+        <category>DiseaseHuman</category>
+        <baseMtbDays>10</baseMtbDays>
+      </li>
+    </comps>
+  </StorytellerDef>
+
+  <StorytellerDef>
+    <defName>Phoebe_Chillax</defName>
+    <label>Phoebe Chillax</label>
+    <description>A gentler storyteller: longer quiet stretches and a more relaxed pace.</description>
+    <listOrder>1</listOrder>
+    <persona>The Chronicle</persona>
+    <pointsFactorFromDaysPassed>
+      <points>
+        <li>(0, 1)</li>
+        <li>(40, 1.5)</li>
+        <li>(150, 2.5)</li>
+      </points>
+    </pointsFactorFromDaysPassed>
+    <comps>
+      <li Class="SimWorld.Director.StorytellerCompProperties_ClassicIntro">
+        <incident>ManhunterPack</incident>
+        <day>8</day>
+      </li>
+      <li Class="SimWorld.Director.StorytellerCompProperties_OnOffCycle">
+        <category>ThreatBig</category>
+        <onDays>4</onDays>
+        <offDays>8</offDays>
+        <minDaysPassed>10</minDaysPassed>
+        <minSpacingDays>2</minSpacingDays>
+        <numIncidentsRange>1~1</numIncidentsRange>
+      </li>
+      <li Class="SimWorld.Director.StorytellerCompProperties_RandomMain">
+        <mtbDays>5.0</mtbDays>
+        <maxThreatBigIntervalDays>0</maxThreatBigIntervalDays>
+        <randomPointsFactorRange>0.9~1.1</randomPointsFactorRange>
+        <categoryWeights>
+          <li><category>Misc</category><weight>40</weight></li>
+          <li><category>FactionArrival</category><weight>20</weight></li>
+          <li><category>OrbitalVisitor</category><weight>5</weight></li>
+          <li><category>AllyAssistance</category><weight>5</weight></li>
+          <li><category>GiveQuest</category><weight>5</weight></li>
+          <li><category>ShipChunkDrop</category><weight>5</weight></li>
+        </categoryWeights>
+      </li>
+      <li Class="SimWorld.Director.StorytellerCompProperties_Disease">
+        <category>DiseaseHuman</category>
+        <baseMtbDays>16</baseMtbDays>
+      </li>
+    </comps>
+  </StorytellerDef>
+
+  <StorytellerDef>
+    <defName>Randy_Random</defName>
+    <label>Randy Random</label>
+    <description>An unpredictable storyteller: no pattern, just chance.</description>
+    <listOrder>2</listOrder>
+    <persona>The Chronicle</persona>
+    <comps>
+      <li Class="SimWorld.Director.StorytellerCompProperties_RandomMain">
+        <mtbDays>1.35</mtbDays>
+        <maxThreatBigIntervalDays>20</maxThreatBigIntervalDays>
+        <randomPointsFactorRange>0.5~1.7</randomPointsFactorRange>
+        <categoryWeights>
+          <li><category>ThreatBig</category><weight>16</weight></li>
+          <li><category>ThreatSmall</category><weight>11</weight></li>
+          <li><category>Misc</category><weight>33</weight></li>
+          <li><category>FactionArrival</category><weight>16</weight></li>
+          <li><category>DiseaseHuman</category><weight>9</weight></li>
+          <li><category>OrbitalVisitor</category><weight>5</weight></li>
+          <li><category>AllyAssistance</category><weight>5</weight></li>
+          <li><category>GiveQuest</category><weight>5</weight></li>
+        </categoryWeights>
+      </li>
+    </comps>
+  </StorytellerDef>
+
+</Defs>

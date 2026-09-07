@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Tags an incident can restrict itself to (RimWorld: IncidentTargetTagDef). SimWorld has no maps or
+    caravans yet, so CivilizationTarget always reports Map_PlayerHome; the rest are carried for content
+    fidelity and for when factions/maps/caravans land.
+  -->
+
+  <IncidentTargetTagDef>
+    <defName>World</defName>
+    <label>world</label>
+  </IncidentTargetTagDef>
+
+  <IncidentTargetTagDef>
+    <defName>Map_PlayerHome</defName>
+    <label>player home</label>
+  </IncidentTargetTagDef>
+
+  <IncidentTargetTagDef>
+    <defName>Map_Misc</defName>
+    <label>other map</label>
+  </IncidentTargetTagDef>
+
+  <IncidentTargetTagDef>
+    <defName>Map_TempIncident</defName>
+    <label>temporary map</label>
+  </IncidentTargetTagDef>
+
+  <IncidentTargetTagDef>
+    <defName>Map_RaidBeacon</defName>
+    <label>raid beacon map</label>
+  </IncidentTargetTagDef>
+
+  <IncidentTargetTagDef>
+    <defName>Caravan</defName>
+    <label>caravan</label>
+  </IncidentTargetTagDef>
+
+</Defs>

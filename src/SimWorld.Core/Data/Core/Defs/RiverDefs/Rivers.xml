@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    River size classes (RimWorld: RiverDefs). WorldGenStep_Rivers accumulates "flow" as the count of
+    merged upstream source paths through a tile (not a physical discharge figure), then picks the largest
+    class whose spawnFlowThreshold that flow clears. These thresholds are tuned for that simplified
+    accounting, not RimWorld's real (undocumented) flow scale.
+  -->
+
+  <RiverDef>
+    <defName>Creek</defName>
+    <label>creek</label>
+    <spawnFlowThreshold>0</spawnFlowThreshold>
+    <degradeThreshold>0</degradeThreshold>
+    <widthOnWorld>0.6</widthOnWorld>
+  </RiverDef>
+
+  <RiverDef>
+    <defName>River</defName>
+    <label>river</label>
+    <spawnFlowThreshold>3</spawnFlowThreshold>
+    <degradeThreshold>1</degradeThreshold>
+    <widthOnWorld>1.2</widthOnWorld>
+  </RiverDef>
+
+  <RiverDef>
+    <defName>LargeRiver</defName>
+    <label>large river</label>
+    <spawnFlowThreshold>6</spawnFlowThreshold>
+    <degradeThreshold>3</degradeThreshold>
+    <widthOnWorld>2.0</widthOnWorld>
+  </RiverDef>
+
+  <RiverDef>
+    <defName>HugeRiver</defName>
+    <label>huge river</label>
+    <spawnFlowThreshold>10</spawnFlowThreshold>
+    <degradeThreshold>6</degradeThreshold>
+    <widthOnWorld>3.2</widthOnWorld>
+  </RiverDef>
+
+</Defs>

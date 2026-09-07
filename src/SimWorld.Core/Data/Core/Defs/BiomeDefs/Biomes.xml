@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Climate zones (RimWorld: BiomeDefs). WorldGenStep_Biomes gives each tile the biome whose workerClass
+    scores it highest; every land worker first checks Tile.WaterCovered (so land and water biomes never
+    compete), and every water worker checks the opposite. Density/disease/movement numbers below are this
+    port's own RimWorld-like approximations, not RimWorld's exact decompiled values.
+  -->
+
+  <BiomeDef>
+    <defName>Ocean</defName>
+    <label>ocean</label>
+    <workerClass>SimWorld.World.BiomeWorker_Ocean</workerClass>
+    <impassable>true</impassable>
+    <canBuildBase>false</canBuildBase>
+    <canAutoChoose>false</canAutoChoose>
+    <allowRoads>false</allowRoads>
+    <allowRivers>false</allowRivers>
+    <animalDensity>0</animalDensity>
+    <plantDensity>0</plantDensity>
+    <settlementSelectionWeight>0</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>Lake</defName>
+    <label>lake</label>
+    <workerClass>SimWorld.World.BiomeWorker_Lake</workerClass>
+    <impassable>true</impassable>
+    <canBuildBase>false</canBuildBase>
+    <canAutoChoose>false</canAutoChoose>
+    <allowRoads>false</allowRoads>
+    <allowRivers>false</allowRivers>
+    <animalDensity>0.2</animalDensity>
+    <plantDensity>0</plantDensity>
+    <settlementSelectionWeight>0</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>SeaIce</defName>
+    <label>sea ice</label>
+    <workerClass>SimWorld.World.BiomeWorker_SeaIce</workerClass>
+    <canBuildBase>false</canBuildBase>
+    <canAutoChoose>false</canAutoChoose>
+    <allowRoads>false</allowRoads>
+    <allowRivers>false</allowRivers>
+    <animalDensity>0.3</animalDensity>
+    <plantDensity>0</plantDensity>
+    <movementDifficulty>1.5</movementDifficulty>
+    <settlementSelectionWeight>0</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>IceSheet</defName>
+    <label>ice sheet</label>
+    <workerClass>SimWorld.World.BiomeWorker_IceSheet</workerClass>
+    <isExtremeBiome>true</isExtremeBiome>
+    <canAutoChoose>false</canAutoChoose>
+    <animalDensity>0.2</animalDensity>
+    <plantDensity>0.05</plantDensity>
+    <diseaseMtbDays>400</diseaseMtbDays>
+    <movementDifficulty>1.6</movementDifficulty>
+    <forageability>0</forageability>
+    <wildPlantRegrowDays>60</wildPlantRegrowDays>
+    <settlementSelectionWeight>0.1</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>Tundra</defName>
+    <label>tundra</label>
+    <workerClass>SimWorld.World.BiomeWorker_Tundra</workerClass>
+    <animalDensity>0.8</animalDensity>
+    <plantDensity>0.6</plantDensity>
+    <diseaseMtbDays>150</diseaseMtbDays>
+    <movementDifficulty>1.1</movementDifficulty>
+    <forageability>0.25</forageability>
+    <wildPlantRegrowDays>25</wildPlantRegrowDays>
+    <settlementSelectionWeight>0.6</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>BorealForest</defName>
+    <label>boreal forest</label>
+    <workerClass>SimWorld.World.BiomeWorker_BorealForest</workerClass>
+    <animalDensity>1.0</animalDensity>
+    <plantDensity>1.0</plantDensity>
+    <diseaseMtbDays>90</diseaseMtbDays>
+    <movementDifficulty>1.2</movementDifficulty>
+    <forageability>0.35</forageability>
+    <wildPlantRegrowDays>16</wildPlantRegrowDays>
+    <settlementSelectionWeight>0.9</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>ColdBog</defName>
+    <label>cold bog</label>
+    <workerClass>SimWorld.World.BiomeWorker_ColdBog</workerClass>
+    <animalDensity>0.9</animalDensity>
+    <plantDensity>0.8</plantDensity>
+    <diseaseMtbDays>60</diseaseMtbDays>
+    <movementDifficulty>1.8</movementDifficulty>
+    <forageability>0.3</forageability>
+    <wildPlantRegrowDays>18</wildPlantRegrowDays>
+    <settlementSelectionWeight>0.4</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>TemperateForest</defName>
+    <label>temperate forest</label>
+    <workerClass>SimWorld.World.BiomeWorker_TemperateForest</workerClass>
+    <animalDensity>1.2</animalDensity>
+    <plantDensity>1.2</plantDensity>
+    <diseaseMtbDays>80</diseaseMtbDays>
+    <movementDifficulty>1.0</movementDifficulty>
+    <forageability>0.4</forageability>
+    <wildPlantRegrowDays>12</wildPlantRegrowDays>
+    <settlementSelectionWeight>1.3</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>TemperateSwamp</defName>
+    <label>temperate swamp</label>
+    <workerClass>SimWorld.World.BiomeWorker_TemperateSwamp</workerClass>
+    <animalDensity>1.0</animalDensity>
+    <plantDensity>1.0</plantDensity>
+    <diseaseMtbDays>45</diseaseMtbDays>
+    <movementDifficulty>1.9</movementDifficulty>
+    <forageability>0.35</forageability>
+    <wildPlantRegrowDays>14</wildPlantRegrowDays>
+    <settlementSelectionWeight>0.5</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>TropicalRainforest</defName>
+    <label>tropical rainforest</label>
+    <workerClass>SimWorld.World.BiomeWorker_TropicalRainforest</workerClass>
+    <animalDensity>1.6</animalDensity>
+    <plantDensity>1.8</plantDensity>
+    <diseaseMtbDays>35</diseaseMtbDays>
+    <movementDifficulty>1.7</movementDifficulty>
+    <forageability>0.5</forageability>
+    <wildPlantRegrowDays>8</wildPlantRegrowDays>
+    <settlementSelectionWeight>0.7</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>TropicalSwamp</defName>
+    <label>tropical swamp</label>
+    <workerClass>SimWorld.World.BiomeWorker_TropicalSwamp</workerClass>
+    <animalDensity>1.4</animalDensity>
+    <plantDensity>1.4</plantDensity>
+    <diseaseMtbDays>30</diseaseMtbDays>
+    <movementDifficulty>2.1</movementDifficulty>
+    <forageability>0.4</forageability>
+    <wildPlantRegrowDays>9</wildPlantRegrowDays>
+    <settlementSelectionWeight>0.35</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>AridShrubland</defName>
+    <label>arid shrubland</label>
+    <workerClass>SimWorld.World.BiomeWorker_AridShrubland</workerClass>
+    <animalDensity>0.6</animalDensity>
+    <plantDensity>0.5</plantDensity>
+    <diseaseMtbDays>140</diseaseMtbDays>
+    <movementDifficulty>1.0</movementDifficulty>
+    <forageability>0.2</forageability>
+    <wildPlantRegrowDays>20</wildPlantRegrowDays>
+    <settlementSelectionWeight>0.8</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>Desert</defName>
+    <label>desert</label>
+    <workerClass>SimWorld.World.BiomeWorker_Desert</workerClass>
+    <animalDensity>0.3</animalDensity>
+    <plantDensity>0.15</plantDensity>
+    <diseaseMtbDays>200</diseaseMtbDays>
+    <movementDifficulty>1.1</movementDifficulty>
+    <forageability>0.08</forageability>
+    <wildPlantRegrowDays>40</wildPlantRegrowDays>
+    <settlementSelectionWeight>0.5</settlementSelectionWeight>
+  </BiomeDef>
+
+  <BiomeDef>
+    <defName>ExtremeDesert</defName>
+    <label>extreme desert</label>
+    <workerClass>SimWorld.World.BiomeWorker_ExtremeDesert</workerClass>
+    <isExtremeBiome>true</isExtremeBiome>
+    <canAutoChoose>false</canAutoChoose>
+    <animalDensity>0.1</animalDensity>
+    <plantDensity>0.02</plantDensity>
+    <diseaseMtbDays>300</diseaseMtbDays>
+    <movementDifficulty>1.4</movementDifficulty>
+    <forageability>0.02</forageability>
+    <wildPlantRegrowDays>80</wildPlantRegrowDays>
+    <settlementSelectionWeight>0.05</settlementSelectionWeight>
+  </BiomeDef>
+
+</Defs>

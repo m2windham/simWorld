@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-06",
-  "testsTotal": 229,
+  "testsTotal": 332,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -192,38 +192,43 @@
       "rimworld": "World Generation",
       "translation": "Proposed: planet generation at civilization scale — biomes, rivers and roads unchanged; many rival civilizations seeded instead of a handful of faction bases.",
       "translationState": "proposed",
-      "module": "src/SimWorld.Core/World",
-      "status": "planned",
-      "tests": 0,
+      "module": "src/SimWorld.Core/World · Noise · Factions (minimal)",
+      "status": "ported",
+      "tests": 26,
       "items": [
         {
           "id": "worldgen.tiles",
-          "label": "Tile grid on a sphere-like projection with configurable coverage",
-          "done": false
+          "label": "Icosphere tile grid (10·4ⁿ+2 tiles, 5/6 neighbours, lat/long) with coverage → subdivision",
+          "done": true
         },
         {
           "id": "worldgen.noise",
-          "label": "Seeded noise fields: elevation, rainfall, temperature, swampiness",
-          "done": false
+          "label": "Seeded Perlin/ridged-multifractal noise → elevation (~32% land), hilliness, temperature by latitude and elevation, rainfall, swampiness",
+          "done": true
         },
         {
           "id": "worldgen.biomes",
-          "label": "Biome assignment from noise + BiomeDef tables (flora, fauna, disease, temperature curve)",
-          "done": false
+          "label": "14 biome workers scoring tiles (ocean/lake by water-body size; tundra…rainforest; deserts)",
+          "done": true
         },
         {
           "id": "worldgen.rivers",
-          "label": "Rivers and roads as tile-graph edges affecting travel and trade",
-          "done": false
+          "label": "Rivers flow downhill by flow thresholds; roads path between settlements over hilliness/biome cost",
+          "done": true
         },
         {
           "id": "worldgen.factions",
-          "label": "Faction/settlement placement rules (count, min distance, biome affinity)",
-          "done": false
+          "label": "Minimal FactionDef/Faction + settlement placement (counts, min distance, biome weight); world save regenerates the grid from its seed",
+          "done": true
         },
         {
           "id": "worldgen.relations",
-          "label": "Initial faction relations and tech levels",
+          "label": "Initial faction relations and tech levels — lands with Factions",
+          "done": false
+        },
+        {
+          "id": "worldgen.civscale",
+          "label": "Translation: many rival civilizations at planet scale — population scaling and era seeding",
           "done": false
         }
       ]
@@ -599,27 +604,37 @@
       "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth, population and era instead of one colony.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
-      "status": "planned",
-      "tests": 0,
+      "status": "ported",
+      "tests": 21,
       "items": [
         {
           "id": "director.personality",
-          "label": "Storyteller personality curves (rising / steady-low / random)",
-          "done": false
+          "label": "Storyteller personas (Cassandra/Phoebe/Randy) built from comps: OnOffCycle, RandomMain, ClassicIntro, SingleMTB, Disease",
+          "done": true
         },
         {
           "id": "director.points",
-          "label": "Threat points from wealth + population + age",
-          "done": false
+          "label": "Threat points: wealth and per-pawn curves × difficulty × adaptation × days-passed, clamped 35–10000",
+          "done": true
         },
         {
           "id": "director.incidents",
-          "label": "Weighted incident categories with cooldowns and fire conditions",
-          "done": false
+          "label": "IncidentDef/category/target tags, workers (disease applies a hediff; threat/trade/wanderer placeholders), refire and gating rules, incident queue",
+          "done": true
+        },
+        {
+          "id": "director.adaptation",
+          "label": "Quiet-time adaptation factor rising with peaceful days, dropping on downs and deaths",
+          "done": true
+        },
+        {
+          "id": "director.chronicle",
+          "label": "Translation: narrator record (chronicle entries) and persona hook — name still open",
+          "done": true
         },
         {
           "id": "director.raids",
-          "label": "Raid squad generator: composition + tactic by points and tech",
+          "label": "Raid squad generator: composition + tactic by points and tech — lands with Factions/Combat",
           "done": false
         },
         {
@@ -635,33 +650,38 @@
       "rimworld": "Combat",
       "translation": "Unchanged mechanics; armies are groups of full agents.",
       "translationState": "proposed",
-      "module": "src/SimWorld.Core/Combat",
-      "status": "planned",
-      "tests": 0,
+      "module": "src/SimWorld.Core/Combat · Health/Damage (armor)",
+      "status": "ported",
+      "tests": 36,
       "items": [
         {
           "id": "combat.verbs",
-          "label": "Verb system: ranged hit-chance formula, melee hit/dodge",
-          "done": false
+          "label": "Verbs: warmup → burst → cooldown state machine; ranged shot reports (accuracy^distance, weapon bands 3/12/25/40, target size, cover) and melee hit/dodge from skill curves",
+          "done": true
         },
         {
           "id": "combat.damage",
-          "label": "Damage types vs armor per type; penetration vs deflect",
-          "done": false
+          "label": "Armor: DamageArmorCategoryDef (Sharp/Blunt/Heat), ArmorUtility deflect/halve rolls, Sharp→Blunt diminish, penetration; wired into DamageWorker_AddInjury",
+          "done": true
+        },
+        {
+          "id": "combat.weapons",
+          "label": "Weapon and projectile content: knife, club, bow, revolver, assault rifle; tool capacities and maneuvers",
+          "done": true
         },
         {
           "id": "combat.cover",
-          "label": "Cover via line-of-fire sampling",
+          "label": "Cover: CoverInfo/CoverUtility math only — map geometry and line of sight land with Map/AI",
           "done": false
         },
         {
           "id": "combat.structures",
-          "label": "Turrets, traps, explosions",
+          "label": "Turrets, traps, explosions — lands with Building/Map",
           "done": false
         },
         {
           "id": "combat.capture",
-          "label": "Downed / capture / prisoner loop",
+          "label": "Downed / capture / prisoner loop — lands with Factions and AI",
           "done": false
         }
       ]
@@ -709,28 +729,38 @@
       "rimworld": "Research & Tech",
       "translation": "Translated: a large authored tech tree detailing societal evolution across eras. Data model leaves room for procedural/endless tech later.",
       "translationState": "decided",
-      "module": "src/SimWorld.Core/Research",
-      "status": "planned",
-      "tests": 0,
+      "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects)",
+      "status": "ported",
+      "tests": 20,
       "items": [
         {
           "id": "research.dag",
-          "label": "ResearchProjectDef prerequisite DAG",
-          "done": false
+          "label": "Research project DAG: prerequisites, hidden prerequisites, cycle detection",
+          "done": true
         },
         {
           "id": "research.progress",
-          "label": "Points per tick from researcher skill × bench quality",
-          "done": false
+          "label": "Research manager: progress, tech-level cost factor (+50% per level above), completion events, Scribe",
+          "done": true
         },
         {
           "id": "research.unlocks",
-          "label": "Unlocks gate recipes, buildings, apparel; tech-level gates",
-          "done": false
+          "label": "IResearchUnlockable: what a project unlocks, computed from every def that names it",
+          "done": true
         },
         {
           "id": "research.eras",
-          "label": "Translation: era structure for societal evolution",
+          "label": "Translation: EraDef ladder (Sticks & Stones → Exotic) with per-era progress and current/next era",
+          "done": true
+        },
+        {
+          "id": "research.content",
+          "label": "Core XML: research tab, 8 eras, a 30-project seed tree across the first eras",
+          "done": true
+        },
+        {
+          "id": "research.tree",
+          "label": "Large authored tech tree of societal evolution — content task on the landed schema",
           "done": false
         },
         {

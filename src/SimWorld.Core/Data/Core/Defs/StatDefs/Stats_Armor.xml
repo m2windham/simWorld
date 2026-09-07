@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Armor ratings, used by DamageArmorCategoryDefs / ArmorUtility. MeleeHitChance, MeleeDodgeChance and
+    ShootingAccuracyPawn are declared here as data/documentation only: with no Stats resolution module yet,
+    CombatStats reads the equivalent skill curves directly in code rather than through these StatDefs.
+  -->
+
+  <StatDef>
+    <defName>ArmorRating_Sharp</defName>
+    <label>armor - sharp</label>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+  <StatDef>
+    <defName>ArmorRating_Blunt</defName>
+    <label>armor - blunt</label>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+  <StatDef>
+    <defName>ArmorRating_Heat</defName>
+    <label>armor - heat</label>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+  <StatDef>
+    <defName>MeleeHitChance</defName>
+    <label>melee hit chance</label>
+    <defaultBaseValue>0.6</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+  <StatDef>
+    <defName>MeleeDodgeChance</defName>
+    <label>melee dodge chance</label>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+  <StatDef>
+    <defName>ShootingAccuracyPawn</defName>
+    <label>shooting accuracy</label>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+</Defs>

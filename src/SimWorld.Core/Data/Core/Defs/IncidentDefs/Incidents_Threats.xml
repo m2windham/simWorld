@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Big, point-scaled threats. Squad generation (composition/tactic from points and tech) lands with the
+    Factions/Combat systems; IncidentWorker_ThreatEvent validates points and lets the chronicle note that a
+    threat of this size was due (see IncidentWorker_ThreatEvent's doc comment).
+  -->
+
+  <IncidentDef>
+    <defName>RaidEnemy</defName>
+    <label>raid</label>
+    <description>Hostiles attack the civilization.</description>
+    <category>ThreatBig</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_ThreatEvent</workerClass>
+    <baseChance>1.0</baseChance>
+    <minThreatPoints>35</minThreatPoints>
+    <pointsScaleable>true</pointsScaleable>
+  </IncidentDef>
+
+  <IncidentDef>
+    <defName>ManhunterPack</defName>
+    <label>manhunter pack</label>
+    <description>A pack of animals turns manhunter and attacks the civilization.</description>
+    <category>ThreatBig</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_ThreatEvent</workerClass>
+    <baseChance>0.5</baseChance>
+    <minThreatPoints>35</minThreatPoints>
+    <pointsScaleable>true</pointsScaleable>
+  </IncidentDef>
+
+</Defs>

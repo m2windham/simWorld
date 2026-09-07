@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Incident groupings the storyteller's comps pick from (RimWorld: IncidentCategoryDef). -->
+
+  <IncidentCategoryDef>
+    <defName>ThreatSmall</defName>
+    <label>small threat</label>
+    <description>A minor danger: a handful of raiders, a small pack of animals.</description>
+  </IncidentCategoryDef>
+
+  <IncidentCategoryDef>
+    <defName>ThreatBig</defName>
+    <label>big threat</label>
+    <description>A major danger scaled by the civilization's threat points: a raid, a manhunter pack.</description>
+  </IncidentCategoryDef>
+
+  <IncidentCategoryDef>
+    <defName>Misc</defName>
+    <label>miscellaneous</label>
+    <description>Weather, wanderers, and other everyday happenings.</description>
+  </IncidentCategoryDef>
+
+  <IncidentCategoryDef>
+    <defName>FactionArrival</defName>
+    <label>faction arrival</label>
+    <description>Traders and visitors arriving from elsewhere.</description>
+  </IncidentCategoryDef>
+
+  <IncidentCategoryDef>
+    <defName>OrbitalVisitor</defName>
+    <label>orbital visitor</label>
+    <description>Something arriving from orbit rather than over land.</description>
+  </IncidentCategoryDef>
+
+  <IncidentCategoryDef>
+    <defName>DiseaseHuman</defName>
+    <label>human disease</label>
+    <description>An illness that can affect the civilization's people.</description>
+  </IncidentCategoryDef>
+
+  <IncidentCategoryDef>
+    <defName>DiseaseAnimal</defName>
+    <label>animal disease</label>
+    <description>An illness that can affect animals.</description>
+  </IncidentCategoryDef>
+
+  <IncidentCategoryDef>
+    <defName>AllyAssistance</defName>
+    <label>ally assistance</label>
+    <description>Help offered by a friendly faction.</description>
+  </IncidentCategoryDef>
+
+  <IncidentCategoryDef>
+    <defName>GiveQuest</defName>
+    <label>quest offer</label>
+    <description>A quest becomes available.</description>
+  </IncidentCategoryDef>
+
+  <IncidentCategoryDef>
+    <defName>ShipChunkDrop</defName>
+    <label>ship chunk drop</label>
+    <description>Wreckage falls from orbit.</description>
+  </IncidentCategoryDef>
+
+  <IncidentCategoryDef>
+    <defName>Special</defName>
+    <label>special</label>
+    <description>Reserved for incidents that don't fit any other category.</description>
+  </IncidentCategoryDef>
+
+</Defs>
