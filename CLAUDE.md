@@ -85,3 +85,9 @@ touches these types from outside, so reach for the qualified form first.
   link check, mermaid validation).
 - Parallel work happens in git worktrees, one per module, merged into the
   feature branch one at a time so CI stays serial.
+- A worktree is cut from the feature branch as it stood when the work started,
+  so a lane that began before another lane merged does not contain it. If your
+  module builds on one that landed meanwhile, fast-forward onto the feature
+  branch tip before you start — with a clean tree that is a no-op advance.
+  Check for the code you depend on rather than assuming it is there: one lane
+  was briefed to build on a module its worktree did not yet have.
