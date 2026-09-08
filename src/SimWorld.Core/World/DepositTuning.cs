@@ -84,6 +84,49 @@ namespace SimWorld.World
         public const float OreMagnitudeLargeHills = 0.35f;
         public const float OreMagnitudeMountainous = 0.85f;
 
+        // ---- Coal (terrain-derived from swampiness/rainfall/elevation, deliberately NOT from hilliness the
+        // way Ore is — spec §5b.2 requires coal to be "distinctly distributed from Ore, which sits in hills
+        // and mountains". Real coal measures are ancient swamp and floodplain sediment: low-lying ground with
+        // a long history of standing water, so this reads Tile.swampiness (the port's own closest proxy for
+        // "historically boggy ground", already gated to low elevation/high rainfall by
+        // Gen.WorldGenStep_Terrain.SwampinessFor) as the primary signal, with rainfall and river presence as
+        // secondary corroborating signals and a hard hilliness ceiling so the two categories cannot converge
+        // on the same terrain. RimWorld has no coal-formation model to source any of this from — every
+        // constant here is this port's own judgement call. ----
+
+        /// <summary>Elevation ceiling (m) for coal-bearing ground. Ancient swamp/floodplain basins are
+        /// valley-floor terrain, never highland; sized like <see cref="ArableMaxElevationMeters"/> since both
+        /// describe the same class of low ground.</summary>
+        public const float CoalMaxElevationMeters = 350f;
+
+        /// <summary>Coal never appears above <see cref="Hilliness.SmallHills"/> at all (see <see cref="OreMagnitudeLargeHills"/>/
+        /// <see cref="OreMagnitudeMountainous"/> for the terrain Ore instead dominates), and even on gentle
+        /// hills it reads weaker than on flat ground — a hill's own better drainage makes a lasting swamp
+        /// less likely than on a true floodplain.</summary>
+        public const float CoalSmallHillsFactor = 0.5f;
+
+        /// <summary>Below this <see cref="Tile.swampiness"/>, the ground alone doesn't read as historically
+        /// wet enough to carry coal; ramps to full credit at <see cref="CoalSwampinessCeiling"/>.</summary>
+        public const float CoalSwampinessFloor = 0.1f;
+
+        public const float CoalSwampinessCeiling = 0.5f;
+
+        /// <summary>Rainfall band (mm) coal-bearing ground sits in even where the swampiness noise sample
+        /// itself didn't land high — wide and wet, since sustained heavy rainfall over geological time is
+        /// what waterlogs ground in the first place. Triangular falloff either side of the midpoint, the
+        /// same idiom as <see cref="ArableRainfallMinMm"/>/<see cref="ArableRainfallMaxMm"/>.</summary>
+        public const float CoalRainfallMinMm = 1200f;
+
+        public const float CoalRainfallMaxMm = 3200f;
+
+        /// <summary>Ceiling on how much rainfall alone (absent real swampiness) can contribute — a wet but
+        /// never-boggy tile is a much weaker signal than an actual historic swamp.</summary>
+        public const float CoalRainfallOnlyCeiling = 0.4f;
+
+        /// <summary>Extra credit for a low-lying tile that also touches a river — a buried sediment basin,
+        /// the same idea as <see cref="ArableFloodplainBonus"/> and <see cref="ClayFloodplainMagnitude"/>.</summary>
+        public const float CoalFloodplainBonus = 0.2f;
+
         // ---- Salt ----
 
         /// <summary>Magnitude for a tile touching open ocean (not a lake) — salt panning/harvesting.</summary>

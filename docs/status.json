@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-08",
-  "testsTotal": 646,
+  "testsTotal": 653,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -963,7 +963,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 44,
+      "tests": 48,
       "items": [
         {
           "id": "economy.goodwill",
@@ -983,6 +983,11 @@
         {
           "id": "economy.caravans",
           "label": "Caravans: world path grid and finder over hilliness, biome and roads; ticks per move from the slowest pawn; food drain and arrival",
+          "done": true
+        },
+        {
+          "id": "economy.coal-access",
+          "label": "CoalSupply: a settlement's access to coal, local deposit or the cheapest reachable settlement that has one via the caravan pathfinder, priced through the existing TradeUtility buy markup plus a route-distance premium — the predicate/cost a later era-transition or industrialisation check reads",
           "done": true
         },
         {
@@ -1183,7 +1188,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/World (regions, deposits, siting, solo start)",
       "status": "in-progress",
-      "tests": 22,
+      "tests": 25,
       "items": [
         {
           "id": "settlements.regions",
@@ -1192,7 +1197,7 @@
         },
         {
           "id": "settlements.deposits",
-          "label": "Resource and landmark deposits derived from existing terrain — clay in floodplains, flint in chalk lowland, ore in hills, salt at coasts and springs, deep soil in valleys, timber by biome, fords and defensible high ground from elevation",
+          "label": "Resource and landmark deposits derived from existing terrain — clay in floodplains, flint in chalk lowland, ore in hills, coal in ancient swamp/floodplain low ground, salt at coasts and springs, deep soil in valleys, timber by biome, fords and defensible high ground from elevation",
           "done": true
         },
         {
@@ -1232,8 +1237,8 @@
         },
         {
           "id": "settlements.coal",
-          "label": "Open: whether coal deserves its own deposit category rather than Ore standing in for industrial mineral wealth — coal-versus-metal is a real historical distinction in where industrial cities went",
-          "done": false
+          "label": "Coal as its own terrain-derived deposit (swampiness/rainfall/floodplain low ground, measurably distinct from Ore's hills and mountains), worth ~0 in site scoring before Medieval and the single highest advantage weight by Industrial, and tradeable via Economy.CoalSupply — a settlement without local coal can buy it from the nearest settlement that has it, at a real markup over sitting on your own deposit",
+          "done": true
         }
       ]
     },

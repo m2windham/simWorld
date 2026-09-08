@@ -6,6 +6,7 @@ using SimWorld.Pawns;
 using SimWorld.Stats;
 using SimWorld.Tests.Content;
 using SimWorld.Work;
+using SimWorld.World;
 using Xunit;
 
 namespace SimWorld.Tests.Economy
@@ -229,6 +230,121 @@ namespace SimWorld.Tests.Economy
             Assert.Same(traderKind, trader.TraderKind);
             Assert.Same(faction, trader.Faction);
             Assert.Single(trader.Goods);
+        }
+
+        // ---- CoalSupply: a settlement's access to coal, local or traded (spec §5b.2) ----
+
+        private static WorldGrid PathableGrid(int subdivisionLevel = 2)
+        {
+            WorldGrid grid = WorldGrid.Generate(subdivisionLevel);
+            for (int i = 0; i < grid.TilesCount; i++)
+            {
+                Tile tile = grid.Tiles[i];
+                tile.elevation = 50f;
+                tile.biome = BiomeDefOf.TemperateForest;
+            }
+            return grid;
+        }
+
+        [Fact]
+        public void CoalSupply_grants_local_access_at_raw_market_value_when_the_settlement_has_its_own_deposit()
+        {
+            WorldGrid grid = WorldGrid.Generate(2);
+            const int tileId = 5;
+            grid.Tiles[tileId].deposits.Add(new TileDeposit(DepositDefOf.Coal, 0.5f));
+
+            CoalAccess access = CoalSupply.Evaluate(grid, tileId, new List<int>());
+
+            Assert.True(access.HasAccess);
+            Assert.True(access.IsLocal);
+            Assert.Equal(tileId, access.SourceTile);
+            Assert.Equal(TradeUtility.BaseMarketValue(EconomyThingDefOf.Coal), access.UnitCost, 3);
+        }
+
+        [Fact]
+        public void CoalSupply_has_no_access_when_neither_local_deposits_nor_any_candidate_settlement_has_coal()
+        {
+            WorldGrid grid = PathableGrid();
+            const int home = 3;
+            const int coalless = 10;
+
+            CoalAccess access = CoalSupply.Evaluate(grid, home, new List<int> { coalless });
+
+            Assert.False(access.HasAccess);
+            Assert.False(access.IsLocal);
+            Assert.Null(access.SourceTile);
+            Assert.Equal(0f, access.UnitCost);
+        }
+
+        [Fact]
+        public void CoalSupply_lets_a_coal_less_settlement_trade_for_coal_at_a_real_markup_over_local_supply()
+        {
+            WorldGrid grid = PathableGrid();
+            const int home = 3;
+            // At least 2 hops out so `home` isn't handed "local" access simply by being a neighbour of the supplier.
+            int supplier = TileAtLeastHopsAway(grid, home, minHops: 2);
+            grid.Tiles[supplier].deposits.Add(new TileDeposit(DepositDefOf.Coal, 0.6f));
+
+            CoalAccess traded = CoalSupply.Evaluate(grid, home, new List<int> { supplier });
+            CoalAccess local = CoalSupply.Evaluate(grid, supplier, new List<int> { home });
+
+            Assert.True(traded.HasAccess);
+            Assert.False(traded.IsLocal);
+            Assert.Equal(supplier, traded.SourceTile);
+
+            Assert.True(local.HasAccess);
+            Assert.True(local.IsLocal);
+
+            Assert.True(
+                traded.UnitCost > local.UnitCost,
+                $"Supplying coal by trade should cost more than sitting on a local deposit ({traded.UnitCost} vs {local.UnitCost}).");
+            // The floor of that markup is TradeUtility's own buy factor, before any route-distance premium.
+            Assert.True(traded.UnitCost >= local.UnitCost * TradeUtility.BuyPriceFactor - 0.001f);
+        }
+
+        [Fact]
+        public void CoalSupply_prefers_the_cheaper_to_reach_of_two_coal_bearing_settlements()
+        {
+            WorldGrid grid = PathableGrid();
+            const int home = 0;
+
+            // Every tile shares the same biome/elevation, so every edge costs the same: hop count alone
+            // decides which of two candidates is cheaper to reach. BFS finds tiles at true shortest-path
+            // distances 2 and 4 from `home` (neither a direct neighbour, so `home` gets no "local" access from
+            // either just by being adjacent) rather than assuming anything about the grid's own numbering.
+            int nearSupplier = TileAtLeastHopsAway(grid, home, minHops: 2);
+            int farSupplier = TileAtLeastHopsAway(grid, home, minHops: 4);
+
+            grid.Tiles[nearSupplier].deposits.Add(new TileDeposit(DepositDefOf.Coal, 0.6f));
+            grid.Tiles[farSupplier].deposits.Add(new TileDeposit(DepositDefOf.Coal, 0.6f));
+
+            CoalAccess access = CoalSupply.Evaluate(grid, home, new List<int> { farSupplier, nearSupplier });
+
+            Assert.True(access.HasAccess);
+            Assert.False(access.IsLocal);
+            Assert.Equal(nearSupplier, access.SourceTile);
+        }
+
+        private static int TileAtLeastHopsAway(WorldGrid grid, int start, int minHops)
+        {
+            var distance = new Dictionary<int, int> { [start] = 0 };
+            var frontier = new Queue<int>();
+            frontier.Enqueue(start);
+            int farthest = start;
+
+            while (frontier.Count > 0)
+            {
+                int current = frontier.Dequeue();
+                if (distance[current] >= minHops) return current;
+                farthest = current;
+                foreach (int neighbor in grid.NeighborsOf(current))
+                {
+                    if (distance.ContainsKey(neighbor)) continue;
+                    distance[neighbor] = distance[current] + 1;
+                    frontier.Enqueue(neighbor);
+                }
+            }
+            return farthest;
         }
     }
 }

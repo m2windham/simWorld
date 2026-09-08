@@ -55,6 +55,23 @@
     </stuffProps>
   </ThingDef>
 
+  <!--
+    Coal (spec §5b.2): a tradeable commodity like every other raw resource here, not a building "stuff", so
+    it carries no stuffProps. Economy.EconomyThingDefOf.Coal / Economy.CoalSupply are what actually turn
+    this MarketValue into "can this settlement get coal, and at what cost" (World.DepositDefOf.Coal is the
+    separate, terrain-derived deposit that decides where it's found).
+  -->
+  <ThingDef>
+    <defName>Coal</defName>
+    <label>coal</label>
+    <description>Fuel dug from a seam of ancient swamp and floodplain sediment. Worth little before an era that burns it at scale, then a great deal.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>1.0</MarketValue></statBases>
+  </ThingDef>
+
   <ThingDef>
     <defName>BlocksSandstone</defName>
     <label>sandstone blocks</label>
