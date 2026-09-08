@@ -306,10 +306,14 @@ against them.
   Medieval the ford and the defensible ridge carry real weight, along with ore;
   by Industrial it is mineral wealth and navigable water, scored through trade
   position.
-- _Open:_ there is no Coal deposit — Ore stands in for industrial mineral
-  wealth. Whether coal deserves its own category is worth deciding before this
-  is player-facing, since coal-versus-metal is a real historical distinction in
-  where industrial cities went.
+- **Coal is its own deposit, and it is tradeable.** Coal decided where industry
+  went, so it gets its own category and its own distribution rather than hiding
+  inside Ore — a site chosen in the neolithic for water and game may or may not
+  turn out to be an industrial one, and the player will not know for centuries.
+  But geography shapes rather than dictates: caravans and trade can supply a
+  settlement that lacks coal, at a cost, which is both what actually happened
+  and real work for the already-ported trade system to do once the industrial
+  era arrives.
 - Trade position comes almost free: the road generator already paths by terrain
   cost, so scoring a tile by how many cheap routes would pass through it is the
   same computation, inverted.
@@ -678,9 +682,27 @@ retrofit.
 - The ported clock stays authoritative: 60 ticks/second, 60,000-tick days,
   3,600,000-tick years (§4). Every pawn, job, hediff and research project runs
   on it. It is the only clock that decides anything.
-- Above it sits an **abstracted clock** whose only job is to skip. The player
-  hands the sim a span of years; the sim consumes it rather than ticking every
-  tick of it.
+- Above it sits an **abstracted clock** whose only job is to skip. It is the
+  default: a civilization runs abstracted, and drops into ticked time only when
+  something is worth attending to.
+- **The director decides when time slows** — the player does not hand the sim a
+  span of years. This is RimWorld's own `TimeSlower` inverted: RimWorld assumes
+  speed is the default and takes it away when danger appears, forcing the player
+  to 1x. A civilization game wants the same authority pointed the other way —
+  abstracted by default, ticked when the storyteller judges a moment worth
+  watching. `TimeSlower` is already ported (`Sim/Ticks/TimeSlower.cs`), so this
+  is the existing mechanism generalised rather than a new clock.
+- **There is therefore no fixed playthrough horizon**, and that is a decision,
+  not an omission. Years are not the currency; attention-worthy moments are. A
+  century in which nothing happened costs nothing to pass, which is exactly what
+  makes an endless arc from sticks and stones to exotic technology playable at
+  all — at RimWorld's real clock, 200 ticked years would be 222 hours at maximum
+  speed.
+- The tech tree is priced against **moments per era**, not years per era. The
+  reachability study measured the tree running dry on day 3,074 at a fixed two
+  researchers (`docs/research/tech-reachability.md`); that number is a function
+  of years, and years have stopped being the unit. Repricing waits until the
+  director's pacing exists to measure against.
 - Time does not itself cause progression. A century of abstracted time with no
   people, no food and no research advances nothing. Progression comes from
   timers, work and events — whichever clock happens to retire them.
@@ -739,6 +761,20 @@ promoted. Demotion is the reverse and must be lossless in identity — a demoted
 citizen is still exactly who they were; only their minute-by-minute existence
 stops being computed.
 
+**RimWorld already proves the Statistical tier works, and we already ported half
+of it.** Its world pawns are people not on any active map: identity,
+relationships and ageing are real, while needs, jobs and health stop ticking
+entirely. `Pawn_AgeTracker.AgeTickMothballed` — the bulk-interval ageing that
+serves exactly that tier — is ported. What is missing is the tier itself, and
+the generalisation from RimWorld's rule (_on the map or not_) to this game's
+(_significant or not_).
+
+**The tiers and the clock are one mechanism, not two.** Under §11.1 a
+civilization runs abstracted by default, which is to say almost everyone sits at
+Interval or Statistical almost always. Dropping into ticked time _is_ promoting
+the attended settlement to Full. The director does not slow time and separately
+raise fidelity; those are the same act described twice.
+
 ### 11.4 Fidelity: the level of detail _is_ the historical record
 
 The observation this design turns on: **what the simulation did not record is
@@ -795,6 +831,10 @@ flowchart TB
 
 - **Tier budgets.** How many citizens each tier can afford comes from
   measurement, not guesswork; the benchmark harness exists to set those numbers.
+  What is already measured: the Full tier is affordable in the low hundreds once
+  injury and illness are normal rather than exceptional (`docs/perf/baseline.md`),
+  and demography's own growth — 4.5% a year, doubling every ~16 years — crosses
+  that from a 20-40 person founding band somewhere around year 40.
 - Whether Interval and Statistical are two tiers or samples of a continuum.
 - How the abstract clock and the director interact — a skipped century still
   needs incidents, and they cannot all fire at the seam.
