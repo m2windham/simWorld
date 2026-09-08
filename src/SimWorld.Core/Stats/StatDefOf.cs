@@ -30,5 +30,18 @@ namespace SimWorld.Stats
 
         /// <summary>Cells per second a pawn walks at (RimWorld: <c>Pawn_PathFollower</c>'s speed stat).</summary>
         public static StatDef MoveSpeed = null!;
+
+        /// <summary>Total work (in <see cref="Building.Frame"/> work-units) a Def's construction requires
+        /// (RimWorld: <c>StatDefOf.WorkToBuild</c>). A plain <c>statBases</c> lookup like <c>MaxHitPoints</c> —
+        /// RimWorld's real stat also scales with a Def's <c>ConstructionSkillPrerequisite</c> and a stuff
+        /// factor, neither of which this pass's content needs (system 16: Building).</summary>
+        public static StatDef WorkToBuild = null!;
+
+        /// <summary>How strongly a wall/door resists a room's temperature equalising with the outdoors
+        /// (system 16: Building; RimWorld has no single named equivalent — its real insulation math lives in
+        /// <c>RoomTemperature</c> reading a wall's <c>StatCategoryDef</c> data directly rather than a stat this
+        /// port's pipeline can address the same way, but the shape — a per-Def resistance value — carries
+        /// over cleanly as its own stat).</summary>
+        public static StatDef Insulation = null!;
     }
 }

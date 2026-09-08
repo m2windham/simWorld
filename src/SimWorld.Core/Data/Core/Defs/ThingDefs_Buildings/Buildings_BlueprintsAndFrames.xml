@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    One Blueprint/Frame ThingDef pair per buildable Def above (system 16: Building) — hand-authored rather
+    than generated; see ThingDef.entityToBuild's own remarks for why. A Blueprint is always Standable/no
+    fill (it never touches the edifice grid at all); a Frame copies its entityToBuild's passability/fillPercent/
+    pathCost so a half-built wall already blocks movement and room flood fill exactly like the finished
+    wall would — Frame.SpawnSetup registers it into the edifice grid manually since its own category is
+    Frame, not Building, so ThingDef.IsEdifice's generic check never fires for it on its own.
+  -->
+
+  <ThingDef>
+    <defName>Blueprint_Wall</defName>
+    <label>wall (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Wall</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Wall</defName>
+    <label>wall (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <pathCost>10000</pathCost>
+    <entityToBuild>Wall</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Door</defName>
+    <label>door (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Door</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Door</defName>
+    <label>door (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>1</fillPercent>
+    <entityToBuild>Door</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_PowerConduit</defName>
+    <label>power conduit (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>PowerConduit</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_PowerConduit</defName>
+    <label>power conduit (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <pathCost>1</pathCost>
+    <entityToBuild>PowerConduit</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_WoodFiredGenerator</defName>
+    <label>wood-fired generator (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>WoodFiredGenerator</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_WoodFiredGenerator</defName>
+    <label>wood-fired generator (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>WoodFiredGenerator</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Battery</defName>
+    <label>battery (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Battery</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Battery</defName>
+    <label>battery (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>Battery</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Heater</defName>
+    <label>heater (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Heater</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Heater</defName>
+    <label>heater (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>Heater</entityToBuild>
+  </ThingDef>
+
+</Defs>

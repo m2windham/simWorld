@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Power grid content (system 16: Building), gated on Electricity — matching real RimWorld, where the
+    conduit, the wood-fired generator, the battery and the heater all unlock together off that one project.
+    fillPercent stays 0 on all four: they are furniture-scale objects, not room-dividing walls, so
+    RoomTracker's flood fill passes straight over their cell (see CompHeatPusherPowered's own remarks on why
+    that matters for a heater finding its own room) even though PowerConduit stays passable underfoot and
+    the other three are Impassable to walk into.
+  -->
+
+  <ThingDef>
+    <defName>PowerConduit</defName>
+    <label>power conduit</label>
+    <description>Distributes electrical power. Can be built under other things.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <pathCost>1</pathCost>
+    <researchPrerequisites>
+      <li>Electricity</li>
+    </researchPrerequisites>
+    <building>
+      <isEdifice>False</isEdifice>
+    </building>
+    <statBases>
+      <MaxHitPoints>75</MaxHitPoints>
+      <WorkToBuild>30</WorkToBuild>
+    </statBases>
+    <costList>
+      <Steel>2</Steel>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Building.CompProperties_PowerTransmitter" />
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>WoodFiredGenerator</defName>
+    <label>wood-fired generator</label>
+    <description>Burns wood to generate electrical power.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <researchPrerequisites>
+      <li>Electricity</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>200</MaxHitPoints>
+      <WorkToBuild>400</WorkToBuild>
+    </statBases>
+    <costList>
+      <Steel>30</Steel>
+    </costList>
+    <comps>
+      <!-- basePowerConsumption negative = production; no fuel model exists yet (see CompPowerPlant's own
+           remarks), so this always runs at its full rated output while spawned. -->
+      <li Class="SimWorld.Building.CompProperties_PowerPlant">
+        <basePowerConsumption>-3400</basePowerConsumption>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Battery</defName>
+    <label>battery</label>
+    <description>Stores electrical power.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <researchPrerequisites>
+      <li>Electricity</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>150</MaxHitPoints>
+      <WorkToBuild>300</WorkToBuild>
+    </statBases>
+    <costList>
+      <Steel>40</Steel>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Building.CompProperties_PowerBattery">
+        <storedEnergyMax>10000</storedEnergyMax>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Heater</defName>
+    <label>heater</label>
+    <description>Consumes electrical power to heat the room it stands in.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <researchPrerequisites>
+      <li>Electricity</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>100</MaxHitPoints>
+      <WorkToBuild>200</WorkToBuild>
+    </statBases>
+    <costList>
+      <Steel>15</Steel>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Building.CompProperties_PowerTrader">
+        <basePowerConsumption>120</basePowerConsumption>
+      </li>
+      <li Class="SimWorld.Building.CompProperties_HeatPusherPowered">
+        <heatPerTick>0.5</heatPerTick>
+        <targetTemperature>23</targetTemperature>
+      </li>
+    </comps>
+  </ThingDef>
+
+</Defs>
