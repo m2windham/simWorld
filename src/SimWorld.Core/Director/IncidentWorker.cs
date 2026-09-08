@@ -26,12 +26,28 @@ namespace SimWorld.Director
             if (def.earliestDay > 0 && GenDate.DaysPassedAt(Find.TickManager.TicksGame) < def.earliestDay) return false;
             if (def.minPopulation > 0 && parms.target.PlayerPawnsForStoryteller.Count() < def.minPopulation) return false;
             if (def.minThreatPoints > 0f && parms.points < def.minThreatPoints) return false;
+            if (!EraAllows()) return false;
             if (!parms.forced && FiredTooRecently(parms.target.StoryState)) return false;
             return CanFireNowSub(parms);
         }
 
         /// <summary>Extra per-incident gating (disease needs a candidate pawn, etc.). Defaults to always allowed.</summary>
         protected virtual bool CanFireNowSub(IncidentParms parms) => true;
+
+        /// <summary>
+        /// The civilization's era is within this incident's <see cref="IncidentDef.minEra"/>..<see cref="IncidentDef.maxEra"/>
+        /// window. An incident with neither bound is allowed in every era, and so is any incident at all while
+        /// no era ladder is loaded — a def-less test fixture must not be silently unable to fire anything.
+        /// </summary>
+        private bool EraAllows()
+        {
+            if (def.minEra == null && def.maxEra == null) return true;
+            Research.EraDef? era = Find.ResearchManager.CurrentEra;
+            if (era == null) return true;
+            if (def.minEra != null && era.order < def.minEra.order) return false;
+            if (def.maxEra != null && era.order > def.maxEra.order) return false;
+            return true;
+        }
 
         private bool FiredTooRecently(StoryState storyState)
         {

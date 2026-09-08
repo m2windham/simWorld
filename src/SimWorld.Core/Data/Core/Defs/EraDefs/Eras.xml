@@ -8,6 +8,12 @@
     occupies for CostFactor and, later, faction/settlement generation. Exotic's techLevel is Archotech, the
     top of RimWorld's ladder, standing in for both "Ultra" and "Archotech" until SimWorld's own translation
     of that end of the ladder is designed.
+
+    threatPointsFactor multiplies the threat points the director spends while a civilization is in the era:
+    a bronze-age rival threatens with bronze-age force. The ladder below is SimWorld's own and could not be
+    sourced from RimWorld, which scales threats off colony wealth instead — the tests pin the trend (never
+    decreasing, and reaching a later era raises the points spent), not these literals. See
+    EraDef.threatPointsFactor for why an era factor stands in for wealth at all.
   -->
 
   <EraDef>
@@ -16,6 +22,7 @@
     <description>Fire, stone tools, and the first words spoken around a hearth.</description>
     <order>0</order>
     <techLevel>Neolithic</techLevel>
+    <threatPointsFactor>1.0</threatPointsFactor>
   </EraDef>
 
   <EraDef>
@@ -24,6 +31,7 @@
     <description>Farming, storage, and permanent settlement replace the hunt and the chase.</description>
     <order>1</order>
     <techLevel>Neolithic</techLevel>
+    <threatPointsFactor>1.15</threatPointsFactor>
   </EraDef>
 
   <EraDef>
@@ -32,6 +40,7 @@
     <description>Smelting and alloying open the door to tools and weapons stone cannot match.</description>
     <order>2</order>
     <techLevel>Medieval</techLevel>
+    <threatPointsFactor>1.35</threatPointsFactor>
   </EraDef>
 
   <EraDef>
@@ -40,6 +49,7 @@
     <description>Law, mathematics, and monumental building organize a civilization at scale.</description>
     <order>3</order>
     <techLevel>Medieval</techLevel>
+    <threatPointsFactor>1.6</threatPointsFactor>
   </EraDef>
 
   <EraDef>
@@ -48,6 +58,7 @@
     <description>Iron and steel, castles and cathedrals, and the long road toward gunpowder.</description>
     <order>4</order>
     <techLevel>Medieval</techLevel>
+    <threatPointsFactor>1.9</threatPointsFactor>
   </EraDef>
 
   <EraDef>
@@ -56,6 +67,7 @@
     <description>Steam, steel mills, and the factory line remake how a civilization builds.</description>
     <order>5</order>
     <techLevel>Industrial</techLevel>
+    <threatPointsFactor>2.3</threatPointsFactor>
   </EraDef>
 
   <EraDef>
@@ -64,6 +76,7 @@
     <description>Electronics, computing, and orbit turn a civilization's knowledge outward.</description>
     <order>6</order>
     <techLevel>Spacer</techLevel>
+    <threatPointsFactor>2.8</threatPointsFactor>
   </EraDef>
 
   <EraDef>
@@ -72,6 +85,7 @@
     <description>Beyond the authored tree: the far end of the ladder, where SimWorld's later procedural extension picks up.</description>
     <order>7</order>
     <techLevel>Archotech</techLevel>
+    <threatPointsFactor>3.4</threatPointsFactor>
   </EraDef>
 
 </Defs>

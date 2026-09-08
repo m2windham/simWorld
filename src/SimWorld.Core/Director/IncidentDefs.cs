@@ -42,6 +42,18 @@ namespace SimWorld.Director
         /// <summary>Minimum days between two firings of this exact def; 0 disables the check.</summary>
         public float minRefireDays;
 
+        /// <summary>
+        /// Earliest era this incident may fire in; null means "any era". SimWorld's own gate, and the
+        /// content half of the spec's "era completion gates content" (§10) for the director: an incident that
+        /// only makes sense once a civilization has reached an age says so here rather than being filtered by
+        /// a hand-written check in its worker.
+        /// </summary>
+        public Research.EraDef? minEra;
+
+        /// <summary>Latest era this incident may fire in; null means "no ceiling". The mirror of <see cref="minEra"/>,
+        /// for an incident a civilization outgrows.</summary>
+        public Research.EraDef? maxEra;
+
         /// <summary>Whether <c>IncidentParms.points</c> should scale this incident's severity (raids do; a
         /// single-effect incident like weather does not).</summary>
         public bool pointsScaleable;
@@ -74,6 +86,7 @@ namespace SimWorld.Director
         {
             foreach (string error in base.ConfigErrors()) yield return error;
             if (category == null) yield return "category is required.";
+            if (minEra != null && maxEra != null && minEra.order > maxEra.order) yield return "minEra must not be later than maxEra.";
             if (workerClass == null || !typeof(IncidentWorker).IsAssignableFrom(workerClass)) yield return "workerClass must derive from IncidentWorker.";
             if (typeof(IncidentWorker_Disease).IsAssignableFrom(workerClass) && diseaseIncident == null) yield return "a disease incident needs diseaseIncident set.";
         }

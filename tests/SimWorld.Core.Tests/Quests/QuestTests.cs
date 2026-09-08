@@ -30,7 +30,7 @@ namespace SimWorld.Tests.Quests
         public void Letters_and_quests_content_loads_with_expected_counts_and_defOfs()
         {
             Assert.Empty(Content.Result.Errors);
-            Assert.Equal(7, DefDatabase<LetterDef>.DefCount);
+            Assert.Equal(8, DefDatabase<LetterDef>.DefCount);
             Assert.Equal(3, DefDatabase<QuestScriptDef>.DefCount);
 
             Assert.NotNull(LetterDefOf.NeutralEvent);
@@ -38,6 +38,7 @@ namespace SimWorld.Tests.Quests
             Assert.NotNull(LetterDefOf.NegativeEvent);
             Assert.NotNull(LetterDefOf.ThreatBig);
             Assert.NotNull(LetterDefOf.AcceptQuest);
+            Assert.NotNull(LetterDefOf.EraReached);
             Assert.Equal(typeof(ChoiceLetter), LetterDefOf.AcceptQuest.letterClass);
             Assert.NotNull(QuestScriptDefOf.Quest_LostCaravan);
         }

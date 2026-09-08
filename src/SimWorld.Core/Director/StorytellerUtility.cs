@@ -34,6 +34,10 @@ namespace SimWorld.Director
         /// (dead pawns contribute nothing, hurt ones contribute proportionally less down to half), times
         /// difficulty's threat scale, times the civilization's current adaptation factor, times the
         /// storyteller's own days-passed curve — clamped to [<see cref="MinThreatPoints"/>, <see cref="MaxThreatPoints"/>].
+        /// <para/>
+        /// <b>Addition:</b> one more multiplier, the current era's <see cref="Research.EraDef.threatPointsFactor"/>,
+        /// applied the same way difficulty and adaptation already are. That factor is SimWorld's own and
+        /// stands in for the wealth term while nothing computes real wealth — see the field's own comment.
         /// </summary>
         public static float DefaultThreatPointsNow(IIncidentTarget target)
         {
@@ -51,6 +55,7 @@ namespace SimWorld.Director
             Storyteller storyteller = Find.Storyteller;
             if (storyteller.difficulty != null) points *= storyteller.difficulty.threatScale;
             points *= storyteller.adaptation.TotalThreatPointsFactor(storyteller.difficulty);
+            points *= Research.EraTransitionUtility.CurrentEraThreatPointsFactor();
             if (storyteller.def != null) points *= storyteller.def.pointsFactorFromDaysPassed.Evaluate(GenDate.DaysPassedAt(Find.TickManager.TicksGame));
 
             return GenMath.Clamp(points, MinThreatPoints, MaxThreatPoints);
