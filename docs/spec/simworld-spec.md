@@ -679,22 +679,54 @@ the translation and its state per system.
 - **Scale**: a colony becomes a civilization of settlements; factions become
   rival civilizations; the storyteller becomes the Chronicle, targeting _your_
   civilization.
-- **Control**: the god issues edicts and goals that enter the think tree above
-  routine work, instead of drafting individuals. Citizens keep full agency.
+- **Control**: the god issues edicts (`EdictDef` + `EdictWorker`, the same
+  `Class=`-selected Def+Worker shape as `WorkGiverDef`/`WorkGiver` and
+  `ThoughtDef`/`ThoughtWorker`) that enter the think tree as `JobGiver_Edicts`,
+  sitting strictly between `JobGiver_DirectedOrder` and `JobGiver_Work` (§7.4):
+  a queued directed order, and every need/mental-state guard above it, still
+  outrank a standing edict, and an edict only ever wins a job routine work
+  would otherwise have offered — it can never pre-empt a need. `JobGiver_Edicts`
+  never touches `Pawn_WorkSettings`; it reads `WorkTypeDef.WorkGivers` for the
+  active edicts' `prioritizedWork` directly (sharing `JobGiver_Work`'s own
+  nearest-candidate scan via `WorkGiverScanUtility` rather than duplicating
+  it), so deactivating an edict leaves a citizen's own work priorities exactly
+  as they were. Citizens keep full agency.
 - **Eras**: an `EraDef` ladder over the research DAG carries a civilization from
-  neolithic to archotech; era completion gates content and scales threats.
-  Reaching an era is an event, not just a readout: `ResearchManager` compares the
-  era before and after each project it finishes — so a save can never re-announce
-  history — raises `EraReached` once per era crossed, and writes a chronicle line
-  and a letter. The era then multiplies the director's threat points
+  neolithic to archotech; era completion gates content, scales threats, and
+  gates which edicts a civilization can issue at all (`EdictDef.requiredEra`,
+  checked against `ResearchManager.CurrentEra`). Reaching an era is an event,
+  not just a readout: `ResearchManager` compares the era before and after each
+  project it finishes — so a save can never re-announce history — raises
+  `EraReached` once per era crossed, and writes a chronicle line and a letter.
+  The era then multiplies the director's threat points
   (`EraDef.threatPointsFactor`, standing in for the wealth term nothing computes
   yet) and gates content through `IncidentDef.minEra`/`maxEra`. A scenario's
   starting era is seeded silently: history begins there, it was not lived through.
-- **Aggregation**: per-citizen depth stays, but the god view reads rollups —
-  public mood, population health, industry — rather than opening every person.
+- **Aggregation**: per-citizen depth stays, but the god view reads `GodRollup`
+  — population by `PawnTier`, mean mood, mean health, a food/industry readout,
+  era and research progress — rather than opening every person. Tier-aware by
+  construction, not by an if-skip: a Statistical citizen's health contribution
+  is `Pawn_TierTracker.SampledHealthFraction`, never a real hediff-set read,
+  which is the entire reason §11.3's tiering exists — reading every citizen's
+  hediffs to answer a civilization-scale question would defeat it. Cached with
+  a recompute cadence and an explicit dirty flag (`Notify_Dirty`), never
+  recomputed per tick per reader.
 
-_Status_: eras and the Chronicle hook exist. Edicts, rollups and the god view
-itself are planned and depend on the AI layer.
+_Status_: all three god-layer pieces are built. **Eras** (§9's ladder) now
+announce themselves, scale threats and gate content — see the Eras bullet
+above. **Edicts** and the edict think-tree tier live in `src/SimWorld.Core/God`:
+`EdictDef`/`EdictWorker` (one concrete worker, `EdictWorker_ExemptMinors`, for
+behaviour a def field alone cannot express — a harsh edict that spares
+children), `GodManager` (`Find.God`: a slot budget sized as a real trade-off
+rather than a checklist, era gating, Chronicle recording on activation and
+deactivation, a Scribe round trip), `JobGiver_Edicts`, and `GodRollup`. Five
+edicts ship spread across the era ladder, each costing public mood through a
+situational thought (`ThoughtWorker_UnderEdict`) that tracks activation on its
+own — no explicit per-pawn grant or removal, so nothing lingers once an edict
+is rescinded. **Settlements** are entities now (§5b.5) rather than a def and a
+tile, which leaves the gap narrow: the god view itself (UI/host work, once
+there is a host to render one), and wiring `GodRollup` to a `Settlement`'s own
+population instead of a caller-supplied list.
 
 ```mermaid
 flowchart LR

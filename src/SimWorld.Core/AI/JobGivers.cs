@@ -81,7 +81,8 @@ namespace SimWorld.AI
     /// <summary>
     /// Scans by work priority, then natural priority, then priority within type — <see cref="Pawn_WorkSettings"/>
     /// already orders <see cref="WorkGiverDef"/>s exactly that way; this just walks the two lists it exposes,
-    /// emergency first (RimWorld: <c>RimWorld.JobGiver_Work</c>).
+    /// emergency first (RimWorld: <c>RimWorld.JobGiver_Work</c>). The actual nearest-candidate scan is shared
+    /// with <see cref="JobGiver_Edicts"/> via <see cref="WorkGiverScanUtility"/> rather than duplicated here.
     /// </summary>
     public sealed class JobGiver_Work : ThinkNode_JobGiver
     {
@@ -89,37 +90,8 @@ namespace SimWorld.AI
         {
             if (!pawn.RaceProps.Humanlike || !pawn.workSettings.EverWork || pawn.Map == null) return null;
 
-            Job? job = TryGiveJobInGivers(pawn, pawn.workSettings.WorkGiversInOrderEmergency);
-            return job ?? TryGiveJobInGivers(pawn, pawn.workSettings.WorkGiversInOrderNormal);
-        }
-
-        private static Job? TryGiveJobInGivers(Pawn pawn, IReadOnlyList<WorkGiverDef> givers)
-        {
-            for (int i = 0; i < givers.Count; i++)
-            {
-                if (!(givers[i].Worker is WorkGiver_Scanner scanner)) continue;
-                if (scanner.ShouldSkip(pawn) || scanner.MissingRequiredCapacity(pawn)) continue;
-                Job? job = TryFindJobOnScanner(pawn, scanner);
-                if (job != null) return job;
-            }
-            return null;
-        }
-
-        private static Job? TryFindJobOnScanner(Pawn pawn, WorkGiver_Scanner scanner)
-        {
-            Map.Map map = pawn.Map!;
-            Thing? best = null;
-            int bestDistSq = int.MaxValue;
-            foreach (Thing t in scanner.PotentialWorkThingsGlobal(pawn))
-            {
-                if (!t.Spawned || t.Map != map) continue;
-                int distSq = (t.Position - pawn.Position).LengthHorizontalSquared;
-                if (distSq >= bestDistSq) continue;
-                if (!scanner.HasJobOnThing(pawn, t)) continue;
-                best = t;
-                bestDistSq = distSq;
-            }
-            return best != null ? scanner.JobOnThing(pawn, best) : null;
+            Job? job = WorkGiverScanUtility.TryGiveJobInGivers(pawn, pawn.workSettings.WorkGiversInOrderEmergency);
+            return job ?? WorkGiverScanUtility.TryGiveJobInGivers(pawn, pawn.workSettings.WorkGiversInOrderNormal);
         }
     }
 
