@@ -4,6 +4,10 @@
   <!--
     Raw crafting resources (RimWorld: ThingDefs_Items/Items_Resource). Stuff-capable resources (wood,
     steel, cloth, stone blocks) double as building materials once Buildings model stuff selection.
+    thingClass is set explicitly on all four (it wasn't before system 16: Building) — the same latent gap
+    already caught and fixed below for the Chunk* defs: nothing constructed one of these as a live Thing
+    before something actually hauled it, so the gap sat uncaught until construction needed to spawn and
+    haul real WoodLog/Steel stacks. See this module's report.
   -->
 
   <ThingDef>
@@ -11,6 +15,7 @@
     <label>wood</label>
     <description>A stack of logs harvested from a tree.</description>
     <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>
     <stackLimit>75</stackLimit>
     <statBases><MarketValue>1.2</MarketValue></statBases>
@@ -25,6 +30,7 @@
     <label>steel</label>
     <description>An alloy of iron and other metals, used for most basic construction and crafting.</description>
     <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
     <stackLimit>75</stackLimit>
     <statBases><MarketValue>1.9</MarketValue></statBases>
@@ -39,6 +45,7 @@
     <label>cloth</label>
     <description>A woven fabric made from plant fibers.</description>
     <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>Textiles</li></thingCategories>
     <stackLimit>100</stackLimit>
     <statBases><MarketValue>1.5</MarketValue></statBases>
@@ -53,6 +60,7 @@
     <label>sandstone blocks</label>
     <description>Sandstone cut into blocks, ready for construction.</description>
     <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>StoneBlocks</li></thingCategories>
     <stackLimit>75</stackLimit>
     <statBases><MarketValue>0.9</MarketValue></statBases>

@@ -123,6 +123,9 @@
     <priorityInType>100</priorityInType>
   </WorkGiverDef>
 
+  <!-- Wired to real scanners with system 16 (Building) — the placeholders above/below this comment that
+       stay WorkGiver_Pending (Repair) are genuinely out of this pass's scope; these three are its point. -->
+
   <WorkGiverDef>
     <defName>ConstructFinishFrames</defName>
     <label>finish frames</label>
@@ -130,6 +133,7 @@
     <gerund>finishing</gerund>
     <workType>Construction</workType>
     <priorityInType>95</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_ConstructFinishFrame</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -139,6 +143,7 @@
     <gerund>hauling resources</gerund>
     <workType>Construction</workType>
     <priorityInType>90</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_ConstructDeliverResourcesToFrames</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -148,6 +153,7 @@
     <gerund>hauling resources</gerund>
     <workType>Construction</workType>
     <priorityInType>85</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_ConstructDeliverResourcesToBlueprints</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>

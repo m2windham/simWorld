@@ -18,6 +18,12 @@ namespace SimWorld.Defs
         Attachment,
         Mote,
         Ethereal,
+
+        /// <summary>The player's construction intent, no materials delivered yet (system 16: Building).</summary>
+        Blueprint,
+
+        /// <summary>Materials delivered, work being applied — the stage between Blueprint and a finished Building (system 16).</summary>
+        Frame,
     }
 
     /// <summary>

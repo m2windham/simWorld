@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-09-07",
-  "testsTotal": 629,
+  "updated": "2026-09-08",
+  "testsTotal": 646,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -990,37 +990,37 @@
       "translation": "Proposed: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Building",
-      "status": "planned",
-      "tests": 0,
+      "status": "ported",
+      "tests": 17,
       "items": [
         {
           "id": "building.zones",
-          "label": "Zones: stockpile, growing, home area",
+          "label": "Zones: stockpile, growing, home area — explicitly out of scope this pass (see this system's report)",
           "done": false
         },
         {
           "id": "building.construction",
-          "label": "Blueprint → frame → building; materials from stock",
-          "done": false
+          "label": "Blueprint → frame → building via real AI jobs/toils/reservations: GenConstruct placement validity, WorkGiver_ConstructDeliverResourcesTo{Blueprints,Frames} haul materials (ThingDefCountClass costList), WorkGiver_ConstructFinishFrame spends work scaled by Construction skill (read directly, not via StatDef.skillNeedFactors — see this system's report) and rolls success/fail; a failed Frame refunds half its delivered materials and respawns a Blueprint",
+          "done": true
         },
         {
           "id": "building.roof",
-          "label": "Roof support flood-fill and collapse",
+          "label": "Roof support flood-fill and collapse — not built; RoofGrid itself (already shipped with Map) is reused read-only, to decide whether a Room counts as enclosed",
           "done": false
         },
         {
           "id": "building.power",
-          "label": "Power grid graph with brownout policy",
-          "done": false
+          "label": "CompPower/CompPowerTransmitter/CompPowerTrader/CompPowerPlant/CompPowerBattery; PowerNetManager builds/merges/splits PowerNets incrementally off cardinal adjacency as comps spawn/despawn (never a full-map rebuild); brownout is a real RimWorld whole-net simultaneous cutoff once batteries are exhausted, not the brief's described per-trader priority order (see this system's report)",
+          "done": true
         },
         {
           "id": "building.temperature",
-          "label": "Per-room heat diffusion; biome/season modulation",
-          "done": false
+          "label": "Room/RoomGroup flood-filled from the edifice grid (a Door still splits a Room but RoomGroup re-merges rooms joined only by one); per-RoomGroup temperature equalises toward Map.outdoorTemperature at a rate from boundary Insulation and cell count, pushed by CompHeatPusherPowered; no biome/season modulation of outdoorTemperature exists (it is a flat settable field — no biome/season/climate system to drive it yet)",
+          "done": true
         },
         {
           "id": "building.plants",
-          "label": "Plant growth from fertility × light × temperature",
+          "label": "Plant growth from fertility × light × temperature — explicitly out of scope this pass",
           "done": false
         },
         {

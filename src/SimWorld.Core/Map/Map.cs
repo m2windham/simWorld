@@ -43,6 +43,19 @@ namespace SimWorld.Map
         /// <summary>This map's A* search (system 9 / AI); one instance, its working arrays reused across searches.</summary>
         public PathFinder pathFinder = null!;
 
+        /// <summary>Every power net on this map, maintained incrementally as transmitters/traders spawn and
+        /// despawn (system 16: Building) — see its own remarks for why that beats a full rebuild.</summary>
+        public Building.PowerNetManager powerNetManager = null!;
+
+        /// <summary>Rooms and room groups, flood-filled lazily off the edifice grid, and their temperatures
+        /// (system 16: Building).</summary>
+        public Building.RoomTracker roomTracker = null!;
+
+        /// <summary>Outdoor temperature every unroofed/unenclosed cell tracks directly, and every enclosed
+        /// room equalises toward (system 16: Building). No biome/season model exists yet — see that
+        /// module's report — so this is a flat, settable value rather than one driven by anything.</summary>
+        public float outdoorTemperature = 21f;
+
         /// <summary>Things read from a save but not yet re-spawned; consumed by <see cref="FinalizeLoading"/>.</summary>
         private List<Thing>? loadedThings;
 
@@ -78,9 +91,17 @@ namespace SimWorld.Map
             }
         }
 
-        /// <summary>Advances nothing yet: every spawned Thing ticks through <see cref="Find.TickManager"/> instead.</summary>
+        /// <summary>
+        /// This map's own per-tick systems (system 16: Building) — every spawned Thing itself still ticks
+        /// through <see cref="Find.TickManager"/>'s own tick lists, not this. Nothing calls this
+        /// automatically yet (no game-loop host exists in this codebase): a caller running a map for real
+        /// wires it in as one of <see cref="Sim.TickManager.PostTickers"/>, once per map, exactly as that
+        /// list's own doc comment describes ("map post-tick"); tests call it directly.
+        /// </summary>
         public void MapTick()
         {
+            powerNetManager.PowerNetManagerTick();
+            roomTracker.RoomTrackerTick();
         }
 
         private void InitializeGridsExceptPath(int sizeX, int sizeZ, TerrainDef fill)
@@ -103,6 +124,8 @@ namespace SimWorld.Map
             reservationManager = new ReservationManager();
             reachability = new Reachability(this);
             pathFinder = new PathFinder(this);
+            powerNetManager = new Building.PowerNetManager(this);
+            roomTracker = new Building.RoomTracker(this);
         }
 
         // ---- Scribe ----
@@ -118,6 +141,7 @@ namespace SimWorld.Map
         {
             Scribe_Values.Look(ref uniqueID, "uniqueID", -1);
             Scribe_Values.Look(ref tile, "tile", -1);
+            Scribe_Values.Look(ref outdoorTemperature, "outdoorTemperature", 21f);
 
             int sizeX = Size.x, sizeZ = Size.z;
             Scribe_Values.Look(ref sizeX, "sizeX");
@@ -151,6 +175,9 @@ namespace SimWorld.Map
             ReservationManager? rm = reservationManager;
             Scribe_Deep.Look(ref rm, "reservationManager");
             reservationManager = rm ?? new ReservationManager();
+
+            roomTracker.ExposeTemperatures();
+
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 FinalizeLoading();

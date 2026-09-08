@@ -25,6 +25,9 @@ namespace SimWorld.Map
                 if (!GenGrid.InBounds(c, map)) continue;
                 grid[map.cellIndices.CellToIndex(c)] = edifice;
             }
+            // An edifice spawning can create or split a room (system 16: Building) — the room tracker
+            // recomputes lazily off this, not every tick.
+            map.roomTracker.Notify_Dirty();
         }
 
         public void DeRegister(Thing edifice)
@@ -36,6 +39,7 @@ namespace SimWorld.Map
                 int i = map.cellIndices.CellToIndex(c);
                 if (ReferenceEquals(grid[i], edifice)) grid[i] = null;
             }
+            map.roomTracker.Notify_Dirty();
         }
     }
 }

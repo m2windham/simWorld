@@ -27,4 +27,18 @@
     <reportString>mining.</reportString>
   </JobDef>
 
+  <!-- Construction (system 16: Building). -->
+
+  <JobDef>
+    <defName>HaulToBuildingSite</defName>
+    <driverClass>SimWorld.Building.JobDriver_HaulToBuildingSite</driverClass>
+    <reportString>hauling to a construction site.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>ConstructFinishFrame</defName>
+    <driverClass>SimWorld.Building.JobDriver_ConstructFinishFrame</driverClass>
+    <reportString>constructing.</reportString>
+  </JobDef>
+
 </Defs>

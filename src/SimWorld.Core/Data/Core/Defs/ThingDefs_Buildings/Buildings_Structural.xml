@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Walls and doors (system 16: Building). Ungated by research — a wood/stone wall is not a technology any
+    more than a club is (see research.unlocks-content's own note on the club). Costed in wood, the material
+    every settlement starts able to gather.
+  -->
+
+  <ThingDef>
+    <defName>Wall</defName>
+    <label>wall</label>
+    <description>A solid wall, providing structure and insulation.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <pathCost>10000</pathCost>
+    <statBases>
+      <MaxHitPoints>300</MaxHitPoints>
+      <Insulation>100</Insulation>
+    </statBases>
+    <costList>
+      <WoodLog>5</WoodLog>
+    </costList>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Door</defName>
+    <label>door</label>
+    <description>A doorway through a wall.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Door</thingClass>
+    <!--
+      Deviation (see SimWorld.Building.Door's own remarks): real RimWorld doors swing open for an
+      approaching pawn and are otherwise impassable; this pass's Door is always Standable (open) — no swing
+      state, no faction-allowed check. fillPercent stays 1 so RoomTracker still treats it as a room boundary
+      (a doorway still separates two Rooms; RoomGroup re-merges them thermally) even though it never blocks
+      movement.
+    -->
+    <passability>Standable</passability>
+    <fillPercent>1</fillPercent>
+    <statBases>
+      <MaxHitPoints>150</MaxHitPoints>
+      <Insulation>1</Insulation>
+    </statBases>
+    <costList>
+      <WoodLog>4</WoodLog>
+    </costList>
+  </ThingDef>
+
+</Defs>

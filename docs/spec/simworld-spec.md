@@ -511,22 +511,68 @@ flowchart TD
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.
 
-### 8.2 Building / Power / Climate — _planned_
+### 8.2 Building / Power / Climate
 
-- Blueprint → frame → building, work speed from skill.
-- Roof support by flood fill; unsupported roof collapses.
-- Power as a producer/storage/conduit graph with a brownout policy.
-- Per-room heat diffusion modulated by biome and season.
+- **Construction**: `Blueprint` (no materials yet) → `Frame` (materials
+  delivered, work being applied) → `Building`, built entirely on the AI layer's
+  real jobs — `WorkGiver_ConstructDeliverResourcesTo{Blueprints,Frames}` haul a
+  `ThingDef.costList` ingredient to the site (a Blueprint converts to its Frame
+  on first delivery); `WorkGiver_ConstructFinishFrame` then spends work scaled
+  by the pawn's Construction skill until the Frame's `WorkToBuild` is met, and
+  rolls a skill-scaled success chance. A failed Frame refunds half its
+  delivered materials as loose stacks and respawns a fresh Blueprint rather
+  than erasing the player's intent. `GenConstruct` checks terrain affordance
+  and rejects a cell already holding a blueprint, frame or edifice. Blueprint
+  and Frame Defs are hand-authored per buildable Def (one pair each) rather
+  than generated per Def at startup the way RimWorld's own
+  `ThingDefGenerator_Buildings` does — this port has no graphics layer to
+  generate a per-Def blueprint/frame ThingDef for, so content carries the pair
+  directly; a Frame's `passability`/`fillPercent`/`pathCost` are copied from
+  its `entityToBuild` by hand so a half-built wall already blocks movement and
+  room detection like the finished wall would.
+- **Power**: `CompPower` (a Thing's presence on a net) with
+  `CompPowerTransmitter` (conduits), `CompPowerTrader` (a signed
+  `basePowerConsumption` — negative means production, so `CompPowerPlant` is
+  nothing more than `CompPowerTrader` under its own name) and
+  `CompPowerBattery`. `PowerNetManager` builds `PowerNet`s incrementally as
+  comps spawn or despawn — a spawn only inspects its own cardinal neighbours; a
+  despawn re-floods only the one net it belonged to, never the whole map.
+  Brownout is a real whole-net event: once batteries cannot cover a shortfall,
+  every consuming trader loses power in the same tick and regains it together
+  the moment supply recovers, not a per-device priority order.
+- **Rooms & temperature**: `RoomTracker` flood-fills `Room`s from the edifice
+  grid (stopping at any Fillage-`Full` edifice — a wall or a `Door`) lazily,
+  off a dirty flag the edifice grid raises on any spawn/despawn, the same
+  trade-off `AI.Reachability` already makes for its own reachability cache. A
+  `Door` still splits a Room the way a wall does, but `RoomGroup` re-merges
+  Rooms joined only by a shared Door back into one thermal unit — since this
+  pass's Door has no closed state at all (always `Standable`; no swing, no
+  faction-allowed check), the practical effect is that a doorway carries zero
+  insulation rather than merely some. Each enclosed RoomGroup's temperature
+  equalises toward `Map.outdoorTemperature` every tick, at a rate set by its
+  boundary edifices' `Insulation` stat and its cell count;
+  `CompHeatPusherPowered` (gated on a sibling `CompPowerTrader`'s `PowerOn`)
+  pushes it toward a target. A Room touching the map edge or missing a roof on
+  any cell tracks outdoor temperature directly, with no lag. No biome/season
+  system exists yet to modulate `outdoorTemperature`, and no roof
+  support/collapse mechanic was built — `RoofGrid` itself (Map core) is only
+  read, to decide what counts as enclosed.
 
 ```mermaid
 flowchart LR
-  Blueprint --> Frame[Frame: work by skill]
-  Frame --> Building
-  Wall[Load-bearing grid] -->|flood fill| Support[Roof support]
-  Support -->|unsupported| Collapse[Roof collapse]
-  Producer[Power producer] --> Storage[Battery]
-  Storage --> Grid[Conduit network]
-  Grid -->|deficit| Brownout
+  Blueprint -->|first resource delivered| Frame
+  Frame -->|WorkToBuild met, skill-rolled success| Building
+  Frame -->|skill-rolled failure| Refund[Refund half materials] --> Blueprint
+
+  Producer[CompPowerPlant] --> Net[PowerNet]
+  Transmitter[CompPowerTransmitter] --> Net
+  Net --> Battery[CompPowerBattery]
+  Net -->|deficit exceeds storage| Brownout[Whole-net brownout]
+
+  Edifices[Edifice grid] -->|flood fill, dirty-flagged| Rooms[Room]
+  Rooms -->|joined only by a Door| Groups[RoomGroup]
+  Groups -->|equalise toward| Outdoor[Map.outdoorTemperature]
+  Heater[CompHeatPusherPowered] --> Groups
 ```
 
 ### 8.3 Combat

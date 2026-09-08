@@ -42,5 +42,11 @@ namespace SimWorld.AI
         public static JobDef LayDown = null!;
         public static JobDef GotoWander = null!;
         public static JobDef Mine = null!;
+
+        /// <summary>Carries a resource stack to a Blueprint/Frame (system 16: Building).</summary>
+        public static JobDef HaulToBuildingSite = null!;
+
+        /// <summary>Spends work ticks on a fully-materialed Frame until it completes or fails (system 16: Building).</summary>
+        public static JobDef ConstructFinishFrame = null!;
     }
 }

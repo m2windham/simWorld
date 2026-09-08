@@ -9,4 +9,31 @@
     <minValue>1</minValue>
   </StatDef>
 
+  <!--
+    Added with system 16 (Building). Read by Frame.WorkToBuild via GetStatValueAbstract, exactly like
+    BaseMaxHitPoints above — a plain per-Def lookup, not the full stat pipeline (see StatPart's own remarks
+    on why this codebase already prefers that for Def-only, no-live-Thing numbers).
+  -->
+  <StatDef>
+    <defName>WorkToBuild</defName>
+    <label>work to build</label>
+    <description>How much construction work this takes to build.</description>
+    <defaultBaseValue>60</defaultBaseValue>
+    <minValue>1</minValue>
+  </StatDef>
+
+  <!--
+    How strongly a wall/door resists its room equalising with the outdoors (RoomTracker.AverageBoundaryInsulation).
+    Not a RimWorld-sourced number: RimWorld's real insulation math lives outside this port's Stats pipeline
+    (see StatDefOf.Insulation's own remarks) — these are this port's own values, high for a solid wall,
+    near zero for a doorway (a door leaks heat almost entirely in this pass's always-open model).
+  -->
+  <StatDef>
+    <defName>Insulation</defName>
+    <label>insulation</label>
+    <description>How much this building resists a room's temperature equalising with the outdoors.</description>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
 </Defs>

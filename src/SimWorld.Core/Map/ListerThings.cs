@@ -17,6 +17,12 @@ namespace SimWorld.Map
         HaulableEver,
         BuildingArtificial,
         Filth,
+
+        /// <summary>Blueprints awaiting materials (system 16: Building).</summary>
+        Blueprint,
+
+        /// <summary>Frames under construction (system 16: Building).</summary>
+        BuildingFrame,
     }
 
     /// <summary>Every spawned Thing on the map, indexed by def and by broad category (RimWorld: <c>Verse.ListerThings</c>).</summary>
@@ -81,6 +87,12 @@ namespace SimWorld.Map
                     break;
                 case ThingCategory.Filth:
                     yield return ThingRequestGroup.Filth;
+                    break;
+                case ThingCategory.Blueprint:
+                    yield return ThingRequestGroup.Blueprint;
+                    break;
+                case ThingCategory.Frame:
+                    yield return ThingRequestGroup.BuildingFrame;
                     break;
             }
             if (thing.def.EverHaulable) yield return ThingRequestGroup.HaulableEver;
