@@ -30,6 +30,9 @@ namespace SimWorld.Pawns
         public Pawn_AgeTracker ageTracker = null!;
         public Pawn_RelationsTracker relations = null!;
 
+        /// <summary>How much of this pawn's state is computed per tick (system 11: tiering, §11.3).</summary>
+        public Pawn_TierTracker tier = null!;
+
         /// <summary>Current job, its driver and the directed-order queue (system 9: AI).</summary>
         public Pawn_JobTracker jobs = null!;
 
@@ -199,16 +202,27 @@ namespace SimWorld.Pawns
             workSettings ??= new Pawn_WorkSettings(this);
             ageTracker ??= new Pawn_AgeTracker(this);
             relations ??= new Pawn_RelationsTracker(this);
+            tier ??= new Pawn_TierTracker(this);
             jobs ??= new Pawn_JobTracker(this);
             pather ??= new Pawn_PathFollower(this);
         }
 
         // ---- ITickable ----
 
+        /// <summary>Full ticks every tick (system 9: AI's <c>Normal</c> list); Interval and Statistical sit on
+        /// the <c>Long</c> list instead (<see cref="Pawn_TierTracker.TickerTypeFor"/>) — the dispatch by tier
+        /// the brief this module was built from asked for, done by which tick list the pawn is <i>on</i> rather
+        /// than by a per-tracker <c>if</c> inside this method.</summary>
+        public override TickerType TickerType => tier != null ? Pawn_TierTracker.TickerTypeFor(tier.Tier) : base.TickerType;
+
         public override void Tick()
         {
             base.Tick();
             if (Dead || Suspended) return;
+            // Defensive, not the mechanism: a Full-only pawn should never reach here from anywhere but the
+            // Normal tick list, which TickerType above already restricts to Full. Guards a list/tier desync
+            // rather than doing the tier's own work — see the class doc on TickerType.
+            if (tier.Tier != PawnTier.Full) return;
             health.HealthTick();
             if (Dead) return;
             needs.NeedsTrackerTick();
@@ -219,6 +233,14 @@ namespace SimWorld.Pawns
             // fresh needs/health/mind-state numbers rather than last tick's, and nothing else this tick
             // reacts to a job starting, ending, or a pawn moving, so nothing needs to run after it.
             jobs.JobTrackerTick();
+        }
+
+        /// <summary>Where a non-Full pawn actually advances (system 11: tiering) — see <see cref="Pawn_TierTracker.CoarseTick"/>.</summary>
+        public override void TickLong()
+        {
+            base.TickLong();
+            if (Dead || Suspended) return;
+            tier.CoarseTick();
         }
 
         // ---- Scribe ----
@@ -260,6 +282,9 @@ namespace SimWorld.Pawns
             Pawn_RelationsTracker? rel = relations;
             Scribe_Deep.Look(ref rel, "relations", this);
             relations = rel ?? new Pawn_RelationsTracker(this);
+            Pawn_TierTracker? tt = tier;
+            Scribe_Deep.Look(ref tt, "tier", this);
+            tier = tt ?? new Pawn_TierTracker(this);
             Pawn_JobTracker? j = jobs;
             Scribe_Deep.Look(ref j, "jobs", this);
             jobs = j ?? new Pawn_JobTracker(this);

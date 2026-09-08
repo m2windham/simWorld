@@ -86,6 +86,27 @@ namespace SimWorld.Needs
             }
         }
 
+        /// <summary>O(1) bulk equivalent of <see cref="NeedInterval"/> (see the base class doc): holds the
+        /// *current* category's fall rate constant across <paramref name="elapsedTicks"/> rather than
+        /// replaying category transitions tick by tick — an approximation only across a span long enough to
+        /// cross a hunger-category threshold mid-span.</summary>
+        public override void NeedIntervalBulk(int elapsedTicks)
+        {
+            if (elapsedTicks <= 0) return;
+            if (!IsFrozen)
+            {
+                CurLevel -= FoodFallPerTick * elapsedTicks;
+            }
+            if (!Starving)
+            {
+                lastNonStarvingTick = Find.TickManager.TicksGame;
+            }
+            if (!IsFrozen)
+            {
+                pawn.Notify_StarvationInterval(Starving);
+            }
+        }
+
         /// <summary>Eats <paramref name="nutrition"/> units; overflow is wasted.</summary>
         public void Eat(float nutrition)
         {

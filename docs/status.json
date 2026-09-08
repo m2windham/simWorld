@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-08",
-  "testsTotal": 659,
+  "testsTotal": 670,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -144,7 +144,7 @@
       "date": "2026-09-07",
       "state": "open",
       "title": "The population ceiling is health-tracker cost",
-      "note": "Measured: 14 microseconds per pawn-day at N<=500, 15x speed holds to roughly 2,500-5,000 healthy pawns, and HealthTick is 75.4% of all per-pawn tick cost. Two fixes landed: making the hot capacity path non-allocating cut garbage 31x (4,232 MB to 138 MB per 1,000 pawn-days, 33 Gen0 collections to 1), and caching the per-tick death check behind the existing dirty flag took a further 7-12% (measured A/B, same box same minute). The remaining cost is spread rather than concentrated, so the next real lever for population scale is the citizen tiering in spec section 11.3, not another micro-optimization. Sick pawns remain far worse: 3 untended injuries measured 24.8x. See docs/perf/baseline.md."
+      "note": "Measured: 14 milliseconds per pawn-day at N<=500 (an earlier note said microseconds, off by a thousand), 15x speed holds to roughly 2,500-5,000 healthy pawns, and HealthTick is 75.4% of all per-pawn tick cost. Two fixes landed: making the hot capacity path non-allocating cut garbage 31x (4,232 MB to 138 MB per 1,000 pawn-days, 33 Gen0 collections to 1), and caching the per-tick death check behind the existing dirty flag took a further 7-12% (measured A/B, same box same minute). The remaining cost is spread rather than concentrated, so the next real lever for population scale is the citizen tiering in spec section 11.3, not another micro-optimization. Sick pawns remain far worse: 3 untended injuries measured 24.8x. See docs/perf/baseline.md."
     },
     {
       "id": "tiering",
@@ -1132,11 +1132,11 @@
       "id": "demography",
       "n": 19,
       "rimworld": "Demography & Lineage",
-      "translation": "SimWorld original — RimWorld has no equivalent to port. A colony of twelve never needs generations; a civilization does. Built on the ported age/life-stage clock rather than a compressed one.",
+      "translation": "SimWorld original — RimWorld has no equivalent to port. A colony of twelve never needs generations; a civilization does. Built on the ported age/life-stage clock rather than a compressed one. Citizen tiering (§11.3) is the same idea pushed further: a civilization needs most of its population cheap, not absent — RimWorld's world-pawn precedent (identity/ageing kept, needs/jobs/health frozen off-map) generalised from \"on the map or not\" to \"significant or not\".",
       "translationState": "implemented",
-      "module": "src/SimWorld.Core/Pawns — Family · FamilyManager · Pawn_RelationsTracker · DemographyTuning",
+      "module": "src/SimWorld.Core/Pawns — Family · FamilyManager · Pawn_RelationsTracker · DemographyTuning · Pawn_TierTracker",
       "status": "translated",
-      "tests": 29,
+      "tests": 40,
       "items": [
         {
           "id": "demography.households",
@@ -1170,8 +1170,8 @@
         },
         {
           "id": "demography.lod",
-          "label": "Population level-of-detail: tiering citizens by significance so a civilization-scale population is affordable, with the sim's own record fidelity doubling as what history remembers",
-          "done": false
+          "label": "Population level-of-detail: PawnTier (Full/Interval/Statistical) and Pawn_TierTracker dispatch ticking by which list a pawn sits on (Normal for Full, Long for Interval and Statistical alike, told apart only by what the coarse tick does there) rather than an if-skip inside Pawn.Tick(); promotion/demotion by significance (attention, role, chronicle mention, relation to someone promoted), never proximity or elapsed time; promotion catch-up brings age (exact, via AgeTickMothballed) and needs (real bulk decay at Interval, cohort sampling at Statistical) current in one step. Measured: Interval ~135 µs/pawn-day, Statistical ~25-36 µs/pawn-day, against Full's ~14,000-34,000 (box-load-dependent; see docs/perf/baseline.md and spec §11.3) — roughly 100-1,000x cheaper per citizen.",
+          "done": true
         },
         {
           "id": "demography.migration",

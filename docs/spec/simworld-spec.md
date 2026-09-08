@@ -759,24 +759,129 @@ particulars. **Sight is global, touch is local.**
 
 ### 11.3 Citizens: tiered by significance, not by distance or clock
 
+**Built.** `PawnTier` and `Pawn_TierTracker` (`src/SimWorld.Core/Pawns/`), filed
+under the `demography` system in `docs/status.json` (`demography.lod`) — it is
+the population-scale half of demography, and shares that system's module path.
+
 Every citizen is a real agent record with a real identity. What varies is how
 much of that record is _computed per tick_.
 
-- **Full** — ticked exactly as ported: needs, mood, health, skills, jobs. The
-  settlement under the player's attention, plus anyone promoted into it.
-- **Interval** — the full state exists, but advances only on the rare/long
-  buckets and the yearly sweeps, never per tick. Behaviour is drawn from
-  aggregates instead of being run job by job.
-- **Statistical** — the citizen is a member of a cohort: identity, family, age
-  and participation in demography are real; needs and health are sampled from
-  the cohort's distribution rather than tracked individually.
+- **Full** — ticked exactly as ported: needs, mood, health, skills, jobs, every
+  tick (`Pawn.Tick`, unchanged). The settlement under the player's attention,
+  plus anyone promoted into it.
+- **Interval** — the full state exists (nothing is deleted or replaced), but
+  advances only on the Long tick bucket (`TickerType.Long`, ~2000 ticks) rather
+  than per tick. Needs decay for real — an O(1) closed-form
+  (`Need.NeedIntervalBulk`) holding each need's own current rate constant across
+  the elapsed span, not a per-tick trickle — and age advances the same way
+  every other tier does (below). No jobs, no mind state, no skills; hediffs
+  already present are carried unchanged rather than bulk-simulated (the one
+  tier this module could not make fully faithful — see below).
+- **Statistical** — a member of a cohort: identity, family, age and demography
+  participation are real; needs are sampled from a cohort distribution rather
+  than tracked, and health is a coarse sampled readout rather than a live
+  hediff simulation. Also sits on the Long bucket (not fully off any tick
+  list — see the note on RimWorld's precedent below) but the coarse tick there
+  does far less work.
 
 Promotion is by **significance, not proximity or elapsed time**: the player
 looks at their settlement, they take a role (leader, founder, great worker), the
 chronicle names them, or a relationship attaches them to someone already
-promoted. Demotion is the reverse and must be lossless in identity — a demoted
-citizen is still exactly who they were; only their minute-by-minute existence
-stops being computed.
+promoted. Any of the four promotes straight to Full from wherever the citizen
+currently sits — Statistical included, no forced climb through Interval first.
+Demotion is the reverse and is lossless in identity — a demoted citizen is
+still exactly who they were: name, family, relationships, age, history; only
+their minute-by-minute computation stops. Full falls to Interval the instant
+none of the four hold. The further fall, Interval to Statistical, is
+deliberately **not automatic** — see §11.5.
+
+**Tier-aware ticking is dispatch by tick list, not a skip inside one.**
+`Thing.TickerType` (previously `def.tickerType`, fixed per content def) is now
+virtual; `Pawn` overrides it to read the tier tracker, so a demoted pawn
+changes which of `TickManager`'s tick lists it is registered on —
+`Pawn_TierTracker` deregisters under the old `TickerType`, flips the tier field,
+then re-registers under the new one, in that order, since registration itself
+reads `TickerType`. `Pawn.Tick()` keeps one defensive guard (a demoted pawn
+should never reach it at all, since it is no longer on the Normal list) but
+that is a safety net for a list/tier desync, not the mechanism.
+
+**RimWorld already proves the Statistical tier works, and we already ported half
+of it.** Its world pawns are people not on any active map: identity,
+relationships and ageing are real, while needs, jobs and health stop ticking
+entirely. `Pawn_AgeTracker.AgeTickMothballed` — the bulk-interval ageing that
+serves exactly that tier — is ported and is exactly what both Interval and
+Statistical call to keep age exact regardless of tier. One deliberate
+divergence from the RimWorld precedent: a Statistical citizen here still sits
+on a (very cheap) tick list rather than leaving ticking altogether, because
+without _some_ periodic driver a population that is never promoted would never
+age and never die — which would break demography participation, a hard
+requirement of this module. RimWorld does not face this because a world pawn's
+age is driven by a different global sweep this codebase does not have; putting
+Statistical pawns on the Long bucket was the smallest way to get the same
+guarantee out of the tick system that already exists.
+
+**The tiers and the clock are one mechanism, not two.** Under §11.1 a
+civilization runs abstracted by default, which is to say almost everyone sits at
+Interval or Statistical almost always. Dropping into ticked time _is_ promoting
+the attended settlement to Full. The director does not slow time and separately
+raise fidelity; those are the same act described twice.
+
+**Promotion catch-up.** A citizen promoted after decades at Statistical or
+Interval must arrive coherent — aged correctly, with plausible needs, not a
+newborn and not a corpse. On promotion, `Pawn_TierTracker` computes the exact
+tick gap since it last brought that citizen's state current and applies it in
+one step before switching tick lists: `AgeTickMothballed` for age (exact at any
+gap size, 2000 ticks or 30 years alike), a real bulk needs update for a
+promoted Interval citizen, or a fresh cohort sample (deterministic,
+`RandomStream.RangeSeeded` keyed on pawn id + tick + need, never the shared
+mutable stream) for a promoted Statistical one. What it deliberately does
+**not** do: manufacture hediffs. A Statistical citizen's health is a coarse
+sampled fraction, never specific injuries invented on the spot — inventing
+detail nobody ever gave the sim would be the §11.4 anti-pattern applied to the
+engine's own state, not only to the chronicle. And it does not retroactively
+apply an age-of-death that was crossed while off-tier: `ShouldDieOfAge()` is
+correct the instant catch-up runs, but nothing kills the pawn until whatever
+population sweep processes them next (the existing, unchanged demography
+sweep) — a citizen can walk around briefly "overdue" between catch-up and the
+next sweep.
+
+**Measured** (`tools/bench/SimWorld.Bench` was not modified; a standalone
+harness outside the repo reproduced its methodology — seed 12345, kind
+Colonist, age 30, median of 3 runs after 1 discarded warmup). The box was
+shared with other build activity throughout (§1's own caveat, sharper here: an
+A/B of the pre- and post-tiering Full tier on the same box in the same session
+showed 19,230 vs 20,128 µs/pawn-day at N=500 — indistinguishable, i.e. tiering
+does not regress Full — while the plain reference number swung from 17,385
+(baseline.md, idle box) to 30,000-36,000 across runs taken minutes apart on
+this one). Absolute numbers below are this session's, not baseline.md's, for
+that reason; the ratios are the load-bearing part:
+
+| tier | µs/pawn-day (N=1,000) | µs/pawn-day (N=100,000) | vs. Full, this session |
+| --- | --- | --- | --- |
+| Full | ~30,500 (single session; see baseline.md for the fuller sweep) | not re-measured at this N (baseline.md: ~2,500-5,000 healthy pawns is the 15x ceiling) | 1x |
+| Interval | 135.4 | 173.4 | ~175-225x cheaper |
+| Statistical | 36.5 | 25.4 (29.3 at N=500,000) | ~850-1,200x cheaper |
+
+Both non-Full tiers scale close to linearly through N=100,000 (Statistical
+measured clean through N=500,000). Projecting each tier's own largest clean
+rate to the 15x budget (66.7s/game-day, §1) — a projection in exactly baseline.md's
+sense, not a measurement beyond the tested range — puts the ceiling around
+N≈385,000 for Interval and N≈2.3M for Statistical, against Full's measured
+~2,500-5,000. That gap is the module's whole justification realized: a
+civilization can hold a population three orders of magnitude larger than a
+single RimWorld colony as long as only the attended, significant slice runs at
+Full depth.
+
+**What this could not make fully faithful:** Interval tier's needs are real
+(closed-form, not sampled), but its hediffs are frozen rather than
+bulk-simulated — an untended wound does not bleed out, an illness does not
+progress, while a citizen sits at Interval. Death from age still works at
+every tier (it never depended on the hediff system), so demography stays real,
+but death from injury or illness effectively pauses the moment attention
+leaves. Building bulk-equivalent hediff physics (bleeding, healing, immunity
+progression, all closed-form over an arbitrary elapsed span) was out of reach
+for this pass — see the module's own report for why, and treat it as the
+natural next piece of this system rather than a silent gap.
 
 **RimWorld already proves the Statistical tier works, and we already ported half
 of it.** Its world pawns are people not on any active map: identity,
@@ -835,8 +940,8 @@ flowchart TB
   Set --> Full
   Full -->|attention leaves, no role| Interval
   Interval -->|role, chronicle mention, relation| Full
-  Interval --> Stat
-  Stat --> Interval
+  Stat -->|role, chronicle mention, relation| Full
+  Interval -->|insignificant, explicit settle| Stat
 
   Full -->|detailed entries| Rec[Chronicle · written at the tier lived]
   Interval -->|sparse entries| Rec
@@ -847,12 +952,28 @@ flowchart TB
 ### 11.5 What this section deliberately does not decide
 
 - **Tier budgets.** How many citizens each tier can afford comes from
-  measurement, not guesswork; the benchmark harness exists to set those numbers.
-  What is already measured: the Full tier is affordable in the low hundreds once
-  injury and illness are normal rather than exceptional (`docs/perf/baseline.md`),
-  and demography's own growth — 4.5% a year, doubling every ~16 years — crosses
-  that from a 20-40 person founding band somewhere around year 40.
-- Whether Interval and Statistical are two tiers or samples of a continuum.
+  measurement, not guesswork. What is now measured (§11.3): the Full tier is
+  affordable in the low hundreds once injury and illness are normal rather than
+  exceptional (`docs/perf/baseline.md`), and demography's own growth — 4.5% a
+  year, doubling every ~16 years — crosses that from a 20-40 person founding
+  band somewhere around year 40; Interval and Statistical sustain roughly two
+  to three orders of magnitude more (projected ~385,000 and ~2.3M respectively
+  at 15x) precisely because they are cheap rather than absent. Still not
+  decided: the exact population curve a real campaign needs across an era, and
+  what fraction of citizens a director would realistically keep Full/Interval
+  at once — those need the director itself (§11.1) to measure against.
+- **Whether Interval and Statistical are two tiers or samples of a
+  continuum — still open, but narrower than before.** Promotion is settled: any
+  of the four significance triggers promotes straight to Full from either
+  coarser tier, so there is no continuum on the way up. What remains genuinely
+  undecided is the way down: this pass built the mechanism for Interval to
+  settle to Statistical (`Pawn_TierTracker.DemoteToStatistical`, gated on
+  "insignificant and already Interval") but deliberately left _when_ to call it
+  unspecified — that is a director/game-loop policy (which citizens, on what
+  cadence, under what pressure), not something this module should invent
+  without the director to measure it against. Until the director exists,
+  Interval is the resting tier for every insignificant citizen; nothing demotes
+  itself to Statistical without an explicit call.
 - How the abstract clock and the director interact — a skipped century still
   needs incidents, and they cannot all fire at the seam.
 

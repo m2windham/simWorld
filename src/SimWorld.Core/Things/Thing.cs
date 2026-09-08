@@ -205,7 +205,14 @@ namespace SimWorld.Things
         // ---- ITickable ----
 
         public int TickId => thingIDNumber;
-        public TickerType TickerType => def.tickerType;
+
+        /// <summary>
+        /// Which tick list this Thing wants (RimWorld: <c>Verse.Thing.def.tickerType</c>, read straight off the
+        /// def). Virtual so <see cref="SimWorld.Pawns.Pawn"/> can answer per-instance instead of per-def: a
+        /// citizen's simulation tier (<see cref="SimWorld.Pawns.PawnTier"/>) decides which list it sits on, and
+        /// two pawns of the same <see cref="ThingDef"/> can therefore answer differently.
+        /// </summary>
+        public virtual TickerType TickerType => def.tickerType;
 
         public virtual void Tick()
         {
