@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The mood consequence of a standing edict (EdictDefs/Edicts.xml, system 12: the god layer). Situational
+    rather than a granted memory, via ThoughtWorker_UnderEdict, so the thought appears and disappears exactly
+    with GodManager.Activate/Deactivate — no explicit per-pawn grant or removal, and nothing left behind once
+    an edict is rescinded. Severity scales roughly with how much of routine work an edict displaces (one work
+    type vs. two) and how demanding its labor is.
+  -->
+
+  <ThoughtDef>
+    <defName>UnderHuntersMandate</defName>
+    <workerClass>SimWorld.God.ThoughtWorker_UnderEdict</workerClass>
+    <stages>
+      <li>
+        <label>hunter's mandate</label>
+        <description>Every day is the hunt. Nothing else gets a moment's rest.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>UnderBreakTheSod</defName>
+    <workerClass>SimWorld.God.ThoughtWorker_UnderEdict</workerClass>
+    <stages>
+      <li>
+        <label>break the sod</label>
+        <description>My back aches from the fields. There is no edict against exhaustion.</description>
+        <baseMoodEffect>-4</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>UnderGreatWorksMandate</defName>
+    <workerClass>SimWorld.God.ThoughtWorker_UnderEdict</workerClass>
+    <stages>
+      <li>
+        <label>great works mandate</label>
+        <description>Stone and timber, timber and stone. The mandate does not care that I am tired.</description>
+        <baseMoodEffect>-6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>UnderIronDiscipline</defName>
+    <workerClass>SimWorld.God.ThoughtWorker_UnderEdict</workerClass>
+    <stages>
+      <li>
+        <label>iron discipline</label>
+        <description>The forge never cools, and neither do I get to.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>UnderIndustrialMobilization</defName>
+    <workerClass>SimWorld.God.ThoughtWorker_UnderEdict</workerClass>
+    <stages>
+      <li>
+        <label>industrial mobilization</label>
+        <description>Shift after shift. The mandate calls it mobilization; it feels like no life at all.</description>
+        <baseMoodEffect>-7</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

@@ -61,14 +61,19 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
-        public void Humanlike_think_tree_orders_danger_over_needs_over_orders_over_work()
+        public void Humanlike_think_tree_orders_danger_over_needs_over_orders_over_edicts_over_work()
         {
+            // The edict tier (system 12: the god layer) was inserted between directed orders and routine work
+            // — see JobGiver_Edicts's own doc for why that position is §10's "citizens keep full agency"
+            // clause made concrete: a need or a queued order still pre-empts a standing edict, and an edict
+            // still only ever pre-empts routine work, never the other way around.
             var root = (ThinkNode_Priority)ThinkTreeDefOf.Humanlike.thinkRoot;
             Assert.IsType<ThinkNode_ConditionalInMentalState>(root.subNodes[0]);
             Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[1]);
             Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[2]);
             Assert.IsType<JobGiver_DirectedOrder>(root.subNodes[3]);
-            Assert.IsType<JobGiver_Work>(root.subNodes[4]);
+            Assert.IsType<global::SimWorld.AI.JobGiver_Edicts>(root.subNodes[4]);
+            Assert.IsType<JobGiver_Work>(root.subNodes[5]);
         }
 
         [Fact]
