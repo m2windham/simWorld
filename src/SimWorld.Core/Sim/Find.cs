@@ -20,6 +20,7 @@ namespace SimWorld.Sim
         [ThreadStatic] private static SimWorld.Scenario.Scenario? scenario;
         [ThreadStatic] private static SimWorld.Pawns.FamilyManager? familyManager;
         [ThreadStatic] private static SimWorld.Social.SocialInteractionManager? socialInteractionManager;
+        [ThreadStatic] private static SimWorld.God.GodManager? godManager;
 
         public static TickManager TickManager
         {
@@ -88,6 +89,14 @@ namespace SimWorld.Sim
             set => socialInteractionManager = value ?? throw new ArgumentNullException(nameof(value));
         }
 
+        /// <summary>Standing edicts and the god view (RimWorld: no equivalent — SimWorld's own translation of
+        /// the player-as-overseer into civilization-scale directives, <c>docs/spec/simworld-spec.md</c> §10).</summary>
+        public static SimWorld.God.GodManager God
+        {
+            get => godManager ??= new SimWorld.God.GodManager();
+            set => godManager = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
         public static void Reset()
         {
             tickManager = null;
@@ -99,6 +108,7 @@ namespace SimWorld.Sim
             scenario = null;
             familyManager = null;
             socialInteractionManager = null;
+            godManager = null;
         }
     }
 }

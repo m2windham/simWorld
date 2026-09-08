@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-08",
-  "testsTotal": 670,
+  "testsTotal": 686,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -747,8 +747,8 @@
         },
         {
           "id": "ai.edicts",
-          "label": "Translation: god edicts/goals as high-priority think nodes",
-          "done": false
+          "label": "Translation: god edicts/goals as high-priority think nodes — built as JobGiver_Edicts, sitting between JobGiver_DirectedOrder and JobGiver_Work; see the god system's own entry for the full picture (EdictDef/EdictWorker, GodManager, the rollup)",
+          "done": true
         }
       ]
     },
@@ -1275,6 +1275,58 @@
         {
           "id": "stats.stuff-quality-parts",
           "label": "StatPart hook and def+stuff factor/offset resolution are real and tested, but no concrete StatPart ships - quality needs a live CompQuality on a spawned Thing (Crafting's QualityCategory exists only on ItemStack today) - lands with Items/Apparel",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "god",
+      "n": 22,
+      "rimworld": "God Layer & Civilization Translation",
+      "translation": "SimWorld's own — RimWorld has no equivalent to port. The re-focus from §10: the player is not a colony overseer but a god directing one civilization, so the player's own verb changes from drafting individuals to issuing standing civilization-scale edicts and reading aggregate rollups. Kept in RimWorld's own declarative shapes throughout even though the concept is new: Def + Worker + Class= polymorphism for EdictDef/EdictWorker (mirroring WorkGiverDef/WorkGiver and ThoughtDef/ThoughtWorker), IExposable for GodManager, a Find service exactly like Find.Storyteller/Find.ResearchManager, and a think-tree job-giver node for the work push rather than a bespoke priority mechanism. The mood consequence reuses the existing situational-thought pipeline (ThoughtWorker_UnderEdict) instead of inventing a second one, so an edict's cost to public mood appears and disappears with activation on its own, the same way every other situational thought already does.",
+      "translationState": "implemented",
+      "module": "src/SimWorld.Core/God · EdictDef · EdictWorker · EdictWorker_ExemptMinors · ThoughtWorker_UnderEdict · GodManager · GodRollup · GodTuning; src/SimWorld.Core/AI/JobGiver_Edicts.cs · WorkGiverScanUtility.cs (shared with JobGiver_Work)",
+      "status": "translated",
+      "tests": 16,
+      "items": [
+        {
+          "id": "god.edicts",
+          "label": "EdictDef: label/description (inherited from Def), prioritizedWork (List<WorkTypeDef>), an optional requiredEra (EraDef) gate read against ResearchManager.CurrentEra, an optional researchFocus (ResearchProjectDef) set as the current project on activation, a Class=-selected workerClass (EdictWorker) defaulting to the declarative base class, and a moodThought (ThoughtDef) granting a situational mood cost to every citizen the edict's AppliesTo(Pawn) reaches. EdictWorker_ExemptMinors ships as the one concrete worker exercising the Class= seam for something a def field alone cannot express (a harsh edict that spares children).",
+          "done": true
+        },
+        {
+          "id": "god.manager",
+          "label": "GodManager (Find.God): active edicts under a slot budget (GodTuning.MaxActiveEdicts, SimWorld's own number, pinned by test rather than trusted as a literal), CanActivate/Activate/Deactivate/IsActive/ActiveEdicts, a Chronicle line on activation and deactivation via Find.Storyteller.RecordChronicle, a self-gated GodTick on the long tick bucket (2000 ticks, GenTicks.TickLongInterval) matching Storyteller.StorytellerTick/FamilyManager.DemographyTick's own idiom, and a full Scribe round trip.",
+          "done": true
+        },
+        {
+          "id": "god.thinktree",
+          "label": "JobGiver_Edicts inserted into ThinkTrees_Humanlike.xml strictly between JobGiver_DirectedOrder and JobGiver_Work — a queued directed order and every need/mental-state guard above it still outrank a standing edict, and an edict only ever wins a job routine work would otherwise have offered, never pre-empting a need. Scans only the WorkGiverDefs under the active edicts' prioritizedWork types, sharing JobGiver_Work's own nearest-candidate scan via the new WorkGiverScanUtility rather than duplicating it. Never touches Pawn_WorkSettings: deactivating an edict leaves a citizen's own work priorities byte-for-byte unchanged, proved by test.",
+          "done": true
+        },
+        {
+          "id": "god.rollup",
+          "label": "GodRollup: population (total and by PawnTier), mean mood, mean health, a food/industry readout (mean Need_Food level; mean Construction/Mining/Crafting skill as the industry proxy in the absence of a real production ledger), current era and its research progress. Tier-aware by construction: a Statistical citizen's health contribution is Pawn_TierTracker.SampledHealthFraction, never Pawn_HealthTracker's real hediff-driven summary — proved by test (a severely injured Statistical citizen's real health, ~0.27, never leaks into the rollup, which instead reports the cohort-sampled band). Cached with an explicit dirty flag (Notify_Dirty) and a recompute cadence, not recomputed per tick per reader.",
+          "done": true
+        },
+        {
+          "id": "god.content",
+          "label": "EdictDefs/Edicts.xml: five edicts spread across the era ladder (HuntersMandate, BreakTheSod, GreatWorksMandate, IronDiscipline, IndustrialMobilization), each with a real requiredEra, prioritizedWork and researchFocus, and its own mood-cost ThoughtDef (ThoughtDefs/Thoughts_Edicts.xml, workerClass ThoughtWorker_UnderEdict). Zero config errors, zero DefOf errors.",
+          "done": true
+        },
+        {
+          "id": "god.settlement-population",
+          "label": "GodRollup takes its population as a caller-supplied IReadOnlyList<Pawn> rather than reading a registry of its own — the Settlement entity being built in a parallel lane is what should feed it once merged; lands with the Settlement-entity module.",
+          "done": false
+        },
+        {
+          "id": "god.view",
+          "label": "The god view itself — a presentation surface reading GodManager/GodRollup and offering edict activation — is UI/host work; lands with the Unity host once there is something to render.",
+          "done": false
+        },
+        {
+          "id": "god.era-transitions",
+          "label": "Reacting to an era transition while an edict is active (auto-deactivation, re-evaluation, a transition-triggered Chronicle tie-in) is a Director-layer concern — era transitions themselves are a later lane; today an edict simply stays active across a later era advance unless something explicitly deactivates it.",
           "done": false
         }
       ]

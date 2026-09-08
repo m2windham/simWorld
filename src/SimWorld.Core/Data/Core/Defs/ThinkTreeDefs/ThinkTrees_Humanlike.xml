@@ -3,8 +3,12 @@
 
   <!--
     The humanlike priority think tree (system 9: AI), matching simworld-spec.md §7.4's diagram order:
-    danger/mental-state overrides needs, needs override directed orders, directed orders override routine
-    work — a final wander tier keeps an otherwise-idle pawn doing *something*.
+    danger/mental-state overrides needs, needs override directed orders, directed orders override the god
+    layer's standing edicts (system 12), and edicts override routine work — a final wander tier keeps an
+    otherwise-idle pawn doing *something*. The edict tier sits strictly between a queued directed order and
+    routine work: a citizen still eats, rests and obeys a direct order before a civilization-scale edict, and
+    an edict still only ever wins a job routine work would otherwise have offered — see JobGiver_Edicts's own
+    doc for why that ordering is §10's "citizens keep full agency" clause made concrete.
   -->
 
   <ThinkTreeDef>
@@ -38,6 +42,8 @@
         </li>
 
         <li Class="SimWorld.AI.JobGiver_DirectedOrder" />
+
+        <li Class="SimWorld.AI.JobGiver_Edicts" />
 
         <li Class="SimWorld.AI.JobGiver_Work" />
 

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Standing civilization-scale directives (system 12: the god layer, docs/spec/simworld-spec.md §10).
+    RimWorld has nothing to port here — the player drafts individual colonists there rather than issuing
+    directives a whole civilization keeps obeying — so this is SimWorld's own translation, spread across the
+    era ladder (EraDefs/EraDefs.xml) the same way research is. Every edict costs public mood while active
+    (moodThought), which is the "demanding hard things should cost public mood" half of the brief; most rely
+    on the base EdictWorker for everything declarative (prioritizedWork, researchFocus, moodThought all read
+    live off this def), except GreatWorksMandate, which exercises the Class= worker seam for something a def
+    field can't express on its own — see EdictWorker_ExemptMinors.
+  -->
+
+  <EdictDef>
+    <defName>HuntersMandate</defName>
+    <label>hunter's mandate</label>
+    <description>Every able hand turns to the hunt. The band eats better, but nothing else gets done.</description>
+    <requiredEra>SticksAndStones</requiredEra>
+    <researchFocus>Hunting</researchFocus>
+    <prioritizedWork>
+      <li>Hunting</li>
+    </prioritizedWork>
+    <moodThought>UnderHuntersMandate</moodThought>
+  </EdictDef>
+
+  <EdictDef>
+    <defName>BreakTheSod</defName>
+    <label>break the sod</label>
+    <description>Every field gets turned this season, whatever else waits.</description>
+    <requiredEra>Agrarian</requiredEra>
+    <researchFocus>Agriculture</researchFocus>
+    <prioritizedWork>
+      <li>Growing</li>
+    </prioritizedWork>
+    <moodThought>UnderBreakTheSod</moodThought>
+  </EdictDef>
+
+  <EdictDef>
+    <defName>GreatWorksMandate</defName>
+    <label>great works mandate</label>
+    <description>Quarry and building site before anything else. Children are spared the mandate's cost, but not its labor shortage.</description>
+    <requiredEra>Bronze</requiredEra>
+    <researchFocus>Masonry</researchFocus>
+    <prioritizedWork>
+      <li>Construction</li>
+      <li>Mining</li>
+    </prioritizedWork>
+    <workerClass>SimWorld.God.EdictWorker_ExemptMinors</workerClass>
+    <moodThought>UnderGreatWorksMandate</moodThought>
+  </EdictDef>
+
+  <EdictDef>
+    <defName>IronDiscipline</defName>
+    <label>iron discipline</label>
+    <description>The forge does not go cold. Every smith works every shift the mandate demands.</description>
+    <requiredEra>Medieval</requiredEra>
+    <researchFocus>Steel</researchFocus>
+    <prioritizedWork>
+      <li>Smithing</li>
+    </prioritizedWork>
+    <moodThought>UnderIronDiscipline</moodThought>
+  </EdictDef>
+
+  <EdictDef>
+    <defName>IndustrialMobilization</defName>
+    <label>industrial mobilization</label>
+    <description>The whole civilization tools up for it: crafting and hauling before anything else.</description>
+    <requiredEra>Industrial</requiredEra>
+    <researchFocus>SteamEngine</researchFocus>
+    <prioritizedWork>
+      <li>Crafting</li>
+      <li>Hauling</li>
+    </prioritizedWork>
+    <moodThought>UnderIndustrialMobilization</moodThought>
+  </EdictDef>
+
+</Defs>
