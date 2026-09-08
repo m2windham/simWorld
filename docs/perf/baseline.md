@@ -50,9 +50,14 @@ N generated colonists ticked through one in-game day (60,000 ticks).
 | 5,000 | 90,498.1 | 18,099.6 | 90.50 | 0.011 |
 | 10,000 | 203,696.6 (guard, 1 trial) | 20,369.7 | 203.70 | 0.005 |
 
-Per-pawn-day cost is **not** flat: 14.0–14.1 µs/pawn-day up to N=500, jumping to
-17.4 at N=1,000 and 21.7 at N=2,500, dipping back to 18.1 at N=5,000, and
-20.4 at N=10,000 (single trial, more noise). This is superlinear-with-jitter,
+Per-pawn-day cost is **not** flat: 14.0–14.1 **ms**/pawn-day up to N=500, jumping
+to 17.4 at N=1,000 and 21.7 at N=2,500, dipping back to 18.1 at N=5,000, and 20.4
+at N=10,000 (single trial, more noise). (An earlier revision of this paragraph
+wrote those as microseconds — off by a thousand against the table directly above
+it, which has been right all along: 7,050.4 ms over 500 pawns is 14.1 ms each.
+The conclusions never depended on it, since the population ceilings below are
+measured breakpoints rather than derived from this figure, but the number was
+quoted onward and is corrected here.) This is superlinear-with-jitter,
 not clean O(N) — consistent with GC pressure (§4: ~4.2 MB/pawn-day means a
 Gen0 collection roughly every 30 pawn-days at N=1,000) and cache effects as
 the working set grows past what fits in the 8 MiB L2 / shared L3.

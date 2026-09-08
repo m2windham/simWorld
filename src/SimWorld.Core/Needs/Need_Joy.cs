@@ -49,11 +49,20 @@ namespace SimWorld.Needs
 
         public void NeedInterval()
         {
-            if (tolerances.Count == 0) return;
+            NeedIntervalBulk(1);
+        }
+
+        /// <summary>Decays every tolerance by <paramref name="slices"/> intervals' worth in one pass — O(#kinds
+        /// held), never O(slices), so an Interval-tier citizen's coarse tick costs the same regardless of how
+        /// many <see cref="Need.IntervalTicks"/>-sized slices the elapsed span holds.</summary>
+        public void NeedIntervalBulk(int slices)
+        {
+            if (slices <= 0 || tolerances.Count == 0) return;
+            float decay = ToleranceDecayPerInterval * slices;
             var keys = new List<JoyKindDef>(tolerances.Keys);
             for (int i = 0; i < keys.Count; i++)
             {
-                float next = Math.Max(0f, tolerances[keys[i]] - ToleranceDecayPerInterval);
+                float next = Math.Max(0f, tolerances[keys[i]] - decay);
                 if (next <= 0f) tolerances.Remove(keys[i]);
                 else tolerances[keys[i]] = next;
             }
@@ -132,6 +141,22 @@ namespace SimWorld.Needs
                 CurLevel -= FallPerInterval;
             }
             tolerances.NeedInterval();
+        }
+
+        /// <summary>O(1) bulk equivalent (see the base class doc): <see cref="FallPerInterval"/> is already
+        /// scaled to one <see cref="Need.IntervalTicks"/> slice rather than a per-tick rate, so this multiplies
+        /// by the slice count instead of raw ticks, holding the current joy-category rate constant across the
+        /// span.</summary>
+        public override void NeedIntervalBulk(int elapsedTicks)
+        {
+            if (elapsedTicks <= 0) return;
+            int slices = elapsedTicks / IntervalTicks;
+            if (slices <= 0) return;
+            if (!IsFrozen)
+            {
+                CurLevel -= FallPerInterval * slices;
+            }
+            tolerances.NeedIntervalBulk(slices);
         }
 
         public override void ExposeData()

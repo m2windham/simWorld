@@ -94,6 +94,20 @@ namespace SimWorld.Needs
             }
         }
 
+        /// <summary>O(1) bulk equivalent of <see cref="NeedInterval"/> (see the base class doc): holds the
+        /// current resting/awake state and fall-rate category constant across <paramref name="elapsedTicks"/>.</summary>
+        public override void NeedIntervalBulk(int elapsedTicks)
+        {
+            if (elapsedTicks <= 0) return;
+            if (!IsFrozen)
+            {
+                if (Resting) CurLevel += RestGainPerTick * elapsedTicks;
+                else CurLevel -= RestFallPerTick * elapsedTicks;
+            }
+            if (CurLevel < 0.0001f) ticksAtZero += elapsedTicks;
+            else ticksAtZero = 0;
+        }
+
         public override void ExposeData()
         {
             base.ExposeData();
