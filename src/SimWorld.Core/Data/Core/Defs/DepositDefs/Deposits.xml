@@ -45,6 +45,12 @@
   </DepositDef>
 
   <DepositDef>
+    <defName>Coal</defName>
+    <label>coal</label>
+    <description>Seams laid down in ancient swamp and floodplain ground, distinct from Ore's hills and mountains.</description>
+  </DepositDef>
+
+  <DepositDef>
     <defName>Salt</defName>
     <label>salt</label>
     <description>Panned from a coastline, or rarely drawn from a mineral spring far inland.</description>

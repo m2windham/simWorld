@@ -365,7 +365,7 @@ namespace SimWorld.Tests.World
             Assert.Equal(7, DefDatabase<WorldGenStepDef>.DefCount);
             Assert.Equal(4, DefDatabase<FactionDef>.DefCount);
             Assert.True(DefDatabase<WorldObjectDef>.DefCount >= 1);
-            Assert.Equal(11, DefDatabase<DepositDef>.DefCount);
+            Assert.Equal(12, DefDatabase<DepositDef>.DefCount);
             Assert.Equal(8, DefDatabase<global::SimWorld.World.Siting.SiteWeightDef>.DefCount);
 
             Assert.NotNull(BiomeDefOf.Ocean);
@@ -384,6 +384,7 @@ namespace SimWorld.Tests.World
             Assert.NotNull(DepositDefOf.Flint);
             Assert.NotNull(DepositDefOf.Stone);
             Assert.NotNull(DepositDefOf.Ore);
+            Assert.NotNull(DepositDefOf.Coal);
             Assert.NotNull(DepositDefOf.Salt);
             Assert.NotNull(DepositDefOf.Timber);
             Assert.NotNull(DepositDefOf.Game);

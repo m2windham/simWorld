@@ -50,7 +50,13 @@ namespace SimWorld.World.Siting
             return Math.Min(lowRamp, highRamp);
         }
 
-        private static float BestNearbyMagnitude(WorldGrid grid, int tileId, DepositDef def)
+        /// <summary>
+        /// The best <paramref name="def"/> magnitude at <paramref name="tileId"/> or any of its neighbours —
+        /// "in reach" of a settlement centred there. Used for necessity gating here; also the shared "does
+        /// this settlement have this deposit at all" check <c>Economy.CoalSupply</c> reuses to decide whether
+        /// a settlement needs to trade for coal rather than duplicating the neighbour-scan logic.
+        /// </summary>
+        public static float BestNearbyMagnitude(WorldGrid grid, int tileId, DepositDef def)
         {
             float best = grid.Tiles[tileId].DepositMagnitude(def);
             foreach (int n in grid.NeighborsOf(tileId))

@@ -8,6 +8,12 @@
     age ("a neolithic founding reads water, game and flint... an industrial one reads coal and navigable
     water") rather than tuned against any real data. SiteScorer.NecessityMultiplier (fresh water, food,
     survivable climate) is NOT era-weighted — only these advantage weights are.
+
+    Coal is worth 0.0 through Classical, a token 0.2 in Medieval (early "sea coal" use), then jumps to 3.5
+    in Industrial — above even Ore's own 3.0 — before easing back for Information/Exotic as other power
+    sources take over. That gradient, not any one number in it, is the entire point of Coal being its own
+    deposit rather than folded into Ore (spec §5b.2): the same tile is worthless for its coal in the
+    neolithic and one of the most valuable in the world for it four eras later.
   -->
 
   <SiteWeightDef>
@@ -25,6 +31,7 @@
       <li><deposit>Salt</deposit><weight>0.5</weight></li>
       <li><deposit>DefensibleGround</deposit><weight>0.2</weight></li>
       <li><deposit>Ore</deposit><weight>0.0</weight></li>
+      <li><deposit>Coal</deposit><weight>0.0</weight></li>
     </depositWeights>
     <tradePositionWeight>0.1</tradePositionWeight>
   </SiteWeightDef>
@@ -44,6 +51,7 @@
       <li><deposit>Stone</deposit><weight>0.5</weight></li>
       <li><deposit>DefensibleGround</deposit><weight>0.5</weight></li>
       <li><deposit>Ore</deposit><weight>0.2</weight></li>
+      <li><deposit>Coal</deposit><weight>0.0</weight></li>
     </depositWeights>
     <tradePositionWeight>0.3</tradePositionWeight>
   </SiteWeightDef>
@@ -63,6 +71,7 @@
       <li><deposit>Timber</deposit><weight>1.0</weight></li>
       <li><deposit>Game</deposit><weight>0.7</weight></li>
       <li><deposit>Flint</deposit><weight>0.3</weight></li>
+      <li><deposit>Coal</deposit><weight>0.0</weight></li>
     </depositWeights>
     <tradePositionWeight>0.8</tradePositionWeight>
   </SiteWeightDef>
@@ -82,6 +91,7 @@
       <li><deposit>Timber</deposit><weight>0.8</weight></li>
       <li><deposit>Game</deposit><weight>0.4</weight></li>
       <li><deposit>Flint</deposit><weight>0.2</weight></li>
+      <li><deposit>Coal</deposit><weight>0.0</weight></li>
     </depositWeights>
     <tradePositionWeight>1.5</tradePositionWeight>
   </SiteWeightDef>
@@ -101,6 +111,7 @@
       <li><deposit>Clay</deposit><weight>0.5</weight></li>
       <li><deposit>Game</deposit><weight>0.3</weight></li>
       <li><deposit>Flint</deposit><weight>0.2</weight></li>
+      <li><deposit>Coal</deposit><weight>0.2</weight></li>
     </depositWeights>
     <tradePositionWeight>1.2</tradePositionWeight>
   </SiteWeightDef>
@@ -120,6 +131,7 @@
       <li><deposit>Clay</deposit><weight>0.2</weight></li>
       <li><deposit>Game</deposit><weight>0.1</weight></li>
       <li><deposit>Flint</deposit><weight>0.05</weight></li>
+      <li><deposit>Coal</deposit><weight>3.5</weight></li>
     </depositWeights>
     <tradePositionWeight>3.0</tradePositionWeight>
   </SiteWeightDef>
@@ -139,6 +151,7 @@
       <li><deposit>Clay</deposit><weight>0.1</weight></li>
       <li><deposit>Game</deposit><weight>0.05</weight></li>
       <li><deposit>Flint</deposit><weight>0.02</weight></li>
+      <li><deposit>Coal</deposit><weight>1.5</weight></li>
     </depositWeights>
     <tradePositionWeight>3.5</tradePositionWeight>
   </SiteWeightDef>
@@ -158,6 +171,7 @@
       <li><deposit>Clay</deposit><weight>0.05</weight></li>
       <li><deposit>Game</deposit><weight>0.02</weight></li>
       <li><deposit>Flint</deposit><weight>0.01</weight></li>
+      <li><deposit>Coal</deposit><weight>0.7</weight></li>
     </depositWeights>
     <tradePositionWeight>3.5</tradePositionWeight>
   </SiteWeightDef>

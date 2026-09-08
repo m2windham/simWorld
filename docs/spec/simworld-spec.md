@@ -278,15 +278,15 @@ profile.
 ### 5b.2 Stage two — the site, by what is visibly there
 
 Inside the chosen region the map shows what a scouting party would see: markers
-for fresh water, arable soil, timber, stone, clay, flint, ore, salt, game,
-fords and defensible high ground. The player places the settlement centre
-against them.
+for fresh water, arable soil, timber, stone, clay, flint, ore, coal, salt,
+game, fords and defensible high ground. The player places the settlement
+centre against them.
 
 - Deposits are **derived from the terrain that already exists**, not sprinkled
   at random: clay in floodplains and river bends, flint in chalk lowland, ore in
-  hills and mountains, salt at coasts and springs, deep soil in valleys and on
-  floodplains, timber from the biome. A player who learns to read the land is
-  reading something real.
+  hills and mountains, coal in ancient swamp and floodplain low ground, salt at
+  coasts and springs, deep soil in valleys and on floodplains, timber from the
+  biome. A player who learns to read the land is reading something real.
 - Site scoring still exists — hard necessities times weighted advantages — but
   for the player's own founding it is **advisory**: it shades the markers rather
   than deciding for them. The same score is what emergent and NPC foundings use,
@@ -310,10 +310,27 @@ against them.
   went, so it gets its own category and its own distribution rather than hiding
   inside Ore — a site chosen in the neolithic for water and game may or may not
   turn out to be an industrial one, and the player will not know for centuries.
-  But geography shapes rather than dictates: caravans and trade can supply a
-  settlement that lacks coal, at a cost, which is both what actually happened
-  and real work for the already-ported trade system to do once the industrial
-  era arrives.
+  Real coal measures are ancient swamp and floodplain sediment, so
+  `World.Gen.WorldGenStep_Deposits` derives it from a tile's swampiness and
+  rainfall on low ground, gated off entirely above `SmallHills` — the deliberate
+  opposite of Ore's hills-and-mountains rule, so a generated world's two
+  distributions are measurably distinct rather than tracking each other
+  (`World.DepositTuning`'s Coal block; pinned by a correlation test in
+  `SettlementFoundingTests`). In site scoring it is worth nothing through the
+  Classical era, a token amount in Medieval, and by Industrial it is the single
+  highest advantage weight on the table — above even Ore's own — before easing
+  back as later eras diversify their power sources (`SiteWeightDefs/SiteWeights.xml`).
+  But geography shapes rather than dictates: `Economy.CoalSupply` gives a
+  settlement `CoalAccess` — local, if a deposit is in reach, otherwise the
+  cheapest-to-reach other settlement that has one, found over the same
+  `Caravans.WorldPathFinder` route a caravan itself would travel. Trading for it
+  costs more than sitting on a deposit: the local price is coal's raw market
+  value, the traded price runs that through the existing `TradeUtility` buy
+  markup and then a further premium scaled by the route's own movement cost, so
+  a short hop barely moves the price while a genuine long haul prices coal well
+  above local supply. `CoalAccess` is deliberately just a predicate/cost pair —
+  it does not gate anything itself; a later era-transition or industrialisation
+  check is what reads it, and neither exists yet.
 - Trade position comes almost free: the road generator already paths by terrain
   cost, so scoring a tile by how many cheap routes would pass through it is the
   same computation, inverted.

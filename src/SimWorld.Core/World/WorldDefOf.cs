@@ -31,6 +31,7 @@ namespace SimWorld.World
         public static DepositDef Flint = null!;
         public static DepositDef Stone = null!;
         public static DepositDef Ore = null!;
+        public static DepositDef Coal = null!;
         public static DepositDef Salt = null!;
         public static DepositDef Timber = null!;
         public static DepositDef Game = null!;
