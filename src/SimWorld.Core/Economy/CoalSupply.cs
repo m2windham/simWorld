@@ -119,6 +119,60 @@ namespace SimWorld.Economy
             return CoalAccess.Traded(bestSource.Value, unitCost);
         }
 
+        /// <summary>
+        /// Same evaluation as <see cref="Evaluate(WorldGrid, int, IReadOnlyList{int})"/>, but for real
+        /// <see cref="Settlement"/> entities: local access is granted when either the settlement's own real
+        /// stores already hold Coal (<see cref="Settlement.StoreCountOf"/> — the settlement-entity module's
+        /// own brief: "route real stock through Economy.CoalSupply rather than reinventing it") <i>or</i> the
+        /// tile-structural signal above still holds. This is deliberately additive, not a replacement: nothing
+        /// in this codebase mines or trades coal into a settlement's stores yet (that needs the Crafting/
+        /// Things systems this port doesn't have), so requiring real stock alone would silently take away the
+        /// access spec §5b.2 already promises ("local, if a deposit is in reach") from every settlement until
+        /// some future system starts stocking it. Once production or trade *does* start moving Coal through
+        /// <see cref="Settlement.Stores"/>, this reads it immediately with no change needed here — that is the
+        /// whole point of routing through real stock instead of re-deriving it structurally every time.
+        /// </summary>
+        public static CoalAccess Evaluate(WorldGrid grid, Settlement settlement, IReadOnlyList<Settlement> otherSettlements)
+        {
+            if (grid == null) throw new ArgumentNullException(nameof(grid));
+            if (settlement == null) throw new ArgumentNullException(nameof(settlement));
+            if (otherSettlements == null) throw new ArgumentNullException(nameof(otherSettlements));
+
+            if (HasCoalAccess(grid, settlement))
+            {
+                return CoalAccess.Local(settlement.tile, TradeUtility.BaseMarketValue(EconomyThingDefOf.Coal));
+            }
+
+            Settlement? bestSource = null;
+            float bestRouteCost = float.MaxValue;
+            for (int i = 0; i < otherSettlements.Count; i++)
+            {
+                Settlement candidate = otherSettlements[i];
+                if (candidate == settlement || !HasCoalAccess(grid, candidate)) continue;
+
+                if (!WorldPathFinder.FindPath(grid, settlement.tile, candidate.tile, out List<int> path) || path.Count < 2) continue;
+
+                float routeCost = TotalMovementCost(grid, path);
+                if (routeCost < bestRouteCost)
+                {
+                    bestRouteCost = routeCost;
+                    bestSource = candidate;
+                }
+            }
+
+            if (bestSource == null) return CoalAccess.None;
+
+            float routeMultiplier = 1f + bestRouteCost * RoutePremiumPerMovementCost;
+            float unitCost = TradeUtility.GetPricePlayerBuy(EconomyThingDefOf.Coal, PriceType.Normal, routeMultiplier);
+            return CoalAccess.Traded(bestSource.tile, unitCost);
+        }
+
+        /// <summary>Real stock first (see <see cref="Evaluate(WorldGrid, Settlement, IReadOnlyList{Settlement})"/>'s
+        /// own doc for why that is additive rather than a replacement), the tile-structural signal otherwise.</summary>
+        private static bool HasCoalAccess(WorldGrid grid, Settlement settlement) =>
+            settlement.StoreCountOf(EconomyThingDefOf.Coal) > 0
+            || SiteScorer.BestNearbyMagnitude(grid, settlement.tile, DepositDefOf.Coal) >= LocalCoalFloor;
+
         private static float TotalMovementCost(WorldGrid grid, List<int> path)
         {
             float total = 0f;

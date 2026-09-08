@@ -252,11 +252,13 @@ flowchart TD
   Map --> Listers[ListerThings, MapPawns]
 ```
 
-## 5b. Regions, Sites & Settlement Founding — _planned_
+## 5b. Regions, Sites & Settlement Founding
 
-**Design, not built.** A game opens with a two-stage choice modelled on Manor
-Lords and Nova Roma: pick a region on the world map, then place the settlement
-inside that region against markers showing what is actually there.
+**Built**, except the settlement interior (§11.2's own seam — a separate
+module) and civilization emergence (§5b.4 — likewise). A game opens with a
+two-stage choice modelled on Manor Lords and Nova Roma: pick a region on the
+world map, then place the settlement inside that region against markers
+showing what is actually there.
 
 ### 5b.1 Stage one — the world map, by region
 
@@ -321,7 +323,10 @@ centre against them.
   highest advantage weight on the table — above even Ore's own — before easing
   back as later eras diversify their power sources (`SiteWeightDefs/SiteWeights.xml`).
   But geography shapes rather than dictates: `Economy.CoalSupply` gives a
-  settlement `CoalAccess` — local, if a deposit is in reach, otherwise the
+  settlement `CoalAccess` — local, if a deposit is in reach _or_ its real
+  `World.Settlement.Stores` already hold Coal (additive, not a replacement:
+  nothing mines or trades coal into stores yet, so requiring real stock alone
+  would take away access the deposit signal already promises), otherwise the
   cheapest-to-reach other settlement that has one, found over the same
   `Caravans.WorldPathFinder` route a caravan itself would travel. Trading for it
   costs more than sitting on a deposit: the local price is coal's raw market
@@ -341,7 +346,12 @@ Twenty to forty people in several households — the archaeological range for a
 neolithic founding group, and the smallest number at which demography works
 unaided: enough unrelated adults for marriage to have real choices, and enough
 households for lineages to diverge instead of collapsing into one (§7.5). Every
-founder is Full-tier from the first tick (§11.3).
+founder is Full-tier from the first tick (§11.3). `World.SettlementFounder`
+builds exactly this: it generates the band, pairs it into households through
+the existing `FamilyManager.FoundHousehold` (no second lineage path), records
+the founding on the chronicle, and hands back a real `World.Settlement` —
+population by tier, a stores ledger, founding tick, name and growth wired to
+`FamilyManager.DemographyTick` — registered into `World.worldObjects`.
 
 ### 5b.4 Alone at the start
 
@@ -356,12 +366,12 @@ opening hours. Emergence is its own system and is not designed here.
 
 | Piece | Today |
 | --- | --- |
-| Region partition over the icosphere, with names and profiles | missing |
-| Resource and landmark deposits derived from terrain | missing — tiles carry climate and elevation only |
-| Site scoring: necessities × era-weighted advantages | missing — placement is a biome lottery with spacing |
-| Settlement as an entity: population, stores, age, name, growth | missing — a def, a tile and a faction |
-| Solo-start world generation | a flag on an existing step |
-| A settlement interior when the player enters it | the §11.2 seam |
+| Region partition over the icosphere, with names and profiles | built (`World.WorldRegion`, `Gen.WorldGenStep_Regions`) |
+| Resource and landmark deposits derived from terrain | built (`World.DepositDef`, `Gen.WorldGenStep_Deposits`) |
+| Site scoring: necessities × era-weighted advantages | built (`Siting.SiteScorer`) |
+| Settlement as an entity: population by tier, stores, founding tick, name, growth | built (`World.Settlement`, `World.SettlementFounder`) — population is tier-aware (real `Pawn`s above Statistical, a bare count at Statistical), stores are a def→count ledger, growth wires into `FamilyManager.DemographyTick` for the real-`Pawn` slice and a closed-form rate for the Statistical one (see the module's report) |
+| Solo-start world generation | built — a flag on the faction gen step (`WorldInfo.soloStart`) |
+| A settlement interior when the player enters it | still missing — the §11.2 seam |
 
 ```mermaid
 flowchart TD
@@ -373,7 +383,8 @@ flowchart TD
   Score -.shades.-> Markers
   Markers -->|player places the centre| Found[Founding: 20-40 people, several households, all Full-tier]
   Found --> Chron[Founding chronicle entry]
-  Found --> Settle[Settlement entity: population, stores, age, name]
+  Found --> Settle[Settlement entity: population by tier, stores, founding tick, name]
+  Settle -->|FamilyManager.DemographyTick + closed-form Statistical growth| Growth[Population grows over time]
   Settle -->|player enters at settlement scope| Map[Interior map generated and persisted]
 ```
 
