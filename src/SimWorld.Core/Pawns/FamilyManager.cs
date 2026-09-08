@@ -275,6 +275,35 @@ namespace SimWorld.Pawns
             Find.Storyteller.RecordDeath(pawn, cause, detail);
         }
 
+        /// <summary>
+        /// One of the four tier-promotion triggers (<c>docs/spec/simworld-spec.md</c> §11.3): "a relationship
+        /// attaches them to someone already promoted". Walks <paramref name="promoted"/>'s spouse, both parents
+        /// and every child — one hop only, not the whole lineage; a promoted leader's grandparent's spouse's
+        /// distant cousin is not "attached" to them, it is a coincidence of descent — and marks each pawn that
+        /// resolves in <paramref name="population"/> as related-to-promoted, which promotes it to Full
+        /// (<see cref="Pawn_TierTracker.Notify_RelatedToPromoted"/>) if it is not there already. Idempotent:
+        /// calling this again after nothing has changed re-sends the same notification, which is a no-op.
+        /// </summary>
+        public static void PromoteRelativesOf(Pawn promoted, IReadOnlyDictionary<int, Pawn> population)
+        {
+            if (promoted == null) throw new ArgumentNullException(nameof(promoted));
+            if (population == null) throw new ArgumentNullException(nameof(population));
+
+            MarkRelated(promoted.relations.spouseId, population);
+            MarkRelated(promoted.relations.parentIdA, population);
+            MarkRelated(promoted.relations.parentIdB, population);
+            foreach (int childId in promoted.relations.childIds) MarkRelated(childId, population);
+        }
+
+        private static void MarkRelated(int id, IReadOnlyDictionary<int, Pawn> population)
+        {
+            if (id == Pawn_RelationsTracker.None) return;
+            if (population.TryGetValue(id, out Pawn? relative) && relative != null)
+            {
+                relative.tier.Notify_RelatedToPromoted(true);
+            }
+        }
+
         private static void MarkBereaved(int id, DeathCause cause, IReadOnlyDictionary<int, Pawn> population)
         {
             if (id == Pawn_RelationsTracker.None) return;

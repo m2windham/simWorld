@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-08",
-  "testsTotal": 646,
+  "testsTotal": 657,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1127,11 +1127,11 @@
       "id": "demography",
       "n": 19,
       "rimworld": "Demography & Lineage",
-      "translation": "SimWorld original — RimWorld has no equivalent to port. A colony of twelve never needs generations; a civilization does. Built on the ported age/life-stage clock rather than a compressed one.",
+      "translation": "SimWorld original — RimWorld has no equivalent to port. A colony of twelve never needs generations; a civilization does. Built on the ported age/life-stage clock rather than a compressed one. Citizen tiering (§11.3) is the same idea pushed further: a civilization needs most of its population cheap, not absent — RimWorld's world-pawn precedent (identity/ageing kept, needs/jobs/health frozen off-map) generalised from \"on the map or not\" to \"significant or not\".",
       "translationState": "implemented",
-      "module": "src/SimWorld.Core/Pawns — Family · FamilyManager · Pawn_RelationsTracker · DemographyTuning",
+      "module": "src/SimWorld.Core/Pawns — Family · FamilyManager · Pawn_RelationsTracker · DemographyTuning · Pawn_TierTracker",
       "status": "translated",
-      "tests": 29,
+      "tests": 40,
       "items": [
         {
           "id": "demography.households",
@@ -1165,8 +1165,8 @@
         },
         {
           "id": "demography.lod",
-          "label": "Population level-of-detail: tiering citizens by significance so a civilization-scale population is affordable, with the sim's own record fidelity doubling as what history remembers",
-          "done": false
+          "label": "Population level-of-detail: PawnTier (Full/Interval/Statistical) and Pawn_TierTracker dispatch ticking by which list a pawn sits on (Normal for Full, Long for Interval and Statistical alike, told apart only by what the coarse tick does there) rather than an if-skip inside Pawn.Tick(); promotion/demotion by significance (attention, role, chronicle mention, relation to someone promoted), never proximity or elapsed time; promotion catch-up brings age (exact, via AgeTickMothballed) and needs (real bulk decay at Interval, cohort sampling at Statistical) current in one step. Measured: Interval ~135 µs/pawn-day, Statistical ~25-36 µs/pawn-day, against Full's ~14,000-34,000 (box-load-dependent; see docs/perf/baseline.md and spec §11.3) — roughly 100-1,000x cheaper per citizen.",
+          "done": true
         },
         {
           "id": "demography.migration",

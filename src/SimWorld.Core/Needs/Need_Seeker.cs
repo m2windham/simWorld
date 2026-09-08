@@ -30,6 +30,24 @@ namespace SimWorld.Needs
                 CurLevel = System.Math.Max(CurLevel - def.seekerFallPerHour * IntervalHourFraction, target);
             }
         }
+
+        /// <summary>O(1) bulk equivalent (see the base class doc): holds the current instant target constant
+        /// across the whole elapsed span rather than re-sampling it every slice — exact for a target that does
+        /// not move (the common case until the map/thoughts systems drive one), an approximation otherwise.</summary>
+        public override void NeedIntervalBulk(int elapsedTicks)
+        {
+            if (elapsedTicks <= 0 || IsFrozen) return;
+            float target = CurInstantLevel;
+            float elapsedHourFraction = (float)elapsedTicks / GenDate.TicksPerHour;
+            if (target > CurLevel)
+            {
+                CurLevel = System.Math.Min(CurLevel + def.seekerRisePerHour * elapsedHourFraction, target);
+            }
+            else if (target < CurLevel)
+            {
+                CurLevel = System.Math.Max(CurLevel - def.seekerFallPerHour * elapsedHourFraction, target);
+            }
+        }
     }
 
     /// <summary>
@@ -51,6 +69,17 @@ namespace SimWorld.Needs
         {
             base.NeedInterval();
             thoughts.ThoughtInterval();
+        }
+
+        /// <summary>O(1) bulk equivalent (see the base class doc): ages/expires memories through one
+        /// <see cref="Thoughts.ThoughtHandler.ThoughtInterval"/> pass rather than one per slice, so a memory
+        /// held through a long Interval-tier span expires more slowly than true per-tick simulation would — a
+        /// documented imprecision (mood memories fading a bit late), not a magnitude-changing one, and mood
+        /// itself is only ever sampled (not bulk-decayed) once a citizen falls all the way to Statistical.</summary>
+        public override void NeedIntervalBulk(int elapsedTicks)
+        {
+            base.NeedIntervalBulk(elapsedTicks);
+            if (elapsedTicks > 0) thoughts.ThoughtInterval();
         }
 
         public override void ExposeData()
