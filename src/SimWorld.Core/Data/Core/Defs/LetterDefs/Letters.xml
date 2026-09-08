@@ -45,6 +45,12 @@
   </LetterDef>
 
   <LetterDef>
+    <defName>EraReached</defName>
+    <label>a new era</label>
+    <description>The civilization has entered a new age.</description>
+  </LetterDef>
+
+  <LetterDef>
     <defName>AcceptQuest</defName>
     <label>quest offer</label>
     <description>A quest is offered and awaits a decision.</description>

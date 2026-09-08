@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-08",
-  "testsTotal": 670,
+  "testsTotal": 683,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -794,7 +794,12 @@
         },
         {
           "id": "director.civ",
-          "label": "Translation: civilization-scale targeting and era-based scaling",
+          "label": "Translation: era-based scaling — the current era multiplies threat points (standing in for the wealth term nothing computes yet), and IncidentDef.minEra/maxEra gate an incident to the ages it belongs to",
+          "done": true
+        },
+        {
+          "id": "director.multi-settlement",
+          "label": "Translation: targeting a civilization of several settlements rather than one — lands with the settlement entity",
           "done": false
         }
       ]
@@ -896,7 +901,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects)",
       "status": "ported",
-      "tests": 40,
+      "tests": 53,
       "items": [
         {
           "id": "research.dag",
@@ -926,6 +931,11 @@
         {
           "id": "research.techlevel",
           "label": "ResearcherTechLevel rises with the era instead of being set once at scenario start — it was silently taxing the whole tree 2.5x from a tribal start",
+          "done": true
+        },
+        {
+          "id": "research.era-transitions",
+          "label": "Entering an era is an event: fired once per era crossed (derived from before/after the project finish, so loading a save never re-announces history), it writes a chronicle line and a letter, and a scenario’s starting era is seeded silently rather than narrated",
           "done": true
         },
         {

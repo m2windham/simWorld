@@ -10,5 +10,8 @@ namespace SimWorld.Letters
         public static LetterDef NegativeEvent = null!;
         public static LetterDef ThreatBig = null!;
         public static LetterDef AcceptQuest = null!;
+
+        /// <summary>The civilization has entered a new era (<see cref="Research.EraTransitionUtility"/>).</summary>
+        public static LetterDef EraReached = null!;
     }
 }

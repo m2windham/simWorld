@@ -22,6 +22,13 @@ namespace SimWorld.Research
         /// <summary>Raised whenever a project finishes, whether from work, <see cref="FinishProject"/>, or debug.</summary>
         public event Action<ResearchProjectDef>? ProjectFinished;
 
+        /// <summary>
+        /// Raised when the civilization enters a new era: the era left behind (null only when the ladder had
+        /// no era below the one reached) and the era reached. Fires exactly once per era crossed, and only
+        /// from a project actually finishing — never from loading a save.
+        /// </summary>
+        public event Action<EraDef?, EraDef>? EraReached;
+
         public ResearchProjectDef? CurrentProj
         {
             get => currentProj;
@@ -94,10 +101,18 @@ namespace SimWorld.Research
         public void FinishProject(ResearchProjectDef def, bool doCompletionDialog = false, Pawn? researcher = null)
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
+
+            // Read the era before the progress write, not from a persisted "last era" field: the era a
+            // civilization is in is derived from what it has finished, so the honest before/after pair is
+            // the one that brackets the mutation. It also means loading a save can never re-fire history —
+            // nothing outside this method moves the ladder.
+            EraDef? eraBefore = CurrentEra;
+
             progress[def] = def.baseCost;
             if (currentProj == def) currentProj = null;
             Notify_ResearchProjectFinished(def);
             ProjectFinished?.Invoke(def);
+            CheckEraTransition(eraBefore);
             _ = doCompletionDialog; // UI concern only; SimWorld has no completion dialog yet.
             _ = researcher; // kept for parity with RimWorld's call sites and future credit/letter text.
         }
@@ -106,6 +121,42 @@ namespace SimWorld.Research
         protected virtual void Notify_ResearchProjectFinished(ResearchProjectDef def)
         {
             AdvanceTechLevelToEra();
+        }
+
+        /// <summary>
+        /// Fires <see cref="EraReached"/> once for every era the civilization crossed by finishing a project.
+        /// One project can complete more than one era at a time — a later era whose spine was already done
+        /// becomes reachable the moment the era below it completes — and each of those is a separate moment
+        /// in the civilization's history, so each gets its own event rather than one event for the jump.
+        /// </summary>
+        private void CheckEraTransition(EraDef? eraBefore)
+        {
+            EraDef? eraNow = CurrentEra;
+            if (eraNow == null || eraNow == eraBefore) return;
+
+            List<EraDef> ordered = OrderedEras();
+            int fromIndex = eraBefore != null ? ordered.IndexOf(eraBefore) : -1;
+            int toIndex = ordered.IndexOf(eraNow);
+            if (toIndex <= fromIndex) return; // the ladder never runs backwards; progress only ever grows.
+
+            EraDef? previous = eraBefore;
+            for (int i = fromIndex + 1; i <= toIndex; i++)
+            {
+                EraDef reached = ordered[i];
+                Notify_EraReached(previous, reached);
+                EraReached?.Invoke(previous, reached);
+                previous = reached;
+            }
+        }
+
+        /// <summary>
+        /// Hook for subclasses to react to the civilization entering a new era. The base implementation
+        /// writes the Chronicle line and the letter (see <see cref="EraTransitionUtility"/>); override to
+        /// replace those, or subscribe to <see cref="EraReached"/> to add to them.
+        /// </summary>
+        protected virtual void Notify_EraReached(EraDef? from, EraDef to)
+        {
+            EraTransitionUtility.Notify_EraReached(from, to);
         }
 
         /// <summary>
@@ -122,6 +173,23 @@ namespace SimWorld.Research
         {
             TechLevel eraLevel = CurrentEra?.techLevel ?? TechLevel.Undefined;
             if (eraLevel > researcherTechLevel) researcherTechLevel = eraLevel;
+        }
+
+        /// <summary>
+        /// Marks a project finished as part of setting a game up, with none of the consequences a project
+        /// finishing during play has: no <see cref="ProjectFinished"/>, no <see cref="EraReached"/>, and so no
+        /// chronicle line and no letter. A scenario that starts a civilization in the bronze age is saying
+        /// where its history begins, not narrating a bronze age the player watched it reach — announcing
+        /// those would open every game with a stack of era letters for eras nobody lived through.
+        /// <see cref="AdvanceTechLevelToEra"/> still runs, so the civilization researches at the level the
+        /// seeded progress earns it.
+        /// </summary>
+        public void SetProjectFinishedForSetup(ResearchProjectDef def)
+        {
+            if (def == null) throw new ArgumentNullException(nameof(def));
+            progress[def] = def.baseCost;
+            if (currentProj == def) currentProj = null;
+            AdvanceTechLevelToEra();
         }
 
         /// <summary>Debug/testing: instantly finishes every loaded project.</summary>

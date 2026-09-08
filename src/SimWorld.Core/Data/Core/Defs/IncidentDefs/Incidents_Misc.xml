@@ -51,6 +51,12 @@
     <earliestDay>15</earliestDay>
   </IncidentDef>
 
+  <!--
+    The one incident in this content that is genuinely era-bound: fallout is industrial-age wreckage, and
+    nothing before the industrial era can produce it. minEra/maxEra exist for exactly this — the rest of
+    these incidents (weather, disease, visitors) happen to a civilization in any age, and are deliberately
+    left ungated rather than given invented eras.
+  -->
   <IncidentDef>
     <defName>ToxicFallout</defName>
     <label>toxic fallout</label>
@@ -59,6 +65,7 @@
     <targetTags><li>Map_PlayerHome</li></targetTags>
     <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
     <baseChance>0.3</baseChance>
+    <minEra>Industrial</minEra>
   </IncidentDef>
 
   <IncidentDef>

@@ -192,7 +192,9 @@ namespace SimWorld.Scenario
             foreach (EraDef other in DefDatabase<EraDef>.AllDefsListForReading)
             {
                 if (other.order >= era.order) continue;
-                foreach (ResearchProjectDef project in other.Projects) ctx.ResearchManager.FinishProject(project);
+                // Seeded, not narrated: see ResearchManager.SetProjectFinishedForSetup for why a scenario's
+                // starting era must not announce the eras it hands the civilization for free.
+                foreach (ResearchProjectDef project in other.Projects) ctx.ResearchManager.SetProjectFinishedForSetup(project);
             }
             ctx.ResearchManager.ResearcherTechLevel = era.techLevel;
         }

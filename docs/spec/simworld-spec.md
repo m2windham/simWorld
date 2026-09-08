@@ -672,6 +672,13 @@ the translation and its state per system.
   routine work, instead of drafting individuals. Citizens keep full agency.
 - **Eras**: an `EraDef` ladder over the research DAG carries a civilization from
   neolithic to archotech; era completion gates content and scales threats.
+  Reaching an era is an event, not just a readout: `ResearchManager` compares the
+  era before and after each project it finishes — so a save can never re-announce
+  history — raises `EraReached` once per era crossed, and writes a chronicle line
+  and a letter. The era then multiplies the director's threat points
+  (`EraDef.threatPointsFactor`, standing in for the wealth term nothing computes
+  yet) and gates content through `IncidentDef.minEra`/`maxEra`. A scenario's
+  starting era is seeded silently: history begins there, it was not lived through.
 - **Aggregation**: per-citizen depth stays, but the god view reads rollups —
   public mood, population health, industry — rather than opening every person.
 
