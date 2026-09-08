@@ -134,10 +134,10 @@
     },
     {
       "id": "horizon",
-      "date": "2026-09-07",
-      "state": "open",
-      "title": "How long is a playthrough?",
-      "note": "Nothing in the repo states an intended length, and every further tech-tree tuning decision depends on it. Measured: the authored tree holds about 50 years of a two-researcher civilization and is exhausted for good on day 3,074; at a 10-year horizon only 52% is reachable, at 50 years 98.4%, and past that every playstyle ends in an identical state. See docs/research/tech-reachability.md."
+      "date": "2026-09-08",
+      "state": "decided",
+      "title": "No fixed horizon — the director paces time",
+      "note": "Decided: years are not the currency, attention-worthy moments are. A civilization runs on the abstracted clock by default and drops into ticked time when the storyteller judges a moment worth watching — RimWorld's own TimeSlower inverted, and TimeSlower is already ported. A century in which nothing happened costs nothing to pass, which is what makes the endless sticks-to-exotic arc playable at all: at the real clock, 200 ticked years would be 222 hours at maximum speed. The tech tree is therefore priced against moments per era rather than years, and the 'dry at day 3,074' measurement is a function of a unit that no longer applies. Spec section 11.1."
     },
     {
       "id": "perf",
@@ -145,6 +145,20 @@
       "state": "open",
       "title": "The population ceiling is health-tracker cost",
       "note": "Measured: 14 microseconds per pawn-day at N<=500, 15x speed holds to roughly 2,500-5,000 healthy pawns, and HealthTick is 75.4% of all per-pawn tick cost. Two fixes landed: making the hot capacity path non-allocating cut garbage 31x (4,232 MB to 138 MB per 1,000 pawn-days, 33 Gen0 collections to 1), and caching the per-tick death check behind the existing dirty flag took a further 7-12% (measured A/B, same box same minute). The remaining cost is spread rather than concentrated, so the next real lever for population scale is the citizen tiering in spec section 11.3, not another micro-optimization. Sick pawns remain far worse: 3 untended injuries measured 24.8x. See docs/perf/baseline.md."
+    },
+    {
+      "id": "tiering",
+      "date": "2026-09-08",
+      "state": "decided",
+      "title": "Citizen tiering is built next, before the god layer",
+      "note": "It is the most invasive change remaining — it touches every tracker and every system that assumes a pawn is fully simulated — so the god layer should be written against tiered citizens rather than retrofitted to them. RimWorld already proves the Statistical tier works: its world pawns keep identity, relationships and ageing while needs, jobs and health stop ticking, and AgeTickMothballed is already ported. The tiers and the abstracted clock are one mechanism: dropping into ticked time is promoting the attended settlement to Full. Spec section 11.3."
+    },
+    {
+      "id": "coal",
+      "date": "2026-09-08",
+      "state": "decided",
+      "title": "Coal is its own deposit, and tradeable",
+      "note": "Coal decided where industry went, so it gets its own category rather than hiding inside Ore: a site chosen in the neolithic for water and game may or may not turn out to be an industrial one, and the player will not know for centuries. Geography shapes rather than dictates — caravans can supply a settlement that lacks coal, at a cost, which is what actually happened and gives the ported trade system real work in the industrial era. Spec section 5b."
     }
   ],
   "systems": [
