@@ -272,6 +272,85 @@ namespace SimWorld.Tests.World
         }
 
         [Fact]
+        public void Coal_never_appears_above_small_hills_where_ore_instead_dominates()
+        {
+            global::SimWorld.World.World world = Generate("coal-vs-ore-hilliness");
+            foreach (Tile tile in world.grid.Tiles)
+            {
+                if (tile.WaterCovered) continue;
+                if (tile.hilliness == Hilliness.LargeHills || tile.hilliness == Hilliness.Mountainous || tile.hilliness == Hilliness.Impassable)
+                {
+                    Assert.Equal(0f, tile.DepositMagnitude(DepositDefOf.Coal));
+                }
+            }
+        }
+
+        [Fact]
+        public void Coal_and_ore_are_distinctly_distributed_across_a_generated_world()
+        {
+            global::SimWorld.World.World world = Generate("coal-ore-distribution", subdivision: 5);
+            WorldGrid grid = world.grid;
+
+            var coal = new List<double>();
+            var ore = new List<double>();
+            foreach (Tile tile in grid.Tiles)
+            {
+                if (tile.WaterCovered) continue;
+                coal.Add(tile.DepositMagnitude(DepositDefOf.Coal));
+                ore.Add(tile.DepositMagnitude(DepositDefOf.Ore));
+            }
+
+            Assert.True(coal.Sum() > 0, "Expected some coal to appear across this world.");
+            Assert.True(ore.Sum() > 0, "Expected some ore to appear across this world.");
+
+            double correlation = PearsonCorrelation(coal, ore);
+            Assert.True(
+                correlation < 0.2,
+                $"Coal and ore should not track each other across tiles if they are genuinely distinctly distributed (spec §5b.2); got correlation {correlation}.");
+
+            // Tiles where ore is strongly present (hills/mountains, per DepositTuning) should carry little to
+            // no coal at all, and the reverse should hold for tiles where coal is strongly present.
+            double meanCoalWhereOreStrong = MeanWhere(grid, t => t.DepositMagnitude(DepositDefOf.Ore) > 0.5f, t => t.DepositMagnitude(DepositDefOf.Coal));
+            double meanOreWhereCoalStrong = MeanWhere(grid, t => t.DepositMagnitude(DepositDefOf.Coal) > 0.5f, t => t.DepositMagnitude(DepositDefOf.Ore));
+            double meanCoalOverall = coal.Average();
+            double meanOreOverall = ore.Average();
+
+            Assert.True(meanCoalWhereOreStrong <= meanCoalOverall, $"Expected coal to be no more common than average where ore is strong ({meanCoalWhereOreStrong} vs {meanCoalOverall}).");
+            Assert.True(meanOreWhereCoalStrong <= meanOreOverall, $"Expected ore to be no more common than average where coal is strong ({meanOreWhereCoalStrong} vs {meanOreOverall}).");
+        }
+
+        private static double MeanWhere(WorldGrid grid, Func<Tile, bool> where, Func<Tile, float> select)
+        {
+            var values = new List<double>();
+            foreach (Tile tile in grid.Tiles)
+            {
+                if (tile.WaterCovered || !where(tile)) continue;
+                values.Add(select(tile));
+            }
+            return values.Count > 0 ? values.Average() : 0.0;
+        }
+
+        private static double PearsonCorrelation(IReadOnlyList<double> a, IReadOnlyList<double> b)
+        {
+            int n = a.Count;
+            double meanA = a.Average();
+            double meanB = b.Average();
+
+            double covariance = 0.0, varA = 0.0, varB = 0.0;
+            for (int i = 0; i < n; i++)
+            {
+                double da = a[i] - meanA;
+                double db = b[i] - meanB;
+                covariance += da * db;
+                varA += da * da;
+                varB += db * db;
+            }
+
+            if (varA <= 0.0 || varB <= 0.0) return 0.0;
+            return covariance / Math.Sqrt(varA * varB);
+        }
+
+        [Fact]
         public void Region_resource_profile_is_the_mean_of_its_tiles_deposits()
         {
             global::SimWorld.World.World world = Generate("deposit-aggregate");
@@ -377,6 +456,40 @@ namespace SimWorld.Tests.World
             Assert.True(
                 highlandIndustrial > valleyIndustrial,
                 $"Industrial weighting should flip the ordering to favor the ore/stone highland ({highlandIndustrial} vs {valleyIndustrial}).");
+        }
+
+        [Fact]
+        public void Coal_swings_the_industrial_era_score_far_more_than_the_earliest_era()
+        {
+            WorldGrid grid = WorldGrid.Generate(2);
+            const int tileId = 7;
+            Tile tile = grid.Tiles[tileId];
+            tile.elevation = 50f;
+            tile.temperature = 15f;
+            tile.deposits.Add(new TileDeposit(DepositDefOf.FreshWater, 0.9f));
+            tile.deposits.Add(new TileDeposit(DepositDefOf.Game, 0.9f));
+
+            SiteWeightDef sticksAndStones = DefDatabase<SiteWeightDef>.GetNamed("SiteWeights_SticksAndStones");
+            SiteWeightDef industrial = DefDatabase<SiteWeightDef>.GetNamed("SiteWeights_Industrial");
+
+            float withoutCoalSticks = SiteScorer.Score(grid, tileId, sticksAndStones);
+            float withoutCoalIndustrial = SiteScorer.Score(grid, tileId, industrial);
+
+            tile.deposits.Add(new TileDeposit(DepositDefOf.Coal, 0.8f));
+
+            float withCoalSticks = SiteScorer.Score(grid, tileId, sticksAndStones);
+            float withCoalIndustrial = SiteScorer.Score(grid, tileId, industrial);
+
+            // Isolate coal's own contribution to the score in each era (everything else on the tile is
+            // unchanged), so the comparison is attributable to coal specifically rather than to some other
+            // difference between the two SiteWeightDefs.
+            float coalContributionSticks = withCoalSticks - withoutCoalSticks;
+            float coalContributionIndustrial = withCoalIndustrial - withoutCoalIndustrial;
+
+            Assert.True(coalContributionIndustrial > 0f, "Coal should raise the Industrial-era score at all.");
+            Assert.True(
+                coalContributionIndustrial > coalContributionSticks * 5f,
+                $"Coal should swing the Industrial-era score far more than the Sticks & Stones one ({coalContributionIndustrial} vs {coalContributionSticks}).");
         }
 
         // ----- Trade position -----

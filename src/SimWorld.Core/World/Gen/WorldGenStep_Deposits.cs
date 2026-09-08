@@ -29,6 +29,7 @@ namespace SimWorld.World.Gen
                 AddIfPositive(tile, DepositDefOf.Flint, FlintMagnitude(tile));
                 AddIfPositive(tile, DepositDefOf.Stone, StoneMagnitude(tile));
                 AddIfPositive(tile, DepositDefOf.Ore, OreMagnitude(tile));
+                AddIfPositive(tile, DepositDefOf.Coal, CoalMagnitude(tile));
                 AddIfPositive(tile, DepositDefOf.Salt, SaltMagnitude(grid, i, tile));
                 AddIfPositive(tile, DepositDefOf.Timber, TimberMagnitude(tile));
                 AddIfPositive(tile, DepositDefOf.Game, GameMagnitude(tile));
@@ -147,6 +148,35 @@ namespace SimWorld.World.Gen
                 Hilliness.Impassable => DepositTuning.OreMagnitudeMountainous,
                 _ => 0f,
             };
+        }
+
+        // ---- Coal: ancient swamp/floodplain sediment — low, historically wet ground, never hills or mountains ----
+
+        private static float CoalMagnitude(Tile tile)
+        {
+            if (tile.elevation >= DepositTuning.CoalMaxElevationMeters) return 0f;
+            if (tile.hilliness != Hilliness.Flat && tile.hilliness != Hilliness.SmallHills) return 0f;
+
+            float hillinessFactor = tile.hilliness == Hilliness.Flat ? 1f : DepositTuning.CoalSmallHillsFactor;
+            float elevationFactor = 1f - GenMath.Clamp01(tile.elevation / DepositTuning.CoalMaxElevationMeters);
+
+            float swampinessRange = DepositTuning.CoalSwampinessCeiling - DepositTuning.CoalSwampinessFloor;
+            float swampinessFactor = swampinessRange > 0f
+                ? GenMath.Clamp01((tile.swampiness - DepositTuning.CoalSwampinessFloor) / swampinessRange)
+                : 0f;
+            float rainfallFactor = TriangularFactor(tile.rainfall, DepositTuning.CoalRainfallMinMm, DepositTuning.CoalRainfallMaxMm);
+
+            // Swampiness (this port's own read of "historically waterlogged ground") is the primary signal;
+            // a merely-rainy tile whose swampiness noise sample didn't land high still contributes, just
+            // capped below what an actual historic swamp reads as.
+            float wetnessFactor = Math.Max(swampinessFactor, rainfallFactor * DepositTuning.CoalRainfallOnlyCeiling);
+
+            float magnitude = hillinessFactor * elevationFactor * wetnessFactor;
+            if (tile.Rivers.Count > 0)
+            {
+                magnitude += DepositTuning.CoalFloodplainBonus;
+            }
+            return magnitude;
         }
 
         // ---- Salt: coastal tiles, rarely inland springs ----
