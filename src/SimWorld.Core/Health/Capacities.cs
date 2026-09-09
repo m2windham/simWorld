@@ -200,7 +200,8 @@ namespace SimWorld.Health
     /// <summary>Body-tree math behind every capacity (RimWorld: <c>Verse.PawnCapacityUtility</c>).</summary>
     public static class PawnCapacityUtility
     {
-        /// <summary>Worker level, then hediff capacity modifiers: offsets summed, post-factors multiplied, setMax applied.</summary>
+        /// <summary>Worker level, then hediff and gene (pawngen.genes) capacity modifiers: offsets summed,
+        /// post-factors multiplied, setMax applied.</summary>
         public static float CalculateCapacityLevel(HediffSet diffSet, PawnCapacityDef capacity)
         {
             if (diffSet == null) throw new ArgumentNullException(nameof(diffSet));
@@ -224,6 +225,16 @@ namespace SimWorld.Health
                         offset += mods[j].offset;
                         setMax = Math.Min(setMax, mods[j].setMax);
                         postFactor *= mods[j].postFactor;
+                    }
+                }
+                if (diffSet.pawn.genes != null)
+                {
+                    foreach (PawnCapacityModifier mod in diffSet.pawn.genes.CapMods)
+                    {
+                        if (mod.capacity != capacity) continue;
+                        offset += mod.offset;
+                        setMax = Math.Min(setMax, mod.setMax);
+                        postFactor *= mod.postFactor;
                     }
                 }
                 level += offset;

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Named germlines (system: pawngen.genes). Baseliner is RimWorld's own name for an unmodified human — an
+    empty gene list, functionally identical to a PawnGenerationRequest that asks for no Xenotype at all (see
+    XenotypeDef's own class doc). The other three are SimWorld's own invented xenotypes, built only from the
+    GeneDefs above, so that generation and inheritance are exercised end to end by real content rather than
+    test-only defs.
+  -->
+
+  <XenotypeDef>
+    <defName>Baseliner</defName>
+    <label>baseliner</label>
+    <description>An unmodified human — no genes beyond the species baseline.</description>
+  </XenotypeDef>
+
+  <XenotypeDef>
+    <defName>Swiftbred</defName>
+    <label>swiftbred</label>
+    <description>Bred for speed and quick reflexes, at the cost of a hungrier metabolism.</description>
+    <genes>
+      <li>Gene_Nimble</li>
+      <li>Gene_FastLearner</li>
+      <li>Gene_HighMetabolism</li>
+    </genes>
+  </XenotypeDef>
+
+  <XenotypeDef>
+    <defName>Ironclad</defName>
+    <label>ironclad</label>
+    <description>Bred to endure: high pain tolerance, a hardy immune system and sharp senses.</description>
+    <genes>
+      <li>Gene_PainResistant</li>
+      <li>Gene_HardyImmunity</li>
+      <li>Gene_KeenSenses</li>
+    </genes>
+  </XenotypeDef>
+
+  <XenotypeDef>
+    <defName>Stillfolk</defName>
+    <label>stillfolk</label>
+    <description>A quiet lineage: incapable of violence, long-lived, and needing little food.</description>
+    <genes>
+      <li>Gene_Pacifist</li>
+      <li>Gene_Longevity</li>
+      <li>Gene_LowMetabolism</li>
+    </genes>
+  </XenotypeDef>
+
+</Defs>

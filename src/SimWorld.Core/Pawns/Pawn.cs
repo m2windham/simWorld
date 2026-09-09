@@ -6,6 +6,7 @@ using SimWorld.Factions;
 using SimWorld.Health;
 using SimWorld.MindState;
 using SimWorld.Needs;
+using SimWorld.Pawns.Genes;
 using SimWorld.Sim;
 using SimWorld.Stats;
 using SimWorld.Things;
@@ -30,6 +31,11 @@ namespace SimWorld.Pawns
         public Pawn_WorkSettings workSettings = null!;
         public Pawn_AgeTracker ageTracker = null!;
         public Pawn_RelationsTracker relations = null!;
+
+        /// <summary>This pawn's genes — Biotech's own module (system: pawngen.genes). Instantiated for every
+        /// pawn like <see cref="training"/>; empty (Baseliner) unless <see cref="Generation.PawnGenerationRequest.Xenotype"/>
+        /// asked for one at generation or <see cref="Genes.GeneInheritanceUtility"/> passed some down at birth.</summary>
+        public Pawn_GeneTracker genes = null!;
 
         /// <summary>Which <see cref="TrainableDef"/>s this pawn has learned (system: ai.animals). Instantiated
         /// for every pawn like RimWorld's own field, but only meaningful for an Animal — see
@@ -111,8 +117,12 @@ namespace SimWorld.Pawns
         /// <summary>Multiplies every body part's hit points (RimWorld: <c>Pawn.HealthScale</c>), scaled by the current life stage.</summary>
         public virtual float HealthScale => RaceProps.baseHealthScale * (ageTracker?.CurLifeStage?.healthScaleFactor ?? 1f);
 
-        /// <summary>Species hunger rate × hediff hunger factors × the current life stage's hunger factor.</summary>
-        public virtual float HungerRate => RaceProps.baseHungerRate * HungerRateFactorFromHealth * (ageTracker?.CurLifeStage?.hungerRateFactor ?? 1f);
+        /// <summary>Species hunger rate × hediff hunger factors × the current life stage's hunger factor × a
+        /// gene-metabolism factor (<see cref="Genes.GeneTuning.HungerRateFactorFromMetabolism"/>) — the same
+        /// seam every other hunger-rate contributor already joins, rather than a parallel calculation.</summary>
+        public virtual float HungerRate => RaceProps.baseHungerRate * HungerRateFactorFromHealth
+            * (ageTracker?.CurLifeStage?.hungerRateFactor ?? 1f)
+            * (genes != null ? GeneTuning.HungerRateFactorFromMetabolism(genes.MetabolismTotal) : 1f);
 
         public virtual float HungerRateFactorFromHealth => health.hediffSet.HungerRateFactor;
 
@@ -139,10 +149,11 @@ namespace SimWorld.Pawns
         public virtual float GlobalLearningFactor => this.GetStatValue(StatDefOf.GlobalLearningFactor);
 
         /// <summary>
-        /// Work tags disabled by traits and, later, backstories. RimWorld also folds in genes and health
-        /// (e.g. a missing arm barring Violent-tagged work); those join here once their systems land.
+        /// Work tags disabled by traits, backstories and genes. RimWorld also folds in health (e.g. a missing
+        /// arm barring Violent-tagged work); that joins here once its system lands.
         /// </summary>
-        public virtual WorkTags CombinedDisabledWorkTags => story.DisabledWorkTagsBackstoryAndTraits;
+        public virtual WorkTags CombinedDisabledWorkTags =>
+            story.DisabledWorkTagsBackstoryAndTraits | (genes?.CombinedDisabledWorkTags ?? WorkTags.None);
 
         public bool WorkTagIsDisabled(WorkTags tags) => (CombinedDisabledWorkTags & tags) != WorkTags.None;
 
@@ -219,6 +230,7 @@ namespace SimWorld.Pawns
             workSettings ??= new Pawn_WorkSettings(this);
             ageTracker ??= new Pawn_AgeTracker(this);
             relations ??= new Pawn_RelationsTracker(this);
+            genes ??= new Pawn_GeneTracker(this);
             training ??= new Pawn_TrainingTracker(this);
             tier ??= new Pawn_TierTracker(this);
             jobs ??= new Pawn_JobTracker(this);
@@ -303,6 +315,9 @@ namespace SimWorld.Pawns
             Pawn_RelationsTracker? rel = relations;
             Scribe_Deep.Look(ref rel, "relations", this);
             relations = rel ?? new Pawn_RelationsTracker(this);
+            Pawn_GeneTracker? gn = genes;
+            Scribe_Deep.Look(ref gn, "genes", this);
+            genes = gn ?? new Pawn_GeneTracker(this);
             Pawn_TrainingTracker? tr = training;
             Scribe_Deep.Look(ref tr, "training", this);
             training = tr ?? new Pawn_TrainingTracker(this);

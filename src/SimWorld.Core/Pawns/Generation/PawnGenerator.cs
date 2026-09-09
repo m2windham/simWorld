@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Defs;
+using SimWorld.Pawns.Genes;
 using SimWorld.Sim;
 using SimWorld.Work;
 
@@ -110,7 +111,8 @@ namespace SimWorld.Pawns.Generation
             // Rolled once here, for every humanlike pawn this generator produces (newborn or not) — see
             // Pawn_AgeTracker's "Hidden lifespan budget" section for why it stays hidden. Comes right after
             // the weapon roll (the RNG-sensitive step every pre-existing test already accounts for) and before
-            // apparel, so this pass's new draw doesn't shift a single number any test already pinned.
+            // apparel and genes, so its draw sits where every test that pins a lifespan or age outcome already
+            // expects it.
             if (humanlike)
             {
                 pawn.ageTracker.RollLifespanBudget(race);
@@ -118,11 +120,31 @@ namespace SimWorld.Pawns.Generation
 
             if (humanlike && !request.Newborn)
             {
-                // Last of all: pawngen.apparel is new this pass, so it goes after every RNG-sensitive step
-                // above rather than between weapon generation and the lifespan roll, which would have shifted
-                // that roll's draw for every humanlike pawn and, with it, every test that pins a lifespan or
-                // age outcome.
+                // Apparel goes after every RNG-sensitive step above rather than between weapon generation and
+                // the lifespan roll, which would have shifted that roll's draw for every humanlike pawn and,
+                // with it, every test that pins a lifespan or age outcome.
                 PawnApparelGenerator.TryGenerateApparelFor(pawn, request);
+            }
+
+            // Genes last of all — after even the lifespan roll above, which a gene's own lifespanBonusYears
+            // needs to already have happened (AdjustLifespan is a no-op before a budget exists to adjust).
+            // Assigning a named xenotype's germline is a deterministic lookup, not a random pick, so it costs
+            // zero Rand calls and its placement here cannot shift the stream any earlier step already depends
+            // on — but a request that asks for none (the overwhelming common case today, since no content
+            // assigns one yet) must still touch nothing at all, or every existing fixed-seed test that
+            // generates a pawn would need re-pinning the moment this module landed. That has already happened
+            // once in this repo with a module inserted mid-pipeline; genes go last specifically to avoid
+            // repeating it. See PawnGenerationRequest.Xenotype's own doc.
+            if (request.Xenotype != null)
+            {
+                pawn.genes.SetXenotype(request.Xenotype);
+                foreach (Gene gene in pawn.genes.Endogenes)
+                {
+                    if (gene.def.lifespanBonusYears != 0f)
+                    {
+                        pawn.ageTracker.AdjustLifespan(gene.def.lifespanBonusYears * GenDate.DaysPerYear, "gene:" + gene.def.defName);
+                    }
+                }
             }
 
             return pawn;

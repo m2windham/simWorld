@@ -9,18 +9,20 @@ namespace SimWorld.Stats
     /// <summary>
     /// Computes one <see cref="StatDef"/>'s value for a <see cref="StatRequest"/> (RimWorld: <c>RimWorld.StatWorker</c>).
     /// <see cref="GetValueUnfinalized"/>'s order mirrors RimWorld's real method: base value → skill-need
-    /// factors, then skill-need offsets → pawn offsets (trait, then hediff-stage) → pawn factors (trait, then
-    /// hediff-stage) → stuff factor/offset → capacity factors. The skill-need pass reads
-    /// <see cref="StatDef.skillNeedFactors"/>/<see cref="StatDef.skillNeedOffsets"/> off the pawn's own
-    /// <see cref="Work.SkillRecord"/> levels (system: <c>work.stats</c>); their exact RimWorld ordering relative to
-    /// each other (factors before offsets) is this port's best recollection rather than a source it could
-    /// verify in this sandbox, so only the shape — skill-need applies once, early, before trait/hediff terms —
-    /// is asserted by tests, not any literal number depending on the order. Trimmed to what this port's
-    /// modules actually read otherwise: RimWorld also folds in capacity *offsets*, apparel/equipment gear,
-    /// life-stage factors, facility bonuses, Inspired bonuses and a scenario factor — none of those have a
-    /// live counterpart in this port yet (no ThingOwner/apparel, no Inspiration system), so they are left out
-    /// rather than faked. <see cref="FinalizeValue"/> then runs stat parts, the post-process curve, and the
-    /// min/max clamp.
+    /// factors, then skill-need offsets → pawn offsets (trait, then hediff-stage, then gene) → pawn factors
+    /// (trait, then hediff-stage, then gene) → stuff factor/offset → capacity factors. The skill-need pass
+    /// reads <see cref="StatDef.skillNeedFactors"/>/<see cref="StatDef.skillNeedOffsets"/> off the pawn's own
+    /// <see cref="Work.SkillRecord"/> levels (system: <c>work.stats</c>); their exact RimWorld ordering
+    /// relative to each other (factors before offsets) is this port's best recollection rather than a source
+    /// it could verify in this sandbox, so only the shape — skill-need applies once, early, before trait,
+    /// hediff and gene terms — is asserted by tests, not any literal number depending on the order. The gene
+    /// terms (<c>pawngen.genes</c>) join the same offset and factor passes traits and hediff stages already
+    /// use rather than a pipeline of their own, so a pawn with no genes pays nothing and reads exactly as
+    /// before. Trimmed to what this port's modules actually read otherwise: RimWorld also folds in capacity
+    /// *offsets*, apparel/equipment gear, life-stage factors, facility bonuses, Inspired bonuses and a
+    /// scenario factor — none of those have a live counterpart in this port yet (no ThingOwner/apparel, no
+    /// Inspiration system), so they are left out rather than faked. <see cref="FinalizeValue"/> then runs stat
+    /// parts, the post-process curve, and the min/max clamp.
     /// </summary>
     public class StatWorker
     {
@@ -59,7 +61,7 @@ namespace SimWorld.Stats
                 TraitSet? traits = pawn.story?.traits;
                 List<Hediff> hediffs = pawn.health.hediffSet.hediffs;
 
-                // ---- offsets: trait degree, then hediff stage ----
+                // ---- offsets: trait degree, then hediff stage, then genes (pawngen.genes) ----
                 if (traits != null)
                 {
                     for (int i = 0; i < traits.allTraits.Count; i++)
@@ -71,8 +73,9 @@ namespace SimWorld.Stats
                 {
                     num += hediffs[i].CurStage?.statOffsets.GetStatOffsetFromList(stat) ?? 0f;
                 }
+                num += pawn.genes?.StatOffsetTotal(stat) ?? 0f;
 
-                // ---- factors: trait degree, then hediff stage ----
+                // ---- factors: trait degree, then hediff stage, then genes (pawngen.genes) ----
                 if (traits != null)
                 {
                     for (int i = 0; i < traits.allTraits.Count; i++)
@@ -84,6 +87,7 @@ namespace SimWorld.Stats
                 {
                     num *= hediffs[i].CurStage?.statFactors.GetStatFactorFromList(stat) ?? 1f;
                 }
+                num *= pawn.genes?.StatFactorTotal(stat) ?? 1f;
             }
 
             // ---- stuff factor/offset: applies to any def, pawn or not ----
