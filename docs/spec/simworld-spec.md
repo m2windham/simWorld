@@ -461,6 +461,18 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   unconsciousness or lost legs; dead from a lethal capacity at zero, core part
   destruction, lethal severity, or total damage past threshold.
 - Disease is a severity-versus-immunity race, modified by tend quality.
+- **Surgery** is a `RecipeDef` with `isSurgery`, queued as a `Bill_Medical` on
+  the patient's own bill stack rather than a workbench's, and carried out by a
+  `Recipe_Surgery` worker selected by `workerClass` — amputation, excision of a
+  hediff, installing a part. The outcome is rolled against the surgeon's
+  Medicine skill times the recipe's own difficulty; a failed operation injures
+  the patient where the surgeon was working and may kill them, and never
+  silently does nothing. RimWorld routes surgeon competence through a
+  `MedicalSurgerySuccessChance` stat whose value comes from `SkillNeed` curves
+  this port does not have yet (the open `work.stats` item), so competence is
+  read straight off the skill for now. Installing a prosthetic ships as a
+  worker but not as content: a prosthetic is an item a civilization has to make
+  or buy, and no such `ThingDef` exists yet.
 
 ### 7.3 Skills & Work
 

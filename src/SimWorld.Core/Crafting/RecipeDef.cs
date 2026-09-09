@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Defs;
+using SimWorld.Health;
 using SimWorld.Pawns;
 using SimWorld.Work;
 
@@ -80,6 +81,53 @@ namespace SimWorld.Crafting
         public List<SkillRequirement>? skillRequirements;
         public List<ThingDef>? recipeUsers;
 
+        // ---- surgery (RimWorld: the same fields on its own RecipeDef) ----
+
+        /// <summary>Behaviour half of the recipe, selected by <c>Class=</c>-style full type name in content.
+        /// The default does nothing, which is right for every ordinary crafting recipe.</summary>
+        public Type workerClass = typeof(RecipeWorker);
+
+        /// <summary>True for a recipe performed on a pawn rather than at a workbench.</summary>
+        public bool isSurgery;
+
+        /// <summary>The recipe names a body part to operate on, and a <c>Bill_Medical</c> for it carries one.</summary>
+        public bool targetsBodyPart = true;
+
+        /// <summary>When set, the only parts this recipe may be applied to; otherwise any part of the body.</summary>
+        public List<BodyPartDef>? appliedOnFixedBodyParts;
+
+        /// <summary>Hediff the recipe adds to the operated part on success (a prosthetic, an implant).</summary>
+        public HediffDef? addsHediff;
+
+        /// <summary>Hediff the recipe removes from the operated part on success.</summary>
+        public HediffDef? removesHediff;
+
+        /// <summary>
+        /// Multiplies the surgeon's own chance of getting this operation right — a simple amputation is more
+        /// forgiving than delicate work. RimWorld carries this exact field; the numbers in this port's content
+        /// are its own.
+        /// </summary>
+        public float surgerySuccessChanceFactor = 1f;
+
+        /// <summary>Chance a failed operation kills the patient outright, rather than merely injuring them.</summary>
+        public float deathOnFailedSurgeryChance;
+
+        private RecipeWorker? workerCache;
+
+        /// <summary>The lazily-created worker (RimWorld: <c>RecipeDef.Worker</c>).</summary>
+        public RecipeWorker Worker
+        {
+            get
+            {
+                if (workerCache == null)
+                {
+                    workerCache = (RecipeWorker)Activator.CreateInstance(workerClass)!;
+                    workerCache.recipe = this;
+                }
+                return workerCache;
+            }
+        }
+
         /// <summary>When true, a product's stuff (see <see cref="ItemStack.Stuff"/>) is set to the dominant ingredient.</summary>
         public bool productHasIngredientStuff;
 
@@ -134,6 +182,13 @@ namespace SimWorld.Crafting
                 }
                 return true;
             }
+        }
+
+        public override void ClearCachedData()
+        {
+            base.ClearCachedData();
+            workerCache = null;
+            valueGetterCache = null;
         }
 
         public ThingDef? ProducedThingDef => products != null && products.Count > 0 ? products[0].thingDef : null;
@@ -200,13 +255,25 @@ namespace SimWorld.Crafting
             {
                 yield return error;
             }
-            if (ingredients == null || ingredients.Count == 0)
+            // A surgery consumes nothing and produces nothing: its whole effect is what its worker does to the
+            // patient. Requiring ingredients and products of one would be requiring it to be a crafting recipe.
+            if (!isSurgery)
             {
-                yield return "has no ingredients.";
+                if (ingredients == null || ingredients.Count == 0)
+                {
+                    yield return "has no ingredients.";
+                }
+                if (products == null || products.Count == 0)
+                {
+                    yield return "has no products.";
+                }
             }
-            if (products == null || products.Count == 0)
+            else
             {
-                yield return "has no products.";
+                if (!typeof(Health.Recipe_Surgery).IsAssignableFrom(workerClass))
+                {
+                    yield return "isSurgery is set but workerClass is not a Recipe_Surgery.";
+                }
             }
             if (workAmount < 0f)
             {

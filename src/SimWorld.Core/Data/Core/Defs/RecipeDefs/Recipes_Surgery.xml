@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Surgeries: recipes performed on a pawn rather than at a workbench. isSurgery routes them to a
+    Bill_Medical on the patient's own bill stack (Pawn_HealthTracker.surgeryBills) instead of a workbench's,
+    and workerClass carries what the operation actually does — a thing "consume these, produce those" cannot
+    express.
+
+    surgerySuccessChanceFactor and deathOnFailedSurgeryChance are SimWorld's own numbers, not sourced from
+    RimWorld: amputation is crude and forgiving, cutting an infection out of a living body is neither. The
+    tests pin the trend (a better surgeon fails less often; a lower factor fails more often) rather than
+    these literals.
+
+    Not here, and deliberately: installing a prosthetic. Recipe_InstallBodyPart exists and is tested, and the
+    SimpleProstheticLeg hediff exists — but a prosthetic is an *item* a civilization has to make or buy, and
+    no such ThingDef exists yet. Shipping the recipe without it would hand out free prosthetics, so the
+    recipe lands with the item (tracked in docs/status.json under health.surgery).
+  -->
+
+  <RecipeDef>
+    <defName>RemoveBodyPart</defName>
+    <label>amputate part</label>
+    <description>Cut off a body part. The oldest operation there is, and the one least likely to go wrong.</description>
+    <jobString>Amputating.</jobString>
+    <isSurgery>true</isSurgery>
+    <targetsBodyPart>true</targetsBodyPart>
+    <workerClass>SimWorld.Health.Recipe_RemoveBodyPart</workerClass>
+    <workAmount>2000</workAmount>
+    <workSkill>Medicine</workSkill>
+    <surgerySuccessChanceFactor>1.0</surgerySuccessChanceFactor>
+    <deathOnFailedSurgeryChance>0.02</deathOnFailedSurgeryChance>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>ExciseInfection</defName>
+    <label>excise infection</label>
+    <description>Cut an infection out of a wound before immunity loses the race to it.</description>
+    <jobString>Excising infection.</jobString>
+    <isSurgery>true</isSurgery>
+    <targetsBodyPart>true</targetsBodyPart>
+    <workerClass>SimWorld.Health.Recipe_RemoveHediff</workerClass>
+    <removesHediff>WoundInfection</removesHediff>
+    <workAmount>2500</workAmount>
+    <workSkill>Medicine</workSkill>
+    <skillRequirements>
+      <li><skill>Medicine</skill><minLevel>4</minLevel></li>
+    </skillRequirements>
+    <surgerySuccessChanceFactor>0.8</surgerySuccessChanceFactor>
+    <deathOnFailedSurgeryChance>0.05</deathOnFailedSurgeryChance>
+  </RecipeDef>
+
+</Defs>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SimWorld.Crafting;
 using SimWorld.Defs;
 using SimWorld.Pawns;
 using SimWorld.Sim;
@@ -26,6 +27,13 @@ namespace SimWorld.Health
         public ImmunityHandler immunity;
         public SummaryHealthHandler summaryHealth;
 
+        /// <summary>
+        /// Surgeries queued on this pawn (RimWorld: <c>Pawn_HealthTracker.surgeryBills</c>). A medical bill
+        /// lives on the patient, not on a workbench — the operation happens wherever the patient is, and
+        /// queueing one is a decision about a person rather than about a production line.
+        /// </summary>
+        public BillStack surgeryBills;
+
         private PawnHealthState healthState = PawnHealthState.Mobile;
         private bool forceDowned;
         private int deathTick = -1;
@@ -35,6 +43,7 @@ namespace SimWorld.Health
 
         public Pawn_HealthTracker(Pawn pawn)
         {
+            surgeryBills = new BillStack(new SurgeryBillGiver(pawn));
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
             hediffSet = new HediffSet(pawn);
             capacities = new PawnCapacitiesHandler(pawn);
@@ -328,9 +337,20 @@ namespace SimWorld.Health
             ImmunityHandler? imm = immunity;
             Scribe_Deep.Look(ref imm, "immunity", pawn);
             immunity = imm ?? new ImmunityHandler(pawn);
+            BillStack? bills = surgeryBills;
+            Scribe_Deep.Look(ref bills, "surgeryBills", new SurgeryBillGiver(pawn));
+            surgeryBills = bills ?? new BillStack(new SurgeryBillGiver(pawn));
+
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 hediffSet.DirtyCache();
+
+                // A Bill_Medical saves its body part as an address, not an object — see that class. The pawn
+                // is the only thing that can turn the address back into a part of a real body.
+                for (int i = 0; i < surgeryBills.Count; i++)
+                {
+                    (surgeryBills[i] as Bill_Medical)?.ResolvePartAfterLoad(pawn);
+                }
             }
         }
     }
