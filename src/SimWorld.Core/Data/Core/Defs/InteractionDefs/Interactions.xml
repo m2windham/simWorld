@@ -25,4 +25,23 @@
     <workerClass>SimWorld.Social.InteractionWorker_Slight</workerClass>
   </InteractionDef>
 
+  <!--
+    Romance (social.romance). Both are ordinary interactions rather than a sweep of their own: the population
+    sweep already picks interactions by weight, and these two weigh zero for almost every pair — anyone
+    married, related, too young, already together, or not liked enough. See Social/Romance.cs for what is
+    deliberately not modelled (infidelity, orientation).
+  -->
+
+  <InteractionDef>
+    <defName>RomanceAttempt</defName>
+    <label>romance attempt</label>
+    <workerClass>SimWorld.Social.InteractionWorker_RomanceAttempt</workerClass>
+  </InteractionDef>
+
+  <InteractionDef>
+    <defName>Breakup</defName>
+    <label>breakup</label>
+    <workerClass>SimWorld.Social.InteractionWorker_Breakup</workerClass>
+  </InteractionDef>
+
 </Defs>

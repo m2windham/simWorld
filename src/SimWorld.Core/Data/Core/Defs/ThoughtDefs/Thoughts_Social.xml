@@ -84,4 +84,81 @@
     </stages>
   </ThoughtDef>
 
+  <!-- Romance (social.romance): what courtship and its ending leave behind. -->
+
+  <ThoughtDef>
+    <defName>BecameLovers</defName>
+    <durationDays>15</durationDays>
+    <stackLimit>1</stackLimit>
+    <stackLimitForSameOtherPawn>1</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>new lover</label>
+        <description>We're together. Everything is a little brighter.</description>
+        <baseMoodEffect>12</baseMoodEffect>
+        <baseOpinionOffset>8</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>RebuffedMyRomanceAttempt</defName>
+    <durationDays>4</durationDays>
+    <stackLimit>2</stackLimit>
+    <stackLimitForSameOtherPawn>1</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>rebuffed</label>
+        <description>I asked, and they said no.</description>
+        <baseMoodEffect>-8</baseMoodEffect>
+        <baseOpinionOffset>-5</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>FailedRomanceAttemptOnMe</defName>
+    <durationDays>4</durationDays>
+    <stackLimit>2</stackLimit>
+    <stackLimitForSameOtherPawn>1</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>unwanted advance</label>
+        <description>They tried it on with me. I wasn't interested.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+        <baseOpinionOffset>-12</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>BrokeUpWithMe</defName>
+    <durationDays>20</durationDays>
+    <stackLimit>1</stackLimit>
+    <stackLimitForSameOtherPawn>1</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>broke up</label>
+        <description>It's over between us.</description>
+        <baseMoodEffect>-14</baseMoodEffect>
+        <baseOpinionOffset>-25</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>Divorced</defName>
+    <durationDays>45</durationDays>
+    <stackLimit>1</stackLimit>
+    <stackLimitForSameOtherPawn>1</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>divorced</label>
+        <description>We were married. Now we are not.</description>
+        <baseMoodEffect>-20</baseMoodEffect>
+        <baseOpinionOffset>-40</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
 </Defs>
