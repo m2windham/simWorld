@@ -344,7 +344,10 @@ namespace SimWorld.Tests.World
             global::SimWorld.World.World loaded = Scribe.Load<global::SimWorld.World.World>(xml, "world", out IReadOnlyList<string> errors, Content.Database);
             Assert.Empty(errors);
 
-            Settlement? loadedSettlement = loaded.worldObjects.OfType<Settlement>().FirstOrDefault();
+            // Named lookup, not .First(): solo-start world generation now founds the player's own opening
+            // settlement(s) too (WorldGenStep_Factions, via SettlementFounder.FoundColony), so "Scribehome" is
+            // no longer necessarily the only — or the first — Settlement in the world.
+            Settlement? loadedSettlement = loaded.worldObjects.OfType<Settlement>().FirstOrDefault(s => s.name == "Scribehome");
             Assert.NotNull(loadedSettlement);
             Assert.Equal("Scribehome", loadedSettlement!.name);
             Assert.Equal(settlement.foundingTick, loadedSettlement.foundingTick);

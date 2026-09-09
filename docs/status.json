@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 804,
+  "testsTotal": 817,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -253,11 +253,11 @@
       "id": "worldgen",
       "n": 2,
       "rimworld": "World Generation",
-      "translation": "Proposed: planet generation at civilization scale — biomes, rivers and roads unchanged; many rival civilizations seeded instead of a handful of faction bases.",
-      "translationState": "proposed",
-      "module": "src/SimWorld.Core/World · Noise · Factions (minimal)",
+      "translation": "Implemented: planet generation at civilization scale — biomes, rivers and roads unchanged; the player's civilization alone at world gen, many rival civilizations seeded over time instead by World.EmergenceManager, population-scaled and era-seeded off the world's current era.",
+      "translationState": "implemented",
+      "module": "src/SimWorld.Core/World · Noise · Factions (minimal) · World.EmergenceManager",
       "status": "ported",
-      "tests": 26,
+      "tests": 39,
       "items": [
         {
           "id": "worldgen.tiles",
@@ -291,8 +291,8 @@
         },
         {
           "id": "worldgen.civscale",
-          "label": "Translation: many rival civilizations at planet scale — population scaling and era seeding",
-          "done": false
+          "label": "Translation: many rival civilizations at planet scale — population scaling and era seeding — World.EmergenceManager, MTB-paced off OverallPopulation and gated by Research.ResearchManager.CurrentEra so nothing emerges more advanced than the world's own most advanced known civilization",
+          "done": true
         }
       ]
     },
@@ -1209,11 +1209,11 @@
       "id": "settlements",
       "n": 20,
       "rimworld": "Settlements & Game Start",
-      "translation": "The opening of the game and what a settlement is once it has an interior. Region-then-site founding, deposits derived from terrain, era-weighted site scoring, and a settlement that is an entity rather than a def plus a tile.",
-      "translationState": "decided",
-      "module": "src/SimWorld.Core/World (regions, deposits, siting, solo start, Settlement entity, SettlementFounder)",
-      "status": "in-progress",
-      "tests": 43,
+      "translation": "The opening of the game and what a settlement is once it has an interior. Region-then-site founding, deposits derived from terrain, era-weighted site scoring, a settlement that is an entity rather than a def plus a tile, and rival civilizations that emerge from play — World.EmergenceManager — rather than existing at time zero. Every settlement anywhere, including world generation's own, is now a real Settlement founded through SettlementFounder; World.Settlements is typed Settlement, not a WorldObject mix.",
+      "translationState": "implemented",
+      "module": "src/SimWorld.Core/World (regions, deposits, siting, solo start, Settlement entity, SettlementFounder, EmergenceManager)",
+      "status": "ported",
+      "tests": 56,
       "items": [
         {
           "id": "settlements.regions",
@@ -1257,8 +1257,8 @@
         },
         {
           "id": "settlements.emergence",
-          "label": "Rival civilizations emerging from the simulation over time rather than being placed at world gen — lands with the civilization-emergence module",
-          "done": false
+          "label": "Rival civilizations emerging from the simulation over time rather than being placed at world gen — World.EmergenceManager, ticked from World.WorldTick: a new civilization emerges with a real, live founding band via SettlementFounder.Found (chronicled), and an established civilization grows into a second settlement via the new SettlementFounder.FoundColony (a Statistical-population colony, no live band — routine growth, not an origin story). Every settlement world generation itself places is now a real Settlement too (SettlementFounder.FoundColony, unchronicled backstory), closing World.Settlements' old WorldObject/Settlement mix. Pacing (MTB years between events) is SimWorld's own, pinned by a simulated-span band test, not a literal; determinism (same seed, same emergence history) is tested via the manager's own persisted RandomStream",
+          "done": true
         },
         {
           "id": "settlements.coal",

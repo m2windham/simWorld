@@ -213,7 +213,9 @@ sequenceDiagram
 - **World gen**: seeded noise (Perlin, ridged multifractal) → elevation
   calibrated to a target land fraction → hilliness, temperature by latitude and
   elevation, rainfall, swampiness → biome workers score each tile → rivers flow
-  downhill → factions and settlements placed → roads pathed between them.
+  downhill → factions and settlements placed → roads pathed between them. In
+  solo-start mode only the player's own civilization is placed this way;
+  every other civilization **emerges** from play afterward (§5b.4).
 - Tiles live on a subdivided icosahedron (10·4ⁿ+2 tiles, 5 or 6 neighbours).
 - Saves store the seed and world objects; the grid regenerates on load.
 - **Pawn gen**: backstory pair → trait roll (exclusion-aware) → skill and
@@ -289,7 +291,7 @@ flowchart TD
 
 ## 5b. Regions, Sites & Settlement Founding
 
-**Built**, including the settlement interior (§11.2's own seam), except
+**Built**, including the settlement interior (§11.2's own seam) and
 civilization emergence (§5b.4). A game opens with a two-stage choice modelled
 on Manor Lords and Nova Roma: pick a region on the world map, then place the
 settlement inside that region against markers showing what is actually there.
@@ -387,14 +389,64 @@ the founding on the chronicle, and hands back a real `World.Settlement` —
 population by tier, a stores ledger, founding tick, name and growth wired to
 `FamilyManager.DemographyTick` — registered into `World.worldObjects`.
 
-### 5b.4 Alone at the start
+### 5b.4 Alone at the start, civilizations emerge
 
 The player's civilization is the only one placed at world generation. The
 faction step gains a solo mode that creates the player's faction and nothing
-else; rival civilizations **emerge** from the simulation later rather than
-existing at time zero. This is the truer sticks-and-stones arc, and its cost is
-accepted deliberately: factions, trade and diplomacy sit idle through the
-opening hours. Emergence is its own system and is not designed here.
+else; rival civilizations **emerge** from the simulation over time instead of
+existing at time zero (`World.EmergenceManager`, ticked from `World.WorldTick`
+— "something a caller ticks", not a second game loop). This is the truer
+sticks-and-stones arc, and its cost is accepted deliberately: factions, trade
+and diplomacy sit idle through the opening decades. When a rival civilization
+does emerge it is founded exactly like the player's own start — a real
+`Settlement` via `SettlementFounder.Found` (a live 20-40 person Full-tier
+founding band, chronicled), sited by `Siting.SiteScorer` decisively against
+wherever the world actually rewards settling, never sprinkled at random.
+
+Two things shape *how* emergence happens, both reusing content already
+authored for world generation rather than inventing a parallel scale:
+
+- **Era seeding.** A civilization cannot emerge more advanced than the most
+  advanced civilization already known to the world —
+  `Research.ResearchManager.CurrentEra`, the only civilization-wide era this
+  simulation tracks, stands in for that ceiling (`EmergenceManager.EligibleFactionDefs`).
+  A sticks-and-stones opening only ever sees Neolithic-tech rivals; each era
+  the player's own civilization reaches widens the pool of civilizations that
+  could appear next.
+- **Population scaling.** The mean time between emergence events is scaled by
+  the same `OverallPopulation` multiplier world generation itself uses for
+  faction and settlement counts (`Gen.WorldGenStep_Factions.PopulationMultiplier`)
+  — a "High" population world sees rivals rise faster than an "AlmostNone" one.
+
+A civilization is more than one settlement. Once an existing settlement is
+large enough to spare people (`EmergenceTuning.ExpansionPopulationThreshold`),
+its civilization may found a second — `SettlementFounder.FoundColony`, a
+Statistical-tier population seeded fresh rather than a live founding band,
+sited within the parent's own region: expansion is routine demographic
+growth, not an origin story, and earns its own chronicle line ("Expansion:
+…") rather than "Founding: …". A civilization stops expanding once it holds
+as many settlements as `Gen.WorldGenStep_Factions.SettlementsPerFactionRange`'s
+own cap allows any faction at world generation — the same ceiling, not a
+second one.
+
+Pacing (`EmergenceTuning.NewCivilizationMTBYears`, `.ExpansionMTBYears`) is
+SimWorld's own — no RimWorld source exists for a game that starts alone and
+watches rivals appear — pinned by a simulated-span band test (after N years
+the world holds somewhere between X and Y civilizations) rather than by the
+literal mean-time-between-events number. It is fully deterministic:
+`EmergenceManager` draws only from its own `RandomStream`, seeded once from
+the world at construction and Scribe round-tripped, so the same seed produces
+the same emergence history regardless of what else in the game has consumed
+the ambient random stream by the time a check runs.
+
+Every settlement world generation itself places is a real `Settlement` too,
+via the same `SettlementFounder.FoundColony` — population already
+established (`SettlementTuning.EstablishedColonyPopulationRange`), no live
+founding band and no chronicle entry, since it is backstory the player never
+watched happen (the same "history begins there, it was not lived through"
+reasoning `Research.ResearchManager.SetProjectFinishedForSetup` already
+applies to a scenario's starting era). `World.Settlements` is typed
+`Settlement`, never a `WorldObject` mix.
 
 ### 5b.5 What this requires that does not exist
 
@@ -406,6 +458,7 @@ opening hours. Emergence is its own system and is not designed here.
 | Settlement as an entity: population by tier, stores, founding tick, name, growth | built (`World.Settlement`, `World.SettlementFounder`) — population is tier-aware (real `Pawn`s above Statistical, a bare count at Statistical), stores are a def→count ledger, growth wires into `FamilyManager.DemographyTick` for the real-`Pawn` slice and a closed-form rate for the Statistical one (see the module's report) |
 | Solo-start world generation | built — a flag on the faction gen step (`WorldInfo.soloStart`) |
 | A settlement interior when the player enters it | built (`World.Settlement.EnterMap`) — the §11.2 seam, sized by `TotalPopulation` and persisted only once entered |
+| Civilization emergence: new civilizations and settlement expansion over time, era-seeded and population-scaled | built (`World.EmergenceManager`, `World.EmergenceTuning`) — ticked from `World.WorldTick`; see §5b.4 |
 
 ```mermaid
 flowchart TD
@@ -420,6 +473,11 @@ flowchart TD
   Found --> Settle[Settlement entity: population by tier, stores, founding tick, name]
   Settle -->|FamilyManager.DemographyTick + closed-form Statistical growth| Growth[Population grows over time]
   Settle -->|player enters at settlement scope| Map[Interior map generated and persisted]
+  Growth -->|large enough to spare people| Expand[EmergenceManager: found a colony · SettlementFounder.FoundColony]
+  Expand --> Chron
+  Clock[World.WorldTick, yearly] -->|era-seeded, population-scaled MTB roll| Emerge[EmergenceManager: a new civilization emerges · SettlementFounder.Found]
+  Emerge --> Chron
+  Emerge --> Settle
 ```
 
 ## 6. Cross-System Contracts
