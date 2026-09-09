@@ -156,6 +156,8 @@
     <giverClass>SimWorld.Building.WorkGiver_ConstructDeliverResourcesToBlueprints</giverClass>
   </WorkGiverDef>
 
+  <!-- Wired to real scanners with system 16 (Building) — plant growth. -->
+
   <WorkGiverDef>
     <defName>GrowerHarvest</defName>
     <label>harvest</label>
@@ -163,6 +165,7 @@
     <gerund>harvesting</gerund>
     <workType>Growing</workType>
     <priorityInType>100</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_GrowerHarvest</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -172,6 +175,9 @@
     <gerund>sowing</gerund>
     <workType>Growing</workType>
     <priorityInType>90</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_GrowerSow</giverClass>
+    <scanCells>true</scanCells>
+    <scanThings>false</scanThings>
   </WorkGiverDef>
 
   <WorkGiverDef>

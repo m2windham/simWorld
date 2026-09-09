@@ -79,7 +79,7 @@ namespace SimWorld.Building
         public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
         {
             Map.Map? map = Map;
-            if (map != null && EntityToBuild.IsEdifice) map.edificeGrid.DeRegister(this);
+            if (map != null && EntityToBuild.IsEdifice) map.edificeGrid.DeRegister(this, mode);
             base.DeSpawn(mode);
         }
 
@@ -91,7 +91,10 @@ namespace SimWorld.Building
             IntVec3 pos = Position;
             Rot4 rot = Rotation;
             ThingDef built = EntityToBuild;
-            Destroy(DestroyMode.Vanish);
+            // WillReplace, not Vanish: the real Building spawns at this exact cell a few lines below, in the
+            // same moment — roof-collapse support checking (system 16: Building) must not read the fraction
+            // of a call between "Frame gone" and "Building spawned" as this cell's support genuinely lost.
+            Destroy(DestroyMode.WillReplace);
 
             Things.Thing building = ThingMaker.MakeThing(built);
             GenSpawn.Spawn(building, pos, map, rot);

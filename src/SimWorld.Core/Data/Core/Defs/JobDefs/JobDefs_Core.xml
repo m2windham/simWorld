@@ -41,4 +41,18 @@
     <reportString>constructing.</reportString>
   </JobDef>
 
+  <!-- Plant growth (system 16: Building). -->
+
+  <JobDef>
+    <defName>Sow</defName>
+    <driverClass>SimWorld.Building.JobDriver_Sow</driverClass>
+    <reportString>sowing.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>Harvest</defName>
+    <driverClass>SimWorld.Building.JobDriver_Harvest</driverClass>
+    <reportString>harvesting.</reportString>
+  </JobDef>
+
 </Defs>

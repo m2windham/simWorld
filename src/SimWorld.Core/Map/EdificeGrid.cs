@@ -1,4 +1,5 @@
 using System;
+using SimWorld.Defs;
 using SimWorld.Things;
 
 namespace SimWorld.Map
@@ -35,10 +36,18 @@ namespace SimWorld.Map
             map.roomTracker.Notify_Dirty();
         }
 
-        public void DeRegister(Thing edifice)
+        /// <summary>
+        /// <paramref name="mode"/> gates roof-collapse support checking (system 16: Building — roof collapse):
+        /// <see cref="DestroyMode.WillReplace"/> means the edifice is about to be re-spawned as something
+        /// else at the same cell in the same moment (RimWorld's own value for exactly this — see
+        /// <see cref="Building.Frame.CompleteConstruction"/>) and must not be treated as support genuinely
+        /// lost. Every other mode does, including the default a caller with no mode of its own uses.
+        /// </summary>
+        public void DeRegister(Thing edifice, DestroyMode mode = DestroyMode.Vanish)
         {
             if (edifice == null) throw new ArgumentNullException(nameof(edifice));
-            foreach (IntVec3 c in edifice.OccupiedRect().Cells)
+            CellRect occupied = edifice.OccupiedRect();
+            foreach (IntVec3 c in occupied.Cells)
             {
                 if (!GenGrid.InBounds(c, map)) continue;
                 int i = map.cellIndices.CellToIndex(c);
@@ -46,6 +55,11 @@ namespace SimWorld.Map
                 map.regionAndRoomUpdater.Notify_DirtyCell(c);
             }
             map.roomTracker.Notify_Dirty();
+
+            if (mode != DestroyMode.WillReplace && edifice.def.Fillage == FillCategory.Full)
+            {
+                Building.RoofCollapseUtility.Notify_RoofHolderDespawned(occupied, map);
+            }
         }
     }
 }

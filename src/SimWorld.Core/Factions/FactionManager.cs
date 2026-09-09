@@ -111,6 +111,17 @@ namespace SimWorld.Factions
             return candidates.Count == 0 ? null : Rand.Element(candidates);
         }
 
+        /// <summary>
+        /// Deep-saves the factions, which is right for a manager saved on its own and wrong for one saved
+        /// beside a <see cref="World.World"/> — the world deep-saves the same objects, so saving both in one
+        /// graph would write every faction twice and load two diverging instances of each.
+        /// <para/>
+        /// <b>Do not "fix" this by switching to <see cref="LookMode.Reference"/>.</b> Nothing else deep-saves
+        /// these objects when the manager is saved alone, so references would dangle and two existing tests
+        /// would break. The ownership rule is the other way round: when a world exists it owns the factions
+        /// and this registry is derived state, which is why <c>Sim.Game</c> deliberately does not save its
+        /// manager and rebuilds it from <c>World.factions</c> after load instead.
+        /// </summary>
         public void ExposeData()
         {
             List<Faction>? f = new List<Faction>(allFactions);

@@ -31,10 +31,13 @@ namespace SimWorld.Work
     }
 
     /// <summary>
-    /// A work giver that scans the map for things (or, later, cells) to act on (RimWorld:
-    /// <c>Verse.WorkGiver_Scanner</c>). <see cref="JobGiver_Work"/> is the only caller: it walks
+    /// A work giver that scans the map for things or cells to act on (RimWorld: <c>Verse.WorkGiver_Scanner</c>).
+    /// <see cref="JobGiver_Work"/> is the only caller, via <see cref="AI.WorkGiverScanUtility"/>: for a
+    /// thing-scanning giver (<see cref="WorkGiverDef.scanThings"/>, the default) it walks
     /// <see cref="PotentialWorkThingsGlobal"/> for the nearest candidate <see cref="HasJobOnThing"/> accepts,
-    /// then asks <see cref="JobOnThing"/> for the actual job.
+    /// then asks <see cref="JobOnThing"/> for the actual job; for a cell-scanning giver
+    /// (<see cref="WorkGiverDef.scanCells"/>) the same shape runs over <see cref="PotentialWorkCellsGlobal"/>/
+    /// <see cref="HasJobOnCell"/>/<see cref="JobOnCell"/> instead.
     /// </summary>
     public abstract class WorkGiver_Scanner : WorkGiver
     {
@@ -48,13 +51,20 @@ namespace SimWorld.Work
         /// <summary>Every Thing on the map this giver could possibly act on, before eligibility narrows it down.</summary>
         public virtual IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn) => Array.Empty<Thing>();
 
-        /// <summary>Cell-scanning counterpart for work that targets bare cells rather than Things; no giver
-        /// this pass ships needs it (hauling/building/growing all depend on systems not yet built).</summary>
+        /// <summary>Cell-scanning counterpart for work that targets bare cells rather than Things — consulted
+        /// by <see cref="AI.WorkGiverScanUtility"/> instead of <see cref="PotentialWorkThingsGlobal"/> when
+        /// <see cref="WorkGiverDef.scanCells"/> is set (system 16: Building — <c>WorkGiver_GrowerSow</c>
+        /// targets an empty, sowable cell inside a growing zone, which has no Thing of its own to scan for).</summary>
         public virtual IEnumerable<IntVec3> PotentialWorkCellsGlobal(Pawn pawn) => Array.Empty<IntVec3>();
 
         public virtual bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false) => false;
 
         public virtual Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false) => null;
+
+        /// <summary>Cell-scanning counterpart of <see cref="HasJobOnThing"/>; consulted by <see cref="AI.WorkGiverScanUtility"/>
+        /// only when <see cref="WorkGiverDef.scanCells"/> is set (system 16: Building — plant growth is the
+        /// first giver this pass ships that needs it; see that def field's own remarks).</summary>
+        public virtual bool HasJobOnCell(Pawn pawn, IntVec3 cell, bool forced = false) => false;
 
         public virtual Job? JobOnCell(Pawn pawn, IntVec3 cell, bool forced = false) => null;
     }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SimWorld.Map;
 using SimWorld.Pawns;
 using SimWorld.Things;
 using SimWorld.Work;
@@ -30,11 +31,24 @@ namespace SimWorld.AI
             return null;
         }
 
-        /// <summary>Nearest spawned, on-map candidate the scanner has a job on; null if none qualify.</summary>
+        /// <summary>
+        /// Nearest spawned, on-map candidate the scanner has a job on; null if none qualify. A cell-scanning
+        /// giver (<see cref="WorkGiverDef.scanCells"/>) is tried first over <see cref="WorkGiver_Scanner.PotentialWorkCellsGlobal"/>;
+        /// a thing-scanning one (<see cref="WorkGiverDef.scanThings"/>, the default) walks
+        /// <see cref="WorkGiver_Scanner.PotentialWorkThingsGlobal"/> exactly as before this pass added the
+        /// cell half — a giver can set both, in which case the cell result wins ties by being tried first.
+        /// </summary>
         public static Job? TryFindJobOnScanner(Pawn pawn, WorkGiver_Scanner scanner)
         {
             Map.Map? map = pawn.Map;
             if (map == null) return null;
+
+            if (scanner.def.scanCells)
+            {
+                Job? cellJob = TryFindJobOnCellScanner(pawn, scanner);
+                if (cellJob != null) return cellJob;
+            }
+            if (!scanner.def.scanThings) return null;
 
             Thing? best = null;
             int bestDistSq = int.MaxValue;
@@ -48,6 +62,23 @@ namespace SimWorld.AI
                 bestDistSq = distSq;
             }
             return best != null ? scanner.JobOnThing(pawn, best) : null;
+        }
+
+        private static Job? TryFindJobOnCellScanner(Pawn pawn, WorkGiver_Scanner scanner)
+        {
+            IntVec3 best = IntVec3.Invalid;
+            int bestDistSq = int.MaxValue;
+            bool found = false;
+            foreach (IntVec3 c in scanner.PotentialWorkCellsGlobal(pawn))
+            {
+                int distSq = (c - pawn.Position).LengthHorizontalSquared;
+                if (distSq >= bestDistSq) continue;
+                if (!scanner.HasJobOnCell(pawn, c)) continue;
+                best = c;
+                bestDistSq = distSq;
+                found = true;
+            }
+            return found ? scanner.JobOnCell(pawn, best) : null;
         }
     }
 }
