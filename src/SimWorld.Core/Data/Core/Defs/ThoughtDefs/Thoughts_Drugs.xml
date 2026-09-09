@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- health.addictions: withdrawal reaching Need_Mood. ThoughtWorker_Hediff already existed (Health's own
+       Sick/Pain thoughts use it the same way) — mirroring the addiction hediff's own stage as this thought's
+       stage is the entire mechanism; nothing new in Thoughts/Needs was touched. baseMoodEffect values are
+       this pass's own, sized worse for yayo than alcohol to match Hediffs_Drugs.xml's own severities. -->
+
+  <ThoughtDef>
+    <defName>AlcoholAddictionWithdrawal</defName>
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_Hediff</workerClass>
+    <hediff>AlcoholAddiction</hediff>
+    <stages>
+      <li>
+        <label>mild craving for alcohol</label>
+        <baseMoodEffect>-2</baseMoodEffect>
+      </li>
+      <li>
+        <label>alcohol withdrawal</label>
+        <baseMoodEffect>-8</baseMoodEffect>
+      </li>
+      <li>
+        <label>severe alcohol withdrawal</label>
+        <baseMoodEffect>-16</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>YayoAddictionWithdrawal</defName>
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_Hediff</workerClass>
+    <hediff>YayoAddiction</hediff>
+    <stages>
+      <li>
+        <label>mild craving for yayo</label>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+      <li>
+        <label>yayo withdrawal</label>
+        <baseMoodEffect>-12</baseMoodEffect>
+      </li>
+      <li>
+        <label>severe yayo withdrawal</label>
+        <baseMoodEffect>-22</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

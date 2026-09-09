@@ -145,9 +145,12 @@ goes through this pipeline instead.
   wounded pawn's stats degrade and recover with the body. `RestRateMultiplier`'s BloodPumping, Metabolism and
   Breathing (weight 0.3 each) are the shipped example: hurt the pawn's heart and it rests slower; heal it and
   the multiplier recovers.
-- `StatPart` (`TransformValue(StatRequest, ref float)`) is real and tested but ships no concrete subclass yet.
-  RimWorld's own quality and stuff-derived StatParts need a live `CompQuality`/apparel-stuff on a spawned
-  Thing; Crafting's `QualityCategory` exists only on `ItemStack` today, so those parts would read nothing.
+- `StatPart` (`TransformValue(StatRequest, ref float)`) ships its first concrete subclass, `StatPart_Quality`
+  (`Stats/StatPart_Quality.cs`), multiplying by a content-authored curve keyed on the quality index of a
+  `Things.CompQuality` on the requested Thing — wired onto `MarketValue`'s own content (`Stats_Economy.xml`).
+  `Thing.Stuff` (set by `ThingMaker.MakeThing`) is what makes the stuff factor/offset step below actually fire
+  for a live Thing rather than only for the abstract `(def, stuff)` request — `StatRequest.For(Thing)` now
+  reads it instead of always passing `null`.
 - `Thing.GetStatValue(stat)` and `ThingDef.GetStatValue(stat, stuff)` are the call-site sugar (`StatExtension`),
   reading like RimWorld's `GetStatValue`/`GetStatValueAbstract` — named identically on the Thing side, but the
   def-side overload keeps the `GetStatValue` name (rather than RimWorld's `GetStatValueAbstract`) so it cannot
@@ -268,16 +271,18 @@ sequenceDiagram
   passion roll → name → age and life stage → weapon (`PawnWeaponGenerator`,
   humanlike non-newborns only). Life stages scale body size, health and
   hunger; newborns record a life event, the seed of lineage-driven generation.
-- **Gear — weapon half only.** `PawnKindDef.weaponTags`/`weaponMoneyRange`
+- **Gear — weapon and apparel.** `PawnKindDef.weaponTags`/`weaponMoneyRange`
   pick among loaded weapon `ThingDef`s by `weaponTags`, `MarketValue` and
   `techLevel` — capped at the generated pawn's own `Pawn.faction`'s
   `FactionDef.techLevel`, so a neolithic raiding faction is never issued
   anything above Neolithic gear. Carried gear lives on the new
-  `Pawn_EquipmentTracker` (`Pawn.equipment`). **Apparel half not built:**
-  `PawnKindDef.apparelTags`/`apparelMoneyRange` exist on the def (ported,
-  unconsumed) but there is no `ThingDef.apparel`/body-part-group coverage
-  content and no wear-tracking runtime for a `PawnApparelGenerator` to spend
-  them against yet.
+  `Pawn_EquipmentTracker` (`Pawn.equipment`). `PawnKindDef.apparelTags`/
+  `apparelMoneyRange` drive `PawnApparelGenerator` the same way, offering every
+  eligible `ThingDef.apparel` piece once in a randomized weighted order and
+  keeping whichever don't conflict with what's already worn
+  (`Pawn_ApparelTracker`); it runs after the pawn's hidden lifespan roll so it
+  never perturbs the RNG sequence any earlier generation step depends on. See
+  §7.2 for what a worn piece actually does once on the pawn.
 - **Map gen**: elevation/fertility noise → terrain by biome, fertility and
   rainfall, plus a carved river channel where the tile carries one → rocky
   outcrops and mountains as natural edifices, scaled by hilliness and the
@@ -574,9 +579,30 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   silently does nothing. RimWorld routes surgeon competence through a
   `MedicalSurgerySuccessChance` stat whose value comes from `SkillNeed` curves
   this port does not have yet (the open `work.stats` item), so competence is
-  read straight off the skill for now. Installing a prosthetic ships as a
-  worker but not as content: a prosthetic is an item a civilization has to make
-  or buy, and no such `ThingDef` exists yet.
+  read straight off the skill for now. Installing a prosthetic ships as content
+  too: `SimpleProstheticLeg` is a real, tradeable `ThingDef`, and
+  `InstallSimpleProstheticLeg` names it as a `RecipeDef.ingredients` entry —
+  `SurgeryUtility.PerformNextSurgery` takes an optional `ingredientsOnHand` list
+  and only fires an ingredient-naming bill once a matching Thing is supplied
+  and consumed, leaving every ingredient-less surgery (amputation, excision)
+  unaffected.
+- **Apparel** is `ThingDef.apparel` (`ApparelProperties`: covered
+  `BodyPartGroupDef`s, `ApparelLayerDef`s, tags) plus `Pawn_ApparelTracker`.
+  Wearing a piece registers it as a `Combat.IArmorSource` through the
+  `PawnArmor` hook Combat already shipped for this — armor rating and coverage
+  route through the stat pipeline exactly like natural armor, so quality and
+  stuff (§3a) bend a worn item's protection the same way they bend anything
+  else. `PawnApparelGenerator` consumes `PawnKindDef.apparelTags`/
+  `apparelMoneyRange` the way `PawnWeaponGenerator` consumes the weapon half.
+- **Drugs and addiction**: a drug `ThingDef` carries `CompDrug`, bound to a
+  `ChemicalDef` naming a tolerance hediff and an addiction hediff. Tolerance
+  builds per dose and decays per day; addiction can start once tolerance
+  crosses the chemical's own threshold, and a further dose once addicted
+  relieves its severity instead of stacking a second one. Withdrawal reaches
+  `Need_Mood` through content alone — a `ThoughtDef` using the pre-existing
+  `ThoughtWorker_Hediff` mirrors the addiction hediff's own stage as a
+  mood-affecting Thought. Overdose and any self-cure of an addiction are out of
+  scope for this pass.
 
 ### 7.3 Skills & Work
 

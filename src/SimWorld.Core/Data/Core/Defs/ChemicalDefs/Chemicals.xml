@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    health.addictions: which tolerance/addiction hediff a drug's dose builds toward (see Hediffs_Drugs.xml)
+    and how much tolerance it takes before a dose can start the addiction. minToleranceToAddict is this pass's
+    own per-chemical number — RimWorld's real addiction-chance curves aren't sourced here — picked only so
+    alcohol (occasional, social) is harder to get hooked on than yayo (harder, more addictive) at the same
+    dose rate; DrugTests pins the trend (no addiction below the threshold; only ever at/above it), not these
+    literals.
+  -->
+
+  <ChemicalDef>
+    <defName>Alcohol</defName>
+    <label>alcohol</label>
+    <toleranceHediff>AlcoholTolerance</toleranceHediff>
+    <addictionHediff>AlcoholAddiction</addictionHediff>
+    <minToleranceToAddict>0.3</minToleranceToAddict>
+  </ChemicalDef>
+
+  <ChemicalDef>
+    <defName>Yayo</defName>
+    <label>yayo</label>
+    <toleranceHediff>YayoTolerance</toleranceHediff>
+    <addictionHediff>YayoAddiction</addictionHediff>
+    <minToleranceToAddict>0.15</minToleranceToAddict>
+  </ChemicalDef>
+
+</Defs>
