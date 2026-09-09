@@ -209,6 +209,13 @@ flowchart TD
   collections. `Game` is now the one Scribe root that ties a whole save
   together — `Scribe.SaveToString(game, "game")`/`Scribe.Load<Game>(...)` —
   rather than each system round-tripping only its own piece in isolation.
+  The saver writes through an `XmlWriter`, as RimWorld's own always did:
+  `Scribe.SaveToStream`/`SaveToFile` push straight to a sink, so a
+  civilization-sized save never has to exist as XML objects beside the
+  simulation that produced it, while `SaveToXDocument`/`SaveToString` keep
+  their exact shape by pointing that same writer at an `XDocument`. Loading
+  still parses the whole document: the three passes re-read nodes after
+  cross-references resolve, and a forward-only reader cannot serve that.
 - **`Game`** (`Sim/Game.cs`, RimWorld: `Verse.Game`): owns the `World`, the
   live `Map`s (read off which settlements currently have an entered
   interior, not a separately-tracked list — see §11.2), and every manager
