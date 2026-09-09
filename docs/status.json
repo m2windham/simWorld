@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 794,
+  "testsTotal": 809,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -470,7 +470,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
       "status": "ported",
-      "tests": 65,
+      "tests": 77,
       "items": [
         {
           "id": "simcore.tick",
@@ -508,9 +508,14 @@
           "done": true
         },
         {
+          "id": "simcore.game",
+          "label": "Game root (Sim/Game.cs): owns World, the live Maps (a settlement's entered interior), and every manager that was previously only reached through Find (research, storyteller + CivilizationTarget, factions, letters, quests, scenario, family, social, god). Find.CurrentGame makes Find.* resolve through it when one exists and fall back to the pre-Game thread-static behaviour unchanged when it doesn't. Game.NewGame runs world generation, founds the starting settlement (SettlementFounder) and Scenario.PostGameStart against the actual founding population, then wires the defined pre/post tick order. Whole-game Scribe round trip (world + settlement + population + elapsed time), reloaded and re-ticked.",
+          "done": true
+        },
+        {
           "id": "simcore.autosave",
-          "label": "Autosave cadence — lands with the game loop",
-          "done": false
+          "label": "Autosave cadence and hook (Game.AutosaveIntervalTicks / Game.AutosaveDue): fires on a cadence wired into the post-tick order; writing the save file is left to the host, per the module's own scope",
+          "done": true
         },
         {
           "id": "simcore.scribe-stream",
@@ -1143,8 +1148,8 @@
         },
         {
           "id": "quests.orchestrator",
-          "label": "Game-start orchestrator to run Scenario.PostGameStart and the quest tick loop — lands with the game loop",
-          "done": false
+          "label": "Game-start orchestrator to run Scenario.PostGameStart and the quest tick loop — Sim/Game.cs: Game.NewGame founds the settlement then runs PostGameStart against its citizens, and QuestManager.QuestManagerTick is wired into the post-tick order (it had never been driven by anything before)",
+          "done": true
         }
       ]
     },
