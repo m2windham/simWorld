@@ -851,6 +851,33 @@ flowchart LR
 - Armor: rating versus penetration rolls deflect, or halve and convert sharp to
   blunt.
 - Downed and dead come from the health system, never from combat directly.
+- **Cover and line of sight** are real map geometry, not a stand-in: `Map.GenSight`
+  is a Bresenham "supercover" walk over the map's own grids (an edifice with
+  `FillCategory.Full` blocks it), and `Combat.CoverUtility.CalculateCoverGiverSet`
+  is RimWorld's own 8-adjacent-cell algorithm — what stands beside the *target*,
+  weighted by the angle it makes with the shooter's line and by point-blank
+  range — resolved automatically once caster and target are spawned on the same
+  map. This is deliberately not a region-graph query: `Region`/`RegionGrid`
+  answer reachability (can a pawn ever walk from A to B, crossing no doorway
+  they can't), which is a different question from "is there an unbroken line of
+  sight between these two cells right now."
+- **Structures** — turrets, traps and explosions — are `ThingDef`s with comps,
+  the Building module's existing shape (RimWorld itself gives a turret and a
+  trap their own `Thing` subclass; this port keeps everything comp-composed
+  instead). A turret's `CompTurretGun` throttles its hostile-pawn scan to a
+  15-tick hash interval (RimWorld's own cadence) so it costs nothing on ticks
+  it isn't due; `Combat.GenExplosion` computes a blast's cells by radius and
+  line of sight the same way (`DamageWorker_AddInjury.ExplosionCellsToHit`),
+  so a wall shields whatever is behind it and takes the hit that stopped the
+  blast itself, with an optional linear falloff from center to edge.
+- **Capture**: a downed pawn of a hostile faction can be captured
+  (`Factions.CaptureUtility`) into a `Pawn_GuestTracker` — RimWorld's own name,
+  though it lives on the *host* `Faction` here (`Faction.prisoners`) rather
+  than on `Pawn`, which carries no such field in this port. `WardenUtility`
+  reduces resistance per visit and recruits once it hits zero, or releases a
+  prisoner outright — the rules the Warden work type needs; the job/work-giver
+  that would actually walk a colonist over to use them is Work/AI's own
+  module and is not part of this.
 
 ### 8.4 Social & Belief
 

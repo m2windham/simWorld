@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 909,
+  "testsTotal": 948,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -361,7 +361,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things",
       "status": "ported",
-      "tests": 33,
+      "tests": 39,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -825,9 +825,9 @@
       "rimworld": "Combat",
       "translation": "Unchanged mechanics; armies are groups of full agents.",
       "translationState": "proposed",
-      "module": "src/SimWorld.Core/Combat · Health/Damage (armor)",
+      "module": "src/SimWorld.Core/Combat · Map · Building · Factions · Health/Damage (armor)",
       "status": "ported",
-      "tests": 36,
+      "tests": 48,
       "items": [
         {
           "id": "combat.verbs",
@@ -846,18 +846,18 @@
         },
         {
           "id": "combat.cover",
-          "label": "Cover: CoverInfo/CoverUtility math only — map geometry and line of sight land with Map/AI",
-          "done": false
+          "label": "Cover: CoverInfo/CoverUtility wired to real map geometry — Map.GenSight (Verse.GenSight-style Bresenham line of sight, decompiled-source-verified) gates a shot, CoverUtility.CalculateCoverGiverSet (the real 8-adjacent-cell, angle- and distance-weighted algorithm) resolves automatically from caster/target position once both are spawned on a map; a pawn behind a wall is measurably harder to hit than one in the open",
+          "done": true
         },
         {
           "id": "combat.structures",
-          "label": "Turrets, traps, explosions — lands with Building/Map",
-          "done": false
+          "label": "Turrets (CompTurretGun: hostile-pawn scan throttled to a 15-tick hash interval, fires the existing Verb/ShotReport pipeline — caster widened from Pawn to Thing for this), traps (CompTrap: armed, springs once on the first non-owning-faction pawn to enter, then spent), explosions (Combat.GenExplosion: GenExplosion/DamageWorker_AddInjury-style radial cells-to-hit with line-of-sight wall blocking, optional linear damage falloff) — all plain ThingDefs with comps, the Building module's existing shape rather than RimWorld's own distinct Building_TurretGun/Building_Trap subclasses",
+          "done": true
         },
         {
           "id": "combat.capture",
-          "label": "Downed / capture / prisoner loop — lands with Factions and AI",
-          "done": false
+          "label": "Downed → captured → prisoner loop: CaptureUtility (downed + hostile-faction → Pawn_GuestTracker) and WardenUtility (resistance reduction → recruit, or release), GuestStatus/PrisonerInteractionModeDef kept as RimWorld's own names. Pawn_GuestTracker lives on the host Faction (Faction.prisoners), not on Pawn — Pawns/** is another lane's module and carries no such field; see Pawn_GuestTracker.cs's own remarks. Partial: this ships the state and the rules only — the Warden WorkGiver/JobDriver that would send a colonist to actually carry them out is Work/AI content and code, out of this lane's reach, and is not built",
+          "done": true
         }
       ]
     },
@@ -988,7 +988,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 111,
+      "tests": 124,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1040,7 +1040,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Building",
       "status": "ported",
-      "tests": 43,
+      "tests": 51,
       "items": [
         {
           "id": "building.zones",
