@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Endless research (system: research, tracker item research.endless). What a civilization that has finished
+    all 232 authored projects keeps its researchers on. Each track continues a tag the authored tree already
+    uses, so the tail grows out of the tree rather than beside it, and each generated project is a pure
+    function of its track and tier — nothing here is rolled, so a save stores one integer rather than a
+    growing list of invented defs (see EndlessResearch's own remarks).
+
+    Three tracks, not fourteen. The authored tree's fourteen tracks are where the history of ideas is
+    actually told; past its end the distinctions that matter are coarser, and a tail of fourteen parallel
+    lines would be fourteen times the noise for no more meaning. Costs and growth rates are this port's own
+    judgement — RimWorld has no endless tech to source them from — and are pinned by trend tests.
+  -->
+
+  <EndlessResearchDef>
+    <defName>EndlessMatter</defName>
+    <label>matter</label>
+    <description>What things are made of, and what else they could be made of instead.</description>
+    <trackTag>MaterialsCrafts</trackTag>
+    <titles>
+      <li>applied metamaterials</li>
+      <li>lattice engineering</li>
+      <li>matter compilation</li>
+    </titles>
+    <baseCost>6000</baseCost>
+    <costGrowth>1.35</costGrowth>
+  </EndlessResearchDef>
+
+  <EndlessResearchDef>
+    <defName>EndlessEnergy</defName>
+    <label>energy</label>
+    <description>Getting more work out of the same fuel, and then out of less.</description>
+    <trackTag>EnergyIndustry</trackTag>
+    <titles>
+      <li>field harmonics</li>
+      <li>containment theory</li>
+      <li>vacuum yield</li>
+    </titles>
+    <baseCost>7000</baseCost>
+    <costGrowth>1.4</costGrowth>
+  </EndlessResearchDef>
+
+  <EndlessResearchDef>
+    <defName>EndlessMind</defName>
+    <label>mind</label>
+    <description>The study of thought by things that think, which never finishes.</description>
+    <trackTag>KnowledgeWriting</trackTag>
+    <titles>
+      <li>cognitive scaffolding</li>
+      <li>inference architecture</li>
+      <li>recursive theory</li>
+    </titles>
+    <baseCost>8000</baseCost>
+    <costGrowth>1.45</costGrowth>
+  </EndlessResearchDef>
+
+</Defs>

@@ -1199,6 +1199,21 @@ the translation and its state per system.
   in the grid than the role was ever there. `WorkPolicyUtility` applies a role
   across a whole population in one call — policy acts on the aggregate, the
   same way `GodManager.Activate` does for an edict.
+- **Endless tech** (`research.endless`, built): the authored tree ends; the game
+  does not. An `EndlessResearchDef` is content naming a tag of the authored tree
+  to continue, title fragments to name refinements with, and a cost that grows,
+  and `EndlessResearch` mints a real `ResearchProjectDef` per track per tier into
+  the global `DefDatabase` — so cost, gating, progress and the letter on
+  completion are handled by exactly the code that handles an authored project,
+  and nothing else has to learn that endless tech exists. It is **derived, not
+  rolled**: `defName`, label, cost and prerequisite are pure functions of track
+  and tier, which is stronger than a seeded stream would be — a save stores one
+  integer, the tier reached, and reloads byte-identical tech rather than a
+  growing list of invented defs. A tier is minted only when nothing in the
+  authored tree can be started, so a civilization that has not finished the tree
+  pays nothing for it. Generated projects carry no era and are invisible to
+  `EraDef.Projects`, so they cannot hold the ladder open: the ladder is a finite
+  authored artefact that ends at Exotic, and this is what comes after it.
 - **Eras**: an `EraDef` ladder over the research DAG carries a civilization from
   neolithic to archotech; era completion gates content, scales threats, and
   gates which edicts a civilization can issue at all (`EdictDef.requiredEra`,
