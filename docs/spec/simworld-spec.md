@@ -795,6 +795,27 @@ flowchart TD
   `CompEggLayer`, all `CompHasGatherableBodyResource`: fullness rises toward 1
   over a per-species interval and `Gather` spawns the real item (stopping at
   unfertilized eggs — no breeding system exists to fertilize one).
+- **Guilds** (`crafting.guilds`, built): the civilization-scale form of the
+  workbench bill queue. A `GuildDef` names the `RoleDef` that staffs a guild,
+  the skill its craftsmen are measured by, and the recipes it may queue; a
+  `Guild` holds a real `BillStack` — repeat modes and target-count hysteresis
+  unchanged — but belongs to a `Settlement`, draws its ingredients from that
+  settlement's `Stores` ledger and puts its products back into it, so a
+  target-count bill reads as "keep two hundred units in the granary" rather
+  than "on the shelf". Members are the settlement's citizens carrying the
+  role, plus an assigned share of its Statistical cohort whose skill is one
+  deterministic cohort sample — `GodRollup`'s own idiom, for the same reason.
+  Labour banks across intervals, because a batch that costs more than one
+  interval's work must be finishable at all; a guild with no runnable bill
+  banks nothing, so idle craftsmen do not stockpile labour. **Not modelled**,
+  all for one reason — it belongs to the settlement interior rather than to
+  the civilization: no workbench `Thing`, no hauling, no job driver, no
+  per-iteration worker. When a settlement is opened and its citizens walk a
+  real map, RimWorld's own bill and job path is what should run there; this is
+  what happens to the other ninety-nine towns. A recipe whose ingredients are
+  a category filter ("any meat") is refused in `ConfigErrors` rather than
+  silently skipped: a def-count ledger has no stockpile to make that choice
+  in.
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.

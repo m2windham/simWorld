@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 1066,
+  "testsTotal": 1079,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -869,7 +869,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "ported",
-      "tests": 40,
+      "tests": 53,
       "items": [
         {
           "id": "crafting.bills",
@@ -903,8 +903,8 @@
         },
         {
           "id": "crafting.guilds",
-          "label": "Translation: guilds and industries as bill queues at civilization scale",
-          "done": false
+          "label": "Translation: guilds and industries as bill queues at civilization scale. A GuildDef names the RoleDef that staffs a guild, the skill its craftsmen are measured by and the recipes it may queue; a Guild holds a real BillStack — repeat modes and target-count hysteresis unchanged — but belongs to a Settlement, draws fixed ingredients from that settlement's Stores ledger and puts products back into it. Members are the settlement's citizens carrying the role, plus an assigned share of the Statistical cohort whose skill is one deterministic cohort sample, GodRollup's own idiom. Labour banks across intervals (WorkAccumulated) so a batch costing more than one interval can be finished at all, and a guild with no runnable bill banks nothing. Not modelled, all for the same reason — it belongs to the settlement interior: no workbench Thing, no hauling, no job driver. A recipe whose ingredients are a category filter is refused in ConfigErrors rather than silently skipped: a def-count ledger has no stockpile to choose between candidates in",
+          "done": true
         }
       ]
     },

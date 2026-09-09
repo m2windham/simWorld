@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Guilds (system: crafting, tracker item crafting.guilds). A guild is the civilization-scale form of
+    RimWorld's workbench bill queue: the bills are unchanged, but the stack belongs to a settlement, the
+    ingredients come from that settlement's stores and the members are its citizens carrying the guild's
+    RoleDef.
+
+    One guild ships, and deliberately only one. A guild's recipes must have fixed ingredients — a settlement
+    holds a def-count ledger, not a stockpile it can choose between candidates in (see Guild's own remarks) —
+    and Make_Blocks_Sandstone is the only shipped recipe that qualifies. Cooking's recipes all draw on
+    category filters ("any meat", "any raw plant food"), so a cooks' guild waits on a settlement stock model
+    that can make that choice rather than on new content here.
+  -->
+
+  <GuildDef>
+    <defName>MasonsGuild</defName>
+    <label>masons' guild</label>
+    <description>Cuts quarried stone into building blocks. The first industry a settlement that has stopped moving tends to want, and the one whose output the next age is built out of.</description>
+    <role>Artisan</role>
+    <skill>Crafting</skill>
+    <recipes>
+      <li>Make_Blocks_Sandstone</li>
+    </recipes>
+  </GuildDef>
+
+</Defs>

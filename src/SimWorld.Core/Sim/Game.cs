@@ -51,6 +51,7 @@ namespace SimWorld.Sim
         private FamilyManager? familyManager;
         private SocialInteractionManager? socialInteractionManager;
         private GodManager? godManager;
+        private SimWorld.Crafting.GuildManager? guildManager;
 
         /// <summary>The one <see cref="IIncidentTarget"/> this port has — see that interface's own doc for
         /// why. Registered with <see cref="Storyteller"/> at <see cref="NewGame"/> time and re-registered on
@@ -134,6 +135,13 @@ namespace SimWorld.Sim
         {
             get => godManager ??= new GodManager();
             set => godManager = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>Every settlement's standing production queues (<c>crafting.guilds</c>).</summary>
+        public SimWorld.Crafting.GuildManager Guilds
+        {
+            get => guildManager ??= new SimWorld.Crafting.GuildManager();
+            set => guildManager = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>See the field's own doc.</summary>
@@ -366,6 +374,7 @@ namespace SimWorld.Sim
             tm.PostTickers.Add(_ => Storyteller.StorytellerTick());
             tm.PostTickers.Add(_ => SocialTick());
             tm.PostTickers.Add(_ => God.GodTick());
+            tm.PostTickers.Add(_ => Guilds.GuildManagerTick());
             tm.PostTickers.Add(_ => FactionManager.FactionManagerTick());
             tm.PostTickers.Add(_ => LetterStack.LetterStackTick());
             tm.PostTickers.Add(_ => QuestManager.QuestManagerTick());
@@ -519,6 +528,13 @@ namespace SimWorld.Sim
             GodManager? god = godManager;
             Scribe_Deep.Look(ref god, "godManager");
             godManager = god;
+
+            SimWorld.Crafting.GuildManager? guilds = guildManager;
+            Scribe_Deep.Look(ref guilds, "guildManager");
+            guildManager = guilds;
+            // A guild is attached to its settlement by world tile rather than by reference (WorldObject is not
+            // ILoadReferenceable), so the reattachment has to wait until the world itself is back.
+            if (Scribe.mode == LoadSaveMode.PostLoadInit) guildManager?.ResolveSettlements(world);
 
             CivilizationTarget? civ = civilizationTarget;
             Scribe_Deep.Look(ref civ, "civilizationTarget");
