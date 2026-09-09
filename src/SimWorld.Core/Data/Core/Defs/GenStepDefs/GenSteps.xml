@@ -44,6 +44,17 @@
     <workerClass>SimWorld.MapGen.GenStep_Scatterers</workerClass>
   </GenStepDef>
 
+  <!--
+    After Scatterers so a ruin's footprint is cleared of whatever chunk/plant scatter randomly landed there;
+    before Roads so a road still clears straight through a ruin exactly as it already clears through rock and
+    scatter (GenStep_Roads's own doc explains why that reach-into-earlier-steps' output is worth it there).
+  -->
+  <GenStepDef>
+    <defName>Ruins</defName>
+    <order>650</order>
+    <workerClass>SimWorld.MapGen.GenStep_Ruins</workerClass>
+  </GenStepDef>
+
   <!-- Last on purpose: clears whatever an earlier step left on its own path, so a street is always walkable. -->
   <GenStepDef>
     <defName>Roads</defName>

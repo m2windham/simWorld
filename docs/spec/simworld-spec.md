@@ -295,10 +295,18 @@ sequenceDiagram
   outcrops and mountains as natural edifices, scaled by hilliness and the
   tile's Stone/Ore deposits → caves cut through mountain by a directional
   random walk → roofs over mountain and cave cells → chunks and wild plants
-  scattered by biome density. `MapGen.MapGenerator.GenerateMapFor(worldTile)`
-  is the §11.2 seam: a settlement's interior is generated from the world tile
-  it sits on, so a tile the world map promised ore or a river on produces a
-  map with ore or a river crossing it.
+  scattered by biome density → weathered ruins scattered onto open ground
+  (`MapGen.GenStep_Ruins`: gap-and-rubble wall rectangles, some roofed, some
+  looted, material drawn from content, walls weathered off full hit points —
+  a hand-written stand-in for RimWorld's RuleDef/SymbolResolver ruin grammar
+  and `GenStep_ScatterShrines`, not a port of either; every ruin keeps at
+  least two forced-open gaps so it can never wall a pawn into an unreachable
+  pocket, checked against the real region graph by test) → world-tile roads
+  carried onto the map as streets last, clearing whatever an earlier step
+  left in their path. `MapGen.MapGenerator.GenerateMapFor(worldTile)` is the
+  §11.2 seam: a settlement's interior is generated from the world tile it
+  sits on, so a tile the world map promised ore or a river on produces a map
+  with ore or a river crossing it.
 - Every generation step takes an explicit seed → reproducible.
 
 ```mermaid

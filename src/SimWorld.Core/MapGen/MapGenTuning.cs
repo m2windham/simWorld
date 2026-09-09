@@ -115,6 +115,59 @@ namespace SimWorld.MapGen
         public static float PlantCellsPerItem(float plantSignal) =>
             GenMath.Lerp(PlantCellsPerItemSparse, PlantCellsPerItemDense, GenMath.Clamp01(plantSignal));
 
+        // ---- Ruins (GenStep_Ruins): wall rectangles with gaps and rubble, weathered rather than pristine.
+        // See that class's own doc comment for what of RimWorld's real ruin generation (RuleDef/SymbolResolver,
+        // GenStep_ScatterShrines) this deliberately does not port. Every number below is this port's own
+        // judgement call — RimWorld's real per-tile ruin count and size range are not sourced or verified
+        // against decompiled source in this sandbox — pinned by a behavioural test (ruins appear in believable
+        // numbers, density scales with map area, a ruin never encloses a pocket the region graph cannot reach
+        // from the border) rather than trusted as a literal. ----
+
+        /// <summary>Map cells per placement attempt; scales attempt count — and so ruin density — with map area, the same way every other scatterer in this file scales off cell count rather than a flat count.</summary>
+        public const float RuinCellsPerAttempt = 2500f;
+
+        /// <summary>Side length range (each axis independently) of one ruin's outer wall rectangle.</summary>
+        public static readonly IntRange RuinSizeRange = new IntRange(4, 9);
+
+        /// <summary>Cells kept clear of the map border on every side, so a ruin's own rectangle — before <see cref="RuinCellsMarginBeforePlacement"/> is even applied around it — never gets clipped by the map boundary.</summary>
+        public const int RuinEdgeMargin = 2;
+
+        /// <summary>Cells expanded around a candidate rect (and around every already-placed ruin) before the water/rock/overlap checks — a placement margin, not a spacing rule of its own: it keeps a ruin off a mountain's edge or a riverbank rather than just barely inside it, and keeps two ruins from reading as one fused structure.</summary>
+        public const int RuinCellsMarginBeforePlacement = 4;
+
+        /// <summary>Chance an ordinary (non-corner) wall-ring cell is a gap — missing wall — rather than standing wall.</summary>
+        public const float RuinWallGapChance = 0.3f;
+
+        /// <summary>Corners get a lower gap chance than an ordinary wall cell, so a ruin still reads as a rectangle rather than a scatter of unrelated wall stubs.</summary>
+        public const float RuinCornerGapChance = 0.1f;
+
+        /// <summary>
+        /// However the dice fall, at least this many of the ring's non-corner cells are forced open. This is
+        /// the structural half of "never walls a pawn into a pocket it cannot leave" (see GenStep_Ruins's own
+        /// doc for why a structural guarantee was chosen over a runtime region-graph repair, and for the
+        /// region-graph test that checks the result rather than trusting the construction alone).
+        /// </summary>
+        public const int RuinMinGuaranteedGaps = 2;
+
+        /// <summary>Chance a gap cell also carries a piece of rubble (a loose rock chunk) rather than standing bare.</summary>
+        public const float RuinRubbleChance = 0.5f;
+
+        /// <summary>Fraction of MaxHitPoints (min, max) a standing ruin wall keeps — weathered, never pristine. A gap already models a wall reduced all the way to nothing, so this range never reaches down to that.</summary>
+        public const float RuinWallHitPointsFractionMin = 0.15f;
+        public const float RuinWallHitPointsFractionMax = 0.65f;
+
+        /// <summary>Chance a ruin's interior is roofed (an ancient structure that partly survived) rather than open to the sky.</summary>
+        public const float RuinRoofedChance = 0.35f;
+
+        /// <summary>Chance a ruin holds any loot at all.</summary>
+        public const float RuinLootChance = 0.55f;
+
+        /// <summary>Loot pieces placed when a ruin does carry loot.</summary>
+        public static readonly IntRange RuinLootItemCountRange = new IntRange(1, 3);
+
+        /// <summary>Stack size range for a stackable loot resource (silver, steel, wood); clamped to the item's own stackLimit besides.</summary>
+        public static readonly IntRange RuinLootStackRange = new IntRange(5, 40);
+
         // ---- Roads (GenStep_Roads) ----
 
         /// <summary>

@@ -300,11 +300,11 @@
       "id": "mapgen",
       "n": 3,
       "rimworld": "Local Map Generation",
-      "translation": "Settlement-site maps, many per civilization, generated on demand from the world tile via MapGen.MapGenerator.GenerateMapFor, rather than RimWorld's single fixed map. Rocky outcrops, ore veins and river channels are not sprinkled independently of the world map: their presence and rough scale are read directly from the tile's own Ore/Stone/river data, so a tile the world map promised ore or a river on always produces a map with ore or a river crossing it.",
+      "translation": "Settlement-site maps, many per civilization, generated on demand from the world tile via MapGen.MapGenerator.GenerateMapFor, rather than RimWorld's single fixed map. Rocky outcrops, ore veins and river channels are not sprinkled independently of the world map: their presence and rough scale are read directly from the tile's own Ore/Stone/river data, so a tile the world map promised ore or a river on always produces a map with ore or a river crossing it. Ruins (GenStep_Ruins) are a direct, hand-written stand-in for RimWorld's RuleDef/SymbolResolver ruin grammar rather than a port of that grammar itself: one ruin shape (a gap-and-rubble wall rectangle, sometimes roofed, sometimes looted, walls weathered off full hit points), not a composable rule library. GenStep_ScatterShrines (a single guarded unique-reward structure) and corpses inside a ruin are not ported at all — no Corpse Thing/system exists yet in this port, and a flavor-only stand-in was judged to misrepresent rather than simplify a dead pawn's identity; see GenStep_Ruins's own doc comment.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/MapGen",
       "status": "ported",
-      "tests": 19,
+      "tests": 27,
       "items": [
         {
           "id": "mapgen.terrain",
@@ -338,8 +338,8 @@
         },
         {
           "id": "mapgen.ruins",
-          "label": "Ruins and ancient structures scattered onto the map — explicitly out of scope for this pass; lands with a future Ruins/ancient-structures module",
-          "done": false
+          "label": "GenStep_Ruins: weathered wall rectangles with gaps and rubble scattered onto the map, some roofed, some carrying loot, material and roofing drawn from content; deterministic per seed, density scaling with map area, and structurally guaranteed (plus region-graph tested) never to wall a pawn into an unreachable pocket. GenStep_ScatterShrines and ruin corpses are not ported — see the module's own doc comment",
+          "done": true
         },
         {
           "id": "mapgen.roads",
