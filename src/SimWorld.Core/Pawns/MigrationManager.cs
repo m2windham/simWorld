@@ -29,18 +29,16 @@ namespace SimWorld.Pawns
     /// <c>Settlement.GrowStatisticalCohort</c> already uses for births-minus-deaths, and only ever materialises a
     /// real <c>Pawn</c> for the rarer, individually-founded-household half of arrivals.
     /// <para/>
-    /// <b>Departures: a real, working mechanism with one honest limitation.</b> <see cref="ProcessDepartures"/>
-    /// removes a distressed family's living members directly from a caller-supplied <see cref="List{Pawn}"/> —
-    /// the same "operate on the list the caller owns" contract <see cref="FamilyManager.DemographyTick"/> already
-    /// uses, which is what lets a caller with the actual backing list (a live settlement's own roster, mutated
-    /// through it) see a real population decline. The <see cref="Settlement"/>-aware overload
-    /// (<see cref="MigrationTick(Settlement,PawnKindDef)"/>) cannot offer that same removal for either
-    /// population slice: <c>Settlement.Citizens</c> is exposed read-only with no public way to remove a citizen,
-    /// and <c>Settlement.StatisticalPopulation</c> is a private field only <c>Settlement</c>'s own code can
-    /// shrink (its one public mutator, <c>AddStatisticalPeople</c>, rejects a negative count outright) — and
-    /// <c>World/**</c> is out of this lane's bounds to add one. So the settlement overload floors net-negative
-    /// migration at zero: an unlivable settlement simply stops attracting anyone rather than shedding population.
-    /// This is a real, stated gap, not a silent one — see the module's own report.
+    /// <b>Departures work on both population slices.</b> <see cref="ProcessDepartures"/> removes a distressed
+    /// family's living members directly from a caller-supplied <see cref="List{Pawn}"/> — the same "operate on
+    /// the list the caller owns" contract <see cref="FamilyManager.DemographyTick"/> already uses. For a
+    /// <see cref="Settlement"/>'s bare Statistical cohort, which has no roster to remove anyone from, net
+    /// migration goes negative through <c>Settlement.RemoveStatisticalPeople</c>: an unlivable settlement sheds
+    /// population rather than merely failing to attract it.
+    /// <para/>
+    /// The live <c>Settlement.Citizens</c> half still has no departure path — that list is exposed read-only and
+    /// removing a specific citizen is the settlement's own business, not migration's. A settlement whose live
+    /// roster should shrink needs the caller-owned-list overload, which is what it is for.
     /// </summary>
     public static class MigrationManager
     {
@@ -211,10 +209,11 @@ namespace SimWorld.Pawns
         }
 
         /// <summary>
-        /// Grows <see cref="Settlement.StatisticalPopulation"/> by <see cref="MigrationTuning.StatisticalNetMigrationRatePerYearAtMaxQuality"/>
-        /// scaled by how far above neutral (0.5) <paramref name="quality"/> sits and by the era factor
-        /// <see cref="ArrivalChance"/> already computes — floored at zero rather than negative; see the class
-        /// doc's "one honest limitation".
+        /// Moves <see cref="Settlement.StatisticalPopulation"/> by <see cref="MigrationTuning.StatisticalNetMigrationRatePerYearAtMaxQuality"/>
+        /// scaled by how far <paramref name="quality"/> sits from neutral (0.5) and by the era factor
+        /// <see cref="ArrivalChance"/> already computes. The rate is signed: a settlement above neutral attracts
+        /// people, one below it loses them, which is what makes somewhere worth leaving as real as somewhere
+        /// worth going.
         /// </summary>
         private static void GrowStatisticalCohortByMigration(Settlement settlement, float quality, EraDef? era)
         {
@@ -224,10 +223,12 @@ namespace SimWorld.Pawns
             float eraFactor = era != null ? 1f + MigrationTuning.EraArrivalBonusPerOrder * era.order : 1f;
             float signedQuality = (quality - 0.5f) * 2f; // maps [0,1] quality to [-1,1] around neutral
             float rate = MigrationTuning.StatisticalNetMigrationRatePerYearAtMaxQuality * signedQuality * eraFactor;
-            if (rate <= 0f) return;
 
-            int grown = (int)Math.Round(current * rate, MidpointRounding.AwayFromZero);
-            if (grown > 0) settlement.AddStatisticalPeople(grown);
+            int moved = (int)Math.Round(current * Math.Abs(rate), MidpointRounding.AwayFromZero);
+            if (moved <= 0) return;
+
+            if (rate > 0f) settlement.AddStatisticalPeople(moved);
+            else settlement.RemoveStatisticalPeople(moved);
         }
     }
 }

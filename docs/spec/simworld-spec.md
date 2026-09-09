@@ -591,7 +591,7 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   content) stands in for the grid: it names the work types it emphasizes, and
   `Pawn_WorkSettings.ApplyRole` sets those to the pawn's best priority while
   leaving everything else at the default. This is deliberately not the same
-  "leaves no trace" guarantee an `EdictDef` gives (§10) — a role is *standing*,
+  "leaves no trace" guarantee an `EdictDef` gives (§10) — a role is _standing_,
   not temporary, and does write into the grid — but it protects the one thing
   that guarantee is really about: `Pawn_WorkSettings` remembers every work type
   a caller set directly (`SetPriority`), and a role's own writes always skip
@@ -935,7 +935,7 @@ want to own (see `docs/status.json` system 17's `social.ideology` item).
   already records every birth, death, edict and era transition unconditionally
   — a log. `MomentCurator` (owned by the `Storyteller` alongside the chronicle
   itself) additionally decides which entries are worth remembering as a
-  civilization's *history*: the first occurrence of a category (an incident's
+  civilization's _history_: the first occurrence of a category (an incident's
   own `defName`, a death cause, or a free-form line's own category), every era
   transition without exception (`§10`: "reaching an era is an event, not just
   a readout"), and a new record for longevity at death. Each rule is bounded in
@@ -985,8 +985,8 @@ the translation and its state per system.
   nearest-candidate scan via `WorkGiverScanUtility` rather than duplicating
   it), so deactivating an edict leaves a citizen's own work priorities exactly
   as they were. Citizens keep full agency.
-- **Policy** (`work.policy`, §7.3): edicts are the *temporary* civilization-scale
-  lever; policy is the *standing* one. A citizen's role (`RoleDef`) shapes what
+- **Policy** (`work.policy`, §7.3): edicts are the _temporary_ civilization-scale
+  lever; policy is the _standing_ one. A citizen's role (`RoleDef`) shapes what
   work they take up — `Pawn_WorkSettings.ApplyRole` — rather than the player
   setting a per-pawn priority grid one citizen at a time. Not the same
   mechanism as an edict (a role does write into the grid, where an edict never

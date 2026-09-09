@@ -122,6 +122,24 @@ namespace SimWorld.World
             statisticalPopulation += count;
         }
 
+        /// <summary>
+        /// Takes <paramref name="count"/> people out of the Statistical cohort, floored at zero, and returns how
+        /// many actually left. The mirror of <see cref="AddStatisticalPeople"/>, and the thing a settlement needs
+        /// in order to be somewhere people leave: emigration, famine, plague and a settlement simply failing are
+        /// all population going down, and a cohort that can only grow can express none of them.
+        /// <para/>
+        /// Separate from <see cref="AddStatisticalPeople"/> rather than a signed count on it, because the two
+        /// directions are not symmetrical at the tier boundary: adding people to a cohort is free, while removing
+        /// them has a floor and a caller usually wants to know how many it actually got.
+        /// </summary>
+        public int RemoveStatisticalPeople(int count)
+        {
+            if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+            int removed = Math.Min(count, statisticalPopulation);
+            statisticalPopulation -= removed;
+            return removed;
+        }
+
         // ---- stores ----
 
         public IReadOnlyDictionary<ThingDef, int> Stores => stores;

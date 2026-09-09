@@ -876,11 +876,42 @@ namespace SimWorld.Tests.Pawns
             settlement.AddStatisticalPeople(10_000);
             Find.TickManager.DebugSetTicksGame(MigrationTuning.MigrationIntervalTicks);
 
-            // No live citizens at all -> SettlementQuality reads neutral (0.5) -> signedQuality is 0 -> no growth.
-            // This is also the documented floor in action: a settlement that can only get worse than neutral
-            // (no way to express that here) simply stops growing rather than shrinking.
+            // No live citizens at all -> SettlementQuality reads neutral (0.5) -> signedQuality is 0 -> no change
+            // in either direction. Neutral is the hinge, not a floor.
             MigrationManager.MigrationTick(settlement, PawnKindDefOf.Colonist);
             Assert.Equal(10_000, settlement.StatisticalPopulation);
+        }
+
+        [Fact]
+        public void Settlement_migration_sheds_statistical_population_when_citizens_are_suffering()
+        {
+            // Somewhere worth leaving has to be as expressible as somewhere worth going. This could not be
+            // asserted while Settlement's only population mutator refused a negative count: net migration was
+            // floored at zero, so an unlivable settlement merely stopped attracting anyone.
+            var settlement = new global::SimWorld.World.Settlement(
+                global::SimWorld.World.WorldObjectDefOf.Settlement, tile: 3, faction: null, name: "Ashfall", foundingTick: 0);
+            Pawn resident = NewAdult();
+            ForceDistressedNeeds(resident);
+            settlement.AddCitizen(resident);
+            settlement.AddStatisticalPeople(10_000);
+            Find.TickManager.DebugSetTicksGame(MigrationTuning.MigrationIntervalTicks);
+
+            MigrationManager.MigrationTick(settlement, PawnKindDefOf.Colonist);
+
+            Assert.True(settlement.StatisticalPopulation < 10_000,
+                "a settlement nobody wants to live in should lose people, not merely fail to gain them.");
+        }
+
+        [Fact]
+        public void A_statistical_cohort_never_goes_below_empty()
+        {
+            var settlement = new global::SimWorld.World.Settlement(
+                global::SimWorld.World.WorldObjectDefOf.Settlement, tile: 4, faction: null, name: "Lastditch", foundingTick: 0);
+            settlement.AddStatisticalPeople(5);
+
+            Assert.Equal(5, settlement.RemoveStatisticalPeople(500));
+            Assert.Equal(0, settlement.StatisticalPopulation);
+            Assert.Equal(0, settlement.RemoveStatisticalPeople(1));
         }
 
         [Fact]
