@@ -41,7 +41,7 @@
     <defName>Cooking</defName>
     <label>cooking</label>
     <description>Fire turns raw food safe and food scraps into meals.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -60,7 +60,7 @@
     <defName>Hunting</defName>
     <label>hunting</label>
     <description>Stone points on spears: the hunt reaches farther and hits harder.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -79,7 +79,7 @@
     <defName>Fishing</defName>
     <label>fishing</label>
     <description>Stone hooks and spears turn rivers and shorelines into a second larder.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -114,7 +114,7 @@
     <defName>Woodworking</defName>
     <label>woodworking</label>
     <description>Stone axes and adzes turn timber into shaped lumber.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -133,7 +133,7 @@
     <defName>BoneCarving</defName>
     <label>bone carving</label>
     <description>Antler and bone, ground and shaped: needles, awls, and points stone cannot make.</description>
-    <baseCost>230</baseCost>
+    <baseCost>300</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -152,7 +152,7 @@
     <defName>Cordage</defName>
     <label>cordage</label>
     <description>Twisted plant fiber makes rope: the first machine part, binding every craft that follows.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -171,7 +171,7 @@
     <defName>PitDwellings</defName>
     <label>pit dwellings</label>
     <description>A dug floor and a timber roof: shelter that shrugs off wind no tent can stop.</description>
-    <baseCost>230</baseCost>
+    <baseCost>300</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -199,7 +199,7 @@
       <li>ConstructionSettlement</li>
     </tags>
     <prerequisites>
-      <li>PitDwellings</li>
+      <li>Woodworking</li>
     </prerequisites>
     <researchViewX>10</researchViewX>
     <researchViewY>2</researchViewY>
@@ -209,7 +209,7 @@
     <defName>TribalCustom</defName>
     <label>tribal custom</label>
     <description>Unwritten rules, held in speech and memory, that settle disputes before they become blood feuds.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -244,7 +244,7 @@
     <defName>Storytelling</defName>
     <label>storytelling</label>
     <description>Spoken history: knowledge that outlives the person who learned it.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -260,10 +260,29 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
+    <defName>Counting</defName>
+    <label>counting</label>
+    <description>Fingers, pebbles, and notched sticks turn 'some' and 'many' into an exact number.</description>
+    <baseCost>200</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>SticksAndStones</era>
+    <tags>
+      <li>SticksAndStones</li>
+      <li>KnowledgeWriting</li>
+    </tags>
+    <prerequisites>
+      <li>Language</li>
+    </prerequisites>
+    <researchViewX>14</researchViewX>
+    <researchViewY>5</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
     <defName>AncestorVeneration</defName>
     <label>ancestor veneration</label>
     <description>The dead are remembered by name: a people's first claim to a past longer than any one life.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -274,7 +293,7 @@
     <prerequisites>
       <li>Language</li>
     </prerequisites>
-    <researchViewX>14</researchViewX>
+    <researchViewX>15</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -282,7 +301,7 @@
     <defName>BodyAdornment</defName>
     <label>body adornment</label>
     <description>Ochre, shell, and tooth worn on the body: the first signs that mean something beyond use.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -293,7 +312,7 @@
     <prerequisites>
       <li>StoneTools</li>
     </prerequisites>
-    <researchViewX>15</researchViewX>
+    <researchViewX>16</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -301,7 +320,7 @@
     <defName>TribalWarfare</defName>
     <label>tribal warfare</label>
     <description>Organized raiding between bands: the hunt's tools turned on other people.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -312,7 +331,7 @@
     <prerequisites>
       <li>StoneTools</li>
     </prerequisites>
-    <researchViewX>16</researchViewX>
+    <researchViewX>17</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -320,7 +339,7 @@
     <defName>GiftExchange</defName>
     <label>gift exchange</label>
     <description>A negotiated gift, given with the expectation of one returned: trade before markets.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -331,7 +350,7 @@
     <prerequisites>
       <li>Language</li>
     </prerequisites>
-    <researchViewX>17</researchViewX>
+    <researchViewX>18</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -339,7 +358,7 @@
     <defName>HerbalRemedies</defName>
     <label>herbal remedies</label>
     <description>Foraged knowledge of which plants ease pain, close wounds, or poison an enemy.</description>
-    <baseCost>170</baseCost>
+    <baseCost>200</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -350,7 +369,26 @@
     <prerequisites>
       <li>Foraging</li>
     </prerequisites>
-    <researchViewX>18</researchViewX>
+    <researchViewX>19</researchViewX>
+    <researchViewY>9</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>BoneSetting</defName>
+    <label>bone setting</label>
+    <description>A splint bound tight and held still lets a broken bone knit instead of crippling for good.</description>
+    <baseCost>300</baseCost>
+    <techLevel>Neolithic</techLevel>
+    <tab>Main</tab>
+    <era>SticksAndStones</era>
+    <tags>
+      <li>SticksAndStones</li>
+      <li>MedicineHealth</li>
+    </tags>
+    <prerequisites>
+      <li>HerbalRemedies</li>
+    </prerequisites>
+    <researchViewX>20</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -358,7 +396,7 @@
     <defName>Rafts</defName>
     <label>rafts</label>
     <description>Lashed logs float a load a swimmer could never carry across a river.</description>
-    <baseCost>230</baseCost>
+    <baseCost>300</baseCost>
     <techLevel>Neolithic</techLevel>
     <tab>Main</tab>
     <era>SticksAndStones</era>
@@ -369,7 +407,7 @@
     <prerequisites>
       <li>Woodworking</li>
     </prerequisites>
-    <researchViewX>19</researchViewX>
+    <researchViewX>21</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 

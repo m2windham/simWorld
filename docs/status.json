@@ -914,9 +914,9 @@
       "rimworld": "Research & Tech",
       "translation": "Translated: a large authored tech tree detailing societal evolution across eras. Data model leaves room for procedural/endless tech later.",
       "translationState": "decided",
-      "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects)",
+      "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects) · tools/content/gen_techtree.py",
       "status": "ported",
-      "tests": 53,
+      "tests": 56,
       "items": [
         {
           "id": "research.dag",
@@ -960,8 +960,8 @@
         },
         {
           "id": "research.divergence",
-          "label": "Author divergence into the tree rather than pricing for it: the shipped tree is 48-85% spine (median ~72%), which structurally caps how much two civilizations can differ within an era. Fewer dependencies and more leaves per era raise that ceiling, and research now has real consequences (ThingDef/RecipeDef gate on it) so a leaf can be written for a civilization that farms rather than one that fights",
-          "done": false
+          "label": "Divergence authored into the tree, not priced for: gen_techtree.py was restructured (68 prerequisite edges de-linearized, protecting the 22-node deep chain and every same-or-earlier-era/no-cycle invariant) and given 13 new leaf projects in previously all-spine track/era cells. Spine fraction fell from 48-85% (median ~72%) to 28-54% (median ~41%) per era, and the harness's eras command shows seen% and archetype overlap measurably lower in every era at the shipped throughput — see docs/research/tech-reachability.md §11",
+          "done": true
         },
         {
           "id": "research.eras",
@@ -975,7 +975,7 @@
         },
         {
           "id": "research.tree",
-          "label": "Authored tech tree of societal evolution: 232 projects across 8 eras and 14 tracks, generated from tools/content/gen_techtree.py",
+          "label": "Authored tech tree of societal evolution: 245 projects across 8 eras and 14 tracks, generated from tools/content/gen_techtree.py",
           "done": true
         },
         {

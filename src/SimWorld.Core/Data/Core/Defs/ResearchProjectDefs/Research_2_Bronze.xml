@@ -7,7 +7,7 @@
     <defName>Beekeeping</defName>
     <label>beekeeping</label>
     <description>Kept hives yield honey on a schedule instead of by lucky discovery.</description>
-    <baseCost>580</baseCost>
+    <baseCost>570</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -26,7 +26,7 @@
     <defName>Winemaking</defName>
     <label>winemaking</label>
     <description>Pressed and fermented grapes turn an orchard crop into a trade good that keeps for years.</description>
-    <baseCost>580</baseCost>
+    <baseCost>570</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -64,7 +64,7 @@
     <defName>Bronze</defName>
     <label>bronze</label>
     <description>Copper alloyed with tin: an age takes its name from it.</description>
-    <baseCost>580</baseCost>
+    <baseCost>570</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -83,7 +83,7 @@
     <defName>Glassmaking</defName>
     <label>glassmaking</label>
     <description>Kiln heat fuses sand and ash into a material stone and clay never made: transparent, and reusable.</description>
-    <baseCost>580</baseCost>
+    <baseCost>570</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -102,7 +102,7 @@
     <defName>Dyeing</defName>
     <label>dyeing</label>
     <description>Plant and mineral pigment fixed into cloth turns a bolt of wool into a marker of status.</description>
-    <baseCost>580</baseCost>
+    <baseCost>570</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -121,7 +121,7 @@
     <defName>Masonry</defName>
     <label>masonry</label>
     <description>Cut and fitted stone: walls that outlast the people who raised them.</description>
-    <baseCost>750</baseCost>
+    <baseCost>710</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -140,7 +140,7 @@
     <defName>Fortification</defName>
     <label>fortification</label>
     <description>A wall and a ditch turn a village into something an enemy has to besiege, not just raid.</description>
-    <baseCost>830</baseCost>
+    <baseCost>790</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -159,7 +159,7 @@
     <defName>UrbanPlanning</defName>
     <label>urban planning</label>
     <description>Streets laid out before the houses are built let a settlement grow into a city on purpose.</description>
-    <baseCost>830</baseCost>
+    <baseCost>790</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -179,7 +179,7 @@
     <defName>Plow</defName>
     <label>plow</label>
     <description>An animal-drawn blade turns soil faster and deeper than any hoe.</description>
-    <baseCost>670</baseCost>
+    <baseCost>640</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -199,7 +199,7 @@
     <defName>Pastoralism</defName>
     <label>pastoralism</label>
     <description>Herds moved with the seasons across grassland too dry to farm.</description>
-    <baseCost>670</baseCost>
+    <baseCost>640</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -218,7 +218,7 @@
     <defName>Kingship</defName>
     <label>kingship</label>
     <description>One ruling house, its claim inherited rather than earned, over a city too large to govern by council.</description>
-    <baseCost>920</baseCost>
+    <baseCost>860</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -227,7 +227,6 @@
       <li>SocietyGovernance</li>
     </tags>
     <prerequisites>
-      <li>ChiefdomLeadership</li>
       <li>UrbanPlanning</li>
     </prerequisites>
     <researchViewX>31</researchViewX>
@@ -235,10 +234,29 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
+    <defName>TributeSystems</defName>
+    <label>tribute systems</label>
+    <description>A king's warband collects tribute from villages under his claim, whether they consent or not.</description>
+    <baseCost>930</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags>
+      <li>Bronze</li>
+      <li>SocietyGovernance</li>
+    </tags>
+    <prerequisites>
+      <li>Kingship</li>
+    </prerequisites>
+    <researchViewX>32</researchViewX>
+    <researchViewY>4</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
     <defName>Bureaucracy</defName>
     <label>bureaucracy</label>
     <description>Scribes who record grain, taxes, and decrees let a ruler govern people they never meet.</description>
-    <baseCost>670</baseCost>
+    <baseCost>640</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -249,7 +267,7 @@
     <prerequisites>
       <li>Writing</li>
     </prerequisites>
-    <researchViewX>32</researchViewX>
+    <researchViewX>33</researchViewX>
     <researchViewY>4</researchViewY>
   </ResearchProjectDef>
 
@@ -257,26 +275,7 @@
     <defName>Mathematics</defName>
     <label>mathematics</label>
     <description>Written numbers: measurement, accounting, and the geometry that follows.</description>
-    <baseCost>670</baseCost>
-    <techLevel>Medieval</techLevel>
-    <tab>Main</tab>
-    <era>Bronze</era>
-    <tags>
-      <li>Bronze</li>
-      <li>KnowledgeWriting</li>
-    </tags>
-    <prerequisites>
-      <li>Writing</li>
-    </prerequisites>
-    <researchViewX>33</researchViewX>
-    <researchViewY>5</researchViewY>
-  </ResearchProjectDef>
-
-  <ResearchProjectDef>
-    <defName>Calendars</defName>
-    <label>calendars</label>
-    <description>A written count of days and seasons tells a farmer when to plant before the sky does.</description>
-    <baseCost>670</baseCost>
+    <baseCost>640</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -292,9 +291,47 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
+    <defName>Calendars</defName>
+    <label>calendars</label>
+    <description>A written count of days and seasons tells a farmer when to plant before the sky does.</description>
+    <baseCost>640</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags>
+      <li>Bronze</li>
+      <li>KnowledgeWriting</li>
+    </tags>
+    <prerequisites>
+      <li>Writing</li>
+    </prerequisites>
+    <researchViewX>35</researchViewX>
+    <researchViewY>5</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
     <defName>Priesthood</defName>
     <label>priesthood</label>
     <description>A dedicated class of ritual specialists, housed in temples a king helps pay for.</description>
+    <baseCost>930</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags>
+      <li>Bronze</li>
+      <li>BeliefCulture</li>
+    </tags>
+    <prerequisites>
+      <li>Kingship</li>
+    </prerequisites>
+    <researchViewX>36</researchViewX>
+    <researchViewY>6</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>SacredSites</defName>
+    <label>sacred sites</label>
+    <description>Groves and springs set aside as sacred, watched over by priesthood, need no walls to be holy.</description>
     <baseCost>1000</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
@@ -304,10 +341,9 @@
       <li>BeliefCulture</li>
     </tags>
     <prerequisites>
-      <li>AnimisticReligion</li>
-      <li>Kingship</li>
+      <li>Priesthood</li>
     </prerequisites>
-    <researchViewX>35</researchViewX>
+    <researchViewX>37</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -315,7 +351,7 @@
     <defName>Mythology</defName>
     <label>mythology</label>
     <description>Written epics fix a people's gods and heroes into a shared, unchanging story.</description>
-    <baseCost>670</baseCost>
+    <baseCost>640</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -324,10 +360,9 @@
       <li>BeliefCulture</li>
     </tags>
     <prerequisites>
-      <li>Music</li>
       <li>Writing</li>
     </prerequisites>
-    <researchViewX>36</researchViewX>
+    <researchViewX>38</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -335,7 +370,7 @@
     <defName>BronzeWeapons</defName>
     <label>bronze weapons</label>
     <description>A cast bronze blade holds an edge no sharpened stone ever could.</description>
-    <baseCost>670</baseCost>
+    <baseCost>640</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -346,7 +381,7 @@
     <prerequisites>
       <li>Bronze</li>
     </prerequisites>
-    <researchViewX>37</researchViewX>
+    <researchViewX>39</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -354,7 +389,7 @@
     <defName>Chariots</defName>
     <label>chariots</label>
     <description>A light cart pulled at a gallop turns a footbound raid into a shock charge.</description>
-    <baseCost>830</baseCost>
+    <baseCost>790</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -366,7 +401,7 @@
       <li>Cart</li>
       <li>BronzeWeapons</li>
     </prerequisites>
-    <researchViewX>38</researchViewX>
+    <researchViewX>40</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -374,7 +409,7 @@
     <defName>Phalanx</defName>
     <label>phalanx tactics</label>
     <description>Spearmen who hold a shield wall together fight as one weapon, not many.</description>
-    <baseCost>750</baseCost>
+    <baseCost>710</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -385,7 +420,7 @@
     <prerequisites>
       <li>BronzeWeapons</li>
     </prerequisites>
-    <researchViewX>39</researchViewX>
+    <researchViewX>41</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -393,7 +428,7 @@
     <defName>LongDistanceTrade</defName>
     <label>long-distance trade</label>
     <description>Caravan and coastal routes carry goods far past the reach of any one market day.</description>
-    <baseCost>750</baseCost>
+    <baseCost>710</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -402,10 +437,9 @@
       <li>TradeEconomy</li>
     </tags>
     <prerequisites>
-      <li>Barter</li>
       <li>Sailing</li>
     </prerequisites>
-    <researchViewX>40</researchViewX>
+    <researchViewX>42</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -413,7 +447,7 @@
     <defName>Currency</defName>
     <label>currency</label>
     <description>Standard coin replaces barter as the measure of a trade.</description>
-    <baseCost>670</baseCost>
+    <baseCost>640</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -425,7 +459,7 @@
       <li>Bronze</li>
       <li>Writing</li>
     </prerequisites>
-    <researchViewX>41</researchViewX>
+    <researchViewX>43</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -433,7 +467,7 @@
     <defName>Midwifery</defName>
     <label>midwifery</label>
     <description>Practiced technique around childbirth turns a dangerous moment into a survivable one, more often.</description>
-    <baseCost>580</baseCost>
+    <baseCost>500</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -442,9 +476,9 @@
       <li>MedicineHealth</li>
     </tags>
     <prerequisites>
-      <li>WoundCare</li>
+      <li>HerbalRemedies</li>
     </prerequisites>
-    <researchViewX>42</researchViewX>
+    <researchViewX>44</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -452,7 +486,7 @@
     <defName>Kilns</defName>
     <label>kilns</label>
     <description>Kilns that hold 1000°C turn clay into watertight vessels and open the road to metals.</description>
-    <baseCost>580</baseCost>
+    <baseCost>570</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -463,7 +497,7 @@
     <prerequisites>
       <li>Pottery</li>
     </prerequisites>
-    <researchViewX>43</researchViewX>
+    <researchViewX>45</researchViewX>
     <researchViewY>10</researchViewY>
   </ResearchProjectDef>
 
@@ -471,7 +505,7 @@
     <defName>Wheel</defName>
     <label>wheel</label>
     <description>A rolling load moves for a fraction of the effort of a dragged one.</description>
-    <baseCost>670</baseCost>
+    <baseCost>640</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -482,7 +516,7 @@
     <prerequisites>
       <li>Bronze</li>
     </prerequisites>
-    <researchViewX>44</researchViewX>
+    <researchViewX>46</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -490,7 +524,7 @@
     <defName>Cart</defName>
     <label>cart</label>
     <description>A wheeled frame: goods move by animal power instead of by back.</description>
-    <baseCost>750</baseCost>
+    <baseCost>710</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -501,7 +535,26 @@
     <prerequisites>
       <li>Wheel</li>
     </prerequisites>
-    <researchViewX>45</researchViewX>
+    <researchViewX>47</researchViewX>
+    <researchViewY>11</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>Causeways</defName>
+    <label>causeways</label>
+    <description>A raised, packed-earth track lets a cart cross marsh and ford a shallow river without bogging down.</description>
+    <baseCost>790</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags>
+      <li>Bronze</li>
+      <li>TransportExploration</li>
+    </tags>
+    <prerequisites>
+      <li>Cart</li>
+    </prerequisites>
+    <researchViewX>48</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -509,7 +562,7 @@
     <defName>Sailing</defName>
     <label>sailing</label>
     <description>Wind-driven hulls: rivers and coastlines become roads.</description>
-    <baseCost>670</baseCost>
+    <baseCost>640</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Bronze</era>
@@ -521,7 +574,7 @@
       <li>Woodworking</li>
       <li>Bronze</li>
     </prerequisites>
-    <researchViewX>46</researchViewX>
+    <researchViewX>49</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 

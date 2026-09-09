@@ -7,7 +7,7 @@
     <defName>Nanomaterials</defName>
     <label>nanomaterials</label>
     <description>Structure engineered atom by atom gives a material strength-to-weight ratios no bulk alloy can reach.</description>
-    <baseCost>6480</baseCost>
+    <baseCost>5220</baseCost>
     <techLevel>Archotech</techLevel>
     <tab>Main</tab>
     <era>Exotic</era>
@@ -47,7 +47,7 @@
     <defName>Arcologies</defName>
     <label>arcologies</label>
     <description>A single self-contained structure, built to composite tolerances, houses what once took a whole megacity.</description>
-    <baseCost>6480</baseCost>
+    <baseCost>5640</baseCost>
     <techLevel>Archotech</techLevel>
     <tab>Main</tab>
     <era>Exotic</era>
@@ -68,7 +68,7 @@
     <defName>Xenobotany</defName>
     <label>xenobotany</label>
     <description>Genetic tools built for earthly crops get turned on organisms suited to soils and skies not our own.</description>
-    <baseCost>5220</baseCost>
+    <baseCost>4800</baseCost>
     <techLevel>Archotech</techLevel>
     <tab>Main</tab>
     <era>Exotic</era>
@@ -78,7 +78,8 @@
       <li>Frontier</li>
     </tags>
     <prerequisites>
-      <li>GeneticSelection</li>
+      <li>SelectiveBreeding</li>
+      <li>Biochemistry</li>
     </prerequisites>
     <researchViewX>73</researchViewX>
     <researchViewY>3</researchViewY>
@@ -88,7 +89,7 @@
     <defName>AIAdministration</defName>
     <label>AI administration</label>
     <description>Automated systems apply policy at a scale and consistency no human civil service ever matched.</description>
-    <baseCost>6060</baseCost>
+    <baseCost>5640</baseCost>
     <techLevel>Archotech</techLevel>
     <tab>Main</tab>
     <era>Exotic</era>
@@ -98,7 +99,6 @@
       <li>Frontier</li>
     </tags>
     <prerequisites>
-      <li>WelfareState</li>
       <li>Computers</li>
     </prerequisites>
     <researchViewX>74</researchViewX>
@@ -109,7 +109,7 @@
     <defName>MemeticCulture</defName>
     <label>memetic culture</label>
     <description>Culture spread instantly across a networked population evolves and mutates faster than any broadcast era allowed.</description>
-    <baseCost>6480</baseCost>
+    <baseCost>5220</baseCost>
     <techLevel>Archotech</techLevel>
     <tab>Main</tab>
     <era>Exotic</era>
@@ -119,7 +119,8 @@
       <li>Frontier</li>
     </tags>
     <prerequisites>
-      <li>MassMedia</li>
+      <li>SecularEthics</li>
+      <li>Electricity</li>
     </prerequisites>
     <researchViewX>75</researchViewX>
     <researchViewY>6</researchViewY>
@@ -191,7 +192,7 @@
     <defName>LifeExtension</defName>
     <label>life extension</label>
     <description>Genomic repair of the mechanisms behind aging itself pushes a natural lifespan well past its old limit.</description>
-    <baseCost>5220</baseCost>
+    <baseCost>4800</baseCost>
     <techLevel>Archotech</techLevel>
     <tab>Main</tab>
     <era>Exotic</era>
@@ -201,7 +202,7 @@
       <li>Frontier</li>
     </tags>
     <prerequisites>
-      <li>Genomics</li>
+      <li>Biochemistry</li>
     </prerequisites>
     <researchViewX>79</researchViewX>
     <researchViewY>9</researchViewY>
@@ -375,48 +376,6 @@
     <defName>OrbitalRingConstruction</defName>
     <label>orbital ring construction</label>
     <description>A structure encircling the whole planet, built from mined asteroid material, replaces rockets with an elevator.</description>
-    <baseCost>7740</baseCost>
-    <techLevel>Archotech</techLevel>
-    <tab>Main</tab>
-    <era>Exotic</era>
-    <tags>
-      <li>Exotic</li>
-      <li>FrontierExotic</li>
-      <li>Frontier</li>
-    </tags>
-    <prerequisites>
-      <li>OrbitalHabitats</li>
-      <li>AsteroidMining</li>
-    </prerequisites>
-    <researchViewX>88</researchViewX>
-    <researchViewY>13</researchViewY>
-  </ResearchProjectDef>
-
-  <ResearchProjectDef>
-    <defName>TerraformingEngineering</defName>
-    <label>terraforming engineering</label>
-    <description>Engineered atmospheres and seeded xenobotany work together to make a dead world breathable.</description>
-    <baseCost>7740</baseCost>
-    <techLevel>Archotech</techLevel>
-    <tab>Main</tab>
-    <era>Exotic</era>
-    <tags>
-      <li>Exotic</li>
-      <li>FrontierExotic</li>
-      <li>Frontier</li>
-    </tags>
-    <prerequisites>
-      <li>AsteroidMining</li>
-      <li>Xenobotany</li>
-    </prerequisites>
-    <researchViewX>89</researchViewX>
-    <researchViewY>13</researchViewY>
-  </ResearchProjectDef>
-
-  <ResearchProjectDef>
-    <defName>WormholeTheory</defName>
-    <label>wormhole theory</label>
-    <description>Quantum computation stable enough to model exotic spacetime finally puts a traversable shortcut within theoretical reach.</description>
     <baseCost>7320</baseCost>
     <techLevel>Archotech</techLevel>
     <tab>Main</tab>
@@ -427,7 +386,48 @@
       <li>Frontier</li>
     </tags>
     <prerequisites>
-      <li>QuantumComputing</li>
+      <li>AsteroidMining</li>
+    </prerequisites>
+    <researchViewX>88</researchViewX>
+    <researchViewY>13</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>TerraformingEngineering</defName>
+    <label>terraforming engineering</label>
+    <description>Engineered atmospheres and seeded xenobotany work together to make a dead world breathable.</description>
+    <baseCost>7320</baseCost>
+    <techLevel>Archotech</techLevel>
+    <tab>Main</tab>
+    <era>Exotic</era>
+    <tags>
+      <li>Exotic</li>
+      <li>FrontierExotic</li>
+      <li>Frontier</li>
+    </tags>
+    <prerequisites>
+      <li>AsteroidMining</li>
+    </prerequisites>
+    <researchViewX>89</researchViewX>
+    <researchViewY>13</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>WormholeTheory</defName>
+    <label>wormhole theory</label>
+    <description>Quantum computation stable enough to model exotic spacetime finally puts a traversable shortcut within theoretical reach.</description>
+    <baseCost>6900</baseCost>
+    <techLevel>Archotech</techLevel>
+    <tab>Main</tab>
+    <era>Exotic</era>
+    <tags>
+      <li>Exotic</li>
+      <li>FrontierExotic</li>
+      <li>Frontier</li>
+    </tags>
+    <prerequisites>
+      <li>Semiconductors</li>
+      <li>ArtificialIntelligence</li>
     </prerequisites>
     <researchViewX>90</researchViewX>
     <researchViewY>13</researchViewY>
@@ -448,7 +448,6 @@
     </tags>
     <prerequisites>
       <li>NeuralLace</li>
-      <li>ArchotechSeeds</li>
     </prerequisites>
     <researchViewX>91</researchViewX>
     <researchViewY>13</researchViewY>

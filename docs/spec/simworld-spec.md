@@ -1033,7 +1033,14 @@ the translation and its state per system.
 - **Eras**: an `EraDef` ladder over the research DAG carries a civilization from
   neolithic to archotech; era completion gates content, scales threats, and
   gates which edicts a civilization can issue at all (`EdictDef.requiredEra`,
-  checked against `ResearchManager.CurrentEra`). Reaching an era is an event,
+  checked against `ResearchManager.CurrentEra`). The DAG itself is authored for
+  divergence rather than priced for it: `tools/content/gen_techtree.py`
+  de-linearizes prerequisite chains and gives every track a genuine leaf in
+  every era it appears, so a civilization's spine (the projects an era's
+  completion, `EraDef.SpineProjects`, actually requires) is a minority of most
+  eras — 28-54% per era, down from the original tree's 48-85% — leaving the
+  rest as real, skippable choice for two civilizations to differ on
+  (`docs/research/tech-reachability.md` §11). Reaching an era is an event,
   not just a readout: `ResearchManager` compares the era before and after each
   project it finishes — so a save can never re-announce history — raises
   `EraReached` once per era crossed, and writes a chronicle line and a letter.
