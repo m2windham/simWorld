@@ -11,10 +11,15 @@ namespace SimWorld.Building
     /// <summary>
     /// Flood-fills <see cref="Room"/>s and <see cref="RoomGroup"/>s from the edifice/roof grids, lazily —
     /// only when something that could change a room's shape has happened (RimWorld: <c>Verse.RegionAndRoomUpdater</c>,
-    /// simplified: this port has no region graph to update incrementally (see the AI module's <c>ai.regions</c>
-    /// item), so a dirty flag triggers a full re-flood of the whole map instead — the same trade-off
-    /// <c>AI.Reachability</c> already makes for the same reason, and cheap for the same reason: it happens
-    /// only on an edifice spawning/despawning, never every tick.
+    /// simplified: a dirty flag triggers a full re-flood of the whole map rather than an incremental update.
+    /// That is cheap because it happens only on an edifice spawning or despawning, never every tick.
+    /// <para/>
+    /// A region graph now exists (<c>Map.RegionGrid</c>/<c>Map.RegionAndRoomUpdater</c>) and updates
+    /// incrementally, so this could be rebuilt on top of it — but rooms and regions answer different
+    /// questions (thermal enclosure vs. reachability partitioning), and this tracker was deliberately left
+    /// alone rather than turned into a second consumer of the graph in the same pass that introduced it.
+    /// An earlier version of this comment said rooms made "the same trade-off <c>AI.Reachability</c> already
+    /// makes"; that stopped being true the moment reachability moved onto the region graph.
     /// </summary>
     public sealed class RoomTracker
     {

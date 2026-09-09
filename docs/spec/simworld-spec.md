@@ -256,6 +256,14 @@ The object layer every later system stands on, ported from RimWorld's `Thing`.
 - **Listers**: `ListerThings` by def and group, `MapPawns` per map.
 - **Save/load**: run-length terrain and roof grids plus a polymorphic list of
   spawned Things, re-spawned at their saved positions on load.
+- **Regions**: `Region`/`RegionLink`/`RegionGrid`/`RegionMaker`/
+  `RegionAndRoomUpdater` (system 9's `AI.Reachability` is the consumer, §7.4) —
+  a graph over the path grid's passability, cardinal-flood-filled per region
+  and linked across region edges, with doors as their own single-cell `Portal`
+  regions so a door's state can change without merging or splitting the rooms
+  it joins. A passability change dirties and rebuilds only the region(s) it
+  touches; regions are never saved, only rebuilt from the map on load, same as
+  the path-cost grid itself.
 
 ```mermaid
 flowchart TD
@@ -265,6 +273,7 @@ flowchart TD
   Thing -->|SpawnSetup| Map
   Map --> Grids[Terrain, roof, thing, edifice grids]
   Grids --> Path[Path cost grid]
+  Path --> Regions[Region / RegionLink graph]
   Map --> Listers[ListerThings, MapPawns]
 ```
 
@@ -469,13 +478,18 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   binary min-heap open list and diagonal corner-cutting rules;
   `Pawn_PathFollower` then walks the returned `PawnPath` cell by cell at a
   speed derived from the `MoveSpeed` stat. `Reachability` answers "can A reach
-  B" from a flat flood-fill cache (one connected-component id per walkable
-  cell, recomputed only when the path grid actually changes) rather than the
-  region/region-link graph a large, well-subdivided map would eventually want
-  — an O(1) cached query today, at the cost of an O(map) recompute on _any_
-  path-grid change anywhere, however small. Full-agent populations still need
-  shared paths (hierarchical or flow field); today's `PathFinder` runs one
-  `A*` search per pawn per path request.
+  B" by BFS over §5a's Region/RegionLink graph (`RegionTraverser`) — a
+  handful of coarse region hops rather than a per-cell search, and rather
+  than the flat flood-fill cache this class used to keep for itself (one
+  connected-component id per walkable cell, recomputed in full on _any_
+  path-grid change anywhere, however small — see `docs/status.json`'s
+  `ai.regions` history). The region graph fixes that cost at its source:
+  `Map.regionAndRoomUpdater` dirties and rebuilds only the region(s) a
+  passability change actually touches, so building one wall no longer forces
+  a whole-map recompute. `CanReachTarget`/`CanReach`'s public shape is
+  unchanged throughout. Full-agent populations still need shared paths
+  (hierarchical or flow field); today's `PathFinder` runs one `A*` search per
+  pawn per path request.
 
 ```mermaid
 flowchart TD
@@ -486,7 +500,7 @@ flowchart TD
   Work --> Job
   Job --> Toils[Toil state machine]
   Toils --> Reserve[Reservation check]
-  Toils --> Path[Flood-fill reachability + A*]
+  Toils --> Path[Region-graph reachability + A*]
 ```
 
 ### 7.5 Demography, Lineage & Lifespan
@@ -590,8 +604,12 @@ flowchart TD
   the moment supply recovers, not a per-device priority order.
 - **Rooms & temperature**: `RoomTracker` flood-fills `Room`s from the edifice
   grid (stopping at any Fillage-`Full` edifice — a wall or a `Door`) lazily,
-  off a dirty flag the edifice grid raises on any spawn/despawn, the same
-  trade-off `AI.Reachability` already makes for its own reachability cache. A
+  off a dirty flag the edifice grid raises on any spawn/despawn — a full
+  re-flood rather than an incremental update, which is cheap because it happens
+  only on a spawn or despawn. (Reachability used to make the same trade-off and
+  no longer does, having moved onto the region graph in §5a; rooms could follow,
+  but thermal enclosure and reachability partitioning are different questions
+  and rooms were left alone rather than rewritten in the same pass.) A
   `Door` still splits a Room the way a wall does, but `RoomGroup` re-merges
   Rooms joined only by a shared Door back into one thermal unit — since this
   pass's Door has no closed state at all (always `Standable`; no swing, no
