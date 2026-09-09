@@ -28,5 +28,21 @@ namespace SimWorld.God
         /// is allowed to be.
         /// </summary>
         public const int GodTickIntervalTicks = GenTicks.TickLongInterval;
+
+        /// <summary>
+        /// Band a settlement's bare Statistical population is sampled within for <see cref="GodRollup.MeanIndustrySkill"/>
+        /// (<c>SkillRecord</c> levels, 0-<see cref="Work.SkillRecord.MaxLevel"/>) — there is no per-person
+        /// <c>SkillRecord</c> at that tier to read, by design (spec §11.3), so this is SimWorld's own stand-in,
+        /// not sourced from RimWorld (which has no cohort-sampling concept for skills either). Deliberately
+        /// low and narrow rather than centered on the skill range's midpoint: every promotion trigger
+        /// (<c>Pawn_TierTracker.Notify_RoleChanged</c> among them — "leader, founder, great worker") already
+        /// pulls a genuinely skilled citizen up to Full, so whoever is left in an untouched Statistical cohort
+        /// is, by construction, nobody a civilization singled out for skill. Pinned by
+        /// <c>GodTests.A_settlements_statistical_cohort_is_folded_into_the_means_by_a_weighted_sample</c> as a
+        /// band, not a literal.
+        /// </summary>
+        public const float StatisticalIndustrySkillSampleMin = 1f;
+
+        public const float StatisticalIndustrySkillSampleMax = 6f;
     }
 }
