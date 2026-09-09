@@ -129,6 +129,10 @@ namespace SimWorld.Factions
             if (def.permanentEnemy || other.def.permanentEnemy)
             {
                 SetRelationDirect(other, FactionRelationKind.Hostile, -100);
+                // A permanent enemy is permanently at war, not merely permanently Hostile — see WarState's
+                // own doc for why the two are kept separate everywhere else. This is the one place they are
+                // forced to agree at creation, since "permanent enemy" has no lesser reading.
+                SetWarState(other, WarState.War);
                 return;
             }
 
@@ -178,6 +182,146 @@ namespace SimWorld.Factions
                 RelationKindChanged?.Invoke(this, other, (int)newKind, reason);
             }
             return true;
+        }
+
+        // ---- war and peace (SimWorld's own translation — see WarState's own doc) ----
+
+        /// <summary>
+        /// Goodwill change <see cref="DeclareWar"/> applies. This port's own number: RimWorld has no
+        /// player-invoked war declaration to source one from — its own hostility swings come only from
+        /// incidents (raids, attacks), never a deliberate act. Deliberately oversized (goodwill only ever
+        /// spans [-100, 100]) so a declaration always lands at the -100 floor regardless of where the
+        /// relation started, the same "clamp does the guaranteeing" idiom <see cref="TryMakeInitialRelationsWith"/>
+        /// already relies on for permanent enemies.
+        /// </summary>
+        public const int WarDeclarationGoodwillChange = -200;
+
+        /// <summary>Goodwill gain <see cref="MakePeace"/> applies. This port's own number — a de-escalation, not a reset: peace does not by itself erase enough history to leave Hostile territory (goodwill stays a separate, softer readout from WarState — see that enum's own doc).</summary>
+        public const int PeaceGoodwillChange = 20;
+
+        /// <summary>Currently at war with <paramref name="other"/> (see <see cref="WarState"/>). False between any faction and itself.</summary>
+        public bool WarWith(Faction other) => !ReferenceEquals(other, this) && RelationWith(other, allowNull: true)?.warState == WarState.War;
+
+        /// <summary>
+        /// Explicit war entry (RimWorld has no equivalent act — see <see cref="Factions.WarState"/>'s own
+        /// doc for why this civilization-scale game gives war its own state instead of reading it off
+        /// goodwill). Refuses (returns false, changes nothing) when already at war with
+        /// <paramref name="other"/>, or while an active non-aggression <see cref="Treaty"/> holds
+        /// between the two (the entry condition a pact exists to enforce — see <see cref="HasActiveTreaty"/>);
+        /// otherwise sets <see cref="WarState.War"/> symmetrically and drops goodwill toward the Hostile
+        /// floor via <see cref="WarDeclarationGoodwillChange"/>.
+        /// </summary>
+        public bool DeclareWar(Faction other, string? reason = null)
+        {
+            if (other == null) throw new ArgumentNullException(nameof(other));
+            if (ReferenceEquals(other, this)) return false;
+            if (WarWith(other)) return false;
+            if (HasActiveTreaty(other, t => t.nonAggression)) return false;
+
+            SetWarState(other, WarState.War);
+            TryAffectGoodwillWith(other, WarDeclarationGoodwillChange, canSendMessage: false, canSendHostilityLetter: false, reason: reason ?? "DeclaredWar");
+            return true;
+        }
+
+        /// <summary>
+        /// Explicit war exit. Refuses (returns false, changes nothing) for a permanent-enemy pair (never
+        /// leaves war — matches <see cref="TryAffectGoodwillWith"/>'s own permanent-enemy refusal) or when
+        /// not currently at war with <paramref name="other"/>; otherwise sets <see cref="WarState.Peace"/>
+        /// symmetrically and applies <see cref="PeaceGoodwillChange"/>. See <see cref="SignTreaty"/> for the
+        /// content-driven version of this same exit (a non-aggression pact signed while at war calls this).
+        /// </summary>
+        public bool MakePeace(Faction other, string? reason = null)
+        {
+            if (other == null) throw new ArgumentNullException(nameof(other));
+            if (ReferenceEquals(other, this)) return false;
+            if (def.permanentEnemy || other.def.permanentEnemy) return false;
+            if (!WarWith(other)) return false;
+
+            SetWarState(other, WarState.Peace);
+            TryAffectGoodwillWith(other, PeaceGoodwillChange, canSendMessage: false, canSendHostilityLetter: false, reason: reason ?? "MadePeace");
+            return true;
+        }
+
+        private void SetWarState(Faction other, WarState state)
+        {
+            GetOrAddRelation(other).warState = state;
+            other.GetOrAddRelation(this).warState = state;
+        }
+
+        // ---- treaties (SimWorld's own translation — see TreatyDef's own doc) ----
+
+        /// <summary>
+        /// Signs <paramref name="def"/> between this faction and <paramref name="other"/>: records a
+        /// <see cref="Treaty"/> on both sides' <see cref="FactionRelation.treaties"/>, applies
+        /// <see cref="TreatyDef.signingGoodwill"/>, and — when <paramref name="def"/> carries
+        /// <see cref="TreatyDef.nonAggression"/> and the two are currently at war — calls
+        /// <see cref="MakePeace"/> first (signing a non-aggression pact while at war is itself how a war
+        /// ends here; RimWorld has no equivalent act). Refuses (returns false, changes nothing) for a
+        /// permanent-enemy pair, which can never hold any treaty.
+        /// </summary>
+        public bool SignTreaty(Faction other, TreatyDef def, string? reason = null)
+        {
+            if (other == null) throw new ArgumentNullException(nameof(other));
+            if (def == null) throw new ArgumentNullException(nameof(def));
+            if (ReferenceEquals(other, this)) return false;
+            if (this.def.permanentEnemy || other.def.permanentEnemy) return false;
+
+            if (def.nonAggression && WarWith(other))
+            {
+                MakePeace(other, reason ?? ("Treaty: " + def.LabelCap));
+            }
+
+            int now = Find.TickManager.TicksGame;
+            GetOrAddRelation(other).treaties.Add(new Treaty(def, now));
+            other.GetOrAddRelation(this).treaties.Add(new Treaty(def, now));
+
+            if (def.signingGoodwill != 0)
+            {
+                TryAffectGoodwillWith(other, def.signingGoodwill, reason: reason ?? ("Treaty: " + def.LabelCap));
+            }
+            return true;
+        }
+
+        /// <summary>Any treaty with <paramref name="other"/> — active right now, per <see cref="Treaty.IsActive"/> — whose def satisfies <paramref name="matches"/>.</summary>
+        public bool HasActiveTreaty(Faction other, Func<TreatyDef, bool> matches)
+        {
+            if (other == null) throw new ArgumentNullException(nameof(other));
+            if (matches == null) throw new ArgumentNullException(nameof(matches));
+            FactionRelation? rel = RelationWith(other, allowNull: true);
+            if (rel == null) return false;
+
+            int now = Find.TickManager.TicksGame;
+            for (int i = 0; i < rel.treaties.Count; i++)
+            {
+                Treaty t = rel.treaties[i];
+                if (t.IsActive(now) && matches(t.def)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>Shorthand for the entry condition <see cref="DeclareWar"/> itself already checks.</summary>
+        public bool HasNonAggressionPactWith(Faction other) => HasActiveTreaty(other, d => d.nonAggression);
+
+        /// <summary>
+        /// Best (largest) <see cref="TreatyDef.tradeAccessPriceGain"/> among every currently active
+        /// <see cref="TreatyDef.tradeAccess"/> treaty with <paramref name="other"/>; 0 when none. Feeds
+        /// <c>TradeDeal.settlementGain</c> the same slot a negotiator's own gain occupies — see
+        /// <c>Economy.SettlementTradeUtility.OpenSession</c>.
+        /// </summary>
+        public float TradeAccessPriceGainWith(Faction other)
+        {
+            if (other == null) throw new ArgumentNullException(nameof(other));
+            FactionRelation? rel = RelationWith(other, allowNull: true);
+            if (rel == null) return 0f;
+
+            int now = Find.TickManager.TicksGame;
+            float best = 0f;
+            for (int i = 0; i < rel.treaties.Count; i++)
+            {
+                Treaty t = rel.treaties[i];
+                if (t.IsActive(now) && t.def.tradeAccess) best = Math.Max(best, t.def.tradeAccessPriceGain);
+            }
+            return best;
         }
 
         /// <summary>

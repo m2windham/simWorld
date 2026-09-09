@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 794,
+  "testsTotal": 845,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -974,11 +974,11 @@
       "id": "economy",
       "n": 15,
       "rimworld": "Economy, Trade & Factions",
-      "translation": "Proposed: other civilizations are the factions; trade routes replace orbital traders; goodwill becomes diplomacy.",
-      "translationState": "proposed",
+      "translation": "Decided: other civilizations are the factions (unchanged); trade routes between settlements replace RimWorld's orbital/caravan traders as the connective tissue, priced the same way CoalSupply already prices coal (a real path through the world pather, marked up by distance) and closed while the two settlements' factions are at war; goodwill becomes diplomacy through two new layers RimWorld has no equivalent of — an explicit War/Peace state per relation (Faction.DeclareWar/MakePeace, entry and exit acts rather than goodwill silently crossing a threshold) kept separate from the existing Hostile/Neutral/Ally goodwill-derived label, and Def-driven Treaty terms (non-aggression, trade access) a pair of factions can sign, each with its own duration and goodwill effect. Every number here (war/peace goodwill swings, route premium, treaty terms) is this port's own judgement call, not sourced from RimWorld — see the code's own comments for where and why.",
+      "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 60,
+      "tests": 111,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1013,12 +1013,12 @@
         {
           "id": "economy.traders",
           "label": "Traders: TraderKindDef with trade sessions and deals — stock generation and visiting traders land with Things/AI",
-          "done": false
+          "done": true
         },
         {
           "id": "economy.diplomacy",
           "label": "Translation: civilization diplomacy — treaties, wars and trade routes between civilizations",
-          "done": false
+          "done": true
         }
       ]
     },
