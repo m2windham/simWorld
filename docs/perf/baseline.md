@@ -301,13 +301,13 @@ consistent with this report's own guidance in the intro.
 
 **What this measures:** `AI.PathFinder` now tries a region-graph corridor
 (`AI.RegionPathCorridorCache`) before falling back to its old unconstrained
-A* — see that class's own remarks in source for the full design argument. Each
+`A*` — see that class's own remarks in source for the full design argument. Each
 row scatters N pawns across N distinct rooms of a door-connected grid of 3x3
 rooms sized to just exceed N (so population and settlement size grow
 together, matching the "civilization gets bigger as its population grows"
 framing this item targets), all pathing once to one shared destination room
 near the grid's centre. "before" is `PathFinder.DisableRegionCorridor = true`
-— exactly today's pre-sharing behaviour, one full-map A* per pawn, unchanged
+— exactly today's pre-sharing behaviour, one full-map `A*` per pawn, unchanged
 by this pass. "after" is the shared default. Both sides use a **fresh**
 `PathFinder` per trial (an empty corridor cache) over the same
 already-region-mapped map, so "after"'s cost is one real corridor-tree build
@@ -328,7 +328,7 @@ it lives in) grows.** The speedup is a modest ~1.5–2.5x at N≤1,000 — noisy
 this end, and the unconstrained search is already fast on a small map, so
 there is less to save — but climbs to 6–10x by N=2,500–10,000. That shape is
 exactly what the design predicts rather than a coincidence: "before"'s
-per-pawn cost is one full A* over a map whose area grows with N (roughly
+per-pawn cost is one full `A*` over a map whose area grows with N (roughly
 O(N) work per pawn, so O(N²) total), while "after"'s per-pawn cost is a
 corridor read bounded by the region-hop distance to the destination — which
 grows only with the map's *diameter* (roughly O(√N) as a square-ish map grows
