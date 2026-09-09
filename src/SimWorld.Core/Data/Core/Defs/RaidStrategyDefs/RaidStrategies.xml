@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    RimWorld: RimWorld.RaidStrategyDef. See RaidStrategyDef.cs's class doc for what these pick (tactic +
+    points spent) versus what they don't (actually executing the tactic — needs AI/Map). pointsFactor values
+    are SimWorld's own (not sourced); IncidentWorker_RaidEnemy's test suite pins the trend a factor is meant
+    to produce, not these literals.
+  -->
+
+  <RaidStrategyDef>
+    <defName>ImmediateAttack</defName>
+    <label>immediate attack</label>
+    <description>The raiders head straight for the civilization.</description>
+    <workerClass>SimWorld.Director.RaidStrategyWorker_ImmediateAttack</workerClass>
+    <pointsFactor>1.0</pointsFactor>
+    <selectionWeight>3.0</selectionWeight>
+  </RaidStrategyDef>
+
+  <RaidStrategyDef>
+    <defName>Siege</defName>
+    <label>siege</label>
+    <description>The raiders dig in at range and bombard rather than closing in.</description>
+    <workerClass>SimWorld.Director.RaidStrategyWorker_Siege</workerClass>
+    <!-- A dug-in bombardment is safer per raider than a straight assault, so it buys a smaller squad for
+         the same threat points (SimWorld's own ratio; not sourced from RimWorld's real siege pointsFactor). -->
+    <pointsFactor>0.8</pointsFactor>
+    <minTechLevel>Industrial</minTechLevel>
+    <selectionWeight>1.0</selectionWeight>
+  </RaidStrategyDef>
+
+</Defs>

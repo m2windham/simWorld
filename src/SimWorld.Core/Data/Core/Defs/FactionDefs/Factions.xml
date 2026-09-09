@@ -54,6 +54,15 @@
       <li>Red</li>
       <li>Bone</li>
     </settlementNamePrefixes>
+    <pawnGroupMakers>
+      <li>
+        <kindDef>Combat</kindDef>
+        <options>
+          <li><kind>Raider_Melee</kind><selectionWeight>2.0</selectionWeight></li>
+          <li><kind>Raider_Bow</kind><selectionWeight>1.0</selectionWeight></li>
+        </options>
+      </li>
+    </pawnGroupMakers>
   </FactionDef>
 
   <FactionDef>
@@ -74,6 +83,15 @@
     <pawnSingular>outlander</pawnSingular>
     <pawnsPlural>outlanders</pawnsPlural>
     <earliestRaidDays>5</earliestRaidDays>
+    <pawnGroupMakers>
+      <li>
+        <kindDef>Combat</kindDef>
+        <options>
+          <li><kind>Raider_Gunner</kind><selectionWeight>2.0</selectionWeight></li>
+          <li><kind>Raider_Melee</kind><selectionWeight>0.5</selectionWeight></li>
+        </options>
+      </li>
+    </pawnGroupMakers>
   </FactionDef>
 
   <FactionDef>
@@ -93,6 +111,15 @@
     <pawnSingular>raider</pawnSingular>
     <pawnsPlural>raiders</pawnsPlural>
     <earliestRaidDays>0</earliestRaidDays>
+    <pawnGroupMakers>
+      <li>
+        <kindDef>Combat</kindDef>
+        <options>
+          <li><kind>Raider_Melee</kind><selectionWeight>1.5</selectionWeight></li>
+          <li><kind>Raider_Bow</kind><selectionWeight>2.0</selectionWeight></li>
+        </options>
+      </li>
+    </pawnGroupMakers>
   </FactionDef>
 
 </Defs>

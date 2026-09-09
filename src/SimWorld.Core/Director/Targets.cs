@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SimWorld.Defs;
+using SimWorld.Map;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 
@@ -86,6 +87,17 @@ namespace SimWorld.Director
         public readonly List<Pawn> pawns = new List<Pawn>();
 
         private readonly List<IncidentTargetTagDef> targetTags = new List<IncidentTargetTagDef>();
+
+        /// <summary>
+        /// The physical map raiders/visitors would arrive on, when one exists. Nothing in the codebase wires a
+        /// <see cref="global::SimWorld.Map.Map"/> to the civilization-scale incident target yet — local maps
+        /// (<c>MapGen.MapGenerator</c>) are generated per settlement, on demand, and never handed back to
+        /// <see cref="Storyteller"/> or its targets. This is the settable hook for whichever future work does
+        /// that wiring; every game today leaves it null, and <see cref="IncidentWorker_RaidEnemy"/>'s class doc
+        /// explains exactly what that means for where a generated raid squad ends up. Not saved: a live map
+        /// reference is re-established the same way it would be set in the first place, not round-tripped.
+        /// </summary>
+        public Map.Map? Map { get; set; }
 
         /// <summary>Parameterless overload so the save system can reconstruct one by reflection; registers with no storyteller.</summary>
         public CivilizationTarget() : this(null)

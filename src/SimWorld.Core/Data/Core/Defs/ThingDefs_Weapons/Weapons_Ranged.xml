@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 
+  <!-- See Weapons_Melee.xml's top comment for what techLevel/weaponTags/MarketValue do here. -->
+
   <ThingDef>
     <defName>Bow_Short</defName>
     <researchPrerequisites>
@@ -8,6 +10,12 @@
     </researchPrerequisites>
     <label>short bow</label>
     <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Neolithic</techLevel>
+    <weaponTags>
+      <li>NeolithicRangedWeapon</li>
+    </weaponTags>
+    <statBases><MarketValue>60</MarketValue></statBases>
     <verbs>
       <li>
         <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
@@ -31,6 +39,12 @@
     </researchPrerequisites>
     <label>revolver</label>
     <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Industrial</techLevel>
+    <weaponTags>
+      <li>IndustrialRangedWeapon</li>
+    </weaponTags>
+    <statBases><MarketValue>150</MarketValue></statBases>
     <verbs>
       <li>
         <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
@@ -55,6 +69,12 @@
     </researchPrerequisites>
     <label>assault rifle</label>
     <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Industrial</techLevel>
+    <weaponTags>
+      <li>IndustrialRangedWeapon</li>
+    </weaponTags>
+    <statBases><MarketValue>350</MarketValue></statBases>
     <verbs>
       <li>
         <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
