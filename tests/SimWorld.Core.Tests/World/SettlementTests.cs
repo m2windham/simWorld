@@ -353,5 +353,111 @@ namespace SimWorld.Tests.World
             Assert.Equal(123, loadedSettlement.StatisticalPopulation);
             Assert.Equal(7, loadedSettlement.StoreCountOf(EconomyThingDefOf.Coal));
         }
+
+        // ----- Interior map: the §11.2 seam (settlements.interior / mapgen.entry-trigger) -----
+
+        [Fact]
+        public void A_settlement_has_no_interior_map_until_it_is_entered()
+        {
+            global::SimWorld.World.World world = GenerateSoloWorld("settlement-enter-lazily");
+            Faction faction = world.factions.First();
+            int tile = BestScoredTile(world.grid, out _);
+            Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(31));
+
+            Assert.Null(settlement.InteriorMap);
+        }
+
+        [Fact]
+        public void EnterMap_generates_once_and_a_second_entry_returns_the_same_instance()
+        {
+            global::SimWorld.World.World world = GenerateSoloWorld("settlement-enter-once");
+            Faction faction = world.factions.First();
+            int tile = BestScoredTile(world.grid, out _);
+            Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(32));
+
+            global::SimWorld.Map.Map first = settlement.EnterMap(world);
+            global::SimWorld.Map.Map second = settlement.EnterMap(world);
+
+            Assert.Same(first, second);
+            Assert.Same(first, settlement.InteriorMap);
+            Assert.Equal(tile, first.tile);
+        }
+
+        [Fact]
+        public void EnterMap_is_deterministic_for_the_same_settlement_in_the_same_world_seed()
+        {
+            global::SimWorld.World.World worldA = GenerateSoloWorld("settlement-enter-deterministic");
+            global::SimWorld.World.World worldB = GenerateSoloWorld("settlement-enter-deterministic");
+            Faction factionA = worldA.factions.First();
+            Faction factionB = worldB.factions.First();
+            // Same seed => identical grids (WorldGenTests already proves this), so the same tile scores the
+            // same in both; only worldA is actually scored.
+            int tile = BestScoredTile(worldA.grid, out _);
+
+            Settlement a = SettlementFounder.Found(worldA, tile, factionA, 20, new RandomStream(1));
+            Settlement b = SettlementFounder.Found(worldB, tile, factionB, 20, new RandomStream(1));
+
+            global::SimWorld.Map.Map mapA = a.EnterMap(worldA);
+            global::SimWorld.Map.Map mapB = b.EnterMap(worldB);
+
+            Assert.Equal(mapA.Size.x, mapB.Size.x);
+            Assert.Equal(mapA.Size.z, mapB.Size.z);
+            foreach (global::SimWorld.Map.IntVec3 c in mapA.AllCells)
+            {
+                Assert.Equal(mapA.terrainGrid.TerrainAt(c), mapB.terrainGrid.TerrainAt(c));
+            }
+        }
+
+        [Fact]
+        public void EnterMap_sizes_the_map_by_population_not_a_flat_constant()
+        {
+            global::SimWorld.World.World world = GenerateSoloWorld("settlement-enter-sizing");
+            Faction faction = world.factions.First();
+            WorldGrid grid = world.grid;
+            List<int> landTiles = Enumerable.Range(0, grid.TilesCount).Where(i => !grid.Tiles[i].WaterCovered).Take(2).ToList();
+
+            Settlement small = SettlementFounder.Found(world, landTiles[0], faction, 20, new RandomStream(41));
+            Settlement large = SettlementFounder.Found(world, landTiles[1], faction, 20, new RandomStream(42));
+            large.AddStatisticalPeople(50000);
+
+            global::SimWorld.Map.Map smallMap = small.EnterMap(world);
+            global::SimWorld.Map.Map largeMap = large.EnterMap(world);
+
+            Assert.True(largeMap.Area > smallMap.Area,
+                $"A settlement of {large.TotalPopulation} should get a larger interior than one of {small.TotalPopulation} ({largeMap.Area} vs {smallMap.Area}).");
+        }
+
+        [Fact]
+        public void Scribe_round_trip_carries_the_interior_map_only_when_the_settlement_was_entered()
+        {
+            global::SimWorld.World.World world = GenerateSoloWorld("settlement-map-scribe", subdivision: 2);
+            Faction faction = world.factions.First();
+            WorldGrid grid = world.grid;
+            List<int> landTiles = Enumerable.Range(0, grid.TilesCount).Where(i => !grid.Tiles[i].WaterCovered).Take(2).ToList();
+
+            Settlement entered = SettlementFounder.Found(world, landTiles[0], faction, 20, new RandomStream(51), "Entered");
+            Settlement neverEntered = SettlementFounder.Found(world, landTiles[1], faction, 20, new RandomStream(52), "NeverEntered");
+            global::SimWorld.Map.Map original = entered.EnterMap(world);
+
+            string xml = Scribe.SaveToString(world, "world");
+            global::SimWorld.World.World loaded = Scribe.Load<global::SimWorld.World.World>(xml, "world", out IReadOnlyList<string> errors, Content.Database);
+            Assert.Empty(errors);
+
+            Settlement loadedEntered = loaded.worldObjects.OfType<Settlement>().First(s => s.name == "Entered");
+            Settlement loadedNeverEntered = loaded.worldObjects.OfType<Settlement>().First(s => s.name == "NeverEntered");
+
+            Assert.Null(loadedNeverEntered.InteriorMap);
+
+            global::SimWorld.Map.Map? loadedMap = loadedEntered.InteriorMap;
+            Assert.NotNull(loadedMap);
+            Assert.Equal(entered.tile, loadedMap!.tile);
+            Assert.Equal(original.Size.x, loadedMap.Size.x);
+            Assert.Equal(original.Size.z, loadedMap.Size.z);
+            foreach (global::SimWorld.Map.IntVec3 c in original.AllCells)
+            {
+                Assert.Equal(original.terrainGrid.TerrainAt(c), loadedMap.terrainGrid.TerrainAt(c));
+                Assert.Equal(original.roofGrid.RoofAt(c), loadedMap.roofGrid.RoofAt(c));
+            }
+        }
     }
 }

@@ -44,4 +44,11 @@
     <workerClass>SimWorld.MapGen.GenStep_Scatterers</workerClass>
   </GenStepDef>
 
+  <!-- Last on purpose: clears whatever an earlier step left on its own path, so a street is always walkable. -->
+  <GenStepDef>
+    <defName>Roads</defName>
+    <order>700</order>
+    <workerClass>SimWorld.MapGen.GenStep_Roads</workerClass>
+  </GenStepDef>
+
 </Defs>

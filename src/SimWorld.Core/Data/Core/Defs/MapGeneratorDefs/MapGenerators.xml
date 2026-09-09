@@ -12,6 +12,7 @@
       <li>Caves</li>
       <li>Roofs</li>
       <li>Scatterers</li>
+      <li>Roads</li>
     </genSteps>
   </MapGeneratorDef>
 

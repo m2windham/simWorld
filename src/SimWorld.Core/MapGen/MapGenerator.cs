@@ -32,15 +32,18 @@ namespace SimWorld.MapGen
 
             Tile tile = world.grid.Tiles[settlement.tile];
             string seedString = world.info.seedString + "_map_" + settlement.tile.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            return GenerateMap(tile, settlement.tile, seedString, sizeOverride, genDef);
+            return GenerateMap(tile, settlement.tile, seedString, sizeOverride, genDef, world.grid);
         }
 
         /// <summary>
         /// The underlying worker: generates a map for any world tile given an explicit seed, without needing
         /// a full <see cref="global::SimWorld.World"/>/<see cref="WorldObject"/> pair. Tests use this
         /// directly to generate from hand-built tiles and to prove the tile→map correspondence.
+        /// <paramref name="grid"/> is optional and only needed for <see cref="GenStep_Roads"/> to turn a
+        /// road's neighbour-tile id into a real heading (see <see cref="MapGenContext.grid"/>'s own doc);
+        /// every other step ignores it.
         /// </summary>
-        public static Map.Map GenerateMap(Tile tile, int tileId, string seedString, IntVec2? sizeOverride = null, MapGeneratorDef? genDef = null)
+        public static Map.Map GenerateMap(Tile tile, int tileId, string seedString, IntVec2? sizeOverride = null, MapGeneratorDef? genDef = null, WorldGrid? grid = null)
         {
             if (tile == null) throw new ArgumentNullException(nameof(tile));
             if (seedString == null) throw new ArgumentNullException(nameof(seedString));
@@ -51,7 +54,7 @@ namespace SimWorld.MapGen
 
             var map = new Map.Map(size.x, size.z, TerrainDefOf.Soil);
             map.tile = tileId;
-            var ctx = new MapGenContext(map, tile, tileId, seedString);
+            var ctx = new MapGenContext(map, tile, tileId, seedString, grid);
 
             var steps = new List<GenStepDef>(generatorDef.genSteps);
             steps.Sort((a, b) => a.order.CompareTo(b.order));
