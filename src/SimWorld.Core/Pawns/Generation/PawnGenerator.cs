@@ -108,11 +108,21 @@ namespace SimWorld.Pawns.Generation
             }
 
             // Rolled once here, for every humanlike pawn this generator produces (newborn or not) — see
-            // Pawn_AgeTracker's "Hidden lifespan budget" section for why it stays hidden. Last step, so it
-            // never perturbs the RNG stream any of the generation steps above already depend on.
+            // Pawn_AgeTracker's "Hidden lifespan budget" section for why it stays hidden. Comes right after
+            // the weapon roll (the RNG-sensitive step every pre-existing test already accounts for) and before
+            // apparel, so this pass's new draw doesn't shift a single number any test already pinned.
             if (humanlike)
             {
                 pawn.ageTracker.RollLifespanBudget(race);
+            }
+
+            if (humanlike && !request.Newborn)
+            {
+                // Last of all: pawngen.apparel is new this pass, so it goes after every RNG-sensitive step
+                // above rather than between weapon generation and the lifespan roll, which would have shifted
+                // that roll's draw for every humanlike pawn and, with it, every test that pins a lifespan or
+                // age outcome.
+                PawnApparelGenerator.TryGenerateApparelFor(pawn, request);
             }
 
             return pawn;

@@ -113,6 +113,9 @@ namespace SimWorld.Research
             Notify_ResearchProjectFinished(def);
             ProjectFinished?.Invoke(def);
             CheckEraTransition(eraBefore);
+            // After the era check, so a crossing is announced against the authored ladder before anything is
+            // minted past its end (research.endless).
+            EnsureSomethingToResearch();
             _ = doCompletionDialog; // UI concern only; SimWorld has no completion dialog yet.
             _ = researcher; // kept for parity with RimWorld's call sites and future credit/letter text.
         }
@@ -192,12 +195,27 @@ namespace SimWorld.Research
             AdvanceTechLevelToEra();
         }
 
-        /// <summary>Debug/testing: instantly finishes every loaded project.</summary>
+        /// <summary>
+        /// Debug/testing: instantly finishes every loaded project. Endless extension is suppressed while it
+        /// runs — otherwise finishing the last authored project would mint a tier, which this loop would then
+        /// finish, which would mint another, forever. The civilization is left exactly where the authored tree
+        /// ends, with nothing to research, which is the state endless tech is the answer to.
+        /// </summary>
         public void DebugSetAllProjectsFinished()
         {
-            foreach (ResearchProjectDef def in DefDatabase<ResearchProjectDef>.AllDefsListForReading)
+            // A snapshot, because FinishProject can now add projects to the database.
+            var all = new List<ResearchProjectDef>(DefDatabase<ResearchProjectDef>.AllDefsListForReading);
+            suppressEndlessExtension = true;
+            try
             {
-                if (!IsFinished(def)) FinishProject(def);
+                for (int i = 0; i < all.Count; i++)
+                {
+                    if (!IsFinished(all[i])) FinishProject(all[i]);
+                }
+            }
+            finally
+            {
+                suppressEndlessExtension = false;
             }
         }
 
@@ -252,11 +270,110 @@ namespace SimWorld.Research
 
         public void ExposeData()
         {
+            // First, and deliberately: a generated project is a real Def in the database, so every reference
+            // below — the current project, every key of the progress dictionary — can only resolve once the
+            // tier count is known and the tree has been re-minted. Read the count, rebuild, then read the
+            // references that point into it.
+            Scribe_Values.Look(ref endlessTier, "endlessTier");
+            if (Scribe.mode == LoadSaveMode.LoadingVars) RemintEndlessTree();
+
             Scribe_Defs.Look(ref currentProj, "currentProj");
             Dictionary<ResearchProjectDef, float>? dict = progress;
             Scribe_Collections.Look(ref dict, "progress", LookMode.Def, LookMode.Value);
             progress = dict ?? new Dictionary<ResearchProjectDef, float>();
             Scribe_Values.Look(ref researcherTechLevel, "researcherTechLevel", TechLevel.Neolithic);
+        }
+
+        // ---- Endless tech (research.endless) ----
+
+        private int endlessTier;
+
+        /// <summary>Set while a bulk finish is in progress; see <see cref="DebugSetAllProjectsFinished"/>.
+        /// Not saved: it is only ever true inside one call.</summary>
+        private bool suppressEndlessExtension;
+
+        /// <summary>
+        /// How many procedural tiers exist past the authored tree. Zero for every civilization that has not
+        /// finished it, which is nearly all of them — endless tech costs nothing until it is reached.
+        /// </summary>
+        public int EndlessTier => endlessTier;
+
+        /// <summary>
+        /// True when nothing in the authored tree can be started: everything reachable is finished. This is
+        /// the condition endless tech exists for, and it is deliberately about <i>reachability</i> rather
+        /// than about completion — a project whose prerequisites can never be met is not something a
+        /// civilization is still able to work on.
+        /// </summary>
+        public bool NothingLeftToResearch
+        {
+            get
+            {
+                IReadOnlyList<ResearchProjectDef> all = DefDatabase<ResearchProjectDef>.AllDefsListForReading;
+                for (int i = 0; i < all.Count; i++)
+                {
+                    if (all[i].CanStartNow) return false;
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Mints one more tier along every endless track. Ordinarily called for you — see
+        /// <see cref="EnsureSomethingToResearch"/> — but public so a scenario or a test can reach past the
+        /// authored tree deliberately.
+        /// </summary>
+        public void ExtendEndlessTree()
+        {
+            IReadOnlyList<EndlessResearchDef> tracks = DefDatabase<EndlessResearchDef>.AllDefsListForReading;
+            if (tracks.Count == 0) return;
+            endlessTier++;
+            DefDatabase database = DefDatabase.Global;
+            for (int i = 0; i < tracks.Count; i++)
+            {
+                EndlessResearch.MintOrGet(tracks[i], endlessTier, database);
+            }
+        }
+
+        /// <summary>
+        /// Extends the tree if and only if there is nothing left to research. Called after every finished
+        /// project, so a civilization that has exhausted the authored tree always has a next thing to work
+        /// on and never silently stops — which is what "endless" has to mean mechanically.
+        /// </summary>
+        public void EnsureSomethingToResearch()
+        {
+            if (suppressEndlessExtension) return;
+            if (DefDatabase<EndlessResearchDef>.AllDefsListForReading.Count == 0) return;
+
+            // Extends until something is startable rather than exactly once. The DefDatabase is process-wide
+            // while endlessTier belongs to this civilization, so a tier this civilization has never reached
+            // can already exist in the database — minted by another game in the same process, or by a test —
+            // and be finished as far as this manager is concerned. Walking forward until the tail is actually
+            // open is the only answer that does not depend on being the only game ever loaded.
+            int guard = 0;
+            while (NothingLeftToResearch && guard++ < MaxEndlessCatchUpTiers)
+            {
+                ExtendEndlessTree();
+            }
+        }
+
+        /// <summary>A bound on the catch-up loop above, so a content set with no workable track cannot spin
+        /// forever minting projects nothing can start.</summary>
+        private const int MaxEndlessCatchUpTiers = 64;
+
+        /// <summary>Rebuilds every tier a save says exists. Idempotent: a tier already in the database is
+        /// returned rather than duplicated, so loading twice into one process is harmless.</summary>
+        private void RemintEndlessTree()
+        {
+            if (endlessTier <= 0) return;
+            IReadOnlyList<EndlessResearchDef> tracks = DefDatabase<EndlessResearchDef>.AllDefsListForReading;
+            DefDatabase database = DefDatabase.Global;
+            for (int i = 0; i < tracks.Count; i++)
+            {
+                for (int tier = 1; tier <= endlessTier; tier++)
+                {
+                    EndlessResearch.MintOrGet(tracks[i], tier, database);
+                }
+            }
         }
     }
 }

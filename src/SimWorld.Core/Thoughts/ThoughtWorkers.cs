@@ -1,5 +1,6 @@
 using SimWorld.Needs;
 using SimWorld.Pawns;
+using SimWorld.Social;
 
 namespace SimWorld.Thoughts
 {
@@ -7,6 +8,28 @@ namespace SimWorld.Thoughts
     public class ThoughtWorker_AlwaysActive : ThoughtWorker
     {
         protected override ThoughtState CurrentStateInternal(Pawn pawn) => ThoughtState.ActiveDefault;
+    }
+
+    /// <summary>
+    /// Active while the pawn has at least one <see cref="DirectPawnRelation"/> of <see
+    /// cref="ThoughtDef.requiredDirectRelation"/>'s kind with anyone (RimWorld: the spatial "a friend is
+    /// nearby"/"a rival is present" situational thoughts, translated to this module's own terms — see that
+    /// field's own doc comment for why). One generic worker driving any number of content-only ThoughtDefs,
+    /// the same shape <see cref="ThoughtWorker_Hediff"/> already uses for <see cref="ThoughtDef.hediff"/>.
+    /// </summary>
+    public class ThoughtWorker_HasDirectRelation : ThoughtWorker
+    {
+        protected override ThoughtState CurrentStateInternal(Pawn pawn)
+        {
+            PawnRelationDef? relation = def.requiredDirectRelation;
+            if (relation == null) return ThoughtState.Inactive;
+            var relations = pawn.relations.directRelations;
+            for (int i = 0; i < relations.Count; i++)
+            {
+                if (relations[i].def == relation) return ThoughtState.ActiveDefault;
+            }
+            return ThoughtState.Inactive;
+        }
     }
 
     /// <summary>Hungry / ravenously hungry / starving from the food need.</summary>

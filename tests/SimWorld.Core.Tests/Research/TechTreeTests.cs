@@ -8,6 +8,7 @@ using Xunit;
 // See ResearchTests.cs for why every production type is aliased explicitly here.
 using ResearchManager = global::SimWorld.Research.ResearchManager;
 using ResearchProjectDef = global::SimWorld.Research.ResearchProjectDef;
+using EndlessResearch = global::SimWorld.Research.EndlessResearch;
 using EraDef = global::SimWorld.Research.EraDef;
 
 namespace SimWorld.Tests.Research
@@ -54,8 +55,17 @@ namespace SimWorld.Tests.Research
             Find.ResearchManager = manager;
         }
 
+        /// <summary>
+        /// The authored tree. Endless tech (<c>research.endless</c>) mints real <see cref="ResearchProjectDef"/>s
+        /// into the same database at run time, and they deliberately break the invariants this file asserts —
+        /// they carry no era, and the first of each track is a root outside the first era — because they come
+        /// after the ladder rather than inside it. These tests are about the content, so they read the
+        /// content.
+        /// </summary>
         private static IReadOnlyList<ResearchProjectDef> AllProjects =>
-            DefDatabase<ResearchProjectDef>.AllDefsListForReading;
+            DefDatabase<ResearchProjectDef>.AllDefsListForReading
+                .Where(p => !EndlessResearch.IsGenerated(p))
+                .ToList();
 
         /// <summary>The project's track tag: whichever of its tags is in <see cref="KnownTracks"/>, or null.</summary>
         private static string? TrackOf(ResearchProjectDef project)

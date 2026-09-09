@@ -8,9 +8,8 @@ namespace SimWorld.Pawns
     /// <summary>
     /// Weapons a pawn is carrying (RimWorld: <c>Verse.Pawn_EquipmentTracker</c>), trimmed to what gear
     /// generation needs: a small held list, with the first entry addressable as <see cref="Primary"/> the way
-    /// RimWorld code everywhere reads <c>pawn.equipment.Primary</c>. No apparel/inventory here — see
-    /// <see cref="PawnKindDef.apparelTags"/>'s doc comment for what's ported on the data side but not yet
-    /// consumed, and why.
+    /// RimWorld code everywhere reads <c>pawn.equipment.Primary</c>. No inventory here (RimWorld's carried,
+    /// non-worn/wielded items) — apparel is <see cref="Pawn_ApparelTracker"/> instead, RimWorld's own split.
     /// </summary>
     public sealed class Pawn_EquipmentTracker : IExposable
     {

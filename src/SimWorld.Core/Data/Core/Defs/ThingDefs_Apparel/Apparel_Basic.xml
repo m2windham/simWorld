@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Apparel (pawngen.apparel): ThingDef.apparel (body part groups + layers + tags) is Things' addition — see
+    ThingDef.Apparel.cs — consumed the same way ThingDef.weaponTags/generateCommonality already are:
+    PawnApparelGenerator matches a PawnKindDef's apparelTags against these, prices against MarketValue within
+    the kind's apparelMoneyRange, and gates on techLevel against the generated pawn's faction, exactly like
+    PawnWeaponGenerator. Prices are this pass's own — not sourced from RimWorld's real apparel costs — picked
+    only to order sensibly relative to each other and to the weapon prices Weapons_Melee.xml already uses.
+
+    ArmorRating_*/Insulation statBases are the first wearers those StatDefs have ever had (Stats_Armor.xml /
+    StatDefs_Things.xml). Every entry here carries hasQuality + CompProperties_Quality so
+    Stats_Economy.xml's new StatPart_Quality actually has something to multiply, and stuffCategories so the
+    stuff factor/offset half of the stat pipeline (StatWorker's own remarks) has something made-from-stuff to
+    read once a real Thing exists with a Stuff set.
+  -->
+
+  <ThingDef Name="BaseApparel" Abstract="True">
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <stackLimit>1</stackLimit>
+    <thingCategories><li>Manufactured</li></thingCategories>
+    <hasQuality>true</hasQuality>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_Quality" />
+    </comps>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseApparel">
+    <defName>Apparel_Shirt</defName>
+    <label>shirt</label>
+    <description>A simple shirt. Everyone owns one.</description>
+    <techLevel>Neolithic</techLevel>
+    <stuffCategories>
+      <li>Fabric</li>
+    </stuffCategories>
+    <statBases>
+      <MarketValue>8</MarketValue>
+      <ArmorRating_Sharp>0.02</ArmorRating_Sharp>
+      <Insulation>0.08</Insulation>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>Torso</li>
+      </bodyPartGroups>
+      <layers>
+        <li>OnSkin</li>
+      </layers>
+      <tags>
+        <li>Civil</li>
+        <li>Tribal</li>
+        <li>Soldier</li>
+      </tags>
+    </apparel>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseApparel">
+    <defName>Apparel_Pants</defName>
+    <label>pants</label>
+    <description>Simple trousers.</description>
+    <techLevel>Neolithic</techLevel>
+    <stuffCategories>
+      <li>Fabric</li>
+    </stuffCategories>
+    <statBases>
+      <MarketValue>8</MarketValue>
+      <ArmorRating_Sharp>0.02</ArmorRating_Sharp>
+      <Insulation>0.08</Insulation>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>Legs</li>
+      </bodyPartGroups>
+      <layers>
+        <li>OnSkin</li>
+      </layers>
+      <tags>
+        <li>Civil</li>
+        <li>Tribal</li>
+        <li>Soldier</li>
+      </tags>
+    </apparel>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseApparel">
+    <defName>Apparel_TribalRobe</defName>
+    <label>tribal robe</label>
+    <description>A robe of tanned hide, wrapped from shoulder to knee.</description>
+    <techLevel>Neolithic</techLevel>
+    <stuffCategories>
+      <li>Leathery</li>
+    </stuffCategories>
+    <statBases>
+      <MarketValue>16</MarketValue>
+      <ArmorRating_Sharp>0.05</ArmorRating_Sharp>
+      <ArmorRating_Blunt>0.05</ArmorRating_Blunt>
+      <Insulation>0.2</Insulation>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>Torso</li>
+        <li>Legs</li>
+      </bodyPartGroups>
+      <layers>
+        <li>Middle</li>
+      </layers>
+      <tags>
+        <li>Tribal</li>
+      </tags>
+    </apparel>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseApparel">
+    <defName>Apparel_Parka</defName>
+    <label>parka</label>
+    <description>A heavy coat, good against the cold and a glancing blow alike.</description>
+    <techLevel>Neolithic</techLevel>
+    <stuffCategories>
+      <li>Fabric</li>
+      <li>Leathery</li>
+    </stuffCategories>
+    <statBases>
+      <MarketValue>28</MarketValue>
+      <ArmorRating_Sharp>0.08</ArmorRating_Sharp>
+      <ArmorRating_Blunt>0.05</ArmorRating_Blunt>
+      <Insulation>0.6</Insulation>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>Torso</li>
+        <li>Arms</li>
+        <li>Neck</li>
+      </bodyPartGroups>
+      <layers>
+        <li>Shell</li>
+      </layers>
+      <tags>
+        <li>Civil</li>
+        <li>Tribal</li>
+      </tags>
+    </apparel>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseApparel">
+    <defName>Apparel_FlakVest</defName>
+    <label>flak vest</label>
+    <description>A vest lined with metal plate, worn over the torso for real protection.</description>
+    <techLevel>Industrial</techLevel>
+    <stuffCategories>
+      <li>Metallic</li>
+    </stuffCategories>
+    <statBases>
+      <MarketValue>65</MarketValue>
+      <ArmorRating_Sharp>0.3</ArmorRating_Sharp>
+      <ArmorRating_Blunt>0.2</ArmorRating_Blunt>
+      <ArmorRating_Heat>0.1</ArmorRating_Heat>
+      <Insulation>0.1</Insulation>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>Torso</li>
+      </bodyPartGroups>
+      <layers>
+        <li>Shell</li>
+      </layers>
+      <tags>
+        <li>Soldier</li>
+      </tags>
+    </apparel>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseApparel">
+    <defName>Apparel_SimpleHelmet</defName>
+    <label>simple helmet</label>
+    <description>A metal helmet, better than nothing against a glancing hit to the head.</description>
+    <techLevel>Industrial</techLevel>
+    <stuffCategories>
+      <li>Metallic</li>
+    </stuffCategories>
+    <statBases>
+      <MarketValue>35</MarketValue>
+      <ArmorRating_Sharp>0.25</ArmorRating_Sharp>
+      <ArmorRating_Blunt>0.15</ArmorRating_Blunt>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>FullHead</li>
+      </bodyPartGroups>
+      <layers>
+        <li>Overhead</li>
+      </layers>
+      <tags>
+        <li>Soldier</li>
+      </tags>
+    </apparel>
+  </ThingDef>
+
+</Defs>

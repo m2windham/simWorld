@@ -10,6 +10,7 @@ using Xunit;
 // matching the convention already used for SimWorld.Needs / SimWorld.MindState elsewhere in this suite.
 using ResearchManager = global::SimWorld.Research.ResearchManager;
 using ResearchProjectDef = global::SimWorld.Research.ResearchProjectDef;
+using EndlessResearch = global::SimWorld.Research.EndlessResearch;
 using EraDef = global::SimWorld.Research.EraDef;
 using IResearchUnlockable = global::SimWorld.Research.IResearchUnlockable;
 using ResearchProjectDefOf = global::SimWorld.Research.ResearchProjectDefOf;
@@ -59,6 +60,9 @@ namespace SimWorld.Tests.Research
         {
             foreach (ResearchProjectDef project in DefDatabase<ResearchProjectDef>.AllDefsListForReading)
             {
+                // Endless tech is minted into this database at run time and deliberately carries no era —
+                // it comes after the ladder rather than inside it (research.endless).
+                if (EndlessResearch.IsGenerated(project)) continue;
                 Assert.True(project.era != null, project.defName + " has no era.");
                 int order = project.era!.order;
                 if (project.prerequisites == null) continue;

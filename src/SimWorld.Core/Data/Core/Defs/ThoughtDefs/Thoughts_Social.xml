@@ -50,4 +50,38 @@
     </stages>
   </ThoughtDef>
 
+  <!-- Situational, not memories: active for as long as the underlying stored relation holds, not gained/lost
+       as a one-off event the way the memories above are. Substitutes for RimWorld's spatial "a friend is
+       nearby"/"a rival is present" thoughts — no Map/room concept reaches this module yet (see
+       SocialInteractionManager's own note) — so "present in this pawn's life" reads as "has a stored direct
+       relation of this kind with someone" rather than "in the same room". One generic worker
+       (ThoughtWorker_HasDirectRelation) drives both; a future relation kind (Lover, say) only needs another
+       ThoughtDef here, no new C#. -->
+
+  <ThoughtDef>
+    <defName>HasFriend</defName>
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_HasDirectRelation</workerClass>
+    <requiredDirectRelation>Friend</requiredDirectRelation>
+    <stages>
+      <li>
+        <label>has a friend</label>
+        <description>I have someone here I can call a friend.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>HasRival</defName>
+    <workerClass>SimWorld.Thoughts.ThoughtWorker_HasDirectRelation</workerClass>
+    <requiredDirectRelation>Rival</requiredDirectRelation>
+    <stages>
+      <li>
+        <label>has a rival</label>
+        <description>Someone here rubs me the wrong way, and it isn't going away.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
 </Defs>

@@ -45,6 +45,11 @@ namespace SimWorld.Director
         /// <summary>The squad the most recent successful firing generated.</summary>
         public IReadOnlyList<Pawn>? LastRaidPawns { get; private set; }
 
+        /// <summary>The settlement the most recent successful firing aimed at, or null when the civilization
+        /// had none attached. A diagnostic of the last fire like the other <c>Last*</c> members here, not
+        /// saved state.</summary>
+        public SimWorld.World.Settlement? LastRaidSettlement { get; private set; }
+
         protected override bool CanFireNowSub(IncidentParms parms) => parms.points > 0f && ResolveFaction(parms) != null;
 
         protected override bool TryExecuteWorker(IncidentParms parms)
@@ -64,7 +69,13 @@ namespace SimWorld.Director
             List<Pawn> pawns = PawnGroupMakerUtility.GeneratePawns(groupParms);
             if (pawns.Count == 0) return false;
 
-            Map.Map? map = (parms.target as CivilizationTarget)?.Map;
+            // Which settlement the raid falls on, and therefore which map it arrives at: a civilization of
+            // several towns is raided somewhere in particular, weighted by where its people are. A settlement
+            // nobody has entered has no interior map, so the raid still resolves without one — the squad is
+            // generated and handed back unspawned exactly as it was before settlements existed.
+            var civ = parms.target as CivilizationTarget;
+            LastRaidSettlement = civ?.ChooseTargetSettlement(Rand.Current);
+            Map.Map? map = civ?.MapFor(LastRaidSettlement);
             if (map != null)
             {
                 IntVec3 edge = RandomEdgeCell(map, Rand.Current);

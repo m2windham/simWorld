@@ -79,5 +79,21 @@ namespace SimWorld.Social
         /// long-running population — pinned by a band/frequency test, not the literal value.
         /// </summary>
         public const float BaseSocialFightChance = 0.15f;
+
+        /// <summary>
+        /// Power of the bare-knuckled <see cref="Combat.Tool"/> <see cref="MindState.MentalState_SocialFighting"/>
+        /// builds for its swings — RimWorld's own natural "fists" tool exists on the Human race ThingDef, not
+        /// coded in; this port has no natural-weapons content yet (Combat module scope), so the fight builds
+        /// one directly instead. Not sourced from RimWorld's real fists power; picked below the weakest content
+        /// weapon (<c>MeleeWeapon_Club</c>'s head, power 12) so a social fight reads as a scuffle rather than a
+        /// weapon fight — pinned by a test on relative wound severity, not the literal number.
+        /// </summary>
+        public const float SocialFightFistPower = 6f;
+
+        /// <summary>Seconds between swings once a social fight's fists verb is warmed up (melee's own
+        /// zero-warmup default — see <see cref="Combat.Verb_MeleeAttack"/>). Not sourced; picked so a handful
+        /// of exchanges land within the mental state's own 100-1200 tick duration without being so frequent
+        /// the fight resolves in a single blow.</summary>
+        public const float SocialFightSwingCooldownSeconds = 1f;
     }
 }

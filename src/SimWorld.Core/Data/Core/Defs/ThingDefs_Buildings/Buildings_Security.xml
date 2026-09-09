@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Turrets, traps and explosives (system 12: Combat — structures). All three are ThingDefs with comps,
+    following the Building module's existing shape (CompPower/CompHeatPusherPowered et al) rather than a
+    distinct thingClass per mechanic — see CompTurretGun.cs's own remarks for why that departs from real
+    RimWorld's Building_TurretGun/Building_Trap, which are each their own Thing subclass there.
+
+    tickerType is Normal on all three: a turret's Verb burst/cooldown state machine and a trap's "is a pawn
+    standing on me" check both need per-tick precision. The turret comp itself throttles its own expensive
+    part (scanning every pawn on the map for a target) to once every 15 ticks — see CompTurretGun's own
+    remarks — so this does not reintroduce the kind of unconditional per-tick scan the steady-state pathing
+    perf test exists to catch.
+  -->
+
+  <ThingDef>
+    <defName>Turret_Mini</defName>
+    <label>mini turret</label>
+    <description>An automated gun turret. Fires on any hostile pawn in range and line of sight.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <tickerType>Normal</tickerType>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <pathCost>10000</pathCost>
+    <researchPrerequisites>
+      <li>Electricity</li>
+      <li>MachineGuns</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>150</MaxHitPoints>
+    </statBases>
+    <costList>
+      <Steel>75</Steel>
+    </costList>
+    <verbs>
+      <li>
+        <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
+        <label>shoot</label>
+        <range>26.9</range>
+        <warmupTime>1.9</warmupTime>
+        <defaultCooldownTime>2.6</defaultCooldownTime>
+        <accuracyTouch>0.7</accuracyTouch>
+        <accuracyShort>0.65</accuracyShort>
+        <accuracyMedium>0.55</accuracyMedium>
+        <accuracyLong>0.45</accuracyLong>
+        <burstShotCount>3</burstShotCount>
+        <ticksBetweenBurstShots>10</ticksBetweenBurstShots>
+        <defaultProjectile>Bullet_AssaultRifle</defaultProjectile>
+      </li>
+    </verbs>
+    <comps>
+      <li Class="SimWorld.Building.CompProperties_PowerTrader">
+        <basePowerConsumption>200</basePowerConsumption>
+      </li>
+      <li Class="SimWorld.Building.CompProperties_TurretGun" />
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>TrapSpike</defName>
+    <label>spike trap</label>
+    <description>A hidden bed of sharp spikes. Springs once, wounding whoever triggers it, then lies spent.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <tickerType>Normal</tickerType>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <pathCost>0</pathCost>
+    <researchPrerequisites>
+      <li>Trapping</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>60</MaxHitPoints>
+    </statBases>
+    <costList>
+      <WoodLog>8</WoodLog>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Building.CompProperties_Trap">
+        <damageDef>Stab</damageDef>
+        <damageAmountRange>8~20</damageAmountRange>
+        <armorPenetrationBase>0.2</armorPenetrationBase>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>TrapIED</defName>
+    <label>IED trap</label>
+    <description>A hidden explosive charge. Detonates once, blasting whoever triggers it and everything nearby.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <tickerType>Normal</tickerType>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <pathCost>0</pathCost>
+    <researchPrerequisites>
+      <li>Gunpowder</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>40</MaxHitPoints>
+    </statBases>
+    <costList>
+      <Steel>10</Steel>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Building.CompProperties_Trap">
+        <!-- damageDef/damageAmountRange are unused whenever a sibling CompProperties_Explosive is present
+             (CompTrap detonates it instead of dealing its own hit) but stay required content, so this
+             repeats the spike trap's own damageDef as an inert fallback. -->
+        <damageDef>Blunt</damageDef>
+      </li>
+      <li Class="SimWorld.Building.CompProperties_Explosive">
+        <explosiveDamageType>Blunt</explosiveDamageType>
+        <explosiveRadius>3.5</explosiveRadius>
+        <damageAmountBase>40</damageAmountBase>
+        <damageFalloff>true</damageFalloff>
+      </li>
+    </comps>
+  </ThingDef>
+
+</Defs>

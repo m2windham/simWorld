@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    health.addictions: drug items with a real CompDrug, so tolerance/addiction/withdrawal (Hediffs_Drugs.xml,
+    Thoughts_Drugs.xml) and Need_Joy's existing Chemical JoyKindDef (JoyKinds.xml) have something to be
+    triggered from. No hasQuality/CompProperties_Quality — consumables carry no quality, same as
+    Items_Food.xml's meals. No crafting recipe: tradeable only, the same "or tradeable" allowance
+    health.prosthetic-items' item takes (no fabrication workbench exists to craft either kind of item at yet).
+    MarketValue/nutrition/joy are this pass's own numbers, not sourced from RimWorld's real Beer/Flake.
+  -->
+
+  <ThingDef>
+    <defName>Beer</defName>
+    <label>beer</label>
+    <description>A weak alcoholic beverage. Relaxing in moderation; habit-forming in excess.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Neolithic</techLevel>
+    <thingCategories>
+      <li>Foods</li>
+    </thingCategories>
+    <stackLimit>25</stackLimit>
+    <statBases>
+      <MarketValue>3.5</MarketValue>
+    </statBases>
+    <ingestible>
+      <nutrition>0.1</nutrition>
+      <preferability>RawTasty</preferability>
+      <foodType>Fluid, Processed</foodType>
+      <joy>0.1</joy>
+    </ingestible>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_Drug">
+        <chemical>Alcohol</chemical>
+        <joyKind>Chemical</joyKind>
+        <toleranceGainPerDose>0.12</toleranceGainPerDose>
+        <addictionChancePerDoseAboveThreshold>0.05</addictionChancePerDoseAboveThreshold>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Flake</defName>
+    <label>flake</label>
+    <description>A refined stimulant, smoked. A powerful high with a hard, addictive comedown.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Industrial</techLevel>
+    <thingCategories>
+      <li>Foods</li>
+    </thingCategories>
+    <stackLimit>25</stackLimit>
+    <statBases>
+      <MarketValue>9</MarketValue>
+    </statBases>
+    <ingestible>
+      <nutrition>0</nutrition>
+      <preferability>DesperateOnly</preferability>
+      <foodType>Processed</foodType>
+      <joy>0.3</joy>
+    </ingestible>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_Drug">
+        <chemical>Yayo</chemical>
+        <joyKind>Chemical</joyKind>
+        <toleranceGainPerDose>0.25</toleranceGainPerDose>
+        <addictionChancePerDoseAboveThreshold>0.35</addictionChancePerDoseAboveThreshold>
+      </li>
+    </comps>
+  </ThingDef>
+
+</Defs>

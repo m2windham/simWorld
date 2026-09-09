@@ -46,7 +46,10 @@ namespace SimWorld.Combat
             this.tool = tool;
         }
 
-        public float GetHitChance() => CombatStats.MeleeHitChanceFor(caster);
+        /// <summary>This module's own <see cref="MeleeVerbUtility.MakeVerb"/> is the only way to construct a <see cref="Verb_MeleeAttack"/>, and it always passes a <see cref="Pawn"/> — nothing melees but pawns.</summary>
+        private Pawn CasterPawn => (Pawn)caster;
+
+        public float GetHitChance() => CombatStats.MeleeHitChanceFor(CasterPawn);
 
         protected override void TryCastShot(Pawn target, float distance)
         {

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    How a warden may act on a visit (system 12: Combat — capture loop). Trimmed to the two modes
+    WardenUtility actually implements; see Pawn_GuestTracker.cs's own remarks for what real RimWorld's
+    fuller set (Chat, Enslave, Execute, ideology conversion) is missing and why.
+  -->
+
+  <PrisonerInteractionModeDef>
+    <defName>NoInteraction</defName>
+    <label>no interaction</label>
+    <description>Wardens leave this prisoner alone.</description>
+  </PrisonerInteractionModeDef>
+
+  <PrisonerInteractionModeDef>
+    <defName>AttemptRecruit</defName>
+    <label>recruit</label>
+    <description>Wardens try to win this prisoner over to join the colony.</description>
+  </PrisonerInteractionModeDef>
+
+</Defs>

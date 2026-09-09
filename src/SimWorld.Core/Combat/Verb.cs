@@ -1,6 +1,7 @@
 using System;
 using SimWorld.Pawns;
 using SimWorld.Sim;
+using SimWorld.Things;
 
 namespace SimWorld.Combat
 {
@@ -23,7 +24,14 @@ namespace SimWorld.Combat
     public abstract class Verb
     {
         public readonly VerbProperties verbProps;
-        public readonly Pawn caster;
+
+        /// <summary>
+        /// Whoever/whatever is making this attack (RimWorld: <c>Verse.Verb.caster</c> is a bare <c>Thing</c>
+        /// too, for exactly this reason): almost always a <see cref="Pawn"/> wielding a weapon, but a
+        /// <see cref="Building.CompTurretGun"/> passes its own turret Building instead, so one Verb/ShotReport
+        /// pipeline serves both.
+        /// </summary>
+        public readonly Thing caster;
 
         private VerbState state = VerbState.Idle;
         private int stateTicksLeft;
@@ -32,7 +40,7 @@ namespace SimWorld.Combat
         private float currentDistance;
         private int lastShotTick = -1;
 
-        protected Verb(Pawn caster, VerbProperties verbProps)
+        protected Verb(Thing caster, VerbProperties verbProps)
         {
             this.caster = caster ?? throw new ArgumentNullException(nameof(caster));
             this.verbProps = verbProps ?? throw new ArgumentNullException(nameof(verbProps));
@@ -43,8 +51,14 @@ namespace SimWorld.Combat
         /// <summary>Game tick <see cref="Sim.Find.TickManager"/> was at when the most recent shot fired; -1 before any shot.</summary>
         public int LastShotTick => lastShotTick;
 
-        /// <summary>Idle and the caster is able to act; a fresh <see cref="TryStartCastOn"/> only succeeds here.</summary>
-        public bool Available() => state == VerbState.Idle && !caster.Dead;
+        /// <summary>
+        /// Idle and the caster is able to act; a fresh <see cref="TryStartCastOn"/> only succeeds here.
+        /// A pawn caster is gated on death (RimWorld: <c>Verse.Pawn.Dead</c>); a non-pawn caster (a turret)
+        /// has no such state, so it is gated on having left the map entirely instead.
+        /// </summary>
+        public bool Available() => state == VerbState.Idle && !CasterUnableToAct;
+
+        private bool CasterUnableToAct => caster is Pawn pawn ? pawn.Dead : caster.Destroyed;
 
         /// <summary>Ticks are the sim's fixed 60/second rate (RimWorld: <c>GenTicks.TicksPerRealSecond</c>).</summary>
         public static int SecondsToTicks(float seconds) => Math.Max(0, GenTicks.SecondsToTicks(seconds));
@@ -119,7 +133,7 @@ namespace SimWorld.Combat
     /// <summary>Constructs a <see cref="Verb"/> from its <see cref="VerbProperties"/> (RimWorld: <c>VerbProperties.CreateVerb</c>).</summary>
     public static class VerbUtility
     {
-        public static Verb MakeVerb(Pawn caster, VerbProperties props)
+        public static Verb MakeVerb(Thing caster, VerbProperties props)
         {
             if (caster == null) throw new ArgumentNullException(nameof(caster));
             if (props == null) throw new ArgumentNullException(nameof(props));

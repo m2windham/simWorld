@@ -45,8 +45,11 @@ namespace SimWorld.Pawns
         /// <summary>Cell-to-cell movement along whatever path the current job asked for (system 9: AI).</summary>
         public Pawn_PathFollower pather = null!;
 
-        /// <summary>Weapons this pawn carries (RimWorld: <c>Pawn.equipment</c>); see <see cref="Pawn_EquipmentTracker"/>'s own doc for what's ported and what isn't (apparel).</summary>
+        /// <summary>Weapons this pawn carries (RimWorld: <c>Pawn.equipment</c>).</summary>
         public Pawn_EquipmentTracker equipment = null!;
+
+        /// <summary>Apparel this pawn is wearing (RimWorld: <c>Pawn.apparel</c>); see <see cref="Pawn_ApparelTracker"/>.</summary>
+        public Pawn_ApparelTracker apparel = null!;
 
         public Gender gender;
         public PawnKindDef? kindDef;
@@ -221,6 +224,7 @@ namespace SimWorld.Pawns
             jobs ??= new Pawn_JobTracker(this);
             pather ??= new Pawn_PathFollower(this);
             equipment ??= new Pawn_EquipmentTracker(this);
+            apparel ??= new Pawn_ApparelTracker(this);
         }
 
         // ---- ITickable ----
@@ -314,6 +318,9 @@ namespace SimWorld.Pawns
             Pawn_EquipmentTracker? eq = equipment;
             Scribe_Deep.Look(ref eq, "equipment", this);
             equipment = eq ?? new Pawn_EquipmentTracker(this);
+            Pawn_ApparelTracker? ap = apparel;
+            Scribe_Deep.Look(ref ap, "apparel", this);
+            apparel = ap ?? new Pawn_ApparelTracker(this);
             Scribe_Values.Look(ref gender, "gender", Gender.None);
             PawnKindDef? kd = kindDef;
             Scribe_Defs.Look(ref kd, "kindDef");

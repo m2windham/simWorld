@@ -6,6 +6,7 @@ using SimWorld.Health;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 using SimWorld.Tests.Content;
+using SimWorld.Things;
 using Xunit;
 
 namespace SimWorld.Tests.Health
@@ -194,9 +195,9 @@ namespace SimWorld.Tests.Health
         [Fact]
         public void Installing_a_part_replaces_whatever_was_there()
         {
-            // The install worker ships without content — a prosthetic is an item, and no such ThingDef exists
-            // yet (see Recipes_Surgery.xml). The worker itself is real, so it is tested against a recipe built
-            // here, the same way other modules test a worker with a throwaway def.
+            // A throwaway recipe, the same way other modules test a worker against a def built here rather
+            // than loaded content — InstallSimpleProstheticLeg (below) is the real, content-shipped version
+            // of exactly this, now that health.prosthetic-items exists.
             var install = new RecipeDef
             {
                 defName = "Test_InstallProsthetic",
@@ -215,6 +216,75 @@ namespace SimWorld.Tests.Health
 
             Assert.False(patient.health.hediffSet.PartIsMissing(leg));
             Assert.True(patient.health.hediffSet.HasHediff(install.addsHediff!, leg));
+        }
+
+        // ---- health.prosthetic-items: the real content recipe, and ingredient consumption ----
+
+        private static RecipeDef InstallProstheticLeg => DefDatabase<RecipeDef>.GetNamed("InstallSimpleProstheticLeg");
+
+        private static ThingDef ProstheticLegDef => DefDatabase<ThingDef>.GetNamed("SimpleProstheticLeg");
+
+        private static ThingWithComps NewProstheticLeg() => (ThingWithComps)ThingMaker.MakeThing(ProstheticLegDef);
+
+        [Fact]
+        public void SimpleProstheticLeg_is_a_real_quality_capable_tradeable_item()
+        {
+            Assert.Equal(ThingCategory.Item, ProstheticLegDef.category);
+            Assert.True(ProstheticLegDef.hasQuality);
+            Assert.True(ProstheticLegDef.BaseMarketValue > 0f);
+            ThingWithComps leg = NewProstheticLeg();
+            Assert.NotNull(leg.GetComp<global::SimWorld.Things.CompQuality>());
+        }
+
+        [Fact]
+        public void InstallSimpleProstheticLeg_names_the_item_as_an_ingredient()
+        {
+            Assert.True(InstallProstheticLeg.isSurgery);
+            Assert.NotNull(InstallProstheticLeg.ingredients);
+            Assert.Single(InstallProstheticLeg.ingredients!);
+            Assert.True(InstallProstheticLeg.ingredients![0].filter.Allows(ProstheticLegDef));
+        }
+
+        [Fact]
+        public void PerformNextSurgery_wont_fire_an_ingredient_requiring_bill_with_nothing_on_hand()
+        {
+            Pawn patient = NewHuman("Patient");
+            BodyPartRecord leg = Part(patient, "left leg");
+            patient.health.surgeryBills.AddBill(new Bill_Medical(InstallProstheticLeg, leg));
+
+            Assert.False(SurgeryUtility.PerformNextSurgery(patient, null));
+            Assert.Equal(1, patient.health.surgeryBills.Count);
+            Assert.True(patient.health.hediffSet.PartIsMissing(leg) == false && !patient.health.hediffSet.HasHediff(InstallProstheticLeg.addsHediff!, leg));
+        }
+
+        [Fact]
+        public void PerformNextSurgery_consumes_the_prosthetic_and_fires_the_bill_when_one_is_on_hand()
+        {
+            Pawn patient = NewHuman("Patient");
+            BodyPartRecord leg = Part(patient, "left leg");
+            patient.health.surgeryBills.AddBill(new Bill_Medical(InstallProstheticLeg, leg));
+
+            ThingWithComps prosthetic = NewProstheticLeg();
+            var onHand = new List<ThingWithComps> { prosthetic };
+
+            Assert.True(SurgeryUtility.PerformNextSurgery(patient, null, onHand));
+
+            Assert.Equal(0, patient.health.surgeryBills.Count);
+            Assert.True(patient.health.hediffSet.HasHediff(InstallProstheticLeg.addsHediff!, leg));
+            Assert.True(prosthetic.Destroyed, "the single prosthetic on hand should have been consumed");
+        }
+
+        [Fact]
+        public void An_ordinary_no_ingredient_surgery_still_fires_with_no_ingredientsOnHand_argument()
+        {
+            // Every surgery before health.prosthetic-items (amputation, excision) still needs nothing: the
+            // ingredient gate only ever engages for a recipe that actually names ingredients.
+            Pawn patient = NewHuman("Patient");
+            BodyPartRecord leg = Part(patient, "left leg");
+            patient.health.surgeryBills.AddBill(new Bill_Medical(Amputate, leg));
+
+            Assert.True(SurgeryUtility.PerformNextSurgery(patient, null));
+            Assert.True(patient.health.hediffSet.PartIsMissing(leg));
         }
     }
 }

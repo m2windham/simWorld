@@ -3,8 +3,14 @@
 
   <!--
     Armor ratings, used by DamageArmorCategoryDefs / ArmorUtility. MeleeHitChance, MeleeDodgeChance and
-    ShootingAccuracyPawn are declared here as data/documentation only: with no Stats resolution module yet,
-    CombatStats reads the equivalent skill curves directly in code rather than through these StatDefs.
+    ShootingAccuracyPawn now carry real skillNeedOffsets content (system: work.stats) that StatWorker resolves
+    for any caller reading them through the Stats pipeline (stat.Worker.GetValue / pawn.GetStatValue). Combat's
+    own CombatStats class predates that pipeline and still reads its own hand-rolled skill curves directly
+    (its own doc comment says so) rather than through these StatDefs — migrating it belongs to the Combat
+    module, not this one, so it is left as-is. The offsets below are this port's own invention (not
+    RimWorld-sourced, and not calibrated to match CombatStats' separately-invented curve either): only the
+    trend — higher skill, higher accuracy/hit chance/dodge chance, level 0 gives the plain base — is real,
+    pinned by tests rather than any literal number.
   -->
 
   <StatDef>
@@ -33,6 +39,14 @@
     <label>melee hit chance</label>
     <defaultBaseValue>0.6</defaultBaseValue>
     <minValue>0</minValue>
+    <maxValue>1</maxValue>
+    <skillNeedOffsets>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Melee</skill>
+        <baseValue>-0.1</baseValue>
+        <bonusPerLevel>0.02</bonusPerLevel>
+      </li>
+    </skillNeedOffsets>
   </StatDef>
 
   <StatDef>
@@ -40,6 +54,14 @@
     <label>melee dodge chance</label>
     <defaultBaseValue>0</defaultBaseValue>
     <minValue>0</minValue>
+    <maxValue>1</maxValue>
+    <skillNeedOffsets>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Melee</skill>
+        <baseValue>0</baseValue>
+        <bonusPerLevel>0.015</bonusPerLevel>
+      </li>
+    </skillNeedOffsets>
   </StatDef>
 
   <StatDef>
@@ -47,6 +69,14 @@
     <label>shooting accuracy</label>
     <defaultBaseValue>1</defaultBaseValue>
     <minValue>0</minValue>
+    <maxValue>1</maxValue>
+    <skillNeedOffsets>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Shooting</skill>
+        <baseValue>-0.1</baseValue>
+        <bonusPerLevel>0.005</bonusPerLevel>
+      </li>
+    </skillNeedOffsets>
   </StatDef>
 
 </Defs>

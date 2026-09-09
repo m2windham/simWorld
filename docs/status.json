@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 971,
+  "testsTotal": 1132,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -300,11 +300,11 @@
       "id": "mapgen",
       "n": 3,
       "rimworld": "Local Map Generation",
-      "translation": "Settlement-site maps, many per civilization, generated on demand from the world tile via MapGen.MapGenerator.GenerateMapFor, rather than RimWorld's single fixed map. Rocky outcrops, ore veins and river channels are not sprinkled independently of the world map: their presence and rough scale are read directly from the tile's own Ore/Stone/river data, so a tile the world map promised ore or a river on always produces a map with ore or a river crossing it.",
+      "translation": "Settlement-site maps, many per civilization, generated on demand from the world tile via MapGen.MapGenerator.GenerateMapFor, rather than RimWorld's single fixed map. Rocky outcrops, ore veins and river channels are not sprinkled independently of the world map: their presence and rough scale are read directly from the tile's own Ore/Stone/river data, so a tile the world map promised ore or a river on always produces a map with ore or a river crossing it. Ruins (GenStep_Ruins) are a direct, hand-written stand-in for RimWorld's RuleDef/SymbolResolver ruin grammar rather than a port of that grammar itself: one ruin shape (a gap-and-rubble wall rectangle, sometimes roofed, sometimes looted, walls weathered off full hit points), not a composable rule library. GenStep_ScatterShrines (a single guarded unique-reward structure) and corpses inside a ruin are not ported at all — no Corpse Thing/system exists yet in this port, and a flavor-only stand-in was judged to misrepresent rather than simplify a dead pawn's identity; see GenStep_Ruins's own doc comment.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/MapGen",
       "status": "ported",
-      "tests": 19,
+      "tests": 27,
       "items": [
         {
           "id": "mapgen.terrain",
@@ -338,8 +338,8 @@
         },
         {
           "id": "mapgen.ruins",
-          "label": "Ruins and ancient structures scattered onto the map — explicitly out of scope for this pass; lands with a future Ruins/ancient-structures module",
-          "done": false
+          "label": "GenStep_Ruins: weathered wall rectangles with gaps and rubble scattered onto the map, some roofed, some carrying loot, material and roofing drawn from content; deterministic per seed, density scaling with map area, and structurally guaranteed (plus region-graph tested) never to wall a pawn into an unreachable pocket. GenStep_ScatterShrines and ruin corpses are not ported — see the module's own doc comment",
+          "done": true
         },
         {
           "id": "mapgen.roads",
@@ -361,7 +361,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things",
       "status": "ported",
-      "tests": 33,
+      "tests": 39,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -447,13 +447,13 @@
         },
         {
           "id": "pawngen.gear",
-          "label": "Weapon half: PawnKindDef.weaponTags/weaponMoneyRange + PawnWeaponGenerator, matched against ThingDef.weaponTags/techLevel/MarketValue and capped at the generated pawn's own Faction.def.techLevel; wired into PawnGenerator's pipeline and carried on the new Pawn_EquipmentTracker (Pawn.equipment), Scribe round-trip included. Apparel half not built — see pawngen.apparel.",
+          "label": "Weapon half: PawnKindDef.weaponTags/weaponMoneyRange + PawnWeaponGenerator, matched against ThingDef.weaponTags/techLevel/MarketValue and capped at the generated pawn's own Faction.def.techLevel; wired into PawnGenerator's pipeline and carried on the new Pawn_EquipmentTracker (Pawn.equipment), Scribe round-trip included. Apparel half now built too — see pawngen.apparel.",
           "done": true
         },
         {
           "id": "pawngen.apparel",
-          "label": "Apparel half of gear: PawnKindDef.apparelTags/apparelMoneyRange fields exist (ported, unconsumed) but there is no ThingDef.apparel/ApparelProperties content, no body-part-group coverage model and no Pawn_ApparelTracker to wear it — needs the Items module's apparel content plus a wear-tracking runtime before a PawnApparelGenerator has anything to spend against",
-          "done": false
+          "label": "Apparel half of gear: ThingDef.apparel/ApparelProperties (body part groups, ApparelLayerDef, tags) plus Pawn_ApparelTracker — wearing an item registers it as a real Combat.IArmorSource through the pre-existing PawnArmor hook, no Combat code touched. PawnApparelGenerator consumes PawnKindDef.apparelTags/apparelMoneyRange the way PawnWeaponGenerator consumes weaponTags, wired into PawnGenerator after the lifespan roll so it never perturbs an RNG-sensitive step any other test already pins. Six ThingDefs ship (Apparel_Basic.xml) with real ArmorRating_*/Insulation stats and CompQuality. Tests: tests/SimWorld.Core.Tests/Things/ApparelTests.cs (filed with CompQuality/apparel content rather than under Pawns, per this pass's test-directory ownership).",
+          "done": true
         },
         {
           "id": "pawngen.genes",
@@ -470,7 +470,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
       "status": "ported",
-      "tests": 77,
+      "tests": 85,
       "items": [
         {
           "id": "simcore.tick",
@@ -519,8 +519,8 @@
         },
         {
           "id": "simcore.scribe-stream",
-          "label": "Streaming XmlWriter save path for very large worlds (current writer builds the document in memory)",
-          "done": false
+          "label": "Streaming XmlWriter save path: ScribeSaver drives a System.Xml.XmlWriter rather than building an XDocument, which is what RimWorld's own saver always did. Scribe.SaveToStream/SaveToFile write straight to a sink, so content leaves as the writer's buffer fills and peak memory stops tracking save size; Scribe.SaveToXDocument/SaveToString keep their exact shape and text by pointing the same writer at an XDocument. Streaming adds one rule the port already obeyed — an attribute must precede its node's child content — and WriteAttribute now throws rather than silently dropping one. Loading still parses whole: the three-pass load re-reads nodes after cross-refs resolve, which a forward-only reader cannot serve",
+          "done": true
         }
       ]
     },
@@ -576,8 +576,8 @@
         },
         {
           "id": "needs.social",
-          "label": "Social/opinion thoughts and social fights — lands with the Social module",
-          "done": false
+          "label": "Social/opinion thoughts and social fights: Thought_Memory carries a nullable otherPawn and feeds opinion (ThoughtDef.IsSocial, ThoughtStage.baseOpinionOffset) as well as mood; the Social module's interaction workers gain those memories, so chitchat/deep talk/insult/slight move opinion. A social fight is a real MentalStateDef (MentalState_SocialFighting) that trades blows through Combat's existing Verb_MeleeAttack/MeleeVerbUtility path rather than a parallel system, and ends at the Def's duration/MTB recovery or the instant either side goes down. Situational relation-driven thoughts (HasFriend/HasRival, via the generic ThoughtWorker_HasDirectRelation) stand in for RimWorld's spatial \"friend nearby\"/\"rival present\" thoughts, since no Map/room concept reaches this seam yet.",
+          "done": true
         },
         {
           "id": "needs.rollup",
@@ -594,7 +594,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 45,
+      "tests": 62,
       "items": [
         {
           "id": "health.body",
@@ -638,18 +638,18 @@
         },
         {
           "id": "health.addictions",
-          "label": "Addictions and drug tolerance — lands with the Drugs/Items content",
-          "done": false
+          "label": "Drug ThingDefs (Beer/Alcohol, Flake/Yayo) carry a real CompDrug: tolerance builds per dose and decays per day (HediffCompProperties_SeverityPerDay, already existing), addiction rolls once tolerance is at ChemicalDef.minToleranceToAddict, and a further dose once addicted relieves severity instead of stacking a second addiction. Withdrawal reaches Need_Mood purely through content pointed at the pre-existing ThoughtWorker_Hediff hook (Thoughts_Drugs.xml) — no new Needs/Thoughts code. A dose's joy uses the existing Chemical JoyKindDef. Deliberately out of scope, and not RimWorld-sourced: overdose, and any chance of an addiction curing itself outright (see CompDrug's own remarks). Tests: tests/SimWorld.Core.Tests/Health/DrugTests.cs.",
+          "done": true
         },
         {
           "id": "health.surgery",
-          "label": "Surgery bills with skill-rolled outcomes: RecipeDef.isSurgery + a Class=-selected Recipe_Surgery worker (amputate, excise a hediff, install a part), queued as a Bill_Medical on the patient’s own bill stack. Success is the surgeon’s Medicine skill times the recipe’s difficulty; a failure injures the patient and may kill them, never silently nothing. Two surgeries ship as content; installing a prosthetic ships as a tested worker but not as content, because a prosthetic is an item a civilization must make or buy and no such ThingDef exists yet",
+          "label": "Surgery bills with skill-rolled outcomes: RecipeDef.isSurgery + a Class=-selected Recipe_Surgery worker (amputate, excise a hediff, install a part), queued as a Bill_Medical on the patient’s own bill stack. Success is the surgeon’s Medicine skill times the recipe’s difficulty; a failure injures the patient and may kill them, never silently nothing. Two surgeries ship as content; installing a prosthetic now ships as content too (InstallSimpleProstheticLeg) — see health.prosthetic-items",
           "done": true
         },
         {
           "id": "health.prosthetic-items",
-          "label": "Prosthetics as real items a civilization makes or buys, so Recipe_InstallBodyPart has something to consume — lands with the item/trade content that gives them a source",
-          "done": false
+          "label": "Prosthetics as real items: SimpleProstheticLeg ThingDef (Item, hasQuality + CompProperties_Quality, MarketValue set) ships tradeable — no crafting recipe, since no fabrication workbench exists yet (the same \"craftable or tradeable\" allowance this item took). InstallSimpleProstheticLeg ships as content, naming the item as a RecipeDef.ingredients entry; SurgeryUtility.PerformNextSurgery gained an optional ingredientsOnHand parameter so a bill naming ingredients only fires once a matching Thing is supplied and consumed (decremented/destroyed) — every ingredient-less surgery (amputate, excise) is unaffected, matching RecipeDef.ConfigErrors' existing surgery/non-surgery split. Tests: tests/SimWorld.Core.Tests/Health/SurgeryTests.cs.",
+          "done": true
         }
       ]
     },
@@ -659,9 +659,9 @@
       "rimworld": "Skills & Work",
       "translation": "Built: standing civilization-scale roles (RoleDef) replace a per-person priority grid. A role names the work types it emphasizes; Pawn_WorkSettings.ApplyRole sets those to the pawn's best priority (1) and leaves everything else at the default (3), rather than a player setting twelve numbers per citizen. Kept distinct from an EdictDef's own 'leaves no trace' guarantee (docs/spec/simworld-spec.md §10): a role is standing, not temporary, and does write into the priority grid — but Pawn_WorkSettings tracks every work type a caller set directly (SetPriority), and a role's own writes always skip those, so assigning or changing a role can never overwrite a person's own explicit choice; clearing a role (SetRole(null)) reverts every non-manual entry it touched back to default, the standing-policy mirror of an edict's guarantee. WorkPolicyUtility.ApplyRoleToPopulation is the civilization-scale lever — one call assigns a role across an entire settlement's citizens, the same 'act on the aggregate' shape GodManager gives edicts.",
       "translationState": "implemented",
-      "module": "src/SimWorld.Core/Work · Pawns",
+      "module": "src/SimWorld.Core/Work · Pawns · Stats",
       "status": "translated",
-      "tests": 35,
+      "tests": 37,
       "items": [
         {
           "id": "work.skills",
@@ -700,13 +700,13 @@
         },
         {
           "id": "work.stats",
-          "label": "Skill-driven stats (WorkSpeedGlobal, MedicalTendQuality...): StatDef.skillNeedOffsets/skillNeedFactors (SkillDef-scaled curves) are not part of the Stats module's first pass (see docs/spec/simworld-spec.md 3a) -- still needs its own follow-up",
-          "done": false
+          "label": "Skill-driven stats: StatDef.skillNeedOffsets/skillNeedFactors (SkillNeed_Direct valuesPerLevel tables, SkillNeed_BaseBonus base+bonusPerLevel) resolved by StatWorker.GetValueUnfinalized off the pawn's own SkillRecord level, Class= polymorphic in content like this repo's other worker lists. Content: new WorkSpeedGlobal, MedicalTendQuality, MiningSpeed, ConstructionSpeed, CookSpeed and ResearchSpeed StatDefs, plus skillNeedOffsets added to the already-shipped ShootingAccuracyPawn/MeleeHitChance/MeleeDodgeChance. RimWorld's own curve numbers were not sourceable in this sandbox (see Stats_Work.xml's own remarks) — every curve here is this port's own invention, pinned by trend tests (higher skill gives a higher value, level 0 gives the plain base) rather than any literal.",
+          "done": true
         },
         {
           "id": "work.backstory",
-          "label": "Backstory-disabled work — lands with Pawn Generation",
-          "done": false
+          "label": "Backstory-disabled work, landed end to end now that Pawn Generation exists (pawngen.backstory): BackstoryDef.workDisables/skillGains ship as content (Backstories_Civil/Tribal.xml, e.g. NobleChild/Scientist/TribalElder each disable real work), PawnGenerator assigns backstories and applies their skill gains, and Pawn.WorkTagIsDisabled/WorkTypeIsDisabled plus Pawn_WorkSettings consult them — a backstory-disabled work type is zeroed out of the priority grid and dropped from work-giver scanning exactly like a trait-disabled one, proven from this module's own side in WorkTests (pawngen.backstory's own tests prove it from pawn generation's side).",
+          "done": true
         },
         {
           "id": "work.policy",
@@ -723,7 +723,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 37,
+      "tests": 53,
       "items": [
         {
           "id": "ai.thinktree",
@@ -764,6 +764,11 @@
           "id": "ai.edicts",
           "label": "Translation: god edicts/goals as high-priority think nodes — built as JobGiver_Edicts, sitting between JobGiver_DirectedOrder and JobGiver_Work; see the god system's own entry for the full picture (EdictDef/EdictWorker, GodManager, the rollup)",
           "done": true
+        },
+        {
+          "id": "ai.warden",
+          "label": "The Warden work type wired to real scanners: WorkGiver_Warden_AttemptRecruit (WardenAttemptRecruit WorkGiverDef, JobDriver_Warden_AttemptRecruit + the PrisonerAttemptRecruit JobDef) drives the recruit/chat interaction combat.capture's Pawn_GuestTracker/WardenUtility already implemented but nothing called outside a test; WorkGiver_Warden_Feed (WardenFeed WorkGiverDef, JobDriver_Warden_Feed + FeedPatient) carries food to a downed, hungry prisoner and feeds it directly. WardenDeliverFood stays the WorkGiver_Pending placeholder — see that WorkGiverDef's own XML comment: this port has no room/prison-cell system, so a non-downed prisoner already reaches food entirely on its own via the ordinary JobGiver_GetFood tier, leaving RimWorld's ambulatory-prisoner DeliverFood case with nothing distinct to cover here. A downed hostile captured by CaptureUtility now ends up recruited (or its resistance worn down) purely through a colonist's own work-giver scan, not a utility called directly by a test.",
+          "done": true
         }
       ]
     },
@@ -775,7 +780,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 38,
+      "tests": 58,
       "items": [
         {
           "id": "director.personality",
@@ -814,8 +819,8 @@
         },
         {
           "id": "director.multi-settlement",
-          "label": "Translation: targeting a civilization of several settlements rather than one — lands with the settlement entity",
-          "done": false
+          "label": "Translation: the storyteller targets a civilization of several settlements. CivilizationTarget stops being told what the civilization is and derives it from the player faction's own Settlements — the roster is their citizens, the seat is the oldest one (ties broken by tile, so list order never decides), and PlayerWealthForStoryteller is the market value of what they hold, the wealth term EraDef.threatPointsFactor was written as a stand-in for. An incident that has to happen somewhere picks a settlement weighted by population, never below weight 1 so an emptied town cannot vanish from the story, and a raid arrives at that settlement's interior map when someone has entered it. One StoryState still covers the whole civilization: a raid this decade is a fact about the civilization, not about a town. Fixes in passing a roster that counted every citizen on the planet, rival civilizations included, once EmergenceManager started founding them",
+          "done": true
         }
       ]
     },
@@ -825,9 +830,9 @@
       "rimworld": "Combat",
       "translation": "Unchanged mechanics; armies are groups of full agents.",
       "translationState": "proposed",
-      "module": "src/SimWorld.Core/Combat · Health/Damage (armor)",
+      "module": "src/SimWorld.Core/Combat · Map · Building · Factions · Health/Damage (armor)",
       "status": "ported",
-      "tests": 36,
+      "tests": 48,
       "items": [
         {
           "id": "combat.verbs",
@@ -846,18 +851,18 @@
         },
         {
           "id": "combat.cover",
-          "label": "Cover: CoverInfo/CoverUtility math only — map geometry and line of sight land with Map/AI",
-          "done": false
+          "label": "Cover: CoverInfo/CoverUtility wired to real map geometry — Map.GenSight (Verse.GenSight-style Bresenham line of sight, decompiled-source-verified) gates a shot, CoverUtility.CalculateCoverGiverSet (the real 8-adjacent-cell, angle- and distance-weighted algorithm) resolves automatically from caster/target position once both are spawned on a map; a pawn behind a wall is measurably harder to hit than one in the open",
+          "done": true
         },
         {
           "id": "combat.structures",
-          "label": "Turrets, traps, explosions — lands with Building/Map",
-          "done": false
+          "label": "Turrets (CompTurretGun: hostile-pawn scan throttled to a 15-tick hash interval, fires the existing Verb/ShotReport pipeline — caster widened from Pawn to Thing for this), traps (CompTrap: armed, springs once on the first non-owning-faction pawn to enter, then spent), explosions (Combat.GenExplosion: GenExplosion/DamageWorker_AddInjury-style radial cells-to-hit with line-of-sight wall blocking, optional linear damage falloff) — all plain ThingDefs with comps, the Building module's existing shape rather than RimWorld's own distinct Building_TurretGun/Building_Trap subclasses",
+          "done": true
         },
         {
           "id": "combat.capture",
-          "label": "Downed / capture / prisoner loop — lands with Factions and AI",
-          "done": false
+          "label": "Downed → captured → prisoner loop: CaptureUtility (downed + hostile-faction → Pawn_GuestTracker) and WardenUtility (resistance reduction → recruit, or release), GuestStatus/PrisonerInteractionModeDef kept as RimWorld's own names. Pawn_GuestTracker lives on the host Faction (Faction.prisoners), not on Pawn — Pawns/** is another lane's module and carries no such field; see Pawn_GuestTracker.cs's own remarks. The Warden WorkGiver/JobDriver that sends a colonist to actually carry this out is AI/Work content and code — see the ai system's own ai.warden entry.",
+          "done": true
         }
       ]
     },
@@ -869,7 +874,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "ported",
-      "tests": 40,
+      "tests": 53,
       "items": [
         {
           "id": "crafting.bills",
@@ -903,8 +908,8 @@
         },
         {
           "id": "crafting.guilds",
-          "label": "Translation: guilds and industries as bill queues at civilization scale",
-          "done": false
+          "label": "Translation: guilds and industries as bill queues at civilization scale. A GuildDef names the RoleDef that staffs a guild, the skill its craftsmen are measured by and the recipes it may queue; a Guild holds a real BillStack — repeat modes and target-count hysteresis unchanged — but belongs to a Settlement, draws fixed ingredients from that settlement's Stores ledger and puts products back into it. Members are the settlement's citizens carrying the role, plus an assigned share of the Statistical cohort whose skill is one deterministic cohort sample, GodRollup's own idiom. Labour banks across intervals (WorkAccumulated) so a batch costing more than one interval can be finished at all, and a guild with no runnable bill banks nothing. Not modelled, all for the same reason — it belongs to the settlement interior: no workbench Thing, no hauling, no job driver. A recipe whose ingredients are a category filter is refused in ConfigErrors rather than silently skipped: a def-count ledger has no stockpile to choose between candidates in",
+          "done": true
         }
       ]
     },
@@ -916,7 +921,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects)",
       "status": "ported",
-      "tests": 53,
+      "tests": 63,
       "items": [
         {
           "id": "research.dag",
@@ -980,8 +985,8 @@
         },
         {
           "id": "research.endless",
-          "label": "Translation: extension point for procedural tech beyond the authored tree",
-          "done": false
+          "label": "Translation: procedural tech past the authored tree. An EndlessResearchDef is content naming a tag of the authored tree to continue, title fragments to name refinements with, and a cost that grows; EndlessResearch mints a ResearchProjectDef per track per tier into the global DefDatabase, so every consumer — cost, gating, progress, the letter on completion — handles a generated project with exactly the code that handles an authored one. Derived rather than rolled: defName, label, cost and prerequisite are pure functions of track and tier, so a save stores one integer (the tier reached) and reloads byte-identical tech instead of a growing list of invented defs. Minted only when nothing in the authored tree can be started, so it costs a civilization that has not finished the tree nothing. Generated projects carry no era and so cannot hold the ladder open — the era ladder is a finite authored artefact that ends at Exotic, and this is what comes after it",
+          "done": true
         }
       ]
     },
@@ -993,7 +998,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 111,
+      "tests": 124,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1045,7 +1050,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Building",
       "status": "ported",
-      "tests": 43,
+      "tests": 51,
       "items": [
         {
           "id": "building.zones",
@@ -1088,11 +1093,11 @@
       "id": "social",
       "n": 17,
       "rimworld": "Social, Ideoligion & DLC Systems",
-      "translation": "Opinions and social interactions ported for this pass, RimWorld's compatibility-factor mechanic (a stable hash of the two pawns) included; ideoligions (still proposed) become the religions and ideologies of your civilization once belief is built; DLC systems (genes, psycasts, anomalies), also still proposed, evaluated per era.",
+      "translation": "Opinions and social interactions ported for this pass, RimWorld's compatibility-factor mechanic (a stable hash of the two pawns) included; ideoligions (still proposed) become the religions and ideologies of your civilization once belief is built; DLC systems (genes, psycasts, anomalies), also still proposed, evaluated per era. RimWorld's Thought_Memory/Thought_MemorySocial split is folded into one Thought_Memory class with a nullable otherPawn and a ThoughtDef.IsSocial property, rather than a second thought class; RimWorld's spatial \"a friend is nearby\"/\"a rival is present\" situational thoughts read this port's stored relations instead (no Map/room concept reaches Social or Thoughts yet), via one generic, content-driven ThoughtWorker_HasDirectRelation.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Social",
       "status": "ported",
-      "tests": 27,
+      "tests": 35,
       "items": [
         {
           "id": "social.opinion",
@@ -1101,7 +1106,7 @@
         },
         {
           "id": "social.interactions",
-          "label": "Periodic interaction rolls on a 2,500-tick population sweep, selected by weight per pair (chitchat, deep talk, insult, slight); a low-opinion, low-mood insult can escalate into a social fight via the existing MentalStateDef machinery",
+          "label": "Periodic interaction rolls on a 2,500-tick population sweep, selected by weight per pair (chitchat, deep talk, insult, slight); a low-opinion, low-mood insult can escalate into a social fight via the existing MentalStateDef machinery — MentalState_SocialFighting runs on both participants, cross-linked via otherPawn, and actually trades blows through Combat's own Verb_MeleeAttack/MeleeVerbUtility path, ending at the Def's own duration/MTB recovery or the instant either side goes down",
           "done": true
         },
         {
@@ -1285,11 +1290,11 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Stats · Data/Core/Defs (StatDefs, StatCategoryDefs)",
       "status": "ported",
-      "tests": 13,
+      "tests": 24,
       "items": [
         {
           "id": "stats.pipeline",
-          "label": "StatRequest (Thing, or def+stuff with no Thing) -> StatWorker.GetValue: base value (statBases, else defaultBaseValue) -> trait and hediff-stage offsets -> trait, hediff-stage and stuff factors -> capacity factors -> stat parts -> post-process curve -> min/max clamp",
+          "label": "StatRequest (Thing, or def+stuff with no Thing) -> StatWorker.GetValue: base value (statBases, else defaultBaseValue) -> skill-need factors, then skill-need offsets (system: work.stats) -> trait and hediff-stage offsets -> trait, hediff-stage and stuff factors -> capacity factors -> stat parts -> post-process curve -> min/max clamp",
           "done": true
         },
         {
@@ -1309,8 +1314,8 @@
         },
         {
           "id": "stats.stuff-quality-parts",
-          "label": "StatPart hook and def+stuff factor/offset resolution are real and tested, but no concrete StatPart ships - quality needs a live CompQuality on a spawned Thing (Crafting's QualityCategory exists only on ItemStack today) - lands with Items/Apparel",
-          "done": false
+          "label": "Closed properly, not by assertion: CompQuality (Things) gives QualityCategory a home on a live Thing; StatPart_Quality (Stats) is the first concrete StatPart this module ships, wired onto MarketValue's own content (Stats_Economy.xml); Thing.Stuff — plus ThingMaker applying it and StatRequest.For(Thing) reading it — finally gives the stuff factor/offset pass (real and tested since stats.pipeline, previously always fed StuffDef=null for a live Thing) something to read. Tests: tests/SimWorld.Core.Tests/Things/QualityAndStuffTests.cs (filed with CompQuality rather than under Stats, per this pass's test-directory ownership).",
+          "done": true
         }
       ]
     },

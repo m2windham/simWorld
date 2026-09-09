@@ -24,6 +24,15 @@ namespace SimWorld.Factions
 
         private readonly List<FactionRelation> relations = new List<FactionRelation>();
 
+        /// <summary>
+        /// Every pawn this faction currently holds captive (RimWorld: real <c>Pawn_GuestTracker</c> is a
+        /// field on <c>Pawn</c> itself; that field does not exist in this port's <c>Pawn</c> — see
+        /// <see cref="Pawn_GuestTracker"/>'s own remarks for why — so the host faction owns the tracker
+        /// instead, one entry per prisoner it holds. <see cref="CaptureUtility"/>/<see cref="WardenUtility"/>
+        /// are the only intended way to add or remove an entry.
+        /// </summary>
+        public readonly List<Pawn_GuestTracker> prisoners = new List<Pawn_GuestTracker>();
+
         /// <summary>Fractional goodwill carried between <see cref="GoodwillCheckInterval"/> checks so a slow daily rate still eventually moves a whole point.</summary>
         private float goodwillDriftAccumulator;
 
@@ -397,6 +406,11 @@ namespace SimWorld.Factions
             Scribe_Collections.Look(ref r, "relations", LookMode.Deep);
             relations.Clear();
             if (r != null) relations.AddRange(r);
+
+            List<Pawn_GuestTracker>? p = new List<Pawn_GuestTracker>(prisoners);
+            Scribe_Collections.Look(ref p, "prisoners", LookMode.Deep);
+            prisoners.Clear();
+            if (p != null) prisoners.AddRange(p);
         }
 
         public override string ToString() => name;

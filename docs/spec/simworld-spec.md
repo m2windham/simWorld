@@ -139,15 +139,37 @@ goes through this pipeline instead.
 - `StatRequest` addresses either a live `Thing`, or an abstract `(ThingDef, ThingDef? stuff)` pair with no
   Thing at all. RimWorld addresses a `BuildableDef` — the base of `ThingDef` and `TerrainDef` — but this port
   has no such base yet and `TerrainDef` carries no stats, so the abstract mode narrows to `ThingDef`.
-- `StatWorker.GetValue` runs `GetValueUnfinalized` (base value → pawn offsets → pawn and stuff factors →
-  capacity factors) then `FinalizeValue` (stat parts → post-process curve → min/max clamp).
+- `StatWorker.GetValue` runs `GetValueUnfinalized` (base value → skill-need factors, then skill-need offsets →
+  pawn offsets → pawn and stuff factors → capacity factors) then `FinalizeValue` (stat parts → post-process
+  curve → min/max clamp).
+- `StatDef.skillNeedFactors`/`skillNeedOffsets` (system: `work.stats`) are lists of `SkillNeed` — polymorphic
+  content the way `StatPart`/`HediffComp` already are (`Class="SimWorld.Stats.SkillNeed_Direct"` or
+  `SkillNeed_BaseBonus`) — read off the pawn's own `SkillRecord` level for `SkillNeed.skill`.
+  `SkillNeed_Direct` looks a value up from an explicit per-level table (clamping past its last entry rather
+  than throwing); `SkillNeed_BaseBonus` is `baseValue + bonusPerLevel * level`. A skill a trait or backstory
+  disables reads as level 0 here for free, since `SkillRecord.Level` itself already collapses to 0 when
+  `SkillRecord.TotallyDisabled` (§7.3) — no extra check needed on the Stats side. Shipped content:
+  `WorkSpeedGlobal`, `MedicalTendQuality`, `MiningSpeed`, `ConstructionSpeed`, `CookSpeed`, `ResearchSpeed`
+  (all new), plus `skillNeedOffsets` on the already-shipped `ShootingAccuracyPawn`/`MeleeHitChance`/
+  `MeleeDodgeChance`. None of RimWorld's own curve numbers were sourceable in this sandbox — every curve is
+  this port's own invention (see `Stats_Work.xml`'s own remarks), so only the trend (higher skill, higher
+  value; level 0, the plain base) is asserted, never a literal. Nothing outside the Stats/Work modules reads
+  these new stats yet — Building's `JobDriver_ConstructFinishFrame` and AI's `JobDriver_Mine` still read a
+  skill level directly and apply their own pre-existing hand-rolled curve (each says so in its own doc
+  comment) rather than through `ConstructionSpeed`/`MiningSpeed`; likewise Combat's `CombatStats` for
+  `ShootingAccuracyPawn`/`MeleeHitChance`/`MeleeDodgeChance` and Health's `SurgeryTuning` for
+  `MedicalSurgerySuccessChance` (§7.2). Migrating those call sites onto the stats belongs to the modules that
+  own them.
 - `StatDef.capacityFactors` reads the Health module's `PawnCapacityDef` levels — the joint that lets a
   wounded pawn's stats degrade and recover with the body. `RestRateMultiplier`'s BloodPumping, Metabolism and
   Breathing (weight 0.3 each) are the shipped example: hurt the pawn's heart and it rests slower; heal it and
   the multiplier recovers.
-- `StatPart` (`TransformValue(StatRequest, ref float)`) is real and tested but ships no concrete subclass yet.
-  RimWorld's own quality and stuff-derived StatParts need a live `CompQuality`/apparel-stuff on a spawned
-  Thing; Crafting's `QualityCategory` exists only on `ItemStack` today, so those parts would read nothing.
+- `StatPart` (`TransformValue(StatRequest, ref float)`) ships its first concrete subclass, `StatPart_Quality`
+  (`Stats/StatPart_Quality.cs`), multiplying by a content-authored curve keyed on the quality index of a
+  `Things.CompQuality` on the requested Thing — wired onto `MarketValue`'s own content (`Stats_Economy.xml`).
+  `Thing.Stuff` (set by `ThingMaker.MakeThing`) is what makes the stuff factor/offset step below actually fire
+  for a live Thing rather than only for the abstract `(def, stuff)` request — `StatRequest.For(Thing)` now
+  reads it instead of always passing `null`.
 - `Thing.GetStatValue(stat)` and `ThingDef.GetStatValue(stat, stuff)` are the call-site sugar (`StatExtension`),
   reading like RimWorld's `GetStatValue`/`GetStatValueAbstract` — named identically on the Thing side, but the
   def-side overload keeps the `GetStatValue` name (rather than RimWorld's `GetStatValueAbstract`) so it cannot
@@ -155,7 +177,9 @@ goes through this pipeline instead.
 
 ```mermaid
 flowchart TD
-  Base["Base value: statBases entry, else defaultBaseValue"] --> Off1["+ trait statOffsets"]
+  Base["Base value: statBases entry, else defaultBaseValue"] --> SkillFac["x skillNeedFactors"]
+  SkillFac --> SkillOff["+ skillNeedOffsets"]
+  SkillOff --> Off1["+ trait statOffsets"]
   Off1 --> Off2["+ hediff-stage statOffsets"]
   Off2 --> Fac1["x trait statFactors"]
   Fac1 --> Fac2["x hediff-stage statFactors"]
@@ -206,6 +230,13 @@ flowchart TD
   collections. `Game` is now the one Scribe root that ties a whole save
   together — `Scribe.SaveToString(game, "game")`/`Scribe.Load<Game>(...)` —
   rather than each system round-tripping only its own piece in isolation.
+  The saver writes through an `XmlWriter`, as RimWorld's own always did:
+  `Scribe.SaveToStream`/`SaveToFile` push straight to a sink, so a
+  civilization-sized save never has to exist as XML objects beside the
+  simulation that produced it, while `SaveToXDocument`/`SaveToString` keep
+  their exact shape by pointing that same writer at an `XDocument`. Loading
+  still parses the whole document: the three passes re-read nodes after
+  cross-references resolve, and a forward-only reader cannot serve that.
 - **`Game`** (`Sim/Game.cs`, RimWorld: `Verse.Game`): owns the `World`, the
   live `Map`s (read off which settlements currently have an entered
   interior, not a separately-tracked list — see §11.2), and every manager
@@ -268,25 +299,35 @@ sequenceDiagram
   passion roll → name → age and life stage → weapon (`PawnWeaponGenerator`,
   humanlike non-newborns only). Life stages scale body size, health and
   hunger; newborns record a life event, the seed of lineage-driven generation.
-- **Gear — weapon half only.** `PawnKindDef.weaponTags`/`weaponMoneyRange`
+- **Gear — weapon and apparel.** `PawnKindDef.weaponTags`/`weaponMoneyRange`
   pick among loaded weapon `ThingDef`s by `weaponTags`, `MarketValue` and
   `techLevel` — capped at the generated pawn's own `Pawn.faction`'s
   `FactionDef.techLevel`, so a neolithic raiding faction is never issued
   anything above Neolithic gear. Carried gear lives on the new
-  `Pawn_EquipmentTracker` (`Pawn.equipment`). **Apparel half not built:**
-  `PawnKindDef.apparelTags`/`apparelMoneyRange` exist on the def (ported,
-  unconsumed) but there is no `ThingDef.apparel`/body-part-group coverage
-  content and no wear-tracking runtime for a `PawnApparelGenerator` to spend
-  them against yet.
+  `Pawn_EquipmentTracker` (`Pawn.equipment`). `PawnKindDef.apparelTags`/
+  `apparelMoneyRange` drive `PawnApparelGenerator` the same way, offering every
+  eligible `ThingDef.apparel` piece once in a randomized weighted order and
+  keeping whichever don't conflict with what's already worn
+  (`Pawn_ApparelTracker`); it runs after the pawn's hidden lifespan roll so it
+  never perturbs the RNG sequence any earlier generation step depends on. See
+  §7.2 for what a worn piece actually does once on the pawn.
 - **Map gen**: elevation/fertility noise → terrain by biome, fertility and
   rainfall, plus a carved river channel where the tile carries one → rocky
   outcrops and mountains as natural edifices, scaled by hilliness and the
   tile's Stone/Ore deposits → caves cut through mountain by a directional
   random walk → roofs over mountain and cave cells → chunks and wild plants
-  scattered by biome density. `MapGen.MapGenerator.GenerateMapFor(worldTile)`
-  is the §11.2 seam: a settlement's interior is generated from the world tile
-  it sits on, so a tile the world map promised ore or a river on produces a
-  map with ore or a river crossing it.
+  scattered by biome density → weathered ruins scattered onto open ground
+  (`MapGen.GenStep_Ruins`: gap-and-rubble wall rectangles, some roofed, some
+  looted, material drawn from content, walls weathered off full hit points —
+  a hand-written stand-in for RimWorld's RuleDef/SymbolResolver ruin grammar
+  and `GenStep_ScatterShrines`, not a port of either; every ruin keeps at
+  least two forced-open gaps so it can never wall a pawn into an unreachable
+  pocket, checked against the real region graph by test) → world-tile roads
+  carried onto the map as streets last, clearing whatever an earlier step
+  left in their path. `MapGen.MapGenerator.GenerateMapFor(worldTile)` is the
+  §11.2 seam: a settlement's interior is generated from the world tile it
+  sits on, so a tile the world map promised ore or a river on produces a map
+  with ore or a river crossing it.
 - Every generation step takes an explicit seed → reproducible.
 
 ```mermaid
@@ -554,6 +595,10 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
 - Thoughts: timed memories (stack limit, renew-oldest) and situational workers.
 - Mood below break bands (0.35 / 0.20 / 0.05) → MTB roll → weighted,
   trait-filtered break table → mental state with a recovery and catharsis path.
+- **Social seam**: a memory thought carries a nullable `otherPawn` and feeds
+  opinion as well as mood (`ThoughtDef.IsSocial`); a social fight is a real
+  `MentalStateDef` (`MentalState_SocialFighting`) that trades blows through
+  Combat's existing melee verb rather than a parallel system. See §8.4.
 
 ### 7.2 Health
 
@@ -572,19 +617,61 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   Medicine skill times the recipe's own difficulty; a failed operation injures
   the patient where the surgeon was working and may kill them, and never
   silently does nothing. RimWorld routes surgeon competence through a
-  `MedicalSurgerySuccessChance` stat whose value comes from `SkillNeed` curves
-  this port does not have yet (the open `work.stats` item), so competence is
-  read straight off the skill for now. Installing a prosthetic ships as a
-  worker but not as content: a prosthetic is an item a civilization has to make
-  or buy, and no such `ThingDef` exists yet.
+  `MedicalSurgerySuccessChance` stat whose value comes from `SkillNeed` curves.
+  That mechanism now exists (`work.stats`, §3a), but Health's own
+  `SurgeryTuning` predates it and still reads the Medicine skill directly;
+  migrating that call site belongs to the Health module. Installing a prosthetic ships as content
+  too: `SimpleProstheticLeg` is a real, tradeable `ThingDef`, and
+  `InstallSimpleProstheticLeg` names it as a `RecipeDef.ingredients` entry —
+  `SurgeryUtility.PerformNextSurgery` takes an optional `ingredientsOnHand` list
+  and only fires an ingredient-naming bill once a matching Thing is supplied
+  and consumed, leaving every ingredient-less surgery (amputation, excision)
+  unaffected.
+- **Apparel** is `ThingDef.apparel` (`ApparelProperties`: covered
+  `BodyPartGroupDef`s, `ApparelLayerDef`s, tags) plus `Pawn_ApparelTracker`.
+  Wearing a piece registers it as a `Combat.IArmorSource` through the
+  `PawnArmor` hook Combat already shipped for this — armor rating and coverage
+  route through the stat pipeline exactly like natural armor, so quality and
+  stuff (§3a) bend a worn item's protection the same way they bend anything
+  else. `PawnApparelGenerator` consumes `PawnKindDef.apparelTags`/
+  `apparelMoneyRange` the way `PawnWeaponGenerator` consumes the weapon half.
+- **Drugs and addiction**: a drug `ThingDef` carries `CompDrug`, bound to a
+  `ChemicalDef` naming a tolerance hediff and an addiction hediff. Tolerance
+  builds per dose and decays per day; addiction can start once tolerance
+  crosses the chemical's own threshold, and a further dose once addicted
+  relieves its severity instead of stacking a second one. Withdrawal reaches
+  `Need_Mood` through content alone — a `ThoughtDef` using the pre-existing
+  `ThoughtWorker_Hediff` mirrors the addiction hediff's own stage as a
+  mood-affecting Thought. Overdose and any self-cure of an addiction are out of
+  scope for this pass.
 
 ### 7.3 Skills & Work
 
 - Skill 0–20 on an XP curve, passion multiplies gain, daily saturation caps it,
   unused skills above level 10 rust.
 - Work tags from traits and backstories disable skills and work types.
+  `BackstoryDef.workDisables`/`skillGains` (`Pawns/Backstory.cs`, content in
+  `Data/Core/Defs/BackstoryDefs/`) land with Pawn Generation: `PawnGenerator`
+  picks a childhood and (age-gated) adulthood backstory and applies both
+  backstories' `skillGains`; `Pawn_StoryTracker.DisabledWorkTagsBackstoryAndTraits`
+  ORs both backstory slots' `workDisables` in with every trait's, and
+  `Pawn.WorkTagIsDisabled`/`WorkTypeIsDisabled` read the combined result — the
+  same path a trait-disabled work type already went through, so a
+  backstory-disabled one is zeroed out of the priority grid
+  (`Pawn_WorkSettings.EnableAndInitialize`/`Notify_DisabledWorkTypesChanged`)
+  and dropped from work-giver scanning identically. Shipped content disables
+  real work (e.g. `NobleChild` bars `ManualDumb`, `Scientist` bars
+  `ManualSkilled`+`Violent`, `TribalElder` bars `Violent`).
 - Per-pawn priority grid; work givers order by priority, then natural priority,
   then priority within type, with emergency givers first.
+- **Skill-driven stats (`work.stats`, built — see §3a).** `StatDef.skillNeedOffsets`/
+  `skillNeedFactors` let a stat's value read a pawn's own skill level through a
+  `SkillNeed` (`SkillNeed_Direct`/`SkillNeed_BaseBonus`); `WorkSpeedGlobal`,
+  `MedicalTendQuality`, `MiningSpeed`, `ConstructionSpeed`, `CookSpeed` and
+  `ResearchSpeed` ship as new content, and the already-shipped
+  `ShootingAccuracyPawn`/`MeleeHitChance`/`MeleeDodgeChance` (§3a) picked up
+  `skillNeedOffsets` too. A `TotallyDisabled` skill (the work-tags rule above)
+  reads as level 0 in every one of these for free.
 - **Policy (SimWorld translation, `work.policy`, built).** A civilization cannot
   set twelve priority numbers per citizen the way a RimWorld player sets them
   per colonist, so a standing `RoleDef` (Farmer, Miner, Artisan, Scholar ship as
@@ -650,6 +737,26 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   completed `Train` job and clawed back by an MTB roll if the animal goes
   untended past a grace window — more than a bool per def, the way RimWorld's
   own tracker is.
+- **Warden work** closes the capture loop (§8.3): `WorkGiver_Warden_AttemptRecruit`
+  (the `WardenAttemptRecruit` `WorkGiverDef`) scans a warden's own faction's
+  prisoners for one set to `PrisonerInteractionModeDefOf.AttemptRecruit`, then
+  `JobDriver_Warden_AttemptRecruit` walks over and calls the already-shipped
+  `WardenUtility.TryInteract` once per completed job — RimWorld loops several
+  `ConvinceRecruitee` rounds inside one `JobDriver_ChatWithPrisoner`; this port's
+  own `TryInteract` already collapsed that into "one visit either lowers
+  resistance or, once it's already at zero, recruits outright," so one call per
+  job is the faithful shape, with a fresh job restarting the next visit.
+  `WorkGiver_Warden_Feed` (`WardenFeed`) finds a **downed**, hungry prisoner of
+  the warden's own faction and carries the nearest reachable food to them,
+  feeding them directly (`JobDriver_Warden_Feed`, `FeedPatient` `JobDef`) —
+  standing in for RimWorld's own "in bed and needs medical rest" trigger, since
+  this port has no bed/room system. A prisoner that is _not_ downed already
+  reaches food entirely on its own through the ordinary `JobGiver_GetFood` tier
+  (nothing in job selection checks guest status or faction at all), so RimWorld's
+  `WardenDeliverFood` counterpart — food left for a prisoner capable of
+  self-service but with nothing reachable — has no distinct case left to cover
+  here and stays the `WorkGiver_Pending` placeholder its `WorkGiverDef` shipped
+  with.
 
 ```mermaid
 flowchart TD
@@ -762,6 +869,27 @@ flowchart TD
   `CompEggLayer`, all `CompHasGatherableBodyResource`: fullness rises toward 1
   over a per-species interval and `Gather` spawns the real item (stopping at
   unfertilized eggs — no breeding system exists to fertilize one).
+- **Guilds** (`crafting.guilds`, built): the civilization-scale form of the
+  workbench bill queue. A `GuildDef` names the `RoleDef` that staffs a guild,
+  the skill its craftsmen are measured by, and the recipes it may queue; a
+  `Guild` holds a real `BillStack` — repeat modes and target-count hysteresis
+  unchanged — but belongs to a `Settlement`, draws its ingredients from that
+  settlement's `Stores` ledger and puts its products back into it, so a
+  target-count bill reads as "keep two hundred units in the granary" rather
+  than "on the shelf". Members are the settlement's citizens carrying the
+  role, plus an assigned share of its Statistical cohort whose skill is one
+  deterministic cohort sample — `GodRollup`'s own idiom, for the same reason.
+  Labour banks across intervals, because a batch that costs more than one
+  interval's work must be finishable at all; a guild with no runnable bill
+  banks nothing, so idle craftsmen do not stockpile labour. **Not modelled**,
+  all for one reason — it belongs to the settlement interior rather than to
+  the civilization: no workbench `Thing`, no hauling, no job driver, no
+  per-iteration worker. When a settlement is opened and its citizens walk a
+  real map, RimWorld's own bill and job path is what should run there; this is
+  what happens to the other ninety-nine towns. A recipe whose ingredients are
+  a category filter ("any meat") is refused in `ConfigErrors` rather than
+  silently skipped: a def-count ledger has no stockpile to make that choice
+  in.
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.
@@ -919,6 +1047,33 @@ flowchart LR
 - Armor: rating versus penetration rolls deflect, or halve and convert sharp to
   blunt.
 - Downed and dead come from the health system, never from combat directly.
+- **Cover and line of sight** are real map geometry, not a stand-in: `Map.GenSight`
+  is a Bresenham "supercover" walk over the map's own grids (an edifice with
+  `FillCategory.Full` blocks it), and `Combat.CoverUtility.CalculateCoverGiverSet`
+  is RimWorld's own 8-adjacent-cell algorithm — what stands beside the _target_,
+  weighted by the angle it makes with the shooter's line and by point-blank
+  range — resolved automatically once caster and target are spawned on the same
+  map. This is deliberately not a region-graph query: `Region`/`RegionGrid`
+  answer reachability (can a pawn ever walk from A to B, crossing no doorway
+  they can't), which is a different question from "is there an unbroken line of
+  sight between these two cells right now."
+- **Structures** — turrets, traps and explosions — are `ThingDef`s with comps,
+  the Building module's existing shape (RimWorld itself gives a turret and a
+  trap their own `Thing` subclass; this port keeps everything comp-composed
+  instead). A turret's `CompTurretGun` throttles its hostile-pawn scan to a
+  15-tick hash interval (RimWorld's own cadence) so it costs nothing on ticks
+  it isn't due; `Combat.GenExplosion` computes a blast's cells by radius and
+  line of sight the same way (`DamageWorker_AddInjury.ExplosionCellsToHit`),
+  so a wall shields whatever is behind it and takes the hit that stopped the
+  blast itself, with an optional linear falloff from center to edge.
+- **Capture**: a downed pawn of a hostile faction can be captured
+  (`Factions.CaptureUtility`) into a `Pawn_GuestTracker` — RimWorld's own name,
+  though it lives on the _host_ `Faction` here (`Faction.prisoners`) rather
+  than on `Pawn`, which carries no such field in this port. `WardenUtility`
+  reduces resistance per visit and recruits once it hits zero, or releases a
+  prisoner outright. The Warden work type actually drives this: a colonist's
+  own work-giver scan finds a prisoner and walks over on its own — see §7.4's
+  "Warden work" bullet for `WorkGiver_Warden_AttemptRecruit`/`_Feed`.
 
 ### 8.4 Social & Belief
 
@@ -934,11 +1089,27 @@ flowchart LR
   insult and slight, selected by weight per pair on a population-wide sweep every
   2,500 ticks — a rare-tick manager sweep (`SocialInteractionManager`), not
   per-pawn-per-tick work. A sufficiently bad opinion and mood can escalate an
-  insult into a social fight, reusing the existing `MentalStateDef` machinery
-  rather than a parallel system.
+  insult into a social fight (`SocialFightUtility.TryStartSocialFight`), reusing
+  the existing `MentalStateDef` machinery rather than a parallel system:
+  `MentalState_SocialFighting` runs on both participants at once (each pointing
+  at the other via `otherPawn`, wired by `TryStartSocialFight` right after both
+  are created) and actually trades blows — a bare-knuckled `Tool` resolved
+  through Combat's own `MeleeVerbUtility`/`Verb_MeleeAttack` path, the same one
+  a weapon uses, not a second combat system. The fight ends at the `MentalStateDef`'s
+  own duration/MTB recovery or the instant either side goes down, dies, or is no
+  longer in the same fight — whichever comes first.
 - **Social thoughts** are ordinary memory thoughts with `otherPawn` set (the mood
   system's own stack, not a separate one), feeding both mood and opinion
-  (`ThoughtStage.baseOpinionOffset`).
+  (`ThoughtStage.baseOpinionOffset`). `ThoughtDef.IsSocial` (true when any stage
+  moves opinion at all) names the distinction RimWorld draws with a separate
+  `Thought_MemorySocial` subclass; this port folds both kinds into one
+  `Thought_Memory` class with a nullable `otherPawn` instead of forking the type.
+- **Situational thoughts from social life**: `ThoughtWorker_HasDirectRelation`
+  (content: `HasFriend`/`HasRival`) is active for as long as a pawn holds a
+  stored relation of the given kind with anyone — this module's stand-in for
+  RimWorld's spatial "a friend is nearby"/"a rival is present" thoughts, since
+  no Map/room concept reaches Social or Thoughts yet; one generic, content-driven
+  worker rather than a bespoke class per relation kind.
 
 **Belief — _planned_.** Ideology, precepts, memes, rituals and roles are out of
 scope for this pass: belief is a separate, much larger design the god layer will
@@ -951,6 +1122,21 @@ want to own (see `docs/status.json` system 17's `social.ideology` item).
 - Storyteller personas built from comps (on/off cycle, random main, intro,
   single MTB, disease) choose which incident category fires each interval.
 - Incidents gate on earliest day, population, points and refire days.
+- **A civilization of several settlements, not a colony**
+  (`director.multi-settlement`, built): `CivilizationTarget` derives what it
+  reports from the player faction's own settlements rather than being kept in
+  sync by hand — the roster is their citizens (previously every citizen on the
+  planet, rival civilizations included, once `EmergenceManager` started
+  founding them), the seat is the oldest settlement with ties broken by tile,
+  and `PlayerWealthForStoryteller` is the market value of what they hold: the
+  wealth term `EraDef.threatPointsFactor` was written as a stand-in for, which
+  stays, because scaling threat by the age a civilization has reached is
+  SimWorld's own idea rather than a substitute. An incident that has to happen
+  somewhere picks a settlement weighted by population — never below weight 1,
+  so an emptied town cannot become invisible to the narrator. The target stays
+  singular: one `StoryState`, one refire memory, one adaptation curve, because
+  "a raid this decade" is a fact about the civilization rather than about a
+  town.
 - **Raids** (`IncidentWorker_RaidEnemy`): picks a hostile faction
   (`FactionManager.RandomEnemyFaction`), a `RaidStrategyDef` tactic that
   faction's tech level allows (weighted among the usable ones; `Siege` needs
@@ -959,10 +1145,13 @@ want to own (see `docs/status.json` system 17's `social.ideology` item).
   faction's squad composition (§8.1) — every generated raider is a full,
   gear-equipped `Pawn` attributed to its faction (`Pawn.faction`), not a stat
   block. **Where it stops:** nothing yet links a
-  physical `Map.Map` to the civilization-scale incident target
-  (`CivilizationTarget.Map` is a settable hook every game today leaves null);
-  when a map is wired, the squad spawns at a random map edge, otherwise it is
-  generated and handed back unspawned. Actually walking the squad to the
+  physical `Map.Map` to the civilization-scale incident target unless someone
+  has entered the settlement the raid picked — the raid resolves to that
+  settlement's `InteriorMap` when it has one, falling back to the settable
+  `CivilizationTarget.Map` hook; when a map is found, the squad spawns at a
+  random map edge, otherwise it is generated and handed back unspawned.
+  Generating a map just to stage an off-screen raid would be the tail wagging
+  the dog, so an unentered settlement is raided without one. Actually walking the squad to the
   colony and fighting is the AI/Map systems' to build on top of this.
 - **The Chronicle** (SimWorld translation): every fired incident appends a
   narrator record. The persona name is still open — see §15.
@@ -1030,6 +1219,21 @@ the translation and its state per system.
   in the grid than the role was ever there. `WorkPolicyUtility` applies a role
   across a whole population in one call — policy acts on the aggregate, the
   same way `GodManager.Activate` does for an edict.
+- **Endless tech** (`research.endless`, built): the authored tree ends; the game
+  does not. An `EndlessResearchDef` is content naming a tag of the authored tree
+  to continue, title fragments to name refinements with, and a cost that grows,
+  and `EndlessResearch` mints a real `ResearchProjectDef` per track per tier into
+  the global `DefDatabase` — so cost, gating, progress and the letter on
+  completion are handled by exactly the code that handles an authored project,
+  and nothing else has to learn that endless tech exists. It is **derived, not
+  rolled**: `defName`, label, cost and prerequisite are pure functions of track
+  and tier, which is stronger than a seeded stream would be — a save stores one
+  integer, the tier reached, and reloads byte-identical tech rather than a
+  growing list of invented defs. A tier is minted only when nothing in the
+  authored tree can be started, so a civilization that has not finished the tree
+  pays nothing for it. Generated projects carry no era and are invisible to
+  `EraDef.Projects`, so they cannot hold the ladder open: the ladder is a finite
+  authored artefact that ends at Exotic, and this is what comes after it.
 - **Eras**: an `EraDef` ladder over the research DAG carries a civilization from
   neolithic to archotech; era completion gates content, scales threats, and
   gates which edicts a civilization can issue at all (`EdictDef.requiredEra`,

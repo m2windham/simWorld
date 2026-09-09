@@ -1,4 +1,5 @@
 using System;
+using SimWorld.Crafting;
 using SimWorld.Defs;
 
 namespace SimWorld.Things
@@ -7,10 +8,13 @@ namespace SimWorld.Things
     public static class ThingMaker
     {
         /// <summary>
-        /// <paramref name="stuff"/> names the material (steel, wood, ...) once a Stuff system exists; accepted
-        /// now so call sites do not need to change later, but not yet applied to anything.
+        /// <paramref name="stuff"/> names the material (steel, wood, ...) for a <c>def.MadeFromStuff</c> Thing —
+        /// set via <see cref="Thing.SetStuffDirect"/> so it flows into <see cref="Stats.StatRequest.For(Thing)"/>.
+        /// <paramref name="quality"/> is applied to a freshly-added <see cref="CompQuality"/> when the def
+        /// carries one (RimWorld folds this into the same call rather than a separate step, since quality is
+        /// only ever known at the moment of creation — a recipe's roll, a trader's stock, map generation).
         /// </summary>
-        public static Thing MakeThing(ThingDef def, ThingDef? stuff = null)
+        public static Thing MakeThing(ThingDef def, ThingDef? stuff = null, QualityCategory? quality = null)
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
             if (def.thingClass == null)
@@ -25,7 +29,12 @@ namespace SimWorld.Things
             var thing = (Thing)Activator.CreateInstance(def.thingClass)!;
             thing.def = def;
             thing.thingIDNumber = Thing.AllocateThingId();
+            if (stuff != null) thing.SetStuffDirect(stuff);
             thing.PostMake();
+            if (quality.HasValue && thing is ThingWithComps twc)
+            {
+                twc.GetComp<CompQuality>()?.SetQuality(quality.Value);
+            }
             return thing;
         }
     }

@@ -10,6 +10,10 @@
     </backstoryCategories>
     <combatPower>60</combatPower>
     <isFighter>true</isFighter>
+    <apparelTags>
+      <li>Civil</li>
+    </apparelTags>
+    <apparelMoneyRange>0~50</apparelMoneyRange>
   </PawnKindDef>
 
   <PawnKindDef>
@@ -20,6 +24,10 @@
       <li>Civil</li>
     </backstoryCategories>
     <combatPower>40</combatPower>
+    <apparelTags>
+      <li>Civil</li>
+    </apparelTags>
+    <apparelMoneyRange>0~30</apparelMoneyRange>
   </PawnKindDef>
 
   <PawnKindDef>
@@ -31,6 +39,10 @@
     </backstoryCategories>
     <combatPower>50</combatPower>
     <isFighter>true</isFighter>
+    <apparelTags>
+      <li>Tribal</li>
+    </apparelTags>
+    <apparelMoneyRange>0~40</apparelMoneyRange>
   </PawnKindDef>
 
   <PawnKindDef>
@@ -42,13 +54,20 @@
       <li>Tribal</li>
     </backstoryCategories>
     <combatPower>45</combatPower>
+    <apparelTags>
+      <li>Civil</li>
+      <li>Tribal</li>
+    </apparelTags>
+    <apparelMoneyRange>0~35</apparelMoneyRange>
   </PawnKindDef>
 
   <!--
     Raid squad kinds (director.raids / pawngen.gear). combatPower is SimWorld's own — picked to sit near the
     existing Colonist(60)/Tribesperson(50) scale rather than sourced from RimWorld's real raider numbers —
     pinned by PawnGroupMakerTests as a trend (a bigger points budget fields a bigger/stronger squad), not a
-    literal. weaponMoneyRange/weaponTags feed PawnWeaponGenerator; see Weapons_Melee.xml's top comment.
+    literal. weaponMoneyRange/weaponTags feed PawnWeaponGenerator; apparelMoneyRange/apparelTags feed
+    PawnApparelGenerator the same way (pawngen.apparel) — see Weapons_Melee.xml's and Apparel_Basic.xml's top
+    comments.
   -->
 
   <PawnKindDef>
@@ -64,6 +83,10 @@
       <li>NeolithicMeleeWeapon</li>
     </weaponTags>
     <weaponMoneyRange>0~100</weaponMoneyRange>
+    <apparelTags>
+      <li>Tribal</li>
+    </apparelTags>
+    <apparelMoneyRange>0~40</apparelMoneyRange>
   </PawnKindDef>
 
   <PawnKindDef>
@@ -79,6 +102,10 @@
       <li>NeolithicRangedWeapon</li>
     </weaponTags>
     <weaponMoneyRange>0~150</weaponMoneyRange>
+    <apparelTags>
+      <li>Tribal</li>
+    </apparelTags>
+    <apparelMoneyRange>0~40</apparelMoneyRange>
   </PawnKindDef>
 
   <PawnKindDef>
@@ -94,6 +121,10 @@
       <li>IndustrialRangedWeapon</li>
     </weaponTags>
     <weaponMoneyRange>100~400</weaponMoneyRange>
+    <apparelTags>
+      <li>Soldier</li>
+    </apparelTags>
+    <apparelMoneyRange>0~400</apparelMoneyRange>
   </PawnKindDef>
 
 </Defs>
