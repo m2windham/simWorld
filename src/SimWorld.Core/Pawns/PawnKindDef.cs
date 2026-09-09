@@ -36,17 +36,13 @@ namespace SimWorld.Pawns
         public FloatRange weaponMoneyRange = FloatRange.Zero;
 
         /// <summary>
-        /// Apparel tags an eventual apparel generator would match against a matching <c>ThingDef.apparelTags</c>
-        /// (RimWorld: <c>PawnKindDef.apparelTags</c>). <b>Not yet consumed:</b> no apparel content and no
-        /// pawn wear-tracking exist in SimWorld yet (no <c>ThingDef.apparel</c>, no <c>Pawn_ApparelTracker</c>),
-        /// so there is nothing for a <c>PawnApparelGenerator</c> to spend this against — see
-        /// <c>docs/status.json</c>'s <c>pawngen.gear</c> entry for exactly what's missing. Ported now, alongside
-        /// <see cref="weaponTags"/>, so content authored against this field's shape does not need revisiting
-        /// once that half lands.
+        /// Apparel tags <see cref="Generation.PawnApparelGenerator"/> matches against
+        /// <see cref="ThingDef.apparel"/>'s own tags to pick this kind's clothing (RimWorld:
+        /// <c>PawnKindDef.apparelTags</c>). Null/empty means this kind is never dressed.
         /// </summary>
         public List<string>? apparelTags;
 
-        /// <summary>Market-value band an eventual apparel generator's picks must fall in (RimWorld: <c>PawnKindDef.apparelMoneyRange</c>). Not yet consumed — see <see cref="apparelTags"/>.</summary>
+        /// <summary>Market-value band each generated apparel piece's price must fall in (RimWorld: <c>PawnKindDef.apparelMoneyRange</c>), checked per candidate the same way <see cref="weaponMoneyRange"/> gates the one weapon.</summary>
         public FloatRange apparelMoneyRange = FloatRange.Zero;
 
         public RaceProperties RaceProps => race!.race!;

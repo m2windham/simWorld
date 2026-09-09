@@ -12,10 +12,13 @@
     tests pin the trend (a better surgeon fails less often; a lower factor fails more often) rather than
     these literals.
 
-    Not here, and deliberately: installing a prosthetic. Recipe_InstallBodyPart exists and is tested, and the
-    SimpleProstheticLeg hediff exists — but a prosthetic is an *item* a civilization has to make or buy, and
-    no such ThingDef exists yet. Shipping the recipe without it would hand out free prosthetics, so the
-    recipe lands with the item (tracked in docs/status.json under health.surgery).
+    InstallSimpleProstheticLeg (health.prosthetic-items) is the recipe this file used to hold back: the
+    SimpleProstheticLeg hediff and Recipe_InstallBodyPart both already existed, but a prosthetic is an *item*
+    a civilization has to make or buy, and no such ThingDef existed. Items_Prosthetics.xml is that item now,
+    and ingredients here names it — SurgeryUtility.PerformNextSurgery only fires this bill when a matching
+    Thing is passed in as an ingredient on hand, so it can no longer hand one out for free. Every surgery
+    above still consumes nothing, unchanged: RecipeDef.ConfigErrors only requires ingredients/products of a
+    non-surgery recipe, and installs are the one surgery content actually gives one.
   -->
 
   <RecipeDef>
@@ -48,6 +51,35 @@
     </skillRequirements>
     <surgerySuccessChanceFactor>0.8</surgerySuccessChanceFactor>
     <deathOnFailedSurgeryChance>0.05</deathOnFailedSurgeryChance>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>InstallSimpleProstheticLeg</defName>
+    <label>install simple prosthetic leg</label>
+    <description>Fit a simple mechanical leg in place of a missing or ruined one.</description>
+    <jobString>Installing simple prosthetic leg.</jobString>
+    <isSurgery>true</isSurgery>
+    <targetsBodyPart>true</targetsBodyPart>
+    <workerClass>SimWorld.Health.Recipe_InstallBodyPart</workerClass>
+    <addsHediff>SimpleProstheticLeg</addsHediff>
+    <appliedOnFixedBodyParts>
+      <li>Leg</li>
+    </appliedOnFixedBodyParts>
+    <ingredients>
+      <li>
+        <filter>
+          <thingDefs><li>SimpleProstheticLeg</li></thingDefs>
+        </filter>
+        <count>1</count>
+      </li>
+    </ingredients>
+    <workAmount>3000</workAmount>
+    <workSkill>Medicine</workSkill>
+    <skillRequirements>
+      <li><skill>Medicine</skill><minLevel>5</minLevel></li>
+    </skillRequirements>
+    <surgerySuccessChanceFactor>0.9</surgerySuccessChanceFactor>
+    <deathOnFailedSurgeryChance>0.02</deathOnFailedSurgeryChance>
   </RecipeDef>
 
 </Defs>

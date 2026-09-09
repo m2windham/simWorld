@@ -29,6 +29,7 @@ namespace SimWorld.Things
         private Rot4 rotation = Rot4.North;
         private Map.Map? map;
         private bool destroyed;
+        private ThingDef? stuffInt;
 
         public Thing()
         {
@@ -112,6 +113,21 @@ namespace SimWorld.Things
         public bool Spawned => map != null;
 
         public bool Destroyed => destroyed;
+
+        /// <summary>
+        /// Material this Thing is made from when <c>def.MadeFromStuff</c> — steel, wood, cloth — or null for a
+        /// Thing with no material of its own (RimWorld: <c>Verse.Thing.Stuff</c>). Feeds
+        /// <see cref="Stats.StatRequest.For(Thing)"/>'s <c>StuffDef</c>, which is what lets
+        /// <see cref="Stats.StatWorker"/>'s stuff factor/offset pass (see its own remarks) actually fire for a
+        /// live Thing instead of only for the abstract <c>(def, stuff)</c> preview request.
+        /// </summary>
+        public ThingDef? Stuff => stuffInt;
+
+        /// <summary>Sets <see cref="Stuff"/> directly (RimWorld: <c>Verse.ThingWithComps.SetStuffDirect</c>,
+        /// promoted here to the base Thing since this port keeps no separate stuff-bearing subclass). Callers
+        /// — <see cref="ThingMaker.MakeThing"/> chief among them — are responsible for only ever passing a def
+        /// this Thing's own <c>def.MadeFromStuff</c> actually allows; nothing here re-validates that.</summary>
+        public void SetStuffDirect(ThingDef? stuff) => stuffInt = stuff;
 
         /// <summary>Cells this Thing's footprint covers at its current position and rotation.</summary>
         public CellRect OccupiedRect() => GenAdj.OccupiedRect(position, rotation, def.size);
@@ -240,6 +256,9 @@ namespace SimWorld.Things
             Scribe_Defs.Look(ref d, "def");
             def = d!;
             Scribe_Values.Look(ref thingIDNumber, "id", -1);
+            ThingDef? stuff = stuffInt;
+            Scribe_Defs.Look(ref stuff, "stuff");
+            stuffInt = stuff;
 
             int posX = position.x, posY = position.y, posZ = position.z;
             Scribe_Values.Look(ref posX, "posX", IntVec3.Invalid.x);

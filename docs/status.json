@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 909,
+  "testsTotal": 947,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -447,13 +447,13 @@
         },
         {
           "id": "pawngen.gear",
-          "label": "Weapon half: PawnKindDef.weaponTags/weaponMoneyRange + PawnWeaponGenerator, matched against ThingDef.weaponTags/techLevel/MarketValue and capped at the generated pawn's own Faction.def.techLevel; wired into PawnGenerator's pipeline and carried on the new Pawn_EquipmentTracker (Pawn.equipment), Scribe round-trip included. Apparel half not built — see pawngen.apparel.",
+          "label": "Weapon half: PawnKindDef.weaponTags/weaponMoneyRange + PawnWeaponGenerator, matched against ThingDef.weaponTags/techLevel/MarketValue and capped at the generated pawn's own Faction.def.techLevel; wired into PawnGenerator's pipeline and carried on the new Pawn_EquipmentTracker (Pawn.equipment), Scribe round-trip included. Apparel half now built too — see pawngen.apparel.",
           "done": true
         },
         {
           "id": "pawngen.apparel",
-          "label": "Apparel half of gear: PawnKindDef.apparelTags/apparelMoneyRange fields exist (ported, unconsumed) but there is no ThingDef.apparel/ApparelProperties content, no body-part-group coverage model and no Pawn_ApparelTracker to wear it — needs the Items module's apparel content plus a wear-tracking runtime before a PawnApparelGenerator has anything to spend against",
-          "done": false
+          "label": "Apparel half of gear: ThingDef.apparel/ApparelProperties (body part groups, ApparelLayerDef, tags) plus Pawn_ApparelTracker — wearing an item registers it as a real Combat.IArmorSource through the pre-existing PawnArmor hook, no Combat code touched. PawnApparelGenerator consumes PawnKindDef.apparelTags/apparelMoneyRange the way PawnWeaponGenerator consumes weaponTags, wired into PawnGenerator after the lifespan roll so it never perturbs an RNG-sensitive step any other test already pins. Six ThingDefs ship (Apparel_Basic.xml) with real ArmorRating_*/Insulation stats and CompQuality. Tests: tests/SimWorld.Core.Tests/Things/ApparelTests.cs (filed with CompQuality/apparel content rather than under Pawns, per this pass's test-directory ownership).",
+          "done": true
         },
         {
           "id": "pawngen.genes",
@@ -594,7 +594,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 45,
+      "tests": 62,
       "items": [
         {
           "id": "health.body",
@@ -638,18 +638,18 @@
         },
         {
           "id": "health.addictions",
-          "label": "Addictions and drug tolerance — lands with the Drugs/Items content",
-          "done": false
+          "label": "Drug ThingDefs (Beer/Alcohol, Flake/Yayo) carry a real CompDrug: tolerance builds per dose and decays per day (HediffCompProperties_SeverityPerDay, already existing), addiction rolls once tolerance is at ChemicalDef.minToleranceToAddict, and a further dose once addicted relieves severity instead of stacking a second addiction. Withdrawal reaches Need_Mood purely through content pointed at the pre-existing ThoughtWorker_Hediff hook (Thoughts_Drugs.xml) — no new Needs/Thoughts code. A dose's joy uses the existing Chemical JoyKindDef. Deliberately out of scope, and not RimWorld-sourced: overdose, and any chance of an addiction curing itself outright (see CompDrug's own remarks). Tests: tests/SimWorld.Core.Tests/Health/DrugTests.cs.",
+          "done": true
         },
         {
           "id": "health.surgery",
-          "label": "Surgery bills with skill-rolled outcomes: RecipeDef.isSurgery + a Class=-selected Recipe_Surgery worker (amputate, excise a hediff, install a part), queued as a Bill_Medical on the patient’s own bill stack. Success is the surgeon’s Medicine skill times the recipe’s difficulty; a failure injures the patient and may kill them, never silently nothing. Two surgeries ship as content; installing a prosthetic ships as a tested worker but not as content, because a prosthetic is an item a civilization must make or buy and no such ThingDef exists yet",
+          "label": "Surgery bills with skill-rolled outcomes: RecipeDef.isSurgery + a Class=-selected Recipe_Surgery worker (amputate, excise a hediff, install a part), queued as a Bill_Medical on the patient’s own bill stack. Success is the surgeon’s Medicine skill times the recipe’s difficulty; a failure injures the patient and may kill them, never silently nothing. Two surgeries ship as content; installing a prosthetic now ships as content too (InstallSimpleProstheticLeg) — see health.prosthetic-items",
           "done": true
         },
         {
           "id": "health.prosthetic-items",
-          "label": "Prosthetics as real items a civilization makes or buys, so Recipe_InstallBodyPart has something to consume — lands with the item/trade content that gives them a source",
-          "done": false
+          "label": "Prosthetics as real items: SimpleProstheticLeg ThingDef (Item, hasQuality + CompProperties_Quality, MarketValue set) ships tradeable — no crafting recipe, since no fabrication workbench exists yet (the same \"craftable or tradeable\" allowance this item took). InstallSimpleProstheticLeg ships as content, naming the item as a RecipeDef.ingredients entry; SurgeryUtility.PerformNextSurgery gained an optional ingredientsOnHand parameter so a bill naming ingredients only fires once a matching Thing is supplied and consumed (decremented/destroyed) — every ingredient-less surgery (amputate, excise) is unaffected, matching RecipeDef.ConfigErrors' existing surgery/non-surgery split. Tests: tests/SimWorld.Core.Tests/Health/SurgeryTests.cs.",
+          "done": true
         }
       ]
     },
@@ -1304,8 +1304,8 @@
         },
         {
           "id": "stats.stuff-quality-parts",
-          "label": "StatPart hook and def+stuff factor/offset resolution are real and tested, but no concrete StatPart ships - quality needs a live CompQuality on a spawned Thing (Crafting's QualityCategory exists only on ItemStack today) - lands with Items/Apparel",
-          "done": false
+          "label": "Closed properly, not by assertion: CompQuality (Things) gives QualityCategory a home on a live Thing; StatPart_Quality (Stats) is the first concrete StatPart this module ships, wired onto MarketValue's own content (Stats_Economy.xml); Thing.Stuff — plus ThingMaker applying it and StatRequest.For(Thing) reading it — finally gives the stuff factor/offset pass (real and tested since stats.pipeline, previously always fed StuffDef=null for a live Thing) something to read. Tests: tests/SimWorld.Core.Tests/Things/QualityAndStuffTests.cs (filed with CompQuality rather than under Stats, per this pass's test-directory ownership).",
+          "done": true
         }
       ]
     },

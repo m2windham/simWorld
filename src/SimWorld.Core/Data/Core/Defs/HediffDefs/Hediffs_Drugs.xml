@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    health.addictions: tolerance and addiction/withdrawal hediffs for Items_Drugs.xml's two drugs.
+    CompDrug.PostIngested's own remarks describe the model these implement; in short:
+
+    - Tolerance hediffs are plain severity counters (isBad=false, invisible mechanically): CompDrug raises
+      them per dose, and they decay slowly on their own (severityPerDay negative) so abstinence eventually
+      resets tolerance.
+    - Addiction hediffs are the withdrawal state itself: severityPerDay is POSITIVE here (unmet craving
+      builds the longer since the last dose) and a new dose knocks severity back down instead
+      (CompDrug.PostIngested). Their stages are what ThoughtDefs/Thoughts_Drugs.xml's ThoughtWorker_Hediff
+      thoughts read to reach Need_Mood — no new Needs/Thoughts code, only content pointed at an existing hook.
+
+    Every severityPerDay/stage number here is this pass's own — not sourced from RimWorld's real per-drug
+    rates or exact withdrawal severities — sized only to be worse for yayo than alcohol; DrugTests pins the
+    trend (tolerance rises with use and decays with abstinence; a satisfied addiction's severity drops), not
+    these literals.
+  -->
+
+  <HediffDef Name="ToleranceBase" Abstract="True">
+    <hediffClass>SimWorld.Health.Hediff</hediffClass>
+    <isBad>false</isBad>
+    <maxSeverity>1</maxSeverity>
+  </HediffDef>
+
+  <HediffDef ParentName="ToleranceBase">
+    <defName>AlcoholTolerance</defName>
+    <label>alcohol tolerance</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_SeverityPerDay">
+        <severityPerDay>-0.05</severityPerDay>
+      </li>
+    </comps>
+  </HediffDef>
+
+  <HediffDef ParentName="ToleranceBase">
+    <defName>YayoTolerance</defName>
+    <label>yayo tolerance</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_SeverityPerDay">
+        <severityPerDay>-0.03</severityPerDay>
+      </li>
+    </comps>
+  </HediffDef>
+
+  <HediffDef Name="AddictionBase" Abstract="True">
+    <hediffClass>SimWorld.Health.Hediff</hediffClass>
+    <isBad>true</isBad>
+    <chronic>true</chronic>
+    <maxSeverity>1</maxSeverity>
+  </HediffDef>
+
+  <HediffDef ParentName="AddictionBase">
+    <defName>AlcoholAddiction</defName>
+    <label>alcohol addiction</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_SeverityPerDay">
+        <severityPerDay>0.15</severityPerDay>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>mild craving</label>
+      </li>
+      <li>
+        <minSeverity>0.3</minSeverity>
+        <label>withdrawal</label>
+        <painOffset>0.02</painOffset>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.05</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.65</minSeverity>
+        <label>severe withdrawal</label>
+        <painOffset>0.05</painOffset>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.1</offset>
+          </li>
+          <li>
+            <capacity>Manipulation</capacity>
+            <offset>-0.1</offset>
+          </li>
+        </capMods>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef ParentName="AddictionBase">
+    <defName>YayoAddiction</defName>
+    <label>yayo addiction</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_SeverityPerDay">
+        <severityPerDay>0.25</severityPerDay>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>mild craving</label>
+      </li>
+      <li>
+        <minSeverity>0.3</minSeverity>
+        <label>withdrawal</label>
+        <painOffset>0.03</painOffset>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.08</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.65</minSeverity>
+        <label>severe withdrawal</label>
+        <painOffset>0.08</painOffset>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.15</offset>
+          </li>
+          <li>
+            <capacity>Manipulation</capacity>
+            <offset>-0.15</offset>
+          </li>
+        </capMods>
+      </li>
+    </stages>
+  </HediffDef>
+
+</Defs>

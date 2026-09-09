@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- What a pawn can wear at once (RimWorld: ApparelLayerDefs), trimmed to the layers this pass's content
+       actually uses. Two apparel pieces conflict only when they share both a layer and a BodyPartGroupDef
+       (ApparelProperties.ConflictsWith), so a shirt (OnSkin) and a coat (Shell) stack over the same torso. -->
+
+  <ApparelLayerDef>
+    <defName>OnSkin</defName>
+    <label>on skin</label>
+    <listOrder>10</listOrder>
+  </ApparelLayerDef>
+
+  <ApparelLayerDef>
+    <defName>Middle</defName>
+    <label>midlayer</label>
+    <listOrder>20</listOrder>
+  </ApparelLayerDef>
+
+  <ApparelLayerDef>
+    <defName>Shell</defName>
+    <label>shell</label>
+    <listOrder>30</listOrder>
+  </ApparelLayerDef>
+
+  <ApparelLayerDef>
+    <defName>Belt</defName>
+    <label>belt</label>
+    <listOrder>40</listOrder>
+  </ApparelLayerDef>
+
+  <ApparelLayerDef>
+    <defName>Overhead</defName>
+    <label>headgear</label>
+    <listOrder>50</listOrder>
+  </ApparelLayerDef>
+
+</Defs>

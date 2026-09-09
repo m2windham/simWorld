@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    health.prosthetic-items: the item Recipes_Surgery.xml's top comment said InstallSimpleProstheticLeg was
+    waiting for. Recipe_InstallBodyPart and the SimpleProstheticLeg hediff both already existed (see that
+    file); this is the other half — a craftable-or-tradeable ThingDef the recipe can actually consume, so
+    installing one isn't handing out free bionics. hasQuality + CompProperties_Quality for the same reason
+    apparel carries them: a hand-made prosthetic's quality should matter, and now there's a live Thing for it
+    to live on. MarketValue is this pass's own number — not sourced from RimWorld's real prosthetic pricing —
+    picked to sit well above ordinary apparel, reflecting real fabrication cost.
+  -->
+
+  <ThingDef>
+    <defName>SimpleProstheticLeg</defName>
+    <label>simple prosthetic leg</label>
+    <description>A crude mechanical leg. Restores basic function to whoever loses the real one, at reduced efficiency.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Industrial</techLevel>
+    <thingCategories>
+      <li>Manufactured</li>
+    </thingCategories>
+    <stackLimit>1</stackLimit>
+    <hasQuality>true</hasQuality>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_Quality" />
+    </comps>
+    <statBases>
+      <MarketValue>300</MarketValue>
+    </statBases>
+  </ThingDef>
+
+</Defs>

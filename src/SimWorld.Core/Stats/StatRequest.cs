@@ -24,13 +24,14 @@ namespace SimWorld.Stats
             this.stuffDef = stuffDef;
         }
 
-        /// <summary>A request for a live Thing; its own def answers <see cref="Def"/>. RimWorld's Thing also
-        /// carries its own "made from stuff" material — this port's <see cref="Things.Thing"/> does not yet
-        /// (no ThingOwner/apparel), so <see cref="StuffDef"/> is always null for a Thing-based request.</summary>
+        /// <summary>A request for a live Thing; its own def answers <see cref="Def"/>, and its own
+        /// <see cref="Things.Thing.Stuff"/> answers <see cref="StuffDef"/> — so <see cref="StatWorker"/>'s
+        /// stuff factor/offset pass applies to a live "made from stuff" Thing exactly as it already does to
+        /// the abstract <c>(def, stuff)</c> preview request below.</summary>
         public static StatRequest For(Thing thing)
         {
             if (thing == null) throw new ArgumentNullException(nameof(thing));
-            return new StatRequest(thing, thing.def, null);
+            return new StatRequest(thing, thing.def, thing.Stuff);
         }
 
         /// <summary>A request for a def with no live Thing — e.g. previewing a stat for a def/stuff combination

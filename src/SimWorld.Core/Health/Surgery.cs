@@ -258,11 +258,15 @@ namespace SimWorld.Health
     {
         /// <summary>
         /// Performs the first medical bill on <paramref name="patient"/>, as <paramref name="surgeon"/>, and
-        /// removes it. Returns false when there was nothing queued. The job driver that will eventually walk a
-        /// surgeon to a patient and spend work doing this is not built; this is the effect that driver will
-        /// call, kept separate from it exactly as <see cref="GenRecipe"/> is for production.
+        /// removes it. Returns false when there was nothing queued, or when the bill's recipe names
+        /// <see cref="RecipeDef.ingredients"/> (health.prosthetic-items: installing a prosthetic consumes the
+        /// item) and none of <paramref name="ingredientsOnHand"/> satisfy them — the bill stays queued rather
+        /// than firing for free. The job driver that will eventually walk a surgeon to a patient, haul the
+        /// prosthetic there and spend work doing this is not built; this is the effect that driver will call,
+        /// kept separate from it exactly as <see cref="GenRecipe"/> is for production — <paramref name="ingredientsOnHand"/>
+        /// stands in for whatever it brings, the same way its <c>worker</c>/<c>ingredients</c> stand in here.
         /// </summary>
-        public static bool PerformNextSurgery(Pawn patient, Pawn? surgeon)
+        public static bool PerformNextSurgery(Pawn patient, Pawn? surgeon, IReadOnlyList<Things.ThingWithComps>? ingredientsOnHand = null)
         {
             if (patient == null) throw new ArgumentNullException(nameof(patient));
 
@@ -270,11 +274,40 @@ namespace SimWorld.Health
             for (int i = 0; i < stack.Count; i++)
             {
                 if (!(stack[i] is Bill_Medical bill) || !bill.ShouldDoNow()) continue;
+                if (!TryConsumeIngredients(bill.recipe, ingredientsOnHand)) continue;
                 bill.recipe.Worker.ApplyOnPawn(patient, bill.part, surgeon, null);
                 stack.Delete(bill);
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// A plain non-surgery recipe's ingredients are matched and reserved by <c>BillIngredientsFinder</c>
+        /// against <c>ItemStack</c>s on a stockpile; a medical bill has no stockpile, only whatever the surgeon
+        /// carried in, so this does the same per-slot match directly against live Things and decrements/destroys
+        /// whichever one satisfies each slot. A recipe with no <see cref="RecipeDef.ingredients"/> (every
+        /// surgery this port shipped before health.prosthetic-items) always succeeds, unchanged.
+        /// </summary>
+        private static bool TryConsumeIngredients(RecipeDef recipe, IReadOnlyList<Things.ThingWithComps>? onHand)
+        {
+            if (recipe.ingredients == null || recipe.ingredients.Count == 0) return true;
+            if (onHand == null) return false;
+
+            foreach (IngredientCount slot in recipe.ingredients)
+            {
+                Things.ThingWithComps? match = null;
+                for (int i = 0; i < onHand.Count; i++)
+                {
+                    if (slot.filter.Allows(onHand[i].def)) { match = onHand[i]; break; }
+                }
+                if (match == null) return false;
+
+                int needed = (int)slot.GetBaseCount();
+                match.stackCount -= needed;
+                if (match.stackCount <= 0) match.Destroy();
+            }
+            return true;
         }
     }
 }
