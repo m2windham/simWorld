@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Treaties (SimWorld's own translation — RimWorld has no treaty system at all, only goodwill and a
+    handful of incident-driven swings; see docs/status.json's economy system translation field). Terms are
+    flags a treaty carries (TreatyDef.nonAggression / tradeAccess), so content can combine them freely
+    rather than needing a def per combination. Every number below is this port's own judgement call, not
+    sourced from RimWorld.
+  -->
+
+  <TreatyDef>
+    <defName>NonAggressionPact</defName>
+    <label>non-aggression pact</label>
+    <description>Neither side will declare war on the other while this pact holds.</description>
+    <nonAggression>true</nonAggression>
+    <durationDays>60</durationDays>
+    <signingGoodwill>15</signingGoodwill>
+  </TreatyDef>
+
+  <TreatyDef>
+    <defName>TradeAgreement</defName>
+    <label>trade agreement</label>
+    <description>Formal trade access between the two civilizations, at a better price than an ordinary caravan gets.</description>
+    <tradeAccess>true</tradeAccess>
+    <tradeAccessPriceGain>0.1</tradeAccessPriceGain>
+    <durationDays>120</durationDays>
+    <signingGoodwill>10</signingGoodwill>
+  </TreatyDef>
+
+  <TreatyDef>
+    <defName>Alliance</defName>
+    <label>alliance</label>
+    <description>A lasting non-aggression and trade pact between two civilizations that trust each other.</description>
+    <nonAggression>true</nonAggression>
+    <tradeAccess>true</tradeAccess>
+    <tradeAccessPriceGain>0.15</tradeAccessPriceGain>
+    <!-- Permanent: a real alliance is not on a countdown the way the lesser two pacts are. -->
+    <durationDays>0</durationDays>
+    <signingGoodwill>30</signingGoodwill>
+  </TreatyDef>
+
+</Defs>

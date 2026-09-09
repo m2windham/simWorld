@@ -697,6 +697,30 @@ flowchart TD
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.
+- **Trade sessions with real stock** (`TraderKindDef.stockGenerators` → `Economy.StockGenerator`/
+  `StockGenerator_SingleDef`/`StockGenerator_MultiDef`): a trader kind's stock is rolled per arrival, not a
+  fixed table, and `Director.IncidentWorker_TraderCaravanArrival` generates one — a real faction not
+  hostile to the player, a `TraderKindDef` from that faction's own `FactionDef.caravanTraderKinds`
+  (weighted, the same `GetGroupMaker`/`ChoosePawnGenOptionsByPoints` idiom raids already use), real priced
+  stock — the same seam the raid worker leaves for a squad's map arrival: it stops at generating a fully
+  attributed trader, since nothing in the civilization-scale incident model yet carries a reachable map or
+  settlement for it to walk onto. `Economy.SettlementTradeUtility` opens a session against a real
+  `World.Settlement`'s own def→count store ledger (seeding `countInPlayer` from it, guaranteeing a currency
+  line even when the trader carries no silver of its own) and, on a completed deal, writes the result back
+  into real stores on both ends — a trade with a settlement moves real stock, not a notional number, and a
+  settlement can itself be wrapped as the seller side of a settlement-to-settlement trade.
+- **Diplomacy** (SimWorld's own translation — see `docs/status.json`'s `economy` system entry): goodwill and
+  the Hostile/Neutral/Ally relation kind are unchanged, but two more layers now sit on top of them, both
+  affecting the same goodwill/hostility rather than replacing it. War and peace are explicit states per
+  relation (`Faction.DeclareWar`/`MakePeace`) rather than goodwill silently crossing a threshold — a
+  permanent enemy starts at war as well as Hostile; declaring war drops goodwill toward the floor; peace is
+  its own act, refused for a permanent enemy. `TreatyDef`/`Treaty` are a Def-driven agreement two factions
+  sign (`Faction.SignTreaty`), each with a duration and flag-shaped terms — non-aggression (blocks
+  `DeclareWar` while active; signing one while at war ends the war outright) and trade access (a price gain
+  folded into `TradeDeal.settlementGain` the same slot a negotiator's own gain occupies). Trade routes
+  between settlements reuse `Economy.CoalSupply`'s own shape almost exactly (`Economy.TradeRouteUtility`,
+  `WorldPathFinder`/`WorldPathGrid`-priced, a route-distance premium) and close while the two settlements'
+  factions are at war, reopening at peace with no separate step since it is evaluated fresh every call.
 - **Squad composition** (`FactionDef.pawnGroupMakers`): each faction's own
   list of `PawnGroupMaker`s (per `PawnGroupKindDef` — only `Combat` is
   consumed today) holds weighted `PawnGenOption`s spent against a points

@@ -63,6 +63,9 @@
         </options>
       </li>
     </pawnGroupMakers>
+    <caravanTraderKinds>
+      <li>Caravan_Tribal_BulkGoods</li>
+    </caravanTraderKinds>
   </FactionDef>
 
   <FactionDef>
@@ -92,6 +95,10 @@
         </options>
       </li>
     </pawnGroupMakers>
+    <caravanTraderKinds>
+      <li>Caravan_Outlander_BulkGoods</li>
+      <li>Orbital_BulkGoods</li>
+    </caravanTraderKinds>
   </FactionDef>
 
   <FactionDef>

@@ -29,8 +29,17 @@ namespace SimWorld.Economy
                 negotiatorGain = TradeUtility.NegotiatorPriceGainFromSocialSkill(socialLevel),
             };
 
+            // Silver is the payment medium, not a priced good: it goes on its own currency line (moved 1:1,
+            // never marked up/down — see TradeDeal.NetPlayerSilverCost, which sums every *other* line's
+            // buy/sell price against it) rather than into the ordinary tradeables list, exactly the split
+            // TradeDeal's own doc describes.
             foreach ((SimWorld.Defs.ThingDef def, int count) in trader.Goods)
             {
+                if (ReferenceEquals(def, EconomyThingDefOf.Silver))
+                {
+                    deal.silverTradeable = new Tradeable(def, count, 0);
+                    continue;
+                }
                 deal.AddTradeable(new Tradeable(def, count, 0));
             }
         }

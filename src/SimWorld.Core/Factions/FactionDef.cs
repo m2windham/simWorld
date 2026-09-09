@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SimWorld.Defs;
+using SimWorld.Economy;
 using SimWorld.Sim;
 
 namespace SimWorld.Factions
@@ -132,6 +133,26 @@ namespace SimWorld.Factions
             return GenCollection.TryRandomElementByWeight((IReadOnlyList<PawnGroupMaker>)matches, m => m.commonality, Rand.Current, out PawnGroupMaker picked)
                 ? picked
                 : matches[0];
+        }
+
+        // ---- trade (RimWorld: FactionDef.caravanTraderKinds) ----
+
+        /// <summary>Trader kinds this faction's caravans can arrive as (RimWorld: <c>FactionDef.caravanTraderKinds</c>) — read by <see cref="Director.IncidentWorker_TraderCaravanArrival"/>, weighted by <see cref="TraderKindDef.commonality"/> via <see cref="RandomTraderKind"/>.</summary>
+        public List<TraderKindDef>? caravanTraderKinds;
+
+        /// <summary>
+        /// Weighted pick among <see cref="caravanTraderKinds"/> — the same "single match skips the weight
+        /// roll, several matches weight by commonality" idiom <see cref="GetGroupMaker"/> already uses for
+        /// squads, centralized here for trade instead of RimWorld's own ad hoc per-call-site resolution.
+        /// Null when this faction has none.
+        /// </summary>
+        public TraderKindDef? RandomTraderKind(RandomStream rand)
+        {
+            if (caravanTraderKinds == null || caravanTraderKinds.Count == 0) return null;
+            if (caravanTraderKinds.Count == 1) return caravanTraderKinds[0];
+            return GenCollection.TryRandomElementByWeight((IReadOnlyList<TraderKindDef>)caravanTraderKinds, k => k.commonality, rand, out TraderKindDef picked)
+                ? picked
+                : caravanTraderKinds[0];
         }
 
         public override IEnumerable<string> ConfigErrors()
