@@ -93,9 +93,16 @@ namespace SimWorld.AI
             if (result.IsValid) StartJob(result.Job!);
         }
 
-        /// <summary>Which think tree governs this pawn. Non-Humanlike pawns get none — an animal think tree
-        /// is explicitly out of this pass's scope (see <c>docs/status.json</c>'s <c>ai.animals</c> item).</summary>
-        private static ThinkTreeDef? ThinkTreeFor(Pawn pawn) => pawn.RaceProps.Humanlike ? ThinkTreeDefOf.Humanlike : null;
+        /// <summary>Which think tree governs this pawn, chosen by race (system: ai.animals) — a Humanlike
+        /// pawn gets the humanlike tree, an Animal pawn its own separate tree (see <c>ThinkTrees_Animal.xml</c>:
+        /// a real second tree, not the humanlike one with branches skipped), and anything else (a
+        /// <see cref="SimWorld.Pawns.Intelligence.ToolUser"/>, should one ever ship) none at all.</summary>
+        private static ThinkTreeDef? ThinkTreeFor(Pawn pawn)
+        {
+            if (pawn.RaceProps.Humanlike) return ThinkTreeDefOf.Humanlike;
+            if (pawn.RaceProps.Animal) return ThinkTreeDefOf.Animal;
+            return null;
+        }
 
         public void JobTrackerTick()
         {

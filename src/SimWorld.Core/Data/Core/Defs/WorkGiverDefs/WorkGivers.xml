@@ -82,6 +82,8 @@
     <gerund>training</gerund>
     <workType>Handling</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner with system: ai.animals. -->
+    <giverClass>SimWorld.AI.WorkGiver_TrainAnimals</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -91,6 +93,7 @@
     <gerund>taming</gerund>
     <workType>Handling</workType>
     <priorityInType>80</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_TameAnimals</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>

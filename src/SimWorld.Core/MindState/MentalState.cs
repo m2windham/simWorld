@@ -283,6 +283,31 @@ namespace SimWorld.MindState
         public MentalStateHandler mentalStateHandler;
         public MentalBreaker mentalBreaker;
 
+        // ---- Animals module (system: ai.animals) ----
+
+        /// <summary>
+        /// How bonded this individual animal is to its owner, 0 (never tamed) to 1 (freshly tamed) — RimWorld
+        /// shape: alongside <see cref="Pawns.RaceProperties.wildness"/> (the species' default, constant per
+        /// race), this is the mutable per-instance counterpart <see cref="Pawns.TameUtility"/> sets on a
+        /// successful tame. <b>Scope call:</b> real RimWorld can also let a tamed animal drift back to wild
+        /// over time; this port does not (yet) model that reversion — see this module's report — so once set
+        /// it only ever changes via another explicit tame.
+        /// </summary>
+        public float tameness;
+
+        /// <summary>
+        /// Set by a failed taming roll (<see cref="Pawns.TameUtility.TryTame"/>): RimWorld's real consequence
+        /// is a manhunter animal that attacks whoever tried, which needs Combat — out of this lane's boundary.
+        /// This port's substitute consequence is behavioural instead: while non-null and before
+        /// <see cref="angryUntilTick"/>, the animal think tree's <c>ThinkNode_ConditionalAngryAtHandler</c>
+        /// tier pre-empts routine behaviour, the same way <c>ThinkNode_ConditionalInMentalState</c> does for
+        /// the humanlike tree.
+        /// </summary>
+        public Pawn? angryAt;
+
+        /// <summary><see cref="Sim.TickManager.TicksGame"/> after which <see cref="angryAt"/> no longer applies.</summary>
+        public int angryUntilTick = -1;
+
         public Pawn_MindState(Pawn pawn)
         {
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
@@ -304,6 +329,12 @@ namespace SimWorld.MindState
             MentalBreaker? b = mentalBreaker;
             Scribe_Deep.Look(ref b, "mentalBreaker", pawn);
             mentalBreaker = b ?? new MentalBreaker(pawn);
+
+            Scribe_Values.Look(ref tameness, "tameness");
+            Pawn? aa = angryAt;
+            Scribe_References.Look(ref aa, "angryAt");
+            angryAt = aa;
+            Scribe_Values.Look(ref angryUntilTick, "angryUntilTick", -1);
         }
     }
 }

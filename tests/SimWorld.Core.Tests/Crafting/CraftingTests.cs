@@ -35,7 +35,7 @@ namespace SimWorld.Tests.Crafting
         public void Core_crafting_content_loads_with_expected_counts()
         {
             Assert.Empty(Content.Result.Errors);
-            Assert.Equal(12, DefDatabase<ThingCategoryDef>.DefCount);
+            Assert.Equal(14, DefDatabase<ThingCategoryDef>.DefCount);
             Assert.Equal(5, DefDatabase<StuffCategoryDef>.DefCount);
             Assert.True(DefDatabase<ThingDef>.AllDefsListForReading.Count(d => d.category == ThingCategory.Item) >= 10);
             Assert.True(DefDatabase<RecipeDef>.DefCount >= 5);

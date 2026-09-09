@@ -55,4 +55,18 @@
     <reportString>harvesting.</reportString>
   </JobDef>
 
+  <!-- Animals (system: ai.animals). -->
+
+  <JobDef>
+    <defName>Tame</defName>
+    <driverClass>SimWorld.AI.JobDriver_Tame</driverClass>
+    <reportString>taming.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>Train</defName>
+    <driverClass>SimWorld.AI.JobDriver_Train</driverClass>
+    <reportString>training.</reportString>
+  </JobDef>
+
 </Defs>

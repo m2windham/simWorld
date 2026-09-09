@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SimWorld.Defs;
 using SimWorld.Health;
 
 namespace SimWorld.Pawns
@@ -47,6 +48,25 @@ namespace SimWorld.Pawns
         /// <summary>Distribution <see cref="Generation.PawnGenerator"/> samples a humanlike pawn's biological age from.</summary>
         public SimpleCurve? ageGenerationCurve;
 
+        // ---- Animals module (system: ai.animals/crafting.animals) ----
+
+        /// <summary>How hard this race is to tame and how readily an untamed individual flees or turns on a
+        /// handler, 0 (trivial) to 1 (extreme) — RimWorld: <c>RaceProperties.wildness</c>. Meaningless for a
+        /// Humanlike race, which is why it defaults to 0 rather than being required.</summary>
+        public float wildness;
+
+        /// <summary>Which <see cref="TrainableDef"/>s this race can ever learn (RimWorld: <c>RaceProperties.trainability</c>);
+        /// null (the Humanlike default) means none — nothing here is trainable in the <see cref="Pawn_TrainingTracker"/> sense.</summary>
+        public TrainabilityDef? trainability;
+
+        /// <summary>What a butchered individual of this race yields as meat (RimWorld: <c>RaceProperties.meatDef</c>);
+        /// null falls back to the generic meat item — see <c>Recipe_ButcherAnimal</c>.</summary>
+        public ThingDef? meatDef;
+
+        /// <summary>What a butchered individual yields as leather (RimWorld: <c>RaceProperties.leatherDef</c>);
+        /// null means this race yields no leather at all (most Humanlike races, in this port).</summary>
+        public ThingDef? leatherDef;
+
         public bool Humanlike => intelligence >= Intelligence.Humanlike;
 
         public bool ToolUser => intelligence >= Intelligence.ToolUser;
@@ -61,6 +81,7 @@ namespace SimWorld.Pawns
             if (baseBodySize <= 0f) yield return "baseBodySize must be positive.";
             if (baseHealthScale <= 0f) yield return "baseHealthScale must be positive.";
             if (foodLevelPercentageWantEat <= 0f || foodLevelPercentageWantEat > 1f) yield return "foodLevelPercentageWantEat must be in (0, 1].";
+            if (wildness < 0f || wildness > 1f) yield return "wildness must be in [0, 1].";
         }
     }
 }
