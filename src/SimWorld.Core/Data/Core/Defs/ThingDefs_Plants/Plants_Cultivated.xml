@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Sowable, harvestable crops (system 16: Building — plant growth). A Zone_Growing names one of these as its
+    plantDefToGrow; WorkGiver_GrowerSow/WorkGiver_GrowerHarvest do the rest. growDays/harvestYield/sowMinFertility
+    are not RimWorld's real per-species values (not sourced in this sandbox — see this module's report); picked
+    short enough to watch a crop sow, grow and harvest end to end inside a test's tick budget.
+  -->
+
+  <ThingDef Name="BasePlantCrop" Abstract="True">
+    <category>Plant</category>
+    <thingClass>SimWorld.Building.Plant</thingClass>
+    <tickerType>Long</tickerType>
+    <passability>Standable</passability>
+    <useHitPoints>true</useHitPoints>
+    <destroyable>true</destroyable>
+    <selectable>true</selectable>
+    <statBases>
+      <MaxHitPoints>60</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BasePlantCrop">
+    <defName>Plant_Potato</defName>
+    <label>potato plant</label>
+    <description>A hardy tuber crop. Tolerant of poorer soil than most.</description>
+    <plant>
+      <growDays>7</growDays>
+      <harvestedThingDef>RawPotatoes</harvestedThingDef>
+      <harvestYield>20</harvestYield>
+      <sowMinFertility>0.2</sowMinFertility>
+    </plant>
+  </ThingDef>
+
+  <ThingDef ParentName="BasePlantCrop">
+    <defName>Plant_Rice</defName>
+    <label>rice plant</label>
+    <description>A fast-growing grain crop that needs decent soil.</description>
+    <plant>
+      <growDays>6</growDays>
+      <harvestedThingDef>RawRice</harvestedThingDef>
+      <harvestYield>18</harvestYield>
+      <sowMinFertility>0.4</sowMinFertility>
+    </plant>
+  </ThingDef>
+
+</Defs>

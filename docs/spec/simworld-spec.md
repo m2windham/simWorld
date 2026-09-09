@@ -639,9 +639,42 @@ flowchart TD
   `CompHeatPusherPowered` (gated on a sibling `CompPowerTrader`'s `PowerOn`)
   pushes it toward a target. A Room touching the map edge or missing a roof on
   any cell tracks outdoor temperature directly, with no lag. No biome/season
-  system exists yet to modulate `outdoorTemperature`, and no roof
-  support/collapse mechanic was built — `RoofGrid` itself (Map core) is only
-  read, to decide what counts as enclosed.
+  system exists yet to modulate `outdoorTemperature`.
+- **Roof support & collapse**: a roofed, edifice-free cell needs a
+  `Fillage.Full` edifice (a wall, a door, a Frame mid-construction of one, or
+  unmined natural rock — the same "wall-like" test `RoomTracker` already uses)
+  within a straight-line radius (`RoofCollapseUtility.RoofSupportMaxRadius`);
+  losing its last one collapses it — the roof comes off and everything under it
+  takes Blunt damage, more for a thick natural roof than a thin or constructed
+  one. Event-driven off `Map.EdificeGrid.DeRegister` (a Fillage-`Full` edifice
+  despawning is the only way support is ever lost), not a per-tick scan, so an
+  undisturbed map pays nothing for it. Built on neither the region graph nor
+  Room/RoomGroup: both partition the map by a different question (reachability
+  crossing a doorway; thermal enclosure) than "how far is the nearest wall",
+  so a direct radius query over `GenRadial` answers the actual question more
+  directly than reusing either graph would. `DestroyMode.WillReplace` (declared
+  since system 9 shipped, unused until now) stops `Frame.CompleteConstruction`'s
+  Frame→Building swap at one cell from reading its own momentary despawn as
+  support genuinely lost.
+- **Zones & the home area**: `Zone`/`Zone_Stockpile`/`Zone_Growing` are named,
+  player-designated cell sets a `ZoneManager` per map enforces one-per-cell for;
+  the home area is a separate, non-exclusive `Area` (`AreaManager.Home`) any
+  number of which can overlap a cell and a Zone both — RimWorld's own Zone/Area
+  split, kept distinct here too. `Zone_Growing` names a plant def to sow;
+  `Zone_Stockpile` carries a real `ThingFilter` but nothing hauls into it yet
+  (general item hauling is unbuilt — `HaulGeneral` stays `WorkGiver_Pending`,
+  unchanged from before this pass).
+- **Plant growth**: `Plant` (RimWorld: `Verse.Plant`) grows on the long tick at
+  fertility × light × temperature, RimWorld's own three-factor product —
+  fertility straight off `TerrainDef.fertility`, light from `GenDate`'s
+  day/night clock (no per-map longitude exists yet, so every map shares one
+  clock), temperature from a recalled-not-decompiled-verified RimWorld curve
+  (no growth at/below freezing or above 58°C, full rate across a 10–42°C
+  band). `WorkGiver_GrowerSow` (cell-scanning) sows an active growing zone's
+  empty, fertile-enough cells; `WorkGiver_GrowerHarvest` harvests any
+  harvestable-now `Plant` map-wide, same as RimWorld — a zone controls sowing,
+  not harvesting. Harvesting yields `PlantProperties.harvestedThingDef`, scaled
+  by how grown the plant actually was.
 
 ```mermaid
 flowchart LR
@@ -658,6 +691,15 @@ flowchart LR
   Rooms -->|joined only by a Door| Groups[RoomGroup]
   Groups -->|equalise toward| Outdoor[Map.outdoorTemperature]
   Heater[CompHeatPusherPowered] --> Groups
+
+  Edifices -->|Fillage.Full despawns| RoofCheck[RoofCollapseUtility]
+  RoofCheck -->|radius has no support left| Collapse[Roof off, Blunt damage]
+
+  GrowingZone[Zone_Growing] -->|empty, fertile cell| Sow[WorkGiver_GrowerSow]
+  Sow --> PlantThing[Plant]
+  PlantThing -->|fertility × light × temperature| PlantThing
+  PlantThing -->|Growth == 1| Harvest[WorkGiver_GrowerHarvest]
+  Harvest --> Yield[harvestedThingDef stack]
 ```
 
 ### 8.3 Combat

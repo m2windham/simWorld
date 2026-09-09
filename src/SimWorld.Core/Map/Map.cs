@@ -60,6 +60,12 @@ namespace SimWorld.Map
         /// (system 16: Building).</summary>
         public Building.RoomTracker roomTracker = null!;
 
+        /// <summary>Every player-designated Zone on this map, one zone per cell (system 16: Building — zones).</summary>
+        public Building.ZoneManager zoneManager = null!;
+
+        /// <summary>Every Area on this map — today, only the home area (system 16: Building — zones).</summary>
+        public Building.AreaManager areaManager = null!;
+
         /// <summary>Outdoor temperature every unroofed/unenclosed cell tracks directly, and every enclosed
         /// room equalises toward (system 16: Building). No biome/season model exists yet — see that
         /// module's report — so this is a flat, settable value rather than one driven by anything.</summary>
@@ -137,6 +143,8 @@ namespace SimWorld.Map
             pathFinder = new PathFinder(this);
             powerNetManager = new Building.PowerNetManager(this);
             roomTracker = new Building.RoomTracker(this);
+            zoneManager = new Building.ZoneManager(this);
+            areaManager = new Building.AreaManager(this);
         }
 
         // ---- Scribe ----
@@ -188,6 +196,8 @@ namespace SimWorld.Map
             reservationManager = rm ?? new ReservationManager();
 
             roomTracker.ExposeTemperatures();
+            zoneManager.ExposeData();
+            areaManager.ExposeData();
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
