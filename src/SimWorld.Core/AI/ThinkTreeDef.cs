@@ -19,5 +19,9 @@ namespace SimWorld.AI
     public static class ThinkTreeDefOf
     {
         public static ThinkTreeDef Humanlike = null!;
+
+        /// <summary>A real second tree (system: ai.animals) — not the humanlike one with branches skipped;
+        /// see <see cref="Pawn_JobTracker"/>'s own doc for how a pawn's race picks between the two.</summary>
+        public static ThinkTreeDef Animal = null!;
     }
 }

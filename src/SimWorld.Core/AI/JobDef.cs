@@ -48,5 +48,11 @@ namespace SimWorld.AI
 
         /// <summary>Spends work ticks on a fully-materialed Frame until it completes or fails (system 16: Building).</summary>
         public static JobDef ConstructFinishFrame = null!;
+
+        /// <summary>One taming attempt on a wild animal (system: ai.animals).</summary>
+        public static JobDef Tame = null!;
+
+        /// <summary>One training session on a tamed animal (system: ai.animals).</summary>
+        public static JobDef Train = null!;
     }
 }

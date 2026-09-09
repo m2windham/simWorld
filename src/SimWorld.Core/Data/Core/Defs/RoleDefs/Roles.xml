@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Standing civilization-scale roles (system: work, docs/spec/simworld-spec.md §10/§7.3, tracker item
+    work.policy). RimWorld has the player set a per-colonist priority grid; a civilization assigns a role
+    instead, and the role shapes which of a citizen's own already-enabled work types they take up first
+    (Pawn_WorkSettings.ApplyRole) rather than replacing the grid outright. Four roles, each built from the
+    existing 20 core WorkTypeDefs (WorkTypeDefs/WorkTypes.xml) rather than new content of their own — a role
+    is a lens on work that already exists, not a new kind of work.
+  -->
+
+  <RoleDef>
+    <defName>Farmer</defName>
+    <label>farmer</label>
+    <description>Feeds the settlement first: growing and plant cutting take priority over everything else this citizen is willing to do.</description>
+    <emphasizedWorkTypes>
+      <li>Growing</li>
+      <li>PlantCutting</li>
+    </emphasizedWorkTypes>
+  </RoleDef>
+
+  <RoleDef>
+    <defName>Miner</defName>
+    <label>miner</label>
+    <description>Pulls stone and ore from the ground before anything else this citizen is willing to do.</description>
+    <emphasizedWorkTypes>
+      <li>Mining</li>
+    </emphasizedWorkTypes>
+  </RoleDef>
+
+  <RoleDef>
+    <defName>Artisan</defName>
+    <label>artisan</label>
+    <description>Smithing, tailoring, crafting and art come before anything else this citizen is willing to do.</description>
+    <emphasizedWorkTypes>
+      <li>Smithing</li>
+      <li>Tailoring</li>
+      <li>Crafting</li>
+      <li>Art</li>
+    </emphasizedWorkTypes>
+  </RoleDef>
+
+  <RoleDef>
+    <defName>Scholar</defName>
+    <label>scholar</label>
+    <description>Research comes before anything else this citizen is willing to do.</description>
+    <emphasizedWorkTypes>
+      <li>Research</li>
+    </emphasizedWorkTypes>
+  </RoleDef>
+
+</Defs>

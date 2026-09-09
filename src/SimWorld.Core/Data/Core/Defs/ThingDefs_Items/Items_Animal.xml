@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Animal husbandry products (system: crafting.animals) — what Recipe_ButcherAnimal and the produce comps
+    (CompMilkable/CompShearable/CompEggLayer) actually spawn. Meat_Generic already ships in Items_Food.xml,
+    per that file's own comment anticipating this module.
+  -->
+
+  <ThingDef Name="BaseAnimalProductItem" Abstract="True">
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <category>Item</category>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseAnimalProductItem">
+    <defName>Leather_Plain</defName>
+    <label>leather</label>
+    <description>Sturdy leather tanned from an animal hide. Makes tough, plain apparel.</description>
+    <thingCategories><li>Leathers</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>2</MarketValue></statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseAnimalProductItem">
+    <defName>WoolAnimal</defName>
+    <label>wool</label>
+    <description>Coarse wool sheared from an animal. Spun into textiles.</description>
+    <thingCategories><li>Wool</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>1.6</MarketValue></statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseAnimalProductItem">
+    <defName>Milk</defName>
+    <label>milk</label>
+    <description>Fresh milk. Nutritious on its own, better used in cooking.</description>
+    <thingCategories><li>AnimalProductRaw</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>0.45</MarketValue></statBases>
+    <ingestible>
+      <nutrition>0.05</nutrition>
+      <preferability>RawTasty</preferability>
+      <foodType>AnimalProduct, Fluid</foodType>
+    </ingestible>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseAnimalProductItem">
+    <defName>EggAnimalUnfertilized</defName>
+    <label>egg</label>
+    <description>An unfertilized egg. Edible raw, better cooked.</description>
+    <thingCategories><li>AnimalProductRaw</li></thingCategories>
+    <stackLimit>50</stackLimit>
+    <statBases><MarketValue>0.75</MarketValue></statBases>
+    <ingestible>
+      <nutrition>0.05</nutrition>
+      <preferability>RawBad</preferability>
+      <foodType>AnimalProduct</foodType>
+    </ingestible>
+  </ThingDef>
+
+</Defs>

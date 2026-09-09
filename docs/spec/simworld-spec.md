@@ -585,6 +585,21 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
 - Work tags from traits and backstories disable skills and work types.
 - Per-pawn priority grid; work givers order by priority, then natural priority,
   then priority within type, with emergency givers first.
+- **Policy (SimWorld translation, `work.policy`, built).** A civilization cannot
+  set twelve priority numbers per citizen the way a RimWorld player sets them
+  per colonist, so a standing `RoleDef` (Farmer, Miner, Artisan, Scholar ship as
+  content) stands in for the grid: it names the work types it emphasizes, and
+  `Pawn_WorkSettings.ApplyRole` sets those to the pawn's best priority while
+  leaving everything else at the default. This is deliberately not the same
+  "leaves no trace" guarantee an `EdictDef` gives (§10) — a role is _standing_,
+  not temporary, and does write into the grid — but it protects the one thing
+  that guarantee is really about: `Pawn_WorkSettings` remembers every work type
+  a caller set directly (`SetPriority`), and a role's own writes always skip
+  those, so a person's own explicit choice is never silently overwritten, and
+  unassigning a role reverts everything it touched back to default.
+  `WorkPolicyUtility.ApplyRoleToPopulation` is the civilization-scale lever —
+  one call assigns a role across an entire settlement's citizens at once,
+  rather than one grid at a time.
 
 ### 7.4 AI (Think Tree / Jobs / Pathing)
 
@@ -615,6 +630,26 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   unchanged throughout. Full-agent populations still need shared paths
   (hierarchical or flow field); today's `PathFinder` runs one `A*` search per
   pawn per path request.
+- **Animals get a real second `ThinkTreeDef`** (`RaceProperties.intelligence`
+  picks it per pawn, not a flag inside the humanlike one): a failed-taming
+  anger guard, then `JobGiver_AnimalFlee` (an untamed, sufficiently wild animal
+  paths away from the nearest humanlike it can see), then the same
+  hunger/rest-needs guards and idle-wander fallback the humanlike tree uses —
+  no work-scan or directed-order tiers, since an animal does neither.
+  **Taming** is `TameUtility.TryTame`: a chance from the tamer's Animals skill
+  against `RaceProperties.wildness`, rolled once per completed `Tame` job
+  (`JobDriver_Tame`, found by the already-shipped `TameAnimals` `WorkGiverDef`
+  now wired to a real scanner); success sets the animal's faction and
+  `Pawn_MindState.tameness` to 1, failure can instead anger it at the tamer
+  (`Pawn_MindState.angryAt`) — RimWorld's manhunter would attack; Combat is a
+  different module's ground, so this port's consequence is behavioural
+  (`ThinkNode_ConditionalAngryAtHandler` pre-empts the animal's tree) rather
+  than damage. **Training** is `TrainableDef`/`TrainabilityDef` content plus
+  `Pawn_TrainingTracker`: a step counter per def, gated by the race's
+  trainability floor and the def's own prerequisites, advanced one point per
+  completed `Train` job and clawed back by an MTB roll if the animal goes
+  untended past a grace window — more than a bool per def, the way RimWorld's
+  own tracker is.
 
 ```mermaid
 flowchart TD
@@ -627,6 +662,10 @@ flowchart TD
   Toils --> Reserve[Reservation check]
   Toils --> Path[Region-graph reachability + A*]
 ```
+
+_(The diagram above is the Humanlike tree; the Animal tree drops the
+directed-order and work-scan tiers entirely and adds its own flee guard —
+see the animals bullet above.)_
 
 ### 7.5 Demography, Lineage & Lifespan
 
@@ -666,6 +705,24 @@ at 3 / 13 / 18) rather than on a compressed one.
   chronicle's fidelity model needs (§11.4).
 - **The sweep** runs on `FamilyManager.DemographyTick` once per simulated year:
   marriages, then births, then deaths from age, then chronicle entries for each.
+- **Migration (SimWorld translation, `demography.migration`, built).** Births
+  alone are not what makes a civilization's population more than generations
+  multiplying in place — people arrive and found households, and leave when a
+  place stops being worth living in. `MigrationManager` mirrors the birth
+  formula's own shape (base × (0.5 + quality) × a situational factor), where
+  quality reads the same per-citizen mood/food signal births already read, and
+  the situational factor is the civilization's era — a more advanced
+  settlement has more to offer. An arrival generates one adult migrant and
+  founds their household through the existing `FamilyManager.FoundHousehold`
+  single-founder hook (built for exactly this); a settlement's bare Statistical
+  cohort grows by the same closed-form percentage idiom natural growth already
+  uses, never by materialising thousands of real `Pawn`s for it. Departures
+  remove a distressed household together from a caller-owned population list.
+  One stated limitation: `Settlement` exposes no public way to shrink its
+  Statistical population or remove a citizen, so a settlement that has become
+  unlivable can only ever stop attracting people through the settlement-aware
+  entry point, not shed the people it already has — see `MigrationManager`'s
+  own doc.
 
 ```mermaid
 flowchart TD
@@ -694,6 +751,17 @@ flowchart TD
   category, stuff, quality and hit points.
 - Cooking carries a skill-driven food-poisoning chance; eating feeds the
   nutrition need.
+- **Animal husbandry.** Butchering is a `RecipeDef` with `isButchery`,
+  applied straight to a dead animal pawn by a `Recipe_ButcherAnimal` worker
+  the same way `isSurgery` applies a `Recipe_Surgery` to a live one — no
+  separate `Corpse` thing exists yet, so `ButcherUtility.TryButcher` is the
+  same no-job-driver call shape `SurgeryUtility.PerformNextSurgery` already
+  established. Yield (meat from `RaceProperties.meatDef`, leather from
+  `leatherDef` where the race has one) scales with the animal's body size.
+  Produce cycles — milk, wool, eggs — are `CompMilkable`/`CompShearable`/
+  `CompEggLayer`, all `CompHasGatherableBodyResource`: fullness rises toward 1
+  over a per-species interval and `Gather` spawns the real item (stopping at
+  unfertilized eggs — no breeding system exists to fertilize one).
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.
@@ -898,6 +966,19 @@ want to own (see `docs/status.json` system 17's `social.ideology` item).
   colony and fighting is the AI/Map systems' to build on top of this.
 - **The Chronicle** (SimWorld translation): every fired incident appends a
   narrator record. The persona name is still open — see §15.
+- **Moments** (SimWorld translation, `quests.moments`, built): the Chronicle
+  already records every birth, death, edict and era transition unconditionally
+  — a log. `MomentCurator` (owned by the `Storyteller` alongside the chronicle
+  itself) additionally decides which entries are worth remembering as a
+  civilization's _history_: the first occurrence of a category (an incident's
+  own `defName`, a death cause, or a free-form line's own category), every era
+  transition without exception (`§10`: "reaching an era is an event, not just
+  a readout"), and a new record for longevity at death. Each rule is bounded in
+  count on its own terms — by how many distinct categories ever occur, by the
+  fixed size of the era ladder, or by a monotonic ratchet — so a moment that
+  fires on everything (a log with extra steps) is exactly what this design
+  avoids: a simulated routine century produces a handful of moments, not
+  hundreds.
 
 ```mermaid
 flowchart TD
@@ -939,6 +1020,16 @@ the translation and its state per system.
   nearest-candidate scan via `WorkGiverScanUtility` rather than duplicating
   it), so deactivating an edict leaves a citizen's own work priorities exactly
   as they were. Citizens keep full agency.
+- **Policy** (`work.policy`, §7.3): edicts are the _temporary_ civilization-scale
+  lever; policy is the _standing_ one. A citizen's role (`RoleDef`) shapes what
+  work they take up — `Pawn_WorkSettings.ApplyRole` — rather than the player
+  setting a per-pawn priority grid one citizen at a time. Not the same
+  mechanism as an edict (a role does write into the grid, where an edict never
+  touches it at all) but the same discipline: it never overwrites a work type a
+  person set for themselves directly, and clearing a role leaves no more trace
+  in the grid than the role was ever there. `WorkPolicyUtility` applies a role
+  across a whole population in one call — policy acts on the aggregate, the
+  same way `GodManager.Activate` does for an edict.
 - **Eras**: an `EraDef` ladder over the research DAG carries a civilization from
   neolithic to archotech; era completion gates content, scales threats, and
   gates which edicts a civilization can issue at all (`EdictDef.requiredEra`,
@@ -1002,8 +1093,10 @@ own — no explicit per-pawn grant or removal, so nothing lingers once an edict
 is rescinded; `HuntersMandate` also carries `obsoleteEra` as real content, not
 just an ad-hoc test case. **Settlements** are entities now (§5b.5) rather than
 a def and a tile, and `GodRollup` reads one (or a civilization of them)
-directly rather than a caller-supplied list. What remains is the god view
-itself — UI/host work, once there is a host to render one.
+directly rather than a caller-supplied list. **Policy** (see the Policy bullet
+above) is now built too, in `src/SimWorld.Core/Work`: `RoleDef`,
+`Pawn_WorkSettings.SetRole`/`ApplyRole` and `WorkPolicyUtility`. What remains
+is the god view itself — UI/host work, once there is a host to render one.
 
 ```mermaid
 flowchart LR

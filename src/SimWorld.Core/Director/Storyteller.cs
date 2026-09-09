@@ -17,6 +17,11 @@ namespace SimWorld.Director
         /// small enum, never a string — see <see cref="Pawns.DeathCause"/>.</summary>
         public DeathCause? deathCause;
 
+        /// <summary>Whether <see cref="MomentCurator"/> judged this entry worth remembering — a first, a
+        /// turning point, or a broken record (tracker item <c>quests.moments</c>). See that class's own doc for
+        /// the three rules; most chronicle entries never set this.</summary>
+        public bool isMoment;
+
         public ChronicleEntry()
         {
         }
@@ -36,6 +41,7 @@ namespace SimWorld.Director
             Scribe_Values.Look(ref targetLabel, "targetLabel", "");
             Scribe_Values.Look(ref points, "points");
             Scribe_Values.Look(ref deathCause, "deathCause");
+            Scribe_Values.Look(ref isMoment, "isMoment");
         }
     }
 
@@ -60,6 +66,10 @@ namespace SimWorld.Director
         public StoryWatcher_Adaptation adaptation = new StoryWatcher_Adaptation();
         public IncidentQueue incidentQueue = new IncidentQueue();
 
+        /// <summary>Decides which chronicle entries are worth remembering as a moment (tracker item
+        /// <c>quests.moments</c>) — see <see cref="MomentCurator"/>'s own doc.</summary>
+        public MomentCurator moments = new MomentCurator();
+
         /// <summary>Raised after every attempted firing, successful or not.</summary>
         public event Action<FiringIncident>? IncidentFired;
 
@@ -70,6 +80,12 @@ namespace SimWorld.Director
         public IReadOnlyList<StorytellerComp> Comps => comps;
         public IReadOnlyList<IIncidentTarget> AllIncidentTargets => allIncidentTargets;
         public IReadOnlyList<ChronicleEntry> Chronicle => chronicle;
+
+        /// <summary>The civilization's curated history — the chronicle entries <see cref="MomentCurator"/> has
+        /// judged worth remembering (tracker item <c>quests.moments</c>). Unlike <see cref="Chronicle"/> this
+        /// list is never trimmed by <see cref="ChronicleCapacity"/> — see <see cref="MomentCurator.Moments"/>'s
+        /// own doc for why.</summary>
+        public IReadOnlyList<ChronicleEntry> Moments => moments.Moments;
 
         /// <summary>Parameterless for <see cref="Sim.Find"/>'s auto-create; leaves def/difficulty unset until assigned.</summary>
         public Storyteller()
@@ -140,8 +156,12 @@ namespace SimWorld.Director
 
         private void RecordChronicle(FiringIncident fi)
         {
-            chronicle.Add(new ChronicleEntry(Find.TickManager.TicksGame, fi.def.defName, DescribeTarget(fi.parms.target), fi.parms.points));
+            var entry = new ChronicleEntry(Find.TickManager.TicksGame, fi.def.defName, DescribeTarget(fi.parms.target), fi.parms.points);
+            chronicle.Add(entry);
             while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
+            // Category = the incident's own defName: stable across every firing of the same incident, so this
+            // flags "first raid ever", "first trader caravan ever" and so on — never one moment per firing.
+            moments.Consider(entry, fi.def.defName);
         }
 
         /// <summary>
@@ -152,8 +172,10 @@ namespace SimWorld.Director
         /// </summary>
         public void RecordChronicle(string text)
         {
-            chronicle.Add(new ChronicleEntry(Find.TickManager.TicksGame, text, "", 0f));
+            var entry = new ChronicleEntry(Find.TickManager.TicksGame, text, "", 0f);
+            chronicle.Add(entry);
             while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
+            moments.Consider(entry, MomentCurator.CategoryForFreeform(text));
         }
 
         /// <summary>
@@ -171,8 +193,19 @@ namespace SimWorld.Director
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
             string label = string.IsNullOrEmpty(detail) ? pawn.Label : pawn.Label + " (" + detail + ")";
-            chronicle.Add(new ChronicleEntry(Find.TickManager.TicksGame, "Death", label, 0f) { deathCause = cause });
+            var entry = new ChronicleEntry(Find.TickManager.TicksGame, "Death", label, 0f) { deathCause = cause };
+            chronicle.Add(entry);
             while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
+
+            // Two independent rules can both apply to the same death (the first death by this cause, and/or a
+            // new longevity record) — MomentCurator's own isMoment guard keeps that a single Moments entry.
+            moments.Consider(entry, "Death:" + cause);
+            moments.ConsiderDeathRecord(entry, pawn.ageTracker.AgeBiologicalYearsFloat);
+
+            // A death the curator judged worth remembering is exactly "the chronicle singled them out by name"
+            // — the trigger Pawn_TierTracker.Notify_ChronicleNamed's own doc says a director-policy decision
+            // must supply (deliberately not wired to every RecordDeath call, only to ones that matter).
+            if (entry.isMoment) pawn.tier.Notify_ChronicleNamed();
         }
 
         private static string DescribeTarget(IIncidentTarget target) =>
@@ -199,6 +232,10 @@ namespace SimWorld.Director
             IncidentQueue? q = incidentQueue;
             Scribe_Deep.Look(ref q, "incidentQueue");
             incidentQueue = q ?? new IncidentQueue();
+
+            MomentCurator? m = moments;
+            Scribe_Deep.Look(ref m, "moments");
+            moments = m ?? new MomentCurator();
 
             List<ChronicleEntry>? chronicleList = new List<ChronicleEntry>(chronicle);
             Scribe_Collections.Look(ref chronicleList, "chronicle", LookMode.Deep);

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The animal priority think tree (system: ai.animals). A real second tree, not the humanlike one with
+    branches skipped: RaceProperties.intelligence already tells Pawn_JobTracker.ThinkTreeFor which of the two
+    a pawn gets, and this one carries no Work/DirectedOrder/Edicts tier at all — an animal never does
+    colonist work or takes a queued order, so those tiers would be permanently-false dead weight rather than
+    a real branch. Order: a failed taming's consequence (ThinkNode_ConditionalAngryAtHandler) pre-empts
+    everything, mirroring ThinkNode_ConditionalInMentalState's place in the humanlike tree; fleeing a nearby
+    human comes next since an animal that would rather run should not stop to eat first; then the same
+    needs-then-wander shape the humanlike tree uses.
+  -->
+
+  <ThinkTreeDef>
+    <defName>Animal</defName>
+    <thinkRoot Class="SimWorld.AI.ThinkNode_Priority">
+      <subNodes>
+
+        <li Class="SimWorld.AI.ThinkNode_ConditionalAngryAtHandler">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_WanderAnywhere" />
+          </subNodes>
+        </li>
+
+        <li Class="SimWorld.AI.JobGiver_AnimalFlee" />
+
+        <li Class="SimWorld.AI.ThinkNode_ConditionalHungry">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_GetFood" />
+          </subNodes>
+        </li>
+
+        <li Class="SimWorld.AI.ThinkNode_ConditionalTired">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_GetRest" />
+          </subNodes>
+        </li>
+
+        <li Class="SimWorld.AI.JobGiver_WanderAnywhere" />
+
+      </subNodes>
+    </thinkRoot>
+  </ThinkTreeDef>
+
+</Defs>

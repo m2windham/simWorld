@@ -31,6 +31,11 @@ namespace SimWorld.Pawns
         public Pawn_AgeTracker ageTracker = null!;
         public Pawn_RelationsTracker relations = null!;
 
+        /// <summary>Which <see cref="TrainableDef"/>s this pawn has learned (system: ai.animals). Instantiated
+        /// for every pawn like RimWorld's own field, but only meaningful for an Animal — see
+        /// <see cref="Pawn_TrainingTracker.CanBeTrained"/>.</summary>
+        public Pawn_TrainingTracker training = null!;
+
         /// <summary>How much of this pawn's state is computed per tick (system 11: tiering, §11.3).</summary>
         public Pawn_TierTracker tier = null!;
 
@@ -211,6 +216,7 @@ namespace SimWorld.Pawns
             workSettings ??= new Pawn_WorkSettings(this);
             ageTracker ??= new Pawn_AgeTracker(this);
             relations ??= new Pawn_RelationsTracker(this);
+            training ??= new Pawn_TrainingTracker(this);
             tier ??= new Pawn_TierTracker(this);
             jobs ??= new Pawn_JobTracker(this);
             pather ??= new Pawn_PathFollower(this);
@@ -239,6 +245,7 @@ namespace SimWorld.Pawns
             mindState.MindStateTick();
             skills.SkillsTick();
             ageTracker.AgeTick();
+            training.TrainingTrackerTick();
             // Jobs run last: a job's think-tree choice and its toils' FailOn checks should see this tick's
             // fresh needs/health/mind-state numbers rather than last tick's, and nothing else this tick
             // reacts to a job starting, ending, or a pawn moving, so nothing needs to run after it.
@@ -292,6 +299,9 @@ namespace SimWorld.Pawns
             Pawn_RelationsTracker? rel = relations;
             Scribe_Deep.Look(ref rel, "relations", this);
             relations = rel ?? new Pawn_RelationsTracker(this);
+            Pawn_TrainingTracker? tr = training;
+            Scribe_Deep.Look(ref tr, "training", this);
+            training = tr ?? new Pawn_TrainingTracker(this);
             Pawn_TierTracker? tt = tier;
             Scribe_Deep.Look(ref tt, "tier", this);
             tier = tt ?? new Pawn_TierTracker(this);

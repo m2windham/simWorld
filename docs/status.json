@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 909,
+  "testsTotal": 971,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -657,11 +657,11 @@
       "id": "work",
       "n": 9,
       "rimworld": "Skills & Work",
-      "translation": "Proposed: skills unchanged; work priorities set by civ policy and roles (guilds, castes, laws) rather than a per-person grid.",
-      "translationState": "proposed",
+      "translation": "Built: standing civilization-scale roles (RoleDef) replace a per-person priority grid. A role names the work types it emphasizes; Pawn_WorkSettings.ApplyRole sets those to the pawn's best priority (1) and leaves everything else at the default (3), rather than a player setting twelve numbers per citizen. Kept distinct from an EdictDef's own 'leaves no trace' guarantee (docs/spec/simworld-spec.md §10): a role is standing, not temporary, and does write into the priority grid — but Pawn_WorkSettings tracks every work type a caller set directly (SetPriority), and a role's own writes always skip those, so assigning or changing a role can never overwrite a person's own explicit choice; clearing a role (SetRole(null)) reverts every non-manual entry it touched back to default, the standing-policy mirror of an edict's guarantee. WorkPolicyUtility.ApplyRoleToPopulation is the civilization-scale lever — one call assigns a role across an entire settlement's citizens, the same 'act on the aggregate' shape GodManager gives edicts.",
+      "translationState": "implemented",
       "module": "src/SimWorld.Core/Work · Pawns",
-      "status": "ported",
-      "tests": 26,
+      "status": "translated",
+      "tests": 35,
       "items": [
         {
           "id": "work.skills",
@@ -710,8 +710,8 @@
         },
         {
           "id": "work.policy",
-          "label": "Translation: policy/role-driven priorities at civ scale",
-          "done": false
+          "label": "Translation: policy/role-driven priorities at civ scale — RoleDef.emphasizedWorkTypes; Pawn_WorkSettings.SetRole/ApplyRole write emphasized types to top priority and everything else to default, skipping any work type a caller set directly (manualPriorities) so a role never overwrites a person's own preference and un-assigning one leaves no trace; WorkPolicyUtility.ApplyRoleToPopulation applies a role across a whole population at once. Four roles ship as content (Farmer, Miner, Artisan, Scholar).",
+          "done": true
         }
       ]
     },
@@ -723,7 +723,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 24,
+      "tests": 37,
       "items": [
         {
           "id": "ai.thinktree",
@@ -757,8 +757,8 @@
         },
         {
           "id": "ai.animals",
-          "label": "Animal think tree, taming, training",
-          "done": false
+          "label": "A real second ThinkTreeDef (Animal) selected by RaceProperties.intelligence — JobGiver_AnimalFlee plus the shared eat/sleep/wander givers, no work/edict/directed-order tiers. Taming as a roll (TameUtility.TryTame) scored off the tamer's Animals skill against RaceProperties.wildness; failure can anger the animal at its tamer (Pawn_MindState.angryAt/tameness), rerouting its tree via ThinkNode_ConditionalAngryAtHandler instead of the Combat-module attack RimWorld's manhunter would trigger. Training as TrainableDef/TrainabilityDef + Pawn_TrainingTracker: steps accumulate per session and decay if untended past a grace window. WorkGiverDefs TameAnimals/TrainAnimals (already-shipped placeholders) wired to real scanners + JobDriver_Tame/JobDriver_Train.",
+          "done": true
         },
         {
           "id": "ai.edicts",
@@ -775,7 +775,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 31,
+      "tests": 38,
       "items": [
         {
           "id": "director.personality",
@@ -799,7 +799,7 @@
         },
         {
           "id": "director.chronicle",
-          "label": "Translation: narrator record (chronicle entries) and persona hook — name still open",
+          "label": "Translation: narrator record (chronicle entries) and persona hook — name still open. Curated as history, not only a log: MomentCurator (owned deep-Scribed alongside the chronicle, like StoryWatcher_Adaptation/IncidentQueue) flags a chronicle entry a moment on first occurrence of its category (an incident's own defName, \"Death:<cause>\", or the text before a free-form line's first colon — no call-site changes needed), always for an era transition (spec §10: \"reaching an era is an event, not just a readout\"), and on a new longevity-at-death record; each rule is independently bounded in count so a routine century produces a handful of moments, never hundreds — see the quests system's own quests.moments item, which this mechanism belongs to.",
           "done": true
         },
         {
@@ -869,7 +869,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "ported",
-      "tests": 28,
+      "tests": 40,
       "items": [
         {
           "id": "crafting.bills",
@@ -898,8 +898,8 @@
         },
         {
           "id": "crafting.animals",
-          "label": "Animal husbandry: taming, training, produce cycles, butchering — lands with the Animals module",
-          "done": false
+          "label": "Animal husbandry: RaceProperties.meatDef/leatherDef feed Recipe_ButcherAnimal (isButchery RecipeDef, applied straight to a dead animal pawn like a surgery — no Corpse thing exists, so ButcherUtility.TryButcher is the same no-job-driver call shape SurgeryUtility already established), yield scaled by body size (HusbandryTuning). CompMilkable/CompShearable/CompEggLayer (shared CompHasGatherableBodyResource base) fill toward 1 over a per-species interval and spawn real Milk/WoolAnimal/EggAnimalUnfertilized items on Gather. New content: Muffalo (milk+wool) and Chicken (eggs) beyond the already-shipped Husky, so wildness/produce variety is real.",
+          "done": true
         },
         {
           "id": "crafting.guilds",
@@ -1125,10 +1125,10 @@
       "id": "quests",
       "n": 18,
       "rimworld": "Quests & Scenario",
-      "translation": "Proposed: scenarios become civilization starts (era, biome, rivals); quests become narrator-issued historical moments.",
-      "translationState": "proposed",
-      "module": "src/SimWorld.Core/Quests · Scenario · Letters",
-      "status": "ported",
+      "translation": "Built: scenarios become civilization starts (era, biome, rivals — quests.starts); quests become narrator-issued historical moments (quests.moments). A moment is the narrator noticing something worth remembering — a first, a record, a turning point — rather than a line per routine event; the Chronicle already recorded births, deaths, edicts and era transitions unconditionally, so the missing piece was deciding which of those matter more. Built as MomentCurator, owned by the Storyteller (src/SimWorld.Core/Director) since that is where the Chronicle itself lives — see that system's director.chronicle item for the mechanism and its own report for why the code sits there rather than under Quests.",
+      "translationState": "implemented",
+      "module": "src/SimWorld.Core/Quests · Scenario · Letters (quests.moments' curator lives in src/SimWorld.Core/Director — see director.chronicle)",
+      "status": "translated",
       "tests": 24,
       "items": [
         {
@@ -1153,8 +1153,8 @@
         },
         {
           "id": "quests.moments",
-          "label": "Translation: narrator-issued historical moments — chronicle entries are recorded on quest events, but there is no dedicated moment or lore system yet",
-          "done": false
+          "label": "Translation: narrator-issued historical moments — MomentCurator (src/SimWorld.Core/Director/MomentCurator.cs, owned deep-Scribed by Storyteller) flags a chronicle entry as a moment on the first occurrence of its category, always for an era transition, and on a new record for longevity at death; a moment death also promotes the pawn via Pawn_TierTracker.Notify_ChronicleNamed. Each rule is independently bounded in count (by distinct categories, by the fixed era ladder, or by a monotonic ratchet), pinned by test that a routine simulated century produces far fewer than a hundred moments.",
+          "done": true
         },
         {
           "id": "quests.orchestrator",
@@ -1167,11 +1167,11 @@
       "id": "demography",
       "n": 19,
       "rimworld": "Demography & Lineage",
-      "translation": "SimWorld original — RimWorld has no equivalent to port. A colony of twelve never needs generations; a civilization does. Built on the ported age/life-stage clock rather than a compressed one. Citizen tiering (§11.3) is the same idea pushed further: a civilization needs most of its population cheap, not absent — RimWorld's world-pawn precedent (identity/ageing kept, needs/jobs/health frozen off-map) generalised from \"on the map or not\" to \"significant or not\".",
+      "translation": "SimWorld original — RimWorld has no equivalent to port. A colony of twelve never needs generations; a civilization does. Built on the ported age/life-stage clock rather than a compressed one. Citizen tiering (§11.3) is the same idea pushed further: a civilization needs most of its population cheap, not absent — RimWorld's world-pawn precedent (identity/ageing kept, needs/jobs/health frozen off-map) generalised from \"on the map or not\" to \"significant or not\". Migration (demography.migration) closes the module's last open seam: MigrationManager mirrors the birth formula's own shape (base × (0.5 + quality) × a situational factor) for arrivals, where quality is the same per-citizen mood/food signal births already read, plus an era factor — a more advanced settlement has more to offer. Arrivals generate one adult migrant per successful roll and found their household through the existing FamilyManager.FoundHousehold(founder, null, tick) hook (built for exactly this); a settlement's bare Statistical cohort grows by the same closed-form percentage idiom Settlement.GrowStatisticalCohort already uses for births-minus-deaths, never by materialising real Pawns for it. Departures remove a distressed family's living members together from a caller-owned population list — the same list-mutation contract FamilyManager.DemographyTick already uses — but Settlement itself exposes no public way to shrink StatisticalPopulation or remove a citizen (World/** is out of this lane's bounds to add one), so the Settlement-aware overload can only ever floor migration at zero, never make it negative; see MigrationManager's own doc for the stated limitation.",
       "translationState": "implemented",
-      "module": "src/SimWorld.Core/Pawns — Family · FamilyManager · Pawn_RelationsTracker · DemographyTuning · Pawn_TierTracker",
+      "module": "src/SimWorld.Core/Pawns — Family · FamilyManager · Pawn_RelationsTracker · DemographyTuning · Pawn_TierTracker · MigrationManager · MigrationTuning",
       "status": "translated",
-      "tests": 40,
+      "tests": 51,
       "items": [
         {
           "id": "demography.households",
@@ -1210,8 +1210,8 @@
         },
         {
           "id": "demography.migration",
-          "label": "Migration and household founding by immigration — FoundHousehold already accepts a single founder, but nothing generates arrivals yet",
-          "done": false
+          "label": "Migration and household founding by immigration: arrivals scale with a settlement’s own mood/food quality and its era, founding households through FamilyManager.FoundHousehold’s single-founder hook; departures remove a distressed family from a caller-owned roster, and a settlement’s Statistical cohort moves in both directions (Settlement.RemoveStatisticalPeople), so somewhere worth leaving is as expressible as somewhere worth going. A settlement’s live Citizens list has no departure path — removing a named citizen is the settlement’s own business, and the caller-owned-list overload is what that case is for",
+          "done": true
         }
       ]
     },

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using SimWorld.Needs;
 using SimWorld.Pawns;
+using SimWorld.Sim;
 
 namespace SimWorld.AI
 {
@@ -50,5 +51,18 @@ namespace SimWorld.AI
     {
         protected override bool Satisfied(Pawn pawn) =>
             pawn.needs.rest != null && !pawn.Asleep && pawn.needs.rest.CurCategory != RestCategory.Rested;
+    }
+
+    /// <summary>
+    /// True while this animal is marked angry at a would-be tamer after a failed taming roll (system:
+    /// ai.animals). Placed first in the animal think tree, mirroring
+    /// <see cref="ThinkNode_ConditionalInMentalState"/>'s position in the humanlike one — see
+    /// <see cref="MindState.Pawn_MindState.angryAt"/>'s own doc for why this is the trimmed stand-in for
+    /// RimWorld's manhunter mental state.
+    /// </summary>
+    public sealed class ThinkNode_ConditionalAngryAtHandler : ThinkNode_Conditional
+    {
+        protected override bool Satisfied(Pawn pawn) =>
+            pawn.mindState.angryAt != null && Find.TickManager.TicksGame < pawn.mindState.angryUntilTick;
     }
 }
