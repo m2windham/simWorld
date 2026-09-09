@@ -16,6 +16,11 @@
     thing to demand — GodManager retires it on its own the moment that era is reached (see EdictDef.obsoleteEra
     and GodManager's era-transition handler). No other edict here has an obvious real-content case for
     obsoleteEra yet, so it stays null for the rest — see GodTests for ad-hoc coverage of the mechanism itself.
+
+    GreatWorksMandate is also the one edict carrying prioritizedConstruction (building.initiative): "quarry
+    and building site before anything else" is exactly SettlementConstructionInitiative's own construction
+    bias, not just its WorkGiver push — a settlement under this mandate builds its walls and storage before
+    anything else it might otherwise have queued.
   -->
 
   <EdictDef>
@@ -53,6 +58,10 @@
       <li>Construction</li>
       <li>Mining</li>
     </prioritizedWork>
+    <prioritizedConstruction>
+      <li>Wall</li>
+      <li>StorageHut</li>
+    </prioritizedConstruction>
     <workerClass>SimWorld.God.EdictWorker_ExemptMinors</workerClass>
     <moodThought>UnderGreatWorksMandate</moodThought>
   </EdictDef>

@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 1167,
+  "testsTotal": 1181,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1046,11 +1046,11 @@
       "id": "building",
       "n": 16,
       "rimworld": "Colony Building & Environment",
-      "translation": "Proposed: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall.",
-      "translationState": "proposed",
+      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative.",
+      "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
-      "status": "ported",
-      "tests": 51,
+      "status": "translated",
+      "tests": 65,
       "items": [
         {
           "id": "building.zones",
@@ -1084,8 +1084,8 @@
         },
         {
           "id": "building.initiative",
-          "label": "Translation: citizen-initiated construction under edicts",
-          "done": false
+          "label": "Translation: citizen-initiated construction under edicts — SettlementConstructionInitiative reads a settlement's real Citizens count (never StatisticalPopulation: a Statistical citizen has no individual Pawn to physically house, by the tiering system's own design — see the class's own remarks), what is already built or already planned on its InteriorMap, and what its Stores ledger holds, then derives a small, concrete need list (a Bed per citizen, a handful of Wall blueprints once there is anyone to shelter, a StorageHut once Stores holds enough to want one) and places blueprints for the shortfall through the existing GenConstruct/Blueprint/Frame pipeline — nothing decided to place a blueprint before this pass. Placement samples cells at random off the ambient RandomStream rather than scanning the map, validated entirely by GenConstruct.CanPlaceBlueprintAt (never overlapping or blocking what is already there), throttled to ConstructionInitiativeTuning.MaxBlueprintsPerTick per gated call so a settlement with a large shortfall grows over many ticks rather than flooding its map at once. Self-gated on GenTicks.TickRareInterval, the same 'rare bucket, not a per-tick scan' shape GodManager.GodTick/Storyteller.StorytellerTick/Settlement.GrowthTick already use; a settlement nobody has entered has no InteriorMap and this is a deliberate no-op there, never a triggered generation. The edict seam: EdictDef.prioritizedConstruction (new field, same declarative/read-live shape as prioritizedWork) reorders which unmet need a settlement fills first while an edict naming it is active — GreatWorksMandate ships it as real content ('quarry and building site before anything else') — with no activation-time side effect, so deactivating leaves no trace. New buildable content: Bed and StorageHut ThingDefs with Blueprint/Frame pairs alongside the existing Wall. Bed is deliberately not wired into Need_Rest/JobGiver_GetRest (AI/**, another lane's module): a citizen does not yet actually sleep in the bed this system builds for them, only its physical presence on the map is tracked here. Not wired into a tick loop by this pass: SettlementConstructionInitiative.Tick() is the civilization-wide entry point a host loop calls once per tick (mirroring God.GodTick() in Sim/Game.cs's WireTickHooks); wiring it there is left to whoever owns Sim/Game.cs.",
+          "done": true
         }
       ]
     },
@@ -1331,7 +1331,7 @@
       "items": [
         {
           "id": "god.edicts",
-          "label": "EdictDef: label/description (inherited from Def), prioritizedWork (List<WorkTypeDef>), an optional requiredEra (EraDef) gate read against ResearchManager.CurrentEra, an optional researchFocus (ResearchProjectDef) set as the current project on activation, a Class=-selected workerClass (EdictWorker) defaulting to the declarative base class, and a moodThought (ThoughtDef) granting a situational mood cost to every citizen the edict's AppliesTo(Pawn) reaches. EdictWorker_ExemptMinors ships as the one concrete worker exercising the Class= seam for something a def field alone cannot express (a harsh edict that spares children).",
+          "label": "EdictDef: label/description (inherited from Def), prioritizedWork (List<WorkTypeDef>), an optional requiredEra (EraDef) gate read against ResearchManager.CurrentEra, an optional researchFocus (ResearchProjectDef) set as the current project on activation, a Class=-selected workerClass (EdictWorker) defaulting to the declarative base class, and a moodThought (ThoughtDef) granting a situational mood cost to every citizen the edict's AppliesTo(Pawn) reaches. EdictWorker_ExemptMinors ships as the one concrete worker exercising the Class= seam for something a def field alone cannot express (a harsh edict that spares children). Also carries prioritizedConstruction (List<ThingDef>, building.initiative): the same declarative, read-live shape as prioritizedWork, biasing which unmet need SettlementConstructionInitiative fills first rather than a second mechanism; GreatWorksMandate ships it as real content.",
           "done": true
         },
         {

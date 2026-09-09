@@ -22,6 +22,17 @@ namespace SimWorld.God
         /// only by what the think tree tries first, so deactivating the edict leaves no trace.</summary>
         public List<WorkTypeDef> prioritizedWork = new List<WorkTypeDef>();
 
+        /// <summary>
+        /// Buildable <see cref="Defs.ThingDef"/>s this edict biases citizen-initiated construction toward
+        /// (<see cref="Building.SettlementConstructionInitiative"/>, <c>docs/status.json</c>'s
+        /// <c>building.initiative</c>) — the same declarative, read-live shape as <see cref="prioritizedWork"/>:
+        /// no activation-time side effect, just a list a settlement's own need-picking logic checks live
+        /// every gated tick, so deactivating the edict leaves no trace (a settlement already going to build
+        /// something eventually still does, just back in its own unbiased priority order once the bias is
+        /// gone). Empty means this edict has no construction opinion at all.
+        /// </summary>
+        public List<ThingDef> prioritizedConstruction = new List<ThingDef>();
+
         /// <summary>Gates activation: null means every era can issue this edict. The era ladder controls which
         /// edicts a civilization can issue at all (<see cref="GodManager.CanActivate"/>).</summary>
         public EraDef? requiredEra;

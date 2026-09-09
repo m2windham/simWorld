@@ -1324,6 +1324,34 @@ the translation and its state per system.
   nearest-candidate scan via `WorkGiverScanUtility` rather than duplicating
   it), so deactivating an edict leaves a citizen's own work priorities exactly
   as they were. Citizens keep full agency.
+- **Growth** (`building.initiative`, built): a settlement decides for itself
+  what it needs and places the blueprint — the player never places a wall
+  directly. `SettlementConstructionInitiative` reads a real `Settlement`'s own
+  state (its `Citizens` count — never `StatisticalPopulation`, since a
+  Statistical citizen has no individual `Pawn` to physically house, by §11.3's
+  own design — what is already built or already planned on its `InteriorMap`,
+  and what its `Stores` ledger holds) and derives a small, concrete need list:
+  a bed per citizen, a handful of walls once there is anyone to shelter, a
+  storage hut once `Stores` holds enough to want one — never a speculative
+  economy. Shortfalls place blueprints through the existing
+  `GenConstruct`/`Blueprint`/`Frame` pipeline (§8.2), sampling cells at random
+  off the ambient `RandomStream` rather than scanning the map, validated
+  entirely by `GenConstruct.CanPlaceBlueprintAt` so a blueprint never overlaps
+  or blocks what is already there, and throttled per gated tick so a large
+  shortfall grows over many ticks instead of flooding the map at once.
+  Self-gated on the rare tick bucket, the same shape `GodManager.GodTick`/
+  `Storyteller.StorytellerTick`/`Settlement.GrowthTick` already use; a
+  settlement nobody has entered has no `InteriorMap`, so this is a deliberate
+  no-op there rather than a triggered generation. The edict seam reuses
+  `prioritizedWork`'s own shape rather than inventing a second mechanism:
+  `EdictDef.prioritizedConstruction` is a declarative, read-live list of
+  buildable Defs an active edict biases a settlement toward — no
+  activation-time side effect, so deactivating leaves no trace, exactly like
+  `prioritizedWork`'s own guarantee. `GreatWorksMandate` ships it as real
+  content ("quarry and building site before anything else"). Not yet built: a
+  citizen does not actually sleep in the bed this system builds for them — the
+  new `Bed` content answers only "does the settlement have one," not
+  `Need_Rest`/`JobGiver_GetRest` (§7.4) actually using it.
 - **Policy** (`work.policy`, §7.3): edicts are the _temporary_ civilization-scale
   lever; policy is the _standing_ one. A citizen's role (`RoleDef`) shapes what
   work they take up — `Pawn_WorkSettings.ApplyRole` — rather than the player
@@ -1414,7 +1442,13 @@ just an ad-hoc test case. **Settlements** are entities now (§5b.5) rather than
 a def and a tile, and `GodRollup` reads one (or a civilization of them)
 directly rather than a caller-supplied list. **Policy** (see the Policy bullet
 above) is now built too, in `src/SimWorld.Core/Work`: `RoleDef`,
-`Pawn_WorkSettings.SetRole`/`ApplyRole` and `WorkPolicyUtility`. What remains
+`Pawn_WorkSettings.SetRole`/`ApplyRole` and `WorkPolicyUtility`. **Growth**
+(see the Growth bullet above) is built too, in `src/SimWorld.Core/Building`:
+`SettlementConstructionInitiative`, `ConstructionInitiativeTuning`,
+`ConstructionThingDefOf`, and `EdictDef.prioritizedConstruction`; not yet
+wired into a host tick loop — `SettlementConstructionInitiative.Tick()` is
+the civilization-wide entry point waiting for one, the same shape
+`God.GodTick()` already has in `Sim/Game.cs`'s `WireTickHooks`. What remains
 is the god view itself — UI/host work, once there is a host to render one.
 
 ```mermaid
@@ -1424,6 +1458,11 @@ flowchart LR
   Citizens --> Rollup[Aggregated civ state]
   Rollup --> GodView[God view: mood, health, industry]
   Rollup --> Chronicle[Chronicle narrates the era]
+
+  Settlement[Settlement: Citizens, InteriorMap, Stores] -->|derives shortfall| Needs[Bed / Wall / StorageHut]
+  God -->|prioritizedConstruction biases| Needs
+  Needs -->|GenConstruct.CanPlaceBlueprintAt| SettlementBlueprint[Blueprint]
+  SettlementBlueprint --> Citizens
 ```
 
 ## 11. Scale: Time, Attention & Level of Detail

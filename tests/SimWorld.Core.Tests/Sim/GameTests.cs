@@ -140,7 +140,7 @@ namespace SimWorld.Tests.Sim
             Game game = NewSoloGame();
 
             Assert.Single(game.TickManager.PreTickers);
-            Assert.Equal(10, game.TickManager.PostTickers.Count);
+            Assert.Equal(11, game.TickManager.PostTickers.Count);
         }
 
         [Fact]
