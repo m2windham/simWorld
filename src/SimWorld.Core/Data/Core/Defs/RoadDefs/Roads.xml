@@ -6,6 +6,9 @@
     minTechLevel the connecting settlements' factions meet. AncientAsphaltRoad's minTechLevel (Ultra) is
     above every generated FactionDef, so it is defined for completeness but never produced by generation —
     in RimWorld it is map-decoration on ancient ruins, not something world gen lays down fresh.
+
+    localTerrain is this port's own field (RoadDef.cs): the local street MapGen.GenStep_Roads paints when
+    one of these crosses a settlement's interior map (spec §5, §11.2's seam).
   -->
 
   <RoadDef>
@@ -15,6 +18,7 @@
     <movementCostMultiplier>0.85</movementCostMultiplier>
     <worldTransitionSameRoadPriority>1</worldTransitionSameRoadPriority>
     <minTechLevel>Animal</minTechLevel>
+    <localTerrain>StreetDirtPath</localTerrain>
   </RoadDef>
 
   <RoadDef>
@@ -24,6 +28,7 @@
     <movementCostMultiplier>0.7</movementCostMultiplier>
     <worldTransitionSameRoadPriority>2</worldTransitionSameRoadPriority>
     <minTechLevel>Medieval</minTechLevel>
+    <localTerrain>StreetDirtRoad</localTerrain>
   </RoadDef>
 
   <RoadDef>
@@ -33,6 +38,7 @@
     <movementCostMultiplier>0.5</movementCostMultiplier>
     <worldTransitionSameRoadPriority>3</worldTransitionSameRoadPriority>
     <minTechLevel>Industrial</minTechLevel>
+    <localTerrain>StreetStoneRoad</localTerrain>
   </RoadDef>
 
   <RoadDef>
@@ -42,6 +48,7 @@
     <movementCostMultiplier>0.35</movementCostMultiplier>
     <worldTransitionSameRoadPriority>4</worldTransitionSameRoadPriority>
     <minTechLevel>Ultra</minTechLevel>
+    <localTerrain>StreetAncientAsphalt</localTerrain>
   </RoadDef>
 
 </Defs>

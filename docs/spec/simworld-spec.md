@@ -254,11 +254,10 @@ flowchart TD
 
 ## 5b. Regions, Sites & Settlement Founding
 
-**Built**, except the settlement interior (§11.2's own seam — a separate
-module) and civilization emergence (§5b.4 — likewise). A game opens with a
-two-stage choice modelled on Manor Lords and Nova Roma: pick a region on the
-world map, then place the settlement inside that region against markers
-showing what is actually there.
+**Built**, including the settlement interior (§11.2's own seam), except
+civilization emergence (§5b.4). A game opens with a two-stage choice modelled
+on Manor Lords and Nova Roma: pick a region on the world map, then place the
+settlement inside that region against markers showing what is actually there.
 
 ### 5b.1 Stage one — the world map, by region
 
@@ -371,7 +370,7 @@ opening hours. Emergence is its own system and is not designed here.
 | Site scoring: necessities × era-weighted advantages | built (`Siting.SiteScorer`) |
 | Settlement as an entity: population by tier, stores, founding tick, name, growth | built (`World.Settlement`, `World.SettlementFounder`) — population is tier-aware (real `Pawn`s above Statistical, a bare count at Statistical), stores are a def→count ledger, growth wires into `FamilyManager.DemographyTick` for the real-`Pawn` slice and a closed-form rate for the Statistical one (see the module's report) |
 | Solo-start world generation | built — a flag on the faction gen step (`WorldInfo.soloStart`) |
-| A settlement interior when the player enters it | still missing — the §11.2 seam |
+| A settlement interior when the player enters it | built (`World.Settlement.EnterMap`) — the §11.2 seam, sized by `TotalPopulation` and persisted only once entered |
 
 ```mermaid
 flowchart TD
@@ -791,16 +790,20 @@ Taken from RimWorld, whose split this codebase already mirrors structurally:
 | World map: tiles, factions, settlements, caravans — nothing at colony depth | `World/` (§5) | ported |
 | Colony map: cells, things, pawns with jobs and needs at full depth | `Map/` (§5a) | ported |
 | A settlement's world tile generates its interior map | `MapGen/` (§5) | ported |
-| Entering a settlement (at settlement scope) triggers that generation and persists the result | — | **missing** |
+| Entering a settlement (at settlement scope) triggers that generation and persists the result | `World.Settlement.EnterMap` | ported |
 
-The two halves now have a seam between them: `MapGen.MapGenerator.GenerateMapFor`
+The two halves are now joined at the seam: `MapGen.MapGenerator.GenerateMapFor`
 takes the world tile a settlement sits on — its biome, elevation, hilliness,
-rainfall, rivers and deposits — and generates the interior that tile promised.
-What is still missing is the game-loop half: nothing yet calls
-`GenerateMapFor` when the player opens a settlement, and a generated map isn't
-yet attached to its `WorldObject` and carried across a save. That is the next
-piece of work, and it is now a game-loop/scope-switching problem rather than a
-map-generation one.
+rainfall, rivers, roads and deposits — and generates the interior that tile
+promised. `Settlement.EnterMap` is the game-loop half: called the first time
+the player opens a settlement, it generates that interior once, sized by
+`TotalPopulation` rather than a flat constant, caches the result on the
+`Settlement` itself, and returns the same `Map` instance on every later entry.
+A settlement never opened carries no map at all, so most of a large
+civilization's settlements cost the save file nothing beyond the entity
+itself — a real interior is real weight (tens of thousands of individually-
+saved Things on a rock-heavy map), so it is only ever paid for the settlements
+the player actually looks inside.
 
 The player's verbs follow the same split. At civilization scope the player sees
 everything and acts through edicts, research direction and policy — indirect and

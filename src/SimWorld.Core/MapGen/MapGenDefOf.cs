@@ -20,6 +20,10 @@ namespace SimWorld.MapGen
         public static TerrainDef SoilRich = null!;
         public static TerrainDef Marsh = null!;
         public static TerrainDef MarshyTerrain = null!;
+        public static TerrainDef StreetDirtPath = null!;
+        public static TerrainDef StreetDirtRoad = null!;
+        public static TerrainDef StreetStoneRoad = null!;
+        public static TerrainDef StreetAncientAsphalt = null!;
     }
 
     /// <summary>ThingDefs <c>MapGen</c> places directly: natural rock, a mineable ore vein, loose chunks and wild plant growth.</summary>
