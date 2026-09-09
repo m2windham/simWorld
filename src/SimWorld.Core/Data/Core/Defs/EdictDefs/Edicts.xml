@@ -10,6 +10,12 @@
     on the base EdictWorker for everything declarative (prioritizedWork, researchFocus, moodThought all read
     live off this def), except GreatWorksMandate, which exercises the Class= worker seam for something a def
     field can't express on its own — see EdictWorker_ExemptMinors.
+
+    HuntersMandate is the one edict that also carries obsoleteEra: reaching Agrarian is a civilization
+    learning to farm, at which point a standing mandate that pulls every hand into hunting stops being the
+    thing to demand — GodManager retires it on its own the moment that era is reached (see EdictDef.obsoleteEra
+    and GodManager's era-transition handler). No other edict here has an obvious real-content case for
+    obsoleteEra yet, so it stays null for the rest — see GodTests for ad-hoc coverage of the mechanism itself.
   -->
 
   <EdictDef>
@@ -17,6 +23,7 @@
     <label>hunter's mandate</label>
     <description>Every able hand turns to the hunt. The band eats better, but nothing else gets done.</description>
     <requiredEra>SticksAndStones</requiredEra>
+    <obsoleteEra>Agrarian</obsoleteEra>
     <researchFocus>Hunting</researchFocus>
     <prioritizedWork>
       <li>Hunting</li>

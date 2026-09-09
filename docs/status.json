@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-08",
-  "testsTotal": 735,
+  "testsTotal": 746,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -571,8 +571,8 @@
         },
         {
           "id": "needs.rollup",
-          "label": "Translation: population mood rollups for the god view",
-          "done": false
+          "label": "Translation: population mood rollups for the god view. Satisfied by God/GodRollup.cs's MeanMood — a population-weighted mean of Need_Mood.CurLevelPercentage, tier-aware (a Statistical citizen's need is cohort-sampled the same as any other, real or folded from a Settlement's bare StatisticalPopulation count), cached with a recompute cadence and an explicit dirty flag, fed by a real Settlement (or several, for a civilization) as of god.settlement-population. See docs/spec/simworld-spec.md §10's Aggregation bullet.",
+          "done": true
         }
       ]
     },
@@ -1297,7 +1297,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/God · EdictDef · EdictWorker · EdictWorker_ExemptMinors · ThoughtWorker_UnderEdict · GodManager · GodRollup · GodTuning; src/SimWorld.Core/AI/JobGiver_Edicts.cs · WorkGiverScanUtility.cs (shared with JobGiver_Work)",
       "status": "translated",
-      "tests": 16,
+      "tests": 27,
       "items": [
         {
           "id": "god.edicts",
@@ -1326,8 +1326,8 @@
         },
         {
           "id": "god.settlement-population",
-          "label": "GodRollup takes its population as a caller-supplied IReadOnlyList<Pawn> rather than reading a registry of its own. The Settlement entity it should read instead now exists (§5b.5, World/Settlement.cs: population by tier, real Pawns only above Statistical) — wiring GodRollup to a Settlement's own population, including the Statistical count it holds as a bare number, is the remaining step",
-          "done": false
+          "label": "GodRollup.Recompute(Settlement) and Recompute(IReadOnlyList<Settlement>) read a real Settlement's population by tier: Citizens (real Pawn objects, Full/Interval) walked exactly like the bare-list overload, StatisticalPopulation (a bare count with no Pawn per person) folded in by AccumulateStatisticalCohort — one deterministic RandomStream.RangeSeeded sample per settlement per statistic (mood, food, health, industry skill), seeded from the settlement's own identity and the current tick, reusing Pawn_TierTracker's cohort-sampling idiom rather than a second one, weighted by count in the running mean rather than walked member by member. Counts (TotalPopulation, StatisticalCount) include the cohort exactly; each mean's own doc comment states the weighted-sample choice. New GodTuning.StatisticalIndustrySkillSampleMin/Max (SimWorld's own, not RimWorld-sourced) stand in for the missing per-person SkillRecord. Proved by test: identical output to the bare-list overload when a settlement has no Statistical slice, correct weighting when it dominates, and a 100,000,000-person Statistical settlement recomputing in well under the per-citizen-loop budget (no enumeration proportional to StatisticalPopulation).",
+          "done": true
         },
         {
           "id": "god.view",
@@ -1336,8 +1336,8 @@
         },
         {
           "id": "god.era-transitions",
-          "label": "Reacting to an era transition while an edict is active (auto-deactivation, re-evaluation, a transition-triggered Chronicle tie-in). Era transitions themselves now exist (ResearchManager.EraReached fires once per era crossed), but nothing in the god layer subscribes to them, so an edict simply stays active across a later era advance unless something explicitly deactivates it",
-          "done": false
+          "label": "GodManager subscribes to ResearchManager.EraReached (constructor for a fresh civilization, ExposeData's PostLoadInit branch for a loaded one, both through the idempotent EnsureSubscribedToEraTransitions so a loaded save can never end up doubly subscribed — proved by test) and reacts on every crossing: EdictDef gained obsoleteEra, the mirror of requiredEra (same minEra/maxEra symmetry as IncidentDef in Director/IncidentDefs.cs, but >= rather than >, since reaching the named era is itself the retirement moment per the brief) — an active edict past its obsoleteEra auto-deactivates with its own \"Edict outgrown\" Chronicle line. Separately, one \"New edicts available\" Chronicle line names every edict the crossing newly unlocks (never one per edict, never written when nothing unlocked). HuntersMandate ships with obsoleteEra=Agrarian as real content proving the mechanism, not just an ad-hoc test def.",
+          "done": true
         }
       ]
     }

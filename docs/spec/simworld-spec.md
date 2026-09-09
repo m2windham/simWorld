@@ -718,31 +718,60 @@ the translation and its state per system.
   (`EraDef.threatPointsFactor`, standing in for the wealth term nothing computes
   yet) and gates content through `IncidentDef.minEra`/`maxEra`. A scenario's
   starting era is seeded silently: history begins there, it was not lived through.
+  The god layer itself reacts, not just the director: `GodManager` subscribes to
+  `EraReached` and re-evaluates active edicts on every crossing.
+  `EdictDef.obsoleteEra` mirrors `requiredEra` the same way `IncidentDef.maxEra`
+  mirrors `minEra` — a thing a civilization outgrows — except the comparison is
+  `>=` rather than `>`: reaching the named era is itself the retirement moment.
+  An edict past its `obsoleteEra` auto-deactivates with its own Chronicle line
+  ("Edict outgrown: …"); separately, one Chronicle line ("New edicts
+  available: …") names every edict the crossing newly unlocks, never one line
+  per edict and never a line at all when nothing unlocked. The subscription
+  itself is idempotent (unsubscribe-then-resubscribe, not a bare `+=`) so a
+  loaded save can never end up doubly subscribed and double-firing Chronicle
+  entries — `GodManager`'s constructor subscribes for a fresh civilization,
+  its `ExposeData`'s `PostLoadInit` branch resubscribes for a loaded one.
 - **Aggregation**: per-citizen depth stays, but the god view reads `GodRollup`
   — population by `PawnTier`, mean mood, mean health, a food/industry readout,
-  era and research progress — rather than opening every person. Tier-aware by
-  construction, not by an if-skip: a Statistical citizen's health contribution
-  is `Pawn_TierTracker.SampledHealthFraction`, never a real hediff-set read,
-  which is the entire reason §11.3's tiering exists — reading every citizen's
-  hediffs to answer a civilization-scale question would defeat it. Cached with
-  a recompute cadence and an explicit dirty flag (`Notify_Dirty`), never
-  recomputed per tick per reader.
+  era and research progress — rather than opening every person. `GodRollup`
+  is fed by a real `Settlement` (`Recompute(Settlement)`) or several, for a
+  whole civilization (`Recompute(IReadOnlyList<Settlement>)`) — or a bare
+  population list, for a caller or test that already has one assembled.
+  Tier-aware by construction, not by an if-skip: a Statistical citizen's
+  health contribution is `Pawn_TierTracker.SampledHealthFraction`, never a
+  real hediff-set read, which is the entire reason §11.3's tiering exists —
+  reading every citizen's hediffs to answer a civilization-scale question
+  would defeat it. A settlement's _bare_ Statistical population — a count
+  with no `Pawn` object per person at all — is folded into the same means by
+  one deterministic cohort sample per settlement per statistic (mood, food,
+  health, industry skill; `GodRollup.AccumulateStatisticalCohort`, reusing
+  `Pawn_TierTracker`'s own sampling idiom rather than a second one), weighted
+  by population count in the running mean rather than walked member by
+  member — the "fold the cohort in with a stated sampled value" choice, so a
+  settlement recomputes in O(settlements) + O(Full/Interval citizens), never
+  O(Statistical population): a 40,000-person settlement costs the same as a
+  40-person one. Cached with a recompute cadence and an explicit dirty flag
+  (`Notify_Dirty`), never recomputed per tick per reader.
 
-_Status_: all three god-layer pieces are built. **Eras** (§9's ladder) now
-announce themselves, scale threats and gate content — see the Eras bullet
-above. **Edicts** and the edict think-tree tier live in `src/SimWorld.Core/God`:
+_Status_: all three god-layer pieces are built, and the two seams the module
+was first left with are now closed. **Eras** (§9's ladder) now announce
+themselves, scale threats, gate content, and — the god layer's own reaction —
+retire and unlock edicts on crossing; see the Eras bullet above. **Edicts**
+and the edict think-tree tier live in `src/SimWorld.Core/God`:
 `EdictDef`/`EdictWorker` (one concrete worker, `EdictWorker_ExemptMinors`, for
 behaviour a def field alone cannot express — a harsh edict that spares
 children), `GodManager` (`Find.God`: a slot budget sized as a real trade-off
-rather than a checklist, era gating, Chronicle recording on activation and
-deactivation, a Scribe round trip), `JobGiver_Edicts`, and `GodRollup`. Five
+rather than a checklist, era gating in both directions (`requiredEra`,
+`obsoleteEra`), Chronicle recording on activation, deactivation and era
+transitions, a Scribe round trip), `JobGiver_Edicts`, and `GodRollup`. Five
 edicts ship spread across the era ladder, each costing public mood through a
 situational thought (`ThoughtWorker_UnderEdict`) that tracks activation on its
 own — no explicit per-pawn grant or removal, so nothing lingers once an edict
-is rescinded. **Settlements** are entities now (§5b.5) rather than a def and a
-tile, which leaves the gap narrow: the god view itself (UI/host work, once
-there is a host to render one), and wiring `GodRollup` to a `Settlement`'s own
-population instead of a caller-supplied list.
+is rescinded; `HuntersMandate` also carries `obsoleteEra` as real content, not
+just an ad-hoc test case. **Settlements** are entities now (§5b.5) rather than
+a def and a tile, and `GodRollup` reads one (or a civilization of them)
+directly rather than a caller-supplied list. What remains is the god view
+itself — UI/host work, once there is a host to render one.
 
 ```mermaid
 flowchart LR
