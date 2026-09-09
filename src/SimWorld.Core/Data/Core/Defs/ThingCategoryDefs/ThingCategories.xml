@@ -77,4 +77,18 @@
     <parent>ResourcesRaw</parent>
   </ThingCategoryDef>
 
+  <!-- Animal husbandry (system: crafting.animals). -->
+
+  <ThingCategoryDef>
+    <defName>Leathers</defName>
+    <label>leathers</label>
+    <parent>ResourcesRaw</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>Wool</defName>
+    <label>wool</label>
+    <parent>ResourcesRaw</parent>
+  </ThingCategoryDef>
+
 </Defs>

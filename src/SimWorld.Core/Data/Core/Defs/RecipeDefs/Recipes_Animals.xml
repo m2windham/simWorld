@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Butchering (system: crafting.animals). isButchery routes it to Recipe_ButcherAnimal, applied straight to
+    the dead animal pawn rather than a workbench's declared ingredients/products — see that worker's own
+    doc for why (no Corpse thing exists yet) and for the body-size-scaled yield (HusbandryTuning).
+    TableButcher already ships in Buildings_Production.xml, anticipating this module.
+  -->
+
+  <RecipeDef>
+    <defName>ButcherAnimal</defName>
+    <label>butcher animal</label>
+    <description>Butcher a dead animal into meat and, for some species, leather.</description>
+    <jobString>Butchering an animal.</jobString>
+    <isButchery>true</isButchery>
+    <workerClass>SimWorld.Crafting.Recipe_ButcherAnimal</workerClass>
+    <workAmount>600</workAmount>
+    <workSkill>Cooking</workSkill>
+    <recipeUsers>
+      <li>TableButcher</li>
+    </recipeUsers>
+  </RecipeDef>
+
+</Defs>

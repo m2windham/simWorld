@@ -630,6 +630,26 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   unchanged throughout. Full-agent populations still need shared paths
   (hierarchical or flow field); today's `PathFinder` runs one `A*` search per
   pawn per path request.
+- **Animals get a real second `ThinkTreeDef`** (`RaceProperties.intelligence`
+  picks it per pawn, not a flag inside the humanlike one): a failed-taming
+  anger guard, then `JobGiver_AnimalFlee` (an untamed, sufficiently wild animal
+  paths away from the nearest humanlike it can see), then the same
+  hunger/rest-needs guards and idle-wander fallback the humanlike tree uses —
+  no work-scan or directed-order tiers, since an animal does neither.
+  **Taming** is `TameUtility.TryTame`: a chance from the tamer's Animals skill
+  against `RaceProperties.wildness`, rolled once per completed `Tame` job
+  (`JobDriver_Tame`, found by the already-shipped `TameAnimals` `WorkGiverDef`
+  now wired to a real scanner); success sets the animal's faction and
+  `Pawn_MindState.tameness` to 1, failure can instead anger it at the tamer
+  (`Pawn_MindState.angryAt`) — RimWorld's manhunter would attack; Combat is a
+  different module's ground, so this port's consequence is behavioural
+  (`ThinkNode_ConditionalAngryAtHandler` pre-empts the animal's tree) rather
+  than damage. **Training** is `TrainableDef`/`TrainabilityDef` content plus
+  `Pawn_TrainingTracker`: a step counter per def, gated by the race's
+  trainability floor and the def's own prerequisites, advanced one point per
+  completed `Train` job and clawed back by an MTB roll if the animal goes
+  untended past a grace window — more than a bool per def, the way RimWorld's
+  own tracker is.
 
 ```mermaid
 flowchart TD
@@ -642,6 +662,10 @@ flowchart TD
   Toils --> Reserve[Reservation check]
   Toils --> Path[Region-graph reachability + A*]
 ```
+
+_(The diagram above is the Humanlike tree; the Animal tree drops the
+directed-order and work-scan tiers entirely and adds its own flee guard —
+see the animals bullet above.)_
 
 ### 7.5 Demography, Lineage & Lifespan
 
@@ -727,6 +751,17 @@ flowchart TD
   category, stuff, quality and hit points.
 - Cooking carries a skill-driven food-poisoning chance; eating feeds the
   nutrition need.
+- **Animal husbandry.** Butchering is a `RecipeDef` with `isButchery`,
+  applied straight to a dead animal pawn by a `Recipe_ButcherAnimal` worker
+  the same way `isSurgery` applies a `Recipe_Surgery` to a live one — no
+  separate `Corpse` thing exists yet, so `ButcherUtility.TryButcher` is the
+  same no-job-driver call shape `SurgeryUtility.PerformNextSurgery` already
+  established. Yield (meat from `RaceProperties.meatDef`, leather from
+  `leatherDef` where the race has one) scales with the animal's body size.
+  Produce cycles — milk, wool, eggs — are `CompMilkable`/`CompShearable`/
+  `CompEggLayer`, all `CompHasGatherableBodyResource`: fullness rises toward 1
+  over a per-species interval and `Gather` spawns the real item (stopping at
+  unfertilized eggs — no breeding system exists to fertilize one).
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.

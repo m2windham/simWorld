@@ -11,6 +11,18 @@ namespace SimWorld.Crafting
         public static ThingCategoryDef Meat = null!;
         public static ThingCategoryDef PlantFoodRaw = null!;
         public static ThingCategoryDef FoodMeals = null!;
+        public static ThingCategoryDef AnimalProductRaw = null!;
+        public static ThingCategoryDef Leathers = null!;
+        public static ThingCategoryDef Wool = null!;
+    }
+
+    /// <summary>Item ThingDefs read by name rather than through a RecipeDef/ThingCategoryDef reference
+    /// (system: crafting.animals) — <c>Recipe_ButcherAnimal</c>'s fallback when a race sets no
+    /// <see cref="Pawns.RaceProperties.meatDef"/> of its own (RimWorld: same default).</summary>
+    [DefOf]
+    public static class ThingDefOf
+    {
+        public static ThingDef Meat_Generic = null!;
     }
 
     [DefOf]

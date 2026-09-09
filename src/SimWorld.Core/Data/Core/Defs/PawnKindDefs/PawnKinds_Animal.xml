@@ -8,4 +8,18 @@
     <combatPower>30</combatPower>
   </PawnKindDef>
 
+  <PawnKindDef>
+    <defName>Muffalo</defName>
+    <label>muffalo</label>
+    <race>Muffalo</race>
+    <combatPower>60</combatPower>
+  </PawnKindDef>
+
+  <PawnKindDef>
+    <defName>Chicken</defName>
+    <label>chicken</label>
+    <race>Chicken</race>
+    <combatPower>4</combatPower>
+  </PawnKindDef>
+
 </Defs>

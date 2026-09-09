@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- How trainable a race is at all (system: ai.animals); RimWorld's own three tiers. -->
+
+  <TrainabilityDef>
+    <defName>None</defName>
+    <label>none</label>
+    <intelligenceOrder>0</intelligenceOrder>
+  </TrainabilityDef>
+
+  <TrainabilityDef>
+    <defName>Intermediate</defName>
+    <label>intermediate</label>
+    <intelligenceOrder>1</intelligenceOrder>
+  </TrainabilityDef>
+
+  <TrainabilityDef>
+    <defName>Advanced</defName>
+    <label>advanced</label>
+    <intelligenceOrder>2</intelligenceOrder>
+  </TrainabilityDef>
+
+  <!--
+    Training steps a tamed animal can learn (RimWorld: TrainableDefs, trimmed to the ones Pawn_TrainingTracker
+    can act on without a Combat-module hookup — RimWorld's own Attack/Guard/Tackle only mean anything once an
+    animal can actually fight, which is out of this lane's boundary). Step counts are this port's own choice,
+    not RimWorld-sourced; AITests pins the decay/learn mechanism's trend, never these literals.
+  -->
+
+  <TrainableDef>
+    <defName>Obedience</defName>
+    <label>obedience</label>
+    <description>Come, stay and follow commands.</description>
+    <steps>1</steps>
+    <defaultTrainable>true</defaultTrainable>
+    <minTrainability>Intermediate</minTrainability>
+  </TrainableDef>
+
+  <TrainableDef>
+    <defName>Release</defName>
+    <label>release</label>
+    <description>Wander freely instead of staying near its handler.</description>
+    <steps>1</steps>
+    <minTrainability>Intermediate</minTrainability>
+    <prerequisites>
+      <li>Obedience</li>
+    </prerequisites>
+  </TrainableDef>
+
+  <TrainableDef>
+    <defName>Rescue</defName>
+    <label>rescue</label>
+    <description>Carry a downed colonist to safety.</description>
+    <steps>2</steps>
+    <minTrainability>Intermediate</minTrainability>
+    <prerequisites>
+      <li>Obedience</li>
+    </prerequisites>
+  </TrainableDef>
+
+  <TrainableDef>
+    <defName>Haul</defName>
+    <label>haul</label>
+    <description>Carry goods between stockpiles.</description>
+    <steps>2</steps>
+    <minTrainability>Intermediate</minTrainability>
+    <prerequisites>
+      <li>Obedience</li>
+    </prerequisites>
+  </TrainableDef>
+
+</Defs>

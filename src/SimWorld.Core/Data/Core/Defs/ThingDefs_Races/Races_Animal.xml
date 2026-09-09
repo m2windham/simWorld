@@ -1,19 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 
-  <ThingDef ParentName="BasePawn">
+  <!--
+    Animal races (system: ai.animals/crafting.animals). Husky already shipped ahead of this module and is
+    used across the test suite; wildness/trainability/meatDef/leatherDef are added to it here rather than
+    changing anything about the pawn it already is. Muffalo and Chicken are new so "wildness varies" and
+    "produce cycles" are real: three different wildness values, milk + wool + eggs between them. All three
+    share Husky's body (QuadrupedAnimalWithPaws) — the only animal body this port ships; a Chicken built from
+    a quadruped body is a deliberate, documented simplification (an avian body is Health's content to add,
+    not this lane's), not a claim that it looks right.
+  -->
+
+  <ThingDef Name="BaseAnimal" ParentName="BasePawn" Abstract="True">
+    <race>
+      <intelligence>Animal</intelligence>
+      <body>QuadrupedAnimalWithPaws</body>
+      <needsRest>true</needsRest>
+    </race>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseAnimal">
     <defName>Husky</defName>
     <label>husky</label>
     <description>A large, hardy working dog.</description>
     <race>
-      <intelligence>Animal</intelligence>
-      <body>QuadrupedAnimalWithPaws</body>
       <baseHealthScale>1</baseHealthScale>
       <baseBodySize>0.86</baseBodySize>
       <baseHungerRate>0.5</baseHungerRate>
       <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>
-      <needsRest>true</needsRest>
       <lifeExpectancy>12</lifeExpectancy>
+      <wildness>0.3</wildness>
+      <trainability>Intermediate</trainability>
+      <meatDef>Meat_Generic</meatDef>
+      <leatherDef>Leather_Plain</leatherDef>
       <lifeStageAges>
         <li>
           <def>AnimalBaby</def>
@@ -29,6 +48,88 @@
         </li>
       </lifeStageAges>
     </race>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseAnimal">
+    <defName>Muffalo</defName>
+    <label>muffalo</label>
+    <description>A large, shaggy pack animal. Placid enough to milk and shear once tamed, but warier of people than a dog.</description>
+    <race>
+      <baseHealthScale>1.5</baseHealthScale>
+      <baseBodySize>1.5</baseBodySize>
+      <baseHungerRate>0.7</baseHungerRate>
+      <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>
+      <lifeExpectancy>16</lifeExpectancy>
+      <wildness>0.6</wildness>
+      <trainability>Intermediate</trainability>
+      <meatDef>Meat_Generic</meatDef>
+      <leatherDef>Leather_Plain</leatherDef>
+      <lifeStageAges>
+        <li>
+          <def>AnimalBaby</def>
+          <minAge>0</minAge>
+        </li>
+        <li>
+          <def>AnimalJuvenile</def>
+          <minAge>0.3</minAge>
+        </li>
+        <li>
+          <def>AnimalAdult</def>
+          <minAge>0.6</minAge>
+        </li>
+      </lifeStageAges>
+    </race>
+    <comps>
+      <li Class="SimWorld.Crafting.CompProperties_Milkable">
+        <resourceDef>Milk</resourceDef>
+        <resourceAmount>10</resourceAmount>
+        <resourceIntervalDays>2</resourceIntervalDays>
+        <femaleOnly>true</femaleOnly>
+      </li>
+      <li Class="SimWorld.Crafting.CompProperties_Shearable">
+        <resourceDef>WoolAnimal</resourceDef>
+        <resourceAmount>50</resourceAmount>
+        <resourceIntervalDays>12</resourceIntervalDays>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseAnimal">
+    <defName>Chicken</defName>
+    <label>chicken</label>
+    <description>A small, flighty domestic fowl kept for eggs and meat.</description>
+    <race>
+      <baseHealthScale>0.35</baseHealthScale>
+      <baseBodySize>0.30</baseBodySize>
+      <baseHungerRate>0.3</baseHungerRate>
+      <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>
+      <lifeExpectancy>5</lifeExpectancy>
+      <wildness>0.5</wildness>
+      <trainability>None</trainability>
+      <meatDef>Meat_Generic</meatDef>
+      <lifeStageAges>
+        <li>
+          <def>AnimalBaby</def>
+          <minAge>0</minAge>
+        </li>
+        <li>
+          <def>AnimalJuvenile</def>
+          <minAge>0.1</minAge>
+        </li>
+        <li>
+          <def>AnimalAdult</def>
+          <minAge>0.3</minAge>
+        </li>
+      </lifeStageAges>
+    </race>
+    <comps>
+      <li Class="SimWorld.Crafting.CompProperties_EggLayer">
+        <resourceDef>EggAnimalUnfertilized</resourceDef>
+        <resourceAmount>1</resourceAmount>
+        <resourceIntervalDays>1</resourceIntervalDays>
+        <femaleOnly>true</femaleOnly>
+      </li>
+    </comps>
   </ThingDef>
 
 </Defs>

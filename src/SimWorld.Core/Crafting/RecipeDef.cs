@@ -112,6 +112,14 @@ namespace SimWorld.Crafting
         /// <summary>Chance a failed operation kills the patient outright, rather than merely injuring them.</summary>
         public float deathOnFailedSurgeryChance;
 
+        // ---- butchering (system: crafting.animals) ----
+
+        /// <summary>True for a recipe applied directly to a dead animal pawn rather than crafted from
+        /// declared ingredients/products (RimWorld: <c>Recipe_ButcherCorpse</c> is worker-driven the same
+        /// way; see <c>Recipe_ButcherAnimal</c>, which computes its yield from the animal's own body size
+        /// instead of a fixed <see cref="products"/> list).</summary>
+        public bool isButchery;
+
         private RecipeWorker? workerCache;
 
         /// <summary>The lazily-created worker (RimWorld: <c>RecipeDef.Worker</c>).</summary>
@@ -255,9 +263,25 @@ namespace SimWorld.Crafting
             {
                 yield return error;
             }
-            // A surgery consumes nothing and produces nothing: its whole effect is what its worker does to the
-            // patient. Requiring ingredients and products of one would be requiring it to be a crafting recipe.
-            if (!isSurgery)
+            // A surgery consumes nothing and produces nothing, and a butchery computes its yield from the
+            // animal's own body size rather than a fixed list: either way, the whole effect is what the
+            // recipe's own worker does, so requiring ingredients/products of one would be requiring it to be
+            // an ordinary crafting recipe.
+            if (isSurgery)
+            {
+                if (!typeof(Health.Recipe_Surgery).IsAssignableFrom(workerClass))
+                {
+                    yield return "isSurgery is set but workerClass is not a Recipe_Surgery.";
+                }
+            }
+            else if (isButchery)
+            {
+                if (!typeof(Recipe_ButcherAnimal).IsAssignableFrom(workerClass))
+                {
+                    yield return "isButchery is set but workerClass is not a Recipe_ButcherAnimal.";
+                }
+            }
+            else
             {
                 if (ingredients == null || ingredients.Count == 0)
                 {
@@ -266,13 +290,6 @@ namespace SimWorld.Crafting
                 if (products == null || products.Count == 0)
                 {
                     yield return "has no products.";
-                }
-            }
-            else
-            {
-                if (!typeof(Health.Recipe_Surgery).IsAssignableFrom(workerClass))
-                {
-                    yield return "isSurgery is set but workerClass is not a Recipe_Surgery.";
                 }
             }
             if (workAmount < 0f)
