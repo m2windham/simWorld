@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 971,
+  "testsTotal": 984,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -659,9 +659,9 @@
       "rimworld": "Skills & Work",
       "translation": "Built: standing civilization-scale roles (RoleDef) replace a per-person priority grid. A role names the work types it emphasizes; Pawn_WorkSettings.ApplyRole sets those to the pawn's best priority (1) and leaves everything else at the default (3), rather than a player setting twelve numbers per citizen. Kept distinct from an EdictDef's own 'leaves no trace' guarantee (docs/spec/simworld-spec.md §10): a role is standing, not temporary, and does write into the priority grid — but Pawn_WorkSettings tracks every work type a caller set directly (SetPriority), and a role's own writes always skip those, so assigning or changing a role can never overwrite a person's own explicit choice; clearing a role (SetRole(null)) reverts every non-manual entry it touched back to default, the standing-policy mirror of an edict's guarantee. WorkPolicyUtility.ApplyRoleToPopulation is the civilization-scale lever — one call assigns a role across an entire settlement's citizens, the same 'act on the aggregate' shape GodManager gives edicts.",
       "translationState": "implemented",
-      "module": "src/SimWorld.Core/Work · Pawns",
+      "module": "src/SimWorld.Core/Work · Pawns · Stats",
       "status": "translated",
-      "tests": 35,
+      "tests": 37,
       "items": [
         {
           "id": "work.skills",
@@ -700,13 +700,13 @@
         },
         {
           "id": "work.stats",
-          "label": "Skill-driven stats (WorkSpeedGlobal, MedicalTendQuality...): StatDef.skillNeedOffsets/skillNeedFactors (SkillDef-scaled curves) are not part of the Stats module's first pass (see docs/spec/simworld-spec.md 3a) -- still needs its own follow-up",
-          "done": false
+          "label": "Skill-driven stats: StatDef.skillNeedOffsets/skillNeedFactors (SkillNeed_Direct valuesPerLevel tables, SkillNeed_BaseBonus base+bonusPerLevel) resolved by StatWorker.GetValueUnfinalized off the pawn's own SkillRecord level, Class= polymorphic in content like this repo's other worker lists. Content: new WorkSpeedGlobal, MedicalTendQuality, MiningSpeed, ConstructionSpeed, CookSpeed and ResearchSpeed StatDefs, plus skillNeedOffsets added to the already-shipped ShootingAccuracyPawn/MeleeHitChance/MeleeDodgeChance. RimWorld's own curve numbers were not sourceable in this sandbox (see Stats_Work.xml's own remarks) — every curve here is this port's own invention, pinned by trend tests (higher skill gives a higher value, level 0 gives the plain base) rather than any literal.",
+          "done": true
         },
         {
           "id": "work.backstory",
-          "label": "Backstory-disabled work — lands with Pawn Generation",
-          "done": false
+          "label": "Backstory-disabled work, landed end to end now that Pawn Generation exists (pawngen.backstory): BackstoryDef.workDisables/skillGains ship as content (Backstories_Civil/Tribal.xml, e.g. NobleChild/Scientist/TribalElder each disable real work), PawnGenerator assigns backstories and applies their skill gains, and Pawn.WorkTagIsDisabled/WorkTypeIsDisabled plus Pawn_WorkSettings consult them — a backstory-disabled work type is zeroed out of the priority grid and dropped from work-giver scanning exactly like a trait-disabled one, proven from this module's own side in WorkTests (pawngen.backstory's own tests prove it from pawn generation's side).",
+          "done": true
         },
         {
           "id": "work.policy",
@@ -1285,11 +1285,11 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Stats · Data/Core/Defs (StatDefs, StatCategoryDefs)",
       "status": "ported",
-      "tests": 13,
+      "tests": 24,
       "items": [
         {
           "id": "stats.pipeline",
-          "label": "StatRequest (Thing, or def+stuff with no Thing) -> StatWorker.GetValue: base value (statBases, else defaultBaseValue) -> trait and hediff-stage offsets -> trait, hediff-stage and stuff factors -> capacity factors -> stat parts -> post-process curve -> min/max clamp",
+          "label": "StatRequest (Thing, or def+stuff with no Thing) -> StatWorker.GetValue: base value (statBases, else defaultBaseValue) -> skill-need factors, then skill-need offsets (system: work.stats) -> trait and hediff-stage offsets -> trait, hediff-stage and stuff factors -> capacity factors -> stat parts -> post-process curve -> min/max clamp",
           "done": true
         },
         {

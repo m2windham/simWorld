@@ -139,8 +139,27 @@ goes through this pipeline instead.
 - `StatRequest` addresses either a live `Thing`, or an abstract `(ThingDef, ThingDef? stuff)` pair with no
   Thing at all. RimWorld addresses a `BuildableDef` — the base of `ThingDef` and `TerrainDef` — but this port
   has no such base yet and `TerrainDef` carries no stats, so the abstract mode narrows to `ThingDef`.
-- `StatWorker.GetValue` runs `GetValueUnfinalized` (base value → pawn offsets → pawn and stuff factors →
-  capacity factors) then `FinalizeValue` (stat parts → post-process curve → min/max clamp).
+- `StatWorker.GetValue` runs `GetValueUnfinalized` (base value → skill-need factors, then skill-need offsets →
+  pawn offsets → pawn and stuff factors → capacity factors) then `FinalizeValue` (stat parts → post-process
+  curve → min/max clamp).
+- `StatDef.skillNeedFactors`/`skillNeedOffsets` (system: `work.stats`) are lists of `SkillNeed` — polymorphic
+  content the way `StatPart`/`HediffComp` already are (`Class="SimWorld.Stats.SkillNeed_Direct"` or
+  `SkillNeed_BaseBonus`) — read off the pawn's own `SkillRecord` level for `SkillNeed.skill`.
+  `SkillNeed_Direct` looks a value up from an explicit per-level table (clamping past its last entry rather
+  than throwing); `SkillNeed_BaseBonus` is `baseValue + bonusPerLevel * level`. A skill a trait or backstory
+  disables reads as level 0 here for free, since `SkillRecord.Level` itself already collapses to 0 when
+  `SkillRecord.TotallyDisabled` (§7.3) — no extra check needed on the Stats side. Shipped content:
+  `WorkSpeedGlobal`, `MedicalTendQuality`, `MiningSpeed`, `ConstructionSpeed`, `CookSpeed`, `ResearchSpeed`
+  (all new), plus `skillNeedOffsets` on the already-shipped `ShootingAccuracyPawn`/`MeleeHitChance`/
+  `MeleeDodgeChance`. None of RimWorld's own curve numbers were sourceable in this sandbox — every curve is
+  this port's own invention (see `Stats_Work.xml`'s own remarks), so only the trend (higher skill, higher
+  value; level 0, the plain base) is asserted, never a literal. Nothing outside the Stats/Work modules reads
+  these new stats yet — Building's `JobDriver_ConstructFinishFrame` and AI's `JobDriver_Mine` still read a
+  skill level directly and apply their own pre-existing hand-rolled curve (each says so in its own doc
+  comment) rather than through `ConstructionSpeed`/`MiningSpeed`; likewise Combat's `CombatStats` for
+  `ShootingAccuracyPawn`/`MeleeHitChance`/`MeleeDodgeChance` and Health's `SurgeryTuning` for
+  `MedicalSurgerySuccessChance` (§7.2). Migrating those call sites onto the stats belongs to the modules that
+  own them.
 - `StatDef.capacityFactors` reads the Health module's `PawnCapacityDef` levels — the joint that lets a
   wounded pawn's stats degrade and recover with the body. `RestRateMultiplier`'s BloodPumping, Metabolism and
   Breathing (weight 0.3 each) are the shipped example: hurt the pawn's heart and it rests slower; heal it and
@@ -155,7 +174,9 @@ goes through this pipeline instead.
 
 ```mermaid
 flowchart TD
-  Base["Base value: statBases entry, else defaultBaseValue"] --> Off1["+ trait statOffsets"]
+  Base["Base value: statBases entry, else defaultBaseValue"] --> SkillFac["x skillNeedFactors"]
+  SkillFac --> SkillOff["+ skillNeedOffsets"]
+  SkillOff --> Off1["+ trait statOffsets"]
   Off1 --> Off2["+ hediff-stage statOffsets"]
   Off2 --> Fac1["x trait statFactors"]
   Fac1 --> Fac2["x hediff-stage statFactors"]
@@ -572,9 +593,12 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   Medicine skill times the recipe's own difficulty; a failed operation injures
   the patient where the surgeon was working and may kill them, and never
   silently does nothing. RimWorld routes surgeon competence through a
-  `MedicalSurgerySuccessChance` stat whose value comes from `SkillNeed` curves
-  this port does not have yet (the open `work.stats` item), so competence is
-  read straight off the skill for now. Installing a prosthetic ships as a
+  `MedicalSurgerySuccessChance` stat whose value comes from `SkillNeed` curves;
+  the `SkillNeed`/`StatDef.skillNeedFactors` mechanism itself now exists
+  (`work.stats`, §3a), but Health's own `SurgeryTuning` predates it and still
+  reads the Medicine skill directly rather than through a
+  `MedicalSurgerySuccessChance` stat — migrating that call site belongs to the
+  Health module. Installing a prosthetic ships as a
   worker but not as content: a prosthetic is an item a civilization has to make
   or buy, and no such `ThingDef` exists yet.
 
@@ -583,8 +607,28 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
 - Skill 0–20 on an XP curve, passion multiplies gain, daily saturation caps it,
   unused skills above level 10 rust.
 - Work tags from traits and backstories disable skills and work types.
+  `BackstoryDef.workDisables`/`skillGains` (`Pawns/Backstory.cs`, content in
+  `Data/Core/Defs/BackstoryDefs/`) land with Pawn Generation: `PawnGenerator`
+  picks a childhood and (age-gated) adulthood backstory and applies both
+  backstories' `skillGains`; `Pawn_StoryTracker.DisabledWorkTagsBackstoryAndTraits`
+  ORs both backstory slots' `workDisables` in with every trait's, and
+  `Pawn.WorkTagIsDisabled`/`WorkTypeIsDisabled` read the combined result — the
+  same path a trait-disabled work type already went through, so a
+  backstory-disabled one is zeroed out of the priority grid
+  (`Pawn_WorkSettings.EnableAndInitialize`/`Notify_DisabledWorkTypesChanged`)
+  and dropped from work-giver scanning identically. Shipped content disables
+  real work (e.g. `NobleChild` bars `ManualDumb`, `Scientist` bars
+  `ManualSkilled`+`Violent`, `TribalElder` bars `Violent`).
 - Per-pawn priority grid; work givers order by priority, then natural priority,
   then priority within type, with emergency givers first.
+- **Skill-driven stats (`work.stats`, built — see §3a).** `StatDef.skillNeedOffsets`/
+  `skillNeedFactors` let a stat's value read a pawn's own skill level through a
+  `SkillNeed` (`SkillNeed_Direct`/`SkillNeed_BaseBonus`); `WorkSpeedGlobal`,
+  `MedicalTendQuality`, `MiningSpeed`, `ConstructionSpeed`, `CookSpeed` and
+  `ResearchSpeed` ship as new content, and the already-shipped
+  `ShootingAccuracyPawn`/`MeleeHitChance`/`MeleeDodgeChance` (§3a) picked up
+  `skillNeedOffsets` too. A `TotallyDisabled` skill (the work-tags rule above)
+  reads as level 0 in every one of these for free.
 - **Policy (SimWorld translation, `work.policy`, built).** A civilization cannot
   set twelve priority numbers per citizen the way a RimWorld player sets them
   per colonist, so a standing `RoleDef` (Farmer, Miner, Artisan, Scholar ship as
