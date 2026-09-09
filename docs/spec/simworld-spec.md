@@ -734,7 +734,7 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   regions are only ever linked when they truly share a walkable border, so a
   corridor can never route through a wall, and an unconstrained retry catches
   anything the corridor could not complete. The trade this makes deliberately:
-  the tree minimizes region *hop count*, not cell distance, so a
+  the tree minimizes region _hop count_, not cell distance, so a
   corridor-constrained path can come out longer than `PathFinder`'s own
   unconstrained optimum — disclosed and bounded by test
   (`PathSharingTests.Hierarchical_corridor_can_be_longer_than_optimal_but_is_still_a_valid_path`)
