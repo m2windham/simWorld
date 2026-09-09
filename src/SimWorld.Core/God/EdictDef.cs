@@ -26,6 +26,20 @@ namespace SimWorld.God
         /// edicts a civilization can issue at all (<see cref="GodManager.CanActivate"/>).</summary>
         public EraDef? requiredEra;
 
+        /// <summary>
+        /// The era at which a civilization outgrows this edict; null means it never expires on its own. The
+        /// mirror of <see cref="requiredEra"/>, the same minEra/maxEra symmetry
+        /// <see cref="Director.IncidentDef.minEra"/>/<see cref="Director.IncidentDef.maxEra"/> already uses for
+        /// "an incident a civilization outgrows" — but the comparison direction is deliberately not identical
+        /// to <see cref="Director.IncidentDef.maxEra"/>: that field stays valid *through* the era it names
+        /// (<see cref="Director.IncidentWorker"/>'s own era gate disqualifies only once the era is exceeded,
+        /// <c>era.order &gt; maxEra.order</c>), while this one fires the moment the named era is *reached*
+        /// (<see cref="GodManager.CanActivate"/> and its era-transition handler both compare with
+        /// <c>&gt;=</c>, not <c>&gt;</c>) — because the brief this field was built from is explicit that
+        /// reaching the era is itself the retirement moment, not the era after it.
+        /// </summary>
+        public EraDef? obsoleteEra;
+
         /// <summary>Set as <see cref="Research.ResearchManager.CurrentProj"/> on activation, when not already
         /// finished. Optional: not every edict directs research.</summary>
         public ResearchProjectDef? researchFocus;
@@ -74,6 +88,11 @@ namespace SimWorld.God
             {
                 yield return "moodThought must be a situational thought (a workerClass, not a duration) so it " +
                     "tracks edict activation automatically instead of needing to be granted and revoked by hand.";
+            }
+            if (requiredEra != null && obsoleteEra != null && requiredEra.order >= obsoleteEra.order)
+            {
+                yield return "requiredEra must be earlier than obsoleteEra, or the edict could never be active " +
+                    "(the era that unlocks it would already be the era that retires it).";
             }
         }
 

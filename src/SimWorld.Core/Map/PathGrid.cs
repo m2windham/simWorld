@@ -19,8 +19,10 @@ namespace SimWorld.Map
         private readonly Map map;
         private readonly int[] perceivedPathCost;
 
-        /// <summary>Bumped every time any cell's cost changes; <see cref="AI.Reachability"/> uses this to
-        /// know when its cached region ids need recomputing instead of checking on every query.</summary>
+        /// <summary>Bumped every time any cell's cost changes. Nothing currently reads it to decide whether
+        /// to recompute (<see cref="RecalculatePerceivedPathCostAt"/> below does that itself, cell by cell,
+        /// via <see cref="Map.regionAndRoomUpdater"/>) — kept as a cheap, map-wide "did anything at all
+        /// change" signal since a test already asserts on it directly.</summary>
         public int Version { get; private set; }
 
         public PathGrid(Map map)
@@ -53,8 +55,19 @@ namespace SimWorld.Map
         public void RecalculatePerceivedPathCostAt(IntVec3 c)
         {
             if (!GenGrid.InBounds(c, map)) return;
-            perceivedPathCost[map.cellIndices.CellToIndex(c)] = CalculatedCostAt(c);
+            int i = map.cellIndices.CellToIndex(c);
+            bool wasWalkable = perceivedPathCost[i] < ImpassableCost;
+            perceivedPathCost[i] = CalculatedCostAt(c);
             Version++;
+
+            // Only a walkability *flip* can change the region graph's shape — a cost change between two
+            // still-walkable values (heavier brush, say) never moves a region boundary, so dirtying the
+            // graph for it would rebuild regions for nothing every time terrain cost is merely re-tuned.
+            bool isWalkable = perceivedPathCost[i] < ImpassableCost;
+            if (wasWalkable != isWalkable)
+            {
+                map.regionAndRoomUpdater.Notify_DirtyCell(c);
+            }
         }
 
         public void RecalculateAllPerceivedPathCosts()

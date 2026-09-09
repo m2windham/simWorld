@@ -256,6 +256,14 @@ The object layer every later system stands on, ported from RimWorld's `Thing`.
 - **Listers**: `ListerThings` by def and group, `MapPawns` per map.
 - **Save/load**: run-length terrain and roof grids plus a polymorphic list of
   spawned Things, re-spawned at their saved positions on load.
+- **Regions**: `Region`/`RegionLink`/`RegionGrid`/`RegionMaker`/
+  `RegionAndRoomUpdater` (system 9's `AI.Reachability` is the consumer, §7.4) —
+  a graph over the path grid's passability, cardinal-flood-filled per region
+  and linked across region edges, with doors as their own single-cell `Portal`
+  regions so a door's state can change without merging or splitting the rooms
+  it joins. A passability change dirties and rebuilds only the region(s) it
+  touches; regions are never saved, only rebuilt from the map on load, same as
+  the path-cost grid itself.
 
 ```mermaid
 flowchart TD
@@ -265,6 +273,7 @@ flowchart TD
   Thing -->|SpawnSetup| Map
   Map --> Grids[Terrain, roof, thing, edifice grids]
   Grids --> Path[Path cost grid]
+  Path --> Regions[Region / RegionLink graph]
   Map --> Listers[ListerThings, MapPawns]
 ```
 
@@ -469,13 +478,18 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   binary min-heap open list and diagonal corner-cutting rules;
   `Pawn_PathFollower` then walks the returned `PawnPath` cell by cell at a
   speed derived from the `MoveSpeed` stat. `Reachability` answers "can A reach
-  B" from a flat flood-fill cache (one connected-component id per walkable
-  cell, recomputed only when the path grid actually changes) rather than the
-  region/region-link graph a large, well-subdivided map would eventually want
-  — an O(1) cached query today, at the cost of an O(map) recompute on _any_
-  path-grid change anywhere, however small. Full-agent populations still need
-  shared paths (hierarchical or flow field); today's `PathFinder` runs one
-  `A*` search per pawn per path request.
+  B" by BFS over §5a's Region/RegionLink graph (`RegionTraverser`) — a
+  handful of coarse region hops rather than a per-cell search, and rather
+  than the flat flood-fill cache this class used to keep for itself (one
+  connected-component id per walkable cell, recomputed in full on _any_
+  path-grid change anywhere, however small — see `docs/status.json`'s
+  `ai.regions` history). The region graph fixes that cost at its source:
+  `Map.regionAndRoomUpdater` dirties and rebuilds only the region(s) a
+  passability change actually touches, so building one wall no longer forces
+  a whole-map recompute. `CanReachTarget`/`CanReach`'s public shape is
+  unchanged throughout. Full-agent populations still need shared paths
+  (hierarchical or flow field); today's `PathFinder` runs one `A*` search per
+  pawn per path request.
 
 ```mermaid
 flowchart TD
@@ -486,7 +500,7 @@ flowchart TD
   Work --> Job
   Job --> Toils[Toil state machine]
   Toils --> Reserve[Reservation check]
-  Toils --> Path[Flood-fill reachability + A*]
+  Toils --> Path[Region-graph reachability + A*]
 ```
 
 ### 7.5 Demography, Lineage & Lifespan
@@ -590,8 +604,12 @@ flowchart TD
   the moment supply recovers, not a per-device priority order.
 - **Rooms & temperature**: `RoomTracker` flood-fills `Room`s from the edifice
   grid (stopping at any Fillage-`Full` edifice — a wall or a `Door`) lazily,
-  off a dirty flag the edifice grid raises on any spawn/despawn, the same
-  trade-off `AI.Reachability` already makes for its own reachability cache. A
+  off a dirty flag the edifice grid raises on any spawn/despawn — a full
+  re-flood rather than an incremental update, which is cheap because it happens
+  only on a spawn or despawn. (Reachability used to make the same trade-off and
+  no longer does, having moved onto the region graph in §5a; rooms could follow,
+  but thermal enclosure and reachability partitioning are different questions
+  and rooms were left alone rather than rewritten in the same pass.) A
   `Door` still splits a Room the way a wall does, but `RoomGroup` re-merges
   Rooms joined only by a shared Door back into one thermal unit — since this
   pass's Door has no closed state at all (always `Standable`; no swing, no
@@ -718,31 +736,60 @@ the translation and its state per system.
   (`EraDef.threatPointsFactor`, standing in for the wealth term nothing computes
   yet) and gates content through `IncidentDef.minEra`/`maxEra`. A scenario's
   starting era is seeded silently: history begins there, it was not lived through.
+  The god layer itself reacts, not just the director: `GodManager` subscribes to
+  `EraReached` and re-evaluates active edicts on every crossing.
+  `EdictDef.obsoleteEra` mirrors `requiredEra` the same way `IncidentDef.maxEra`
+  mirrors `minEra` — a thing a civilization outgrows — except the comparison is
+  `>=` rather than `>`: reaching the named era is itself the retirement moment.
+  An edict past its `obsoleteEra` auto-deactivates with its own Chronicle line
+  ("Edict outgrown: …"); separately, one Chronicle line ("New edicts
+  available: …") names every edict the crossing newly unlocks, never one line
+  per edict and never a line at all when nothing unlocked. The subscription
+  itself is idempotent (unsubscribe-then-resubscribe, not a bare `+=`) so a
+  loaded save can never end up doubly subscribed and double-firing Chronicle
+  entries — `GodManager`'s constructor subscribes for a fresh civilization,
+  its `ExposeData`'s `PostLoadInit` branch resubscribes for a loaded one.
 - **Aggregation**: per-citizen depth stays, but the god view reads `GodRollup`
   — population by `PawnTier`, mean mood, mean health, a food/industry readout,
-  era and research progress — rather than opening every person. Tier-aware by
-  construction, not by an if-skip: a Statistical citizen's health contribution
-  is `Pawn_TierTracker.SampledHealthFraction`, never a real hediff-set read,
-  which is the entire reason §11.3's tiering exists — reading every citizen's
-  hediffs to answer a civilization-scale question would defeat it. Cached with
-  a recompute cadence and an explicit dirty flag (`Notify_Dirty`), never
-  recomputed per tick per reader.
+  era and research progress — rather than opening every person. `GodRollup`
+  is fed by a real `Settlement` (`Recompute(Settlement)`) or several, for a
+  whole civilization (`Recompute(IReadOnlyList<Settlement>)`) — or a bare
+  population list, for a caller or test that already has one assembled.
+  Tier-aware by construction, not by an if-skip: a Statistical citizen's
+  health contribution is `Pawn_TierTracker.SampledHealthFraction`, never a
+  real hediff-set read, which is the entire reason §11.3's tiering exists —
+  reading every citizen's hediffs to answer a civilization-scale question
+  would defeat it. A settlement's _bare_ Statistical population — a count
+  with no `Pawn` object per person at all — is folded into the same means by
+  one deterministic cohort sample per settlement per statistic (mood, food,
+  health, industry skill; `GodRollup.AccumulateStatisticalCohort`, reusing
+  `Pawn_TierTracker`'s own sampling idiom rather than a second one), weighted
+  by population count in the running mean rather than walked member by
+  member — the "fold the cohort in with a stated sampled value" choice, so a
+  settlement recomputes in O(settlements) + O(Full/Interval citizens), never
+  O(Statistical population): a 40,000-person settlement costs the same as a
+  40-person one. Cached with a recompute cadence and an explicit dirty flag
+  (`Notify_Dirty`), never recomputed per tick per reader.
 
-_Status_: all three god-layer pieces are built. **Eras** (§9's ladder) now
-announce themselves, scale threats and gate content — see the Eras bullet
-above. **Edicts** and the edict think-tree tier live in `src/SimWorld.Core/God`:
+_Status_: all three god-layer pieces are built, and the two seams the module
+was first left with are now closed. **Eras** (§9's ladder) now announce
+themselves, scale threats, gate content, and — the god layer's own reaction —
+retire and unlock edicts on crossing; see the Eras bullet above. **Edicts**
+and the edict think-tree tier live in `src/SimWorld.Core/God`:
 `EdictDef`/`EdictWorker` (one concrete worker, `EdictWorker_ExemptMinors`, for
 behaviour a def field alone cannot express — a harsh edict that spares
 children), `GodManager` (`Find.God`: a slot budget sized as a real trade-off
-rather than a checklist, era gating, Chronicle recording on activation and
-deactivation, a Scribe round trip), `JobGiver_Edicts`, and `GodRollup`. Five
+rather than a checklist, era gating in both directions (`requiredEra`,
+`obsoleteEra`), Chronicle recording on activation, deactivation and era
+transitions, a Scribe round trip), `JobGiver_Edicts`, and `GodRollup`. Five
 edicts ship spread across the era ladder, each costing public mood through a
 situational thought (`ThoughtWorker_UnderEdict`) that tracks activation on its
 own — no explicit per-pawn grant or removal, so nothing lingers once an edict
-is rescinded. **Settlements** are entities now (§5b.5) rather than a def and a
-tile, which leaves the gap narrow: the god view itself (UI/host work, once
-there is a host to render one), and wiring `GodRollup` to a `Settlement`'s own
-population instead of a caller-supplied list.
+is rescinded; `HuntersMandate` also carries `obsoleteEra` as real content, not
+just an ad-hoc test case. **Settlements** are entities now (§5b.5) rather than
+a def and a tile, and `GodRollup` reads one (or a civilization of them)
+directly rather than a caller-supplied list. What remains is the god view
+itself — UI/host work, once there is a host to render one.
 
 ```mermaid
 flowchart LR
