@@ -107,6 +107,79 @@ namespace SimWorld.ReachHarness
             Console.WriteLine("(spread = mean days between the first and last engaged archetype turning that era on a seed)");
         }
 
+        /// <summary>
+        /// The question the horizon decision actually leaves open. Years are not the currency — a century in
+        /// which nothing happened costs nothing to pass — so "can a 50-year civilization have everything" is
+        /// a question about a unit that no longer applies. What survives the reframing is per era: by the time
+        /// a civilization leaves an era behind, how much of that era had it actually seen, and did two
+        /// different civilizations see the same things?
+        ///
+        /// <list type="bullet">
+        /// <item><b>seen%</b>: of the era's own projects, the share finished at the moment that era turned.
+        /// 100% means the era offered no choice at all; very low means most of its content is scenery.</item>
+        /// <item><b>overlap</b>: mean pairwise Jaccard of what two engaged archetypes had finished at that
+        /// same moment. 1.00 means every civilization walks the identical path — the failure the original
+        /// "playstyles diverge" phrasing was really about.</item>
+        /// </list>
+        /// </summary>
+        public static void EraShape(PanelResult panel, TreeModel tree)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"{"era",-18}{"projects",10}{"spine%",8}{"seen%",8}{"overlap",9}{"reached",9}");
+            for (int order = 0; order < tree.Eras.Count; order++)
+            {
+                EraDef era = tree.Eras[order];
+                List<ResearchProjectDef> inEra = tree.InEra(era).ToList();
+                var snapshots = new List<HashSet<ResearchProjectDef>>();
+                foreach (RunResult run in panel.Engaged)
+                {
+                    if (order >= run.FinishedAtEraTurn.Length) continue;
+                    HashSet<ResearchProjectDef>? snap = run.FinishedAtEraTurn[order];
+                    if (snap != null) snapshots.Add(snap);
+                }
+
+                // How much of the era is spine is the ceiling on how much two civilizations can differ:
+                // everyone must finish the spine to leave the era at all, so only the leaves are ever a choice.
+                double spineShare = inEra.Count == 0 ? 0 : inEra.Count(p => tree.OutDegree[p] > 0) / (double)inEra.Count;
+
+                if (snapshots.Count == 0 || inEra.Count == 0)
+                {
+                    Console.WriteLine($"{era.defName,-18}{inEra.Count,10}{spineShare,8:P0}{"-",8}{"-",9}{"never",9}");
+                    continue;
+                }
+
+                double seen = snapshots.Average(snap => inEra.Count(p => snap.Contains(p)) / (double)inEra.Count);
+                double overlap = MeanPairwiseOverlap(snapshots, inEra);
+                double reached = snapshots.Count / (double)panel.Engaged.Count;
+                Console.WriteLine($"{era.defName,-18}{inEra.Count,10}{spineShare,8:P0}{seen,8:P0}{overlap,9:0.00}{reached,9:P0}");
+            }
+            Console.WriteLine("(spine% = share of the era something else depends on, which every civilization must finish to leave");
+            Console.WriteLine(" the era — the structural ceiling on how much two civilizations can differ within it;");
+            Console.WriteLine(" seen% = share of that era's own projects finished when the era turned; overlap = mean pairwise");
+            Console.WriteLine(" Jaccard of those sets across engaged archetypes; reached = share of runs that turned the era at all)");
+        }
+
+        /// <summary>Mean pairwise Jaccard similarity of what each run had finished <i>within one era</i>.</summary>
+        private static double MeanPairwiseOverlap(List<HashSet<ResearchProjectDef>> snapshots, List<ResearchProjectDef> inEra)
+        {
+            if (snapshots.Count < 2) return 1.0;
+
+            double total = 0;
+            int pairs = 0;
+            for (int i = 0; i < snapshots.Count; i++)
+            {
+                for (int j = i + 1; j < snapshots.Count; j++)
+                {
+                    var a = inEra.Where(snapshots[i].Contains).ToHashSet();
+                    var b = inEra.Where(snapshots[j].Contains).ToHashSet();
+                    int union = a.Union(b).Count();
+                    total += union == 0 ? 1.0 : a.Intersect(b).Count() / (double)union;
+                    pairs++;
+                }
+            }
+            return pairs == 0 ? 1.0 : total / pairs;
+        }
+
         public static void DeadContent(PanelResult panel, TreeModel tree, int listLimit = 0)
         {
             Console.WriteLine();

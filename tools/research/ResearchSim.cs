@@ -26,6 +26,14 @@ namespace SimWorld.ReachHarness
         /// <summary>First day each era became complete counting unbroken from era 0; -1 when it never did.</summary>
         public int[] EraTurnDay = Array.Empty<int>();
 
+        /// <summary>
+        /// What had been finished at the moment each era turned — the snapshot the "moments per era" framing
+        /// needs. Years are not the currency (the horizon decision), so the question is not "how much by year
+        /// N" but "how much of an era had this civilization seen by the time it left that era behind".
+        /// Null for an era never reached.
+        /// </summary>
+        public HashSet<ResearchProjectDef>?[] FinishedAtEraTurn = Array.Empty<HashSet<ResearchProjectDef>?>();
+
         /// <summary>Highest era order reached by unbroken completion; -1 when era 0 never completed.</summary>
         public int MaxEraOrder = -1;
 
@@ -81,6 +89,7 @@ namespace SimWorld.ReachHarness
                 Seed = seed,
                 ActiveCount = ctx.Active.Count,
                 EraTurnDay = new int[tree.Eras.Count],
+                FinishedAtEraTurn = new HashSet<ResearchProjectDef>?[tree.Eras.Count],
             };
             for (int i = 0; i < result.EraTurnDay.Length; i++) result.EraTurnDay[i] = -1;
 
@@ -90,7 +99,7 @@ namespace SimWorld.ReachHarness
             int skillLevel = config.StartSkill;
             float attention = policy.AttentionOverride >= 0f ? policy.AttentionOverride : config.Attention;
             int erasComplete = CountCompleteEras(tree, ctx, eraRule);
-            RecordEraTurns(result, erasComplete, 0);
+            RecordEraTurns(result, ctx, erasComplete, 0);
             if (config.EraGatesAvailability) ctx.OpenEraOrder = erasComplete;
 
             int currentDay = 0;
@@ -101,7 +110,7 @@ namespace SimWorld.ReachHarness
             {
                 int now = CountCompleteEras(tree, ctx, eraRule);
                 if (now <= erasComplete) return false;
-                RecordEraTurns(result, now, currentDay);
+                RecordEraTurns(result, ctx, now, currentDay);
                 erasComplete = now;
                 if (config.EraGatesAvailability) ctx.OpenEraOrder = erasComplete;
                 return true;
@@ -248,11 +257,24 @@ namespace SimWorld.ReachHarness
             return n;
         }
 
-        private static void RecordEraTurns(RunResult result, int erasComplete, int day)
+        /// <summary>
+        /// Records the day each newly-complete era turned, and snapshots what was finished at that moment.
+        /// The snapshot has to be taken from the <paramref name="ctx"/>'s live manager: <c>RunResult.Finished</c>
+        /// is only assembled after the whole run, so reading it here would snapshot an empty set every time —
+        /// which is exactly the silent, plausible-looking zero this measurement produced before.
+        /// </summary>
+        private static void RecordEraTurns(RunResult result, PolicyContext ctx, int erasComplete, int day)
         {
             for (int i = 0; i < erasComplete && i < result.EraTurnDay.Length; i++)
             {
-                if (result.EraTurnDay[i] < 0) result.EraTurnDay[i] = day;
+                if (result.EraTurnDay[i] >= 0) continue;
+                result.EraTurnDay[i] = day;
+                var snapshot = new HashSet<ResearchProjectDef>();
+                foreach (ResearchProjectDef p in ctx.Active)
+                {
+                    if (ctx.Manager.IsFinished(p)) snapshot.Add(p);
+                }
+                result.FinishedAtEraTurn[i] = snapshot;
             }
         }
     }

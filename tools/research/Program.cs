@@ -36,6 +36,9 @@ namespace SimWorld.ReachHarness
                 case "baseline":
                     Baseline(full, seeds);
                     break;
+                case "eras":
+                    EraShape(full, seeds);
+                    break;
                 case "sweep":
                     Sweep(core, seeds);
                     break;
@@ -48,11 +51,12 @@ namespace SimWorld.ReachHarness
                 case "all":
                     Reports.TreeStats(tree);
                     Baseline(full, seeds);
+                    EraShape(full, seeds);
                     Sweep(core, seeds);
                     Modifiers(full, seeds);
                     break;
                 default:
-                    Console.Error.WriteLine("commands: tree | baseline | sweep | modifiers | all | run <modifierSpec> [key=value ...]");
+                    Console.Error.WriteLine("commands: tree | baseline | eras | sweep | modifiers | all | run <modifierSpec> [key=value ...]");
                     return 1;
             }
 
@@ -78,6 +82,38 @@ namespace SimWorld.ReachHarness
         /// researcher tech level is set once by ScenPart_StartingEra and nothing ever advances it, so
         /// "as shipped" pays the stale CostFactor and "tech tracks era" is the same tree without it.
         /// </summary>
+        /// <summary>
+        /// The era-shape report, run over the configuration the game actually ships (tech level tracking the
+        /// era, which is how ResearchManager now behaves) and over a range of research throughputs. Throughput
+        /// stands in for everything the abstracted clock makes unmeasurable in years: a civilization that
+        /// spends more of itself on research reaches the same place sooner, and the question is whether the
+        /// *shape* of an era survives that, not how many years it took.
+        /// </summary>
+        private static void EraShape(IReadOnlyList<ResearchPolicy> policies, IReadOnlyList<int> seeds)
+        {
+            Reports.Heading("Era shape: how much of an era a civilization sees before leaving it");
+
+            foreach (float throughput in new[] { 0.5f, 1f, 2f, 4f })
+            {
+                RunConfig c = BaseConfig();
+                c.ThroughputMultiplier = throughput;
+                PanelResult p = Panel.Run(tree, c, "techtrack", policies, seeds, $"throughput x{throughput:0.#}");
+                Console.WriteLine();
+                Console.WriteLine($"-- shipped, throughput x{throughput:0.#} --");
+                Reports.EraShape(p, tree);
+            }
+
+            // The candidate fix, measured rather than assumed: price the leaves — the content nothing else
+            // depends on — so sweeping all of them up while working the spine stops being free.
+            foreach (float leaf in new[] { 2f, 4f, 8f })
+            {
+                PanelResult p = Panel.Run(tree, BaseConfig(), $"techtrack,leafcost{leaf:0.#}", policies, seeds, $"leaf cost x{leaf:0.#}");
+                Console.WriteLine();
+                Console.WriteLine($"-- leaf cost x{leaf:0.#} (spine unchanged) --");
+                Reports.EraShape(p, tree);
+            }
+        }
+
         private static void Baseline(IReadOnlyList<ResearchPolicy> policies, IReadOnlyList<int> seeds)
         {
             RunConfig config = BaseConfig();
