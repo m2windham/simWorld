@@ -5,6 +5,7 @@ using SimWorld.Defs;
 using SimWorld.MapGen;
 using SimWorld.Sim;
 using SimWorld.Tests.Content;
+using SimWorld.Things;
 using SimWorld.World;
 using SimWorld.World.Gen;
 using Xunit;
@@ -79,10 +80,10 @@ namespace SimWorld.Tests.MapGen
         [Fact]
         public void MapGen_content_is_fully_loaded_and_bound()
         {
-            Assert.Equal(7, DefDatabase<GenStepDef>.DefCount);
+            Assert.Equal(8, DefDatabase<GenStepDef>.DefCount);
             Assert.Equal(1, DefDatabase<MapGeneratorDef>.DefCount);
             Assert.NotNull(MapGeneratorDefOf.Base);
-            Assert.Equal(7, MapGeneratorDefOf.Base.genSteps.Count);
+            Assert.Equal(8, MapGeneratorDefOf.Base.genSteps.Count);
 
             Assert.NotNull(MapGenTerrainDefOf.SoilRich);
             Assert.NotNull(MapGenTerrainDefOf.Marsh);
@@ -100,6 +101,15 @@ namespace SimWorld.Tests.MapGen
             Assert.NotNull(MapGenThingDefOf.ChunkGranite);
             Assert.NotNull(MapGenThingDefOf.ChunkLimestone);
             Assert.NotNull(MapGenThingDefOf.WildPlant);
+
+            Assert.NotNull(MapGenThingDefOf.Wall);
+            Assert.NotNull(MapGenThingDefOf.BlocksSandstone);
+            Assert.NotNull(MapGenThingDefOf.Steel);
+            Assert.NotNull(MapGenThingDefOf.WoodLog);
+            Assert.NotNull(MapGenThingDefOf.Silver);
+            Assert.NotNull(MapGenThingDefOf.MeleeWeapon_Knife);
+            Assert.NotNull(MapGenThingDefOf.MeleeWeapon_Club);
+            Assert.NotNull(MapGenThingDefOf.Bow_Short);
         }
 
         // ----- Determinism -----
@@ -531,6 +541,141 @@ namespace SimWorld.Tests.MapGen
             // Both spokes run to the map's own centre, so the centre cell is where they overlap.
             var center = new global::SimWorld.Map.IntVec3(size.x / 2, 0, size.x / 2);
             Assert.Equal(MapGenTerrainDefOf.StreetStoneRoad, map.terrainGrid.TerrainAt(center));
+        }
+
+        // ----- Ruins (GenStep_Ruins; spec: mapgen.ruins) -----
+
+        private static int WallCount(global::SimWorld.Map.Map map) => ThingCountOfDef(map, MapGenThingDefOf.Wall);
+
+        private static int RoofCountOfDef(global::SimWorld.Map.Map map, global::SimWorld.Map.RoofDef roof)
+        {
+            int count = 0;
+            foreach (global::SimWorld.Map.IntVec3 c in map.AllCells)
+            {
+                if (map.roofGrid.RoofAt(c) == roof) count++;
+            }
+            return count;
+        }
+
+        [Fact]
+        public void Ruins_place_a_believable_number_of_wall_segments_not_a_scatter_or_a_maze()
+        {
+            var size = new global::SimWorld.Map.IntVec2(100, 100);
+            Tile tile = MakeTile(Hilliness.Flat);
+            global::SimWorld.Map.Map map = MapGenerator.GenerateMap(tile, 1, "ruins-believable", size);
+
+            int walls = WallCount(map);
+            Assert.True(walls > 0, "Expected at least one ruin wall segment on a 100x100 flat map with this seed.");
+            Assert.True(walls < size.Area / 10, $"Ruin walls ({walls}) should stay a small minority of the map, not fill it.");
+        }
+
+        [Fact]
+        public void Ruin_walls_are_weathered_below_full_hit_points_but_never_to_zero()
+        {
+            var size = new global::SimWorld.Map.IntVec2(100, 100);
+            Tile tile = MakeTile(Hilliness.Flat);
+            global::SimWorld.Map.Map map = MapGenerator.GenerateMap(tile, 1, "ruins-weathered", size);
+
+            IReadOnlyList<Thing> walls = map.listerThings.ThingsOfDef(MapGenThingDefOf.Wall);
+            Assert.True(walls.Count > 0, "Expected ruin walls on this seed to check weathering against.");
+
+            bool anyWeathered = false;
+            foreach (Thing wall in walls)
+            {
+                Assert.True(wall.HitPoints >= 1, "A spawned wall should never carry zero or negative hit points.");
+                Assert.True(wall.HitPoints <= wall.MaxHitPoints, "A spawned wall should never exceed its own max hit points.");
+                if (wall.HitPoints < wall.MaxHitPoints) anyWeathered = true;
+            }
+            Assert.True(anyWeathered, "At least one ruin wall should read as weathered (below full hit points), not pristine.");
+        }
+
+        [Fact]
+        public void Same_seed_produces_identical_ruins()
+        {
+            Tile tile = MakeTile(Hilliness.Flat);
+            var size = new global::SimWorld.Map.IntVec2(100, 100);
+
+            global::SimWorld.Map.Map a = MapGenerator.GenerateMap(tile, 1, "ruins-determinism", size);
+            global::SimWorld.Map.Map b = MapGenerator.GenerateMap(tile, 1, "ruins-determinism", size);
+
+            var wallsA = a.listerThings.ThingsOfDef(MapGenThingDefOf.Wall)
+                .Select(t => (t.Position, t.HitPoints)).OrderBy(t => t.Position.x).ThenBy(t => t.Position.z).ToList();
+            var wallsB = b.listerThings.ThingsOfDef(MapGenThingDefOf.Wall)
+                .Select(t => (t.Position, t.HitPoints)).OrderBy(t => t.Position.x).ThenBy(t => t.Position.z).ToList();
+
+            Assert.True(wallsA.Count > 0, "Expected ruin walls on this seed to check determinism against.");
+            Assert.Equal(wallsA, wallsB);
+        }
+
+        [Fact]
+        public void Ruin_density_scales_with_map_area()
+        {
+            Tile tile = MakeTile(Hilliness.Flat);
+            var smallSize = new global::SimWorld.Map.IntVec2(60, 60);
+            var largeSize = new global::SimWorld.Map.IntVec2(180, 180);
+
+            int smallTotal = 0, largeTotal = 0;
+            for (int seed = 0; seed < 8; seed++)
+            {
+                string seedString = "ruins-density-" + seed.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                smallTotal += WallCount(MapGenerator.GenerateMap(tile, seed, seedString, smallSize));
+                largeTotal += WallCount(MapGenerator.GenerateMap(tile, seed, seedString, largeSize));
+            }
+            Assert.True(largeTotal > smallTotal,
+                $"A map 9x the area ({largeTotal} wall cells across 8 seeds) should place more ruin material on average than a small one ({smallTotal}).");
+        }
+
+        [Fact]
+        public void Some_ruins_are_roofed_and_some_carry_loot_over_enough_seeds()
+        {
+            // Flat, with no rock/water of its own: the only source of RoofConstructed on such a map is a ruin.
+            Tile tile = MakeTile(Hilliness.Flat);
+            var size = new global::SimWorld.Map.IntVec2(80, 80);
+
+            int roofedCells = 0;
+            int lootCount = 0;
+            for (int seed = 0; seed < 12; seed++)
+            {
+                global::SimWorld.Map.Map map = MapGenerator.GenerateMap(tile, seed, "ruins-flavor-" + seed.ToString(System.Globalization.CultureInfo.InvariantCulture), size);
+                roofedCells += RoofCountOfDef(map, global::SimWorld.Map.RoofDefOf.RoofConstructed);
+                lootCount += ThingCountOfDef(map, MapGenThingDefOf.Silver)
+                    + ThingCountOfDef(map, MapGenThingDefOf.MeleeWeapon_Knife)
+                    + ThingCountOfDef(map, MapGenThingDefOf.MeleeWeapon_Club)
+                    + ThingCountOfDef(map, MapGenThingDefOf.Bow_Short);
+            }
+            Assert.True(roofedCells > 0, "At least one ruin, over 12 seeds, should come up roofed.");
+            Assert.True(lootCount > 0, "At least one ruin, over 12 seeds, should carry loot.");
+        }
+
+        [Fact]
+        public void Ruins_never_wall_off_a_pocket_the_region_graph_cannot_reach_from_the_border()
+        {
+            // A stress case: a big flat map (no rock or water of its own) crowded with ruins, so any
+            // enclosure this step could produce gets every chance to show up. Flat + no river keeps every
+            // non-ruin cell walkable, so cell (0,0) — outside every ruin's RuinEdgeMargin by construction —
+            // is a safe, always-walkable anchor to reach every other walkable cell from.
+            Tile tile = MakeTile(Hilliness.Flat);
+            var size = new global::SimWorld.Map.IntVec2(160, 160);
+            global::SimWorld.Map.Map map = MapGenerator.GenerateMap(tile, 1, "ruins-reachability", size);
+
+            Assert.True(WallCount(map) > 0, "Expected this seed/size to place ruin walls to actually test enclosure against.");
+
+            map.regionAndRoomUpdater.RebuildIfNeeded();
+            var origin = new global::SimWorld.Map.IntVec3(0, 0, 0);
+            global::SimWorld.Map.Region? borderRegion = map.regionGrid.RegionAt(origin);
+            Assert.NotNull(borderRegion);
+
+            int walkableChecked = 0;
+            foreach (global::SimWorld.Map.IntVec3 c in map.AllCells)
+            {
+                if (!global::SimWorld.Map.GenGrid.Walkable(c, map)) continue;
+                global::SimWorld.Map.Region? here = map.regionGrid.RegionAt(c);
+                Assert.NotNull(here);
+                Assert.True(global::SimWorld.Map.RegionTraverser.WithinRegions(borderRegion!, here!),
+                    $"Cell {c} is walkable but unreachable from the map border through the region graph — a ruin walled off a pocket.");
+                walkableChecked++;
+            }
+            Assert.True(walkableChecked > size.Area / 2, "Expected the large majority of a flat, ruin-scattered map to remain walkable.");
         }
 
         // ----- Scribe -----
