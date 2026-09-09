@@ -1102,6 +1102,14 @@ flowchart LR
   courts, and half of RimWorld's cheating model would be worse than none) and
   orientation (no pawn carries one, and a gate the data cannot support would be
   invented rather than ported).
+- **Scope of the sweep**: one sweep per settlement, not one over the planet.
+  The sweep pairs people up to chat, insult, court and fall out with each
+  other, so its scope decides who can have a relationship at all — and two
+  citizens of rival civilizations a continent apart have never met. Since
+  `World.EmergenceManager` began founding rivals, most candidate pairs in a
+  whole-world sweep were exactly that. A settlement is the smallest unit this
+  port has that means "the people among whom you live"; when caravans and
+  travel make strangers meet, that is the seam to widen.
 - **Interactions** (`InteractionDef` + `InteractionWorker`): chitchat, deep talk,
   insult and slight, selected by weight per pair on a population-wide sweep every
   2,500 ticks — a rare-tick manager sweep (`SocialInteractionManager`), not
