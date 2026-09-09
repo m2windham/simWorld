@@ -22,6 +22,17 @@ namespace SimWorld.MapGen
         /// <summary>Base seed text every <see cref="GenStep"/> derives its own stream from (see <see cref="GenStep.SeededStream"/>).</summary>
         public readonly string seedString;
 
+        /// <summary>
+        /// The world grid <see cref="tileId"/> comes from, when one is available — <see cref="MapGenerator.GenerateMapFor"/>
+        /// (the real entry point a settlement actually uses) always supplies it; the lower-level, tile-only
+        /// <see cref="MapGenerator.GenerateMap"/> overload most of this suite's other tests call does not have
+        /// to. <see cref="GenStep_Roads"/> is the one step that needs it — a <see cref="World.RoadLink"/> only
+        /// carries a neighbour tile id, and turning that into a real heading needs the grid's own tile
+        /// positions (<see cref="World.WorldGrid.LongLatOf"/>). Null means "no real heading is available";
+        /// see that step's own doc for why it draws nothing rather than guess one.
+        /// </summary>
+        public readonly WorldGrid? grid;
+
         /// <summary>0..1 per cell, built by <see cref="GenStep_ElevationFertility"/>; read by <see cref="GenStep_RocksAndMountains"/>.</summary>
         public float[] elevationGrid = Array.Empty<float>();
 
@@ -35,12 +46,13 @@ namespace SimWorld.MapGen
         /// </summary>
         public bool[] rock = Array.Empty<bool>();
 
-        public MapGenContext(Map.Map map, Tile tile, int tileId, string seedString)
+        public MapGenContext(Map.Map map, Tile tile, int tileId, string seedString, WorldGrid? grid = null)
         {
             this.map = map ?? throw new ArgumentNullException(nameof(map));
             this.tile = tile ?? throw new ArgumentNullException(nameof(tile));
             this.tileId = tileId;
             this.seedString = seedString ?? throw new ArgumentNullException(nameof(seedString));
+            this.grid = grid;
         }
     }
 }

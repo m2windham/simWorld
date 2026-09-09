@@ -2,9 +2,10 @@
 <Defs>
 
   <!--
-    Big, point-scaled threats. Squad generation (composition/tactic from points and tech) lands with the
-    Factions/Combat systems; IncidentWorker_ThreatEvent validates points and lets the chronicle note that a
-    threat of this size was due (see IncidentWorker_ThreatEvent's doc comment).
+    Big, point-scaled threats. RaidEnemy's squad composition/tactic (points and tech spent against the
+    raiding faction's own PawnGroupMakers/RaidStrategyDefs) lives in IncidentWorker_RaidEnemy; see that
+    class's doc comment for exactly how far it goes without a Map to place the squad on. ManhunterPack has
+    no such system yet, so it still uses the points-validating placeholder.
   -->
 
   <IncidentDef>
@@ -13,7 +14,7 @@
     <description>Hostiles attack the civilization.</description>
     <category>ThreatBig</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
-    <workerClass>SimWorld.Director.IncidentWorker_ThreatEvent</workerClass>
+    <workerClass>SimWorld.Director.IncidentWorker_RaidEnemy</workerClass>
     <baseChance>1.0</baseChance>
     <minThreatPoints>35</minThreatPoints>
     <pointsScaleable>true</pointsScaleable>

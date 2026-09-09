@@ -79,14 +79,18 @@ namespace SimWorld.Tests.MapGen
         [Fact]
         public void MapGen_content_is_fully_loaded_and_bound()
         {
-            Assert.Equal(6, DefDatabase<GenStepDef>.DefCount);
+            Assert.Equal(7, DefDatabase<GenStepDef>.DefCount);
             Assert.Equal(1, DefDatabase<MapGeneratorDef>.DefCount);
             Assert.NotNull(MapGeneratorDefOf.Base);
-            Assert.Equal(6, MapGeneratorDefOf.Base.genSteps.Count);
+            Assert.Equal(7, MapGeneratorDefOf.Base.genSteps.Count);
 
             Assert.NotNull(MapGenTerrainDefOf.SoilRich);
             Assert.NotNull(MapGenTerrainDefOf.Marsh);
             Assert.NotNull(MapGenTerrainDefOf.MarshyTerrain);
+            Assert.NotNull(MapGenTerrainDefOf.StreetDirtPath);
+            Assert.NotNull(MapGenTerrainDefOf.StreetDirtRoad);
+            Assert.NotNull(MapGenTerrainDefOf.StreetStoneRoad);
+            Assert.NotNull(MapGenTerrainDefOf.StreetAncientAsphalt);
 
             Assert.NotNull(MapGenThingDefOf.Sandstone);
             Assert.NotNull(MapGenThingDefOf.Granite);
@@ -279,6 +283,254 @@ namespace SimWorld.Tests.MapGen
 
             Assert.Equal(30, map.Size.x);
             Assert.Equal(35, map.Size.z);
+        }
+
+        // ----- Interior map sizing (Settlement.EnterMap's own tuning) -----
+
+        [Fact]
+        public void MapSizeForPopulation_never_shrinks_as_population_grows()
+        {
+            int[] populations = { 0, 10, 39, 40, 90, 250, 900, 3000, 50000 };
+            global::SimWorld.Map.IntVec2 previous = MapGenTuning.MapSizeForPopulation(populations[0]);
+            foreach (int population in populations.Skip(1))
+            {
+                global::SimWorld.Map.IntVec2 size = MapGenTuning.MapSizeForPopulation(population);
+                Assert.True(size.x >= previous.x, $"Population {population} produced a smaller map ({size.x}) than a lower population did ({previous.x}).");
+                Assert.Equal(size.x, size.z); // square, like every other map this generator produces
+                previous = size;
+            }
+            Assert.True(previous.x > MapGenTuning.MapSizeForPopulation(populations[0]).x,
+                "A huge settlement should end up with a strictly larger map than an empty one, not a no-op constant.");
+        }
+
+        // ----- Roads: world-tile roads carried onto the map as a street (spec §5, §11.2) -----
+
+        private static (int tileId, int neighborA, int neighborB) DivergentNeighborPair(WorldGrid grid)
+        {
+            for (int tileId = 0; tileId < grid.TilesCount; tileId++)
+            {
+                IReadOnlyList<int> neighbors = grid.NeighborsOf(tileId);
+                for (int i = 0; i < neighbors.Count; i++)
+                {
+                    for (int j = i + 1; j < neighbors.Count; j++)
+                    {
+                        global::SimWorld.Vector3 da = (grid.GetTileCenter(neighbors[i]) - grid.GetTileCenter(tileId)).Normalized;
+                        global::SimWorld.Vector3 db = (grid.GetTileCenter(neighbors[j]) - grid.GetTileCenter(tileId)).Normalized;
+                        // More than 90 degrees apart: unambiguously different sides of the settlement, not just noise.
+                        if (global::SimWorld.Vector3.Dot(da, db) < 0f)
+                        {
+                            return (tileId, neighbors[i], neighbors[j]);
+                        }
+                    }
+                }
+            }
+            throw new InvalidOperationException("No sufficiently divergent neighbour pair found at this subdivision level.");
+        }
+
+        private static global::SimWorld.Map.IntVec3 ClosestStreetCellToBorder(global::SimWorld.Map.Map map, global::SimWorld.Map.TerrainDef streetTerrain)
+        {
+            global::SimWorld.Map.IntVec3 best = default;
+            int bestDist = int.MaxValue;
+            foreach (global::SimWorld.Map.IntVec3 c in map.AllCells)
+            {
+                if (map.terrainGrid.TerrainAt(c) != streetTerrain) continue;
+                int distToEdge = Math.Min(Math.Min(c.x, map.Size.x - 1 - c.x), Math.Min(c.z, map.Size.z - 1 - c.z));
+                if (distToEdge < bestDist)
+                {
+                    bestDist = distToEdge;
+                    best = c;
+                }
+            }
+            Assert.True(bestDist != int.MaxValue, "Expected at least one street cell.");
+            return best;
+        }
+
+        [Fact]
+        public void A_tile_with_a_road_produces_a_map_with_a_street_and_a_tile_without_does_not()
+        {
+            WorldGrid grid = WorldGrid.Generate(3);
+            RoadDef road = DefDatabase<RoadDef>.GetNamed("DirtRoad");
+            var size = new global::SimWorld.Map.IntVec2(60, 60);
+            const int tileId = 0;
+            int neighbor = grid.NeighborsOf(tileId)[0];
+
+            Tile withRoad = MakeTile(Hilliness.Flat);
+            withRoad.potentialRoads.Add(new RoadLink(neighbor, road));
+            Tile withoutRoad = MakeTile(Hilliness.Flat);
+
+            global::SimWorld.Map.Map roadMap = MapGenerator.GenerateMap(withRoad, tileId, "road-presence", size, grid: grid);
+            global::SimWorld.Map.Map plainMap = MapGenerator.GenerateMap(withoutRoad, tileId, "road-presence", size, grid: grid);
+
+            int streetCells = roadMap.AllCells.Count(c => roadMap.terrainGrid.TerrainAt(c) == MapGenTerrainDefOf.StreetDirtRoad);
+            Assert.True(streetCells > 0, "A tile with a road link should produce a map with some street terrain.");
+            Assert.Equal(0, plainMap.AllCells.Count(c => plainMap.terrainGrid.TerrainAt(c) == MapGenTerrainDefOf.StreetDirtRoad));
+        }
+
+        [Fact]
+        public void A_road_with_no_grid_available_draws_nothing_rather_than_guess_a_heading()
+        {
+            RoadDef road = DefDatabase<RoadDef>.GetNamed("DirtRoad");
+            var size = new global::SimWorld.Map.IntVec2(50, 50);
+            Tile tile = MakeTile(Hilliness.Flat);
+            tile.potentialRoads.Add(new RoadLink(999, road));
+
+            // No grid argument: the tile-only overload every other test in this file already uses.
+            global::SimWorld.Map.Map map = MapGenerator.GenerateMap(tile, 1, "road-no-grid", size);
+
+            Assert.Equal(0, map.AllCells.Count(c => map.terrainGrid.TerrainAt(c) == MapGenTerrainDefOf.StreetDirtRoad));
+        }
+
+        [Fact]
+        public void A_road_enters_the_map_from_the_side_facing_its_real_neighbour_not_a_fixed_or_opposite_one()
+        {
+            WorldGrid grid = WorldGrid.Generate(3);
+            (int tileId, int neighborA, int neighborB) = DivergentNeighborPair(grid);
+            RoadDef road = DefDatabase<RoadDef>.GetNamed("DirtRoad");
+            var size = new global::SimWorld.Map.IntVec2(60, 60);
+
+            Tile tileA = MakeTile(Hilliness.Flat);
+            tileA.potentialRoads.Add(new RoadLink(neighborA, road));
+            Tile tileB = MakeTile(Hilliness.Flat);
+            tileB.potentialRoads.Add(new RoadLink(neighborB, road));
+
+            // Same seed string for both: direction is the only thing that differs between the two maps.
+            global::SimWorld.Map.Map mapA = MapGenerator.GenerateMap(tileA, tileId, "road-direction", size, grid: grid);
+            global::SimWorld.Map.Map mapB = MapGenerator.GenerateMap(tileB, tileId, "road-direction", size, grid: grid);
+
+            global::SimWorld.Map.IntVec3 entryA = ClosestStreetCellToBorder(mapA, MapGenTerrainDefOf.StreetDirtRoad);
+            global::SimWorld.Map.IntVec3 entryB = ClosestStreetCellToBorder(mapB, MapGenTerrainDefOf.StreetDirtRoad);
+
+            double apart = Math.Sqrt(Math.Pow(entryA.x - entryB.x, 2) + Math.Pow(entryA.z - entryB.z, 2));
+            Assert.True(apart > size.x * 0.3,
+                $"Two neighbours more than 90 degrees apart from {tileId} should enter the map at clearly different points ({entryA} vs {entryB}, {apart:F1} cells apart).");
+        }
+
+        [Fact]
+        public void A_river_enters_the_map_from_the_side_facing_the_tile_it_flows_to()
+        {
+            // Rivers used to pick their axis with a coin flip even though RiverLink carries the same real
+            // neighbour data RoadLink does. Same shape of proof as the road test: two tiles differing only in
+            // which neighbour their river runs to must put their water in clearly different places.
+            WorldGrid grid = WorldGrid.Generate(3);
+            (int tileId, int neighborA, int neighborB) = DivergentNeighborPair(grid);
+            RiverDef river = DefDatabase<RiverDef>.GetNamed("River");
+            var size = new global::SimWorld.Map.IntVec2(60, 60);
+
+            Tile tileA = MakeTile(Hilliness.Flat);
+            tileA.potentialRivers.Add(new RiverLink(neighborA, river));
+            Tile tileB = MakeTile(Hilliness.Flat);
+            tileB.potentialRivers.Add(new RiverLink(neighborB, river));
+
+            // Same seed string for both: direction is the only thing that differs.
+            global::SimWorld.Map.Map mapA = MapGenerator.GenerateMap(tileA, tileId, "river-direction", size, grid: grid);
+            global::SimWorld.Map.Map mapB = MapGenerator.GenerateMap(tileB, tileId, "river-direction", size, grid: grid);
+
+            global::SimWorld.Map.IntVec3 entryA = ClosestWaterCellToBorder(mapA);
+            global::SimWorld.Map.IntVec3 entryB = ClosestWaterCellToBorder(mapB);
+
+            double apart = Math.Sqrt(Math.Pow(entryA.x - entryB.x, 2) + Math.Pow(entryA.z - entryB.z, 2));
+            Assert.True(apart > size.x * 0.3,
+                $"A river to two neighbours more than 90 degrees apart from {tileId} should enter at clearly different points ({entryA} vs {entryB}, {apart:F1} cells apart).");
+        }
+
+        [Fact]
+        public void A_river_still_crosses_the_map_when_no_grid_is_available()
+        {
+            // The fallback path: no grid means no real heading, so the axis is still a coin flip — but the one
+            // correspondence spec §5 calls load-bearing (a river tile always produces water crossing the map)
+            // must hold either way.
+            RiverDef river = DefDatabase<RiverDef>.GetNamed("River");
+            Tile tile = MakeTile(Hilliness.Flat);
+            tile.potentialRivers.Add(new RiverLink(999, river));
+            var size = new global::SimWorld.Map.IntVec2(60, 60);
+
+            global::SimWorld.Map.Map map = MapGenerator.GenerateMap(tile, 1, "river-no-grid", size);
+
+            Assert.True(WaterCellCount(map) > 0);
+            Assert.True(TouchesTwoOppositeBorders(map), "A river should cross the map, not stop inside it.");
+        }
+
+        private static global::SimWorld.Map.IntVec3 ClosestWaterCellToBorder(global::SimWorld.Map.Map map)
+        {
+            global::SimWorld.Map.IntVec3 best = default;
+            int bestDist = int.MaxValue;
+            foreach (global::SimWorld.Map.IntVec3 c in map.AllCells)
+            {
+                if (!IsWater(map, c)) continue;
+                int distToEdge = Math.Min(Math.Min(c.x, map.Size.x - 1 - c.x), Math.Min(c.z, map.Size.z - 1 - c.z));
+                if (distToEdge < bestDist)
+                {
+                    bestDist = distToEdge;
+                    best = c;
+                }
+            }
+            Assert.True(bestDist != int.MaxValue, "Expected at least one water cell.");
+            return best;
+        }
+
+        private static bool IsWater(global::SimWorld.Map.Map map, global::SimWorld.Map.IntVec3 c)
+        {
+            global::SimWorld.Map.TerrainDef t = map.terrainGrid.TerrainAt(c);
+            return t == global::SimWorld.Map.TerrainDefOf.WaterShallow || t == global::SimWorld.Map.TerrainDefOf.WaterDeep;
+        }
+
+        private static bool TouchesTwoOppositeBorders(global::SimWorld.Map.Map map)
+        {
+            bool west = false, east = false, south = false, north = false;
+            foreach (global::SimWorld.Map.IntVec3 c in map.AllCells)
+            {
+                if (!IsWater(map, c)) continue;
+                if (c.x == 0) west = true;
+                if (c.x == map.Size.x - 1) east = true;
+                if (c.z == 0) south = true;
+                if (c.z == map.Size.z - 1) north = true;
+            }
+            return (west && east) || (south && north);
+        }
+
+        [Fact]
+        public void Same_seed_tile_and_grid_produce_an_identical_street()
+        {
+            WorldGrid grid = WorldGrid.Generate(3);
+            int tileId = 0;
+            int neighbor = grid.NeighborsOf(tileId)[0];
+            RoadDef road = DefDatabase<RoadDef>.GetNamed("StoneRoad");
+            var size = new global::SimWorld.Map.IntVec2(50, 50);
+
+            Tile MakeRoadTile()
+            {
+                Tile t = MakeTile(Hilliness.SmallHills);
+                t.potentialRoads.Add(new RoadLink(neighbor, road));
+                return t;
+            }
+
+            global::SimWorld.Map.Map a = MapGenerator.GenerateMap(MakeRoadTile(), tileId, "road-determinism", size, grid: grid);
+            global::SimWorld.Map.Map b = MapGenerator.GenerateMap(MakeRoadTile(), tileId, "road-determinism", size, grid: grid);
+
+            foreach (global::SimWorld.Map.IntVec3 c in a.AllCells)
+            {
+                Assert.Equal(a.terrainGrid.TerrainAt(c), b.terrainGrid.TerrainAt(c));
+            }
+        }
+
+        [Fact]
+        public void Two_road_links_of_different_priority_leave_the_higher_priority_terrain_showing_where_they_overlap()
+        {
+            WorldGrid grid = WorldGrid.Generate(3);
+            (int tileId, int neighborA, int neighborB) = DivergentNeighborPair(grid);
+            RoadDef low = DefDatabase<RoadDef>.GetNamed("DirtPath");
+            RoadDef high = DefDatabase<RoadDef>.GetNamed("StoneRoad");
+            var size = new global::SimWorld.Map.IntVec2(60, 60);
+
+            Tile tile = MakeTile(Hilliness.Flat);
+            tile.potentialRoads.Add(new RoadLink(neighborA, low));
+            tile.potentialRoads.Add(new RoadLink(neighborB, high));
+
+            global::SimWorld.Map.Map map = MapGenerator.GenerateMap(tile, tileId, "road-priority", size, grid: grid);
+
+            // Both spokes run to the map's own centre, so the centre cell is where they overlap.
+            var center = new global::SimWorld.Map.IntVec3(size.x / 2, 0, size.x / 2);
+            Assert.Equal(MapGenTerrainDefOf.StreetStoneRoad, map.terrainGrid.TerrainAt(center));
         }
 
         // ----- Scribe -----

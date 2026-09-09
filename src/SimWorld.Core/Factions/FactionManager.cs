@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Defs;
@@ -61,9 +62,32 @@ namespace SimWorld.Factions
             }
         }
 
+        /// <summary>
+        /// A hostile faction to raid with, weighted by <see cref="FactionDef.raidCommonality"/> — a faction
+        /// twice as common raids about twice as often (RimWorld weights its own raider choice the same way).
+        /// The other <c>Random*Faction</c> pickers stay uniform: commonality is about who comes for you, not
+        /// about who happens to be allied or neutral.
+        /// </summary>
         public Faction? RandomEnemyFaction(bool allowHidden = false, bool allowDefeated = false, bool allowNonHumanlike = true, TechLevel minTechLevel = TechLevel.Undefined)
         {
-            return RandomFactionMatching((f, player) => f.HostileTo(player), allowHidden, allowDefeated, allowNonHumanlike, minTechLevel);
+            Faction? player = OfPlayer;
+            if (player == null) return null;
+            List<Faction> candidates = GetFactions(allowHidden, allowDefeated, allowNonHumanlike, minTechLevel)
+                .Where(f => !ReferenceEquals(f, player) && f.HostileTo(player))
+                .ToList();
+            if (candidates.Count == 0) return null;
+
+            float total = 0f;
+            for (int i = 0; i < candidates.Count; i++) total += Math.Max(0f, candidates[i].def.raidCommonality);
+            if (total <= 0f) return Rand.Element(candidates); // every candidate weighted to nothing: fall back to uniform.
+
+            float roll = Rand.Value * total;
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                roll -= Math.Max(0f, candidates[i].def.raidCommonality);
+                if (roll <= 0f) return candidates[i];
+            }
+            return candidates[candidates.Count - 1]; // floating-point slack at the very top of the range.
         }
 
         public Faction? RandomAlliedFaction(bool allowHidden = false, bool allowDefeated = false, bool allowNonHumanlike = true, TechLevel minTechLevel = TechLevel.Undefined)

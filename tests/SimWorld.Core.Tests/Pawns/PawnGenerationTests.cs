@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Defs;
+using SimWorld.Factions;
 using SimWorld.Pawns;
 using SimWorld.Pawns.Generation;
 using SimWorld.Sim;
@@ -18,6 +19,10 @@ namespace SimWorld.Tests.Pawns
         }
 
         private static PawnKindDef Kind(string defName) => DefDatabase<PawnKindDef>.GetNamed(defName);
+
+        private static FactionDef FactionDefNamed(string defName) => DefDatabase<FactionDef>.GetNamed(defName);
+
+        private static Faction NewFaction(string factionDefName, string name) => new Faction(FactionDefNamed(factionDefName), name, "F_" + name);
 
         // ---- content ----
 
@@ -367,6 +372,106 @@ namespace SimWorld.Tests.Pawns
                 if (x < 1.5f) lowHalf++; else highHalf++;
             }
             Assert.True(highHalf > lowHalf * 3, "expected the heavily-weighted half of the curve to be sampled far more often");
+        }
+
+        // ---- gear (pawngen.gear: weapon half) ----
+
+        [Fact]
+        public void Kind_with_no_weaponTags_is_never_armed()
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                Pawn pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(PawnKindDefOf.Colonist, fixedBiologicalAge: 30f));
+                Assert.Null(pawn.equipment.Primary);
+            }
+        }
+
+        [Fact]
+        public void Kind_with_weaponTags_and_no_faction_is_armed_with_a_matching_untiered_weapon()
+        {
+            bool sawWeapon = false;
+            for (int i = 0; i < 30; i++)
+            {
+                Pawn pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(Kind("Raider_Melee"), fixedBiologicalAge: 30f));
+                ThingDef? weapon = pawn.equipment.Primary?.def;
+                if (weapon == null) continue;
+                sawWeapon = true;
+                Assert.Contains("NeolithicMeleeWeapon", weapon.weaponTags!);
+                Assert.InRange(weapon.BaseMarketValue, Kind("Raider_Melee").weaponMoneyRange.min, Kind("Raider_Melee").weaponMoneyRange.max);
+            }
+            Assert.True(sawWeapon, "expected at least one Raider_Melee generation to carry a weapon across 30 tries");
+        }
+
+        [Fact]
+        public void Gunner_kind_never_armed_for_a_neolithic_faction_but_armed_for_an_industrial_one()
+        {
+            Faction tribal = NewFaction("TribalCivilization", "GearTribal");
+            for (int i = 0; i < 30; i++)
+            {
+                Pawn pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(Kind("Raider_Gunner"), fixedBiologicalAge: 30f, faction: tribal));
+                Assert.Null(pawn.equipment.Primary);
+            }
+
+            Faction outlander = NewFaction("OutlanderCivilization", "GearOutlander");
+            bool sawWeapon = false;
+            for (int i = 0; i < 30 && !sawWeapon; i++)
+            {
+                Pawn pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(Kind("Raider_Gunner"), fixedBiologicalAge: 30f, faction: outlander));
+                if (pawn.equipment.Primary != null)
+                {
+                    sawWeapon = true;
+                    Assert.True(pawn.equipment.Primary.def.techLevel <= TechLevel.Industrial);
+                    Assert.Contains("IndustrialRangedWeapon", pawn.equipment.Primary.def.weaponTags!);
+                }
+            }
+            Assert.True(sawWeapon, "expected an Industrial-tech faction's gunner to be armed across 30 tries");
+        }
+
+        [Fact]
+        public void Weapon_generation_is_deterministic_for_the_same_seed()
+        {
+            Faction outlander1 = NewFaction("OutlanderCivilization", "DetA");
+            Rand.Current = new RandomStream(2468);
+            Pawn.ResetThingIdCounter();
+            NameUseChecker.Clear();
+            Pawn a = PawnGenerator.GeneratePawn(new PawnGenerationRequest(Kind("Raider_Gunner"), fixedBiologicalAge: 30f, faction: outlander1));
+
+            Faction outlander2 = NewFaction("OutlanderCivilization", "DetA"); // same defName/loadID as above, distinct instance
+            Rand.Current = new RandomStream(2468);
+            Pawn.ResetThingIdCounter();
+            NameUseChecker.Clear();
+            Pawn b = PawnGenerator.GeneratePawn(new PawnGenerationRequest(Kind("Raider_Gunner"), fixedBiologicalAge: 30f, faction: outlander2));
+
+            Assert.Equal(a.equipment.Primary?.def.defName, b.equipment.Primary?.def.defName);
+        }
+
+        // ---- gear Scribe round trip ----
+
+        [Fact]
+        public void Scribe_round_trip_preserves_carried_gear()
+        {
+            // No faction on this request: gear round-tripping only needs the weapon Thing itself, and a
+            // Faction reference elsewhere in the same save graph is exercised separately (Factions'
+            // PawnGroupMakerTests.Scribe_round_trip_of_a_generated_raid_squad_preserves_faction_and_gear).
+            // Raider_Gunner's two candidate weapons (Gun_Revolver, Gun_AssaultRifle) both always pass its
+            // tag/price filters with no tech ceiling, so this kind is armed deterministically here.
+            Rand.Current = new RandomStream(4004);
+            Pawn.ResetThingIdCounter();
+            Pawn pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(Kind("Raider_Gunner"), fixedBiologicalAge: 30f));
+            Assert.NotNull(pawn.equipment.Primary);
+            string originalDefName = pawn.equipment.Primary!.def.defName;
+            int originalHitPoints = pawn.equipment.Primary.HitPoints;
+
+            var holder = new PawnHolder { pawns = new List<Pawn> { pawn } };
+            string xml = Scribe.SaveToString(holder, "game");
+            Pawn.ResetThingIdCounter();
+            PawnHolder loaded = Scribe.Load<PawnHolder>(xml, "game", out IReadOnlyList<string> errors);
+
+            Assert.Empty(errors);
+            Pawn restored = loaded.pawns![0];
+            Assert.NotNull(restored.equipment.Primary);
+            Assert.Equal(originalDefName, restored.equipment.Primary!.def.defName);
+            Assert.Equal(originalHitPoints, restored.equipment.Primary.HitPoints);
         }
     }
 }

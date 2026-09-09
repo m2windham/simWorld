@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Defs;
 using SimWorld.Factions;
+using SimWorld.Map;
+using SimWorld.MapGen;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 
@@ -168,6 +170,38 @@ namespace SimWorld.World
             statisticalPopulation = Math.Max(0, (int)Math.Round(grown));
         }
 
+        // ---- interior map (spec §11.2's seam) ----
+
+        /// <summary>Never triggers generation — null until <see cref="EnterMap"/> has actually been called once. See that method's own doc for why a settlement that has never been opened stays this way.</summary>
+        private Map.Map? interiorMap;
+
+        public Map.Map? InteriorMap => interiorMap;
+
+        /// <summary>
+        /// This settlement's interior, generated the first time the player opens it and cached from then on —
+        /// a second call returns the exact same <see cref="Map.Map"/> instance rather than paying to
+        /// regenerate it. Sized by <see cref="TotalPopulation"/> via <see cref="MapGenTuning.MapSizeForPopulation"/>
+        /// rather than the generator's own flat default (spec: "size the map by the settlement, not by a
+        /// constant" — <c>TotalPopulation</c> is read once, at first entry, so a settlement that grows after
+        /// being entered keeps the interior it was first given rather than resizing under the player).
+        /// <para/>
+        /// <b>Left null until entered on purpose.</b> A generated <see cref="Map.Map"/> is the single most
+        /// expensive thing this save file can hold — a full terrain/roof grid plus every scattered Thing —
+        /// and in a civilization of many settlements, most are never opened at all. Generating (and later
+        /// saving) one for every settlement regardless of whether the player ever looks inside would be
+        /// real, avoidable cost for nothing; see the module's report for the concrete numbers.
+        /// </summary>
+        public Map.Map EnterMap(World world)
+        {
+            if (world == null) throw new ArgumentNullException(nameof(world));
+            if (interiorMap == null)
+            {
+                IntVec2 size = MapGenTuning.MapSizeForPopulation(TotalPopulation);
+                interiorMap = MapGenerator.GenerateMapFor(this, world, size);
+            }
+            return interiorMap;
+        }
+
         // ---- Scribe ----
 
         public override void ExposeData()
@@ -189,6 +223,12 @@ namespace SimWorld.World
             {
                 foreach (KeyValuePair<ThingDef, int> kv in storeDict) stores[kv.Key] = kv.Value;
             }
+
+            // Null when this settlement has never been entered (EnterMap's own doc) — Scribe_Deep.Look
+            // writes/reads a null element in that case rather than paying to save or load a map at all.
+            Map.Map? m = interiorMap;
+            Scribe_Deep.Look(ref m, "interiorMap");
+            interiorMap = m;
         }
     }
 }

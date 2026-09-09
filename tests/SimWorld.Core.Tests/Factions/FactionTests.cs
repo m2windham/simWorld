@@ -299,6 +299,46 @@ namespace SimWorld.Tests.Factions
         }
 
         [Fact]
+        public void A_more_common_raider_is_picked_more_often()
+        {
+            // raidCommonality was declared but unconsumed until raids were built: RandomEnemyFaction picked
+            // uniformly, so a faction content said should raid twice as often raided exactly as often as
+            // everyone else. The assertion is a band, not a ratio: with a 4:1 weighting the common raider
+            // should clearly dominate, without pinning the sampler's exact distribution.
+            var manager = new FactionManager();
+            Faction player = NewFaction(PlayerDef, "Player");
+            Faction common = NewFaction(RoughDef, "Common");
+            Faction rare = NewFaction(TribalDef, "Rare");
+            manager.Add(player);
+            manager.Add(common);
+            manager.Add(rare);
+            common.SetRelationDirect(player, FactionRelationKind.Hostile, -100);
+            rare.SetRelationDirect(player, FactionRelationKind.Hostile, -100);
+
+            float savedCommon = common.def.raidCommonality;
+            float savedRare = rare.def.raidCommonality;
+            try
+            {
+                common.def.raidCommonality = 4f;
+                rare.def.raidCommonality = 1f;
+
+                int commonPicks = 0;
+                const int Draws = 400;
+                for (int i = 0; i < Draws; i++)
+                {
+                    if (ReferenceEquals(manager.RandomEnemyFaction(), common)) commonPicks++;
+                }
+
+                Assert.InRange(commonPicks, Draws * 0.6, Draws * 0.95);
+            }
+            finally
+            {
+                common.def.raidCommonality = savedCommon;
+                rare.def.raidCommonality = savedRare;
+            }
+        }
+
+        [Fact]
         public void FactionManager_random_pickers_respect_relation_to_the_player()
         {
             var manager = new FactionManager();

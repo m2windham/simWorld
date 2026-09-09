@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Local streets MapGen.GenStep_Roads paints when a settlement's world-tile road (World.RoadDef) crosses
+    its interior map. One terrain per road class, matched by RoadDef.localTerrain in RoadDefs/Roads.xml —
+    distinct defNames from the world-scale RoadDefs on purpose (DefDatabase keys by concrete Def type, so a
+    RoadDef and a TerrainDef could technically share one name without colliding, but two same-named Defs of
+    different kinds is exactly the kind of thing worth avoiding on sight). pathCost 0 across the board matches
+    Soil, the fastest terrain this port models — this port has no local movement-speed bonus below that to
+    give a nicer road (see MapGenTuning's own remark); what a road actually buys here is a guaranteed, always-
+    walkable street regardless of what hilliness or scatter the tile otherwise produced.
+  -->
+
+  <TerrainDef>
+    <defName>StreetDirtPath</defName>
+    <label>dirt path</label>
+    <pathCost>0</pathCost>
+    <fertility>0</fertility>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>StreetDirtRoad</defName>
+    <label>dirt road</label>
+    <pathCost>0</pathCost>
+    <fertility>0</fertility>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+      <li>Heavy</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>StreetStoneRoad</defName>
+    <label>stone road</label>
+    <pathCost>0</pathCost>
+    <fertility>0</fertility>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+      <li>Heavy</li>
+    </affordances>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>StreetAncientAsphalt</defName>
+    <label>ancient asphalt</label>
+    <pathCost>0</pathCost>
+    <fertility>0</fertility>
+    <affordances>
+      <li>Light</li>
+      <li>Medium</li>
+      <li>Heavy</li>
+    </affordances>
+  </TerrainDef>
+
+</Defs>

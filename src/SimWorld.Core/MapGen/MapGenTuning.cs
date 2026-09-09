@@ -1,3 +1,4 @@
+using SimWorld.Map;
 using SimWorld.World;
 
 namespace SimWorld.MapGen
@@ -113,5 +114,63 @@ namespace SimWorld.MapGen
 
         public static float PlantCellsPerItem(float plantSignal) =>
             GenMath.Lerp(PlantCellsPerItemSparse, PlantCellsPerItemDense, GenMath.Clamp01(plantSignal));
+
+        // ---- Roads (GenStep_Roads) ----
+
+        /// <summary>
+        /// Width, in cells, of a carried-over street. SimWorld's own — unlike <see cref="RiverDef.widthOnWorld"/>,
+        /// which gives rivers a real world-scale number to derive a cell width from, RimWorld's local roads
+        /// have no published width to source at all; pinned by a behavioural test (a street is present and
+        /// several cells wide, not an exact literal) rather than trusted as a literal.
+        /// </summary>
+        public const int RoadWidthCells = 3;
+
+        // ---- Interior map sizing (Settlement.EnterMap) ----
+
+        /// <summary>
+        /// The map-size ladder <see cref="MapSizeForPopulation"/> picks a rung from. The brief that asked for
+        /// population-based sizing says outright that RimWorld's own local map size is a fixed player-chosen
+        /// setting with nothing behind it to source, so every rung here — and every threshold in
+        /// <see cref="MapSizeForPopulation"/> that picks among them — is this port's own judgement call,
+        /// anchored on the existing flat default (<see cref="MapGenerator.DefaultMapSizeX"/>) as the middle
+        /// rung so a settlement of unremarkable population gets exactly what every settlement got before this
+        /// existed. Only the *band* (a larger population never picks a smaller rung) is asserted by test,
+        /// never a literal side length.
+        /// </summary>
+        private static readonly int[] MapSideLadder =
+        {
+            MapGenerator.DefaultMapSizeX - 50,
+            MapGenerator.DefaultMapSizeX - 25,
+            MapGenerator.DefaultMapSizeX,
+            MapGenerator.DefaultMapSizeX + 25,
+            MapGenerator.DefaultMapSizeX + 50,
+            MapGenerator.DefaultMapSizeX + 75,
+            MapGenerator.DefaultMapSizeX + 100,
+        };
+
+        /// <summary>Population at which the ladder's second rung unlocks — the founding band's own maximum (spec §5b.3: 20-40) already clears it.</summary>
+        private const int FirstRungPopulation = 40;
+
+        /// <summary>Population roughly multiplies by this for every rung further up the ladder.</summary>
+        private const double RungPopulationGrowth = 2.5;
+
+        /// <summary>
+        /// A larger settlement gets a larger interior (spec: "size the map by the settlement, not by a
+        /// constant") — <paramref name="population"/> is <see cref="World.Settlement.TotalPopulation"/>, read
+        /// by <see cref="World.Settlement.EnterMap"/> at first entry. Square, like every map this generator
+        /// already produces.
+        /// </summary>
+        public static IntVec2 MapSizeForPopulation(int population)
+        {
+            int rung = 0;
+            double threshold = FirstRungPopulation;
+            while (rung < MapSideLadder.Length - 1 && population >= threshold)
+            {
+                rung++;
+                threshold *= RungPopulationGrowth;
+            }
+            int side = MapSideLadder[rung];
+            return new IntVec2(side, side);
+        }
     }
 }

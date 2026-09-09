@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using SimWorld.AI;
 using SimWorld.Defs;
+using SimWorld.Factions;
 using SimWorld.Health;
 using SimWorld.MindState;
 using SimWorld.Needs;
@@ -39,9 +40,17 @@ namespace SimWorld.Pawns
         /// <summary>Cell-to-cell movement along whatever path the current job asked for (system 9: AI).</summary>
         public Pawn_PathFollower pather = null!;
 
+        /// <summary>Weapons this pawn carries (RimWorld: <c>Pawn.equipment</c>); see <see cref="Pawn_EquipmentTracker"/>'s own doc for what's ported and what isn't (apparel).</summary>
+        public Pawn_EquipmentTracker equipment = null!;
+
         public Gender gender;
         public PawnKindDef? kindDef;
         public Name? Name;
+
+        /// <summary>The civilization/faction this pawn belongs to, if any (RimWorld: <c>Pawn.Faction</c>). Set
+        /// by <see cref="Generation.PawnGenerator"/> from <see cref="Generation.PawnGenerationRequest.Faction"/>;
+        /// a pawn built directly (<c>new Pawn(def, name)</c>) has none.</summary>
+        public Faction? faction;
 
         /// <summary>Environment sampler for seeker needs (beauty, comfort, outdoors, room); the map supplies it later.</summary>
         public IEnvironmentSampler? environment;
@@ -205,6 +214,7 @@ namespace SimWorld.Pawns
             tier ??= new Pawn_TierTracker(this);
             jobs ??= new Pawn_JobTracker(this);
             pather ??= new Pawn_PathFollower(this);
+            equipment ??= new Pawn_EquipmentTracker(this);
         }
 
         // ---- ITickable ----
@@ -291,6 +301,9 @@ namespace SimWorld.Pawns
             Pawn_PathFollower? pf = pather;
             Scribe_Deep.Look(ref pf, "pather", this);
             pather = pf ?? new Pawn_PathFollower(this);
+            Pawn_EquipmentTracker? eq = equipment;
+            Scribe_Deep.Look(ref eq, "equipment", this);
+            equipment = eq ?? new Pawn_EquipmentTracker(this);
             Scribe_Values.Look(ref gender, "gender", Gender.None);
             PawnKindDef? kd = kindDef;
             Scribe_Defs.Look(ref kd, "kindDef");
@@ -298,6 +311,9 @@ namespace SimWorld.Pawns
             Name? nm = Name;
             Scribe_Deep.Look(ref nm, "fullName");
             Name = nm;
+            Faction? f = faction;
+            Scribe_References.Look(ref f, "faction");
+            faction = f;
         }
     }
 

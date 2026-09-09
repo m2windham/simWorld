@@ -217,9 +217,19 @@ sequenceDiagram
 - Tiles live on a subdivided icosahedron (10·4ⁿ+2 tiles, 5 or 6 neighbours).
 - Saves store the seed and world objects; the grid regenerates on load.
 - **Pawn gen**: backstory pair → trait roll (exclusion-aware) → skill and
-  passion roll → name → age and life stage. Life stages scale body size, health
-  and hunger; newborns record a life event, the seed of lineage-driven
-  generation.
+  passion roll → name → age and life stage → weapon (`PawnWeaponGenerator`,
+  humanlike non-newborns only). Life stages scale body size, health and
+  hunger; newborns record a life event, the seed of lineage-driven generation.
+- **Gear — weapon half only.** `PawnKindDef.weaponTags`/`weaponMoneyRange`
+  pick among loaded weapon `ThingDef`s by `weaponTags`, `MarketValue` and
+  `techLevel` — capped at the generated pawn's own `Pawn.faction`'s
+  `FactionDef.techLevel`, so a neolithic raiding faction is never issued
+  anything above Neolithic gear. Carried gear lives on the new
+  `Pawn_EquipmentTracker` (`Pawn.equipment`). **Apparel half not built:**
+  `PawnKindDef.apparelTags`/`apparelMoneyRange` exist on the def (ported,
+  unconsumed) but there is no `ThingDef.apparel`/body-part-group coverage
+  content and no wear-tracking runtime for a `PawnApparelGenerator` to spend
+  them against yet.
 - **Map gen**: elevation/fertility noise → terrain by biome, fertility and
   rainfall, plus a carved river channel where the tile carries one → rocky
   outcrops and mountains as natural edifices, scaled by hilliness and the
@@ -279,11 +289,10 @@ flowchart TD
 
 ## 5b. Regions, Sites & Settlement Founding
 
-**Built**, except the settlement interior (§11.2's own seam — a separate
-module) and civilization emergence (§5b.4 — likewise). A game opens with a
-two-stage choice modelled on Manor Lords and Nova Roma: pick a region on the
-world map, then place the settlement inside that region against markers
-showing what is actually there.
+**Built**, including the settlement interior (§11.2's own seam), except
+civilization emergence (§5b.4). A game opens with a two-stage choice modelled
+on Manor Lords and Nova Roma: pick a region on the world map, then place the
+settlement inside that region against markers showing what is actually there.
 
 ### 5b.1 Stage one — the world map, by region
 
@@ -396,7 +405,7 @@ opening hours. Emergence is its own system and is not designed here.
 | Site scoring: necessities × era-weighted advantages | built (`Siting.SiteScorer`) |
 | Settlement as an entity: population by tier, stores, founding tick, name, growth | built (`World.Settlement`, `World.SettlementFounder`) — population is tier-aware (real `Pawn`s above Statistical, a bare count at Statistical), stores are a def→count ledger, growth wires into `FamilyManager.DemographyTick` for the real-`Pawn` slice and a closed-form rate for the Statistical one (see the module's report) |
 | Solo-start world generation | built — a flag on the faction gen step (`WorldInfo.soloStart`) |
-| A settlement interior when the player enters it | still missing — the §11.2 seam |
+| A settlement interior when the player enters it | built (`World.Settlement.EnterMap`) — the §11.2 seam, sized by `TotalPopulation` and persisted only once entered |
 
 ```mermaid
 flowchart TD
@@ -572,6 +581,16 @@ flowchart TD
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.
+- **Squad composition** (`FactionDef.pawnGroupMakers`): each faction's own
+  list of `PawnGroupMaker`s (per `PawnGroupKindDef` — only `Combat` is
+  consumed today) holds weighted `PawnGenOption`s spent against a points
+  budget by `PawnGroupMakerUtility.ChoosePawnGenOptionsByPoints` — pick an
+  affordable option by weight, deduct its `PawnKindDef.combatPower`, repeat
+  until nothing fits (never empty: an unaffordable budget still buys the
+  cheapest option). A faction's tech level is enforced structurally, not by a
+  runtime check: its `pawnGroupMakers` simply never list a `PawnKindDef` above
+  its own `TechLevel`. The Director layer's raid worker (§9) is the one
+  consumer so far.
 
 ### 8.2 Building / Power / Climate
 
@@ -682,6 +701,19 @@ want to own (see `docs/status.json` system 17's `social.ideology` item).
 - Storyteller personas built from comps (on/off cycle, random main, intro,
   single MTB, disease) choose which incident category fires each interval.
 - Incidents gate on earliest day, population, points and refire days.
+- **Raids** (`IncidentWorker_RaidEnemy`): picks a hostile faction
+  (`FactionManager.RandomEnemyFaction`), a `RaidStrategyDef` tactic that
+  faction's tech level allows (weighted among the usable ones; `Siege` needs
+  Industrial, `ImmediateAttack` needs nothing), multiplies the threat points
+  by the tactic's `pointsFactor`, and spends the result against that
+  faction's squad composition (§8.1) — every generated raider is a full,
+  gear-equipped `Pawn` attributed to its faction (`Pawn.faction`), not a stat
+  block. **Where it stops:** nothing yet links a
+  physical `Map.Map` to the civilization-scale incident target
+  (`CivilizationTarget.Map` is a settable hook every game today leaves null);
+  when a map is wired, the squad spawns at a random map edge, otherwise it is
+  generated and handed back unspawned. Actually walking the squad to the
+  colony and fighting is the AI/Map systems' to build on top of this.
 - **The Chronicle** (SimWorld translation): every fired incident appends a
   narrator record. The persona name is still open — see §15.
 
@@ -854,16 +886,20 @@ Taken from RimWorld, whose split this codebase already mirrors structurally:
 | World map: tiles, factions, settlements, caravans — nothing at colony depth | `World/` (§5) | ported |
 | Colony map: cells, things, pawns with jobs and needs at full depth | `Map/` (§5a) | ported |
 | A settlement's world tile generates its interior map | `MapGen/` (§5) | ported |
-| Entering a settlement (at settlement scope) triggers that generation and persists the result | — | **missing** |
+| Entering a settlement (at settlement scope) triggers that generation and persists the result | `World.Settlement.EnterMap` | ported |
 
-The two halves now have a seam between them: `MapGen.MapGenerator.GenerateMapFor`
+The two halves are now joined at the seam: `MapGen.MapGenerator.GenerateMapFor`
 takes the world tile a settlement sits on — its biome, elevation, hilliness,
-rainfall, rivers and deposits — and generates the interior that tile promised.
-What is still missing is the game-loop half: nothing yet calls
-`GenerateMapFor` when the player opens a settlement, and a generated map isn't
-yet attached to its `WorldObject` and carried across a save. That is the next
-piece of work, and it is now a game-loop/scope-switching problem rather than a
-map-generation one.
+rainfall, rivers, roads and deposits — and generates the interior that tile
+promised. `Settlement.EnterMap` is the game-loop half: called the first time
+the player opens a settlement, it generates that interior once, sized by
+`TotalPopulation` rather than a flat constant, caches the result on the
+`Settlement` itself, and returns the same `Map` instance on every later entry.
+A settlement never opened carries no map at all, so most of a large
+civilization's settlements cost the save file nothing beyond the entity
+itself — a real interior is real weight (tens of thousands of individually-
+saved Things on a rock-heavy map), so it is only ever paid for the settlements
+the player actually looks inside.
 
 The player's verbs follow the same split. At civilization scope the player sees
 everything and acts through edicts, research direction and policy — indirect and
