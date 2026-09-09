@@ -1011,6 +1011,21 @@ want to own (see `docs/status.json` system 17's `social.ideology` item).
 - Storyteller personas built from comps (on/off cycle, random main, intro,
   single MTB, disease) choose which incident category fires each interval.
 - Incidents gate on earliest day, population, points and refire days.
+- **A civilization of several settlements, not a colony**
+  (`director.multi-settlement`, built): `CivilizationTarget` derives what it
+  reports from the player faction's own settlements rather than being kept in
+  sync by hand — the roster is their citizens (previously every citizen on the
+  planet, rival civilizations included, once `EmergenceManager` started
+  founding them), the seat is the oldest settlement with ties broken by tile,
+  and `PlayerWealthForStoryteller` is the market value of what they hold: the
+  wealth term `EraDef.threatPointsFactor` was written as a stand-in for, which
+  stays, because scaling threat by the age a civilization has reached is
+  SimWorld's own idea rather than a substitute. An incident that has to happen
+  somewhere picks a settlement weighted by population — never below weight 1,
+  so an emptied town cannot become invisible to the narrator. The target stays
+  singular: one `StoryState`, one refire memory, one adaptation curve, because
+  "a raid this decade" is a fact about the civilization rather than about a
+  town.
 - **Raids** (`IncidentWorker_RaidEnemy`): picks a hostile faction
   (`FactionManager.RandomEnemyFaction`), a `RaidStrategyDef` tactic that
   faction's tech level allows (weighted among the usable ones; `Siege` needs
@@ -1019,10 +1034,13 @@ want to own (see `docs/status.json` system 17's `social.ideology` item).
   faction's squad composition (§8.1) — every generated raider is a full,
   gear-equipped `Pawn` attributed to its faction (`Pawn.faction`), not a stat
   block. **Where it stops:** nothing yet links a
-  physical `Map.Map` to the civilization-scale incident target
-  (`CivilizationTarget.Map` is a settable hook every game today leaves null);
-  when a map is wired, the squad spawns at a random map edge, otherwise it is
-  generated and handed back unspawned. Actually walking the squad to the
+  physical `Map.Map` to the civilization-scale incident target unless someone
+  has entered the settlement the raid picked — the raid resolves to that
+  settlement's `InteriorMap` when it has one, falling back to the settable
+  `CivilizationTarget.Map` hook; when a map is found, the squad spawns at a
+  random map edge, otherwise it is generated and handed back unspawned.
+  Generating a map just to stage an off-screen raid would be the tail wagging
+  the dog, so an unentered settlement is raided without one. Actually walking the squad to the
   colony and fighting is the AI/Map systems' to build on top of this.
 - **The Chronicle** (SimWorld translation): every fired incident appends a
   narrator record. The persona name is still open — see §15.

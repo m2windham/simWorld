@@ -410,13 +410,18 @@ namespace SimWorld.Sim
             if (citizens.Count > 0) SocialInteractionManager.SocialInteractionTick(citizens);
         }
 
-        /// <summary>Keeps <see cref="CivilizationTarget"/>'s pawn roster and tile current, gated to the same
-        /// interval <see cref="Storyteller.StorytellerTick"/> actually reads it on
-        /// (<see cref="Storyteller.IncidentCycleLengthTicks"/>) so a settlement that grows still
-        /// scales the threat director's population-intent read, without paying to rebuild the roster every
-        /// tick. <see cref="CivilizationTarget.PlayerWealthForStoryteller"/> is left at its default: no
-        /// economy/wealth feed exists yet to compute it from <see cref="SimWorld.World.Settlement.Stores"/> —
-        /// that gap belongs to the Economy lane, not this one.</summary>
+        /// <summary>
+        /// Re-attaches the player civilization's settlements to <see cref="CivilizationTarget"/>, gated to the
+        /// same interval <see cref="Storyteller.StorytellerTick"/> actually reads them on
+        /// (<see cref="Storyteller.IncidentCycleLengthTicks"/>), so a civilization that grows — or founds a
+        /// second town — scales the threat director without paying to rebuild anything every tick.
+        ///
+        /// <para/>The target derives its roster, seat and wealth from those settlements itself, so nothing is
+        /// copied into it here. Two things this fixes by construction: the roster used to be every citizen on
+        /// the planet, rival civilizations included, which inflated the threat curve by exactly the rest of
+        /// the world once <c>EmergenceManager</c> started founding rivals; and wealth used to be left at its
+        /// default because nothing computed it from <see cref="SimWorld.World.Settlement.Stores"/>.
+        /// </summary>
         private void SyncCivilizationTargetIfDue()
         {
             if (world == null) return;
@@ -427,8 +432,32 @@ namespace SimWorld.Sim
         private static void SyncCivilizationTarget(Game game, CivilizationTarget target)
         {
             if (game.world == null) return;
+            target.SetSettlements(game.PlayerSettlements());
+            // The hand-set list is what the target falls back on when it has no settlements; leaving a stale
+            // copy of the roster in it would only ever be a second, wrong answer to the same question.
             target.pawns.Clear();
-            target.pawns.AddRange(game.CollectCitizens());
+        }
+
+        /// <summary>
+        /// The settlements of the player's own civilization — the ones the storyteller is telling a story
+        /// about. A world with rivals in it has settlements that are emphatically not the player's, and
+        /// <see cref="CollectCitizens"/> deliberately does not make that distinction because its callers
+        /// (the social sweep) want everyone.
+        /// </summary>
+        private List<SimWorld.World.Settlement> PlayerSettlements()
+        {
+            var found = new List<SimWorld.World.Settlement>();
+            if (world == null) return found;
+            SimWorld.Factions.Faction? player = world.factions.FirstOrDefault(f => f.def.isPlayer);
+            foreach (SimWorld.World.WorldObject obj in world.worldObjects)
+            {
+                if (obj is SimWorld.World.Settlement settlement
+                    && (player == null ? settlement.faction == null : ReferenceEquals(settlement.faction, player)))
+                {
+                    found.Add(settlement);
+                }
+            }
+            return found;
         }
 
         private void AutosaveTick()

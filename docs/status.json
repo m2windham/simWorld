@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 1056,
+  "testsTotal": 1066,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -775,7 +775,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 38,
+      "tests": 58,
       "items": [
         {
           "id": "director.personality",
@@ -814,8 +814,8 @@
         },
         {
           "id": "director.multi-settlement",
-          "label": "Translation: targeting a civilization of several settlements rather than one — lands with the settlement entity",
-          "done": false
+          "label": "Translation: the storyteller targets a civilization of several settlements. CivilizationTarget stops being told what the civilization is and derives it from the player faction's own Settlements — the roster is their citizens, the seat is the oldest one (ties broken by tile, so list order never decides), and PlayerWealthForStoryteller is the market value of what they hold, the wealth term EraDef.threatPointsFactor was written as a stand-in for. An incident that has to happen somewhere picks a settlement weighted by population, never below weight 1 so an emptied town cannot vanish from the story, and a raid arrives at that settlement's interior map when someone has entered it. One StoryState still covers the whole civilization: a raid this decade is a fact about the civilization, not about a town. Fixes in passing a roster that counted every citizen on the planet, rival civilizations included, once EmergenceManager started founding them",
+          "done": true
         }
       ]
     },
