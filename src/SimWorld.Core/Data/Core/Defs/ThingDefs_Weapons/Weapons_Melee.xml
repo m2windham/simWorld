@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 
+  <!--
+    techLevel/weaponTags/MarketValue (added for pawngen.gear): PawnWeaponGenerator matches a PawnKindDef's
+    weaponTags against these, prices against MarketValue within the kind's weaponMoneyRange, and gates on
+    techLevel against the generated pawn's own faction (Faction.def.techLevel) so a neolithic raiding
+    faction can never be issued anything above Neolithic here. Prices are SimWorld's own — not sourced from
+    RimWorld's real weapon costs — picked only to order sensibly relative to each other; see PawnKindDefs'
+    weaponMoneyRange comments for the same note.
+  -->
+
   <ThingDef>
     <defName>MeleeWeapon_Knife</defName>
     <researchPrerequisites>
@@ -8,6 +17,12 @@
     </researchPrerequisites>
     <label>knife</label>
     <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Neolithic</techLevel>
+    <weaponTags>
+      <li>NeolithicMeleeWeapon</li>
+    </weaponTags>
+    <statBases><MarketValue>30</MarketValue></statBases>
     <tools>
       <li>
         <label>blade</label>
@@ -30,6 +45,12 @@
     <defName>MeleeWeapon_Club</defName>
     <label>club</label>
     <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Neolithic</techLevel>
+    <weaponTags>
+      <li>NeolithicMeleeWeapon</li>
+    </weaponTags>
+    <statBases><MarketValue>25</MarketValue></statBases>
     <tools>
       <li>
         <label>head</label>

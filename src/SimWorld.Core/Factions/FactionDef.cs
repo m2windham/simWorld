@@ -1,15 +1,16 @@
 using System.Collections.Generic;
 using SimWorld.Defs;
+using SimWorld.Sim;
 
 namespace SimWorld.Factions
 {
     /// <summary>
     /// A kind of civilization (RimWorld: <c>RimWorld.FactionDef</c>). World generation uses it to seed rival
     /// civilizations and place their settlements; this also carries the diplomacy tuning
-    /// <see cref="Faction"/>/<see cref="FactionGenerator"/> use for initial relations and goodwill drift.
-    /// Raid squad composition and caravan traveler kinds (RimWorld's <c>pawnGroupMakers</c>/
-    /// <c>caravanTravelerKinds</c>) are out of scope here — they need pawn kinds from the Pawn Generation
-    /// system, so this only carries the commonality weight a future raid-composition system would read.
+    /// <see cref="Faction"/>/<see cref="FactionGenerator"/> use for initial relations and goodwill drift, and
+    /// the squad composition <see cref="Factions.PawnGroupMakerUtility"/> reads to build a raid
+    /// (<see cref="pawnGroupMakers"/>). Caravan traveler kinds (RimWorld's <c>caravanTravelerKinds</c>) are
+    /// still out of scope — nothing generates a peaceful caravan yet.
     /// </summary>
     public class FactionDef : Def
     {
@@ -60,7 +61,9 @@ namespace SimWorld.Factions
         /// </summary>
         public bool mustStartOneEnemy;
 
-        /// <summary>Relative weight this faction is picked to raid with, versus other hostile factions. Not yet consumed — raid squad selection lands with the Combat/Director systems.</summary>
+        /// <summary>Relative weight this faction is picked to raid with, versus other hostile factions —
+        /// consumed by <see cref="Sim.Find.FactionManager"/>'s <c>RandomEnemyFaction</c>, which is what
+        /// <see cref="Director.IncidentWorker_RaidEnemy"/> calls to choose a raider.</summary>
         public float raidCommonality = 1f;
 
         /// <summary>This faction's ruler's title (e.g. "chief", "governor"). Flavor text only so far.</summary>
@@ -90,5 +93,57 @@ namespace SimWorld.Factions
 
         /// <summary>Days after world start before this faction may raid. Not yet consumed — raid incidents don't yet key off the originating faction.</summary>
         public int earliestRaidDays;
+
+        // ---- squad composition (RimWorld: FactionDef.pawnGroupMakers) ----
+
+        /// <summary>
+        /// Which pawn squads this faction can field, by <see cref="PawnGroupKindDef"/> (RimWorld:
+        /// <c>FactionDef.pawnGroupMakers</c>). A faction with none for <see cref="PawnGroupKindDefOf.Combat"/>
+        /// can never raid, no matter how much <c>raidCommonality</c> or hostility it has — see
+        /// <see cref="GetGroupMaker"/> and <see cref="Director.IncidentWorker_RaidEnemy"/>. This is the whole
+        /// tech-level gate on raid composition: a neolithic faction's own makers simply never list an
+        /// industrial <see cref="Pawns.PawnKindDef"/>, so it structurally cannot generate one.
+        /// </summary>
+        public List<PawnGroupMaker>? pawnGroupMakers;
+
+        /// <summary>
+        /// Picks among this def's <see cref="pawnGroupMakers"/> for <paramref name="kindDef"/>, weighted by
+        /// <see cref="PawnGroupMaker.commonality"/> when more than one matches (RimWorld:
+        /// <c>FactionDef.GetGroupMaker</c>). Null when none do.
+        /// </summary>
+        public PawnGroupMaker? GetGroupMaker(PawnGroupKindDef kindDef)
+        {
+            if (pawnGroupMakers == null || kindDef == null) return null;
+
+            PawnGroupMaker? single = null;
+            List<PawnGroupMaker>? matches = null;
+            for (int i = 0; i < pawnGroupMakers.Count; i++)
+            {
+                if (pawnGroupMakers[i].kindDef != kindDef) continue;
+                if (single == null && matches == null)
+                {
+                    single = pawnGroupMakers[i];
+                    continue;
+                }
+                matches ??= new List<PawnGroupMaker> { single! };
+                matches.Add(pawnGroupMakers[i]);
+            }
+            if (matches == null) return single;
+            return GenCollection.TryRandomElementByWeight((IReadOnlyList<PawnGroupMaker>)matches, m => m.commonality, Rand.Current, out PawnGroupMaker picked)
+                ? picked
+                : matches[0];
+        }
+
+        public override IEnumerable<string> ConfigErrors()
+        {
+            foreach (string error in base.ConfigErrors()) yield return error;
+            if (pawnGroupMakers != null)
+            {
+                foreach (PawnGroupMaker maker in pawnGroupMakers)
+                {
+                    foreach (string error in maker.ConfigErrors()) yield return error;
+                }
+            }
+        }
     }
 }

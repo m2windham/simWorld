@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 764,
+  "testsTotal": 794,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -408,7 +408,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Pawns · Pawns/Generation",
       "status": "ported",
-      "tests": 22,
+      "tests": 27,
       "items": [
         {
           "id": "pawngen.backstory",
@@ -447,7 +447,12 @@
         },
         {
           "id": "pawngen.gear",
-          "label": "Gear from faction tech level + PawnKindDef loadouts — lands with Items/Combat",
+          "label": "Weapon half: PawnKindDef.weaponTags/weaponMoneyRange + PawnWeaponGenerator, matched against ThingDef.weaponTags/techLevel/MarketValue and capped at the generated pawn's own Faction.def.techLevel; wired into PawnGenerator's pipeline and carried on the new Pawn_EquipmentTracker (Pawn.equipment), Scribe round-trip included. Apparel half not built — see pawngen.apparel.",
+          "done": true
+        },
+        {
+          "id": "pawngen.apparel",
+          "label": "Apparel half of gear: PawnKindDef.apparelTags/apparelMoneyRange fields exist (ported, unconsumed) but there is no ThingDef.apparel/ApparelProperties content, no body-part-group coverage model and no Pawn_ApparelTracker to wear it — needs the Items module's apparel content plus a wear-tracking runtime before a PawnApparelGenerator has anything to spend against",
           "done": false
         },
         {
@@ -760,7 +765,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 21,
+      "tests": 31,
       "items": [
         {
           "id": "director.personality",
@@ -789,8 +794,8 @@
         },
         {
           "id": "director.raids",
-          "label": "Raid squad generator: composition + tactic by points and tech — lands with Factions/Combat",
-          "done": false
+          "label": "Raid squad generator: IncidentWorker_RaidEnemy picks a hostile faction and a tech-gated RaidStrategyDef, spends points against that faction's own PawnGroupMaker/PawnGenOption roster (PawnGroupMakerUtility.ChoosePawnGenOptionsByPoints) so a neolithic faction structurally cannot field an industrial raider, and generates full, armed, faction-attributed pawns. Spawns them at a map edge when CivilizationTarget.Map is wired (no game wires one yet — nothing links a physical Map to the civilization-scale incident target); otherwise the squad is generated and handed back unspawned. The actual arrival-and-fight-the-player loop needs AI/Map and is not this item's scope.",
+          "done": true
         },
         {
           "id": "director.civ",
@@ -973,7 +978,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 48,
+      "tests": 60,
       "items": [
         {
           "id": "economy.goodwill",
@@ -998,6 +1003,11 @@
         {
           "id": "economy.coal-access",
           "label": "CoalSupply: a settlement's access to coal, local deposit or the cheapest reachable settlement that has one via the caravan pathfinder, priced through the existing TradeUtility buy markup plus a route-distance premium — the predicate/cost a later era-transition or industrialisation check reads",
+          "done": true
+        },
+        {
+          "id": "economy.pawn-groups",
+          "label": "FactionDef.pawnGroupMakers: PawnGroupKindDef/PawnGenOption/PawnGroupMaker plus FactionDef.GetGroupMaker — the squad-composition roster director.raids spends threat points against; each raiding FactionDef's own maker list is the tech gate (a neolithic faction's maker never lists an industrial PawnKindDef)",
           "done": true
         },
         {

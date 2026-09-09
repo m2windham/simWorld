@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using SimWorld.Defs;
+using SimWorld.Factions;
 using SimWorld.Health;
 
 namespace SimWorld.Director
@@ -104,8 +105,10 @@ namespace SimWorld.Director
 
         public bool forced;
 
-        /// <summary>Placeholder until the Factions system lands (RimWorld's originating/target faction).</summary>
-        public object? faction;
+        /// <summary>The faction responsible for this incident (RimWorld's originating/target faction) — set
+        /// by the caller to pin a specific raider (tests, a forced incident), or left null so the worker
+        /// picks one itself (<see cref="IncidentWorker_RaidEnemy"/>: <c>Find.FactionManager.RandomEnemyFaction()</c>).</summary>
+        public Faction? faction;
     }
 
     /// <summary>An incident selected to fire, waiting to be executed or queued (RimWorld: <c>Verse.FiringIncident</c>).</summary>

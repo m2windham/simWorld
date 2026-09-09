@@ -217,9 +217,19 @@ sequenceDiagram
 - Tiles live on a subdivided icosahedron (10·4ⁿ+2 tiles, 5 or 6 neighbours).
 - Saves store the seed and world objects; the grid regenerates on load.
 - **Pawn gen**: backstory pair → trait roll (exclusion-aware) → skill and
-  passion roll → name → age and life stage. Life stages scale body size, health
-  and hunger; newborns record a life event, the seed of lineage-driven
-  generation.
+  passion roll → name → age and life stage → weapon (`PawnWeaponGenerator`,
+  humanlike non-newborns only). Life stages scale body size, health and
+  hunger; newborns record a life event, the seed of lineage-driven generation.
+- **Gear — weapon half only.** `PawnKindDef.weaponTags`/`weaponMoneyRange`
+  pick among loaded weapon `ThingDef`s by `weaponTags`, `MarketValue` and
+  `techLevel` — capped at the generated pawn's own `Pawn.faction`'s
+  `FactionDef.techLevel`, so a neolithic raiding faction is never issued
+  anything above Neolithic gear. Carried gear lives on the new
+  `Pawn_EquipmentTracker` (`Pawn.equipment`). **Apparel half not built:**
+  `PawnKindDef.apparelTags`/`apparelMoneyRange` exist on the def (ported,
+  unconsumed) but there is no `ThingDef.apparel`/body-part-group coverage
+  content and no wear-tracking runtime for a `PawnApparelGenerator` to spend
+  them against yet.
 - **Map gen**: elevation/fertility noise → terrain by biome, fertility and
   rainfall, plus a carved river channel where the tile carries one → rocky
   outcrops and mountains as natural edifices, scaled by hilliness and the
@@ -571,6 +581,16 @@ flowchart TD
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.
+- **Squad composition** (`FactionDef.pawnGroupMakers`): each faction's own
+  list of `PawnGroupMaker`s (per `PawnGroupKindDef` — only `Combat` is
+  consumed today) holds weighted `PawnGenOption`s spent against a points
+  budget by `PawnGroupMakerUtility.ChoosePawnGenOptionsByPoints` — pick an
+  affordable option by weight, deduct its `PawnKindDef.combatPower`, repeat
+  until nothing fits (never empty: an unaffordable budget still buys the
+  cheapest option). A faction's tech level is enforced structurally, not by a
+  runtime check: its `pawnGroupMakers` simply never list a `PawnKindDef` above
+  its own `TechLevel`. The Director layer's raid worker (§9) is the one
+  consumer so far.
 
 ### 8.2 Building / Power / Climate
 
@@ -681,6 +701,19 @@ want to own (see `docs/status.json` system 17's `social.ideology` item).
 - Storyteller personas built from comps (on/off cycle, random main, intro,
   single MTB, disease) choose which incident category fires each interval.
 - Incidents gate on earliest day, population, points and refire days.
+- **Raids** (`IncidentWorker_RaidEnemy`): picks a hostile faction
+  (`FactionManager.RandomEnemyFaction`), a `RaidStrategyDef` tactic that
+  faction's tech level allows (weighted among the usable ones; `Siege` needs
+  Industrial, `ImmediateAttack` needs nothing), multiplies the threat points
+  by the tactic's `pointsFactor`, and spends the result against that
+  faction's squad composition (§8.1) — every generated raider is a full,
+  gear-equipped `Pawn` attributed to its faction (`Pawn.faction`), not a stat
+  block. **Where it stops:** nothing yet links a
+  physical `Map.Map` to the civilization-scale incident target
+  (`CivilizationTarget.Map` is a settable hook every game today leaves null);
+  when a map is wired, the squad spawns at a random map edge, otherwise it is
+  generated and handed back unspawned. Actually walking the squad to the
+  colony and fighting is the AI/Map systems' to build on top of this.
 - **The Chronicle** (SimWorld translation): every fired incident appends a
   narrator record. The persona name is still open — see §15.
 

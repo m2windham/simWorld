@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    RimWorld: Verse.PawnGroupKindDef. Only Combat is read anywhere today (raid squad generation); Peaceful
+    and Trader are seeded so a future caravan/trader system can name itself the way RimWorld's own content
+    does, without inventing new names later.
+  -->
+
+  <PawnGroupKindDef>
+    <defName>Combat</defName>
+    <label>combat</label>
+  </PawnGroupKindDef>
+
+  <PawnGroupKindDef>
+    <defName>Peaceful</defName>
+    <label>peaceful</label>
+  </PawnGroupKindDef>
+
+  <PawnGroupKindDef>
+    <defName>Trader</defName>
+    <label>trader</label>
+  </PawnGroupKindDef>
+
+</Defs>

@@ -44,4 +44,56 @@
     <combatPower>45</combatPower>
   </PawnKindDef>
 
+  <!--
+    Raid squad kinds (director.raids / pawngen.gear). combatPower is SimWorld's own — picked to sit near the
+    existing Colonist(60)/Tribesperson(50) scale rather than sourced from RimWorld's real raider numbers —
+    pinned by PawnGroupMakerTests as a trend (a bigger points budget fields a bigger/stronger squad), not a
+    literal. weaponMoneyRange/weaponTags feed PawnWeaponGenerator; see Weapons_Melee.xml's top comment.
+  -->
+
+  <PawnKindDef>
+    <defName>Raider_Melee</defName>
+    <label>raider</label>
+    <race>Human</race>
+    <backstoryCategories>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>35</combatPower>
+    <isFighter>true</isFighter>
+    <weaponTags>
+      <li>NeolithicMeleeWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>0~100</weaponMoneyRange>
+  </PawnKindDef>
+
+  <PawnKindDef>
+    <defName>Raider_Bow</defName>
+    <label>raider archer</label>
+    <race>Human</race>
+    <backstoryCategories>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>45</combatPower>
+    <isFighter>true</isFighter>
+    <weaponTags>
+      <li>NeolithicRangedWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>0~150</weaponMoneyRange>
+  </PawnKindDef>
+
+  <PawnKindDef>
+    <defName>Raider_Gunner</defName>
+    <label>raider gunner</label>
+    <race>Human</race>
+    <backstoryCategories>
+      <li>Civil</li>
+    </backstoryCategories>
+    <combatPower>70</combatPower>
+    <isFighter>true</isFighter>
+    <weaponTags>
+      <li>IndustrialRangedWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>100~400</weaponMoneyRange>
+  </PawnKindDef>
+
 </Defs>

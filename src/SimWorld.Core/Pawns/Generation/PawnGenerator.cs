@@ -77,6 +77,7 @@ namespace SimWorld.Pawns.Generation
 
             var pawn = new Pawn(raceDef);
             pawn.kindDef = kind;
+            pawn.faction = request.Faction;
 
             GenerateGender(pawn, request);
             GenerateAge(pawn, request, race, kind);
@@ -97,6 +98,13 @@ namespace SimWorld.Pawns.Generation
             if (request.Newborn)
             {
                 pawn.story.RecordLifeEvent("Born", pawn.Label + " was born.");
+            }
+            else if (humanlike)
+            {
+                // A newborn never carries a weapon (matches the "no backstories/traits either" gate above);
+                // runs after identity/appearance are settled so a retried generation (MustBeCapableOfViolence)
+                // discards a consistent whole pawn rather than a half-armed one.
+                PawnWeaponGenerator.TryGenerateWeaponFor(pawn, request);
             }
 
             // Rolled once here, for every humanlike pawn this generator produces (newborn or not) — see
