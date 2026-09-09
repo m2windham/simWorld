@@ -12,6 +12,7 @@ namespace SimWorld.Bench
         public double GuardSeconds { get; set; } = 120.0;
         public int[] ScalingNs { get; set; } = { 100, 250, 500, 1000, 2500, 5000, 10000 };
         public int[] Subdivisions { get; set; } = { 3, 4, 5, 6 };
+        public int[] PathingNs { get; set; } = { 100, 400, 1000 };
 
         public double GuardMs => GuardSeconds * 1000.0;
     }

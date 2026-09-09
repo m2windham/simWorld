@@ -7,7 +7,7 @@
     <defName>Canning</defName>
     <label>canning</label>
     <description>Food sealed airtight in a tin-plated can outlasts salting or smoking by years, not seasons.</description>
-    <baseCost>3200</baseCost>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -16,7 +16,6 @@
       <li>SurvivalFood</li>
     </tags>
     <prerequisites>
-      <li>FoodPreservation</li>
       <li>TinPlating</li>
     </prerequisites>
     <researchViewX>50</researchViewX>
@@ -36,7 +35,6 @@
       <li>SurvivalFood</li>
     </tags>
     <prerequisites>
-      <li>Canning</li>
       <li>Electricity</li>
     </prerequisites>
     <researchViewX>51</researchViewX>
@@ -47,7 +45,7 @@
     <defName>CokeSmelting</defName>
     <label>coke smelting</label>
     <description>Coke burns hotter and cleaner than charcoal, smelting iron at a scale charcoal forests could never fuel.</description>
-    <baseCost>2800</baseCost>
+    <baseCost>2890</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -66,7 +64,7 @@
     <defName>TinPlating</defName>
     <label>tin plating</label>
     <description>A thin tin coat on rolled steel resists rust long enough to hold food safely.</description>
-    <baseCost>3000</baseCost>
+    <baseCost>3070</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -85,7 +83,7 @@
     <defName>Vulcanization</defName>
     <label>vulcanization</label>
     <description>Sulfur cross-linked into raw rubber under heat turns a sticky curiosity into a durable material.</description>
-    <baseCost>3000</baseCost>
+    <baseCost>3070</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -104,7 +102,7 @@
     <defName>BessemerProcess</defName>
     <label>bessemer process</label>
     <description>Blown air burns carbon out of molten iron in minutes, turning steel from a craft into an industry.</description>
-    <baseCost>3000</baseCost>
+    <baseCost>3070</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -123,7 +121,7 @@
     <defName>SteelFraming</defName>
     <label>steel framing</label>
     <description>A riveted steel skeleton carries a building's weight, freeing walls to be little more than a skin.</description>
-    <baseCost>3200</baseCost>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -142,7 +140,7 @@
     <defName>UrbanSanitation</defName>
     <label>urban sanitation</label>
     <description>Pressurized water mains and citywide sewers serve a population no gravity-fed aqueduct ever could.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3420</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -162,7 +160,7 @@
     <defName>Zoning</defName>
     <label>zoning</label>
     <description>Districts set aside by law keep a factory's smoke and noise away from where people sleep.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3420</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -182,7 +180,7 @@
     <defName>SyntheticFertilizer</defName>
     <label>synthetic fertilizer</label>
     <description>Industrially fixed nitrogen feeds a field far past what manure and rotation ever could.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3420</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -191,7 +189,6 @@
       <li>AgricultureAnimals</li>
     </tags>
     <prerequisites>
-      <li>ThreeFieldSystem</li>
       <li>Thermodynamics</li>
     </prerequisites>
     <researchViewX>59</researchViewX>
@@ -202,7 +199,7 @@
     <defName>MechanizedFarming</defName>
     <label>mechanized farming</label>
     <description>A steam-driven thresher does the work of a harvest crew, and never tires.</description>
-    <baseCost>3200</baseCost>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -222,7 +219,7 @@
     <defName>NationState</defName>
     <label>nation state</label>
     <description>A single sovereign authority over a defined territory replaces overlapping feudal loyalties.</description>
-    <baseCost>3200</baseCost>
+    <baseCost>3070</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -242,7 +239,7 @@
     <defName>Constitutionalism</defName>
     <label>constitutionalism</label>
     <description>A written constitution binds even the nation's rulers to law, not just its subjects.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -262,7 +259,7 @@
     <defName>CivilService</defName>
     <label>civil service</label>
     <description>Officials hired and promoted on examined merit run a nation's business past any one ruler's reign.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -282,7 +279,7 @@
     <defName>Printing</defName>
     <label>printing</label>
     <description>Cast metal type, reused page after page, turns one copied book into a thousand identical ones.</description>
-    <baseCost>3000</baseCost>
+    <baseCost>3070</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -291,7 +288,6 @@
       <li>KnowledgeWriting</li>
     </tags>
     <prerequisites>
-      <li>Paper</li>
       <li>MetalCasting</li>
     </prerequisites>
     <researchViewX>64</researchViewX>
@@ -299,10 +295,10 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
-    <defName>ScientificMethod</defName>
-    <label>scientific method</label>
-    <description>Published, repeatable experiment replaces inherited authority as the test of what is true.</description>
-    <baseCost>3200</baseCost>
+    <defName>Journalism</defName>
+    <label>journalism</label>
+    <description>A press run on a fixed schedule turns news into something bought daily, not gossiped once.</description>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -311,7 +307,6 @@
       <li>KnowledgeWriting</li>
     </tags>
     <prerequisites>
-      <li>Scholasticism</li>
       <li>Printing</li>
     </prerequisites>
     <researchViewX>65</researchViewX>
@@ -319,10 +314,29 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
+    <defName>ScientificMethod</defName>
+    <label>scientific method</label>
+    <description>Published, repeatable experiment replaces inherited authority as the test of what is true.</description>
+    <baseCost>3240</baseCost>
+    <techLevel>Industrial</techLevel>
+    <tab>Main</tab>
+    <era>Industrial</era>
+    <tags>
+      <li>Industrial</li>
+      <li>KnowledgeWriting</li>
+    </tags>
+    <prerequisites>
+      <li>Printing</li>
+    </prerequisites>
+    <researchViewX>66</researchViewX>
+    <researchViewY>5</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
     <defName>Encyclopedism</defName>
     <label>encyclopedism</label>
     <description>A printed, cross-referenced compendium puts a library's worth of knowledge on a single shelf.</description>
-    <baseCost>3200</baseCost>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -334,7 +348,7 @@
       <li>Printing</li>
       <li>Libraries</li>
     </prerequisites>
-    <researchViewX>66</researchViewX>
+    <researchViewX>67</researchViewX>
     <researchViewY>5</researchViewY>
   </ResearchProjectDef>
 
@@ -342,7 +356,7 @@
     <defName>Reformation</defName>
     <label>reformation</label>
     <description>Printed scripture in a common tongue lets belief split from a single church's authority.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -354,7 +368,7 @@
       <li>Monasticism</li>
       <li>Printing</li>
     </prerequisites>
-    <researchViewX>67</researchViewX>
+    <researchViewX>68</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -362,7 +376,7 @@
     <defName>Humanism</defName>
     <label>humanism</label>
     <description>Human reason and dignity, not divine decree alone, become a legitimate ground for belief.</description>
-    <baseCost>3600</baseCost>
+    <baseCost>3420</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -371,10 +385,9 @@
       <li>BeliefCulture</li>
     </tags>
     <prerequisites>
-      <li>Reformation</li>
       <li>ScientificMethod</li>
     </prerequisites>
-    <researchViewX>68</researchViewX>
+    <researchViewX>69</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -382,7 +395,7 @@
     <defName>Firearms</defName>
     <label>firearms</label>
     <description>A cast steel barrel turns gunpowder's blast into an aimed shot instead of a loud accident.</description>
-    <baseCost>3200</baseCost>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -391,10 +404,9 @@
       <li>Warfare</li>
     </tags>
     <prerequisites>
-      <li>Gunpowder</li>
       <li>BessemerProcess</li>
     </prerequisites>
-    <researchViewX>69</researchViewX>
+    <researchViewX>70</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -402,7 +414,7 @@
     <defName>Artillery</defName>
     <label>artillery</label>
     <description>A steel-cast cannon throws a shell farther and harder than any siege engine's spring or weight.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3420</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -414,7 +426,7 @@
       <li>Firearms</li>
       <li>SteelFraming</li>
     </prerequisites>
-    <researchViewX>70</researchViewX>
+    <researchViewX>71</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -422,7 +434,7 @@
     <defName>Ironclads</defName>
     <label>ironclads</label>
     <description>Steam power and armor plate turn a warship into something cannon fire can no longer easily sink.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3420</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -435,7 +447,7 @@
       <li>SteamEngine</li>
       <li>CokeSmelting</li>
     </prerequisites>
-    <researchViewX>71</researchViewX>
+    <researchViewX>72</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -443,7 +455,7 @@
     <defName>StockExchanges</defName>
     <label>stock exchanges</label>
     <description>Shares of a venture, bought and sold in one open hall, spread its risk across many strangers at once.</description>
-    <baseCost>2600</baseCost>
+    <baseCost>2530</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -453,9 +465,8 @@
     </tags>
     <prerequisites>
       <li>Banking</li>
-      <li>DoubleEntryBookkeeping</li>
     </prerequisites>
-    <researchViewX>72</researchViewX>
+    <researchViewX>73</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -463,7 +474,7 @@
     <defName>Insurance</defName>
     <label>insurance</label>
     <description>Pooled premiums let a single lost ship be a manageable loss, not a ruined merchant.</description>
-    <baseCost>2800</baseCost>
+    <baseCost>2710</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -474,7 +485,7 @@
     <prerequisites>
       <li>StockExchanges</li>
     </prerequisites>
-    <researchViewX>73</researchViewX>
+    <researchViewX>74</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -482,7 +493,7 @@
     <defName>IndustrialCapitalism</defName>
     <label>industrial capitalism</label>
     <description>Traded capital funds steel-framed factories at a scale no single merchant fortune could finance alone.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3420</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -494,7 +505,7 @@
       <li>StockExchanges</li>
       <li>SteelFraming</li>
     </prerequisites>
-    <researchViewX>74</researchViewX>
+    <researchViewX>75</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -502,7 +513,7 @@
     <defName>Antiseptics</defName>
     <label>antiseptics</label>
     <description>Chemically killing germs on a wound, not just cleaning it, cuts infection deaths sharply.</description>
-    <baseCost>2800</baseCost>
+    <baseCost>2890</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -514,7 +525,7 @@
       <li>Anatomy</li>
       <li>Pharmacology</li>
     </prerequisites>
-    <researchViewX>75</researchViewX>
+    <researchViewX>76</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -522,7 +533,7 @@
     <defName>Anesthesia</defName>
     <label>anesthesia</label>
     <description>A measured dose of ether or chloroform lets a surgeon operate on a patient who feels nothing.</description>
-    <baseCost>3000</baseCost>
+    <baseCost>2890</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -531,9 +542,10 @@
       <li>MedicineHealth</li>
     </tags>
     <prerequisites>
-      <li>Antiseptics</li>
+      <li>Anatomy</li>
+      <li>Pharmacology</li>
     </prerequisites>
-    <researchViewX>76</researchViewX>
+    <researchViewX>77</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -541,7 +553,7 @@
     <defName>Microscope</defName>
     <label>microscope</label>
     <description>Ground lenses stacked in a tube reveal a world of living things too small for the naked eye.</description>
-    <baseCost>2800</baseCost>
+    <baseCost>2890</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -553,7 +565,7 @@
       <li>Glassmaking</li>
       <li>Anatomy</li>
     </prerequisites>
-    <researchViewX>77</researchViewX>
+    <researchViewX>78</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -570,9 +582,9 @@
       <li>EnergyIndustry</li>
     </tags>
     <prerequisites>
-      <li>Kilns</li>
+      <li>Pottery</li>
     </prerequisites>
-    <researchViewX>78</researchViewX>
+    <researchViewX>79</researchViewX>
     <researchViewY>10</researchViewY>
   </ResearchProjectDef>
 
@@ -580,7 +592,7 @@
     <defName>SteamEngine</defName>
     <label>steam engine</label>
     <description>Burning coal to boil water and drive a piston delivers power no river or windmill site can limit.</description>
-    <baseCost>3000</baseCost>
+    <baseCost>3070</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -589,10 +601,9 @@
       <li>EnergyIndustry</li>
     </tags>
     <prerequisites>
-      <li>CoalMining</li>
       <li>CokeSmelting</li>
     </prerequisites>
-    <researchViewX>79</researchViewX>
+    <researchViewX>80</researchViewX>
     <researchViewY>10</researchViewY>
   </ResearchProjectDef>
 
@@ -600,7 +611,7 @@
     <defName>Thermodynamics</defName>
     <label>thermodynamics</label>
     <description>A theory of heat and work explains why an engine loses power, and how to claw some of it back.</description>
-    <baseCost>3200</baseCost>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -611,7 +622,7 @@
     <prerequisites>
       <li>SteamEngine</li>
     </prerequisites>
-    <researchViewX>80</researchViewX>
+    <researchViewX>81</researchViewX>
     <researchViewY>10</researchViewY>
   </ResearchProjectDef>
 
@@ -619,7 +630,7 @@
     <defName>Electricity</defName>
     <label>electricity</label>
     <description>A generator turns mechanical motion into a current that travels down a wire faster than any belt.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3420</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -630,7 +641,7 @@
     <prerequisites>
       <li>Thermodynamics</li>
     </prerequisites>
-    <researchViewX>81</researchViewX>
+    <researchViewX>82</researchViewX>
     <researchViewY>10</researchViewY>
   </ResearchProjectDef>
 
@@ -638,7 +649,7 @@
     <defName>Railways</defName>
     <label>railways</label>
     <description>A steam engine on steel rails hauls more freight, faster, than any road ever carried.</description>
-    <baseCost>3400</baseCost>
+    <baseCost>3420</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -650,7 +661,7 @@
       <li>SteamEngine</li>
       <li>SteelFraming</li>
     </prerequisites>
-    <researchViewX>82</researchViewX>
+    <researchViewX>83</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -658,7 +669,7 @@
     <defName>SteamShips</defName>
     <label>steam ships</label>
     <description>A steam-driven hull keeps schedule against wind and tide, where a sailing ship only guesses at both.</description>
-    <baseCost>3200</baseCost>
+    <baseCost>3240</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -667,10 +678,9 @@
       <li>TransportExploration</li>
     </tags>
     <prerequisites>
-      <li>Shipbuilding</li>
       <li>SteamEngine</li>
     </prerequisites>
-    <researchViewX>83</researchViewX>
+    <researchViewX>84</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -678,7 +688,7 @@
     <defName>BooleanLogic</defName>
     <label>boolean logic</label>
     <description>Algebra rewritten for true and false lets any argument, in principle, be checked like a sum.</description>
-    <baseCost>2600</baseCost>
+    <baseCost>2530</baseCost>
     <techLevel>Industrial</techLevel>
     <tab>Main</tab>
     <era>Industrial</era>
@@ -687,9 +697,9 @@
       <li>InformationComputation</li>
     </tags>
     <prerequisites>
-      <li>Algebra</li>
+      <li>Geometry</li>
     </prerequisites>
-    <researchViewX>84</researchViewX>
+    <researchViewX>85</researchViewX>
     <researchViewY>12</researchViewY>
   </ResearchProjectDef>
 
@@ -708,7 +718,7 @@
     <prerequisites>
       <li>Electricity</li>
     </prerequisites>
-    <researchViewX>85</researchViewX>
+    <researchViewX>86</researchViewX>
     <researchViewY>12</researchViewY>
   </ResearchProjectDef>
 

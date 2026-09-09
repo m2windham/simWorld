@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 1181,
+  "testsTotal": 1217,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -719,11 +719,11 @@
       "id": "ai",
       "n": 10,
       "rimworld": "AI: Think Tree / Job System",
-      "translation": "Proposed: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding must be shared (hierarchical / flow fields) to survive full-agent populations — this pass ships a single-agent A* plus a Region/RegionLink-graph reachability query, not that sharing.",
-      "translationState": "proposed",
+      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor.",
+      "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 53,
+      "tests": 59,
       "items": [
         {
           "id": "ai.thinktree",
@@ -752,8 +752,8 @@
         },
         {
           "id": "ai.pathing.sharing",
-          "label": "Hierarchical / flow-field path sharing for full-agent populations — not built; today's PathFinder is one A* search per pawn per path request",
-          "done": false
+          "label": "Hierarchical path sharing over the Region/RegionLink graph: AI.RegionPathCorridorCache builds a BFS corridor tree once per unique destination region-set and shares it across every pawn walking there; PathFinder tries the corridor first and always falls back to its original unconstrained A* on any doubt, so a corridor can narrow a search but never make it wrong. Correct but not always optimal (hop-count corridor can be geometrically longer than the true shortest path — bounded by test, not hidden). Measured: before/after speedup on 'N pawns to a shared destination' grows from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 (docs/perf/baseline.md §9) — flow fields not attempted; the region-graph corridor already delivers the asymptotic win this item needed",
+          "done": true
         },
         {
           "id": "ai.animals",
@@ -919,9 +919,9 @@
       "rimworld": "Research & Tech",
       "translation": "Translated: a large authored tech tree detailing societal evolution across eras. Data model leaves room for procedural/endless tech later.",
       "translationState": "decided",
-      "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects)",
+      "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects) · tools/content/gen_techtree.py",
       "status": "ported",
-      "tests": 63,
+      "tests": 66,
       "items": [
         {
           "id": "research.dag",
@@ -965,8 +965,8 @@
         },
         {
           "id": "research.divergence",
-          "label": "Author divergence into the tree rather than pricing for it: the shipped tree is 48-85% spine (median ~72%), which structurally caps how much two civilizations can differ within an era. Fewer dependencies and more leaves per era raise that ceiling, and research now has real consequences (ThingDef/RecipeDef gate on it) so a leaf can be written for a civilization that farms rather than one that fights",
-          "done": false
+          "label": "Divergence authored into the tree, not priced for: gen_techtree.py was restructured (68 prerequisite edges de-linearized, protecting the 22-node deep chain and every same-or-earlier-era/no-cycle invariant) and given 13 new leaf projects in previously all-spine track/era cells. Spine fraction fell from 48-85% (median ~72%) to 28-54% (median ~41%) per era, and the harness's eras command shows seen% and archetype overlap measurably lower in every era at the shipped throughput — see docs/research/tech-reachability.md §11",
+          "done": true
         },
         {
           "id": "research.eras",
@@ -980,7 +980,7 @@
         },
         {
           "id": "research.tree",
-          "label": "Authored tech tree of societal evolution: 232 projects across 8 eras and 14 tracks, generated from tools/content/gen_techtree.py",
+          "label": "Authored tech tree of societal evolution: 245 projects across 8 eras and 14 tracks, generated from tools/content/gen_techtree.py",
           "done": true
         },
         {
@@ -1093,11 +1093,11 @@
       "id": "social",
       "n": 17,
       "rimworld": "Social, Ideoligion & DLC Systems",
-      "translation": "Opinions and social interactions ported for this pass, RimWorld's compatibility-factor mechanic (a stable hash of the two pawns) included; ideoligions (still proposed) become the religions and ideologies of your civilization once belief is built; DLC systems (genes, psycasts, anomalies), also still proposed, evaluated per era. RimWorld's Thought_Memory/Thought_MemorySocial split is folded into one Thought_Memory class with a nullable otherPawn and a ThoughtDef.IsSocial property, rather than a second thought class; RimWorld's spatial \"a friend is nearby\"/\"a rival is present\" situational thoughts read this port's stored relations instead (no Map/room concept reaches Social or Thoughts yet), via one generic, content-driven ThoughtWorker_HasDirectRelation.",
+      "translation": "Opinions and social interactions ported for this pass, RimWorld's compatibility-factor mechanic (a stable hash of the two pawns) included; ideoligions become the religions and ideologies of your civilization — memes/precepts feeding thoughts through the existing pipeline, rituals with a quality resolution, and precept-granted roles are built (social.ideology); per-citizen ideoligion membership (certainty, conversion, an outsider penalty) is not, and one Ideo stands in for a whole civilization's belief for now — see that item's own label. DLC systems (genes, psycasts, anomalies), still proposed, evaluated per era. RimWorld's Thought_Memory/Thought_MemorySocial split is folded into one Thought_Memory class with a nullable otherPawn and a ThoughtDef.IsSocial property, rather than a second thought class; RimWorld's spatial \"a friend is nearby\"/\"a rival is present\" situational thoughts read this port's stored relations instead (no Map/room concept reaches Social or Thoughts yet), via one generic, content-driven ThoughtWorker_HasDirectRelation.",
       "translationState": "implemented",
-      "module": "src/SimWorld.Core/Social",
+      "module": "src/SimWorld.Core/Social · Social/Ideology",
       "status": "ported",
-      "tests": 47,
+      "tests": 62,
       "items": [
         {
           "id": "social.opinion",
@@ -1116,8 +1116,8 @@
         },
         {
           "id": "social.ideology",
-          "label": "Memes + precepts feeding thoughts; rituals; roles — explicitly out of scope for this pass: belief is a separate, much larger design the god layer will want to own. Needs a precept/meme content layer, ritual quality resolution, and role assignment before it can land.",
-          "done": false
+          "label": "Built: MemeDef/PreceptDef (memes are broad themes with slots; precepts are the specific rules, faithfully split), an Ideo runtime object generated from an IdeoDef preset and Scribe round-tripped, precepts feeding mood through the existing thought pipeline (ThoughtWorker_UnderPrecept, built directly on the ThoughtWorker_UnderEdict precedent — one PreceptWorker class serves opposing judgments, the mood sign lives in content), rituals with a quality resolution (RitualUtility: participant count, officiant-role presence, participant mood — the shape is RimWorld's, the numbers are this port's own, pinned by trend tests since RimWorld's own quality table could not be sourced here), and precept-granted roles (IdeoRoleDef, capped by maxHolders — a second concept from Work.RoleDef, not an extension of it, partly because the two class names would silently collide in Def-type resolution). Content ships two contrasting ideoligions (TheHearthway, TheForgeCovenant) whose precepts read the same citizen state and reach opposite mood conclusions, plus a ritual and a role each, working end to end. NOT built: per-citizen ideoligion membership (RimWorld's certainty/conversion/outsider-penalty) — one Ideo stands in for a whole civilization's belief, every Humanlike citizen assumed a member, which is exactly the much-larger design this item originally deferred; event-tracked precepts (cannibalism, corpse treatment) — no consumption/corpse event stream exists to read, so every shipped precept instead reads state another module already tracks durably (a trait, worn apparel, a role). IdeoManager is a thread-static self-gate in Social/Ideology, not a Find.Ideo — Sim/** was out of this pass's file ownership; wiring a real Find.Ideo/Game.Ideo slot is the follow-up.",
+          "done": true
         },
         {
           "id": "social.dlc",

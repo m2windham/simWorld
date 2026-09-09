@@ -217,5 +217,59 @@ namespace SimWorld.Tests.Research
                     $"{project.defName} (Exotic) is not tagged Frontier.");
             }
         }
+
+        // --- research.divergence (docs/status.json): the shipped tree used to be 48-85% spine, a
+        // corridor every civilization researched in nearly the same order. tools/content/gen_techtree.py
+        // was restructured and given real optional leaf content to bring that down; these pin the new
+        // shape as a band (per CLAUDE.md, "assert behaviour... not a magic number"), not the literal
+        // percentages a re-run of tools/research/ReachHarness.csproj reports in docs/research/tech-reachability.md
+        // §10, which move a little every time the table itself is edited.
+
+        [Fact]
+        public void No_era_is_more_than_two_thirds_spine()
+        {
+            // Before the divergence pass this ranged 48-85% (median ~72%); every era should now sit well
+            // under the old low end. 2/3 leaves real headroom for authoring judgement while still failing
+            // if the tree drifts back toward a corridor.
+            foreach (EraDef era in DefDatabase<EraDef>.AllDefsListForReading)
+            {
+                if (era.Projects.Count == 0) continue;
+                double spineFraction = era.SpineProjects.Count / (double)era.Projects.Count;
+                Assert.True(spineFraction <= 2.0 / 3.0,
+                    $"{era.defName} is {spineFraction:P0} spine, expected at most 67%.");
+            }
+        }
+
+        [Fact]
+        public void The_tree_wide_spine_fraction_is_below_half()
+        {
+            int totalProjects = 0;
+            int totalSpine = 0;
+            foreach (EraDef era in DefDatabase<EraDef>.AllDefsListForReading)
+            {
+                totalProjects += era.Projects.Count;
+                totalSpine += era.SpineProjects.Count;
+            }
+            Assert.True(totalProjects > 0);
+            double spineFraction = totalSpine / (double)totalProjects;
+            Assert.True(spineFraction < 0.5,
+                $"tree-wide spine fraction is {spineFraction:P0} ({totalSpine} of {totalProjects}), expected below 50%.");
+        }
+
+        [Fact]
+        public void Every_era_has_genuinely_optional_content()
+        {
+            // A civilization must finish an era's spine to leave it (EraDef.IsComplete) but never its
+            // leaves: every era needs at least some leaves so there is something for two civilizations
+            // to differ on, and enough of them that leaf content isn't a rounding error.
+            foreach (EraDef era in DefDatabase<EraDef>.AllDefsListForReading)
+            {
+                if (era.Projects.Count == 0) continue;
+                int leaves = era.Projects.Count - era.SpineProjects.Count;
+                double leafFraction = leaves / (double)era.Projects.Count;
+                Assert.True(leafFraction >= 0.3,
+                    $"{era.defName} has only {leaves} of {era.Projects.Count} projects as leaves ({leafFraction:P0}), expected at least 30%.");
+            }
+        }
     }
 }

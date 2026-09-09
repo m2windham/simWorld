@@ -16,7 +16,6 @@
       <li>SurvivalFood</li>
     </tags>
     <prerequisites>
-      <li>Fishing</li>
       <li>Irrigation</li>
     </prerequisites>
     <researchViewX>30</researchViewX>
@@ -27,7 +26,7 @@
     <defName>Iron</defName>
     <label>iron</label>
     <description>Smelted iron: harder and more common than bronze ever was.</description>
-    <baseCost>1150</baseCost>
+    <baseCost>1320</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -47,7 +46,7 @@
     <defName>Bellows</defName>
     <label>bellows</label>
     <description>A worked bellows forces air into a forge fire, reaching heats a mouth-blown flame never could.</description>
-    <baseCost>920</baseCost>
+    <baseCost>980</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -66,7 +65,7 @@
     <defName>Enamelling</defName>
     <label>enamelling</label>
     <description>Fused glass fired onto metal or clay adds color and a surface nothing else can scratch.</description>
-    <baseCost>920</baseCost>
+    <baseCost>980</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -85,7 +84,7 @@
     <defName>Aqueduct</defName>
     <label>aqueduct</label>
     <description>Carried water: a city can grow far past what its own wells could support.</description>
-    <baseCost>1150</baseCost>
+    <baseCost>1320</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -105,7 +104,7 @@
     <defName>Roadbuilding</defName>
     <label>roadbuilding</label>
     <description>Paved roads: a cart moves as fast in the rain as in the sun.</description>
-    <baseCost>1150</baseCost>
+    <baseCost>1320</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -125,7 +124,7 @@
     <defName>MonumentalArchitecture</defName>
     <label>monumental architecture</label>
     <description>Calculated proportion and cut stone raise temples and tombs meant to outlast empires.</description>
-    <baseCost>1150</baseCost>
+    <baseCost>1320</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -145,7 +144,7 @@
     <defName>Sanitation</defName>
     <label>sanitation</label>
     <description>Covered sewers carry waste out of a city before it can carry disease back in.</description>
-    <baseCost>1270</baseCost>
+    <baseCost>1320</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -154,7 +153,8 @@
       <li>ConstructionSettlement</li>
     </tags>
     <prerequisites>
-      <li>Aqueduct</li>
+      <li>Masonry</li>
+      <li>Irrigation</li>
     </prerequisites>
     <researchViewX>37</researchViewX>
     <researchViewY>2</researchViewY>
@@ -164,7 +164,7 @@
     <defName>Terracing</defName>
     <label>terracing</label>
     <description>Stepped, walled fields turn a hillside too steep to plow into farmland.</description>
-    <baseCost>1150</baseCost>
+    <baseCost>1320</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -203,7 +203,7 @@
     <defName>CodifiedLaw</defName>
     <label>codified law</label>
     <description>Written law applies the same to every case, not to whichever noble hears it that day.</description>
-    <baseCost>1030</baseCost>
+    <baseCost>1150</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -223,7 +223,7 @@
     <defName>Citizenship</defName>
     <label>citizenship</label>
     <description>A defined body of citizens, with rights a king or council cannot simply revoke.</description>
-    <baseCost>1150</baseCost>
+    <baseCost>1320</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -242,7 +242,7 @@
     <defName>Taxation</defName>
     <label>taxation</label>
     <description>Coined tax, recorded and collected on schedule, funds armies and roads no single harvest could.</description>
-    <baseCost>1030</baseCost>
+    <baseCost>1150</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -262,7 +262,7 @@
     <defName>Astronomy</defName>
     <label>astronomy</label>
     <description>Tracking the sky: calendars, navigation, and the shape of the year.</description>
-    <baseCost>1030</baseCost>
+    <baseCost>1150</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -272,7 +272,6 @@
     </tags>
     <prerequisites>
       <li>Mathematics</li>
-      <li>Calendars</li>
     </prerequisites>
     <researchViewX>43</researchViewX>
     <researchViewY>5</researchViewY>
@@ -282,7 +281,7 @@
     <defName>Geometry</defName>
     <label>geometry</label>
     <description>Proven relationships between shapes let a builder measure a wall before it exists.</description>
-    <baseCost>1030</baseCost>
+    <baseCost>1150</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -298,10 +297,29 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
+    <defName>Cartography</defName>
+    <label>cartography</label>
+    <description>A map drawn to scale turns a captain's memory of a coastline into something another captain can read.</description>
+    <baseCost>1320</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Classical</era>
+    <tags>
+      <li>Classical</li>
+      <li>KnowledgeWriting</li>
+    </tags>
+    <prerequisites>
+      <li>Geometry</li>
+    </prerequisites>
+    <researchViewX>45</researchViewX>
+    <researchViewY>5</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
     <defName>Libraries</defName>
     <label>libraries</label>
     <description>A building dedicated to storing written scrolls turns scattered knowledge into a shared archive.</description>
-    <baseCost>1270</baseCost>
+    <baseCost>1500</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -313,7 +331,7 @@
       <li>Writing</li>
       <li>MonumentalArchitecture</li>
     </prerequisites>
-    <researchViewX>45</researchViewX>
+    <researchViewX>46</researchViewX>
     <researchViewY>5</researchViewY>
   </ResearchProjectDef>
 
@@ -321,7 +339,7 @@
     <defName>Philosophy</defName>
     <label>philosophy</label>
     <description>Written argument turns storytelling into systematic thought.</description>
-    <baseCost>920</baseCost>
+    <baseCost>980</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -333,7 +351,7 @@
       <li>Writing</li>
       <li>Storytelling</li>
     </prerequisites>
-    <researchViewX>46</researchViewX>
+    <researchViewX>47</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -341,27 +359,7 @@
     <defName>OrganizedReligion</defName>
     <label>organized religion</label>
     <description>A settled hierarchy of temples and clergy turns scattered ritual into a single institution.</description>
-    <baseCost>1500</baseCost>
-    <techLevel>Medieval</techLevel>
-    <tab>Main</tab>
-    <era>Classical</era>
-    <tags>
-      <li>Classical</li>
-      <li>BeliefCulture</li>
-    </tags>
-    <prerequisites>
-      <li>Priesthood</li>
-      <li>Mythology</li>
-    </prerequisites>
-    <researchViewX>47</researchViewX>
-    <researchViewY>6</researchViewY>
-  </ResearchProjectDef>
-
-  <ResearchProjectDef>
-    <defName>Theater</defName>
-    <label>theater</label>
-    <description>Myth performed before a paying crowd becomes a civic ritual in its own right.</description>
-    <baseCost>1030</baseCost>
+    <baseCost>1150</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -377,10 +375,29 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
+    <defName>Theater</defName>
+    <label>theater</label>
+    <description>Myth performed before a paying crowd becomes a civic ritual in its own right.</description>
+    <baseCost>1150</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Classical</era>
+    <tags>
+      <li>Classical</li>
+      <li>BeliefCulture</li>
+    </tags>
+    <prerequisites>
+      <li>Mythology</li>
+    </prerequisites>
+    <researchViewX>49</researchViewX>
+    <researchViewY>6</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
     <defName>IronWeapons</defName>
     <label>iron weapons</label>
     <description>Iron blades are cheaper to arm an army with than bronze ever was, and just as sharp.</description>
-    <baseCost>1270</baseCost>
+    <baseCost>1500</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -391,7 +408,7 @@
     <prerequisites>
       <li>Iron</li>
     </prerequisites>
-    <researchViewX>49</researchViewX>
+    <researchViewX>50</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -399,7 +416,7 @@
     <defName>SiegeEngines</defName>
     <label>siege engines</label>
     <description>Torsion and counterweight turn stored energy into a wall-breaking blow.</description>
-    <baseCost>1380</baseCost>
+    <baseCost>1500</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -408,10 +425,9 @@
       <li>Warfare</li>
     </tags>
     <prerequisites>
-      <li>IronWeapons</li>
       <li>MonumentalArchitecture</li>
     </prerequisites>
-    <researchViewX>50</researchViewX>
+    <researchViewX>51</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -428,10 +444,9 @@
       <li>Warfare</li>
     </tags>
     <prerequisites>
-      <li>Phalanx</li>
       <li>Bureaucracy</li>
     </prerequisites>
-    <researchViewX>51</researchViewX>
+    <researchViewX>52</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -439,7 +454,7 @@
     <defName>TradeRoutes</defName>
     <label>trade routes</label>
     <description>Maintained roads and sea lanes turn occasional caravans into a standing network.</description>
-    <baseCost>1270</baseCost>
+    <baseCost>1500</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -448,10 +463,9 @@
       <li>TradeEconomy</li>
     </tags>
     <prerequisites>
-      <li>LongDistanceTrade</li>
       <li>Roadbuilding</li>
     </prerequisites>
-    <researchViewX>52</researchViewX>
+    <researchViewX>53</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -459,7 +473,7 @@
     <defName>Markets</defName>
     <label>markets</label>
     <description>A fixed, regulated place to trade turns haggling into a public institution with its own rules.</description>
-    <baseCost>1030</baseCost>
+    <baseCost>1150</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -470,7 +484,7 @@
     <prerequisites>
       <li>Currency</li>
     </prerequisites>
-    <researchViewX>53</researchViewX>
+    <researchViewX>54</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -478,7 +492,7 @@
     <defName>Medicine</defName>
     <label>medicine</label>
     <description>Written case and remedy: healing becomes knowledge passed on, not just skill.</description>
-    <baseCost>1030</baseCost>
+    <baseCost>1150</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -490,7 +504,7 @@
       <li>Writing</li>
       <li>Philosophy</li>
     </prerequisites>
-    <researchViewX>54</researchViewX>
+    <researchViewX>55</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -498,7 +512,7 @@
     <defName>Surgery</defName>
     <label>surgery</label>
     <description>Deliberate cutting, guided by written precedent, treats what a poultice alone cannot.</description>
-    <baseCost>1150</baseCost>
+    <baseCost>1320</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -509,7 +523,7 @@
     <prerequisites>
       <li>Medicine</li>
     </prerequisites>
-    <researchViewX>55</researchViewX>
+    <researchViewX>56</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -517,7 +531,7 @@
     <defName>PublicHygiene</defName>
     <label>public hygiene</label>
     <description>Written medical guidance about clean water and waste turns sanitation into public policy.</description>
-    <baseCost>1380</baseCost>
+    <baseCost>1500</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -529,7 +543,7 @@
       <li>Medicine</li>
       <li>Sanitation</li>
     </prerequisites>
-    <researchViewX>56</researchViewX>
+    <researchViewX>57</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -537,7 +551,7 @@
     <defName>WaterMills</defName>
     <label>water mills</label>
     <description>A river turning a wheel grinds grain all day without a single tired arm.</description>
-    <baseCost>1150</baseCost>
+    <baseCost>1320</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -549,7 +563,7 @@
       <li>Wheel</li>
       <li>Masonry</li>
     </prerequisites>
-    <researchViewX>57</researchViewX>
+    <researchViewX>58</researchViewX>
     <researchViewY>10</researchViewY>
   </ResearchProjectDef>
 
@@ -567,9 +581,8 @@
     </tags>
     <prerequisites>
       <li>Sailing</li>
-      <li>Astronomy</li>
     </prerequisites>
-    <researchViewX>58</researchViewX>
+    <researchViewX>59</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -577,7 +590,7 @@
     <defName>Caravans</defName>
     <label>caravans</label>
     <description>Carts and pack animals traveling together cross deserts no lone trader would risk.</description>
-    <baseCost>1150</baseCost>
+    <baseCost>1320</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Classical</era>
@@ -587,9 +600,8 @@
     </tags>
     <prerequisites>
       <li>Cart</li>
-      <li>PackAnimals</li>
     </prerequisites>
-    <researchViewX>59</researchViewX>
+    <researchViewX>60</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 

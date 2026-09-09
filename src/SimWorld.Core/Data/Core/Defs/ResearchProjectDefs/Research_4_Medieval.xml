@@ -26,7 +26,7 @@
     <defName>Confectionery</defName>
     <label>confectionery</label>
     <description>Honey and preserved fruit, boiled and set, turn raw sweetness into a keepable treat.</description>
-    <baseCost>1320</baseCost>
+    <baseCost>1340</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -35,7 +35,6 @@
       <li>SurvivalFood</li>
     </tags>
     <prerequisites>
-      <li>Beekeeping</li>
       <li>Winemaking</li>
     </prerequisites>
     <researchViewX>41</researchViewX>
@@ -46,7 +45,7 @@
     <defName>Steel</defName>
     <label>steel</label>
     <description>Iron refined further still: the backbone of the medieval world.</description>
-    <baseCost>1700</baseCost>
+    <baseCost>1770</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -68,7 +67,7 @@
     <defName>MetalCasting</defName>
     <label>metal casting</label>
     <description>Molten metal poured into a mold reproduces a shape exactly, as many times as needed.</description>
-    <baseCost>1820</baseCost>
+    <baseCost>1910</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -87,7 +86,7 @@
     <defName>Clockwork</defName>
     <label>clockwork</label>
     <description>Gears and springs cut to a tolerance turn stored tension into a steady, countable motion.</description>
-    <baseCost>1820</baseCost>
+    <baseCost>1910</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -106,7 +105,7 @@
     <defName>Alchemy</defName>
     <label>alchemy</label>
     <description>Systematic experiment with heat, acid, and mineral, chasing transmutation and finding real chemistry by accident.</description>
-    <baseCost>1450</baseCost>
+    <baseCost>1490</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -125,7 +124,7 @@
     <defName>Castles</defName>
     <label>castles</label>
     <description>Steel-reinforced stone keeps turn fortification into a fortress a siege engine struggles to crack.</description>
-    <baseCost>1820</baseCost>
+    <baseCost>1910</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -134,7 +133,6 @@
       <li>ConstructionSettlement</li>
     </tags>
     <prerequisites>
-      <li>Fortification</li>
       <li>Steel</li>
     </prerequisites>
     <researchViewX>46</researchViewX>
@@ -145,7 +143,7 @@
     <defName>Cathedrals</defName>
     <label>cathedrals</label>
     <description>Ribbed vaults and flying buttresses let stone walls climb higher than gravity should allow.</description>
-    <baseCost>1700</baseCost>
+    <baseCost>1770</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -165,7 +163,7 @@
     <defName>GuildHalls</defName>
     <label>guild halls</label>
     <description>A dedicated hall gives a city's craftsmen a place to set standards and settle disputes.</description>
-    <baseCost>1700</baseCost>
+    <baseCost>1770</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -185,7 +183,7 @@
     <defName>HeavyPlow</defName>
     <label>heavy plow</label>
     <description>A steel-tipped, wheeled plow turns heavy clay soil that a wooden blade could never break.</description>
-    <baseCost>1820</baseCost>
+    <baseCost>1910</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -194,7 +192,6 @@
       <li>AgricultureAnimals</li>
     </tags>
     <prerequisites>
-      <li>Plow</li>
       <li>Steel</li>
     </prerequisites>
     <researchViewX>49</researchViewX>
@@ -205,7 +202,7 @@
     <defName>ThreeFieldSystem</defName>
     <label>three-field system</label>
     <description>Rotating a third field to legumes each year rests the soil without resting the harvest.</description>
-    <baseCost>1950</baseCost>
+    <baseCost>2060</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -222,10 +219,29 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
+    <defName>Haymaking</defName>
+    <label>haymaking</label>
+    <description>Cut and cured before the frost, a stored store of hay carries a herd through a winter that killed the grass months before.</description>
+    <baseCost>1200</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Medieval</era>
+    <tags>
+      <li>Medieval</li>
+      <li>AgricultureAnimals</li>
+    </tags>
+    <prerequisites>
+      <li>AnimalHusbandry</li>
+    </prerequisites>
+    <researchViewX>51</researchViewX>
+    <researchViewY>3</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
     <defName>Feudalism</defName>
     <label>feudalism</label>
     <description>Land granted in exchange for loyalty and arms lets a king rule through his own nobles.</description>
-    <baseCost>1950</baseCost>
+    <baseCost>1910</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -235,9 +251,8 @@
     </tags>
     <prerequisites>
       <li>Kingship</li>
-      <li>Castles</li>
     </prerequisites>
-    <researchViewX>51</researchViewX>
+    <researchViewX>52</researchViewX>
     <researchViewY>4</researchViewY>
   </ResearchProjectDef>
 
@@ -245,7 +260,7 @@
     <defName>GuildSystem</defName>
     <label>guild system</label>
     <description>Chartered guilds regulate a trade's training, quality, and price across an entire city.</description>
-    <baseCost>1820</baseCost>
+    <baseCost>1910</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -255,9 +270,8 @@
     </tags>
     <prerequisites>
       <li>GuildHalls</li>
-      <li>Taxation</li>
     </prerequisites>
-    <researchViewX>52</researchViewX>
+    <researchViewX>53</researchViewX>
     <researchViewY>4</researchViewY>
   </ResearchProjectDef>
 
@@ -277,7 +291,7 @@
       <li>CodifiedLaw</li>
       <li>Monasticism</li>
     </prerequisites>
-    <researchViewX>53</researchViewX>
+    <researchViewX>54</researchViewX>
     <researchViewY>4</researchViewY>
   </ResearchProjectDef>
 
@@ -285,7 +299,7 @@
     <defName>Paper</defName>
     <label>paper</label>
     <description>Pulped fiber pressed thin and dried is cheaper than parchment and just as good to write on.</description>
-    <baseCost>1820</baseCost>
+    <baseCost>1910</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -297,7 +311,7 @@
       <li>Weaving</li>
       <li>Libraries</li>
     </prerequisites>
-    <researchViewX>54</researchViewX>
+    <researchViewX>55</researchViewX>
     <researchViewY>5</researchViewY>
   </ResearchProjectDef>
 
@@ -305,7 +319,7 @@
     <defName>Algebra</defName>
     <label>algebra</label>
     <description>Solving for an unknown by symbol, not just by shape, generalizes mathematics past geometry's reach.</description>
-    <baseCost>1580</baseCost>
+    <baseCost>1490</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -314,9 +328,9 @@
       <li>KnowledgeWriting</li>
     </tags>
     <prerequisites>
-      <li>Geometry</li>
+      <li>Mathematics</li>
     </prerequisites>
-    <researchViewX>55</researchViewX>
+    <researchViewX>56</researchViewX>
     <researchViewY>5</researchViewY>
   </ResearchProjectDef>
 
@@ -324,7 +338,7 @@
     <defName>Scholasticism</defName>
     <label>scholasticism</label>
     <description>Universities built around a library and a curriculum turn scattered philosophy into a formal course of study.</description>
-    <baseCost>1820</baseCost>
+    <baseCost>1910</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -336,7 +350,7 @@
       <li>Libraries</li>
       <li>Philosophy</li>
     </prerequisites>
-    <researchViewX>56</researchViewX>
+    <researchViewX>57</researchViewX>
     <researchViewY>5</researchViewY>
   </ResearchProjectDef>
 
@@ -344,7 +358,7 @@
     <defName>Monasticism</defName>
     <label>monasticism</label>
     <description>Communities bound by vow and rule keep copying, farming, and praying long after a kingdom falls.</description>
-    <baseCost>2080</baseCost>
+    <baseCost>2060</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -353,9 +367,10 @@
       <li>BeliefCulture</li>
     </tags>
     <prerequisites>
-      <li>OrganizedReligion</li>
+      <li>Priesthood</li>
+      <li>Mythology</li>
     </prerequisites>
-    <researchViewX>57</researchViewX>
+    <researchViewX>58</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -363,7 +378,7 @@
     <defName>Chivalry</defName>
     <label>chivalry</label>
     <description>A written code of conduct binds an armored noble's violence to some notion of honor.</description>
-    <baseCost>2080</baseCost>
+    <baseCost>2060</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -375,7 +390,7 @@
       <li>Feudalism</li>
       <li>Philosophy</li>
     </prerequisites>
-    <researchViewX>58</researchViewX>
+    <researchViewX>59</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -383,7 +398,7 @@
     <defName>SteelWeapons</defName>
     <label>steel weapons</label>
     <description>A steel blade holds a keener edge, and survives more of them, than iron ever managed.</description>
-    <baseCost>1820</baseCost>
+    <baseCost>1910</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -394,7 +409,7 @@
     <prerequisites>
       <li>Steel</li>
     </prerequisites>
-    <researchViewX>59</researchViewX>
+    <researchViewX>60</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -402,7 +417,7 @@
     <defName>Crossbows</defName>
     <label>crossbows</label>
     <description>A steel lath and a trigger let an untrained conscript hold the draw of a master archer.</description>
-    <baseCost>1950</baseCost>
+    <baseCost>2060</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -413,7 +428,7 @@
     <prerequisites>
       <li>SteelWeapons</li>
     </prerequisites>
-    <researchViewX>60</researchViewX>
+    <researchViewX>61</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -421,7 +436,7 @@
     <defName>Knighthood</defName>
     <label>knighthood</label>
     <description>An armored horseman, bound by chivalric code and backed by his own land, becomes war's elite.</description>
-    <baseCost>2200</baseCost>
+    <baseCost>2060</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -431,9 +446,8 @@
     </tags>
     <prerequisites>
       <li>SteelWeapons</li>
-      <li>Chivalry</li>
     </prerequisites>
-    <researchViewX>61</researchViewX>
+    <researchViewX>62</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -441,7 +455,7 @@
     <defName>Gunpowder</defName>
     <label>gunpowder</label>
     <description>Saltpeter, sulfur, and charcoal, mixed and packed, release their stored energy all at once.</description>
-    <baseCost>1580</baseCost>
+    <baseCost>1630</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -452,7 +466,7 @@
     <prerequisites>
       <li>Alchemy</li>
     </prerequisites>
-    <researchViewX>62</researchViewX>
+    <researchViewX>63</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -460,7 +474,7 @@
     <defName>Banking</defName>
     <label>banking</label>
     <description>Written letters of credit let a merchant move wealth across a continent without moving coin.</description>
-    <baseCost>1450</baseCost>
+    <baseCost>1490</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -472,7 +486,7 @@
       <li>Currency</li>
       <li>Writing</li>
     </prerequisites>
-    <researchViewX>63</researchViewX>
+    <researchViewX>64</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -480,7 +494,7 @@
     <defName>GuildTrade</defName>
     <label>guild trade</label>
     <description>Chartered guilds fix prices and quality across market towns, turning local trade into a regulated network.</description>
-    <baseCost>1950</baseCost>
+    <baseCost>2060</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -489,10 +503,9 @@
       <li>TradeEconomy</li>
     </tags>
     <prerequisites>
-      <li>Markets</li>
       <li>GuildSystem</li>
     </prerequisites>
-    <researchViewX>64</researchViewX>
+    <researchViewX>65</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -500,7 +513,7 @@
     <defName>DoubleEntryBookkeeping</defName>
     <label>double-entry bookkeeping</label>
     <description>Recording every transaction twice, as a debit and a credit, catches an error a single ledger line would hide.</description>
-    <baseCost>1580</baseCost>
+    <baseCost>1630</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -511,7 +524,7 @@
     <prerequisites>
       <li>Banking</li>
     </prerequisites>
-    <researchViewX>65</researchViewX>
+    <researchViewX>66</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -531,7 +544,7 @@
       <li>Surgery</li>
       <li>Monasticism</li>
     </prerequisites>
-    <researchViewX>66</researchViewX>
+    <researchViewX>67</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -539,7 +552,7 @@
     <defName>Anatomy</defName>
     <label>anatomy</label>
     <description>Systematic dissection maps the body's structure well enough to teach, not just to guess at.</description>
-    <baseCost>1700</baseCost>
+    <baseCost>1770</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -550,7 +563,7 @@
     <prerequisites>
       <li>Surgery</li>
     </prerequisites>
-    <researchViewX>67</researchViewX>
+    <researchViewX>68</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -558,7 +571,7 @@
     <defName>Pharmacology</defName>
     <label>pharmacology</label>
     <description>Alchemical distillation and measured dosing turn folk remedy into a reproducible medicine.</description>
-    <baseCost>1580</baseCost>
+    <baseCost>1630</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -570,7 +583,7 @@
       <li>HerbalRemedies</li>
       <li>Alchemy</li>
     </prerequisites>
-    <researchViewX>68</researchViewX>
+    <researchViewX>69</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -578,7 +591,7 @@
     <defName>Windmills</defName>
     <label>windmills</label>
     <description>Sails on a turning cap catch wind a river's current never offered, and grind grain anywhere it blows.</description>
-    <baseCost>1700</baseCost>
+    <baseCost>1630</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -587,9 +600,10 @@
       <li>EnergyIndustry</li>
     </tags>
     <prerequisites>
-      <li>WaterMills</li>
+      <li>Wheel</li>
+      <li>Masonry</li>
     </prerequisites>
-    <researchViewX>69</researchViewX>
+    <researchViewX>70</researchViewX>
     <researchViewY>10</researchViewY>
   </ResearchProjectDef>
 
@@ -597,7 +611,27 @@
     <defName>Compass</defName>
     <label>compass</label>
     <description>A floating lodestone always points north, in fog or open ocean, when the stars are hidden.</description>
-    <baseCost>1700</baseCost>
+    <baseCost>1630</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Medieval</era>
+    <tags>
+      <li>Medieval</li>
+      <li>TransportExploration</li>
+    </tags>
+    <prerequisites>
+      <li>Sailing</li>
+      <li>Astronomy</li>
+    </prerequisites>
+    <researchViewX>71</researchViewX>
+    <researchViewY>11</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
+    <defName>OceanicNavigation</defName>
+    <label>oceanic navigation</label>
+    <description>Compass, chart, and reckoning together let a captain leave sight of any coast at all.</description>
+    <baseCost>1630</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -608,26 +642,7 @@
     <prerequisites>
       <li>Navigation</li>
     </prerequisites>
-    <researchViewX>70</researchViewX>
-    <researchViewY>11</researchViewY>
-  </ResearchProjectDef>
-
-  <ResearchProjectDef>
-    <defName>OceanicNavigation</defName>
-    <label>oceanic navigation</label>
-    <description>Compass, chart, and reckoning together let a captain leave sight of any coast at all.</description>
-    <baseCost>1820</baseCost>
-    <techLevel>Medieval</techLevel>
-    <tab>Main</tab>
-    <era>Medieval</era>
-    <tags>
-      <li>Medieval</li>
-      <li>TransportExploration</li>
-    </tags>
-    <prerequisites>
-      <li>Compass</li>
-    </prerequisites>
-    <researchViewX>71</researchViewX>
+    <researchViewX>72</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -635,7 +650,7 @@
     <defName>Shipbuilding</defName>
     <label>shipbuilding</label>
     <description>Steel-fastened, multi-decked hulls survive ocean crossings a coastal galley never could.</description>
-    <baseCost>1950</baseCost>
+    <baseCost>1910</baseCost>
     <techLevel>Medieval</techLevel>
     <tab>Main</tab>
     <era>Medieval</era>
@@ -644,10 +659,9 @@
       <li>TransportExploration</li>
     </tags>
     <prerequisites>
-      <li>OceanicNavigation</li>
       <li>Steel</li>
     </prerequisites>
-    <researchViewX>72</researchViewX>
+    <researchViewX>73</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 

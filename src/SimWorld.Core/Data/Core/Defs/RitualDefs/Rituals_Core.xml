@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <RitualDef>
+    <defName>HearthGathering</defName>
+    <label>hearth gathering</label>
+    <description>The Hearthway gathers to share out what the season gave.</description>
+    <officiantRole>Elder</officiantRole>
+    <attendeeMemory>AttendedHearthGathering</attendeeMemory>
+    <baseQuality>0.3</baseQuality>
+  </RitualDef>
+
+  <RitualDef>
+    <defName>ForgeRite</defName>
+    <label>forge rite</label>
+    <description>The Forge Covenant tempers its resolve at the anvil.</description>
+    <officiantRole>Forgemaster</officiantRole>
+    <attendeeMemory>AttendedForgeRite</attendeeMemory>
+    <baseQuality>0.3</baseQuality>
+  </RitualDef>
+
+</Defs>

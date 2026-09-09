@@ -646,3 +646,136 @@ If the shipped tree is left exactly as it is, the honest description is: eras
 are a paced ladder every civilization walks the same way, and the variety comes
 from elsewhere in the simulation. That is a legitimate design — it is just not
 the one `research.horizon` assumed.
+
+## 11. Authoring the divergence (`research.divergence`)
+
+§10.5's conclusion is the brief this section executes: tree shape, not price,
+is the lever, and it is now worth pulling because research gates real content.
+Nothing in `src/SimWorld.Core/Research` changed — only
+`tools/content/gen_techtree.py` and the `ResearchProjectDef` XML it generates.
+
+### 11.1 What was authored
+
+**De-linearize 68 of the tree's prerequisite edges.** §10.4 showed why spine
+share is the ceiling on divergence: a project only becomes optional once
+nothing else needs it, and a long single-file chain (A→B→C→D, each the sole
+prerequisite of the next) makes every link but the last mandatory. The fix is
+mechanical: for every project with exactly one dependent, either drop it from
+that dependent's prerequisite list (if the dependent has others) or splice the
+dependent onto the source's own prerequisites (if it does not), turning the
+source into a leaf. Applied once, in a single deterministic pass over the
+original topology (era order, then `defName`) so a downstream project loses at
+most one incoming edge — an earlier iterative version let two independent
+single-source edges compound onto the same node and once silently rerouted
+`TradeRoutes` past two intermediate techs at once, which was surgery, not
+authoring, and was rejected in favor of the single-pass version measured here.
+
+Two things were protected from this pass:
+
+- **The 22-node deep chain** (`StoneTools` through `OpenEndedFrontier`, the one
+  `TechTreeTests.The_longest_prerequisite_chain_is_at_least_20_deep` pins) —
+  every node on it was excluded as an edge _source_, and the pass was verified
+  afterward to leave every one of its 22 depths unchanged. Two of its interior
+  nodes (`SteamEngine`, `MindUploading`) still lost an _unrelated_ second
+  prerequisite as edge _targets_ (`CoalMining`, `ArchotechSeeds` respectively);
+  that is safe because depth is a max over prerequisites and the chain's own
+  branch was never the one removed, confirmed by the same before/after check.
+- **`Fire` and `Foraging`**, the two SticksAndStones roots whose sole
+  dependents (`Cooking`, `HerbalRemedies`) would otherwise have been spliced
+  onto an empty prerequisite list. Nothing in the validator forbids a second
+  generation of first-era roots, but a tech tree where "cooking" needs nothing
+  at all reads as an artifact of the algorithm rather than an authored choice,
+  so these two edges were left as spine by hand. (`AncestorVeneration` and
+  `GiftExchange` looked like the same case on a first pass — they are not:
+  both already require `Language`, so their skip-transformations are ordinary.)
+
+**13 new leaf projects, one per track/era cell that the restructuring left with
+none.** Cutting edges lowers spine share but does not, by itself, give a track
+specialist anything of their own to spend time on: `TrackPolicy` prioritizes
+every unfinished project in its track, spine or leaf, over everything else, so
+a cell with zero leaves gives that archetype no room to diverge from a
+generalist in that era. `Counting`, `BoneSetting`, `Threshing`, `Pictographs`,
+`TributeSystems`, `SacredSites`, `Causeways`, `Cartography`, `Haymaking`,
+`Journalism`, `Suburbs`, `VideoGames` and `ComputerGraphics` each fill exactly
+one such cell (era, track pair where every existing project was spine),
+prerequisite on an existing project in the same cell or its immediate ancestor,
+never gate anything themselves, and cost inside their era's existing band via
+the same depth-based `assign_costs` every other project uses — no new pricing
+mechanism.
+
+**Not attempted: mutually-exclusive lines.** The brief named this as a
+divergence type; `ResearchProjectDef` has no exclusion-tag mechanism (no
+RimWorld-style `ExclusionTags`, no OR-prerequisites), and adding one is a
+`src/SimWorld.Core/Research` change explicitly out of scope this round (it
+collides with `EndlessResearch`, landing separately — see the brief). The
+restructuring above is exclusively AND-DAG surgery: fewer mandatory edges and
+more parallel leaves, not branches that foreclose each other.
+
+### 11.2 Measured
+
+`dotnet run -c Release --project tools/research/ReachHarness.csproj tree` and
+`eras`, before (232 projects, the tree §2 and §10 describe) and after (245):
+
+| Era | Spine % (before → after) | Seen % (before → after) | Overlap (before → after) |
+| --- | --- | --- | --- |
+| SticksAndStones | 65% → **36%** | 87% → 65% | 0.87 → **0.70** |
+| Agrarian | 72% → **33%** | 96% → 84% | 0.93 → **0.78** |
+| Bronze | 85% → **53%** | 98% → 88% | 0.97 → **0.86** |
+| Classical | 67% → **45%** | 95% → 89% | 0.92 → **0.84** |
+| Medieval | 70% → **38%** | 91% → 86% | 0.91 → **0.82** |
+| Industrial | 78% → **43%** | 97% → 89% | 0.95 → **0.83** |
+| Information | 78% → **54%** | 98% → 93% | 0.96 → **0.89** |
+| Exotic | 48% → **28%** | 90% → 87% | 0.86 → **0.82** |
+| **Mean** | **70.4% → 41.3%** | 94.0% → 85.1% | **0.921 → 0.818** |
+
+(Shipped throughput, tech level tracking the era, 21 archetypes × 24 seeds —
+the same panel §10.2 used. "Seen %" and "overlap" are the moment each era's
+spine completes, per `Reports.EraShape`.) Every era moved in the intended
+direction on every column; none regressed. Tree-wide (`TechTreeTests`'
+`The_tree_wide_spine_fraction_is_below_half`), spine share is 104 of 245
+projects, 42.4%, against the original tree's 165 of 232, 71.1%.
+
+**Nothing became unreachable.** `baseline` reports 245 of 245 projects reached
+by some archetype on some seed (0 never-reached, by era and by track), every
+era's reach rate over the 50-year panel is 90–95% — in the same band §3.1
+reported for the original tree under the `Full` rule it was measured against
+at the time, and the harness's own `EraRule.Shipped` fix (§10.1) means this is
+now the first time that comparison has been apples-to-apples with the live
+game — and the deep chain's 22-node length is unchanged, both by direct
+before/after check and by a passing `TechTreeTests` (`dotnet test`, full
+suite, 974 of 974 passing — see the tracker item for the exact count this
+branch shipped with).
+
+**Confirms §10.3's finding from the other direction.** Running `leafcost2/4/8`
+_on top of_ the restructured tree still barely moves overlap (0.73–0.95 across
+the sweep — most eras within a couple points of the unpriced 0.70–0.89) while
+pushing seen% down further (to 30–59% at `leafcost4`, versus 65–93% unpriced) —
+cost changes how much of an era's optional content gets bought, but not, on
+its own, which projects diverge. What moved overlap in §11.2 was changing
+which projects are mandatory, not what they cost.
+
+### 11.3 What this did not do
+
+- **Did not chase spine% to zero, or hold eras to one target number.** Bronze
+  and Information stay the highest (53%, 54%) because their existing projects
+  are genuinely foundational — early materials techs and the internet/AI
+  cluster are load-bearing for most of what comes after by the tree's own
+  historical logic, not by an authoring accident. Flattening them further
+  would mean inventing prerequisites that do not make sense, which the brief's
+  "translate second, port first" spirit argues against.
+- **Did not touch cost.** §10.3/§10.5 already showed price does not move
+  overlap; re-deriving that on the new tree (§11.2) rather than re-tuning
+  bands was the point.
+- **Did not wire the 13 new leaves to any `ThingDef`/`RecipeDef`.** That
+  content lives outside this round's file ownership (`research.divergence`
+  owns `ResearchProjectDefs/`, `EraDefs/`, and the harness, not `ThingDefs/` or
+  `RecipeDefs/`). They are real, priced, optional research; they are not yet
+  consequential the way the 9 existing `IResearchUnlockable` projects are.
+  Wiring them up is exactly the kind of change §7.1 and §10.5 describe, and
+  would very likely move `seen%`/overlap further in the same direction —
+  worth a follow-up now that the DAG has somewhere for that wiring to attach.
+- **Did not re-run the `sweep`/`modifiers` reports against the new tree.**
+  They describe candidate fixes that were rejected or partially accepted
+  before this round (§6); re-deriving all of them was out of scope for a
+  content-shape change. `eras` and `baseline`, the two the brief asks for, are
+  re-run in full above.

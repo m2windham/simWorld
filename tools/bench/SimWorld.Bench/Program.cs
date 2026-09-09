@@ -66,6 +66,9 @@ namespace SimWorld.Bench
                 case "saveload":
                     SaveLoadSuite.Run(opt);
                     break;
+                case "pathing":
+                    PathingSuite.Run(opt, opt.PathingNs);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -95,6 +98,7 @@ namespace SimWorld.Bench
             AllocationSuite.Run(opt);
             WorldGenSuite.Run(opt);
             SaveLoadSuite.Run(opt);
+            PathingSuite.Run(opt, opt.PathingNs);
         }
 
         /// <summary>
@@ -147,6 +151,9 @@ namespace SimWorld.Bench
                         break;
                     case "--subdivisions":
                         opt.Subdivisions = ParseIntList(Next(args, ref i), "--subdivisions");
+                        break;
+                    case "--pathing-ns":
+                        opt.PathingNs = ParseIntList(Next(args, ref i), "--pathing-ns");
                         break;
                     default:
                         throw new ArgumentException("unrecognized argument '" + a + "'.");
@@ -203,7 +210,7 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
   --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc.
   --seed <N>              RandomStream seed (default 12345).
@@ -212,6 +219,7 @@ OPTIONS
   --guard-seconds <secs>  abort a configuration if a single trial exceeds this (default 120).
   --ns <csv>              N sweep for --suite scaling (default 100,250,500,1000,2500,5000,10000).
   --subdivisions <csv>    subdivision sweep for --suite worldgen (default 3,4,5,6).
+  --pathing-ns <csv>      N sweep for --suite pathing (default 100,400,1000).
   --help, -h              show this text.
 
 SUITES
@@ -223,6 +231,8 @@ SUITES
   alloc         Measurement 4: GC.GetTotalAllocatedBytes and Gen0/1/2 counts for one day at --pawns.
   worldgen      Measurement 5: WorldGenerator.GenerateWorld time and tile count across --subdivisions.
   saveload      Measurement 6: Scribe save/load time and serialized size for --pawns pawns.
+  pathing       Measurement 9: N pawns to a shared destination, before (no region-graph sharing) vs after,
+                across --pathing-ns.
   all           Runs every suite in sequence (scaling first; attribution's N is derived from its result).
 
 EXAMPLES
