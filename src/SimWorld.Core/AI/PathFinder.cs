@@ -18,9 +18,24 @@ namespace SimWorld.AI
     /// at the cost of the heap holding more entries than reachable cells in the worst case. Correct for this
     /// graph (all edge costs are non-negative) but a real decrease-key heap would use less memory on a huge,
     /// densely-connected map; noted here rather than silently assumed.
+    ///
+    /// <b>Path sharing</b> (system 9's <c>ai.pathing.sharing</c> pass): before running the full-map search,
+    /// <see cref="FindPath"/> asks <see cref="corridorCache"/> for a corridor — a chain of <see cref="Region"/>s
+    /// from the pawn's start region toward the destination, built once per unique destination and shared by
+    /// every pawn walking there. When one is available the search first runs constrained to that corridor's
+    /// cells only, so most pawns' own search touches a handful of rooms instead of the whole map; see
+    /// <see cref="RegionPathCorridorCache"/> for why that is safe. Either way — no corridor available, or a
+    /// corridor that comes back without reaching a goal — <see cref="FindPath"/> falls through to exactly the
+    /// unconstrained search this class always ran, so the corridor can only ever make a search cheaper, never
+    /// wrong.
     /// </summary>
     public sealed class PathFinder
     {
+        /// <summary>Capacity of the fixed-size goal arrays below (a job's <see cref="PathEndMode.Touch"/> et
+        /// al. target at most its 8 neighbours plus itself). Also <see cref="RegionPathCorridorCache"/>'s own
+        /// scratch-array size, so the two stay in lockstep without a second magic number.</summary>
+        internal const int MaxGoals = 8;
+
         private struct NodeInfo
         {
             public int knownCost;
@@ -46,11 +61,20 @@ namespace SimWorld.AI
         private int[] heapPriority;
         private int heapCount;
 
-        private readonly int[] goalIndices = new int[8];
-        private readonly IntVec3[] goalCells = new IntVec3[8];
+        private readonly int[] goalIndices = new int[MaxGoals];
+        private readonly IntVec3[] goalCells = new IntVec3[MaxGoals];
         private int goalCount;
 
         private readonly List<int> retraceBuffer = new List<int>();
+
+        private readonly RegionPathCorridorCache corridorCache;
+        private readonly HashSet<Region> corridorScratch = new HashSet<Region>();
+
+        /// <summary>Bench/test-only escape hatch for A/B-measuring the effect of path sharing on its own —
+        /// see <c>docs/perf/baseline.md</c> §9 and <c>tools/bench</c>'s pathing suite. Defaults to
+        /// <c>false</c> (sharing on) for every ordinary caller; nothing in the simulation core itself ever
+        /// sets it.</summary>
+        public bool DisableRegionCorridor { get; set; }
 
         public PathFinder(Map.Map map)
         {
@@ -60,6 +84,7 @@ namespace SimWorld.AI
             int initialHeapSize = Math.Max(64, n / 4) + 1;
             heapCell = new int[initialHeapSize];
             heapPriority = new int[initialHeapSize];
+            corridorCache = new RegionPathCorridorCache(this.map);
         }
 
         public PawnPath FindPath(Pawn pawn, IntVec3 start, LocalTargetInfo dest, PathEndMode mode)
@@ -70,6 +95,30 @@ namespace SimWorld.AI
             BuildGoals(dest, mode);
             if (goalCount == 0) return PawnPath.NotFound;
 
+            // Path sharing: a corridor only ever narrows which cells the search below is willing to expand
+            // into — it adds no cell, cost or goal the unconstrained search wouldn't already have accepted —
+            // so trying it first can only make this call cheaper, never wrong. See
+            // RegionPathCorridorCache's own remarks and PathFinder's class doc for the full argument.
+            if (!DisableRegionCorridor && corridorCache.TryBuildCorridor(start, goalCells, goalCount, corridorScratch))
+            {
+                PawnPath corridorResult = RunSearch(start, corridorScratch);
+                if (corridorResult.Found) return corridorResult;
+                // The corridor came back without reaching a goal — a stale tree, region-graph edge cases
+                // around a target with no region of its own, or (rarest) a genuinely unreachable target that
+                // the unconstrained search below is about to also, correctly, fail to reach. Never trust the
+                // corridor's silence as an answer; only the unconstrained search gets to say "not found".
+            }
+
+            return RunSearch(start, null);
+        }
+
+        /// <summary>The A* search itself. <paramref name="corridor"/> is <c>null</c> for the plain,
+        /// always-correct unconstrained search this class has always run; when non-null, a neighbour cell is
+        /// only expanded if its own region is in the corridor (see <see cref="FindPath"/>) — every other rule
+        /// (walkability, corner-cutting, cost) is unchanged, so a corridor search that does succeed found a
+        /// path exactly as valid as an unconstrained one would have.</summary>
+        private PawnPath RunSearch(IntVec3 start, HashSet<Region>? corridor)
+        {
             generation++;
             heapCount = 0;
             int startIndex = map.cellIndices.CellToIndex(start);
@@ -98,6 +147,11 @@ namespace SimWorld.AI
                     var nbCell = new IntVec3(nx, 0, nz);
                     int nbIndex = map.cellIndices.CellToIndex(nbCell);
                     if (!map.pathGrid.WalkableFast(nbIndex)) continue;
+                    if (corridor != null)
+                    {
+                        Region? nbRegion = map.regionGrid.RegionAtIndex(nbIndex);
+                        if (nbRegion == null || !corridor.Contains(nbRegion)) continue;
+                    }
 
                     bool diagonal = offset.x != 0 && offset.z != 0;
                     if (diagonal)
