@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 1132,
+  "testsTotal": 1159,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1093,11 +1093,11 @@
       "id": "social",
       "n": 17,
       "rimworld": "Social, Ideoligion & DLC Systems",
-      "translation": "Opinions and social interactions ported for this pass, RimWorld's compatibility-factor mechanic (a stable hash of the two pawns) included; ideoligions (still proposed) become the religions and ideologies of your civilization once belief is built; DLC systems (genes, psycasts, anomalies), also still proposed, evaluated per era. RimWorld's Thought_Memory/Thought_MemorySocial split is folded into one Thought_Memory class with a nullable otherPawn and a ThoughtDef.IsSocial property, rather than a second thought class; RimWorld's spatial \"a friend is nearby\"/\"a rival is present\" situational thoughts read this port's stored relations instead (no Map/room concept reaches Social or Thoughts yet), via one generic, content-driven ThoughtWorker_HasDirectRelation.",
+      "translation": "Opinions and social interactions ported for this pass, RimWorld's compatibility-factor mechanic (a stable hash of the two pawns) included; ideoligions become the religions and ideologies of your civilization — memes/precepts feeding thoughts through the existing pipeline, rituals with a quality resolution, and precept-granted roles are built (social.ideology); per-citizen ideoligion membership (certainty, conversion, an outsider penalty) is not, and one Ideo stands in for a whole civilization's belief for now — see that item's own label. DLC systems (genes, psycasts, anomalies), still proposed, evaluated per era. RimWorld's Thought_Memory/Thought_MemorySocial split is folded into one Thought_Memory class with a nullable otherPawn and a ThoughtDef.IsSocial property, rather than a second thought class; RimWorld's spatial \"a friend is nearby\"/\"a rival is present\" situational thoughts read this port's stored relations instead (no Map/room concept reaches Social or Thoughts yet), via one generic, content-driven ThoughtWorker_HasDirectRelation.",
       "translationState": "implemented",
-      "module": "src/SimWorld.Core/Social",
+      "module": "src/SimWorld.Core/Social · Social/Ideology",
       "status": "ported",
-      "tests": 35,
+      "tests": 62,
       "items": [
         {
           "id": "social.opinion",
@@ -1116,8 +1116,8 @@
         },
         {
           "id": "social.ideology",
-          "label": "Memes + precepts feeding thoughts; rituals; roles — explicitly out of scope for this pass: belief is a separate, much larger design the god layer will want to own. Needs a precept/meme content layer, ritual quality resolution, and role assignment before it can land.",
-          "done": false
+          "label": "Built: MemeDef/PreceptDef (memes are broad themes with slots; precepts are the specific rules, faithfully split), an Ideo runtime object generated from an IdeoDef preset and Scribe round-tripped, precepts feeding mood through the existing thought pipeline (ThoughtWorker_UnderPrecept, built directly on the ThoughtWorker_UnderEdict precedent — one PreceptWorker class serves opposing judgments, the mood sign lives in content), rituals with a quality resolution (RitualUtility: participant count, officiant-role presence, participant mood — the shape is RimWorld's, the numbers are this port's own, pinned by trend tests since RimWorld's own quality table could not be sourced here), and precept-granted roles (IdeoRoleDef, capped by maxHolders — a second concept from Work.RoleDef, not an extension of it, partly because the two class names would silently collide in Def-type resolution). Content ships two contrasting ideoligions (TheHearthway, TheForgeCovenant) whose precepts read the same citizen state and reach opposite mood conclusions, plus a ritual and a role each, working end to end. NOT built: per-citizen ideoligion membership (RimWorld's certainty/conversion/outsider-penalty) — one Ideo stands in for a whole civilization's belief, every Humanlike citizen assumed a member, which is exactly the much-larger design this item originally deferred; event-tracked precepts (cannibalism, corpse treatment) — no consumption/corpse event stream exists to read, so every shipped precept instead reads state another module already tracks durably (a trait, worn apparel, a role). IdeoManager is a thread-static self-gate in Social/Ideology, not a Find.Ideo — Sim/** was out of this pass's file ownership; wiring a real Find.Ideo/Game.Ideo slot is the follow-up.",
+          "done": true
         },
         {
           "id": "social.dlc",

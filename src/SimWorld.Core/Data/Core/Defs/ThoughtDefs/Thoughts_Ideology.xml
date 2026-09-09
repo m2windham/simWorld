@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Situational thoughts driving the precept/mood core loop (system 17: social.ideology). Every one of
+       these is workerClass=ThoughtWorker_UnderPrecept: active only while some precept in the currently
+       ambient Ideo (IdeoManager.Current) names it as a moodThought and that precept's own PreceptWorker
+       condition holds for the pawn — see PreceptDefs/Precepts_Core.xml for which precept drives which. -->
+
+  <ThoughtDef>
+    <defName>HearthwayBelonging</defName>
+    <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
+    <stages>
+      <li>
+        <label>living the Hearthway</label>
+        <description>The hearth is shared, and so is everything else. It's a good way to live.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>BareSkinComfortable</defName>
+    <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
+    <stages>
+      <li>
+        <label>bare skin, hearth-warmed</label>
+        <description>Nothing between me and the hearth-light. Nothing to hide.</description>
+        <baseMoodEffect>4</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>KindnessHonored</defName>
+    <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
+    <stages>
+      <li>
+        <label>kindness honored</label>
+        <description>The Hearthway holds gentleness as a virtue, and I have it.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>GuidingTheHearthway</defName>
+    <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
+    <stages>
+      <li>
+        <label>guiding the Hearthway</label>
+        <description>The settlement looks to me when a dispute needs settling. It's a weight I carry gladly.</description>
+        <baseMoodEffect>5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>ForgeCovenantBelonging</defName>
+    <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
+    <stages>
+      <li>
+        <label>sworn to the forge</label>
+        <description>The covenant asks nothing of me I have not chosen to give.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>ImmodestExposure</defName>
+    <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
+    <stages>
+      <li>
+        <label>immodest exposure</label>
+        <description>Bare before the forge's judgment. The covenant expects better of me.</description>
+        <baseMoodEffect>-4</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>BloodlustHonored</defName>
+    <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
+    <stages>
+      <li>
+        <label>bloodlust honored</label>
+        <description>The covenant does not ask me to temper what I am. It asks me to forge it.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>MasteringTheForge</defName>
+    <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
+    <stages>
+      <li>
+        <label>mastering the forge</label>
+        <description>The covenant answers to me now. That is no small thing.</description>
+        <baseMoodEffect>5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <!-- Ritual attendee memories (system 17: rituals). Granted by RitualUtility.PerformRitual, forced to the
+       stage the rolled quality proportionally lands on — a Poor rite leaves less of a mark than a Memorable
+       one, the same graded-thought idiom this port's other quality-driven systems already use. -->
+
+  <ThoughtDef>
+    <defName>AttendedHearthGathering</defName>
+    <durationDays>4</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>a thin gathering</label>
+        <description>The hearth gathering was sparse. Still, we gathered.</description>
+        <baseMoodEffect>1</baseMoodEffect>
+      </li>
+      <li>
+        <label>a fair gathering</label>
+        <description>A decent hearth gathering. Good enough company, good enough food.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+      <li>
+        <label>a fine gathering</label>
+        <description>The hearth gathering ran long into the night. It was a fine one.</description>
+        <baseMoodEffect>5</baseMoodEffect>
+      </li>
+      <li>
+        <label>a gathering to remember</label>
+        <description>People will speak of this hearth gathering for seasons.</description>
+        <baseMoodEffect>8</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>AttendedForgeRite</defName>
+    <durationDays>4</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>a thin rite</label>
+        <description>The forge rite was sparse. Still, the covenant was kept.</description>
+        <baseMoodEffect>1</baseMoodEffect>
+      </li>
+      <li>
+        <label>a fair rite</label>
+        <description>A decent forge rite. The anvil rang true enough.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+      <li>
+        <label>a fine rite</label>
+        <description>The forge rite burned hot and long. It was a fine one.</description>
+        <baseMoodEffect>5</baseMoodEffect>
+      </li>
+      <li>
+        <label>a rite to remember</label>
+        <description>The forge rite will be spoken of for seasons.</description>
+        <baseMoodEffect>8</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

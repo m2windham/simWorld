@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <IdeoRoleDef>
+    <defName>Elder</defName>
+    <label>elder</label>
+    <description>Keeper of the Hearthway's memory, and the one who settles its disputes.</description>
+    <maxHolders>1</maxHolders>
+    <ritualQualityOffset>0.15</ritualQualityOffset>
+  </IdeoRoleDef>
+
+  <IdeoRoleDef>
+    <defName>Forgemaster</defName>
+    <label>forgemaster</label>
+    <description>Whoever tends the covenant's forge speaks for it.</description>
+    <maxHolders>2</maxHolders>
+    <ritualQualityOffset>0.15</ritualQualityOffset>
+  </IdeoRoleDef>
+
+</Defs>

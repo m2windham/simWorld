@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Two contrasting ideoligions' worth of memes (system 17: social.ideology). Each ideoligion carries
+       exactly one Structure meme (IdeoDef.ConfigErrors enforces it) plus a handful of Normal memes, each of
+       which opens exactly one precept slot that Ideos_Core.xml's IdeoDefs fill with an opposing choice — the
+       same topic ("Apparel", "Personality", "Leadership"), a different rule. -->
+
+  <!-- ==================== The Hearthway ==================== -->
+
+  <MemeDef>
+    <defName>Structure_Communal</defName>
+    <label>communal</label>
+    <description>No owner stands apart from the hearth; what one household has, the settlement shares.</description>
+    <category>Structure</category>
+    <autoPrecepts>
+      <li>Precept_HearthwayBelonging</li>
+    </autoPrecepts>
+  </MemeDef>
+
+  <MemeDef>
+    <defName>Nudism</defName>
+    <label>nudism</label>
+    <description>Skin bared to hearth-light is nothing to hide.</description>
+    <preceptSlots>
+      <li>Apparel</li>
+    </preceptSlots>
+  </MemeDef>
+
+  <MemeDef>
+    <defName>AncestorReverence</defName>
+    <label>ancestor reverence</label>
+    <description>The dead are honored by how gently the living treat one another.</description>
+    <preceptSlots>
+      <li>Personality</li>
+    </preceptSlots>
+  </MemeDef>
+
+  <MemeDef>
+    <defName>EldersLead</defName>
+    <label>elders lead</label>
+    <description>An elder's word settles what argument cannot.</description>
+    <preceptSlots>
+      <li>Leadership</li>
+    </preceptSlots>
+  </MemeDef>
+
+  <!-- ==================== The Forge Covenant ==================== -->
+
+  <MemeDef>
+    <defName>Structure_Ascendant</defName>
+    <label>ascendant</label>
+    <description>The forge answers to whoever is strong enough to master it, not to the settlement at large.</description>
+    <category>Structure</category>
+    <autoPrecepts>
+      <li>Precept_ForgeCovenantBelonging</li>
+    </autoPrecepts>
+  </MemeDef>
+
+  <MemeDef>
+    <defName>Modesty</defName>
+    <label>modesty</label>
+    <description>A covenant-keeper is never seen bare before the forge's judgment.</description>
+    <preceptSlots>
+      <li>Apparel</li>
+    </preceptSlots>
+  </MemeDef>
+
+  <MemeDef>
+    <defName>MartialValor</defName>
+    <label>martial valor</label>
+    <description>A taste for the fight, tempered by the forge, is a virtue rather than a vice.</description>
+    <preceptSlots>
+      <li>Personality</li>
+    </preceptSlots>
+  </MemeDef>
+
+  <MemeDef>
+    <defName>ForgemastersLead</defName>
+    <label>forgemasters lead</label>
+    <description>Whoever masters the forge, masters the covenant.</description>
+    <preceptSlots>
+      <li>Leadership</li>
+    </preceptSlots>
+  </MemeDef>
+
+</Defs>
