@@ -391,10 +391,10 @@ namespace SimWorld.Sim
             foreach (SimWorld.Map.Map map in Maps) map.MapTick();
         }
 
-        /// <summary>Every Full/Interval citizen across every settlement — the population
-        /// <see cref="SocialInteractionManager.SocialInteractionTick"/> and <see cref="CivilizationTarget"/>'s
-        /// roster read. Never includes a Statistical citizen (<see cref="SimWorld.World.Settlement"/>'s own
-        /// design: no live <c>Pawn</c> object exists for one).</summary>
+        /// <summary>Every Full/Interval citizen on the planet, every civilization's alike. Never includes a
+        /// Statistical citizen (<see cref="SimWorld.World.Settlement"/>'s own design: no live <c>Pawn</c>
+        /// object exists for one). Used where a whole-world roll really is wanted; the social sweep
+        /// deliberately does not use it — see <see cref="SocialTick"/>.</summary>
         private List<Pawn> CollectCitizens()
         {
             var citizens = new List<Pawn>();
@@ -415,8 +415,20 @@ namespace SimWorld.Sim
         {
             if (world == null) return;
             if (TickManager.TicksGame % SocialTuning.InteractionIntervalTicks != 0) return;
-            List<Pawn> citizens = CollectCitizens();
-            if (citizens.Count > 0) SocialInteractionManager.SocialInteractionTick(citizens);
+
+            // One sweep per settlement, not one over the planet. The sweep pairs people up to chat, insult,
+            // court and fall out with each other, and two citizens of rival civilizations a continent apart
+            // have never met: rolling them against each other manufactures relationships — and, since
+            // World.EmergenceManager started founding rivals, most of the candidate pairs in a whole-world
+            // sweep are exactly that. A settlement is the smallest unit this port has that means "the people
+            // among whom you live", so it is the right scope; when caravans and travel make strangers meet,
+            // that is the seam to widen, not this one.
+            foreach (SimWorld.World.WorldObject obj in world.worldObjects)
+            {
+                if (obj is not SimWorld.World.Settlement settlement) continue;
+                IReadOnlyList<Pawn> citizens = settlement.Citizens;
+                if (citizens.Count > 1) SocialInteractionManager.SocialInteractionTick(citizens);
+            }
         }
 
         /// <summary>
