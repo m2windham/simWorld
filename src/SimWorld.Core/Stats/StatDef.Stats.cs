@@ -16,6 +16,15 @@ namespace SimWorld.Defs
         /// <summary>Extra transforms applied after factors, before the post-process curve (RimWorld: <c>StatDef.parts</c>).</summary>
         public List<Stats.StatPart>? parts;
 
+        /// <summary>Skill-driven terms added into the value, before trait/hediff offsets (RimWorld:
+        /// <c>StatDef.skillNeedOffsets</c>). See <see cref="Stats.StatWorker.GetValueUnfinalized"/> for where
+        /// this and <see cref="skillNeedFactors"/> apply in the pipeline.</summary>
+        public List<Stats.SkillNeed>? skillNeedOffsets;
+
+        /// <summary>Skill-driven terms multiplied into the value, before trait/hediff factors (RimWorld:
+        /// <c>StatDef.skillNeedFactors</c>).</summary>
+        public List<Stats.SkillNeed>? skillNeedFactors;
+
         /// <summary>How much a pawn's health capacities bend the final value — e.g. RestRateMultiplier's
         /// BloodPumping/Metabolism/Breathing (RimWorld: <c>StatDef.capacityFactors</c>).</summary>
         public List<Stats.PawnCapacityFactor>? capacityFactors;

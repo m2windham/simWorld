@@ -350,6 +350,62 @@ namespace SimWorld.Tests.Work
             Assert.DoesNotContain(p.workSettings.WorkGiversInOrderEmergency, g => g.defName == "FightFires");
         }
 
+        // ---- backstory-disabled work (system: work.backstory) ----
+
+        /// <summary>
+        /// pawngen.backstory (a different lane's tracker item) already proves BackstoryDef.workDisables reaches
+        /// Pawn.WorkTagIsDisabled — see PawnGenerationTests.Backstory_workDisables_ManualDumb_disables_Hauling.
+        /// This is the Work module's own end of the same pipe: a backstory-disabled work type actually gets
+        /// zeroed in the priority grid and drops out of work-giver scanning, the same as a trait-disabled one
+        /// already does (see Pyromaniac_disables_firefighting_via_content above) — not just that the tag check
+        /// reports true.
+        /// </summary>
+        [Fact]
+        public void Backstory_disabled_work_type_is_zeroed_in_the_priority_grid_and_dropped_from_work_givers()
+        {
+            BackstoryDef nobleChild = DefDatabase<BackstoryDef>.GetNamed("NobleChild");
+            Assert.Equal(WorkTags.ManualDumb, nobleChild.workDisables);
+
+            Pawn p = NewHuman();
+            Assert.Equal(3, p.workSettings.GetPriority(WorkTypeDefOf.Hauling)); // enabled before the backstory lands
+
+            p.story.childhood = nobleChild;
+            p.Notify_TraitsChanged(); // Pawn_WorkSettings.Notify_DisabledWorkTypesChanged re-zeroes what just became disabled
+
+            Assert.True(p.WorkTypeIsDisabled(WorkTypeDefOf.Hauling));
+            Assert.Equal(0, p.workSettings.GetPriority(WorkTypeDefOf.Hauling));
+            Assert.DoesNotContain(p.workSettings.WorkGiversInOrderNormal, g => g.defName == "HaulGeneral");
+            Assert.DoesNotContain(p.workSettings.WorkGiversInOrderNormal, g => g.defName == "HaulCorpses");
+
+            // SetPriority refuses to turn a backstory-disabled work type back on, the same rule a
+            // trait-disabled one already gets (SetPriority_refuses_a_disabled_worktype above).
+            p.workSettings.useWorkPriorities = true;
+            p.workSettings.SetPriority(WorkTypeDefOf.Hauling, 2);
+            Assert.Equal(0, p.workSettings.GetPriority(WorkTypeDefOf.Hauling));
+        }
+
+        [Fact]
+        public void Adulthood_and_childhood_backstory_workDisables_combine()
+        {
+            // Scientist (adulthood) disables ManualSkilled and Violent; a childhood alone would not, so a pawn
+            // with only Scientist as its adulthood backstory should pick up exactly Scientist's own tags —
+            // proving DisabledWorkTagsBackstoryAndTraits reads both slots rather than only childhood.
+            BackstoryDef scientist = DefDatabase<BackstoryDef>.GetNamed("Scientist");
+            Assert.Equal(WorkTags.ManualSkilled | WorkTags.Violent, scientist.workDisables);
+
+            Pawn p = NewHuman();
+            p.story.adulthood = scientist;
+            p.Notify_TraitsChanged();
+
+            Assert.True(p.WorkTagIsDisabled(WorkTags.ManualSkilled));
+            Assert.True(p.WorkTagIsDisabled(WorkTags.Violent));
+            Assert.True(p.WorkTypeIsDisabled(WorkTypeDefOf.Hunting)); // Hunting carries the Violent tag
+
+            // Still free to haul — ManualDumb (NobleChild's tag) was never granted here.
+            Assert.False(p.WorkTagIsDisabled(WorkTags.ManualDumb));
+            Assert.Equal(3, p.workSettings.GetPriority(WorkTypeDefOf.Hauling));
+        }
+
         // ---- work giver ordering ----
 
         [Fact]

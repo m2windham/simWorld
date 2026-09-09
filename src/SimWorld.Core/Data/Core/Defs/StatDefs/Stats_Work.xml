@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Skill-driven stats (system: work.stats). Content for the StatDef.skillNeedOffsets/skillNeedFactors
+    pipeline (src/SimWorld.Core/Stats/StatWorker.cs, SkillNeed.cs): a SkillNeed_Direct table looks a value up
+    per skill level; a SkillNeed_BaseBonus adds baseValue + bonusPerLevel * level. None of the numbers below
+    are RimWorld's own sourced values — this sandbox has no access to RimWorld's real StatDefs_Work.xml, so
+    every curve here is this port's own invention, picked only to be monotonic (higher skill never gives a
+    worse value) and to land somewhere plausible. Tests pin the trend (skill up -> value up, level 0 -> base),
+    never a literal number from these tables, per CLAUDE.md's "say so in a comment" rule.
+
+    MiningSpeed, ConstructionSpeed, CookSpeed and ResearchSpeed are new here (no prior StatDef existed for
+    them) — real RimWorld canon names, added because this module's brief names them explicitly as stats that
+    "obviously want a skill need". Nothing outside the Stats/Work modules reads them yet: Building's
+    JobDriver_ConstructFinishFrame and AI's JobDriver_Mine still read their skill levels directly and apply
+    their own hand-rolled curves (each says so in its own doc comment, predating this module) rather than
+    going through these StatDefs — wiring that up belongs to whichever module owns those job drivers, not
+    this one. ConstructionSpeed's own curve (0.4 at level 0, 2.0 at level 20) is deliberately set to the same
+    endpoints as JobDriver_ConstructFinishFrame's WorkSpeedFactorFromConstructionLevel for narrative
+    consistency, not because the two are wired together.
+  -->
+
+  <StatDef>
+    <defName>WorkSpeedGlobal</defName>
+    <label>work speed</label>
+    <description>A general work speed factor that applies to all work.</description>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0.1</minValue>
+    <!--
+      RimWorld's own WorkSpeedGlobal carries no skillNeedFactors at all (only trait/health/capacity effects —
+      each specific work type has its own speed stat for that). This module's brief calls for WorkSpeedGlobal
+      specifically to demonstrate the pipeline before per-work-type speed stats are read by any job driver;
+      Intellectual is an arbitrary "general competence" stand-in with no RimWorld basis, kept deliberately
+      small (+/-5% across the whole skill range) precisely because it is not RimWorld-authentic.
+    -->
+    <skillNeedFactors>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Intellectual</skill>
+        <baseValue>0.95</baseValue>
+        <bonusPerLevel>0.005</bonusPerLevel>
+      </li>
+    </skillNeedFactors>
+  </StatDef>
+
+  <StatDef>
+    <defName>MedicalTendQuality</defName>
+    <label>medical tend quality</label>
+    <description>How good a job this pawn does when tending wounds and illness.</description>
+    <!--
+      Base 1, not 0: skillNeedFactors below is multiplicative (base * factor), so a 0 base would stay 0 at
+      every skill level regardless of the factor table — the table itself already spans the full 0.30..1.00
+      range a base of 1 needs to land exactly on those numbers.
+    -->
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0</minValue>
+    <skillNeedFactors>
+      <li Class="SimWorld.Stats.SkillNeed_Direct">
+        <skill>Medicine</skill>
+        <valuesPerLevel>
+          <li>0.30</li>
+          <li>0.335</li>
+          <li>0.37</li>
+          <li>0.405</li>
+          <li>0.44</li>
+          <li>0.475</li>
+          <li>0.51</li>
+          <li>0.545</li>
+          <li>0.58</li>
+          <li>0.615</li>
+          <li>0.65</li>
+          <li>0.685</li>
+          <li>0.72</li>
+          <li>0.755</li>
+          <li>0.79</li>
+          <li>0.825</li>
+          <li>0.86</li>
+          <li>0.895</li>
+          <li>0.93</li>
+          <li>0.965</li>
+          <li>1.00</li>
+        </valuesPerLevel>
+      </li>
+    </skillNeedFactors>
+  </StatDef>
+
+  <StatDef>
+    <defName>MiningSpeed</defName>
+    <label>mining speed</label>
+    <description>How quickly this pawn breaks rock while mining.</description>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0.1</minValue>
+    <skillNeedFactors>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Mining</skill>
+        <baseValue>0.6</baseValue>
+        <bonusPerLevel>0.04</bonusPerLevel>
+      </li>
+    </skillNeedFactors>
+  </StatDef>
+
+  <StatDef>
+    <defName>ConstructionSpeed</defName>
+    <label>construction speed</label>
+    <description>How quickly this pawn builds things.</description>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0.1</minValue>
+    <skillNeedFactors>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Construction</skill>
+        <baseValue>0.4</baseValue>
+        <bonusPerLevel>0.08</bonusPerLevel>
+      </li>
+    </skillNeedFactors>
+  </StatDef>
+
+  <StatDef>
+    <defName>CookSpeed</defName>
+    <label>cooking speed</label>
+    <description>How quickly this pawn cooks meals.</description>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0.1</minValue>
+    <skillNeedFactors>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Cooking</skill>
+        <baseValue>0.6</baseValue>
+        <bonusPerLevel>0.04</bonusPerLevel>
+      </li>
+    </skillNeedFactors>
+  </StatDef>
+
+  <StatDef>
+    <defName>ResearchSpeed</defName>
+    <label>research speed</label>
+    <description>How quickly this pawn generates research points.</description>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0.1</minValue>
+    <skillNeedFactors>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Intellectual</skill>
+        <baseValue>0.4</baseValue>
+        <bonusPerLevel>0.08</bonusPerLevel>
+      </li>
+    </skillNeedFactors>
+  </StatDef>
+
+</Defs>

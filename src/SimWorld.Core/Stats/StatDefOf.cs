@@ -43,5 +43,34 @@ namespace SimWorld.Stats
         /// port's pipeline can address the same way, but the shape — a per-Def resistance value — carries
         /// over cleanly as its own stat).</summary>
         public static StatDef Insulation = null!;
+
+        // ---- system: work.stats (skill-driven stats — see Stats/SkillNeed.cs) ----
+
+        /// <summary>General work speed multiplier (RimWorld: <c>StatDefOf.WorkSpeedGlobal</c>). Not read by
+        /// any job driver yet in this port; ships with a (deliberately unsourced, see content) skill-need tie
+        /// as the demonstration case the work.stats brief names explicitly.</summary>
+        public static StatDef WorkSpeedGlobal = null!;
+
+        /// <summary>How good a tend is, skill-need-scaled off Medicine (RimWorld: <c>StatDefOf.MedicalTendQuality</c>).
+        /// Health's own <see cref="Health.SurgeryTuning"/> still reads the Medicine skill directly for
+        /// surgery's own success chance rather than through this stat — see that module's own doc comment and
+        /// <c>docs/spec/simworld-spec.md</c> §7.2.</summary>
+        public static StatDef MedicalTendQuality = null!;
+
+        /// <summary>How fast this pawn breaks rock while mining, skill-need-scaled off Mining (RimWorld:
+        /// <c>StatDefOf.MiningSpeed</c>). Not read by <see cref="AI.JobGiver_Work"/>'s job drivers yet — see
+        /// the content file's own remarks.</summary>
+        public static StatDef MiningSpeed = null!;
+
+        /// <summary>How fast this pawn builds things, skill-need-scaled off Construction (RimWorld:
+        /// <c>StatDefOf.ConstructionSpeed</c>).</summary>
+        public static StatDef ConstructionSpeed = null!;
+
+        /// <summary>How fast this pawn cooks meals, skill-need-scaled off Cooking (RimWorld: <c>StatDefOf.CookSpeed</c>).</summary>
+        public static StatDef CookSpeed = null!;
+
+        /// <summary>How fast this pawn generates research points, skill-need-scaled off Intellectual (RimWorld:
+        /// <c>StatDefOf.ResearchSpeed</c>).</summary>
+        public static StatDef ResearchSpeed = null!;
     }
 }
