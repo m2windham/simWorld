@@ -554,6 +554,10 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
 - Thoughts: timed memories (stack limit, renew-oldest) and situational workers.
 - Mood below break bands (0.35 / 0.20 / 0.05) → MTB roll → weighted,
   trait-filtered break table → mental state with a recovery and catharsis path.
+- **Social seam**: a memory thought carries a nullable `otherPawn` and feeds
+  opinion as well as mood (`ThoughtDef.IsSocial`); a social fight is a real
+  `MentalStateDef` (`MentalState_SocialFighting`) that trades blows through
+  Combat's existing melee verb rather than a parallel system. See §8.4.
 
 ### 7.2 Health
 
@@ -934,11 +938,27 @@ flowchart LR
   insult and slight, selected by weight per pair on a population-wide sweep every
   2,500 ticks — a rare-tick manager sweep (`SocialInteractionManager`), not
   per-pawn-per-tick work. A sufficiently bad opinion and mood can escalate an
-  insult into a social fight, reusing the existing `MentalStateDef` machinery
-  rather than a parallel system.
+  insult into a social fight (`SocialFightUtility.TryStartSocialFight`), reusing
+  the existing `MentalStateDef` machinery rather than a parallel system:
+  `MentalState_SocialFighting` runs on both participants at once (each pointing
+  at the other via `otherPawn`, wired by `TryStartSocialFight` right after both
+  are created) and actually trades blows — a bare-knuckled `Tool` resolved
+  through Combat's own `MeleeVerbUtility`/`Verb_MeleeAttack` path, the same one
+  a weapon uses, not a second combat system. The fight ends at the `MentalStateDef`'s
+  own duration/MTB recovery or the instant either side goes down, dies, or is no
+  longer in the same fight — whichever comes first.
 - **Social thoughts** are ordinary memory thoughts with `otherPawn` set (the mood
   system's own stack, not a separate one), feeding both mood and opinion
-  (`ThoughtStage.baseOpinionOffset`).
+  (`ThoughtStage.baseOpinionOffset`). `ThoughtDef.IsSocial` (true when any stage
+  moves opinion at all) names the distinction RimWorld draws with a separate
+  `Thought_MemorySocial` subclass; this port folds both kinds into one
+  `Thought_Memory` class with a nullable `otherPawn` instead of forking the type.
+- **Situational thoughts from social life**: `ThoughtWorker_HasDirectRelation`
+  (content: `HasFriend`/`HasRival`) is active for as long as a pawn holds a
+  stored relation of the given kind with anyone — this module's stand-in for
+  RimWorld's spatial "a friend is nearby"/"a rival is present" thoughts, since
+  no Map/room concept reaches Social or Thoughts yet; one generic, content-driven
+  worker rather than a bespoke class per relation kind.
 
 **Belief — _planned_.** Ideology, precepts, memes, rituals and roles are out of
 scope for this pass: belief is a separate, much larger design the god layer will

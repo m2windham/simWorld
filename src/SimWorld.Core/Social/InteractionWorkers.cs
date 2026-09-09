@@ -1,3 +1,4 @@
+using SimWorld.MindState;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 
@@ -89,7 +90,18 @@ namespace SimWorld.Social
             if (!Rand.Chance(chance)) return false;
 
             bool started = recipient.mindState.mentalStateHandler.TryStartMentalState(SocialMentalStateDefOf.SocialFighting, "SocialFight");
-            initiator.mindState.mentalStateHandler.TryStartMentalState(SocialMentalStateDefOf.SocialFighting, "SocialFight");
+            bool startedOther = initiator.mindState.mentalStateHandler.TryStartMentalState(SocialMentalStateDefOf.SocialFighting, "SocialFight");
+            // Each TryStartMentalState above only ever knows about the one pawn it belongs to (see
+            // MentalStateHandler.TryStartMentalState) — pair the two freshly-created instances together here,
+            // the only place that has both pawns in hand at once.
+            if (started && recipient.mindState.mentalStateHandler.CurState is MentalState_SocialFighting recipientFight)
+            {
+                recipientFight.otherPawn = initiator;
+            }
+            if (startedOther && initiator.mindState.mentalStateHandler.CurState is MentalState_SocialFighting initiatorFight)
+            {
+                initiatorFight.otherPawn = recipient;
+            }
             return started;
         }
     }
