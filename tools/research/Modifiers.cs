@@ -198,6 +198,31 @@ namespace SimWorld.ReachHarness
     }
 
     /// <summary>
+    /// Multiply the cost of every project nothing else depends on — the leaves — leaving the spine alone.
+    /// The candidate answer to what the era-shape measurement found: a civilization sees ~90% of an era before
+    /// leaving it because the optional content is cheap enough to sweep up while working the spine that
+    /// actually gates the age. Make the flavour cost something and it becomes a choice instead of a formality.
+    /// </summary>
+    public sealed class LeafCostModifier : Modifier
+    {
+        private readonly float factor;
+
+        public LeafCostModifier(float factor) => this.factor = factor;
+
+        public override string Name => "leafcost" + factor.ToString("0.##", CultureInfo.InvariantCulture);
+
+        public override void Apply(TreeModel tree, HashSet<ResearchProjectDef> excluded)
+        {
+            foreach (ResearchProjectDef p in tree.Projects)
+            {
+                if (tree.OutDegree[p] > 0) continue; // spine: the era waits on it, so its price sets the pace
+                p.baseCost = MathF.Round(p.baseCost * factor / 10f) * 10f;
+            }
+            tree.Recompute();
+        }
+    }
+
+    /// <summary>
     /// Make the era ladder gate content instead of only labelling it: a project becomes researchable when
     /// its era opens, which happens when every earlier era is complete under the active era rule.
     /// </summary>
@@ -241,6 +266,7 @@ namespace SimWorld.ReachHarness
             if (token == "techtrack") return new TechTrackModifier();
             if (token == "spine") return new EraRuleModifier(new EraRule.Spine());
             if (token == "eragate") return new EraGateModifier();
+            if (TryNumeric(token, "leafcost", out float leaf)) return new LeafCostModifier(leaf);
             if (TryNumeric(token, "costscale", out float scale)) return new CostScaleModifier(scale);
             if (TryNumeric(token, "throughput", out float t)) return new ThroughputModifier(t);
             if (TryNumeric(token, "trim", out float trim)) return new TrimModifier((int)trim);

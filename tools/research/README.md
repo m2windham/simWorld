@@ -23,6 +23,7 @@ Commands:
 | --- | --- |
 | `tree` | Static shape of the shipped tree: size, cost, depth, connectivity, unlock consequence |
 | `baseline` | The headline panel, as shipped and with the tech level tracking the era, plus the shipped scenarios' starting eras |
+| `eras` | Era shape: how much of an era a civilization has seen when it leaves it, and whether archetypes diverge (see the report's §10) |
 | `sweep` | Sensitivity to throughput, horizon, starting era, researcher growth, attention and skill |
 | `modifiers` | Every candidate fix, measured against the same panel |
 | `all` | All of the above (about eight minutes) |

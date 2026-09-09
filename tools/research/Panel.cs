@@ -141,7 +141,7 @@ namespace SimWorld.ReachHarness
             var excluded = new HashSet<ResearchProjectDef>();
             RunConfig config = baseConfig.Clone();
             List<Modifier> mods = ModifierRegistry.Parse(modifierSpec);
-            EraRule rule = EraRule.Full;
+            EraRule rule = EraRule.Shipped;
             foreach (Modifier m in mods)
             {
                 m.Apply(tree, excluded);

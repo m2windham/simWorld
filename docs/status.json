@@ -955,7 +955,12 @@
         },
         {
           "id": "research.horizon",
-          "label": "Price the tree to an intended playthrough length: measured, 2-3x cost is where a 50-year civilization visibly cannot have everything and playstyles diverge, with nothing unreachable. Blocked on the horizon decision and on research having consequences first",
+          "label": "Pacing, re-framed after the horizon decision: years are not the currency, so \"can a 50-year civilization have everything\" is a question about a unit that no longer applies. Measured per era instead — how much of an era a civilization has seen when it leaves it, and whether two archetypes see the same things. Answer: seen% lands within 2-4 points of the era’s spine share in every era, so cost tuning moves how MUCH gets done and never WHAT, and overlap never falls below ~0.85 at any price. Do not re-price the tree (docs/research/tech-reachability.md §10)",
+          "done": true
+        },
+        {
+          "id": "research.divergence",
+          "label": "Author divergence into the tree rather than pricing for it: the shipped tree is 48-85% spine (median ~72%), which structurally caps how much two civilizations can differ within an era. Fewer dependencies and more leaves per era raise that ceiling, and research now has real consequences (ThingDef/RecipeDef gate on it) so a leaf can be written for a civilization that farms rather than one that fights",
           "done": false
         },
         {

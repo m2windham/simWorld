@@ -536,3 +536,113 @@ every number here re-derived.
 - **Anything about the world state Epoch's charters read** — population, stockpiles,
   buildings raised, raids survived. The charter proposal's mechanical half was
   measured; its world-state half needs the world sim.
+
+## 10. Era shape, after the horizon decision
+
+§9 named the intended playthrough length as "the single largest source of
+uncertainty in the report". That uncertainty is now resolved by decision rather
+than by measurement: **there is no fixed horizon** — the director paces time, a
+century in which nothing happened costs nothing to pass, and years are not the
+currency. The tracker item this report served (`research.horizon`) asked whether
+a 50-year civilization can have everything. That question is about a unit that
+no longer applies.
+
+What survives the reframing is per era: **by the time a civilization leaves an
+era behind, how much of that era had it seen, and did two civilizations see the
+same things?** The harness gained an `eras` command that answers exactly that.
+
+### 10.1 A stale rule, and a tautology
+
+The first run reported 100% seen and 1.00 overlap in every era at every
+throughput. That was not a finding — it was the harness measuring a rule the
+game had stopped using.
+
+`EraRule.Full` was the shipped rule and was documented as such. Then
+`EraDef.IsComplete` moved to the **spine** rule (§6, §7.2) and this harness was
+not updated. Under `Full`, an era turns exactly when 100% of it is finished, so
+"how much had they seen when it turned" is 100% by construction, and every
+archetype's set is identical.
+
+The fix is structural rather than a correction: `EraRule.Shipped` now delegates
+to the real `EraDef`, so the harness cannot drift from the game again. Every
+number below is measured against it.
+
+### 10.2 What the shipped tree actually does
+
+Panel: the full archetype set, tech level tracking the era, five seeds.
+
+| throughput | seen% (range across eras) | overlap |
+| --- | --- | --- |
+| x0.5 | 88–98% | 0.89–1.00 |
+| x1 | 88–98% | 0.86–0.96 |
+| x2 | 87–98% | 0.86–0.97 |
+| x4 | 87–98% | 0.86–0.97 |
+
+A civilization sees **essentially all of an era before leaving it**, and two
+different archetypes finish nearly the same set. Throughput barely moves either
+number: researching four times faster changes seen% by about one point. The
+shape of an era does not depend on how fast you research it.
+
+### 10.3 The candidate fix, and why it stops working
+
+If optional content is cheap enough to sweep up while working the spine that
+actually gates the age, then price it. `leafcost<N>` multiplies the cost of
+every project nothing else depends on, leaving the spine alone.
+
+| leaf cost | seen% (range) | overlap | eras reached |
+| --- | --- | --- | --- |
+| shipped | 87–98% | 0.86–0.97 | 95% |
+| x2 | 53–87% | 0.86–0.96 | 89–95% |
+| x4 | 50–87% | 0.86–0.97 | 80–95% |
+| x8 | 50–87% | 0.91–0.97 | 75–90% |
+
+It works once and then saturates. x2 buys real choice; x4 and x8 buy almost
+nothing more, while steadily making later eras less reachable. **Overlap never
+moves at all** — at any price, archetypes finish nearly the same set.
+
+### 10.4 Why: the spine is the floor
+
+Reporting spine share beside seen% makes the reason exact. At leaf cost x4:
+
+| era | spine% | seen% |
+| --- | --- | --- |
+| SticksAndStones | 65% | 69% |
+| Agrarian | 72% | 76% |
+| Bronze | 85% | 87% |
+| Classical | 67% | 71% |
+| Medieval | 70% | 74% |
+| Industrial | 78% | 81% |
+| Information | 78% | 79% |
+| Exotic | 48% | 50% |
+
+**seen% lands within two to four points of spine% in every era.** Every
+civilization must finish the spine to leave the era at all, so the leaves are
+the only room for divergence, and pricing can push seen% down to the spine and
+no further. The shipped tree is 48–85% spine, median about 72%.
+
+That is a structural ceiling, not a tuning problem:
+
+- Cost tuning moves seen% between "spine plus everything" (the shipped 87–98%)
+  and "spine only" (~spine%). That is the entire available range.
+- Overlap cannot fall much below ~0.85 whatever the price, because the shared
+  spine is most of what anyone finishes.
+
+### 10.5 Conclusion
+
+**Do not re-price the tree.** The premise behind `research.horizon` — that cost
+tuning produces playstyle divergence — is not supported. Cost changes how _much_
+a civilization does within an era; it does not change _what_, because the part
+that differs is a minority of the era by construction.
+
+The lever is **tree shape**: fewer dependencies and more leaves per era raises
+the ceiling that pricing then works within. And unlike when this report was
+first written, that is now worth authoring for — research has real consequences
+(`ThingDef` and `RecipeDef` gate on it, §7.1's condition, since landed), so
+leaves can be written so a farming civilization and a war-making one genuinely
+want different ones. Divergence has to be authored into what projects _do_
+before any amount of pricing can express it.
+
+If the shipped tree is left exactly as it is, the honest description is: eras
+are a paced ladder every civilization walks the same way, and the variety comes
+from elsewhere in the simulation. That is a legitimate design — it is just not
+the one `research.horizon` assumed.
