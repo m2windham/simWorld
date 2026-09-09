@@ -152,7 +152,7 @@ namespace SimWorld.Things
                 Find.TickManager.DeRegisterAllTickabilityFor(this);
             }
             if (this is SimWorld.Pawns.Pawn pawn) m.mapPawns.DeRegisterPawn(pawn);
-            if (def.IsEdifice) m.edificeGrid.DeRegister(this);
+            if (def.IsEdifice) m.edificeGrid.DeRegister(this, mode);
             m.thingGrid.Deregister(this);
             m.listerThings.Remove(this);
             map = null;

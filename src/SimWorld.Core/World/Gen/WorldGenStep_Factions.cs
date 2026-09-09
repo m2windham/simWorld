@@ -13,6 +13,16 @@ namespace SimWorld.World.Gen
     /// and <see cref="FactionDef.maxCountAtGameStart"/> instances, scaled by <see cref="OverallPopulation"/>;
     /// each instance's settlements land on weighted-random <see cref="BiomeDef.canBuildBase"/> land tiles,
     /// rejecting any candidate closer than <see cref="MinSettlementDistance"/> tiles to one already placed.
+    /// <para/>
+    /// <b>Every placed settlement is a real <see cref="World.Settlement"/>, not a bare <see cref="WorldObject"/>
+    /// (spec §5b.5's "a settlement in the world is a Settlement").</b> All of them go through
+    /// <see cref="SettlementFounder.FoundColony"/> rather than <see cref="SettlementFounder.Found"/>: a
+    /// settlement placed at world generation is backstory the player never watched happen — the same
+    /// "history begins there" reasoning <c>Research.ResearchManager.SetProjectFinishedForSetup</c> already
+    /// applies to a scenario's starting era — so it gets a plausible established population
+    /// (<see cref="SettlementTuning.EstablishedColonyPopulationRange"/>) and no chronicle entry, rather than a
+    /// freshly-rolled live founding band and a "Founding: ..." line for something nobody watched found. A
+    /// civilization's real, witnessed founding is <see cref="EmergenceManager"/>'s job now (spec §5b.4).
     /// </summary>
     public class WorldGenStep_Factions : WorldGenStep
     {
@@ -59,19 +69,29 @@ namespace SimWorld.World.Gen
 
             foreach (Faction faction in factions)
             {
+                // The player's own first settlement is not world-generation's to place. It is the opening
+                // moment of the game — a region chosen, a site chosen, a founding band of 20-40 people and a
+                // chronicle entry (spec §5b.3) — and Game.NewGame founds it through SettlementFounder.Found
+                // for exactly that reason. Placing an already-established colony here as well would leave the
+                // player's civilization holding two settlements at tick zero, one of which nobody founded.
+                if (faction.def.isPlayer) continue;
+
                 int settlementCount = SettlementCountFor(faction.def, popMultiplier, rand);
                 for (int s = 0; s < settlementCount; s++)
                 {
                     int? tile = PickSettlementTile(grid, candidateTiles, placedTiles, minDistance, rand);
                     if (tile == null) break;
                     placedTiles.Add(tile.Value);
-                    world.worldObjects.Add(new WorldObject(WorldObjectDefOf.Settlement, tile.Value, faction));
+                    int population = rand.Range(SettlementTuning.EstablishedColonyPopulationRange);
+                    SettlementFounder.FoundColony(world, tile.Value, faction, population, rand, recordChronicle: false);
                 }
             }
         }
 
-        /// <summary>RimWorld: ~20 tiles apart at full (100k+ tile) size; scaled down for smaller grids, floored at 2 so tiny test worlds can still place several settlements.</summary>
-        private static int MinSettlementDistance(int tilesCount)
+        /// <summary>RimWorld: ~20 tiles apart at full (100k+ tile) size; scaled down for smaller grids, floored
+        /// at 2 so tiny test worlds can still place several settlements. Public so <see cref="EmergenceManager"/>
+        /// sites a settlement founded during play against the exact same spacing rule world generation used.</summary>
+        public static int MinSettlementDistance(int tilesCount)
         {
             double scaled = 20.0 * Math.Sqrt(tilesCount / 100000.0);
             return Math.Max(2, (int)Math.Round(scaled));

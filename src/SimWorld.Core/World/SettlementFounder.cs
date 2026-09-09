@@ -54,6 +54,47 @@ namespace SimWorld.World
             return settlement;
         }
 
+        /// <summary>
+        /// Founds a new <see cref="Settlement"/> as an already-established civilization's expansion rather
+        /// than a from-nothing founding (spec §5b.4/§5b.5's emergence gap: "an existing civilization should
+        /// be able to found a second settlement as it grows"). Unlike <see cref="Found"/>, this seats
+        /// <paramref name="statisticalPopulation"/> people directly into the Statistical tier — no live
+        /// founding band, no individually named founders — the same representation a settlement's own
+        /// organic growth eventually produces once it no longer needs every citizen modelled individually
+        /// (spec §11.3). Two callers use this for two different reasons, both documented on their own call
+        /// sites: <c>Gen.WorldGenStep_Factions</c> for a faction's second-and-later settlement at world
+        /// generation (population already established, never watched come into being), and
+        /// <see cref="EmergenceManager"/> for a growing civilization spinning off a new settlement during
+        /// play (a small, just-founded colony the player does watch happen).
+        /// </summary>
+        public static Settlement FoundColony(
+            World world, int tile, Faction? faction, int statisticalPopulation, RandomStream rand,
+            string? name = null, bool recordChronicle = true)
+        {
+            if (world == null) throw new ArgumentNullException(nameof(world));
+            if (rand == null) throw new ArgumentNullException(nameof(rand));
+            if (statisticalPopulation < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(statisticalPopulation), statisticalPopulation, "Population cannot be negative.");
+            }
+
+            int foundingTick = Find.TickManager.TicksGame;
+            string settlementName = name ?? RegionNameMaker.MakeRegionName(rand, ExistingSettlementNames(world));
+
+            var settlement = new Settlement(WorldObjectDefOf.Settlement, tile, faction, settlementName, foundingTick);
+            settlement.AddStatisticalPeople(statisticalPopulation);
+
+            world.worldObjects.Add(settlement);
+
+            if (recordChronicle)
+            {
+                Find.Storyteller.RecordChronicle(
+                    "Expansion: " + settlementName + " founded as a new settlement of " + (faction?.name ?? "an unaffiliated people") + ".");
+            }
+
+            return settlement;
+        }
+
         private static List<string> ExistingSettlementNames(World world)
         {
             var names = new List<string>();

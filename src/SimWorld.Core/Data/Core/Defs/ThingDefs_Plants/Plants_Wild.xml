@@ -2,24 +2,31 @@
 <Defs>
 
   <!--
-    Placeholder wild vegetation, scattered onto a generated map by MapGen.GenStep_Scatterers (spec §5).
-    RimWorld's real Plant carries growth stages, a harvest yield and a species-specific look, none of which
-    exist in the Defs layer yet (no PlantProperties, no growth simulation) — that is a future Plants module's
-    job. Until it lands this is a single flavor/occupancy marker: it reads the tile's biome plant density and
-    Timber deposit so a lush biome's map looks lush, but it does not grow, spread or yield anything.
+    Wild vegetation, scattered onto a generated map by MapGen.GenStep_Scatterers (spec §5). Now a real
+    Building.Plant (system 16: Building — plant growth landed) — it grows on the long tick from fertility ×
+    light × temperature like any other plant — but it spawns already fully established (Plant.PostMake's own
+    default) rather than a fresh seedling, since it represents pre-existing scrub rather than something a
+    colonist just sowed; and it carries no harvestedThingDef, so WorkGiver_GrowerHarvest never targets it —
+    still flavor/occupancy dressing, just dressing with a real growth mechanism behind it now.
   -->
 
   <ThingDef>
     <defName>WildPlant</defName>
     <label>wild plant growth</label>
-    <description>Undergrowth and scrub, as thick as the local biome allows. Not yet a farmable or harvestable plant — that waits on a dedicated Plants module.</description>
+    <description>Undergrowth and scrub, as thick as the local biome allows.</description>
     <category>Plant</category>
-    <thingClass>SimWorld.Things.Thing</thingClass>
-    <tickerType>Never</tickerType>
+    <thingClass>SimWorld.Building.Plant</thingClass>
+    <tickerType>Long</tickerType>
     <passability>Standable</passability>
-    <useHitPoints>false</useHitPoints>
+    <useHitPoints>true</useHitPoints>
     <destroyable>true</destroyable>
     <selectable>false</selectable>
+    <statBases>
+      <MaxHitPoints>40</MaxHitPoints>
+    </statBases>
+    <plant>
+      <growDays>5</growDays>
+    </plant>
   </ThingDef>
 
 </Defs>

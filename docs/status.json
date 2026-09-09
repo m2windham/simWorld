@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 804,
+  "testsTotal": 909,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -253,11 +253,11 @@
       "id": "worldgen",
       "n": 2,
       "rimworld": "World Generation",
-      "translation": "Proposed: planet generation at civilization scale — biomes, rivers and roads unchanged; many rival civilizations seeded instead of a handful of faction bases.",
-      "translationState": "proposed",
-      "module": "src/SimWorld.Core/World · Noise · Factions (minimal)",
+      "translation": "Implemented: planet generation at civilization scale — biomes, rivers and roads unchanged; the player's civilization alone at world gen, many rival civilizations seeded over time instead by World.EmergenceManager, population-scaled and era-seeded off the world's current era.",
+      "translationState": "implemented",
+      "module": "src/SimWorld.Core/World · Noise · Factions (minimal) · World.EmergenceManager",
       "status": "ported",
-      "tests": 26,
+      "tests": 39,
       "items": [
         {
           "id": "worldgen.tiles",
@@ -291,8 +291,8 @@
         },
         {
           "id": "worldgen.civscale",
-          "label": "Translation: many rival civilizations at planet scale — population scaling and era seeding",
-          "done": false
+          "label": "Translation: many rival civilizations at planet scale — population scaling and era seeding — World.EmergenceManager, MTB-paced off OverallPopulation and gated by Research.ResearchManager.CurrentEra so nothing emerges more advanced than the world's own most advanced known civilization",
+          "done": true
         }
       ]
     },
@@ -470,7 +470,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
       "status": "ported",
-      "tests": 65,
+      "tests": 77,
       "items": [
         {
           "id": "simcore.tick",
@@ -508,9 +508,14 @@
           "done": true
         },
         {
+          "id": "simcore.game",
+          "label": "Game root (Sim/Game.cs): owns World, the live Maps (a settlement's entered interior), and every manager that was previously only reached through Find (research, storyteller + CivilizationTarget, factions, letters, quests, scenario, family, social, god). Find.CurrentGame makes Find.* resolve through it when one exists and fall back to the pre-Game thread-static behaviour unchanged when it doesn't. Game.NewGame runs world generation, founds the starting settlement (SettlementFounder) and Scenario.PostGameStart against the actual founding population, then wires the defined pre/post tick order. Whole-game Scribe round trip (world + settlement + population + elapsed time), reloaded and re-ticked.",
+          "done": true
+        },
+        {
           "id": "simcore.autosave",
-          "label": "Autosave cadence — lands with the game loop",
-          "done": false
+          "label": "Autosave cadence and hook (Game.AutosaveIntervalTicks / Game.AutosaveDue): fires on a cadence wired into the post-tick order; writing the save file is left to the host, per the module's own scope",
+          "done": true
         },
         {
           "id": "simcore.scribe-stream",
@@ -979,11 +984,11 @@
       "id": "economy",
       "n": 15,
       "rimworld": "Economy, Trade & Factions",
-      "translation": "Proposed: other civilizations are the factions; trade routes replace orbital traders; goodwill becomes diplomacy.",
-      "translationState": "proposed",
+      "translation": "Decided: other civilizations are the factions (unchanged); trade routes between settlements replace RimWorld's orbital/caravan traders as the connective tissue, priced the same way CoalSupply already prices coal (a real path through the world pather, marked up by distance) and closed while the two settlements' factions are at war; goodwill becomes diplomacy through two new layers RimWorld has no equivalent of — an explicit War/Peace state per relation (Faction.DeclareWar/MakePeace, entry and exit acts rather than goodwill silently crossing a threshold) kept separate from the existing Hostile/Neutral/Ally goodwill-derived label, and Def-driven Treaty terms (non-aggression, trade access) a pair of factions can sign, each with its own duration and goodwill effect. Every number here (war/peace goodwill swings, route premium, treaty terms) is this port's own judgement call, not sourced from RimWorld — see the code's own comments for where and why.",
+      "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 60,
+      "tests": 111,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1018,12 +1023,12 @@
         {
           "id": "economy.traders",
           "label": "Traders: TraderKindDef with trade sessions and deals — stock generation and visiting traders land with Things/AI",
-          "done": false
+          "done": true
         },
         {
           "id": "economy.diplomacy",
           "label": "Translation: civilization diplomacy — treaties, wars and trade routes between civilizations",
-          "done": false
+          "done": true
         }
       ]
     },
@@ -1035,12 +1040,12 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Building",
       "status": "ported",
-      "tests": 17,
+      "tests": 43,
       "items": [
         {
           "id": "building.zones",
-          "label": "Zones: stockpile, growing, home area — explicitly out of scope this pass (see this system's report)",
-          "done": false
+          "label": "Zone/Zone_Stockpile/Zone_Growing/ZoneManager (one zone per cell, Scribe round-trip with cells) plus a map-wide Area/AreaManager for the home area, kept distinct from Zone per RimWorld's own split; WorkGiver_GrowerSow (cell-scanning) sows an active growing zone's empty cells, WorkGiver_GrowerHarvest harvests any harvestable-now Plant map-wide — Zone_Stockpile carries a real ThingFilter but nothing hauls into it yet (HaulGeneral stays WorkGiver_Pending, unchanged from before this pass — see this system's report)",
+          "done": true
         },
         {
           "id": "building.construction",
@@ -1049,8 +1054,8 @@
         },
         {
           "id": "building.roof",
-          "label": "Roof support flood-fill and collapse — not built; RoofGrid itself (already shipped with Map) is reused read-only, to decide whether a Room counts as enclosed",
-          "done": false
+          "label": "RoofCollapseUtility: a roofed, edifice-free cell needs a Fillage.Full edifice (wall or unmined rock) within a straight-line radius; losing its last one collapses it, removing the roof and dealing Blunt damage (more for a thick natural roof) to whatever is under it. Event-driven off Map.EdificeGrid.DeRegister, not a per-tick scan; built on neither the region graph nor Room/RoomGroup — both answer a different question (reachability partitioning / thermal enclosure) than \"how far is the nearest wall\" — see this system's report for the full reasoning. DestroyMode.WillReplace (declared, previously unused) stops Frame.CompleteConstruction's Frame→Building swap from reading its own momentary despawn as support lost",
+          "done": true
         },
         {
           "id": "building.power",
@@ -1064,8 +1069,8 @@
         },
         {
           "id": "building.plants",
-          "label": "Plant growth from fertility × light × temperature — explicitly out of scope this pass",
-          "done": false
+          "label": "Building.Plant grows on the long tick at fertility (TerrainDef.fertility) × light × temperature — RimWorld's own three-factor product; light derived from GenDate's day/night clock (no per-map longitude exists yet, so every map shares one clock — see this system's report) and temperature from a recalled-not-verified RimWorld curve (0 below freezing/above 58°C, full rate in a 10-42°C band); harvest yields ThingDef.plant.harvestedThingDef scaled by Growth. Content ships two sowable crops (Plant_Potato, Plant_Rice) plus WildPlant upgraded to the same real Plant class",
+          "done": true
         },
         {
           "id": "building.initiative",
@@ -1148,8 +1153,8 @@
         },
         {
           "id": "quests.orchestrator",
-          "label": "Game-start orchestrator to run Scenario.PostGameStart and the quest tick loop — lands with the game loop",
-          "done": false
+          "label": "Game-start orchestrator to run Scenario.PostGameStart and the quest tick loop — Sim/Game.cs: Game.NewGame founds the settlement then runs PostGameStart against its citizens, and QuestManager.QuestManagerTick is wired into the post-tick order (it had never been driven by anything before)",
+          "done": true
         }
       ]
     },
@@ -1209,11 +1214,11 @@
       "id": "settlements",
       "n": 20,
       "rimworld": "Settlements & Game Start",
-      "translation": "The opening of the game and what a settlement is once it has an interior. Region-then-site founding, deposits derived from terrain, era-weighted site scoring, and a settlement that is an entity rather than a def plus a tile.",
-      "translationState": "decided",
-      "module": "src/SimWorld.Core/World (regions, deposits, siting, solo start, Settlement entity, SettlementFounder)",
-      "status": "in-progress",
-      "tests": 43,
+      "translation": "The opening of the game and what a settlement is once it has an interior. Region-then-site founding, deposits derived from terrain, era-weighted site scoring, a settlement that is an entity rather than a def plus a tile, and rival civilizations that emerge from play — World.EmergenceManager — rather than existing at time zero. Every settlement anywhere, including world generation's own, is now a real Settlement founded through SettlementFounder; World.Settlements is typed Settlement, not a WorldObject mix.",
+      "translationState": "implemented",
+      "module": "src/SimWorld.Core/World (regions, deposits, siting, solo start, Settlement entity, SettlementFounder, EmergenceManager)",
+      "status": "ported",
+      "tests": 56,
       "items": [
         {
           "id": "settlements.regions",
@@ -1257,8 +1262,8 @@
         },
         {
           "id": "settlements.emergence",
-          "label": "Rival civilizations emerging from the simulation over time rather than being placed at world gen — lands with the civilization-emergence module",
-          "done": false
+          "label": "Rival civilizations emerging from the simulation over time rather than being placed at world gen — World.EmergenceManager, ticked from World.WorldTick: a new civilization emerges with a real, live founding band via SettlementFounder.Found (chronicled), and an established civilization grows into a second settlement via the new SettlementFounder.FoundColony (a Statistical-population colony, no live band — routine growth, not an origin story). Every settlement world generation itself places is now a real Settlement too (SettlementFounder.FoundColony, unchronicled backstory), closing World.Settlements' old WorldObject/Settlement mix. Pacing (MTB years between events) is SimWorld's own, pinned by a simulated-span band test, not a literal; determinism (same seed, same emergence history) is tested via the manager's own persisted RandomStream",
+          "done": true
         },
         {
           "id": "settlements.coal",

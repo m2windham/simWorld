@@ -36,5 +36,20 @@ namespace SimWorld.World
         /// specifically to avoid running per-citizen at all.
         /// </summary>
         public const float StatisticalNetGrowthPerYear = 0.045f;
+
+        /// <summary>
+        /// Statistical starting population for a settlement placed at world generation for a civilization
+        /// that is not the game's own opening moment — an NPC civilization, or (until the two-stage
+        /// region-then-site UI exists) a placeholder for the player's own extra starting settlements. These
+        /// are backstory the player never watched happen, the same "history begins there, it was not lived
+        /// through" reasoning <c>Research.ResearchManager.SetProjectFinishedForSetup</c> already applies to a
+        /// scenario's starting era — so they get a plausible already-established size via
+        /// <see cref="SettlementFounder.FoundColony"/> rather than a freshly-rolled founding band. SimWorld's
+        /// own judgement call: RimWorld's <c>Settlement</c> carries no population at all to source a number
+        /// from, and nothing yet models a civilization's real history well enough to compute one. Deliberately
+        /// well above <see cref="FoundingBandRange"/> — small enough that a whole starting civilization is not
+        /// implausibly vast, large enough to read as "already living there" rather than "just arrived".
+        /// </summary>
+        public static readonly IntRange EstablishedColonyPopulationRange = new IntRange(80, 400);
     }
 }

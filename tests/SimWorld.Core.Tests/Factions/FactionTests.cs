@@ -363,6 +363,271 @@ namespace SimWorld.Tests.Factions
             }
         }
 
+        // ---- Diplomacy: war/peace and treaties (economy.diplomacy — SimWorld's own translation) ----
+
+        private static TreatyDef NonAggressionPact => DefDatabase<TreatyDef>.GetNamed("NonAggressionPact");
+        private static TreatyDef TradeAgreement => DefDatabase<TreatyDef>.GetNamed("TradeAgreement");
+        private static TreatyDef Alliance => DefDatabase<TreatyDef>.GetNamed("Alliance");
+
+        [Fact]
+        public void Content_has_the_expected_treaty_defs()
+        {
+            Assert.Empty(Content.Result.Errors);
+            Assert.True(NonAggressionPact.nonAggression);
+            Assert.False(NonAggressionPact.tradeAccess);
+            Assert.True(TradeAgreement.tradeAccess);
+            Assert.False(TradeAgreement.nonAggression);
+            Assert.True(Alliance.nonAggression && Alliance.tradeAccess);
+        }
+
+        [Fact]
+        public void WarWith_is_false_between_freshly_related_factions()
+        {
+            Faction a = NewFaction(TribalDef, "WA");
+            Faction b = NewFaction(OutlanderDef, "WB");
+
+            Assert.False(a.WarWith(b));
+            Assert.False(b.WarWith(a));
+        }
+
+        [Fact]
+        public void DeclareWar_sets_WarState_symmetrically_and_drops_goodwill_toward_hostile()
+        {
+            Faction a = NewFaction(TribalDef, "DWA");
+            Faction b = NewFaction(OutlanderDef, "DWB");
+            a.TryAffectGoodwillWith(b, 40);
+
+            bool result = a.DeclareWar(b);
+
+            Assert.True(result);
+            Assert.True(a.WarWith(b));
+            Assert.True(b.WarWith(a));
+            Assert.Equal(FactionRelationKind.Hostile, a.RelationKindWith(b));
+            Assert.Equal(-100, a.GoodwillWith(b));
+        }
+
+        [Fact]
+        public void DeclareWar_refuses_when_already_at_war()
+        {
+            Faction a = NewFaction(TribalDef, "AlreadyA");
+            Faction b = NewFaction(OutlanderDef, "AlreadyB");
+            Assert.True(a.DeclareWar(b));
+
+            Assert.False(a.DeclareWar(b));
+        }
+
+        [Fact]
+        public void DeclareWar_refuses_while_an_active_nonAggression_pact_holds()
+        {
+            Faction a = NewFaction(TribalDef, "PactA");
+            Faction b = NewFaction(OutlanderDef, "PactB");
+            Assert.True(a.SignTreaty(b, NonAggressionPact));
+
+            Assert.False(a.DeclareWar(b));
+            Assert.False(a.WarWith(b));
+        }
+
+        [Fact]
+        public void MakePeace_clears_WarState_and_applies_the_peace_goodwill_gain()
+        {
+            Faction a = NewFaction(TribalDef, "PeaceA");
+            Faction b = NewFaction(OutlanderDef, "PeaceB");
+            Assert.True(a.DeclareWar(b));
+            int atWar = a.GoodwillWith(b);
+
+            bool result = a.MakePeace(b);
+
+            Assert.True(result);
+            Assert.False(a.WarWith(b));
+            Assert.False(b.WarWith(a));
+            Assert.True(a.GoodwillWith(b) > atWar, "peace should raise goodwill from where the war declaration left it");
+        }
+
+        [Fact]
+        public void MakePeace_refuses_when_not_at_war()
+        {
+            Faction a = NewFaction(TribalDef, "NoWarA");
+            Faction b = NewFaction(OutlanderDef, "NoWarB");
+
+            Assert.False(a.MakePeace(b));
+        }
+
+        [Fact]
+        public void MakePeace_refuses_for_a_permanent_enemy_pair()
+        {
+            Faction rough = NewFaction(RoughDef, "PermA");
+            Faction player = NewFaction(PlayerDef, "PermB");
+            rough.TryMakeInitialRelationsWith(player, new RandomStream(1));
+            Assert.True(rough.WarWith(player)); // permanent enemies start at war (see TryMakeInitialRelationsWith)
+
+            Assert.False(rough.MakePeace(player));
+            Assert.True(rough.WarWith(player));
+        }
+
+        [Fact]
+        public void Permanent_enemy_pairs_start_at_war_from_TryMakeInitialRelationsWith()
+        {
+            Faction rough = NewFaction(RoughDef, "InitWarA");
+            Faction player = NewFaction(PlayerDef, "InitWarB");
+
+            rough.TryMakeInitialRelationsWith(player, new RandomStream(1));
+
+            Assert.True(rough.WarWith(player));
+            Assert.True(player.WarWith(rough));
+        }
+
+        [Fact]
+        public void SignTreaty_records_an_active_treaty_on_both_sides_and_applies_signing_goodwill()
+        {
+            Faction a = NewFaction(TribalDef, "SignA");
+            Faction b = NewFaction(OutlanderDef, "SignB");
+
+            bool result = a.SignTreaty(b, NonAggressionPact);
+
+            Assert.True(result);
+            Assert.True(a.HasNonAggressionPactWith(b));
+            Assert.True(b.HasNonAggressionPactWith(a));
+            Assert.Equal(NonAggressionPact.signingGoodwill, a.GoodwillWith(b));
+        }
+
+        [Fact]
+        public void SignTreaty_a_nonAggression_pact_while_at_war_ends_the_war()
+        {
+            Faction a = NewFaction(TribalDef, "EndWarA");
+            Faction b = NewFaction(OutlanderDef, "EndWarB");
+            Assert.True(a.DeclareWar(b));
+            Assert.True(a.WarWith(b));
+
+            Assert.True(a.SignTreaty(b, NonAggressionPact));
+
+            Assert.False(a.WarWith(b));
+            Assert.False(b.WarWith(a));
+        }
+
+        [Fact]
+        public void SignTreaty_refuses_for_a_permanent_enemy_pair()
+        {
+            Faction rough = NewFaction(RoughDef, "NoPactA");
+            Faction player = NewFaction(PlayerDef, "NoPactB");
+
+            Assert.False(rough.SignTreaty(player, NonAggressionPact));
+            Assert.False(rough.HasNonAggressionPactWith(player));
+        }
+
+        [Fact]
+        public void Treaty_is_active_immediately_and_inactive_once_its_duration_has_passed()
+        {
+            Find.TickManager.DebugSetTicksGame(0);
+            var treaty = new Treaty(NonAggressionPact, Find.TickManager.TicksGame);
+
+            Assert.True(treaty.IsActive(0));
+            Assert.True(treaty.IsActive(NonAggressionPact.durationDays * GenDate.TicksPerDay - 1));
+            Assert.False(treaty.IsActive(NonAggressionPact.durationDays * GenDate.TicksPerDay + 1));
+        }
+
+        [Fact]
+        public void Treaty_with_zero_duration_never_expires()
+        {
+            Assert.Equal(0, Alliance.durationDays);
+            var treaty = new Treaty(Alliance, 0);
+
+            Assert.True(treaty.IsActive(0));
+            Assert.True(treaty.IsActive(int.MaxValue - 1));
+        }
+
+        [Fact]
+        public void DeclareWar_is_allowed_again_once_a_nonAggression_pact_has_expired()
+        {
+            Faction a = NewFaction(TribalDef, "ExpireA");
+            Faction b = NewFaction(OutlanderDef, "ExpireB");
+            Find.TickManager.DebugSetTicksGame(0);
+            Assert.True(a.SignTreaty(b, NonAggressionPact));
+            Assert.False(a.DeclareWar(b));
+
+            Find.TickManager.DebugSetTicksGame(NonAggressionPact.durationDays * GenDate.TicksPerDay + 1);
+
+            Assert.True(a.DeclareWar(b));
+        }
+
+        [Fact]
+        public void TradeAccessPriceGainWith_reads_the_best_active_tradeAccess_treaty_and_ignores_expired_ones()
+        {
+            Faction a = NewFaction(TribalDef, "GainA");
+            Faction b = NewFaction(OutlanderDef, "GainB");
+
+            Assert.Equal(0f, a.TradeAccessPriceGainWith(b));
+
+            Find.TickManager.DebugSetTicksGame(0);
+            Assert.True(a.SignTreaty(b, TradeAgreement));
+            Assert.Equal(TradeAgreement.tradeAccessPriceGain, a.TradeAccessPriceGainWith(b));
+
+            Find.TickManager.DebugSetTicksGame(TradeAgreement.durationDays * GenDate.TicksPerDay + 1);
+            Assert.Equal(0f, a.TradeAccessPriceGainWith(b));
+        }
+
+        [Fact]
+        public void Scribe_round_trip_preserves_war_state_and_treaties()
+        {
+            Faction a = NewFaction(TribalDef, "RTA");
+            Faction b = NewFaction(OutlanderDef, "RTB");
+            Find.TickManager.DebugSetTicksGame(1000);
+            Assert.True(a.SignTreaty(b, TradeAgreement));
+            Assert.True(a.DeclareWar(b));
+
+            var manager = new FactionManager();
+            manager.Add(a);
+            manager.Add(b);
+
+            string xml = Scribe.SaveToString(manager, "factionManager");
+            FactionManager loaded = Scribe.Load<FactionManager>(xml, "factionManager", out IReadOnlyList<string> errors, Content.Database);
+
+            Assert.Empty(errors);
+            Faction loadedA = loaded.FirstFactionOfDef(TribalDef)!;
+            Faction loadedB = loaded.FirstFactionOfDef(OutlanderDef)!;
+
+            Assert.True(loadedA.WarWith(loadedB));
+            Assert.True(loadedB.WarWith(loadedA));
+            Assert.True(loadedA.HasActiveTreaty(loadedB, d => d.tradeAccess));
+            Assert.Equal(TradeAgreement.tradeAccessPriceGain, loadedA.TradeAccessPriceGainWith(loadedB));
+        }
+
+        // ---- FactionDef.caravanTraderKinds (economy.traders) ----
+
+        [Fact]
+        public void CaravanTraderKinds_are_content_defined_for_the_trading_civilizations()
+        {
+            Assert.NotNull(TribalDef.caravanTraderKinds);
+            Assert.NotEmpty(TribalDef.caravanTraderKinds!);
+            Assert.NotNull(OutlanderDef.caravanTraderKinds);
+            Assert.NotEmpty(OutlanderDef.caravanTraderKinds!);
+            // A permanent enemy never trades — see RandomTraderKind's own null-when-none contract below.
+            Assert.True(RoughDef.caravanTraderKinds == null || RoughDef.caravanTraderKinds.Count == 0);
+        }
+
+        [Fact]
+        public void RandomTraderKind_is_null_when_a_faction_has_none()
+        {
+            Assert.Null(RoughDef.RandomTraderKind(new RandomStream(1)));
+        }
+
+        [Fact]
+        public void RandomTraderKind_a_more_common_kind_is_picked_more_often()
+        {
+            var common = new global::SimWorld.Economy.TraderKindDef { defName = "CommonKind", commonality = 4f };
+            var rare = new global::SimWorld.Economy.TraderKindDef { defName = "RareKind", commonality = 1f };
+            var def = new FactionDef { defName = "WeightedTraders", caravanTraderKinds = new List<global::SimWorld.Economy.TraderKindDef> { common, rare } };
+            var rand = new RandomStream(1234);
+
+            int commonPicks = 0;
+            const int Draws = 400;
+            for (int i = 0; i < Draws; i++)
+            {
+                if (ReferenceEquals(def.RandomTraderKind(rand), common)) commonPicks++;
+            }
+
+            Assert.InRange(commonPicks, Draws * 0.6, Draws * 0.95);
+        }
+
         // ---- FactionGenerator / world generation ----
 
         [Fact]

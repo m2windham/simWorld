@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The trade currency (RimWorld: ThingDefOf.Silver). A new file rather than an addition to
+    Items_Resource.xml so this Economy-owned Def sits apart from that folder's existing entries (see
+    CLAUDE.md's lane boundaries for this pass). MarketValue is fixed at 1 by definition — TradeUtility
+    prices every other good relative to silver, and TradeSession.SetupWith routes this exact def into
+    TradeDeal.silverTradeable instead of an ordinary priced line, so its own MarketValue never actually
+    feeds a buy/sell calculation; it is set to 1 anyway so the def is self-consistent if ever priced like
+    any other good (BaseMarketValue(Silver) == 1, matching RimWorld's own Silver).
+  -->
+
+  <ThingDef>
+    <defName>Silver</defName>
+    <label>silver</label>
+    <description>Precious metal coins and chunks, used as currency by most civilizations.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <stackLimit>1000</stackLimit>
+    <statBases><MarketValue>1</MarketValue></statBases>
+  </ThingDef>
+
+</Defs>

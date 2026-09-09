@@ -28,6 +28,15 @@ namespace SimWorld.World
         /// </summary>
         public List<WorldRegion> regions = new List<WorldRegion>();
 
+        /// <summary>
+        /// Rival civilizations emerging from play rather than existing at time zero (spec §5b.4/§5b.5). Saved
+        /// (its own random stream's position is the whole of its state) so a reloaded save continues the exact
+        /// same emergence history rather than restarting it. Ticked from <see cref="WorldTick"/>, the same
+        /// "something a caller ticks" seam every other per-world process already uses — this is not a second,
+        /// competing game loop.
+        /// </summary>
+        public EmergenceManager emergence = null!;
+
         private int nextObjectId = 1;
 
         /// <summary>For Scribe's deep-load construction.</summary>
@@ -39,17 +48,22 @@ namespace SimWorld.World
         {
             this.info = info;
             this.grid = grid;
+            this.emergence = new EmergenceManager(info.seed);
         }
 
-        public IEnumerable<WorldObject> Settlements => worldObjects.Where(o => o.def == WorldObjectDefOf.Settlement);
+        /// <summary>Every settlement in the world. Always a real <see cref="Settlement"/> — every founding path
+        /// (<see cref="SettlementFounder.Found"/>, <see cref="SettlementFounder.FoundColony"/>) constructs one,
+        /// never a bare <see cref="WorldObject"/> (spec §5b.5).</summary>
+        public IEnumerable<Settlement> Settlements => worldObjects.OfType<Settlement>();
 
-        /// <summary>Call once per game tick: advances every world object (RimWorld: <c>Verse.WorldObjectsHolder.WorldObjectsHolderTick</c>, folded into <c>World</c> here). Caravans use this to step along their path and consume food.</summary>
+        /// <summary>Call once per game tick: advances every world object (RimWorld: <c>Verse.WorldObjectsHolder.WorldObjectsHolderTick</c>, folded into <c>World</c> here), then <see cref="EmergenceManager.Tick"/>. Caravans use this to step along their path and consume food.</summary>
         public void WorldTick()
         {
             for (int i = 0; i < worldObjects.Count; i++)
             {
                 worldObjects[i].Tick(this);
             }
+            emergence.Tick(this);
         }
 
         /// <summary>Hands out a unique, deterministic-per-world id for a newly created <see cref="Faction"/> or <see cref="WorldObject"/>.</summary>
@@ -70,6 +84,13 @@ namespace SimWorld.World
             List<WorldObject>? w = worldObjects;
             Scribe_Collections.Look(ref w, "worldObjects", LookMode.Deep);
             worldObjects = w ?? new List<WorldObject>();
+
+            EmergenceManager? e = emergence;
+            Scribe_Deep.Look(ref e, "emergence");
+            // Older saves (or a freshly-constructed World whose caller skipped the (info, grid) constructor)
+            // carry no emergence state at all — fall back to a fresh manager seeded from info exactly as the
+            // (info, grid) constructor would, rather than leaving a null that WorldTick would throw on.
+            emergence = e ?? new EmergenceManager(info.seed);
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {

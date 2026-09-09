@@ -174,20 +174,64 @@ flowchart TD
 - **Tick buckets**: `TickList` per cadence — normal, rare (250 ticks), long
   (2000 ticks) — with deferred register/deregister so a tick may spawn or
   destroy. Per-object work is additionally spread by hash interval.
-- Tick order: pre-tickers (world, map) → normal → rare → long → post-tickers.
+- Tick order: pre-tickers → normal → rare → long → post-tickers, driven by
+  `Game.NewGame`/`Game.ExposeData` populating `TickManager.PreTickers`/
+  `PostTickers` (delegates aren't Scribed, so both a fresh game and a loaded
+  one rebuild them the same way — `Game.WireTickHooks`). Pre-tickers: the
+  world (`World.WorldTick`, which is also where a settlement's own
+  `GrowthTick`/demography sweep runs — see §5b.3). Post-tickers, in order:
+  every live map's `MapTick`; the civilization's story-state roster sync
+  (`CivilizationTarget`, gated to the storyteller's own interval);
+  `Storyteller.StorytellerTick`; the population-wide social interaction sweep
+  (`SocialInteractionManager.SocialInteractionTick`, gated to its own
+  interval so the population list is never built on a tick that would no-op
+  inside it); `GodManager.GodTick`; `FactionManager.FactionManagerTick`
+  (goodwill drift, itself gated per faction); `LetterStack.LetterStackTick`;
+  `QuestManager.QuestManagerTick` (the quest tick loop — undriven before this
+  existed); and the autosave cadence. Nothing here re-tunes a cadence any of
+  these already self-gated to; the pre/post-ticker wiring only decides the
+  order they run in.
 - **Randomness**: MurmurHash-based `RandomStream`, one per system, plus a
   thread-static `Rand` facade keeping RimWorld's call shape (`Rand.Value`,
   `Rand.MTBEventOccurs`). Thread-static, so parallel tests never share a
-  sequence.
+  sequence. `Game.NewGame` seeds `Rand.Current` from the game's own seed
+  string, so pawn generation (which reads `Rand.Current`, not an explicit
+  stream) is reproducible from a seed the same way world generation's own
+  per-step `SeededStream`s already are.
 - **Calendar**: `GenDate` — 60,000-tick days, quadrums, years, longitude-local
   time, latitude seasons.
 - **Save/load**: `Scribe`, a reflection serializer over `IExposable`, in three
   passes — `LoadingVars` → `ResolvingCrossRefs` → `PostLoadInit`. Handles
   polymorphic deep saves (`Class=`), forward and cyclic references, and
-  collections.
-- **Services**: `Find.TickManager`, `Find.ResearchManager`, `Find.Storyteller`
-  are thread-static, matching RimWorld's global-service shape without sharing
-  state across tests.
+  collections. `Game` is now the one Scribe root that ties a whole save
+  together — `Scribe.SaveToString(game, "game")`/`Scribe.Load<Game>(...)` —
+  rather than each system round-tripping only its own piece in isolation.
+- **`Game`** (`Sim/Game.cs`, RimWorld: `Verse.Game`): owns the `World`, the
+  live `Map`s (read off which settlements currently have an entered
+  interior, not a separately-tracked list — see §11.2), and every manager
+  that used to be reached only through `Find` — research, the storyteller
+  plus its one `CivilizationTarget`, factions, letters, quests, the running
+  scenario, family, social, and the god layer. `Game.NewGame` generates a
+  world, runs the scenario's `PostWorldGenerate`, founds the starting
+  settlement (`SettlementFounder`) and then runs `PostGameStart` against
+  that settlement's own citizens (StartingPawns has to be populated before
+  PostGameStart per its own contract, but `SettlementFounder` — another
+  lane's territory this pass — has no seam to accept a pre-built founder
+  list, so founding runs first and PostGameStart's forced traits/starting
+  research/starting items land on the real founders a beat later instead of
+  a beat earlier; the end state is identical). **Autosave**
+  (`simcore.autosave`) is a cadence and a hook only — `Game.AutosaveIntervalTicks`
+  and the `Game.AutosaveDue` event — wired into the post-tick order; writing
+  the file to disk is the host's job, not the core's.
+- **Services**: `Find.TickManager`, `Find.ResearchManager`, `Find.Storyteller`,
+  and friends are thread-static, matching RimWorld's global-service shape
+  without sharing state across tests. `Find` now resolves through
+  `Find.CurrentGame` when one exists (RimWorld: `Verse.Current.Game`, folded
+  into `Find` here rather than porting a separate `Current` class) and falls
+  back to its own thread-static field exactly as before when it doesn't —
+  every pre-`Game` test wires `Find` by hand with no game in sight, and
+  `Find.Reset()` (which also drops `CurrentGame`) is what keeps that
+  working unchanged.
 
 _Note_: this is an object graph with trackers, not an ECS component store. The
 port follows RimWorld's real architecture; a data-oriented rewrite would break
@@ -200,11 +244,13 @@ sequenceDiagram
   participant N as Normal tick list
   participant R as Rare (250)
   participant L as Long (2000)
+  participant Post as Post-tickers
   loop each tick
-    TM->>Pre: world and map
+    TM->>Pre: World.WorldTick (world objects, settlement growth)
     TM->>N: pawns, projectiles, jobs
     TM->>R: needs decay, mood
     TM->>L: growth, disease, research
+    TM->>Post: maps, storyteller, social, god,<br/>factions, letters, quests, autosave
   end
 ```
 
@@ -213,7 +259,9 @@ sequenceDiagram
 - **World gen**: seeded noise (Perlin, ridged multifractal) → elevation
   calibrated to a target land fraction → hilliness, temperature by latitude and
   elevation, rainfall, swampiness → biome workers score each tile → rivers flow
-  downhill → factions and settlements placed → roads pathed between them.
+  downhill → factions and settlements placed → roads pathed between them. In
+  solo-start mode only the player's own civilization is placed this way;
+  every other civilization **emerges** from play afterward (§5b.4).
 - Tiles live on a subdivided icosahedron (10·4ⁿ+2 tiles, 5 or 6 neighbours).
 - Saves store the seed and world objects; the grid regenerates on load.
 - **Pawn gen**: backstory pair → trait roll (exclusion-aware) → skill and
@@ -289,7 +337,7 @@ flowchart TD
 
 ## 5b. Regions, Sites & Settlement Founding
 
-**Built**, including the settlement interior (§11.2's own seam), except
+**Built**, including the settlement interior (§11.2's own seam) and
 civilization emergence (§5b.4). A game opens with a two-stage choice modelled
 on Manor Lords and Nova Roma: pick a region on the world map, then place the
 settlement inside that region against markers showing what is actually there.
@@ -387,14 +435,64 @@ the founding on the chronicle, and hands back a real `World.Settlement` —
 population by tier, a stores ledger, founding tick, name and growth wired to
 `FamilyManager.DemographyTick` — registered into `World.worldObjects`.
 
-### 5b.4 Alone at the start
+### 5b.4 Alone at the start, civilizations emerge
 
 The player's civilization is the only one placed at world generation. The
 faction step gains a solo mode that creates the player's faction and nothing
-else; rival civilizations **emerge** from the simulation later rather than
-existing at time zero. This is the truer sticks-and-stones arc, and its cost is
-accepted deliberately: factions, trade and diplomacy sit idle through the
-opening hours. Emergence is its own system and is not designed here.
+else; rival civilizations **emerge** from the simulation over time instead of
+existing at time zero (`World.EmergenceManager`, ticked from `World.WorldTick`
+— "something a caller ticks", not a second game loop). This is the truer
+sticks-and-stones arc, and its cost is accepted deliberately: factions, trade
+and diplomacy sit idle through the opening decades. When a rival civilization
+does emerge it is founded exactly like the player's own start — a real
+`Settlement` via `SettlementFounder.Found` (a live 20-40 person Full-tier
+founding band, chronicled), sited by `Siting.SiteScorer` decisively against
+wherever the world actually rewards settling, never sprinkled at random.
+
+Two things shape _how_ emergence happens, both reusing content already
+authored for world generation rather than inventing a parallel scale:
+
+- **Era seeding.** A civilization cannot emerge more advanced than the most
+  advanced civilization already known to the world —
+  `Research.ResearchManager.CurrentEra`, the only civilization-wide era this
+  simulation tracks, stands in for that ceiling (`EmergenceManager.EligibleFactionDefs`).
+  A sticks-and-stones opening only ever sees Neolithic-tech rivals; each era
+  the player's own civilization reaches widens the pool of civilizations that
+  could appear next.
+- **Population scaling.** The mean time between emergence events is scaled by
+  the same `OverallPopulation` multiplier world generation itself uses for
+  faction and settlement counts (`Gen.WorldGenStep_Factions.PopulationMultiplier`)
+  — a "High" population world sees rivals rise faster than an "AlmostNone" one.
+
+A civilization is more than one settlement. Once an existing settlement is
+large enough to spare people (`EmergenceTuning.ExpansionPopulationThreshold`),
+its civilization may found a second — `SettlementFounder.FoundColony`, a
+Statistical-tier population seeded fresh rather than a live founding band,
+sited within the parent's own region: expansion is routine demographic
+growth, not an origin story, and earns its own chronicle line ("Expansion:
+…") rather than "Founding: …". A civilization stops expanding once it holds
+as many settlements as `Gen.WorldGenStep_Factions.SettlementsPerFactionRange`'s
+own cap allows any faction at world generation — the same ceiling, not a
+second one.
+
+Pacing (`EmergenceTuning.NewCivilizationMTBYears`, `.ExpansionMTBYears`) is
+SimWorld's own — no RimWorld source exists for a game that starts alone and
+watches rivals appear — pinned by a simulated-span band test (after N years
+the world holds somewhere between X and Y civilizations) rather than by the
+literal mean-time-between-events number. It is fully deterministic:
+`EmergenceManager` draws only from its own `RandomStream`, seeded once from
+the world at construction and Scribe round-tripped, so the same seed produces
+the same emergence history regardless of what else in the game has consumed
+the ambient random stream by the time a check runs.
+
+Every settlement world generation itself places is a real `Settlement` too,
+via the same `SettlementFounder.FoundColony` — population already
+established (`SettlementTuning.EstablishedColonyPopulationRange`), no live
+founding band and no chronicle entry, since it is backstory the player never
+watched happen (the same "history begins there, it was not lived through"
+reasoning `Research.ResearchManager.SetProjectFinishedForSetup` already
+applies to a scenario's starting era). `World.Settlements` is typed
+`Settlement`, never a `WorldObject` mix.
 
 ### 5b.5 What this requires that does not exist
 
@@ -406,6 +504,7 @@ opening hours. Emergence is its own system and is not designed here.
 | Settlement as an entity: population by tier, stores, founding tick, name, growth | built (`World.Settlement`, `World.SettlementFounder`) — population is tier-aware (real `Pawn`s above Statistical, a bare count at Statistical), stores are a def→count ledger, growth wires into `FamilyManager.DemographyTick` for the real-`Pawn` slice and a closed-form rate for the Statistical one (see the module's report) |
 | Solo-start world generation | built — a flag on the faction gen step (`WorldInfo.soloStart`) |
 | A settlement interior when the player enters it | built (`World.Settlement.EnterMap`) — the §11.2 seam, sized by `TotalPopulation` and persisted only once entered |
+| Civilization emergence: new civilizations and settlement expansion over time, era-seeded and population-scaled | built (`World.EmergenceManager`, `World.EmergenceTuning`) — ticked from `World.WorldTick`; see §5b.4 |
 
 ```mermaid
 flowchart TD
@@ -420,6 +519,11 @@ flowchart TD
   Found --> Settle[Settlement entity: population by tier, stores, founding tick, name]
   Settle -->|FamilyManager.DemographyTick + closed-form Statistical growth| Growth[Population grows over time]
   Settle -->|player enters at settlement scope| Map[Interior map generated and persisted]
+  Growth -->|large enough to spare people| Expand[EmergenceManager: found a colony · SettlementFounder.FoundColony]
+  Expand --> Chron
+  Clock[World.WorldTick, yearly] -->|era-seeded, population-scaled MTB roll| Emerge[EmergenceManager: a new civilization emerges · SettlementFounder.Found]
+  Emerge --> Chron
+  Emerge --> Settle
 ```
 
 ## 6. Cross-System Contracts
@@ -593,6 +697,30 @@ flowchart TD
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.
+- **Trade sessions with real stock** (`TraderKindDef.stockGenerators` → `Economy.StockGenerator`/
+  `StockGenerator_SingleDef`/`StockGenerator_MultiDef`): a trader kind's stock is rolled per arrival, not a
+  fixed table, and `Director.IncidentWorker_TraderCaravanArrival` generates one — a real faction not
+  hostile to the player, a `TraderKindDef` from that faction's own `FactionDef.caravanTraderKinds`
+  (weighted, the same `GetGroupMaker`/`ChoosePawnGenOptionsByPoints` idiom raids already use), real priced
+  stock — the same seam the raid worker leaves for a squad's map arrival: it stops at generating a fully
+  attributed trader, since nothing in the civilization-scale incident model yet carries a reachable map or
+  settlement for it to walk onto. `Economy.SettlementTradeUtility` opens a session against a real
+  `World.Settlement`'s own def→count store ledger (seeding `countInPlayer` from it, guaranteeing a currency
+  line even when the trader carries no silver of its own) and, on a completed deal, writes the result back
+  into real stores on both ends — a trade with a settlement moves real stock, not a notional number, and a
+  settlement can itself be wrapped as the seller side of a settlement-to-settlement trade.
+- **Diplomacy** (SimWorld's own translation — see `docs/status.json`'s `economy` system entry): goodwill and
+  the Hostile/Neutral/Ally relation kind are unchanged, but two more layers now sit on top of them, both
+  affecting the same goodwill/hostility rather than replacing it. War and peace are explicit states per
+  relation (`Faction.DeclareWar`/`MakePeace`) rather than goodwill silently crossing a threshold — a
+  permanent enemy starts at war as well as Hostile; declaring war drops goodwill toward the floor; peace is
+  its own act, refused for a permanent enemy. `TreatyDef`/`Treaty` are a Def-driven agreement two factions
+  sign (`Faction.SignTreaty`), each with a duration and flag-shaped terms — non-aggression (blocks
+  `DeclareWar` while active; signing one while at war ends the war outright) and trade access (a price gain
+  folded into `TradeDeal.settlementGain` the same slot a negotiator's own gain occupies). Trade routes
+  between settlements reuse `Economy.CoalSupply`'s own shape almost exactly (`Economy.TradeRouteUtility`,
+  `WorldPathFinder`/`WorldPathGrid`-priced, a route-distance premium) and close while the two settlements'
+  factions are at war, reopening at peace with no separate step since it is evaluated fresh every call.
 - **Squad composition** (`FactionDef.pawnGroupMakers`): each faction's own
   list of `PawnGroupMaker`s (per `PawnGroupKindDef` — only `Combat` is
   consumed today) holds weighted `PawnGenOption`s spent against a points
@@ -651,9 +779,42 @@ flowchart TD
   `CompHeatPusherPowered` (gated on a sibling `CompPowerTrader`'s `PowerOn`)
   pushes it toward a target. A Room touching the map edge or missing a roof on
   any cell tracks outdoor temperature directly, with no lag. No biome/season
-  system exists yet to modulate `outdoorTemperature`, and no roof
-  support/collapse mechanic was built — `RoofGrid` itself (Map core) is only
-  read, to decide what counts as enclosed.
+  system exists yet to modulate `outdoorTemperature`.
+- **Roof support & collapse**: a roofed, edifice-free cell needs a
+  `Fillage.Full` edifice (a wall, a door, a Frame mid-construction of one, or
+  unmined natural rock — the same "wall-like" test `RoomTracker` already uses)
+  within a straight-line radius (`RoofCollapseUtility.RoofSupportMaxRadius`);
+  losing its last one collapses it — the roof comes off and everything under it
+  takes Blunt damage, more for a thick natural roof than a thin or constructed
+  one. Event-driven off `Map.EdificeGrid.DeRegister` (a Fillage-`Full` edifice
+  despawning is the only way support is ever lost), not a per-tick scan, so an
+  undisturbed map pays nothing for it. Built on neither the region graph nor
+  Room/RoomGroup: both partition the map by a different question (reachability
+  crossing a doorway; thermal enclosure) than "how far is the nearest wall",
+  so a direct radius query over `GenRadial` answers the actual question more
+  directly than reusing either graph would. `DestroyMode.WillReplace` (declared
+  since system 9 shipped, unused until now) stops `Frame.CompleteConstruction`'s
+  Frame→Building swap at one cell from reading its own momentary despawn as
+  support genuinely lost.
+- **Zones & the home area**: `Zone`/`Zone_Stockpile`/`Zone_Growing` are named,
+  player-designated cell sets a `ZoneManager` per map enforces one-per-cell for;
+  the home area is a separate, non-exclusive `Area` (`AreaManager.Home`) any
+  number of which can overlap a cell and a Zone both — RimWorld's own Zone/Area
+  split, kept distinct here too. `Zone_Growing` names a plant def to sow;
+  `Zone_Stockpile` carries a real `ThingFilter` but nothing hauls into it yet
+  (general item hauling is unbuilt — `HaulGeneral` stays `WorkGiver_Pending`,
+  unchanged from before this pass).
+- **Plant growth**: `Plant` (RimWorld: `Verse.Plant`) grows on the long tick at
+  fertility × light × temperature, RimWorld's own three-factor product —
+  fertility straight off `TerrainDef.fertility`, light from `GenDate`'s
+  day/night clock (no per-map longitude exists yet, so every map shares one
+  clock), temperature from a recalled-not-decompiled-verified RimWorld curve
+  (no growth at/below freezing or above 58°C, full rate across a 10–42°C
+  band). `WorkGiver_GrowerSow` (cell-scanning) sows an active growing zone's
+  empty, fertile-enough cells; `WorkGiver_GrowerHarvest` harvests any
+  harvestable-now `Plant` map-wide, same as RimWorld — a zone controls sowing,
+  not harvesting. Harvesting yields `PlantProperties.harvestedThingDef`, scaled
+  by how grown the plant actually was.
 
 ```mermaid
 flowchart LR
@@ -670,6 +831,15 @@ flowchart LR
   Rooms -->|joined only by a Door| Groups[RoomGroup]
   Groups -->|equalise toward| Outdoor[Map.outdoorTemperature]
   Heater[CompHeatPusherPowered] --> Groups
+
+  Edifices -->|Fillage.Full despawns| RoofCheck[RoofCollapseUtility]
+  RoofCheck -->|radius has no support left| Collapse[Roof off, Blunt damage]
+
+  GrowingZone[Zone_Growing] -->|empty, fertile cell| Sow[WorkGiver_GrowerSow]
+  Sow --> PlantThing[Plant]
+  PlantThing -->|fertility × light × temperature| PlantThing
+  PlantThing -->|Growth == 1| Harvest[WorkGiver_GrowerHarvest]
+  Harvest --> Yield[harvestedThingDef stack]
 ```
 
 ### 8.3 Combat
@@ -1142,9 +1312,20 @@ flowchart TB
 
 - `SimWorld.Core` is `netstandard2.1` with no engine reference and an asmdef
   marked `noEngineReferences`; Unity consumes it as a local package.
-- The host renders and issues commands; it holds no simulation state.
-- A launch path appears only once a playable loop exists — the Blueprint
-  tracker shows the launch control disabled with its reason until then.
+- The host renders and issues commands; it holds no simulation state — a
+  `Game` (§4) is the one object that does, and the host's whole seam into
+  the simulation is: `Game.NewGame(...)` to start one;
+  `game.TickManager.TickManagerUpdate(deltaSeconds)` once a frame to
+  advance it (or `DoSingleTick()` directly, off the render loop, for a
+  headless run); `Scribe.SaveToString(game, "game")` /
+  `Scribe.Load<Game>(xml, "game", defs)` to save and load the whole thing
+  as one document; and `game.AutosaveDue` to know when to do that save —
+  the core only ever hands back a string, writing it to disk (or wherever)
+  is the host's own job, never the core's.
+- A playable loop now exists (`Game`, §4) — the Blueprint tracker's launch
+  control can drop its "no game loop yet" reason. What still sits above it
+  (rendering, input, the UI a player actually clicks) is unchanged and
+  remains the host's to build.
 
 ## 13. Determinism & Testing
 

@@ -2,8 +2,11 @@
 <Defs>
 
   <!--
-    Trader kinds (RimWorld: TraderKindDefs). Stock generation (stockGenerators) is a placeholder shape
-    here — it needs real Things to fill in, which land with the Things/Crafting systems.
+    Trader kinds (RimWorld: TraderKindDefs). stockGenerators now reads real ThingDefs through
+    StockGenerator_MultiDef/StockGenerator_SingleDef (see Economy.StockGenerator) — every count below is a
+    rolled IntRange, not a fixed table, so two arrivals of the same trader kind never carry identical stock.
+    Every trader carries some Silver of its own (see EconomyThingDefOf.Silver / TradeSession.SetupWith) so
+    it can pay the player for goods sold to it, not only sell to the player.
   -->
 
   <TraderKindDef>
@@ -13,6 +16,20 @@
     <orbital>false</orbital>
     <requestable>true</requestable>
     <tradeCurrency>Silver</tradeCurrency>
+    <stockGenerators>
+      <li Class="SimWorld.Economy.StockGenerator_MultiDef">
+        <thingDefs>
+          <li><def>WoodLog</def><count>20~60</count></li>
+          <li><def>Cloth</def><count>10~30</count></li>
+          <li><def>Pemmican</def><count>10~40</count></li>
+          <li><def>MeleeWeapon_Knife</def><count>0~3</count></li>
+        </thingDefs>
+      </li>
+      <li Class="SimWorld.Economy.StockGenerator_SingleDef">
+        <thingDef>Silver</thingDef>
+        <countRange>150~400</countRange>
+      </li>
+    </stockGenerators>
   </TraderKindDef>
 
   <TraderKindDef>
@@ -22,6 +39,20 @@
     <orbital>false</orbital>
     <requestable>true</requestable>
     <tradeCurrency>Silver</tradeCurrency>
+    <stockGenerators>
+      <li Class="SimWorld.Economy.StockGenerator_MultiDef">
+        <thingDefs>
+          <li><def>Steel</def><count>20~60</count></li>
+          <li><def>Cloth</def><count>10~30</count></li>
+          <li><def>MealFine</def><count>5~20</count></li>
+          <li><def>Gun_Revolver</def><count>0~2</count></li>
+        </thingDefs>
+      </li>
+      <li Class="SimWorld.Economy.StockGenerator_SingleDef">
+        <thingDef>Silver</thingDef>
+        <countRange>300~700</countRange>
+      </li>
+    </stockGenerators>
   </TraderKindDef>
 
   <TraderKindDef>
@@ -31,6 +62,19 @@
     <orbital>true</orbital>
     <requestable>true</requestable>
     <tradeCurrency>Silver</tradeCurrency>
+    <stockGenerators>
+      <li Class="SimWorld.Economy.StockGenerator_MultiDef">
+        <thingDefs>
+          <li><def>Steel</def><count>40~100</count></li>
+          <li><def>MealLavish</def><count>5~15</count></li>
+          <li><def>Gun_AssaultRifle</def><count>0~2</count></li>
+        </thingDefs>
+      </li>
+      <li Class="SimWorld.Economy.StockGenerator_SingleDef">
+        <thingDef>Silver</thingDef>
+        <countRange>500~1200</countRange>
+      </li>
+    </stockGenerators>
   </TraderKindDef>
 
 </Defs>
