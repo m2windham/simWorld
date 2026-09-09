@@ -32,6 +32,16 @@ namespace SimWorld.Map
         /// pinning an exact literal.</summary>
         public int RegionsCreatedLastRebuild { get; private set; }
 
+        /// <summary>Bumped every time a rebuild actually runs (<see cref="RebuildAll"/> or
+        /// <see cref="RebuildDirty"/>) — never on a no-op <see cref="RebuildIfNeeded"/> call. RimWorld has no
+        /// such counter either; this one exists so <see cref="AI.RegionPathCorridorCache"/> (system 9's
+        /// path-sharing pass) has a cheap, correct signal for "the graph might have changed under me": every
+        /// rebuild tears down and re-floods whichever <see cref="Region"/>s it touches rather than patching
+        /// them in place, so a cache holding a stale <see cref="Region"/> reference from before a rebuild can
+        /// be holding parent pointers through regions that no longer exist or no longer link the way they used
+        /// to — this version number is the one-sentence invalidation trigger that cache clears itself on.</summary>
+        public int Version { get; private set; }
+
         public RegionAndRoomUpdater(Map map, RegionGrid regionGrid)
         {
             this.map = map ?? throw new ArgumentNullException(nameof(map));
@@ -79,6 +89,7 @@ namespace SimWorld.Map
                 if (maker.TryGenerateRegionFrom(map.cellIndices.IndexToCell(i))) RegionsCreatedLastRebuild++;
             }
             initialBuildDone = true;
+            Version++;
         }
 
         /// <summary>
@@ -131,6 +142,7 @@ namespace SimWorld.Map
                 if (!map.pathGrid.Walkable(c)) continue;
                 if (maker.TryGenerateRegionFrom(c)) RegionsCreatedLastRebuild++;
             }
+            Version++;
         }
     }
 }

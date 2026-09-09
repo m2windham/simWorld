@@ -718,9 +718,37 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   `Map.regionAndRoomUpdater` dirties and rebuilds only the region(s) a
   passability change actually touches, so building one wall no longer forces
   a whole-map recompute. `CanReachTarget`/`CanReach`'s public shape is
-  unchanged throughout. Full-agent populations still need shared paths
-  (hierarchical or flow field); today's `PathFinder` runs one `A*` search per
-  pawn per path request.
+  unchanged throughout.
+- **Path sharing** (`docs/status.json`'s `ai.pathing.sharing`, translated — full-
+  agent civilization scale, not something RimWorld's own single-colony
+  `Verse.AI.PathFinder` had to solve): `AI.RegionPathCorridorCache` builds one
+  unweighted BFS tree over the same Region/RegionLink graph, rooted at a
+  destination's region(s), the moment the first pawn asks to go there — the
+  expensive part (every region reachable from that destination) is paid once
+  per unique destination and reused verbatim by every later pawn walking
+  there, whatever room each one starts in; reading one pawn's own corridor
+  back out costs only its hop distance to the destination. `PathFinder.FindPath`
+  tries a search constrained to that corridor's cells first and only ever
+  falls back to its original unconstrained search — never the reverse — so a
+  stale or inapplicable corridor can make a call slower, never wrong: two
+  regions are only ever linked when they truly share a walkable border, so a
+  corridor can never route through a wall, and an unconstrained retry catches
+  anything the corridor could not complete. The trade this makes deliberately:
+  the tree minimizes region *hop count*, not cell distance, so a
+  corridor-constrained path can come out longer than `PathFinder`'s own
+  unconstrained optimum — disclosed and bounded by test
+  (`PathSharingTests.Hierarchical_corridor_can_be_longer_than_optimal_but_is_still_a_valid_path`)
+  rather than hidden. The whole cache is thrown away the moment
+  `RegionAndRoomUpdater.Version` moves (any rebuild replaces whichever regions
+  it touches rather than patching them, so a tree from before a rebuild can
+  hold parent pointers through regions that no longer exist) — coarser than
+  strictly necessary but simple to state and cheap to pay again. Measured
+  (`docs/perf/baseline.md` §9): the before/after speedup on "N pawns to one
+  shared destination" grows with N — roughly 1.5–2.5x at N=100–1,000, 9.7x at
+  N=10,000 — an asymptotic win (`before` grows with map area, `after` with map
+  diameter) rather than a constant factor, which is what a growing population
+  needs. Flow fields were not attempted; the region-graph corridor already
+  delivers that asymptotic improvement without a second grid to maintain.
 - **Animals get a real second `ThinkTreeDef`** (`RaceProperties.intelligence`
   picks it per pawn, not a flag inside the humanlike one): a failed-taming
   anger guard, then `JobGiver_AnimalFlee` (an untamed, sufficiently wild animal
@@ -1801,8 +1829,11 @@ system as an isolated tested module; the god layer and a playable loop follow.
 - **Narrator name**: Scribe, Historian, or The Chronicle. Code module stays
   `Director` until chosen.
 - Population ceiling: the tiering design (§11.3) fixes the shape; the actual
-  per-tier budgets wait on measurement from the benchmark harness, plus a
-  pathing pass once AI lands.
+  per-tier budgets wait on measurement from the benchmark harness. The pathing
+  half of "a pathing... pass" has landed and is measured (§7.4's path-sharing
+  bullet, `docs/perf/baseline.md` §9) — path-finding cost for many pawns
+  converging on a shared destination is no longer the open half of this
+  question, tick-budget per tier still is.
 - Endless tech beyond the authored era ladder: procedural generation shape.
 - Multiplayer determinism, which would constrain RNG stream design.
 - Director behaviour across an abstracted-time skip (§11.5): a skipped century

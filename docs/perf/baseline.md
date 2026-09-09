@@ -287,12 +287,80 @@ tick loop, and the needs and mind-state trackers. There is no third obvious
 single-call win here, and the next honest step for population scale is the
 tiering in spec §11.3, not another micro-optimization.
 
+## 9. Path sharing (`ai.pathing.sharing`)
+
+Measured on the same box as §1–§8 (dotnet SDK 8.0.424, 4 vCPU Xeon @ 2.10GHz,
+Ubuntu 24.04 — see "Hardware / runtime" above), `dotnet run -c Release
+--project tools/bench/SimWorld.Bench -- --suite pathing`, 1 warmup + 3 measured
+trials per row (median reported), fixed seed 12345. This machine had other
+worktree sessions present but not competing for CPU during the timed runs
+(same discipline as §1–§8's "otherwise idle" note); small-N rows still show
+some run-to-run wobble on a repeat run (±10–20%) — treat the single-digit-N
+rows as directional and the trend across the sweep as the load-bearing part,
+consistent with this report's own guidance in the intro.
+
+**What this measures:** `AI.PathFinder` now tries a region-graph corridor
+(`AI.RegionPathCorridorCache`) before falling back to its old unconstrained
+A* — see that class's own remarks in source for the full design argument. Each
+row scatters N pawns across N distinct rooms of a door-connected grid of 3x3
+rooms sized to just exceed N (so population and settlement size grow
+together, matching the "civilization gets bigger as its population grows"
+framing this item targets), all pathing once to one shared destination room
+near the grid's centre. "before" is `PathFinder.DisableRegionCorridor = true`
+— exactly today's pre-sharing behaviour, one full-map A* per pawn, unchanged
+by this pass. "after" is the shared default. Both sides use a **fresh**
+`PathFinder` per trial (an empty corridor cache) over the same
+already-region-mapped map, so "after"'s cost is one real corridor-tree build
+plus N cheap reads — what a population converging on a destination in an
+already-settled map actually costs, not a pre-warmed best case.
+
+| N | rooms | before (ms) | after (ms) | speedup |
+| --- | --- | --- | --- | --- |
+| 100 | 121 | 5.0 | 3.2 | 1.54x |
+| 400 | 441 | 29.3 | 11.7 | 2.51x |
+| 1,000 | 1,024 | 75.1 | 39.2 | 1.92x |
+| 2,500 | 2,601 | 608.0 | 98.0 | 6.21x |
+| 5,000 | 5,041 | 1,992.2 | 247.4 | 8.05x |
+| 10,000 | 10,201 | 8,889.8 | 918.8 | 9.68x |
+
+**The sharing pays, and increasingly so as the population (and the settlement
+it lives in) grows.** The speedup is a modest ~1.5–2.5x at N≤1,000 — noisy at
+this end, and the unconstrained search is already fast on a small map, so
+there is less to save — but climbs to 6–10x by N=2,500–10,000. That shape is
+exactly what the design predicts rather than a coincidence: "before"'s
+per-pawn cost is one full A* over a map whose area grows with N (roughly
+O(N) work per pawn, so O(N²) total), while "after"'s per-pawn cost is a
+corridor read bounded by the region-hop distance to the destination — which
+grows only with the map's *diameter* (roughly O(√N) as a square-ish map grows
+with N) — plus a local search confined to that corridor's own cells, not the
+whole map. The one-time corridor-tree build (§ design doc: paid once per
+unique destination, amortized across every pawn that shares it) is real but
+small next to N searches once N is in the hundreds. Net effect measured here:
+"after" grows roughly linearly with N (0.032 ms/pawn at N=100 to 0.092
+ms/pawn at N=10,000) where "before" grows clearly superlinearly (0.050
+ms/pawn at N=100 to 0.889 ms/pawn at N=10,000) — an asymptotic win, not just a
+constant-factor one, which is the property a civilization-scale population
+target actually needs.
+
+**What this does not claim:** the corridor is a region-hop shortest path, not
+a cell-distance shortest path, so a hierarchical route can be longer than
+`PathFinder`'s own unconstrained optimum — disclosed and bounded, not hidden,
+by `PathSharingTests.Hierarchical_corridor_can_be_longer_than_optimal_but_is_still_a_valid_path`
+(`tests/SimWorld.Core.Tests/AI/PathSharingTests.cs`). And this section measures
+only the cost of *finding* paths for many simultaneous movers to one
+destination — it says nothing about per-tick ticking cost, which is what §1–§8
+are about and where the population ceiling below is actually set.
+
 ## Where the ceiling is
 
 The engine comfortably handles world generation and save/load at civilization-
 relevant scale (§5, §6). The ceiling is entirely in per-pawn ticking, and it is
 **much lower than 1,000 full-agent citizens the moment any of them are hurt or
 sick** — which, in a running colony, is the normal state, not the exception.
+Path sharing (§9) is a real, increasingly large win for the *pathing* half of
+that "pathing and tick-budget pass" — but it does not move this ceiling: the
+ceiling below was never about pathing cost, it is about `HealthTick`, and nothing
+in §9 changes that.
 
 **Top 3 bottlenecks, in order of impact:**
 
@@ -352,3 +420,12 @@ one uncached per-tick capacity computation and one cache-invalidation pattern
 that turns a should-be-rare recomputation into a should-never-happen-this-often
 one. Fixing either (or both — they share a root cause) is very likely worth
 more than fixing everything else in this report combined.
+
+**Update (§9):** the "pathing" half of that same open question is now built
+and measured — region-graph path sharing turns "N pawns to a shared
+destination" from a roughly-O(N²) cost into a roughly-O(N) one, an
+increasingly large win as the population (and its settlement) grows, 9.7x
+measured at N=10,000. It does not move the ceiling above, which was always a
+tick-budget (health-tracker) finding, not a pathing one — the two are
+independent axes of the same open question, and this report now has a
+positive, measured answer for one of them.

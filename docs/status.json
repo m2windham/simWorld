@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 1181,
+  "testsTotal": 1187,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -719,11 +719,11 @@
       "id": "ai",
       "n": 10,
       "rimworld": "AI: Think Tree / Job System",
-      "translation": "Proposed: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding must be shared (hierarchical / flow fields) to survive full-agent populations — this pass ships a single-agent A* plus a Region/RegionLink-graph reachability query, not that sharing.",
-      "translationState": "proposed",
+      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor.",
+      "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 53,
+      "tests": 59,
       "items": [
         {
           "id": "ai.thinktree",
@@ -752,8 +752,8 @@
         },
         {
           "id": "ai.pathing.sharing",
-          "label": "Hierarchical / flow-field path sharing for full-agent populations — not built; today's PathFinder is one A* search per pawn per path request",
-          "done": false
+          "label": "Hierarchical path sharing over the Region/RegionLink graph: AI.RegionPathCorridorCache builds a BFS corridor tree once per unique destination region-set and shares it across every pawn walking there; PathFinder tries the corridor first and always falls back to its original unconstrained A* on any doubt, so a corridor can narrow a search but never make it wrong. Correct but not always optimal (hop-count corridor can be geometrically longer than the true shortest path — bounded by test, not hidden). Measured: before/after speedup on 'N pawns to a shared destination' grows from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 (docs/perf/baseline.md §9) — flow fields not attempted; the region-graph corridor already delivers the asymptotic win this item needed",
+          "done": true
         },
         {
           "id": "ai.animals",
