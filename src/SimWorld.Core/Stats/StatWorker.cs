@@ -9,8 +9,8 @@ namespace SimWorld.Stats
     /// <summary>
     /// Computes one <see cref="StatDef"/>'s value for a <see cref="StatRequest"/> (RimWorld: <c>RimWorld.StatWorker</c>).
     /// <see cref="GetValueUnfinalized"/>'s order mirrors RimWorld's real method: base value → pawn offsets
-    /// (trait, then hediff-stage) → pawn factors (trait, then hediff-stage) → stuff factor/offset → capacity
-    /// factors. Trimmed to what this port's modules actually read: RimWorld also folds in skill-need
+    /// (trait, then hediff-stage, then gene — pawngen.genes) → pawn factors (trait, then hediff-stage, then
+    /// gene) → stuff factor/offset → capacity factors. Trimmed to what this port's modules actually read: RimWorld also folds in skill-need
     /// offsets/factors, capacity *offsets*, apparel/equipment gear, life-stage factors, facility bonuses,
     /// Inspired bonuses and a scenario factor — none of those have a live counterpart in this port yet (no
     /// ThingOwner/apparel, no per-stat skill gating, no Inspiration system), so they are left out rather than
@@ -37,7 +37,7 @@ namespace SimWorld.Stats
                 TraitSet? traits = pawn.story?.traits;
                 List<Hediff> hediffs = pawn.health.hediffSet.hediffs;
 
-                // ---- offsets: trait degree, then hediff stage ----
+                // ---- offsets: trait degree, then hediff stage, then genes (pawngen.genes) ----
                 if (traits != null)
                 {
                     for (int i = 0; i < traits.allTraits.Count; i++)
@@ -49,8 +49,9 @@ namespace SimWorld.Stats
                 {
                     num += hediffs[i].CurStage?.statOffsets.GetStatOffsetFromList(stat) ?? 0f;
                 }
+                num += pawn.genes?.StatOffsetTotal(stat) ?? 0f;
 
-                // ---- factors: trait degree, then hediff stage ----
+                // ---- factors: trait degree, then hediff stage, then genes (pawngen.genes) ----
                 if (traits != null)
                 {
                     for (int i = 0; i < traits.allTraits.Count; i++)
@@ -62,6 +63,7 @@ namespace SimWorld.Stats
                 {
                     num *= hediffs[i].CurStage?.statFactors.GetStatFactorFromList(stat) ?? 1f;
                 }
+                num *= pawn.genes?.StatFactorTotal(stat) ?? 1f;
             }
 
             // ---- stuff factor/offset: applies to any def, pawn or not ----

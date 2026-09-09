@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Defs;
+using SimWorld.Pawns.Genes;
 using SimWorld.Sim;
 using SimWorld.Work;
 
@@ -108,11 +109,33 @@ namespace SimWorld.Pawns.Generation
             }
 
             // Rolled once here, for every humanlike pawn this generator produces (newborn or not) — see
-            // Pawn_AgeTracker's "Hidden lifespan budget" section for why it stays hidden. Last step, so it
-            // never perturbs the RNG stream any of the generation steps above already depend on.
+            // Pawn_AgeTracker's "Hidden lifespan budget" section for why it stays hidden. Downstream of every
+            // roll above, so it never perturbs the RNG stream any of the generation steps above already
+            // depend on.
             if (humanlike)
             {
                 pawn.ageTracker.RollLifespanBudget(race);
+            }
+
+            // Genes go last of all — after even the lifespan roll above, which a gene's own lifespanBonusYears
+            // needs to already have happened (AdjustLifespan is a no-op before a budget exists to adjust).
+            // Assigning a named xenotype's germline is a deterministic lookup, not a random pick, so it costs
+            // zero Rand calls and its placement here cannot shift the stream any earlier step already depends
+            // on — but a request that asks for none (the overwhelming common case today, since no content
+            // assigns one yet) must still touch nothing at all, or every existing fixed-seed test that
+            // generates a pawn would need re-pinning the moment this module landed. That already happened once
+            // in this repo with an earlier module inserted mid-pipeline; genes go last specifically to avoid
+            // repeating it. See PawnGenerationRequest.Xenotype's own doc.
+            if (request.Xenotype != null)
+            {
+                pawn.genes.SetXenotype(request.Xenotype);
+                foreach (Gene gene in pawn.genes.Endogenes)
+                {
+                    if (gene.def.lifespanBonusYears != 0f)
+                    {
+                        pawn.ageTracker.AdjustLifespan(gene.def.lifespanBonusYears * GenDate.DaysPerYear, "gene:" + gene.def.defName);
+                    }
+                }
             }
 
             return pawn;

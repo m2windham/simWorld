@@ -140,7 +140,9 @@ goes through this pipeline instead.
   Thing at all. RimWorld addresses a `BuildableDef` — the base of `ThingDef` and `TerrainDef` — but this port
   has no such base yet and `TerrainDef` carries no stats, so the abstract mode narrows to `ThingDef`.
 - `StatWorker.GetValue` runs `GetValueUnfinalized` (base value → pawn offsets → pawn and stuff factors →
-  capacity factors) then `FinalizeValue` (stat parts → post-process curve → min/max clamp).
+  capacity factors) then `FinalizeValue` (stat parts → post-process curve → min/max clamp). Pawn offsets/factors
+  are trait, then hediff-stage, then gene (`pawngen.genes`, §7.6) — three sources feeding the same two lists
+  rather than three separate mechanisms.
 - `StatDef.capacityFactors` reads the Health module's `PawnCapacityDef` levels — the joint that lets a
   wounded pawn's stats degrade and recover with the body. `RestRateMultiplier`'s BloodPumping, Metabolism and
   Breathing (weight 0.3 each) are the shipped example: hurt the pawn's heart and it rests slower; heal it and
@@ -157,9 +159,11 @@ goes through this pipeline instead.
 flowchart TD
   Base["Base value: statBases entry, else defaultBaseValue"] --> Off1["+ trait statOffsets"]
   Off1 --> Off2["+ hediff-stage statOffsets"]
-  Off2 --> Fac1["x trait statFactors"]
+  Off2 --> Off3["+ gene statOffsets"]
+  Off3 --> Fac1["x trait statFactors"]
   Fac1 --> Fac2["x hediff-stage statFactors"]
-  Fac2 --> Stuff["x stuff statFactors, then + stuff statOffsets"]
+  Fac2 --> Fac3["x gene statFactors"]
+  Fac3 --> Stuff["x stuff statFactors, then + stuff statOffsets"]
   Stuff --> Cap["Capacity factors: lerp(value, value x factor, weight) per PawnCapacityDef"]
   Cap --> Parts["Stat parts: TransformValue"]
   Parts --> Curve["Post-process curve"]
@@ -738,6 +742,92 @@ flowchart TD
   D --> Chron[Chronicle: birth, marriage, death]
   Child --> Chron
   F --> Chron
+```
+
+### 7.6 Genes & Xenotypes (Biotech)
+
+RimWorld's Biotech gene system (`pawngen.genes`), ported at the fidelity trimmed
+to what actually moves a number here — see `Pawns/Genes/GeneDef.cs`'s own class
+doc for the exact field-by-field mapping and what was left out (archite genes,
+gated behind a research/economy system this port does not have).
+
+- **`GeneDef`/`Gene` split, mirroring `TraitDef`/`Trait`.** A `GeneDef` carries
+  `statOffsets`/`statFactors`, `capMods`, `disabledWorkTags`, the RimWorld-named
+  `biostatCpx`/`biostatMet` pair, an `exclusionTags` conflict list, and
+  SimWorld's own `lifespanBonusYears` (see below). `Gene` is the per-pawn
+  instance: a def reference plus one bit, `xenogene`.
+- **Germline vs. acquired, not endogene-list-vs-xenogene-list content.**
+  `XenotypeDef` names a germline — a gene list a pawn generated as that
+  xenotype receives as **endogenes**. Nothing in this port implants a
+  xenogerm yet (no such surgery exists), so every gene a pawn carries today
+  arrived as an endogene, either from `PawnGenerationRequest.Xenotype` or from
+  inheritance at birth — but `Gene.xenogene` and `Pawn_GeneTracker`'s
+  `AddGene(def, xenogene)` parameter are real, so a future implant mechanic has
+  somewhere to land without reshaping the tracker.
+- **Genes reuse three existing seams; they do not add a fourth pipeline.**
+  Stat offsets/factors join the list `StatWorker.GetValueUnfinalized` already
+  sums for traits and hediff stages (§3a). Capacity modifiers join the list
+  `PawnCapacityUtility.CalculateCapacityLevel` already sums for hediff stages
+  (§7.2). Disabled work OR's into `Pawn.CombinedDisabledWorkTags` next to
+  `Pawn_StoryTracker.DisabledWorkTagsBackstoryAndTraits` (§7.3). Metabolism
+  folds into `Pawn.HungerRate` next to the life-stage and health factors
+  already there. A pawn with no genes costs nothing extra at any of the three
+  call sites — `Pawn_GeneTracker.ActiveGenesListForReading` returns a shared
+  empty array rather than allocating, which matters because `StatWorker` reads
+  it from `Pawn_PathFollower.PatherTick`'s own per-tick `MoveSpeed` lookup, a
+  path this repo already has an allocation-free regression test guarding.
+- **Exclusion resolution.** Two genes sharing an `exclusionTags` entry cannot
+  both be active; `Pawn_GeneTracker.ActiveGenesListForReading` keeps a
+  xenogene over a conflicting endogene, and otherwise the one added first —
+  the overridden gene stays stored (and saved) rather than removed, so
+  removing the gene that is overriding it reactivates the one it silenced.
+- **Generation is opt-in and RNG-safe by construction.**
+  `PawnGenerationRequest.Xenotype` defaults to null; `PawnGenerator` only
+  touches genes when it is set, and assigning a named germline is a
+  deterministic lookup with zero `Rand` calls, applied after every other roll
+  — including the hidden-lifespan-budget roll (§7.5), so a `GeneDef` with
+  `lifespanBonusYears` set (SimWorld's own translation of RimWorld's Deathless
+  gene — see `GeneDef`'s own doc for why a revive-on-death mechanic became a
+  budget nudge instead) has an existing budget to adjust. A request that never
+  asks for a xenotype therefore rolls byte-for-byte the same pawn as it did
+  before this module existed — the specific regression a fixed-seed
+  integration test in this repo has broken on before, when an earlier module
+  was inserted mid-pipeline instead of at the end.
+- **Inheritance is `FamilyManager`'s birth path, not a second generation
+  pipeline.** `GeneInheritanceUtility.InheritEndogenesFrom` reads both
+  parents' endogenes — xenogenes never pass down, the one part of RimWorld's
+  own inheritance rule this port is confident it sourced correctly. A gene
+  both parents carry is inherited for certain; a gene only one parent carries
+  is an independent 50% roll per gene. RimWorld's own per-gene
+  selection-weight math was not available to source in this sandbox (no
+  decompiled source, no network access here), so this is SimWorld's own,
+  defensible stand-in — pinned by a test asserting the _property_ (shared
+  genes breed true; a single-parent gene lands both ways across a population;
+  the same seed reproduces the same child) rather than a literal gene list.
+  Consumes zero `Rand` calls when neither parent carries any gene, so wiring
+  it unconditionally into every birth does not perturb a population nobody
+  has ever assigned a xenotype to.
+- **Content.** 14 `GeneDef`s and four `XenotypeDef`s ship: `Baseliner` (an
+  empty gene list — functionally identical to a request with no `Xenotype` at
+  all) plus three invented, non-baseline xenotypes (`Swiftbred`, `Ironclad`,
+  `Stillfolk`) built only from those 14 genes, so generation, the stat/
+  capacity/work-tag seams, and inheritance are all exercised end to end by
+  real content.
+
+```mermaid
+flowchart TD
+  Req[PawnGenerationRequest.Xenotype] -->|"null: Baseliner, zero Rand cost"| Skip[No genes applied]
+  Req -->|set| Set["Pawn_GeneTracker.SetXenotype: germline genes added as endogenes"]
+  Set --> Lifespan[Any lifespanBonusYears adjusts the already-rolled budget]
+  Birth[FamilyManager birth path] --> Inherit["GeneInheritanceUtility: parents' endogenes only"]
+  Inherit --> Shared["Gene in both parents: inherited for certain"]
+  Inherit --> Single["Gene in one parent: 50% Rand.Chance"]
+  Set --> Active["Pawn_GeneTracker.ActiveGenesListForReading: exclusionTags conflicts resolved"]
+  Inherit --> Active
+  Active --> StatSeam["StatWorker: offsets/factors join trait + hediff-stage"]
+  Active --> CapSeam["PawnCapacityUtility: capMods join hediff-stage capMods"]
+  Active --> WorkSeam[Pawn.CombinedDisabledWorkTags]
+  Active --> Hunger["Pawn.HungerRate: biostatMet total"]
 ```
 
 ## 8. World Simulation Layer

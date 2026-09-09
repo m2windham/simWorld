@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Pawns.Generation;
+using SimWorld.Pawns.Genes;
 using SimWorld.Sim;
 
 namespace SimWorld.Pawns
@@ -207,6 +208,11 @@ namespace SimWorld.Pawns
         {
             PawnKindDef kind = parentA.kindDef ?? parentB.kindDef ?? PawnKindDefOf.Colonist;
             Pawn newborn = PawnGenerator.GenerateNewborn(kind);
+
+            // pawngen.genes: endogenes only, never xenogenes — see GeneInheritanceUtility's own doc for the
+            // rule and why it is SimWorld's own rather than a sourced RimWorld one. A no-op (and zero extra
+            // Rand calls) for the overwhelming majority of today's population, which carries no genes at all.
+            GeneInheritanceUtility.InheritEndogenesFrom(newborn, parentA, parentB);
 
             newborn.relations.familyId = family.id;
             newborn.relations.SetParents(parentA.thingIDNumber, parentB.thingIDNumber);
