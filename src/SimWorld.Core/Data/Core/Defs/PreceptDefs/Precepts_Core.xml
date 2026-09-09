@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- The specific rules the two memes files' worth of themes resolve to. Every moodThought here points at a
+       ThoughtDef in Data/Core/Defs/ThoughtDefs/Thoughts_Ideology.xml whose workerClass is
+       SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept — this file only ever names *which* precept drives
+       *which* thought; the actual mood numbers live on the ThoughtDef, per this system's own doc on why one
+       PreceptWorker class serves opposing judgments. -->
+
+  <!-- ==================== The Hearthway ==================== -->
+
+  <PreceptDef>
+    <defName>Precept_HearthwayBelonging</defName>
+    <label>belonging to the Hearthway</label>
+    <issue>Identity</issue>
+    <moodThought>HearthwayBelonging</moodThought>
+  </PreceptDef>
+
+  <PreceptDef>
+    <defName>Precept_Nudity_Preferred</defName>
+    <label>nudity preferred</label>
+    <issue>Apparel</issue>
+    <workerClass>SimWorld.Social.Ideology.PreceptWorker_Unclothed</workerClass>
+    <moodThought>BareSkinComfortable</moodThought>
+  </PreceptDef>
+
+  <PreceptDef>
+    <defName>Precept_Kindness_Celebrated</defName>
+    <label>kindness celebrated</label>
+    <issue>Personality</issue>
+    <workerClass>SimWorld.Social.Ideology.PreceptWorker_Trait</workerClass>
+    <trait>Kind</trait>
+    <moodThought>KindnessHonored</moodThought>
+  </PreceptDef>
+
+  <PreceptDef>
+    <defName>Precept_EldersLead</defName>
+    <label>elders lead</label>
+    <issue>Leadership</issue>
+    <grantsRole>Elder</grantsRole>
+    <workerClass>SimWorld.Social.Ideology.PreceptWorker_RoleHolder</workerClass>
+    <moodThought>GuidingTheHearthway</moodThought>
+    <unlocksRitual>HearthGathering</unlocksRitual>
+  </PreceptDef>
+
+  <!-- ==================== The Forge Covenant ==================== -->
+
+  <PreceptDef>
+    <defName>Precept_ForgeCovenantBelonging</defName>
+    <label>belonging to the Forge Covenant</label>
+    <issue>Identity</issue>
+    <moodThought>ForgeCovenantBelonging</moodThought>
+  </PreceptDef>
+
+  <PreceptDef>
+    <defName>Precept_Modesty_Required</defName>
+    <label>modesty required</label>
+    <issue>Apparel</issue>
+    <workerClass>SimWorld.Social.Ideology.PreceptWorker_Unclothed</workerClass>
+    <moodThought>ImmodestExposure</moodThought>
+  </PreceptDef>
+
+  <PreceptDef>
+    <defName>Precept_Bloodlust_Celebrated</defName>
+    <label>bloodlust celebrated</label>
+    <issue>Personality</issue>
+    <workerClass>SimWorld.Social.Ideology.PreceptWorker_Trait</workerClass>
+    <trait>Bloodlust</trait>
+    <moodThought>BloodlustHonored</moodThought>
+  </PreceptDef>
+
+  <PreceptDef>
+    <defName>Precept_ForgemastersLead</defName>
+    <label>forgemasters lead</label>
+    <issue>Leadership</issue>
+    <grantsRole>Forgemaster</grantsRole>
+    <workerClass>SimWorld.Social.Ideology.PreceptWorker_RoleHolder</workerClass>
+    <moodThought>MasteringTheForge</moodThought>
+    <unlocksRitual>ForgeRite</unlocksRitual>
+  </PreceptDef>
+
+</Defs>

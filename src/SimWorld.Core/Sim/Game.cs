@@ -52,6 +52,7 @@ namespace SimWorld.Sim
         private SocialInteractionManager? socialInteractionManager;
         private GodManager? godManager;
         private SimWorld.Crafting.GuildManager? guildManager;
+        private SimWorld.Social.Ideology.Ideo? ideo;
 
         /// <summary>The one <see cref="IIncidentTarget"/> this port has — see that interface's own doc for
         /// why. Registered with <see cref="Storyteller"/> at <see cref="NewGame"/> time and re-registered on
@@ -135,6 +136,18 @@ namespace SimWorld.Sim
         {
             get => godManager ??= new GodManager();
             set => godManager = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
+        /// The civilization's ideoligion (<c>social.ideology</c>), or null when it has none — which is most
+        /// of them, and every game today. Unlike the managers above this is not auto-constructed: an
+        /// invented default would need an <c>IdeoDef</c> nothing has a principled way to pick, and every
+        /// precept worker already reads a null Ideo as "nothing applies".
+        /// </summary>
+        public SimWorld.Social.Ideology.Ideo? Ideo
+        {
+            get => ideo;
+            set => ideo = value;
         }
 
         /// <summary>Every settlement's standing production queues (<c>crafting.guilds</c>).</summary>
@@ -547,6 +560,10 @@ namespace SimWorld.Sim
             SimWorld.Crafting.GuildManager? guilds = guildManager;
             Scribe_Deep.Look(ref guilds, "guildManager");
             guildManager = guilds;
+
+            SimWorld.Social.Ideology.Ideo? beliefs = ideo;
+            Scribe_Deep.Look(ref beliefs, "ideo");
+            ideo = beliefs;
             // A guild is attached to its settlement by world tile rather than by reference (WorldObject is not
             // ILoadReferenceable), so the reattachment has to wait until the world itself is back.
             if (Scribe.mode == LoadSaveMode.PostLoadInit) guildManager?.ResolveSettlements(world);

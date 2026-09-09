@@ -32,6 +32,7 @@ namespace SimWorld.Sim
         [ThreadStatic] private static SimWorld.Pawns.FamilyManager? familyManager;
         [ThreadStatic] private static SimWorld.Social.SocialInteractionManager? socialInteractionManager;
         [ThreadStatic] private static SimWorld.God.GodManager? godManager;
+        [ThreadStatic] private static SimWorld.Social.Ideology.Ideo? ideo;
         [ThreadStatic] private static SimWorld.World.World? world;
 
         /// <summary>
@@ -158,6 +159,22 @@ namespace SimWorld.Sim
         }
 
         /// <summary>
+        /// The civilization's ideoligion (<c>social.ideology</c>), or null when it has none. Nullable for the
+        /// same reason <see cref="World"/> is: unlike every other service here it has no sensible
+        /// auto-created default, because an invented <c>IdeoDef</c> is a belief nobody chose. Every precept
+        /// worker already reads null as "nothing applies".
+        /// </summary>
+        public static SimWorld.Social.Ideology.Ideo? Ideo
+        {
+            get => currentGame != null ? currentGame.Ideo : ideo;
+            set
+            {
+                if (currentGame != null) currentGame.Ideo = value;
+                else ideo = value;
+            }
+        }
+
+        /// <summary>
         /// The generated planet (RimWorld: <c>Verse.Find.World</c>), or null before one has been generated.
         /// Unlike the other services this has no sensible auto-created default (an empty <c>World</c> has no
         /// grid to hand out), so this is the one property on <see cref="Find"/> that can return null.
@@ -190,6 +207,7 @@ namespace SimWorld.Sim
             familyManager = null;
             socialInteractionManager = null;
             godManager = null;
+            ideo = null;
             world = null;
         }
     }

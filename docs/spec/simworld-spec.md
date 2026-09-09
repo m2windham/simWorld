@@ -1254,9 +1254,73 @@ flowchart LR
   no Map/room concept reaches Social or Thoughts yet; one generic, content-driven
   worker rather than a bespoke class per relation kind.
 
-**Belief — _planned_.** Ideology, precepts, memes, rituals and roles are out of
-scope for this pass: belief is a separate, much larger design the god layer will
-want to own (see `docs/status.json` system 17's `social.ideology` item).
+**Belief** (`src/SimWorld.Core/Social/Ideology`, tracker item `social.ideology`).
+RimWorld's own meme/precept split is ported faithfully: a `MemeDef` is a broad
+theme — a `Structure` meme (exactly one per ideoligion, `IdeoDef.ConfigErrors`
+enforces it) or a `Normal` one — that either grants `autoPrecepts` outright or
+opens a slot (a free-form issue tag, e.g. `"Apparel"`) some `PreceptDef` must
+fill; a `PreceptDef` is the specific rule, reaching mood through the _existing_
+thought pipeline exactly as briefed rather than a parallel one — its
+`moodThought` is an ordinary situational `ThoughtDef` whose worker is
+`ThoughtWorker_UnderPrecept`, built directly on the `ThoughtWorker_UnderEdict`
+precedent (a worker scanning the owning defs for one pointing at it, rather
+than a back-reference). A `PreceptWorker` (mirroring `EdictWorker`) decides
+_whether_ a citizen currently upholds the rule — the base class is
+unconditionally true (a belonging/flavour precept); `PreceptWorker_Trait`,
+`PreceptWorker_Unclothed` and `PreceptWorker_RoleHolder` read a citizen's
+already-tracked state (traits, worn apparel, an ideoligion role) rather than
+needing a new event hook into another module. One worker class serves _both_
+directions of a judgment — the divergent mood sign lives entirely in each
+precept's own `ThoughtDef` stages, so the same "wears nothing" condition is a
+mood boost under one ideoligion and a mood penalty under another. Content ships
+two contrasting ideoligions this way (`TheHearthway`, communal/nudist/kindness-
+celebrating; `TheForgeCovenant`, individualist/modest/bloodlust-celebrating) so
+a bare citizen reads opposite judgments depending purely on which civilization
+they belong to.
+
+An `Ideo` is the runtime belief system a civilization actually holds — one
+per civilization in this pass, not one per citizen (see "not built" below) —
+generated from an `IdeoDef` preset (RimWorld: its own fixed-ideoligion
+presets) the way a `Pawn` is generated from a `PawnKindDef`, Scribe round-
+tripped whole. **Roles** are a precept-granted position (`IdeoRoleDef`, capped
+by `maxHolders`, assignment tracked by `IdeoRoleTracker` — a `Pawn`→role
+dictionary, Scribe'd by reference) — deliberately a _second_ concept from
+`Work.RoleDef` (renamed to avoid a silent Def-type-name collision:
+`DefTypeResolver` resolves an XML element to a .NET type by bare class name,
+so two classes both named `RoleDef` would collide with no error at all) rather
+than an extension of it: `Work.RoleDef` is standing work-priority policy
+applicable to any number of citizens with no cap or grant mechanism, while an
+ideoligion role only exists because a precept names it and is capped by
+design. **Rituals** (`RitualDef` + `RitualUtility`) roll a quality in [0, 1]
+from participant count (diminishing returns), whether a holder of the
+ritual's `officiantRole` is present, and the participants' own mean mood — a
+documented stand-in for RimWorld's physical-setting term (room, altar,
+weather), none of which reaches `Social` yet — then grant every living
+participant a memory thought forced to the stage the rolled quality
+proportionally lands on. RimWorld's own `RitualOutcomeEffectDef` quality
+table could not be sourced from this environment, so only the _shape_ (several
+independent factors summing into one quality) is ported; the numbers are this
+port's own, pinned by trend tests (more/better participants never score a
+ritual lower) rather than trusted as literals.
+
+`IdeoManager` (a thread-static `Ideo? Current`, in `Social/Ideology`) is a
+deliberate self-gate, not a `Find.Ideo`: `Sim/**` — where a `Find.Ideo`/
+`Game.Ideo` slot belongs, beside `Find.God` — was out of this pass's file
+ownership. Every worker here reads it the way `ThoughtWorker_UnderEdict` reads
+`Find.God`; wiring a real slot into `Sim/Find.cs`/`Sim/Game.cs` and pointing
+this class through it is the follow-up.
+
+**Not built this pass** (see `docs/status.json`'s own item for the up-to-date
+line): per-citizen ideoligion membership — RimWorld lets colonists follow
+different ideoligions with certainty, conversion and an outsider-opinion
+penalty; this pass assumes every Humanlike citizen belongs to whichever `Ideo`
+is current, which is exactly the "belief is a separate, much larger design"
+the original scope note named. Event-tracked precepts (cannibalism, a
+corpse's treatment, self-mutilation) are not attempted either — this port has
+no consumption/corpse event stream for a precept worker to read, and inventing
+one to check a box would have meant a hollow condition rather than a real
+one; every precept this pass ships instead reads state some other module
+already tracks durably (a trait, worn apparel, a granted role).
 
 ## 9. Director Layer
 

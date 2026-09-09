@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Two contrasting ideoligions, built from the memes and precepts above, so two civilizations can visibly
+       believe different things about the same situation (a bare citizen: comfortable under one, immodest
+       under the other) as well as different things outright (Kindness vs. Bloodlust celebrated). -->
+
+  <IdeoDef>
+    <defName>TheHearthway</defName>
+    <label>the Hearthway</label>
+    <description>A communal, tradition-bound way of life built around the shared hearth.</description>
+    <memes>
+      <li>Structure_Communal</li>
+      <li>Nudism</li>
+      <li>AncestorReverence</li>
+      <li>EldersLead</li>
+    </memes>
+    <precepts>
+      <li>Precept_Nudity_Preferred</li>
+      <li>Precept_Kindness_Celebrated</li>
+      <li>Precept_EldersLead</li>
+    </precepts>
+  </IdeoDef>
+
+  <IdeoDef>
+    <defName>TheForgeCovenant</defName>
+    <label>the Forge Covenant</label>
+    <description>An individualist, martial covenant sworn at the forge.</description>
+    <memes>
+      <li>Structure_Ascendant</li>
+      <li>Modesty</li>
+      <li>MartialValor</li>
+      <li>ForgemastersLead</li>
+    </memes>
+    <precepts>
+      <li>Precept_Modesty_Required</li>
+      <li>Precept_Bloodlust_Celebrated</li>
+      <li>Precept_ForgemastersLead</li>
+    </precepts>
+  </IdeoDef>
+
+</Defs>
