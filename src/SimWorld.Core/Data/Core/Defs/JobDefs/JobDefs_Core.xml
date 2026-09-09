@@ -69,4 +69,18 @@
     <reportString>training.</reportString>
   </JobDef>
 
+  <!-- The capture loop's warden work (system 12: Factions — capture). -->
+
+  <JobDef>
+    <defName>PrisonerAttemptRecruit</defName>
+    <driverClass>SimWorld.AI.JobDriver_Warden_AttemptRecruit</driverClass>
+    <reportString>talking with prisoner.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>FeedPatient</defName>
+    <driverClass>SimWorld.AI.JobDriver_Warden_Feed</driverClass>
+    <reportString>feeding.</reportString>
+  </JobDef>
+
 </Defs>

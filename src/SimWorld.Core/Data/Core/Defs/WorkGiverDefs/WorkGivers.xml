@@ -64,6 +64,27 @@
     <gerund>feeding</gerund>
     <workType>Warden</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner with the capture loop (system 12: Factions — capture): feeds a downed
+         prisoner directly, standing in for RimWorld's own "in bed and needs medical rest" trigger — see
+         WorkGiver_Warden_Feed's own doc. -->
+    <giverClass>SimWorld.AI.WorkGiver_Warden_Feed</giverClass>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>WardenAttemptRecruit</defName>
+    <label>recruit prisoners</label>
+    <verb>Talk with prisoner</verb>
+    <gerund>talking with prisoner</gerund>
+    <workType>Warden</workType>
+    <priorityInType>80</priorityInType>
+    <!-- Wired to a real scanner with the capture loop (system 12: Factions — capture): the missing other
+         half of Pawn_GuestTracker.cs's WardenUtility.TryInteract, which a prior pass left implemented but
+         uncalled by anything except a test. See WorkGiver_Warden_AttemptRecruit's own doc for why this
+         WorkGiverDef itself (unlike PrisonerAttemptRecruit, the JobDef) has no RimWorld-sourced name to
+         port 1:1: RimWorld reaches this interaction through its social-interaction scheduler, which this
+         codebase does not have, so the scan is this port's own translation onto the WorkGiver shape every
+         other Warden task here already uses. -->
+    <giverClass>SimWorld.AI.WorkGiver_Warden_AttemptRecruit</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -73,6 +94,13 @@
     <gerund>delivering food</gerund>
     <workType>Warden</workType>
     <priorityInType>90</priorityInType>
+    <!-- Stays WorkGiver_Pending, deliberately: RimWorld's own WorkGiver_Warden_DeliverFood exists for a
+         prisoner capable of self-service but with no food reachable in its own room — a distinction this
+         port cannot draw (no room/prison-cell system). Here, a prisoner that is not Downed already reaches
+         food entirely on its own through the ordinary JobGiver_GetFood tier of its think tree (nothing in
+         this port's job selection checks guest status or faction at all), so there is no ambulatory-prisoner
+         case left uncovered for this giver to fill — see WorkGiver_Warden_Feed's own doc and this module's
+         report. -->
   </WorkGiverDef>
 
   <WorkGiverDef>

@@ -54,5 +54,15 @@ namespace SimWorld.AI
 
         /// <summary>One training session on a tamed animal (system: ai.animals).</summary>
         public static JobDef Train = null!;
+
+        /// <summary>One warden visit to a prisoner set to be recruited — reduces resistance, or recruits
+        /// outright once it's already at zero (system: ai — <see cref="SimWorld.Factions.WardenUtility.TryInteract"/>;
+        /// RimWorld: <c>JobDefOf.PrisonerAttemptRecruit</c>).</summary>
+        public static JobDef PrisonerAttemptRecruit = null!;
+
+        /// <summary>Carries food to a downed prisoner and feeds them directly (system: ai — see
+        /// <see cref="WorkGiver_Warden_Feed"/>'s own doc for why this is the one Warden feeding case this
+        /// port's job system covers; RimWorld: <c>JobDefOf.FeedPatient</c>).</summary>
+        public static JobDef FeedPatient = null!;
     }
 }
