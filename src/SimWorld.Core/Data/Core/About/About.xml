@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+
+  <!--
+    The base game's own content pack. Core is a pack like any other (RimWorld does the same) so that the
+    loader has exactly one notion of "where content comes from", and so a mod can declare a dependency on
+    Core, load after it, or patch it, without the loader special-casing anything but the load order: Core
+    always loads first.
+  -->
+
+  <packageId>simworld.core</packageId>
+  <name>Core</name>
+  <author>SimWorld</author>
+  <description>The base content: races, needs, health, work, research, factions, incidents and the era ladder.</description>
+
+</ModMetaData>
