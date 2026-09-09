@@ -24,6 +24,11 @@ namespace SimWorld.Map
             {
                 if (!GenGrid.InBounds(c, map)) continue;
                 grid[map.cellIndices.CellToIndex(c)] = edifice;
+                // A door spawning/despawning changes whether this cell should be its own Portal region even
+                // when walkability itself doesn't flip (a Door replacing plain floor is still Standable
+                // either way) — PathGrid's own walkability-flip hook would miss exactly that case, so the
+                // region graph needs its own notification here regardless of pathCost.
+                map.regionAndRoomUpdater.Notify_DirtyCell(c);
             }
             // An edifice spawning can create or split a room (system 16: Building) — the room tracker
             // recomputes lazily off this, not every tick.
@@ -38,6 +43,7 @@ namespace SimWorld.Map
                 if (!GenGrid.InBounds(c, map)) continue;
                 int i = map.cellIndices.CellToIndex(c);
                 if (ReferenceEquals(grid[i], edifice)) grid[i] = null;
+                map.regionAndRoomUpdater.Notify_DirtyCell(c);
             }
             map.roomTracker.Notify_Dirty();
         }

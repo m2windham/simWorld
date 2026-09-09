@@ -37,8 +37,17 @@ namespace SimWorld.Map
         /// <summary>Who has claimed what, so two pawns never act on the same target (system 9 / AI).</summary>
         public ReservationManager reservationManager = null!;
 
-        /// <summary>Cached region-reachability for this map (system 9 / AI); rebuilt lazily off <see cref="PathGrid.Version"/>.</summary>
+        /// <summary>Reachability queries for this map (system 9 / AI); answers via BFS over <see cref="regionGrid"/>.</summary>
         public Reachability reachability = null!;
+
+        /// <summary>The region/region-link graph over this map's passability (RimWorld: <c>Verse.Map.regionGrid</c>);
+        /// <see cref="regionAndRoomUpdater"/> keeps it up to date, <see cref="reachability"/> is its consumer.</summary>
+        public RegionGrid regionGrid = null!;
+
+        /// <summary>Dirty-cell tracking and incremental rebuilds for <see cref="regionGrid"/> (RimWorld:
+        /// <c>Verse.Map.regionAndRoomUpdater</c>) — see that class's own remarks for why its "Room" half is
+        /// not built here.</summary>
+        public RegionAndRoomUpdater regionAndRoomUpdater = null!;
 
         /// <summary>This map's A* search (system 9 / AI); one instance, its working arrays reused across searches.</summary>
         public PathFinder pathFinder = null!;
@@ -122,6 +131,8 @@ namespace SimWorld.Map
         private void InitializeAIManagers()
         {
             reservationManager = new ReservationManager();
+            regionGrid = new RegionGrid(this);
+            regionAndRoomUpdater = new RegionAndRoomUpdater(this, regionGrid);
             reachability = new Reachability(this);
             pathFinder = new PathFinder(this);
             powerNetManager = new Building.PowerNetManager(this);

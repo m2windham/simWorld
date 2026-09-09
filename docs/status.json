@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-09-08",
-  "testsTotal": 712,
+  "updated": "2026-09-09",
+  "testsTotal": 719,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -361,7 +361,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things",
       "status": "ported",
-      "tests": 26,
+      "tests": 33,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -395,8 +395,8 @@
         },
         {
           "id": "mapcore.regions",
-          "label": "Region / RegionLink graph for reachability — lands with AI",
-          "done": false
+          "label": "Region / RegionLink graph over the map's passability (Region, RegionLink, RegionGrid, RegionMaker, RegionAndRoomUpdater), cardinal flood fill with doors as their own Portal regions, torn down and re-flooded only for the region(s) a passability change actually touches — AI's Reachability is the consumer",
+          "done": true
         }
       ]
     },
@@ -704,7 +704,7 @@
       "id": "ai",
       "n": 10,
       "rimworld": "AI: Think Tree / Job System",
-      "translation": "Proposed: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding must be shared (hierarchical / flow fields) to survive full-agent populations — this pass ships a single-agent A* plus a flood-fill reachability cache, not that sharing.",
+      "translation": "Proposed: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding must be shared (hierarchical / flow fields) to survive full-agent populations — this pass ships a single-agent A* plus a Region/RegionLink-graph reachability query, not that sharing.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
@@ -727,8 +727,8 @@
         },
         {
           "id": "ai.regions",
-          "label": "Region / RegionLink graph for reachability — this pass ships a flat flood-fill cache (AI.Reachability) instead: O(1) cached queries, but a full-map recompute on any path-grid change anywhere, however small; a real region graph can replace it without changing its public shape",
-          "done": false
+          "label": "Reachability answers via BFS over the Map/RegionGrid graph (mapcore.regions) instead of its own flat flood-fill cache: a passability change now dirties and rebuilds only the region(s) it touches, not the whole map, and a query walks a handful of coarse regions rather than every cell on the shortest path. CanReachTarget/CanReach's public shape is unchanged",
+          "done": true
         },
         {
           "id": "ai.pathing",
