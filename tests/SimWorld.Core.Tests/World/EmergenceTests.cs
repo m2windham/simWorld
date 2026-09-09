@@ -26,6 +26,25 @@ namespace SimWorld.Tests.World
         private static global::SimWorld.World.World SoloWorld(string seed, int subdivision = 3) =>
             WorldGenerator.GenerateWorld(seed, 0.3f, OverallRainfall.Normal, OverallTemperature.Normal, OverallPopulation.Normal, "Test", subdivision, soloStart: true);
 
+        /// <summary>
+        /// A solo world with the player's own settlement founded on it. World generation deliberately does not
+        /// place that settlement — founding it is the opening move of the game (spec §5b.3: a region, a site,
+        /// a band of 20-40 and a chronicle entry), which <c>Game.NewGame</c> performs — so a test about what
+        /// happens to an existing civilization has to establish that civilization itself rather than lean on a
+        /// world-generation side effect.
+        /// </summary>
+        private static global::SimWorld.World.World SoloWorldWithPlayerSettlement(string seed, int subdivision = 3)
+        {
+            global::SimWorld.World.World world = SoloWorld(seed, subdivision);
+            Faction player = world.factions.First();
+            var rand = new RandomStream(GenText.StableStringHash(seed + "-player-settlement"));
+            int tile = world.grid.Tiles
+                .Select((t, i) => (tile: t, index: i))
+                .First(x => !x.tile.WaterCovered && x.tile.biome != null && x.tile.biome.canBuildBase).index;
+            SettlementFounder.FoundColony(world, tile, player, SettlementTuning.EstablishedColonyPopulationRange.min, rand, recordChronicle: false);
+            return world;
+        }
+
         /// <summary>Jumps the clock a whole year at a time and ticks emergence directly — the same
         /// "advance the clock, then invoke the interval-gated method" idiom <c>SettlementTests.AdvanceYear</c>
         /// already uses, since single-stepping centuries of ticks would make these tests far too slow.</summary>
@@ -41,14 +60,12 @@ namespace SimWorld.Tests.World
 
         // ----- Every settlement is a real Settlement (spec §5b.5) -----
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void Every_settlement_world_generation_places_is_a_real_Settlement(bool soloStart)
+        [Fact]
+        public void Every_settlement_world_generation_places_is_a_real_Settlement()
         {
             global::SimWorld.World.World world = WorldGenerator.GenerateWorld(
                 "worldgen-settlements-are-real", 0.3f, OverallRainfall.Normal, OverallTemperature.Normal,
-                OverallPopulation.Normal, "Test", subdivisionOverride: 3, soloStart: soloStart);
+                OverallPopulation.Normal, "Test", subdivisionOverride: 3, soloStart: false);
 
             List<WorldObject> settlementObjects = world.worldObjects.Where(o => o.def == WorldObjectDefOf.Settlement).ToList();
             Assert.NotEmpty(settlementObjects);
@@ -57,6 +74,21 @@ namespace SimWorld.Tests.World
             // world.Settlements itself is typed Settlement now, not a mix — reading TotalPopulation directly
             // (no cast) is the point of the fix.
             Assert.All(world.Settlements, s => Assert.True(s.TotalPopulation > 0));
+        }
+
+        [Fact]
+        public void A_solo_start_world_begins_with_nothing_founded_at_all()
+        {
+            // "Alone, others emerge later" means exactly that at tick zero: no rival has founded anything,
+            // and neither has the player — founding the first settlement is the opening move of the game
+            // (spec §5b.3), which Game.NewGame performs through SettlementFounder.Found. World generation
+            // placing an already-established colony for the player would hand their civilization a settlement
+            // nobody founded, alongside the one they then found.
+            global::SimWorld.World.World world = SoloWorld("worldgen-solo-start-empty");
+
+            Assert.Single(world.factions);
+            Assert.True(world.factions[0].def.isPlayer);
+            Assert.DoesNotContain(world.worldObjects, o => o.def == WorldObjectDefOf.Settlement);
         }
 
         [Fact]
@@ -186,7 +218,7 @@ namespace SimWorld.Tests.World
         [Fact]
         public void A_settlement_below_the_expansion_threshold_never_founds_a_colony()
         {
-            global::SimWorld.World.World world = SoloWorld("expansion-below-threshold");
+            global::SimWorld.World.World world = SoloWorldWithPlayerSettlement("expansion-below-threshold");
             Faction player = world.factions.First();
 
             // Replace whatever world generation placed with exactly one settlement, held under threshold, so
@@ -207,7 +239,7 @@ namespace SimWorld.Tests.World
         [Fact]
         public void A_large_settlement_eventually_founds_a_second_settlement_for_the_same_civilization()
         {
-            global::SimWorld.World.World world = SoloWorld("expansion-grows");
+            global::SimWorld.World.World world = SoloWorldWithPlayerSettlement("expansion-grows");
             Faction player = world.factions.First();
             int settlementsBefore = world.Settlements.Count(s => s.faction == player);
 
@@ -231,7 +263,7 @@ namespace SimWorld.Tests.World
         [Fact]
         public void Expansion_never_exceeds_the_per_faction_settlement_cap()
         {
-            global::SimWorld.World.World world = SoloWorld("expansion-cap", subdivision: 4);
+            global::SimWorld.World.World world = SoloWorldWithPlayerSettlement("expansion-cap", subdivision: 4);
             Faction player = world.factions.First();
 
             // Force every existing settlement well above threshold, and keep doing so for any colony that
@@ -251,7 +283,13 @@ namespace SimWorld.Tests.World
                 world.emergence.Tick(world);
             }
 
-            Assert.Equal(EmergenceTuning.MaxSettlementsPerFaction, world.Settlements.Count(s => s.faction == player));
+            // The claim this test's name makes is the cap, so that is what it asserts — plus that expansion
+            // actually ran, so it cannot pass by never firing. It used to assert exact equality with the cap,
+            // which only held while world generation handed the player several settlements to start with;
+            // from a single founding settlement, whether 600 years is enough to reach the cap exactly is the
+            // pacing roll's business, not the cap's.
+            int playerSettlements = world.Settlements.Count(s => s.faction == player);
+            Assert.InRange(playerSettlements, 2, EmergenceTuning.MaxSettlementsPerFaction);
         }
 
         // ----- Scribe round trip: the manager's own random stream resumes, not restarts -----

@@ -69,6 +69,13 @@ namespace SimWorld.World.Gen
 
             foreach (Faction faction in factions)
             {
+                // The player's own first settlement is not world-generation's to place. It is the opening
+                // moment of the game — a region chosen, a site chosen, a founding band of 20-40 people and a
+                // chronicle entry (spec §5b.3) — and Game.NewGame founds it through SettlementFounder.Found
+                // for exactly that reason. Placing an already-established colony here as well would leave the
+                // player's civilization holding two settlements at tick zero, one of which nobody founded.
+                if (faction.def.isPlayer) continue;
+
                 int settlementCount = SettlementCountFor(faction.def, popMultiplier, rand);
                 for (int s = 0; s < settlementCount; s++)
                 {

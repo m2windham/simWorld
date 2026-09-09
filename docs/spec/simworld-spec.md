@@ -174,20 +174,64 @@ flowchart TD
 - **Tick buckets**: `TickList` per cadence — normal, rare (250 ticks), long
   (2000 ticks) — with deferred register/deregister so a tick may spawn or
   destroy. Per-object work is additionally spread by hash interval.
-- Tick order: pre-tickers (world, map) → normal → rare → long → post-tickers.
+- Tick order: pre-tickers → normal → rare → long → post-tickers, driven by
+  `Game.NewGame`/`Game.ExposeData` populating `TickManager.PreTickers`/
+  `PostTickers` (delegates aren't Scribed, so both a fresh game and a loaded
+  one rebuild them the same way — `Game.WireTickHooks`). Pre-tickers: the
+  world (`World.WorldTick`, which is also where a settlement's own
+  `GrowthTick`/demography sweep runs — see §5b.3). Post-tickers, in order:
+  every live map's `MapTick`; the civilization's story-state roster sync
+  (`CivilizationTarget`, gated to the storyteller's own interval);
+  `Storyteller.StorytellerTick`; the population-wide social interaction sweep
+  (`SocialInteractionManager.SocialInteractionTick`, gated to its own
+  interval so the population list is never built on a tick that would no-op
+  inside it); `GodManager.GodTick`; `FactionManager.FactionManagerTick`
+  (goodwill drift, itself gated per faction); `LetterStack.LetterStackTick`;
+  `QuestManager.QuestManagerTick` (the quest tick loop — undriven before this
+  existed); and the autosave cadence. Nothing here re-tunes a cadence any of
+  these already self-gated to; the pre/post-ticker wiring only decides the
+  order they run in.
 - **Randomness**: MurmurHash-based `RandomStream`, one per system, plus a
   thread-static `Rand` facade keeping RimWorld's call shape (`Rand.Value`,
   `Rand.MTBEventOccurs`). Thread-static, so parallel tests never share a
-  sequence.
+  sequence. `Game.NewGame` seeds `Rand.Current` from the game's own seed
+  string, so pawn generation (which reads `Rand.Current`, not an explicit
+  stream) is reproducible from a seed the same way world generation's own
+  per-step `SeededStream`s already are.
 - **Calendar**: `GenDate` — 60,000-tick days, quadrums, years, longitude-local
   time, latitude seasons.
 - **Save/load**: `Scribe`, a reflection serializer over `IExposable`, in three
   passes — `LoadingVars` → `ResolvingCrossRefs` → `PostLoadInit`. Handles
   polymorphic deep saves (`Class=`), forward and cyclic references, and
-  collections.
-- **Services**: `Find.TickManager`, `Find.ResearchManager`, `Find.Storyteller`
-  are thread-static, matching RimWorld's global-service shape without sharing
-  state across tests.
+  collections. `Game` is now the one Scribe root that ties a whole save
+  together — `Scribe.SaveToString(game, "game")`/`Scribe.Load<Game>(...)` —
+  rather than each system round-tripping only its own piece in isolation.
+- **`Game`** (`Sim/Game.cs`, RimWorld: `Verse.Game`): owns the `World`, the
+  live `Map`s (read off which settlements currently have an entered
+  interior, not a separately-tracked list — see §11.2), and every manager
+  that used to be reached only through `Find` — research, the storyteller
+  plus its one `CivilizationTarget`, factions, letters, quests, the running
+  scenario, family, social, and the god layer. `Game.NewGame` generates a
+  world, runs the scenario's `PostWorldGenerate`, founds the starting
+  settlement (`SettlementFounder`) and then runs `PostGameStart` against
+  that settlement's own citizens (StartingPawns has to be populated before
+  PostGameStart per its own contract, but `SettlementFounder` — another
+  lane's territory this pass — has no seam to accept a pre-built founder
+  list, so founding runs first and PostGameStart's forced traits/starting
+  research/starting items land on the real founders a beat later instead of
+  a beat earlier; the end state is identical). **Autosave**
+  (`simcore.autosave`) is a cadence and a hook only — `Game.AutosaveIntervalTicks`
+  and the `Game.AutosaveDue` event — wired into the post-tick order; writing
+  the file to disk is the host's job, not the core's.
+- **Services**: `Find.TickManager`, `Find.ResearchManager`, `Find.Storyteller`,
+  and friends are thread-static, matching RimWorld's global-service shape
+  without sharing state across tests. `Find` now resolves through
+  `Find.CurrentGame` when one exists (RimWorld: `Verse.Current.Game`, folded
+  into `Find` here rather than porting a separate `Current` class) and falls
+  back to its own thread-static field exactly as before when it doesn't —
+  every pre-`Game` test wires `Find` by hand with no game in sight, and
+  `Find.Reset()` (which also drops `CurrentGame`) is what keeps that
+  working unchanged.
 
 _Note_: this is an object graph with trackers, not an ECS component store. The
 port follows RimWorld's real architecture; a data-oriented rewrite would break
@@ -200,11 +244,13 @@ sequenceDiagram
   participant N as Normal tick list
   participant R as Rare (250)
   participant L as Long (2000)
+  participant Post as Post-tickers
   loop each tick
-    TM->>Pre: world and map
+    TM->>Pre: World.WorldTick (world objects, settlement growth)
     TM->>N: pawns, projectiles, jobs
     TM->>R: needs decay, mood
     TM->>L: growth, disease, research
+    TM->>Post: maps, storyteller, social, god,<br/>factions, letters, quests, autosave
   end
 ```
 
@@ -1200,9 +1246,20 @@ flowchart TB
 
 - `SimWorld.Core` is `netstandard2.1` with no engine reference and an asmdef
   marked `noEngineReferences`; Unity consumes it as a local package.
-- The host renders and issues commands; it holds no simulation state.
-- A launch path appears only once a playable loop exists — the Blueprint
-  tracker shows the launch control disabled with its reason until then.
+- The host renders and issues commands; it holds no simulation state — a
+  `Game` (§4) is the one object that does, and the host's whole seam into
+  the simulation is: `Game.NewGame(...)` to start one;
+  `game.TickManager.TickManagerUpdate(deltaSeconds)` once a frame to
+  advance it (or `DoSingleTick()` directly, off the render loop, for a
+  headless run); `Scribe.SaveToString(game, "game")` /
+  `Scribe.Load<Game>(xml, "game", defs)` to save and load the whole thing
+  as one document; and `game.AutosaveDue` to know when to do that save —
+  the core only ever hands back a string, writing it to disk (or wherever)
+  is the host's own job, never the core's.
+- A playable loop now exists (`Game`, §4) — the Blueprint tracker's launch
+  control can drop its "no game loop yet" reason. What still sits above it
+  (rendering, input, the UI a player actually clicks) is unchanged and
+  remains the host's to build.
 
 ## 13. Determinism & Testing
 
