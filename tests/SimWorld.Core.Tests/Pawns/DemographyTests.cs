@@ -712,5 +712,233 @@ namespace SimWorld.Tests.Pawns
             Assert.Equal(starved, p.ageTracker.DebugDeathAgeYears, 3);
         }
 
+        // ---- demography.migration: arrivals ----
+
+        private static void ForceNeutralNeeds(Pawn p)
+        {
+            if (p.needs?.mood != null) p.needs.mood.CurLevel = p.needs.mood.MaxLevel * 0.5f;
+            if (p.needs?.food != null) p.needs.food.CurLevel = p.needs.food.MaxLevel * 0.5f;
+        }
+
+        private static void ForceGoodNeeds(Pawn p)
+        {
+            if (p.needs?.mood != null) p.needs.mood.CurLevel = p.needs.mood.MaxLevel;
+            if (p.needs?.food != null) p.needs.food.CurLevel = p.needs.food.MaxLevel;
+        }
+
+        private static void ForceDistressedNeeds(Pawn p)
+        {
+            if (p.needs?.mood != null) p.needs.mood.CurLevel = 0f;
+            if (p.needs?.food != null) p.needs.food.CurLevel = 0f;
+        }
+
+        [Fact]
+        public void Arrival_chance_increases_with_quality_and_era()
+        {
+            float low = MigrationManager.ArrivalChance(0f, null);
+            float neutral = MigrationManager.ArrivalChance(0.5f, null);
+            float high = MigrationManager.ArrivalChance(1f, null);
+            Assert.True(low < neutral);
+            Assert.True(neutral < high);
+
+            var early = new global::SimWorld.Research.EraDef { defName = "TestEraEarly", order = 0 };
+            var later = new global::SimWorld.Research.EraDef { defName = "TestEraLater", order = 10 };
+            Assert.True(MigrationManager.ArrivalChance(0.5f, early) < MigrationManager.ArrivalChance(0.5f, later));
+        }
+
+        [Fact]
+        public void Settlement_quality_is_neutral_with_no_living_population()
+        {
+            Assert.Equal(0.5f, MigrationManager.SettlementQuality(new List<Pawn>()));
+
+            var deadOnly = new List<Pawn> { NewAdult() };
+            deadOnly[0].health.Kill(null, null);
+            Assert.Equal(0.5f, MigrationManager.SettlementQuality(deadOnly));
+        }
+
+        [Fact]
+        public void Settlement_quality_averages_mood_and_food_across_the_living()
+        {
+            Pawn happy = NewAdult();
+            ForceGoodNeeds(happy);
+            Pawn miserable = NewAdult();
+            ForceDistressedNeeds(miserable);
+
+            float quality = MigrationManager.SettlementQuality(new List<Pawn> { happy, miserable });
+            Assert.InRange(quality, 0.4f, 0.6f); // one maxed, one zeroed -> roughly the midpoint
+        }
+
+        [Fact]
+        public void Migration_only_acts_on_its_interval_boundary()
+        {
+            var population = new List<Pawn> { NewAdult() };
+            ForceGoodNeeds(population[0]);
+
+            Find.TickManager.DebugSetTicksGame(MigrationTuning.MigrationIntervalTicks - 1);
+            bool arrivedOffBoundary = MigrationManager.MigrationTick(population, PawnKindDefOf.Colonist);
+            Assert.False(arrivedOffBoundary);
+            Assert.Single(population);
+        }
+
+        [Fact]
+        public void An_arriving_migrant_founds_a_household_and_is_promoted_to_full()
+        {
+            Find.Storyteller = new global::SimWorld.Director.Storyteller();
+            var population = new List<Pawn> { NewAdult() };
+            ForceGoodNeeds(population[0]);
+            Find.TickManager.DebugSetTicksGame(MigrationTuning.MigrationIntervalTicks);
+
+            Pawn? migrant = null;
+            for (int seed = 0; seed < 500 && migrant == null; seed++)
+            {
+                Rand.Current = new RandomStream(seed * 104729 + 1);
+                var attempt = new List<Pawn>(population);
+                if (MigrationManager.ProcessArrivals(attempt, PawnKindDefOf.Colonist))
+                {
+                    migrant = attempt[attempt.Count - 1];
+                }
+            }
+
+            Assert.NotNull(migrant);
+            Assert.True(migrant!.relations.HasFamily);
+            Assert.False(migrant.relations.IsMarried); // a solo founder, not paired
+            Assert.Equal(PawnTier.Full, migrant.tier.Tier);
+            Assert.True(migrant.ageTracker.AgeBiologicalYearsFloat >= DemographyTuning.MinMarriageAgeYears);
+            Assert.Contains(Find.Storyteller.Chronicle, e => e.incidentDefName.StartsWith("Migration:") && e.incidentDefName.Contains("founds a household"));
+        }
+
+        [Fact]
+        public void Migration_never_produces_more_than_one_arrival_per_interval()
+        {
+            for (int seed = 0; seed < 100; seed++)
+            {
+                Rand.Current = new RandomStream(seed);
+                var population = new List<Pawn> { NewAdult() };
+                ForceGoodNeeds(population[0]);
+                Find.TickManager.DebugSetTicksGame(MigrationTuning.MigrationIntervalTicks);
+                MigrationManager.ProcessArrivals(population, PawnKindDefOf.Colonist);
+                Assert.True(population.Count == 1 || population.Count == 2,
+                    "seed " + seed + " produced " + population.Count + " pawns from a single interval's arrival roll.");
+            }
+        }
+
+        // ---- demography.migration: departures ----
+
+        [Fact]
+        public void A_distressed_household_can_depart_together_and_shrinks_its_familys_living_count()
+        {
+            Pawn husband = NewAdult(gender: Gender.Male);
+            Pawn wife = NewAdult(gender: Gender.Female);
+            Family family = Find.FamilyManager.FoundHousehold(husband, wife, 0);
+            ForceDistressedNeeds(husband);
+            ForceDistressedNeeds(wife);
+
+            var population = new List<Pawn> { husband, wife };
+            int departed = 0;
+            for (int seed = 0; seed < 200 && departed == 0; seed++)
+            {
+                Rand.Current = new RandomStream(seed * 7919 + 3);
+                departed = MigrationManager.ProcessDepartures(population);
+            }
+
+            Assert.Equal(1, departed);
+            Assert.Empty(population);
+            Assert.Equal(0, family.livingCount);
+            Assert.Equal(2, family.totalCount); // history is not erased, only the living roster shrinks
+        }
+
+        [Fact]
+        public void A_household_above_the_distress_threshold_never_departs()
+        {
+            Pawn husband = NewAdult(gender: Gender.Male);
+            Pawn wife = NewAdult(gender: Gender.Female);
+            Find.FamilyManager.FoundHousehold(husband, wife, 0);
+            ForceGoodNeeds(husband);
+            ForceGoodNeeds(wife);
+
+            var population = new List<Pawn> { husband, wife };
+            for (int seed = 0; seed < 200; seed++)
+            {
+                Rand.Current = new RandomStream(seed);
+                MigrationManager.ProcessDepartures(population);
+            }
+
+            Assert.Equal(2, population.Count);
+        }
+
+        // ---- demography.migration: Settlement-aware overload and its floor ----
+
+        [Fact]
+        public void Settlement_migration_grows_statistical_population_only_when_quality_is_above_neutral()
+        {
+            var settlement = new global::SimWorld.World.Settlement(
+                global::SimWorld.World.WorldObjectDefOf.Settlement, tile: 1, faction: null, name: "Riverbend", foundingTick: 0);
+            settlement.AddStatisticalPeople(10_000);
+            Find.TickManager.DebugSetTicksGame(MigrationTuning.MigrationIntervalTicks);
+
+            // No live citizens at all -> SettlementQuality reads neutral (0.5) -> signedQuality is 0 -> no growth.
+            // This is also the documented floor in action: a settlement that can only get worse than neutral
+            // (no way to express that here) simply stops growing rather than shrinking.
+            MigrationManager.MigrationTick(settlement, PawnKindDefOf.Colonist);
+            Assert.Equal(10_000, settlement.StatisticalPopulation);
+        }
+
+        [Fact]
+        public void Settlement_migration_grows_statistical_population_when_citizens_are_thriving()
+        {
+            var settlement = new global::SimWorld.World.Settlement(
+                global::SimWorld.World.WorldObjectDefOf.Settlement, tile: 2, faction: null, name: "Goldenvale", foundingTick: 0);
+            Pawn resident = NewAdult();
+            ForceGoodNeeds(resident);
+            settlement.AddCitizen(resident);
+            settlement.AddStatisticalPeople(10_000);
+            Find.TickManager.DebugSetTicksGame(MigrationTuning.MigrationIntervalTicks);
+
+            MigrationManager.MigrationTick(settlement, PawnKindDefOf.Colonist);
+
+            Assert.True(settlement.StatisticalPopulation > 10_000,
+                "a thriving settlement should attract statistical growth beyond the natural-growth mechanism.");
+        }
+
+        // ---- demography.migration: pacing over a simulated span ----
+
+        [Fact]
+        public void Migration_contributes_a_bounded_share_of_growth_over_a_simulated_century()
+        {
+            // A neutral-conditions, ten-founder population, run 100 years with both demography and migration
+            // ticking every interval. This pins the trend the brief asks for ("a band... over a simulated
+            // span"), not a literal: migration should add a real, visible number of arrivals over a century
+            // (it is meant to matter) without swamping births as the dominant channel of growth (it is meant
+            // to be a second channel, not the whole story) — see MigrationTuning.ArrivalBaseChancePerInterval's
+            // own doc for why it was sized against DemographyTuning.BaseBirthChancePerInterval.
+            Rand.Current = new RandomStream(24601);
+            var population = new List<Pawn>();
+            for (int i = 0; i < 10; i++)
+            {
+                Pawn p = NewAdult(age: 20f + i, gender: i % 2 == 0 ? Gender.Male : Gender.Female);
+                ForceNeutralNeeds(p);
+                population.Add(p);
+            }
+
+            int tick = 0;
+            int arrivals = 0;
+            for (int year = 0; year < 100; year++)
+            {
+                tick += DemographyTuning.DemographyIntervalTicks;
+                AdvanceYear(population, DemographyTuning.DemographyIntervalTicks);
+                Find.TickManager.DebugSetTicksGame(tick);
+                Find.FamilyManager.DemographyTick(population);
+                foreach (Pawn p in population) if (!p.Dead) ForceNeutralNeeds(p);
+                if (MigrationManager.MigrationTick(population, PawnKindDefOf.Colonist)) arrivals++;
+            }
+
+            int living = population.Count(p => !p.Dead);
+            Assert.True(living > 10, "expected demography plus migration to grow the population; got " + living);
+            // At neutral quality (0.5) the per-interval arrival chance is ArrivalBaseChancePerInterval * 1.0 =
+            // 0.25, so ~25 arrivals is the expectation over 100 independent yearly rolls; a generous band around
+            // that (not a tight one — this is a Bernoulli trial, not a fixed count) catches a formula regression
+            // without being a coin-flip-fragile test.
+            Assert.InRange(arrivals, 5, 50);
+        }
     }
 }

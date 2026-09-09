@@ -585,6 +585,21 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
 - Work tags from traits and backstories disable skills and work types.
 - Per-pawn priority grid; work givers order by priority, then natural priority,
   then priority within type, with emergency givers first.
+- **Policy (SimWorld translation, `work.policy`, built).** A civilization cannot
+  set twelve priority numbers per citizen the way a RimWorld player sets them
+  per colonist, so a standing `RoleDef` (Farmer, Miner, Artisan, Scholar ship as
+  content) stands in for the grid: it names the work types it emphasizes, and
+  `Pawn_WorkSettings.ApplyRole` sets those to the pawn's best priority while
+  leaving everything else at the default. This is deliberately not the same
+  "leaves no trace" guarantee an `EdictDef` gives (§10) — a role is *standing*,
+  not temporary, and does write into the grid — but it protects the one thing
+  that guarantee is really about: `Pawn_WorkSettings` remembers every work type
+  a caller set directly (`SetPriority`), and a role's own writes always skip
+  those, so a person's own explicit choice is never silently overwritten, and
+  unassigning a role reverts everything it touched back to default.
+  `WorkPolicyUtility.ApplyRoleToPopulation` is the civilization-scale lever —
+  one call assigns a role across an entire settlement's citizens at once,
+  rather than one grid at a time.
 
 ### 7.4 AI (Think Tree / Jobs / Pathing)
 
@@ -666,6 +681,24 @@ at 3 / 13 / 18) rather than on a compressed one.
   chronicle's fidelity model needs (§11.4).
 - **The sweep** runs on `FamilyManager.DemographyTick` once per simulated year:
   marriages, then births, then deaths from age, then chronicle entries for each.
+- **Migration (SimWorld translation, `demography.migration`, built).** Births
+  alone are not what makes a civilization's population more than generations
+  multiplying in place — people arrive and found households, and leave when a
+  place stops being worth living in. `MigrationManager` mirrors the birth
+  formula's own shape (base × (0.5 + quality) × a situational factor), where
+  quality reads the same per-citizen mood/food signal births already read, and
+  the situational factor is the civilization's era — a more advanced
+  settlement has more to offer. An arrival generates one adult migrant and
+  founds their household through the existing `FamilyManager.FoundHousehold`
+  single-founder hook (built for exactly this); a settlement's bare Statistical
+  cohort grows by the same closed-form percentage idiom natural growth already
+  uses, never by materialising thousands of real `Pawn`s for it. Departures
+  remove a distressed household together from a caller-owned population list.
+  One stated limitation: `Settlement` exposes no public way to shrink its
+  Statistical population or remove a citizen, so a settlement that has become
+  unlivable can only ever stop attracting people through the settlement-aware
+  entry point, not shed the people it already has — see `MigrationManager`'s
+  own doc.
 
 ```mermaid
 flowchart TD
@@ -898,6 +931,19 @@ want to own (see `docs/status.json` system 17's `social.ideology` item).
   colony and fighting is the AI/Map systems' to build on top of this.
 - **The Chronicle** (SimWorld translation): every fired incident appends a
   narrator record. The persona name is still open — see §15.
+- **Moments** (SimWorld translation, `quests.moments`, built): the Chronicle
+  already records every birth, death, edict and era transition unconditionally
+  — a log. `MomentCurator` (owned by the `Storyteller` alongside the chronicle
+  itself) additionally decides which entries are worth remembering as a
+  civilization's *history*: the first occurrence of a category (an incident's
+  own `defName`, a death cause, or a free-form line's own category), every era
+  transition without exception (`§10`: "reaching an era is an event, not just
+  a readout"), and a new record for longevity at death. Each rule is bounded in
+  count on its own terms — by how many distinct categories ever occur, by the
+  fixed size of the era ladder, or by a monotonic ratchet — so a moment that
+  fires on everything (a log with extra steps) is exactly what this design
+  avoids: a simulated routine century produces a handful of moments, not
+  hundreds.
 
 ```mermaid
 flowchart TD
@@ -939,6 +985,16 @@ the translation and its state per system.
   nearest-candidate scan via `WorkGiverScanUtility` rather than duplicating
   it), so deactivating an edict leaves a citizen's own work priorities exactly
   as they were. Citizens keep full agency.
+- **Policy** (`work.policy`, §7.3): edicts are the *temporary* civilization-scale
+  lever; policy is the *standing* one. A citizen's role (`RoleDef`) shapes what
+  work they take up — `Pawn_WorkSettings.ApplyRole` — rather than the player
+  setting a per-pawn priority grid one citizen at a time. Not the same
+  mechanism as an edict (a role does write into the grid, where an edict never
+  touches it at all) but the same discipline: it never overwrites a work type a
+  person set for themselves directly, and clearing a role leaves no more trace
+  in the grid than the role was ever there. `WorkPolicyUtility` applies a role
+  across a whole population in one call — policy acts on the aggregate, the
+  same way `GodManager.Activate` does for an edict.
 - **Eras**: an `EraDef` ladder over the research DAG carries a civilization from
   neolithic to archotech; era completion gates content, scales threats, and
   gates which edicts a civilization can issue at all (`EdictDef.requiredEra`,
@@ -1002,8 +1058,10 @@ own — no explicit per-pawn grant or removal, so nothing lingers once an edict
 is rescinded; `HuntersMandate` also carries `obsoleteEra` as real content, not
 just an ad-hoc test case. **Settlements** are entities now (§5b.5) rather than
 a def and a tile, and `GodRollup` reads one (or a civilization of them)
-directly rather than a caller-supplied list. What remains is the god view
-itself — UI/host work, once there is a host to render one.
+directly rather than a caller-supplied list. **Policy** (see the Policy bullet
+above) is now built too, in `src/SimWorld.Core/Work`: `RoleDef`,
+`Pawn_WorkSettings.SetRole`/`ApplyRole` and `WorkPolicyUtility`. What remains
+is the god view itself — UI/host work, once there is a host to render one.
 
 ```mermaid
 flowchart LR

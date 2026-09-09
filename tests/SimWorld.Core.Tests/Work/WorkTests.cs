@@ -421,5 +421,140 @@ namespace SimWorld.Tests.Work
             // Loaded objects are fully wired: ticking must not throw.
             RunTicks(300, la);
         }
+
+        // ---- work.policy: standing roles ----
+
+        [Fact]
+        public void Role_emphasizes_its_work_types_and_leaves_the_rest_at_default()
+        {
+            Pawn p = NewHuman();
+            RoleDef farmer = DefDatabase<RoleDef>.GetNamed("Farmer");
+
+            p.workSettings.SetRole(farmer);
+
+            Assert.Same(farmer, p.workSettings.Role);
+            Assert.Equal(Pawn_WorkSettings.EmphasizedPriority, p.workSettings.GetPriority(WorkTypeDefOf.Growing));
+            Assert.Equal(Pawn_WorkSettings.EmphasizedPriority, p.workSettings.GetPriority(WorkTypeDefOf.PlantCutting));
+            Assert.Equal(Pawn_WorkSettings.DefaultPriority, p.workSettings.GetPriority(WorkTypeDefOf.Mining));
+            Assert.Equal(Pawn_WorkSettings.DefaultPriority, p.workSettings.GetPriority(WorkTypeDefOf.Hauling));
+        }
+
+        [Fact]
+        public void Assigning_a_role_turns_on_detailed_priorities_so_the_emphasis_is_not_silently_collapsed()
+        {
+            Pawn p = NewHuman();
+            Assert.False(p.workSettings.useWorkPriorities);
+
+            p.workSettings.SetRole(DefDatabase<RoleDef>.GetNamed("Miner"));
+
+            Assert.True(p.workSettings.useWorkPriorities);
+            Assert.Equal(Pawn_WorkSettings.EmphasizedPriority, p.workSettings.GetPriority(WorkTypeDefOf.Mining));
+        }
+
+        [Fact]
+        public void A_role_never_overwrites_a_manually_set_priority()
+        {
+            Pawn p = NewHuman();
+            p.workSettings.useWorkPriorities = true;
+            p.workSettings.SetPriority(WorkTypeDefOf.Growing, 4); // a person's own explicit choice for this pawn
+
+            p.workSettings.SetRole(DefDatabase<RoleDef>.GetNamed("Farmer")); // Farmer emphasizes Growing
+
+            Assert.Equal(4, p.workSettings.GetPriority(WorkTypeDefOf.Growing)); // untouched by the role
+            Assert.Equal(Pawn_WorkSettings.EmphasizedPriority, p.workSettings.GetPriority(WorkTypeDefOf.PlantCutting)); // still applied
+        }
+
+        [Fact]
+        public void A_role_never_enables_a_disabled_worktype()
+        {
+            Pawn p = NewHuman();
+            TraitDef noPlantWork = MakeTraitDef("TestNoPlantWork", WorkTags.PlantWork);
+            p.story.traits.GainTrait(new Trait(noPlantWork, 0));
+            Assert.True(p.WorkTypeIsDisabled(WorkTypeDefOf.Growing));
+
+            p.workSettings.SetRole(DefDatabase<RoleDef>.GetNamed("Farmer"));
+
+            Assert.Equal(0, p.workSettings.GetPriority(WorkTypeDefOf.Growing));
+        }
+
+        [Fact]
+        public void Clearing_a_role_reverts_every_non_manual_priority_it_touched_leaving_no_trace()
+        {
+            Pawn p = NewHuman();
+            p.workSettings.SetRole(DefDatabase<RoleDef>.GetNamed("Scholar"));
+            Assert.Equal(Pawn_WorkSettings.EmphasizedPriority, p.workSettings.GetPriority(WorkTypeDefOf.Research));
+
+            p.workSettings.SetRole(null);
+
+            Assert.Null(p.workSettings.Role);
+            Assert.Equal(Pawn_WorkSettings.DefaultPriority, p.workSettings.GetPriority(WorkTypeDefOf.Research));
+        }
+
+        [Fact]
+        public void Switching_roles_re_derives_the_grid_from_the_new_role_alone()
+        {
+            Pawn p = NewHuman();
+            p.workSettings.SetRole(DefDatabase<RoleDef>.GetNamed("Farmer"));
+            p.workSettings.SetRole(DefDatabase<RoleDef>.GetNamed("Miner"));
+
+            // Farmer's own emphasis (Growing) must not linger once the pawn switches to Miner.
+            Assert.Equal(Pawn_WorkSettings.DefaultPriority, p.workSettings.GetPriority(WorkTypeDefOf.Growing));
+            Assert.Equal(Pawn_WorkSettings.EmphasizedPriority, p.workSettings.GetPriority(WorkTypeDefOf.Mining));
+        }
+
+        [Fact]
+        public void A_role_moves_its_worktype_ahead_of_others_in_job_giver_order()
+        {
+            Pawn p = NewHuman();
+            p.workSettings.SetRole(DefDatabase<RoleDef>.GetNamed("Miner"));
+
+            IReadOnlyList<WorkGiverDef> normal = p.workSettings.WorkGiversInOrderNormal;
+            int miningIndex = IndexOf(normal, "Mine");
+            int haulingIndex = IndexOf(normal, "HaulGeneral");
+
+            Assert.True(miningIndex >= 0 && haulingIndex >= 0);
+            Assert.True(miningIndex < haulingIndex, "an emphasized work type's giver should be tried before a default-priority one");
+        }
+
+        [Fact]
+        public void WorkPolicyUtility_applies_a_role_across_a_population_and_skips_non_workers()
+        {
+            Pawn worker = NewHuman("Worker");
+            var dog = new Pawn(Husky, "PolicyDog");
+            var dead = NewHuman("Dead");
+            dead.health.Kill(null, null);
+
+            RoleDef artisan = DefDatabase<RoleDef>.GetNamed("Artisan");
+            int applied = WorkPolicyUtility.ApplyRoleToPopulation(new List<Pawn> { worker, dog, dead }, artisan);
+
+            Assert.Equal(1, applied);
+            Assert.Same(artisan, worker.workSettings.Role);
+            Assert.False(dog.workSettings.EverWork);
+            Assert.Null(dog.workSettings.Role); // animals never get a grid at all, so the role never reaches them
+        }
+
+        [Fact]
+        public void Role_and_manual_overrides_round_trip_through_Scribe()
+        {
+            Pawn a = NewHuman("Rowan");
+            a.workSettings.useWorkPriorities = true;
+            a.workSettings.SetPriority(WorkTypeDefOf.Cleaning, 4); // manual, protected
+            a.workSettings.SetRole(DefDatabase<RoleDef>.GetNamed("Miner"));
+
+            var holder = new PawnHolder { pawns = new List<Pawn> { a } };
+            string xml = Scribe.SaveToString(holder, "game");
+            Pawn.ResetThingIdCounter();
+            PawnHolder loaded = Scribe.Load<PawnHolder>(xml, "game", out IReadOnlyList<string> errors);
+
+            Assert.Empty(errors);
+            Pawn la = loaded.pawns![0];
+            Assert.Equal("Miner", la.workSettings.Role?.defName);
+            Assert.Equal(Pawn_WorkSettings.EmphasizedPriority, la.workSettings.GetPriority(WorkTypeDefOf.Mining));
+            Assert.Equal(4, la.workSettings.GetPriority(WorkTypeDefOf.Cleaning)); // manual override survived the round trip
+
+            // The manual override still protects Cleaning against a fresh role application after loading.
+            la.workSettings.SetRole(DefDatabase<RoleDef>.GetNamed("Artisan")); // does not emphasize Cleaning
+            Assert.Equal(4, la.workSettings.GetPriority(WorkTypeDefOf.Cleaning));
+        }
     }
 }
