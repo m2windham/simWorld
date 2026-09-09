@@ -375,6 +375,9 @@ namespace SimWorld.Sim
             tm.PostTickers.Add(_ => SocialTick());
             tm.PostTickers.Add(_ => God.GodTick());
             tm.PostTickers.Add(_ => Guilds.GuildManagerTick());
+            // building.initiative: settlements decide what they lack and queue the blueprints for it. Self
+            // gated on the rare tick like the managers above, so a tick it is not due on costs a modulo.
+            tm.PostTickers.Add(_ => SimWorld.Building.SettlementConstructionInitiative.Tick());
             tm.PostTickers.Add(_ => FactionManager.FactionManagerTick());
             tm.PostTickers.Add(_ => LetterStack.LetterStackTick());
             tm.PostTickers.Add(_ => QuestManager.QuestManagerTick());

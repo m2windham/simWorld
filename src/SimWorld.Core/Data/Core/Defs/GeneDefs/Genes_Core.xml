@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Biotech's gene system (system: pawngen.genes), trimmed to the fields that actually move a number in this
+    port — see SimWorld.Core/Pawns/Genes/GeneDef.cs for what was ported and why. Numeric tuning below is
+    SimWorld's own where RimWorld's exact figures were not available to source in this sandbox (no decompiled
+    source, no network access here); each such value is pinned by a behaviour test in
+    tests/SimWorld.Core.Tests/Pawns/GenesTests.cs rather than trusted as a literal RimWorld number. biostatCpx
+    is recorded as flavor data only — nothing in this port enforces it as a hard budget yet (see GeneDef's own
+    doc).
+
+    Two exclusion pairs are deliberately included (Agility, Metabolism) so Pawn_GeneTracker's
+    ActiveGenesListForReading conflict resolution is exercised by real content, not test-only defs.
+  -->
+
+  <GeneDef>
+    <defName>Gene_Nimble</defName>
+    <label>nimble</label>
+    <description>Quick reflexes turn incoming blows into near misses more often.</description>
+    <biostatCpx>2</biostatCpx>
+    <exclusionTags>
+      <li>Agility</li>
+    </exclusionTags>
+    <statFactors>
+      <MeleeDodgeChance>1.15</MeleeDodgeChance>
+    </statFactors>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_Clumsy</defName>
+    <label>clumsy</label>
+    <description>Poor coordination makes both landing and dodging a blow harder.</description>
+    <biostatCpx>1</biostatCpx>
+    <exclusionTags>
+      <li>Agility</li>
+    </exclusionTags>
+    <statFactors>
+      <MeleeDodgeChance>0.85</MeleeDodgeChance>
+      <MeleeHitChance>0.9</MeleeHitChance>
+    </statFactors>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_HardyImmunity</defName>
+    <label>hardy immunity</label>
+    <description>A quick-responding immune system builds resistance to sickness faster than most.</description>
+    <biostatCpx>3</biostatCpx>
+    <statFactors>
+      <ImmunityGainSpeed>1.3</ImmunityGainSpeed>
+    </statFactors>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_Immunoweak</defName>
+    <label>immunoweak</label>
+    <description>A sluggish immune system builds resistance to sickness more slowly than most.</description>
+    <biostatCpx>1</biostatCpx>
+    <statFactors>
+      <ImmunityGainSpeed>0.6</ImmunityGainSpeed>
+    </statFactors>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_PainResistant</defName>
+    <label>pain resistant</label>
+    <description>Tolerates a great deal of pain before it becomes debilitating.</description>
+    <biostatCpx>2</biostatCpx>
+    <statOffsets>
+      <PainShockThreshold>0.15</PainShockThreshold>
+    </statOffsets>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_FastLearner</defName>
+    <label>fast learner</label>
+    <description>Picks up new skills more quickly than most, from both training and doing.</description>
+    <biostatCpx>3</biostatCpx>
+    <statFactors>
+      <GlobalLearningFactor>1.15</GlobalLearningFactor>
+    </statFactors>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_SlowLearner</defName>
+    <label>slow learner</label>
+    <description>Picks up new skills more slowly than most.</description>
+    <biostatCpx>1</biostatCpx>
+    <statFactors>
+      <GlobalLearningFactor>0.85</GlobalLearningFactor>
+    </statFactors>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_HighMetabolism</defName>
+    <label>high metabolism</label>
+    <description>Burns energy fast, needing more food, but moves with the extra energy to spare.</description>
+    <biostatCpx>2</biostatCpx>
+    <biostatMet>2</biostatMet>
+    <exclusionTags>
+      <li>Metabolism</li>
+    </exclusionTags>
+    <statFactors>
+      <MoveSpeed>1.08</MoveSpeed>
+    </statFactors>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_LowMetabolism</defName>
+    <label>low metabolism</label>
+    <description>Runs efficiently on little food, at no cost to anything else.</description>
+    <biostatCpx>2</biostatCpx>
+    <biostatMet>-2</biostatMet>
+    <exclusionTags>
+      <li>Metabolism</li>
+    </exclusionTags>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_KeenSenses</defName>
+    <label>keen senses</label>
+    <description>Sharper eyes and ears than most.</description>
+    <biostatCpx>2</biostatCpx>
+    <capMods>
+      <li>
+        <capacity>Sight</capacity>
+        <offset>0.15</offset>
+      </li>
+      <li>
+        <capacity>Hearing</capacity>
+        <offset>0.15</offset>
+      </li>
+    </capMods>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_Frail</defName>
+    <label>frail</label>
+    <description>A weak body: less capable of moving and manipulating, and less tolerant of pain.</description>
+    <biostatCpx>1</biostatCpx>
+    <statOffsets>
+      <PainShockThreshold>-0.1</PainShockThreshold>
+    </statOffsets>
+    <capMods>
+      <li>
+        <capacity>Moving</capacity>
+        <offset>-0.1</offset>
+      </li>
+      <li>
+        <capacity>Manipulation</capacity>
+        <offset>-0.1</offset>
+      </li>
+    </capMods>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_Pacifist</defName>
+    <label>pacifist</label>
+    <description>Constitutionally unable to do violence.</description>
+    <biostatCpx>4</biostatCpx>
+    <disabledWorkTags>Violent</disabledWorkTags>
+  </GeneDef>
+
+  <GeneDef>
+    <defName>Gene_Longevity</defName>
+    <label>longevity</label>
+    <!--
+      SimWorld's own translation of RimWorld's Deathless gene (see GeneDef.lifespanBonusYears's own doc): this
+      port's mortality model is a single hidden lifespan budget rather than a revive-on-death event to
+      intercept, so "lives much longer than most" becomes "starts with a much larger budget" instead. The
+      +10 years figure is this port's own, not sourced from RimWorld.
+    -->
+    <description>Ages more slowly than most; tends to live a long life.</description>
+    <biostatCpx>4</biostatCpx>
+    <lifespanBonusYears>10</lifespanBonusYears>
+  </GeneDef>
+
+</Defs>

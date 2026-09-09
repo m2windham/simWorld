@@ -2,12 +2,13 @@
 <Defs>
 
   <!--
-    One Blueprint/Frame ThingDef pair per buildable Def above (system 16: Building) — hand-authored rather
-    than generated; see ThingDef.entityToBuild's own remarks for why. A Blueprint is always Standable/no
-    fill (it never touches the edifice grid at all); a Frame copies its entityToBuild's passability/fillPercent/
-    pathCost so a half-built wall already blocks movement and room flood fill exactly like the finished
-    wall would — Frame.SpawnSetup registers it into the edifice grid manually since its own category is
-    Frame, not Building, so ThingDef.IsEdifice's generic check never fires for it on its own.
+    One Blueprint/Frame ThingDef pair per buildable Def this module ships (system 16: Building; Bed/StorageHut
+    live in Buildings_Structural.xml) — hand-authored rather than generated; see ThingDef.entityToBuild's own
+    remarks for why. A Blueprint is always Standable/no fill (it never touches the edifice grid at all); a
+    Frame copies its entityToBuild's passability/fillPercent/pathCost so a half-built wall already blocks
+    movement and room flood fill exactly like the finished wall would — Frame.SpawnSetup registers it into
+    the edifice grid manually since its own category is Frame, not Building, so ThingDef.IsEdifice's generic
+    check never fires for it on its own.
   -->
 
   <ThingDef>
@@ -105,6 +106,44 @@
     <passability>Impassable</passability>
     <fillPercent>0</fillPercent>
     <entityToBuild>Battery</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Bed</defName>
+    <label>bed (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Bed</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Bed</defName>
+    <label>bed (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>Bed</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_StorageHut</defName>
+    <label>storage hut (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>StorageHut</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_StorageHut</defName>
+    <label>storage hut (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>StorageHut</entityToBuild>
   </ThingDef>
 
   <ThingDef>
