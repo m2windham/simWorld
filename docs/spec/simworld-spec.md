@@ -1085,6 +1085,23 @@ flowchart LR
   are derived on demand from demography's own ids (`spouseId`/`parentIdA`/
   `parentIdB`/`childIds`) rather than stored a second time; friend, rival, lover
   and ex-spouse are stored as a `DirectPawnRelation` on both pawns.
+- **Romance** (`social.romance`, built): courtship and its ending, built as two
+  more interactions rather than a sweep of their own — a romance attempt and a
+  breakup are things one person does to another, which is what `InteractionDef`
+  already models. `InteractionWorker_RomanceAttempt` weighs zero for anyone
+  married, related, too young, already together or not liked enough, and
+  acceptance turns on opinion plus the pair's compatibility factor.
+  `InteractionWorker_Breakup` is offered only to a couple whose social
+  **memories** of each other have gone negative — measured on memories alone,
+  because total opinion also carries the `Lover` relation's own +20 (a couple
+  happy because they are a couple) and the compatibility factor (two people who
+  click could never fall out). A marriage ends as a divorce: both spouse ids
+  cleared and a mutual `ExSpouse` recorded, the shape widowhood already used,
+  leaving the `Family` standing, because a household here is a lineage rather
+  than a residence. Deliberately absent: infidelity (a married citizen never
+  courts, and half of RimWorld's cheating model would be worse than none) and
+  orientation (no pawn carries one, and a gate the data cannot support would be
+  invented rather than ported).
 - **Interactions** (`InteractionDef` + `InteractionWorker`): chitchat, deep talk,
   insult and slight, selected by weight per pair on a population-wide sweep every
   2,500 ticks — a rare-tick manager sweep (`SocialInteractionManager`), not

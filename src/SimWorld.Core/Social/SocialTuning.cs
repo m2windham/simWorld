@@ -95,5 +95,52 @@ namespace SimWorld.Social
         /// of exchanges land within the mental state's own 100-1200 tick duration without being so frequent
         /// the fight resolves in a single blow.</summary>
         public const float SocialFightSwingCooldownSeconds = 1f;
+
+        // ---- Romance (social.romance) ----
+        // None of these are RimWorld's: RimWorld's romance model reads an orientation and a cheating risk
+        // this port has no data for, so every number below is this port's own and is pinned by a trend test
+        // (a better-liked suitor is likelier to be accepted, a marriage is harder to leave than an affair)
+        // rather than by the literal.
+
+        /// <summary>Youngest a citizen can court or be courted. Adulthood as this port already models it —
+        /// the same line demography draws for marriage.</summary>
+        public const float RomanceMinAgeYears = 16f;
+
+        /// <summary>
+        /// Opinion below which a romance attempt is never made and never accepted. Set against what this
+        /// port's opinion system actually produces rather than picked in the abstract: a Friend relation is
+        /// +12 and a deep talk +6, so the bar sits just above "we are friends" and below "we are friends who
+        /// have talked properly" — which is where courtship should start.
+        /// </summary>
+        public const float RomanceMinOpinion = 15f;
+
+        /// <summary>Selection weight of a romance attempt for a pair who clear every gate. Small: the sweep
+        /// runs over the whole population and courtship should be rare per pair per interval.</summary>
+        public const float RomanceBaseWeight = 0.4f;
+
+        /// <summary>Floor of the acceptance chance for a pair who just clear the opinion bar.</summary>
+        public const float RomanceBaseAcceptChance = 0.15f;
+
+        /// <summary>How much of the acceptance chance opinion accounts for.</summary>
+        public const float RomanceOpinionAcceptWeight = 0.5f;
+
+        /// <summary>How much of it the pair's stable compatibility factor accounts for.</summary>
+        public const float RomanceCompatibilityAcceptWeight = 0.25f;
+
+        /// <summary>
+        /// Memory balance above which a couple never breaks up. Measured on their social memories alone —
+        /// what they have actually done to each other — rather than on total opinion, which also carries the
+        /// <c>Lover</c> relation's own +20 and the pair's stable compatibility factor. Both of those would
+        /// make the gate say something else: the first that a couple is happy because they are a couple, the
+        /// second that two people who happen to click can never fall out. Zero, so a couple parts once the
+        /// ledger between them has gone negative.
+        /// </summary>
+        public const float BreakupMaxMemoryOpinion = 0f;
+
+        /// <summary>Selection weight of a breakup for an unhappy couple.</summary>
+        public const float BreakupBaseWeight = 0.6f;
+
+        /// <summary>A marriage is harder to leave than an affair: the same unhappiness ends one sooner.</summary>
+        public const float DivorceWeightFactor = 0.35f;
     }
 }

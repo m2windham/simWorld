@@ -26,6 +26,8 @@ namespace SimWorld.Social
         public static InteractionDef DeepTalk = null!;
         public static InteractionDef Insult = null!;
         public static InteractionDef Slight = null!;
+        public static InteractionDef RomanceAttempt = null!;
+        public static InteractionDef Breakup = null!;
     }
 
     /// <summary>Social memory ThoughtDefs code constructs directly. <c>Insulted</c> already shipped with the
@@ -38,6 +40,11 @@ namespace SimWorld.Social
         public static ThoughtDef HadDeepTalk = null!;
         public static ThoughtDef Insulted = null!;
         public static ThoughtDef WasSlighted = null!;
+        public static ThoughtDef BecameLovers = null!;
+        public static ThoughtDef RebuffedMyRomanceAttempt = null!;
+        public static ThoughtDef FailedRomanceAttemptOnMe = null!;
+        public static ThoughtDef BrokeUpWithMe = null!;
+        public static ThoughtDef Divorced = null!;
     }
 
     /// <summary>The mental state a social fight starts (RimWorld: <c>MentalStateDefOf.SocialFighting</c>) —

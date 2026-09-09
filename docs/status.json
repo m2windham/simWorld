@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 1132,
+  "testsTotal": 1144,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1097,7 +1097,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Social",
       "status": "ported",
-      "tests": 35,
+      "tests": 47,
       "items": [
         {
           "id": "social.opinion",
@@ -1111,8 +1111,8 @@
         },
         {
           "id": "social.romance",
-          "label": "Marriage/breakup beyond demography's own marriage — explicitly out of scope for this pass (the brief's own \"out of scope\" list overrides its \"what to build\" mention of a marriage-proposal interaction; see the social system's report). Rivalry and lover relation kinds and their opinion thresholds are covered under social.opinion/social.interactions; breakup/divorce lands with a future relationship-dissolution mechanic, not built here.",
-          "done": false
+          "label": "Courtship and its ending. Two more InteractionDefs rather than a sweep of their own: InteractionWorker_RomanceAttempt weighs zero for anyone married, related, too young, already together or not liked enough, and acceptance turns on opinion plus the pair's stable compatibility factor; InteractionWorker_Breakup is offered only to a couple whose social memories of each other have gone negative — measured on memories alone, because total opinion also carries the Lover relation's own +20 (a couple happy because they are a couple) and the compatibility factor (two people who click could never fall out). A marriage ends as a divorce: both spouse ids cleared and a mutual ExSpouse recorded, the shape widowhood already used, leaving the household standing because a household here is a lineage rather than a residence. Deliberately absent: infidelity (a married citizen never courts) and orientation (no pawn carries one, and a gate the data cannot support would be invented)",
+          "done": true
         },
         {
           "id": "social.ideology",
