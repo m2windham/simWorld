@@ -102,7 +102,23 @@ Def class.
 - Lifecycle: `PostLoad` → cross-refs → `ResolveReferences` → `ConfigErrors`.
 - Duplicate `defName`: later pack wins (mod load-order semantics).
 
-_Planned_: mod content packs and XPath `PatchOperation`s.
+- **Content packs**: a pack is a folder with `About/About.xml`, `Defs/` and
+  `Patches/` (`ModContentPack`). Core is a pack like any other so the loader has
+  one notion of where content comes from; the only special case is that Core
+  loads first. `ModLoadOrder` topologically sorts packs by `modDependencies`,
+  `loadAfter` and `loadBefore`, with the declared order as the tie-break so the
+  same folder set always loads the same way. A missing dependency and a
+  constraint cycle are both reported and then survived — content loading says
+  what is wrong and keeps going, the way an unresolvable cross-reference does.
+- **Patching**: XPath `PatchOperation`s (`Add`, `Insert`, `Remove`, `Replace`,
+  the three attribute operations, `SetName`, plus `Sequence`, `Conditional` and
+  `FindMod` for control flow) let a pack edit content it does not own. Every
+  pack's Defs are combined into one document, then every pack's patches run
+  against it in load order, **before** inheritance resolves — so a patch sees
+  the authored XML, and one edit to an abstract parent reaches everything that
+  derives from it. An operation matching nothing is an error unless it declares
+  `<success>Always</success>`. A Def a patch adds is credited to the patching
+  pack, not to the file it landed beside.
 
 ```mermaid
 flowchart LR

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using SimWorld.Defs;
@@ -56,6 +57,72 @@ namespace SimWorld.Content
             var loader = new DefLoader(database, types, options);
             AddCoreDefs(loader);
             return loader.Load();
+        }
+
+        /// <summary>
+        /// Every content pack under a data directory: one per subfolder that carries content
+        /// (<c>Defs/</c>, <c>Patches/</c> or an <c>About/</c>), read in ordinal folder order before load
+        /// ordering re-sorts them.
+        /// </summary>
+        public static List<ModContentPack> DiscoverPacks(string? dataDirectory, DefTypeResolver types, List<DefLoadError> errors)
+        {
+            if (types == null) throw new ArgumentNullException(nameof(types));
+            if (errors == null) throw new ArgumentNullException(nameof(errors));
+
+            var packs = new List<ModContentPack>();
+            string? data = dataDirectory ?? DataDirectory;
+            if (data == null || !Directory.Exists(data)) return packs;
+
+            string[] folders = Directory.GetDirectories(data);
+            Array.Sort(folders, StringComparer.Ordinal);
+            foreach (string folder in folders)
+            {
+                if (!Directory.Exists(Path.Combine(folder, ModContentPack.DefsFolder))
+                    && !Directory.Exists(Path.Combine(folder, ModContentPack.PatchesFolder))
+                    && !Directory.Exists(Path.Combine(folder, ModMetaData.DirectoryName)))
+                {
+                    continue;
+                }
+                ModContentPack? pack = ModContentPack.FromDirectory(folder, types, errors);
+                if (pack != null) packs.Add(pack);
+            }
+            return packs;
+        }
+
+        /// <summary>
+        /// Loads every discovered content pack in dependency order: all Defs from every pack first, then all
+        /// patches, because a patch edits the combined document and must be able to reach content from a pack
+        /// that loads after its own (RimWorld: <c>LoadedModManager.LoadAllActiveMods</c> works the same way).
+        /// Errors from discovery and ordering are folded into the load result rather than thrown.
+        /// </summary>
+        public static DefLoadResult LoadAllPacks(
+            DefDatabase database, DefTypeResolver? types = null, DefLoadOptions? options = null, string? dataDirectory = null)
+        {
+            DefTypeResolver resolver = types ?? new DefTypeResolver();
+            var discoveryErrors = new List<DefLoadError>();
+            List<ModContentPack> packs = ModLoadOrder.Resolve(DiscoverPacks(dataDirectory, resolver, discoveryErrors), discoveryErrors);
+
+            var loader = new DefLoader(database, resolver, options);
+            foreach (ModContentPack pack in packs)
+            {
+                loader.PackIdentifiers.Add(pack.PackageId);
+                if (pack.Name != pack.PackageId) loader.PackIdentifiers.Add(pack.Name);
+            }
+            foreach (ModContentPack pack in packs)
+            {
+                if (pack.HasDefs) loader.AddDirectory(pack.DefsDirectory, pack.Name);
+            }
+            foreach (ModContentPack pack in packs)
+            {
+                if (pack.HasPatches) loader.AddPatchDirectory(pack.PatchesDirectory, pack.Name);
+            }
+
+            DefLoadResult result = loader.Load();
+            if (discoveryErrors.Count == 0) return result;
+
+            var all = new List<DefLoadError>(discoveryErrors);
+            all.AddRange(result.Errors);
+            return new DefLoadResult(result.Defs, all);
         }
 
         public static void ResetCache() => cachedDataDirectory = null;
