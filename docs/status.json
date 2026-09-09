@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 1098,
+  "testsTotal": 1106,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -576,8 +576,8 @@
         },
         {
           "id": "needs.social",
-          "label": "Social/opinion thoughts and social fights — lands with the Social module",
-          "done": false
+          "label": "Social/opinion thoughts and social fights: Thought_Memory carries a nullable otherPawn and feeds opinion (ThoughtDef.IsSocial, ThoughtStage.baseOpinionOffset) as well as mood; the Social module's interaction workers gain those memories, so chitchat/deep talk/insult/slight move opinion. A social fight is a real MentalStateDef (MentalState_SocialFighting) that trades blows through Combat's existing Verb_MeleeAttack/MeleeVerbUtility path rather than a parallel system, and ends at the Def's duration/MTB recovery or the instant either side goes down. Situational relation-driven thoughts (HasFriend/HasRival, via the generic ThoughtWorker_HasDirectRelation) stand in for RimWorld's spatial \"friend nearby\"/\"rival present\" thoughts, since no Map/room concept reaches this seam yet.",
+          "done": true
         },
         {
           "id": "needs.rollup",
@@ -1088,11 +1088,11 @@
       "id": "social",
       "n": 17,
       "rimworld": "Social, Ideoligion & DLC Systems",
-      "translation": "Opinions and social interactions ported for this pass, RimWorld's compatibility-factor mechanic (a stable hash of the two pawns) included; ideoligions (still proposed) become the religions and ideologies of your civilization once belief is built; DLC systems (genes, psycasts, anomalies), also still proposed, evaluated per era.",
+      "translation": "Opinions and social interactions ported for this pass, RimWorld's compatibility-factor mechanic (a stable hash of the two pawns) included; ideoligions (still proposed) become the religions and ideologies of your civilization once belief is built; DLC systems (genes, psycasts, anomalies), also still proposed, evaluated per era. RimWorld's Thought_Memory/Thought_MemorySocial split is folded into one Thought_Memory class with a nullable otherPawn and a ThoughtDef.IsSocial property, rather than a second thought class; RimWorld's spatial \"a friend is nearby\"/\"a rival is present\" situational thoughts read this port's stored relations instead (no Map/room concept reaches Social or Thoughts yet), via one generic, content-driven ThoughtWorker_HasDirectRelation.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Social",
       "status": "ported",
-      "tests": 27,
+      "tests": 35,
       "items": [
         {
           "id": "social.opinion",
@@ -1101,7 +1101,7 @@
         },
         {
           "id": "social.interactions",
-          "label": "Periodic interaction rolls on a 2,500-tick population sweep, selected by weight per pair (chitchat, deep talk, insult, slight); a low-opinion, low-mood insult can escalate into a social fight via the existing MentalStateDef machinery",
+          "label": "Periodic interaction rolls on a 2,500-tick population sweep, selected by weight per pair (chitchat, deep talk, insult, slight); a low-opinion, low-mood insult can escalate into a social fight via the existing MentalStateDef machinery — MentalState_SocialFighting runs on both participants, cross-linked via otherPawn, and actually trades blows through Combat's own Verb_MeleeAttack/MeleeVerbUtility path, ending at the Def's own duration/MTB recovery or the instant either side goes down",
           "done": true
         },
         {

@@ -61,6 +61,7 @@
   <MentalStateDef>
     <defName>SocialFighting</defName>
     <label>social fighting</label>
+    <stateClass>SimWorld.MindState.MentalState_SocialFighting</stateClass>
     <category>Aggro</category>
     <minTicksBeforeRecovery>100</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>1200</maxTicksBeforeRecovery>

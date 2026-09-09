@@ -357,6 +357,13 @@ namespace SimWorld.Tests.Social
                     Assert.True(b.InMentalState);
                     Assert.Equal("SocialFighting", a.MentalStateDef!.defName);
                     Assert.Equal("SocialFighting", b.MentalStateDef!.defName);
+
+                    // TryStartMentalState only ever knows about the one pawn it belongs to; SocialFightUtility
+                    // itself is responsible for pairing the two freshly-created instances together.
+                    var fightA = Assert.IsType<MentalState_SocialFighting>(a.mindState.mentalStateHandler.CurState);
+                    var fightB = Assert.IsType<MentalState_SocialFighting>(b.mindState.mentalStateHandler.CurState);
+                    Assert.Same(b, fightA.otherPawn);
+                    Assert.Same(a, fightB.otherPawn);
                 }
             }
             Assert.True(everStarted, "expected the social fight roll to succeed at least once across 300 seeds");
@@ -374,6 +381,82 @@ namespace SimWorld.Tests.Social
                 Rand.Current = new RandomStream(seed);
                 Assert.False(SocialFightUtility.TryStartSocialFight(a, b));
             }
+        }
+
+        // ---- social fights: MentalState_SocialFighting mechanics (blows, ending) ----
+
+        /// <summary>Starts the mental state on both sides directly, bypassing SocialFightUtility's own
+        /// opinion/mood/chance gate (already covered above) — these tests are about what the state itself
+        /// does once running, not about whether it gets triggered.</summary>
+        private static void StartFightDirect(Pawn a, Pawn b)
+        {
+            Assert.True(a.mindState.mentalStateHandler.TryStartMentalState(SocialMentalStateDefOf.SocialFighting, "test"));
+            Assert.True(b.mindState.mentalStateHandler.TryStartMentalState(SocialMentalStateDefOf.SocialFighting, "test"));
+            ((MentalState_SocialFighting)a.mindState.mentalStateHandler.CurState!).otherPawn = b;
+            ((MentalState_SocialFighting)b.mindState.mentalStateHandler.CurState!).otherPawn = a;
+        }
+
+        [Fact]
+        public void Social_fight_never_outlives_its_maxTicksBeforeRecovery()
+        {
+            Pawn a = NewHuman("A");
+            Pawn b = NewHuman("B");
+            StartFightDirect(a, b);
+
+            MentalStateDef def = SocialMentalStateDefOf.SocialFighting;
+            RunTicks(def.maxTicksBeforeRecovery + 100, a, b);
+
+            Assert.False(a.InMentalState, "a social fight must not outlive its Def's maxTicksBeforeRecovery");
+            Assert.False(b.InMentalState);
+        }
+
+        [Fact]
+        public void Social_fight_actually_trades_blows_through_the_existing_melee_verb()
+        {
+            bool sawDamage = false;
+            for (int seed = 0; seed < 20 && !sawDamage; seed++)
+            {
+                Find.TickManager = new TickManager();
+                Rand.Current = new RandomStream(seed);
+                Pawn.ResetThingIdCounter();
+
+                Pawn a = NewHuman("A");
+                Pawn b = NewHuman("B");
+                StartFightDirect(a, b);
+
+                RunTicks(SocialMentalStateDefOf.SocialFighting.maxTicksBeforeRecovery + 100, a, b);
+
+                if (a.health.hediffSet.hediffs.Count > 0 || b.health.hediffSet.hediffs.Count > 0) sawDamage = true;
+            }
+            Assert.True(sawDamage, "expected at least one landed blow across 20 seeds of a full-duration fight");
+        }
+
+        [Fact]
+        public void Social_fight_ends_for_both_sides_the_moment_one_participant_goes_down()
+        {
+            Pawn a = NewHuman("A");
+            Pawn b = NewHuman("B");
+            StartFightDirect(a, b);
+            Assert.True(a.InMentalState);
+            Assert.True(b.InMentalState);
+
+            a.health.ForceDowned = true;
+            RunTicks(1, a, b);
+
+            Assert.False(a.InMentalState, "a downed participant recovers immediately (recoverFromDowned)");
+            Assert.False(b.InMentalState, "the other side should stand down too once its opponent is downed");
+        }
+
+        [Fact]
+        public void Social_fight_fist_power_reads_gentler_than_every_content_melee_weapon()
+        {
+            float weakestWeaponPower = DefDatabase<ThingDef>.AllDefsListForReading
+                .Where(d => d.tools != null)
+                .SelectMany(d => d.tools!)
+                .Min(t => t.power);
+            Assert.True(SocialTuning.SocialFightFistPower < weakestWeaponPower,
+                $"a bare-fisted social fight should read as gentler than the weakest weapon in content: " +
+                $"{SocialTuning.SocialFightFistPower} vs {weakestWeaponPower}");
         }
 
         // ---- SocialInteractionManager: cadence, scope, determinism ----
@@ -494,6 +577,66 @@ namespace SimWorld.Tests.Social
             Assert.Equal(opinionBefore, la.relations.OpinionOf(lb));
         }
 
+        [Fact]
+        public void Scribe_round_trips_a_social_fight_including_the_cross_linked_otherPawn()
+        {
+            Pawn a = NewHuman("A");
+            Pawn b = NewHuman("B");
+            StartFightDirect(a, b);
+            RunTicks(30, a, b); // let some age/verb state accumulate before saving
+
+            var holder = new SocialHolder { pawns = new List<Pawn> { a, b } };
+            string xml = Scribe.SaveToString(holder, "game");
+            Pawn.ResetThingIdCounter();
+            SocialHolder loaded = Scribe.Load<SocialHolder>(xml, "game", out IReadOnlyList<string> errors);
+
+            Assert.Empty(errors);
+            Pawn la = loaded.pawns![0];
+            Pawn lb = loaded.pawns[1];
+
+            Assert.True(la.InMentalState);
+            Assert.True(lb.InMentalState);
+            Assert.Equal("SocialFighting", la.MentalStateDef!.defName);
+            var fightA = Assert.IsType<MentalState_SocialFighting>(la.mindState.mentalStateHandler.CurState);
+            var fightB = Assert.IsType<MentalState_SocialFighting>(lb.mindState.mentalStateHandler.CurState);
+            Assert.Same(lb, fightA.otherPawn);
+            Assert.Same(la, fightB.otherPawn);
+
+            // The loaded state keeps working: a fresh Verb_MeleeAttack rebuilds against the loaded pawns
+            // without error, and the fight (well short of its 100-tick minimum) is still running.
+            RunTicks(5, la, lb);
+            Assert.True(la.InMentalState);
+            Assert.True(lb.InMentalState);
+        }
+
+        // ---- situational mood thoughts from social life (content: Thoughts_Social.xml) ----
+
+        [Fact]
+        public void Having_a_friend_or_a_rival_drives_the_matching_situational_mood_thought()
+        {
+            Pawn p = NewHuman("P");
+            Pawn friend = NewHuman("Friend");
+            Pawn rival = NewHuman("Rival");
+            ThoughtHandler thoughts = p.needs.mood!.thoughts;
+            Assert.Equal(0f, thoughts.TotalMoodOffset());
+
+            SocialUtility.AddMutualRelation(p, friend, PawnRelationDefOf.Friend);
+            thoughts.situational.Notify_SituationalThoughtsDirty();
+            Assert.Equal(3f, thoughts.TotalMoodOffset());
+
+            SocialUtility.AddMutualRelation(p, rival, PawnRelationDefOf.Rival);
+            thoughts.situational.Notify_SituationalThoughtsDirty();
+            Assert.Equal(0f, thoughts.TotalMoodOffset(), 3); // +3 friend and -3 rival cancel out
+
+            SocialUtility.RemoveMutualRelation(p, friend, PawnRelationDefOf.Friend);
+            thoughts.situational.Notify_SituationalThoughtsDirty();
+            Assert.Equal(-3f, thoughts.TotalMoodOffset());
+
+            SocialUtility.RemoveMutualRelation(p, rival, PawnRelationDefOf.Rival);
+            thoughts.situational.Notify_SituationalThoughtsDirty();
+            Assert.Equal(0f, thoughts.TotalMoodOffset());
+        }
+
         // ---- content ----
 
         [Fact]
@@ -514,6 +657,30 @@ namespace SimWorld.Tests.Social
         {
             MentalStateDef def = DefDatabase<MentalStateDef>.GetNamed("SocialFighting");
             Assert.Same(def, SocialMentalStateDefOf.SocialFighting);
+            Assert.Equal(typeof(MentalState_SocialFighting), def.stateClass);
+        }
+
+        [Fact]
+        public void HasFriend_and_HasRival_are_content_defined_situational_thoughts()
+        {
+            ThoughtDef hasFriend = DefDatabase<ThoughtDef>.GetNamed("HasFriend");
+            ThoughtDef hasRival = DefDatabase<ThoughtDef>.GetNamed("HasRival");
+            Assert.True(hasFriend.IsSituational);
+            Assert.True(hasRival.IsSituational);
+            Assert.Same(PawnRelationDefOf.Friend, hasFriend.requiredDirectRelation);
+            Assert.Same(PawnRelationDefOf.Rival, hasRival.requiredDirectRelation);
+        }
+
+        [Fact]
+        public void IsSocial_is_true_only_for_thoughts_that_carry_an_opinion_effect()
+        {
+            Assert.True(SocialThoughtDefOf.HadChitchat.IsSocial);
+            Assert.True(SocialThoughtDefOf.HadDeepTalk.IsSocial);
+            Assert.True(SocialThoughtDefOf.Insulted.IsSocial);
+            Assert.True(SocialThoughtDefOf.WasSlighted.IsSocial);
+            // Mood-only memories and situational thoughts never move opinion.
+            Assert.False(DefDatabase<ThoughtDef>.GetNamed("Catharsis").IsSocial);
+            Assert.False(DefDatabase<ThoughtDef>.GetNamed("HasFriend").IsSocial);
         }
 
         [Fact]
