@@ -522,5 +522,149 @@ namespace SimWorld.Tests.Director
             Assert.Equal(9999, q.fireTick);
             Assert.Same(loaded.target, q.target);
         }
+
+        // ---- quests.moments: curated history ----
+
+        [Fact]
+        public void First_occurrence_of_a_free_form_category_is_a_moment_but_repeats_are_not()
+        {
+            var storyteller = new global::SimWorld.Director.Storyteller();
+            Find.Storyteller = storyteller;
+
+            storyteller.RecordChronicle("Birth: Ada joins family 1.");
+            storyteller.RecordChronicle("Birth: Bea joins family 2.");
+            storyteller.RecordChronicle("Birth: Cid joins family 3.");
+
+            Assert.Equal(3, storyteller.Chronicle.Count);
+            Assert.Single(storyteller.Moments);
+            Assert.True(storyteller.Chronicle[0].isMoment);
+            Assert.False(storyteller.Chronicle[1].isMoment);
+            Assert.False(storyteller.Chronicle[2].isMoment);
+        }
+
+        [Fact]
+        public void Distinct_free_form_categories_each_earn_their_own_first_moment()
+        {
+            var storyteller = new global::SimWorld.Director.Storyteller();
+            Find.Storyteller = storyteller;
+
+            storyteller.RecordChronicle("Birth: Ada joins family 1.");
+            storyteller.RecordChronicle("Edict issued: Hunter's Mandate.");
+            storyteller.RecordChronicle("Edict rescinded: Hunter's Mandate.");
+
+            Assert.Equal(3, storyteller.Moments.Count);
+        }
+
+        [Fact]
+        public void Every_era_transition_is_a_moment_not_only_the_first()
+        {
+            var storyteller = new global::SimWorld.Director.Storyteller();
+            Find.Storyteller = storyteller;
+
+            storyteller.RecordChronicle("Era reached: Sticks and Stones.");
+            storyteller.RecordChronicle("Era reached: Agrarian, after the Sticks and Stones.");
+            storyteller.RecordChronicle("Era reached: Bronze, after the Agrarian.");
+
+            Assert.Equal(3, storyteller.Moments.Count);
+            Assert.All(storyteller.Chronicle, e => Assert.True(e.isMoment));
+        }
+
+        [Fact]
+        public void First_firing_of_an_incident_is_a_moment_but_a_repeat_firing_of_the_same_def_is_not()
+        {
+            global::SimWorld.Director.Storyteller storyteller = NewStoryteller();
+            CivilizationTarget target = NewTarget(storyteller);
+            IncidentDef testIncident = MakeTestIncidentDef(IncidentCategoryDefOf.Misc, typeof(IncidentWorker_Placeholder));
+
+            var fi1 = new FiringIncident(testIncident, null, new IncidentParms { target = target, points = 0f });
+            var fi2 = new FiringIncident(testIncident, null, new IncidentParms { target = target, points = 0f });
+
+            Assert.True(storyteller.TryFire(fi1));
+            Assert.True(storyteller.TryFire(fi2));
+
+            Assert.Equal(1, storyteller.Moments.Count(e => e.incidentDefName == testIncident.defName));
+        }
+
+        [Fact]
+        public void First_death_by_a_cause_and_a_new_longevity_record_are_each_moments_a_routine_death_is_not()
+        {
+            var storyteller = new global::SimWorld.Director.Storyteller();
+            Find.Storyteller = storyteller;
+
+            Pawn young = NewHuman("Young");
+            young.ageTracker.DebugSetAge(40f);
+            storyteller.RecordDeath(young, DeathCause.Age); // first death ever (and first "Death:Age") -> moment; also the first longevity record
+
+            Pawn older = NewHuman("Older");
+            older.ageTracker.DebugSetAge(70f);
+            storyteller.RecordDeath(older, DeathCause.Age); // not a "first" any more, but 70 beats 40 -> a new record
+
+            Pawn younger = NewHuman("Younger");
+            younger.ageTracker.DebugSetAge(50f);
+            storyteller.RecordDeath(younger, DeathCause.Age); // neither a first nor a record (50 < 70) -> routine
+
+            Assert.Equal(3, storyteller.Chronicle.Count(e => e.incidentDefName == "Death"));
+            Assert.Equal(2, storyteller.Moments.Count);
+            Assert.True(young.tier.ChronicleNamed);
+            Assert.True(older.tier.ChronicleNamed);
+            Assert.False(younger.tier.ChronicleNamed);
+        }
+
+        [Fact]
+        public void A_routine_century_of_chronicle_activity_produces_far_fewer_than_a_hundred_moments()
+        {
+            var storyteller = new global::SimWorld.Director.Storyteller();
+            Find.Storyteller = storyteller;
+            var rand = new RandomStream(999);
+
+            // A century of routine demographic/political noise: a birth every year (all distinct text, the
+            // way FamilyManager actually writes them), an edict toggling on and off every few years, and a
+            // death every year at a mixed, mostly-non-record age — the kind of activity that would produce
+            // hundreds of chronicle lines but should not produce hundreds of moments.
+            for (int year = 0; year < 100; year++)
+            {
+                storyteller.RecordChronicle("Birth: Citizen" + year + " joins family " + (year % 20) + ".");
+                if (year % 5 == 0) storyteller.RecordChronicle("Edict issued: SomeEdict.");
+                if (year % 5 == 2) storyteller.RecordChronicle("Edict rescinded: SomeEdict.");
+
+                Pawn p = NewHuman("Deceased" + year);
+                p.ageTracker.DebugSetAge(rand.Range(40f, 90f));
+                storyteller.RecordDeath(p, DeathCause.Age);
+            }
+
+            Assert.True(storyteller.Chronicle.Count(e => e.incidentDefName.StartsWith("Birth:")) == 100,
+                "sanity check: a century of routine births should still all land in the chronicle");
+            Assert.True(storyteller.Moments.Count < 20,
+                "expected a small, bounded number of moments from a routine century; got " + storyteller.Moments.Count);
+        }
+
+        [Fact]
+        public void Scribe_round_trip_of_moment_curator()
+        {
+            var curator = new MomentCurator();
+            var birth = new ChronicleEntry(100, "Birth: Ada joins family 1.", "", 0f);
+            curator.Consider(birth, "Birth");
+            var death = new ChronicleEntry(200, "Death", "Old Bea", 0f) { deathCause = DeathCause.Age };
+            curator.ConsiderDeathRecord(death, 90f);
+
+            string xml = Scribe.SaveToString(curator, "moments");
+            MomentCurator loaded = Scribe.Load<MomentCurator>(xml, "moments", out IReadOnlyList<string> errors);
+
+            Assert.Empty(errors);
+            Assert.Equal(2, loaded.Moments.Count);
+            Assert.Contains(loaded.Moments, e => e.incidentDefName.StartsWith("Birth:") && e.isMoment);
+            Assert.Contains(loaded.Moments, e => e.incidentDefName == "Death" && e.isMoment && e.deathCause == DeathCause.Age);
+
+            // The curated *state* round-tripped too, not merely the entries already in Moments: a repeat of an
+            // already-seen category is no longer a "first" on the loaded curator, and a death that does not
+            // beat the loaded longevity record is not treated as a new one either.
+            var repeatBirth = new ChronicleEntry(300, "Birth: Cid joins family 2.", "", 0f);
+            loaded.Consider(repeatBirth, "Birth");
+            Assert.False(repeatBirth.isMoment);
+
+            var lowerAgeDeath = new ChronicleEntry(400, "Death", "Young Cal", 0f) { deathCause = DeathCause.Age };
+            loaded.ConsiderDeathRecord(lowerAgeDeath, 50f);
+            Assert.False(lowerAgeDeath.isMoment);
+        }
     }
 }
