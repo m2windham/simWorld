@@ -47,49 +47,9 @@ namespace SimWorld.MapGen
                 TerrainDef? terrain = link.road.localTerrain;
                 if (terrain == null) continue; // no honest terrain to paint (RoadDef.localTerrain's own doc)
 
-                IntVec3 edge = EdgePointTowards(map, grid, ctx.tileId, link.neighbor);
+                IntVec3 edge = MapGenGeometry.EdgePointTowards(map, grid, ctx.tileId, link.neighbor);
                 CarveStreet(map, edge, center, terrain);
             }
-        }
-
-        /// <summary>
-        /// Where a straight ray from the map's centre, aimed at <paramref name="toTile"/>'s real compass
-        /// bearing from <paramref name="fromTile"/>, exits the map's rectangular border.
-        /// </summary>
-        private static IntVec3 EdgePointTowards(Map.Map map, WorldGrid grid, int fromTile, int toTile)
-        {
-            (double lat1, double lon1) = grid.LongLatOf(fromTile);
-            (double lat2, double lon2) = grid.LongLatOf(toTile);
-            double bearing = InitialBearingRadians(lat1, lon1, lat2, lon2);
-
-            // North (bearing 0) is +z, east (bearing 90°) is +x — the same facing convention Rot4 already uses.
-            double dirX = Math.Sin(bearing);
-            double dirZ = Math.Cos(bearing);
-
-            double cx = (map.Size.x - 1) / 2.0;
-            double cz = (map.Size.z - 1) / 2.0;
-
-            double t = double.PositiveInfinity;
-            if (dirX > 1e-9) t = Math.Min(t, (map.Size.x - 1 - cx) / dirX);
-            else if (dirX < -1e-9) t = Math.Min(t, (0 - cx) / dirX);
-            if (dirZ > 1e-9) t = Math.Min(t, (map.Size.z - 1 - cz) / dirZ);
-            else if (dirZ < -1e-9) t = Math.Min(t, (0 - cz) / dirZ);
-
-            int x = GenMath.Clamp((int)Math.Round(cx + dirX * t), 0, map.Size.x - 1);
-            int z = GenMath.Clamp((int)Math.Round(cz + dirZ * t), 0, map.Size.z - 1);
-            return new IntVec3(x, 0, z);
-        }
-
-        /// <summary>Great-circle initial bearing from point 1 to point 2, in radians, clockwise from north (the standard navigation formula).</summary>
-        private static double InitialBearingRadians(double lat1, double lon1, double lat2, double lon2)
-        {
-            double phi1 = lat1 * Math.PI / 180.0;
-            double phi2 = lat2 * Math.PI / 180.0;
-            double deltaLambda = (lon2 - lon1) * Math.PI / 180.0;
-
-            double y = Math.Sin(deltaLambda) * Math.Cos(phi2);
-            double x = Math.Cos(phi1) * Math.Sin(phi2) - Math.Sin(phi1) * Math.Cos(phi2) * Math.Cos(deltaLambda);
-            return Math.Atan2(y, x);
         }
 
         /// <summary>Straight DDA line, <see cref="MapGenTuning.RoadWidthCells"/> wide, clearing and repainting every cell it touches.</summary>

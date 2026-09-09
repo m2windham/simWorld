@@ -406,6 +406,89 @@ namespace SimWorld.Tests.MapGen
         }
 
         [Fact]
+        public void A_river_enters_the_map_from_the_side_facing_the_tile_it_flows_to()
+        {
+            // Rivers used to pick their axis with a coin flip even though RiverLink carries the same real
+            // neighbour data RoadLink does. Same shape of proof as the road test: two tiles differing only in
+            // which neighbour their river runs to must put their water in clearly different places.
+            WorldGrid grid = WorldGrid.Generate(3);
+            (int tileId, int neighborA, int neighborB) = DivergentNeighborPair(grid);
+            RiverDef river = DefDatabase<RiverDef>.GetNamed("River");
+            var size = new global::SimWorld.Map.IntVec2(60, 60);
+
+            Tile tileA = MakeTile(Hilliness.Flat);
+            tileA.potentialRivers.Add(new RiverLink(neighborA, river));
+            Tile tileB = MakeTile(Hilliness.Flat);
+            tileB.potentialRivers.Add(new RiverLink(neighborB, river));
+
+            // Same seed string for both: direction is the only thing that differs.
+            global::SimWorld.Map.Map mapA = MapGenerator.GenerateMap(tileA, tileId, "river-direction", size, grid: grid);
+            global::SimWorld.Map.Map mapB = MapGenerator.GenerateMap(tileB, tileId, "river-direction", size, grid: grid);
+
+            global::SimWorld.Map.IntVec3 entryA = ClosestWaterCellToBorder(mapA);
+            global::SimWorld.Map.IntVec3 entryB = ClosestWaterCellToBorder(mapB);
+
+            double apart = Math.Sqrt(Math.Pow(entryA.x - entryB.x, 2) + Math.Pow(entryA.z - entryB.z, 2));
+            Assert.True(apart > size.x * 0.3,
+                $"A river to two neighbours more than 90 degrees apart from {tileId} should enter at clearly different points ({entryA} vs {entryB}, {apart:F1} cells apart).");
+        }
+
+        [Fact]
+        public void A_river_still_crosses_the_map_when_no_grid_is_available()
+        {
+            // The fallback path: no grid means no real heading, so the axis is still a coin flip — but the one
+            // correspondence spec §5 calls load-bearing (a river tile always produces water crossing the map)
+            // must hold either way.
+            RiverDef river = DefDatabase<RiverDef>.GetNamed("River");
+            Tile tile = MakeTile(Hilliness.Flat);
+            tile.potentialRivers.Add(new RiverLink(999, river));
+            var size = new global::SimWorld.Map.IntVec2(60, 60);
+
+            global::SimWorld.Map.Map map = MapGenerator.GenerateMap(tile, 1, "river-no-grid", size);
+
+            Assert.True(WaterCellCount(map) > 0);
+            Assert.True(TouchesTwoOppositeBorders(map), "A river should cross the map, not stop inside it.");
+        }
+
+        private static global::SimWorld.Map.IntVec3 ClosestWaterCellToBorder(global::SimWorld.Map.Map map)
+        {
+            global::SimWorld.Map.IntVec3 best = default;
+            int bestDist = int.MaxValue;
+            foreach (global::SimWorld.Map.IntVec3 c in map.AllCells)
+            {
+                if (!IsWater(map, c)) continue;
+                int distToEdge = Math.Min(Math.Min(c.x, map.Size.x - 1 - c.x), Math.Min(c.z, map.Size.z - 1 - c.z));
+                if (distToEdge < bestDist)
+                {
+                    bestDist = distToEdge;
+                    best = c;
+                }
+            }
+            Assert.True(bestDist != int.MaxValue, "Expected at least one water cell.");
+            return best;
+        }
+
+        private static bool IsWater(global::SimWorld.Map.Map map, global::SimWorld.Map.IntVec3 c)
+        {
+            global::SimWorld.Map.TerrainDef t = map.terrainGrid.TerrainAt(c);
+            return t == global::SimWorld.Map.TerrainDefOf.WaterShallow || t == global::SimWorld.Map.TerrainDefOf.WaterDeep;
+        }
+
+        private static bool TouchesTwoOppositeBorders(global::SimWorld.Map.Map map)
+        {
+            bool west = false, east = false, south = false, north = false;
+            foreach (global::SimWorld.Map.IntVec3 c in map.AllCells)
+            {
+                if (!IsWater(map, c)) continue;
+                if (c.x == 0) west = true;
+                if (c.x == map.Size.x - 1) east = true;
+                if (c.z == 0) south = true;
+                if (c.z == map.Size.z - 1) north = true;
+            }
+            return (west && east) || (south && north);
+        }
+
+        [Fact]
         public void Same_seed_tile_and_grid_produce_an_identical_street()
         {
             WorldGrid grid = WorldGrid.Generate(3);
