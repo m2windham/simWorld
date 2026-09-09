@@ -39,7 +39,10 @@ namespace SimWorld.Tests.Work
             Assert.Empty(Content.Result.Errors);
             Assert.Equal(12, DefDatabase<SkillDef>.DefCount);
             Assert.Equal(20, DefDatabase<WorkTypeDef>.DefCount);
-            Assert.Equal(27, DefDatabase<WorkGiverDef>.DefCount);
+            // 28: the capture loop (system 12: Factions) added WardenAttemptRecruit and wired WardenFeed —
+            // see src/SimWorld.Core/Data/Core/Defs/WorkGiverDefs/WorkGivers.xml. AI/** owns that content this
+            // round; Work/** does not, so only this literal count moved.
+            Assert.Equal(28, DefDatabase<WorkGiverDef>.DefCount);
         }
 
         [Fact]

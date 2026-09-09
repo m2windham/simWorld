@@ -737,6 +737,26 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   completed `Train` job and clawed back by an MTB roll if the animal goes
   untended past a grace window — more than a bool per def, the way RimWorld's
   own tracker is.
+- **Warden work** closes the capture loop (§8.3): `WorkGiver_Warden_AttemptRecruit`
+  (the `WardenAttemptRecruit` `WorkGiverDef`) scans a warden's own faction's
+  prisoners for one set to `PrisonerInteractionModeDefOf.AttemptRecruit`, then
+  `JobDriver_Warden_AttemptRecruit` walks over and calls the already-shipped
+  `WardenUtility.TryInteract` once per completed job — RimWorld loops several
+  `ConvinceRecruitee` rounds inside one `JobDriver_ChatWithPrisoner`; this port's
+  own `TryInteract` already collapsed that into "one visit either lowers
+  resistance or, once it's already at zero, recruits outright," so one call per
+  job is the faithful shape, with a fresh job restarting the next visit.
+  `WorkGiver_Warden_Feed` (`WardenFeed`) finds a **downed**, hungry prisoner of
+  the warden's own faction and carries the nearest reachable food to them,
+  feeding them directly (`JobDriver_Warden_Feed`, `FeedPatient` `JobDef`) —
+  standing in for RimWorld's own "in bed and needs medical rest" trigger, since
+  this port has no bed/room system. A prisoner that is _not_ downed already
+  reaches food entirely on its own through the ordinary `JobGiver_GetFood` tier
+  (nothing in job selection checks guest status or faction at all), so RimWorld's
+  `WardenDeliverFood` counterpart — food left for a prisoner capable of
+  self-service but with nothing reachable — has no distinct case left to cover
+  here and stays the `WorkGiver_Pending` placeholder its `WorkGiverDef` shipped
+  with.
 
 ```mermaid
 flowchart TD
@@ -1051,9 +1071,9 @@ flowchart LR
   though it lives on the _host_ `Faction` here (`Faction.prisoners`) rather
   than on `Pawn`, which carries no such field in this port. `WardenUtility`
   reduces resistance per visit and recruits once it hits zero, or releases a
-  prisoner outright — the rules the Warden work type needs; the job/work-giver
-  that would actually walk a colonist over to use them is Work/AI's own
-  module and is not part of this.
+  prisoner outright. The Warden work type actually drives this: a colonist's
+  own work-giver scan finds a prisoner and walks over on its own — see §7.4's
+  "Warden work" bullet for `WorkGiver_Warden_AttemptRecruit`/`_Feed`.
 
 ### 8.4 Social & Belief
 

@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-09",
-  "testsTotal": 1116,
+  "testsTotal": 1132,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -723,7 +723,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 37,
+      "tests": 53,
       "items": [
         {
           "id": "ai.thinktree",
@@ -763,6 +763,11 @@
         {
           "id": "ai.edicts",
           "label": "Translation: god edicts/goals as high-priority think nodes — built as JobGiver_Edicts, sitting between JobGiver_DirectedOrder and JobGiver_Work; see the god system's own entry for the full picture (EdictDef/EdictWorker, GodManager, the rollup)",
+          "done": true
+        },
+        {
+          "id": "ai.warden",
+          "label": "The Warden work type wired to real scanners: WorkGiver_Warden_AttemptRecruit (WardenAttemptRecruit WorkGiverDef, JobDriver_Warden_AttemptRecruit + the PrisonerAttemptRecruit JobDef) drives the recruit/chat interaction combat.capture's Pawn_GuestTracker/WardenUtility already implemented but nothing called outside a test; WorkGiver_Warden_Feed (WardenFeed WorkGiverDef, JobDriver_Warden_Feed + FeedPatient) carries food to a downed, hungry prisoner and feeds it directly. WardenDeliverFood stays the WorkGiver_Pending placeholder — see that WorkGiverDef's own XML comment: this port has no room/prison-cell system, so a non-downed prisoner already reaches food entirely on its own via the ordinary JobGiver_GetFood tier, leaving RimWorld's ambulatory-prisoner DeliverFood case with nothing distinct to cover here. A downed hostile captured by CaptureUtility now ends up recruited (or its resistance worn down) purely through a colonist's own work-giver scan, not a utility called directly by a test.",
           "done": true
         }
       ]
@@ -856,7 +861,7 @@
         },
         {
           "id": "combat.capture",
-          "label": "Downed → captured → prisoner loop: CaptureUtility (downed + hostile-faction → Pawn_GuestTracker) and WardenUtility (resistance reduction → recruit, or release), GuestStatus/PrisonerInteractionModeDef kept as RimWorld's own names. Pawn_GuestTracker lives on the host Faction (Faction.prisoners), not on Pawn — Pawns/** is another lane's module and carries no such field; see Pawn_GuestTracker.cs's own remarks. Partial: this ships the state and the rules only — the Warden WorkGiver/JobDriver that would send a colonist to actually carry them out is Work/AI content and code, out of this lane's reach, and is not built",
+          "label": "Downed → captured → prisoner loop: CaptureUtility (downed + hostile-faction → Pawn_GuestTracker) and WardenUtility (resistance reduction → recruit, or release), GuestStatus/PrisonerInteractionModeDef kept as RimWorld's own names. Pawn_GuestTracker lives on the host Faction (Faction.prisoners), not on Pawn — Pawns/** is another lane's module and carries no such field; see Pawn_GuestTracker.cs's own remarks. The Warden WorkGiver/JobDriver that sends a colonist to actually carry this out is AI/Work content and code — see the ai system's own ai.warden entry.",
           "done": true
         }
       ]
