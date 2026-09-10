@@ -57,17 +57,18 @@ namespace SimWorld.AI
     }
 
     /// <summary>
-    /// Lies down and sleeps in place (RimWorld: <c>RimWorld.JobGiver_GetRest</c>, trimmed). <b>Deviation:</b>
-    /// real RimWorld first looks for an assigned or free bed via <c>RestUtility.FindBedFor</c>; no bed
-    /// building exists in this pass yet, so every pawn sleeps on the ground at <see cref="Need_Rest.lastRestEffectiveness"/>
-    /// 1 — already the documented ground-effectiveness default in <c>Need_Rest</c>.
+    /// Lies down and sleeps in place (RimWorld: <c>RimWorld.JobGiver_GetRest</c>, trimmed). Looks for a free
+    /// bed via <see cref="RestUtility.FindBedFor"/> first, the way real RimWorld's own <c>JobGiver_GetRest</c>
+    /// does; a pawn with no reachable, unclaimed bed sleeps on the ground exactly as this always did, at
+    /// <see cref="Need_Rest.lastRestEffectiveness"/> 1 (that field's own documented ground default).
     /// </summary>
     public sealed class JobGiver_GetRest : ThinkNode_JobGiver
     {
         protected override Job? TryGiveJob(Pawn pawn)
         {
             if (pawn.needs.rest == null || pawn.Map == null) return null;
-            return new Job(JobDefOf.LayDown, pawn.Position);
+            Thing? bed = RestUtility.FindBedFor(pawn);
+            return bed != null ? new Job(JobDefOf.LayDown, bed) : new Job(JobDefOf.LayDown, pawn.Position);
         }
     }
 

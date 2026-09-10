@@ -430,6 +430,121 @@ namespace SimWorld.Tests.World
                 $"A settlement of {large.TotalPopulation} should get a larger interior than one of {small.TotalPopulation} ({largeMap.Area} vs {smallMap.Area}).");
         }
 
+        // ----- Citizen <-> map presence: the §11.2 seam this module closes -----
+
+        [Fact]
+        public void Entering_a_settlement_spawns_its_Full_tier_citizens_and_never_a_Statistical_one()
+        {
+            global::SimWorld.World.World world = GenerateSoloWorld("settlement-citizen-spawn-tiers");
+            Faction faction = world.factions.First();
+            int tile = BestScoredTile(world.grid, out _);
+            Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(61));
+
+            // A civilization-scale Statistical cohort with no live Pawn object at all (spec §11.3) — if
+            // entering ever instantiated one to put it on the map, this would be the population it would
+            // have to come from, since the founding band itself is a fixed 20.
+            settlement.AddStatisticalPeople(50000);
+
+            global::SimWorld.Map.Map map = settlement.EnterMap(world);
+
+            Assert.Equal(20, map.mapPawns.AllPawns.Count);
+            Assert.Equal(20, settlement.PopulationOf(PawnTier.Full));
+            Assert.All(map.mapPawns.AllPawns, p => Assert.Equal(PawnTier.Full, p.tier.Tier));
+            Assert.All(map.mapPawns.AllPawns, p => Assert.True(p.Spawned && ReferenceEquals(p.Map, map)));
+            // The 50,000-strong Statistical slice is real population (TotalPopulation says so) but never
+            // became a map presence — exactly the query-without-instantiation guarantee §11.3 exists for.
+            Assert.Equal(50020, settlement.TotalPopulation);
+        }
+
+        [Fact]
+        public void A_citizen_demoted_off_Full_is_taken_back_off_the_map_and_a_promoted_one_is_placed_on_it()
+        {
+            global::SimWorld.World.World world = GenerateSoloWorld("settlement-citizen-tier-despawn");
+            Faction faction = world.factions.First();
+            int tile = BestScoredTile(world.grid, out _);
+            Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(62));
+            global::SimWorld.Map.Map map = settlement.EnterMap(world);
+            Assert.Equal(20, map.mapPawns.AllPawns.Count);
+
+            Pawn demoted = settlement.Citizens[0];
+            Assert.True(demoted.Spawned);
+
+            // The same true-then-false Notify_AttentionChanged sequence SettlementTests' own tier test uses:
+            // significant, then not, which demotes Full -> Interval with no forced climb back through Full.
+            demoted.tier.Notify_AttentionChanged(true);
+            demoted.tier.Notify_AttentionChanged(false);
+            Assert.Equal(PawnTier.Interval, demoted.tier.Tier);
+
+            settlement.SyncCitizenSpawns();
+
+            Assert.False(demoted.Spawned, "An Interval-tier citizen should never remain standing on the interior map.");
+            Assert.Equal(19, map.mapPawns.AllPawns.Count);
+
+            // The mirror: promoting back to Full puts them back on the map, the same map, without anyone
+            // spawning them by hand.
+            demoted.tier.Notify_AttentionChanged(true);
+            Assert.Equal(PawnTier.Full, demoted.tier.Tier);
+            settlement.SyncCitizenSpawns();
+
+            Assert.True(demoted.Spawned && ReferenceEquals(demoted.Map, map));
+            Assert.Equal(20, map.mapPawns.AllPawns.Count);
+        }
+
+        [Fact]
+        public void A_citizen_who_dies_while_spawned_is_taken_off_the_map_and_off_the_roster()
+        {
+            global::SimWorld.World.World world = GenerateSoloWorld("settlement-citizen-death-prune");
+            Faction faction = world.factions.First();
+            int tile = BestScoredTile(world.grid, out _);
+            Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(63));
+            global::SimWorld.Map.Map map = settlement.EnterMap(world);
+
+            int populationBefore = settlement.TotalPopulation;
+            Pawn victim = settlement.Citizens[0];
+            Assert.True(victim.Spawned);
+
+            victim.health.Kill(null, null);
+            Assert.True(victim.Dead);
+
+            settlement.SyncCitizenSpawns();
+
+            Assert.DoesNotContain(victim, settlement.Citizens);
+            Assert.False(victim.Spawned, "A dead citizen should not linger on the interior map.");
+            Assert.Equal(populationBefore - 1, settlement.TotalPopulation);
+            Assert.Equal(19, map.mapPawns.AllPawns.Count);
+        }
+
+        [Fact]
+        public void Scribe_round_trip_of_spawned_citizens_preserves_them_without_duplicating_them()
+        {
+            global::SimWorld.World.World world = GenerateSoloWorld("settlement-citizen-spawn-scribe", subdivision: 2);
+            Faction faction = world.factions.First();
+            int tile = BestScoredTile(world.grid, out _);
+            Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(64), "SpawnedHome");
+            global::SimWorld.Map.Map map = settlement.EnterMap(world);
+            Assert.Equal(20, map.mapPawns.AllPawns.Count);
+
+            string xml = Scribe.SaveToString(world, "world");
+            global::SimWorld.World.World loaded = Scribe.Load<global::SimWorld.World.World>(xml, "world", out IReadOnlyList<string> errors, Content.Database);
+            Assert.Empty(errors);
+
+            Settlement loadedSettlement = loaded.worldObjects.OfType<Settlement>().First(s => s.name == "SpawnedHome");
+            global::SimWorld.Map.Map loadedMap = loadedSettlement.InteriorMap!;
+
+            // Not duplicated: exactly the 20 founders, on the roster and on the map, each id appearing once.
+            Assert.Equal(20, loadedSettlement.Citizens.Count);
+            Assert.Equal(20, loadedMap.mapPawns.AllPawns.Count);
+            Assert.Equal(20, loadedSettlement.Citizens.Select(p => p.thingIDNumber).Distinct().Count());
+
+            // Not lost, and not two independently reconstructed copies: every citizen is spawned, on this
+            // exact map, and the very same C# object the map itself holds — not a second Pawn sharing its id.
+            Assert.All(loadedSettlement.Citizens, p => Assert.True(p.Spawned && ReferenceEquals(p.Map, loadedMap)));
+            foreach (Pawn citizen in loadedSettlement.Citizens)
+            {
+                Assert.Contains(citizen, loadedMap.mapPawns.AllPawns);
+            }
+        }
+
         [Fact]
         public void Scribe_round_trip_carries_the_interior_map_only_when_the_settlement_was_entered()
         {

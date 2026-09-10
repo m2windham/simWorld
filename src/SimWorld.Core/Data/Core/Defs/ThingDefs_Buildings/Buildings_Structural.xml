@@ -57,11 +57,11 @@
     Door and Heater in effort; pinned by ConstructionInitiativeTests' end-to-end build rather than trusted as
     a literal (CLAUDE.md's own rule for untraceable numbers).
 
-    Bed is deliberately not wired into Need_Rest/JobGiver_GetRest (AI/**, out of this lane's reach): a citizen
-    does not yet actually sleep in the bed this system builds for them — every pawn still sleeps on the ground
-    per JobGiver_GetRest's own doc. This system only answers "does the settlement have a physical bed for each
-    of its people" — the physical-presence half of that gap. Wiring real bed use into the Rest need is
-    JobGiver_GetRest's own next step, not this one.
+    Bed is wired into Need_Rest/JobGiver_GetRest (AI/RestUtility.cs, AI/JobDriver_LayDown.cs): a pawn seeking
+    rest claims the nearest reachable, unclaimed Bed and sleeps faster there than on the ground
+    (Need_Rest.BedRestEffectiveness) rather than always sleeping in place. This system still only decides
+    whether the settlement *has* enough beds — placing one per citizen — not who sleeps in which; there is no
+    ownership/assignment concept here, matching what RimWorld actually needs for an unowned, first-come bed.
   -->
 
   <ThingDef>

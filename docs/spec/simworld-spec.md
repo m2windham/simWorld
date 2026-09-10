@@ -1440,10 +1440,13 @@ the translation and its state per system.
   buildable Defs an active edict biases a settlement toward — no
   activation-time side effect, so deactivating leaves no trace, exactly like
   `prioritizedWork`'s own guarantee. `GreatWorksMandate` ships it as real
-  content ("quarry and building site before anything else"). Not yet built: a
-  citizen does not actually sleep in the bed this system builds for them — the
-  new `Bed` content answers only "does the settlement have one," not
-  `Need_Rest`/`JobGiver_GetRest` (§7.4) actually using it.
+  content ("quarry and building site before anything else"). A citizen now
+  actually sleeps in the bed this system builds for them: `JobGiver_GetRest`
+  claims the nearest reachable, unclaimed `Bed` via `AI.RestUtility.FindBedFor`
+  before falling back to the ground, and rests faster there
+  (`Need_Rest.BedRestEffectiveness`) than on it — no ownership/assignment UI,
+  since every bed this settlement builds is unowned and open to anyone, which
+  is all RimWorld's own `CompAssignableToPawn` machinery would buy here.
 - **Policy** (`work.policy`, §7.3): edicts are the _temporary_ civilization-scale
   lever; policy is the _standing_ one. A citizen's role (`RoleDef`) shapes what
   work they take up — `Pawn_WorkSettings.ApplyRole` — rather than the player
@@ -1619,6 +1622,7 @@ Taken from RimWorld, whose split this codebase already mirrors structurally:
 | Colony map: cells, things, pawns with jobs and needs at full depth | `Map/` (§5a) | ported |
 | A settlement's world tile generates its interior map | `MapGen/` (§5) | ported |
 | Entering a settlement (at settlement scope) triggers that generation and persists the result | `World.Settlement.EnterMap` | ported |
+| The settlement's own citizens are actually standing on that interior, not merely implied by a population count | `World.Settlement.SyncCitizenSpawns` | ported |
 
 The two halves are now joined at the seam: `MapGen.MapGenerator.GenerateMapFor`
 takes the world tile a settlement sits on — its biome, elevation, hilliness,
@@ -1632,6 +1636,21 @@ civilization's settlements cost the save file nothing beyond the entity
 itself — a real interior is real weight (tens of thousands of individually-
 saved Things on a rock-heavy map), so it is only ever paid for the settlements
 the player actually looks inside.
+
+`EnterMap` also closes the last gap in this seam: it calls
+`Settlement.SyncCitizenSpawns`, which spawns every not-yet-spawned Full-tier
+citizen onto the interior (near whatever the settlement has already built,
+never a map corner), and the same method runs again on a rare gated cadence
+after that (`SettlementTuning.CitizenMapSyncIntervalTicks`) so a newborn, a
+migrant, or a citizen who died or fell out of Full tier is reconciled without
+anyone re-entering the settlement. Only Full ever spawns — see §11.3's own
+tiering rationale for why Interval, which the tracker already keeps jobless
+and mindless, would gain nothing by occupying a cell, and why a Statistical
+citizen was never eligible to begin with. A citizen's departure from the map
+(death, or falling out of Full) is the only "release" this design has:
+nothing here ever discards an already-generated interior once cached, so
+there is no larger "close the settlement" event to react to — a citizen
+simply stops qualifying, the same way one starts.
 
 The player's verbs follow the same split. At civilization scope the player sees
 everything and acts through edicts, research direction and policy — indirect and
