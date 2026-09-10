@@ -351,6 +351,179 @@ only the cost of *finding* paths for many simultaneous movers to one
 destination — it says nothing about per-tick ticking cost, which is what §1–§8
 are about and where the population ceiling below is actually set.
 
+## 10. Fine-grained cache dirtying for hediff severity drift
+
+Finding #3 in "Where the ceiling is" (below, as it read before this section):
+`Hediff.Severity`'s setter dirties `HediffSet`'s *entire* cache — and, through
+it, `PawnCapacitiesHandler`'s one shared `dirty` bool covering all ten
+`PawnCapacityDef`s — on every severity change, with no regard for whether that
+change could possibly move any cached value. `HediffComp_Immunizable` (every
+disease: Flu, Plague, WoundInfection) nudges severity every tick it isn't fully
+immune, so a cache built to be computed once and reused was instead rebuilt on
+demand up to 60,000 times a day per sick pawn. This is the mechanism §3
+measured and the third bottleneck the original report named.
+
+It also changes how finding #2 should be read. That finding, as originally
+written, said `ShouldBeDead` called `PawnCapacityUtility.CalculatePartEfficiency`
+directly, "bypassing `PawnCapacitiesHandler`'s own dirty-flag cache entirely,"
+and that the fix landed in §7 covered only the allocation half, leaving "the
+CPU half stands: the check still runs every tick and still recomputes from
+scratch." That description stopped matching the code once §8 landed
+(`086e716`): `ShouldBeDead` reads `hediffSet.CorePartEfficiency`, a cache
+behind `DirtyCache()`, not an uncached direct call, and `Pawn_AgeTracker`
+covers the one extra input (life stage) that cache depends on beyond hediffs.
+Read literally, finding #2's "still recomputes from scratch" claim was already
+stale by the time this section was written — but the *symptom* it described
+(a sick pawn's death check paying full recomputation cost every tick) was
+still real, for the reason finding #3 gives: §8's cache was invalidated as
+fast as it was filled, by finding #3's mechanism, so it never got the chance
+to pay for itself on a sick pawn. Finding #2's "the CPU half stands" line
+below is corrected to say this plainly, in the spirit of §8 correcting §7:
+the remaining cost was never an uncached call bypassing a cache. It was a
+cache being dirtied by every tick a disease was active, which is finding #3,
+and closing finding #3 closes what was left of finding #2 along with it.
+
+### The fix
+
+Every hediff type except `Hediff_Injury` derives every quantity the cache
+reads — `PainOffset`, `BleedRate`, `CapMods`, and (through `HediffStage`)
+`partEfficiencyOffset` — from `CurStage`, never from raw `Severity`. A severity
+nudge that stays inside the current stage's `minSeverity` band cannot move any
+of those, so dirtying the cache for it is exactly the waste finding #3 names.
+`Hediff_Injury` is the sole exception: its part-health contribution (and so
+core-part efficiency), pain, and bleed rate are literally `Severity`, not
+`CurStage`, so it must keep dirtying on every change.
+
+A new `Hediff.SeverityAffectsCachesWithinStage` virtual property (default
+`false`; overridden `true` only on `Hediff_Injury`) records which case a
+hediff type is. `Severity`'s setter now compares `CurStageIndex` before and
+after the change and calls `Pawn_HealthTracker.Notify_HediffChanged` with
+whether the stage actually moved (always `true` for an injury, since it never
+checks). `Notify_HediffChanged` only calls `HediffSet.DirtyCache()` — and so
+`PawnCapacitiesHandler.Notify_CapacityLevelsDirty()` — when that flag is set;
+`CheckForStateChange` still runs unconditionally either way, so a hediff's
+death and downed checks are exactly as fresh as before. `Hediff.CauseDeathNow()`
+(lethal-severity death) and `Hediff.ShouldRemove` (severity ≤ 0 removal) were
+never part of the cache this skips — both are read live, uncached, on every
+`ShouldBeDead()`/`HealthTick()` call regardless of this change, so a hediff
+crossing its lethal threshold or dropping to zero mid-stage is caught exactly
+as before.
+
+Comparing stage indices is a couple of short backward scans over a def's stage
+list (2-3 entries for every disease shipped) — negligible next to the
+`PawnCapacitiesHandler.Recalculate()` it now usually avoids, which walks all
+ten capacities' body-tree math from scratch.
+
+**Every hediff type in the codebase was checked against the invariant this
+relies on** (`Hediff`, `Hediff_Injury`, `Hediff_MissingPart`, `Hediff_AddedPart`
+— the whole hierarchy, nothing else exists): `Hediff_MissingPart` overrides
+`Severity` itself with a no-op setter, so this change never applies to it;
+`Hediff_AddedPart` uses the stage-based base formulas untouched; `Hediff_Injury`
+opts out of the skip entirely. Nothing else derives a cached quantity from raw
+severity outside its stage.
+
+### Tests
+
+`tests/SimWorld.Core.Tests/Health/HealthCacheTests.cs` gained two tests that
+pin the skip is exact, not just plausible:
+
+- Many small within-stage severity nudges on a `WoundInfection` (the same
+  shape `HediffComp_Immunizable` produces), asserting after *every* nudge that
+  pain, bleed rate, core efficiency, total injury severity, and a capacity
+  level all match a fresh, uncached recompute — through the one nudge that
+  finally crosses into the next stage, where they must (and do) change.
+- A full untended `WoundInfection`, ticked for real through
+  `HediffComp_Immunizable`'s actual per-tick drift (not a synthetic severity
+  jump) all the way to death, asserting the run actually passes through the
+  major and extreme stages and that the recorded death cause is correct.
+
+The pre-existing behaviour-pinning suite this lane was told to protect — death
+from the lethal damage threshold (`Total_injury_beyond_the_lethal_threshold_kills`),
+from a destroyed core part (`A_pawn_still_dies_when_the_cached_check_says_it_should`),
+from a lost lethal capacity (`Destroying_the_brain_kills`, `Destroying_the_heart_kills`),
+and the downing thresholds (`Losing_both_legs_downs_but_does_not_kill`,
+`Pain_shock_downs_and_healing_lifts_it`, `Force_downed_overrides_the_body`) —
+already existed from §7/§8 and needed no changes; it was run before and after
+this fix and passes unchanged both times. Full suite: 1,217 tests before this
+section's change, 1,219 after (the two above).
+
+### Measured
+
+This box was carrying other concurrent sessions during these runs, the same
+caveat §8 raised about its own numbers — a "no hediffs" row here reads ~40-42s
+where §1-§3's quiet-box runs read ~17s for the same N=1,000. So, following
+§8's own precedent, this is an **A/B on the same box in the same short window,
+alternating builds**, not a comparison against §1-§9's absolute numbers.
+
+N=20, 1 in-game day, 1 warmup + 3 measured trials (median), seed 12345, two
+alternating passes:
+
+| variant | before (ms) | after (ms) | before→after speedup |
+| --- | --- | --- | --- |
+| no hediffs | 599.9 (avg of 614.1, 585.7) | 558.9 (avg of 571.1, 546.6) | 1.07x (noise; this path is untouched) |
+| 3 injuries | 9,950.5 (avg of 10,110.9, 9,790.1) | 1,143.4 (avg of 1,152.0, 1,134.7) | **8.70x** |
+| 3 injuries + Flu | 45,035.2 (avg of 45,381.4, 44,689.0) | 1,819.5 (avg of 1,837.2, 1,801.8) | **24.76x** |
+
+Multiplier vs. that side's own "no hediffs" row: before, 3 injuries is 16.59x
+and +Flu is 75.07x — both close to §3's original *quiet-box* figures (24.8x,
+and a projected ~45-50 min at N=1,000). After, 3 injuries is 2.05x and +Flu is
+3.26x: the disease no longer dominates the cost of the wounds it was riding
+alongside.
+
+N=1,000, 1 day, same `--guard-seconds 120` §1-§9 use throughout:
+
+| variant | before | after |
+| --- | --- | --- |
+| no hediffs | 40,262.5 ms (median of 3) | 42,021.5 ms (median of 3) |
+| 3 injuries | 501,987.9 ms (guard, 1 trial) | 82,503.8 ms (median of 3) — **6.08x faster** |
+| 3 injuries + Flu | did not complete a single in-game day within 27 minutes of wall clock, killed | 138,995.4 ms (guard, 1 trial) |
+
+The before row for "3 injuries + Flu" is not a number, deliberately: at
+N=1,000 it never finished, same as §3's original quiet-box finding except
+worse, because this box was busier. That itself is the headline result —
+after this fix, the exact scenario §3 flagged as unable to complete a single
+in-game day at civilization-relevant scale now completes one in under two
+and a half minutes, on a busier box than the one that couldn't finish it at
+all in fifteen. Extrapolating the N=20 before-side number linearly to N=1,000
+(§1 says linear is an *underestimate* of the real superlinear scaling) lands
+around 37-38 minutes — consistent with "still running past 27 minutes and not
+done" rather than contradicting it.
+
+N=5, unwarmed, 1 sample — §3's own original method, for direct continuity:
+
+| variant | before (ms) | after (ms) |
+| --- | --- | --- |
+| no hediffs | 1,069.5 | 811.0 |
+| 3 injuries | 1,563.2 (1.46x) | 608.6 (0.75x) |
+| 3 injuries + Flu | 12,017.5 (11.24x) | 689.0 (0.85x) |
+
+At this tiny, unwarmed N the absolute numbers are noise-dominated (§3 said the
+same about its own N=5 sample) — the after-side "0.75x" and "0.85x" are not a
+sick pawn ticking *faster* than a healthy one, they are three variants that
+now all cost about the same, small amount, and JIT/GC noise decides which one
+comes out on top by a few hundred microseconds. That flatness is itself the
+result: the multiplier this fix targets has gone from "dominant" to "within
+noise" at this scale.
+
+**What this bought:** the two things named as still open — an uncached
+recompute and a cache that never got to keep anything — are both closed now
+(see "The fix" and the note above on finding #2). A sick population's tick
+cost, measured at N=20 and N=1,000, dropped 8-25x depending on how much
+disease-driven severity drift was in play, while the healthy-pawn path (§1's
+own ceiling case) is unchanged within noise, as it should be — nothing here
+touches a pawn with no hediffs at all.
+
+**What this does not buy:** ticking a sick pawn still costs more than ticking
+a healthy one — 2.05x for wounds alone, 3.26x with a disease on top of them,
+measured at N=20. That remainder is not a cache bug; it is the real, expected
+cost of more state per pawn: more `Hediff.Tick()` calls, comp iteration,
+`Rand.MTBEventOccurs` rolls for life-threatening stages, and the periodic
+bleed/heal/immunity work every injury and disease genuinely requires. There is
+no further single-call win visible here, the same conclusion §8 reached after
+its own fix. The next step for population scale, same as §8 said, is the
+tiering `docs/spec/simworld-spec.md` §11.3 already calls for, not another
+micro-optimization of this path.
+
 ## Where the ceiling is
 
 The engine comfortably handles world generation and save/load at civilization-
@@ -368,41 +541,43 @@ in §9 changes that.
    next-largest tracker (`needs`, 12.5%). Any optimization pass that doesn't
    touch `Pawn_HealthTracker` is optimizing the wrong 25%.
 
-2. **An uncached, unconditional per-tick capacity check drove ~86.5% of all
-   allocation.** *(Allocation half fixed — see §7. The CPU half stands: the
-   check still runs every tick and still recomputes from scratch.)*
-   `Pawn_HealthTracker.ShouldBeDead()` (src/SimWorld.Core/Health/Pawn_HealthTracker.cs,
-   `CheckForStateChange` → `ShouldBeDead`, called unconditionally at the end of
-   every `HealthTick`) calls `PawnCapacityUtility.CalculatePartEfficiency(hediffSet, corePart)`
-   directly — bypassing `PawnCapacitiesHandler`'s own dirty-flag cache
-   entirely (src/SimWorld.Core/Health/Capacities.cs:349-374). That call walks
-   `HediffSet.GetHediffsOnPart` (src/SimWorld.Core/Health/HediffSet.cs:164), a
-   `yield return` generic iterator that allocates a heap enumerator on every
-   call whether or not the part has any hediffs. Measured at 64 bytes/call,
-   run 60,000×/pawn/day unconditionally, this one call site alone accounts for
-   an estimated 3,662 of the 4,232 MB allocated per pawn per day (§4) — and,
-   by extension, for a large share of the 33 Gen0 / 4 Gen1 / 1 Gen2 collections
-   per pawn-day, which is a very plausible explanation for §1's non-monotonic,
-   worse-than-linear scaling as N grows.
+2. ~~An uncached, unconditional per-tick capacity check drove ~86.5% of all
+   allocation.~~ **Fixed — see §7 (allocation) and §8 (the CPU cost of the
+   call site itself, via caching `hediffSet.CorePartEfficiency`).** This
+   finding originally said the allocation fix in §7 left "the CPU half"
+   standing, because `ShouldBeDead` still called
+   `PawnCapacityUtility.CalculatePartEfficiency` directly every tick. That
+   stopped being true once §8 landed (`086e716`): `ShouldBeDead` reads a
+   cached `hediffSet.CorePartEfficiency` now, not an uncached direct call.
+   This line was left saying otherwise for a section written before that
+   correction was folded in — corrected here, in the same spirit §8 corrected
+   §7. What was actually still recomputing from scratch on a sick pawn was
+   finding #3's mechanism defeating §8's cache, not this call bypassing one.
+   See §10.
 
-3. **Hediffs with a per-tick severity drift (any `HediffComp_Immunizable` —
+3. ~~Hediffs with a per-tick severity drift (any `HediffComp_Immunizable` —
    i.e. every disease: Flu, Plague, WoundInfection) invalidate the pawn's
    *entire* capacity cache every single tick, not just when something that
-   actually affects capacities changes.** The chain: `Hediff.Severity`'s
-   setter (src/SimWorld.Core/Health/Hediff.cs:43-49) calls
-   `Notify_HediffChanged` → `HediffSet.DirtyCache()`
+   actually affects capacities changes.~~ **Fixed — see §10.** The chain was:
+   `Hediff.Severity`'s setter (src/SimWorld.Core/Health/Hediff.cs:43-49)
+   called `Notify_HediffChanged` → `HediffSet.DirtyCache()`
    (src/SimWorld.Core/Health/HediffSet.cs:370-374) → `Notify_HediffSetChanged()`
    → `PawnCapacitiesHandler.Notify_CapacityLevelsDirty()`
    (src/SimWorld.Core/Health/Capacities.cs:360-363), which sets one shared
-   `dirty` bool covering *all ten* `PawnCapacityDef`s. `HediffComp_Immunizable.CompPostTick`
+   `dirty` bool covering *all ten* `PawnCapacityDef`s, unconditionally, for
+   every severity change on every hediff. `HediffComp_Immunizable.CompPostTick`
    (src/SimWorld.Core/Health/Hediff.cs:271-274) adds a nonzero severity delta
    *every tick* while not fully immune, so the cache — designed to be
-   recomputed once and reused — is instead invalidated and rebuilt 60,000
-   times a day. Measured impact (§3): 3 untended injuries alone (which dirty
-   the cache ~1,700×/day via bleeding/healing, not every tick) already cost
-   24.8x; adding one disease with an Immunizable comp made a single day fail
-   to finish in 15 minutes at N=1,000, and a smaller-N sample shows roughly a
-   further 10x on top of the injuries-alone cost.
+   recomputed once and reused — was rebuilt up to 60,000 times a day per sick
+   pawn. Measured impact before the fix (§3, §10): 3 untended injuries alone
+   already cost 16.6-24.8x depending on N; adding one disease with an
+   Immunizable comp on top made a single day fail to finish within 15-27
+   minutes at N=1,000, on either the quiet box §3 used or the busier one §10
+   did. §10's fix distinguishes a severity nudge that cannot move any cached
+   value (stays inside the current stage, true for every non-injury hediff
+   the game ships) from one that can, and only dirties for the latter —
+   measured 8.7-24.8x faster on the exact scenarios above, with the healthy-
+   pawn path unchanged.
 
 **What the numbers say the engine cannot currently do:** it cannot run 1,000
 full-agent citizens with any meaningful rate of injury or illness at anything
@@ -429,3 +604,18 @@ measured at N=10,000. It does not move the ceiling above, which was always a
 tick-budget (health-tracker) finding, not a pathing one — the two are
 independent axes of the same open question, and this report now has a
 positive, measured answer for one of them.
+
+**Update (§10):** the "well under 200 pawns" figure above was built on
+injuries-alone's pre-fix 24.8x multiplier, and both named findings it rested
+on are now closed (§10). Re-running that same arithmetic with §10's measured
+post-fix multiplier for the worse of the two cases — wounds *and* a disease
+together, 3.26x at N=20, the actual scenario "any meaningful rate of injury
+or illness" describes — against the same 2,500-5,000-pawn healthy-population
+15x ceiling (§1, unchanged by this fix) puts a sick population's 15x ceiling
+at roughly **750-1,500 pawns**. Still a PROJECTION, not a measurement, and
+still short of the healthy-population figure it's divided from — a sick
+colony is not free — but roughly an order of magnitude higher than the figure
+this report gave before §10, because the thing driving that order of
+magnitude is exactly what closed. The engine's own state has not changed
+since §9: this is a health-tracker finding, path sharing is orthogonal to it,
+and the ceiling has never been about world generation or save/load (§5, §6).
