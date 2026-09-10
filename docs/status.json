@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-10",
-  "testsTotal": 1226,
+  "testsTotal": 1241,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1337,7 +1337,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/God · EdictDef · EdictWorker · EdictWorker_ExemptMinors · ThoughtWorker_UnderEdict · GodManager · GodRollup · GodTuning; src/SimWorld.Core/AI/JobGiver_Edicts.cs · WorkGiverScanUtility.cs (shared with JobGiver_Work)",
       "status": "translated",
-      "tests": 27,
+      "tests": 42,
       "items": [
         {
           "id": "god.edicts",
@@ -1370,8 +1370,13 @@
           "done": true
         },
         {
+          "id": "god.read-model",
+          "label": "God/View: the engine-free contract the host binds to. GodViewSnapshot.Capture() takes one tick's values — civilization rollup, settlements, every edict with an EdictAvailability and a reason in words, chronicle tail and curated moments — and GodCommands issues or rescinds by defName, explaining every refusal in the same wording the snapshot used. Everything crosses the seam as strings and values: the host never holds a Def (so it cannot reach a worker) or a manager (so it cannot mutate state off-tick), and a test asserts that structurally. EdictOption.Availability == Available is pinned to agree with GodManager.CanActivate for every edict at both ends of the era ladder, so the view can never offer something the simulation would then refuse.",
+          "done": true
+        },
+        {
           "id": "god.view",
-          "label": "The god view itself — a presentation surface reading GodManager/GodRollup and offering edict activation — is UI/host work; lands with the Unity host once there is something to render.",
+          "label": "The god view itself — a presentation surface reading the read model below and offering edicts. Needs the Unity host: a headless container has no display, so nothing visual can be built or verified here. The contract it binds to is done (god.read-model); what is left is the surface.",
           "done": false
         },
         {
