@@ -1,3 +1,5 @@
+using SimWorld.Sim;
+
 namespace SimWorld.World
 {
     /// <summary>
@@ -7,6 +9,19 @@ namespace SimWorld.World
     /// </summary>
     public static class SettlementTuning
     {
+        /// <summary>
+        /// How often <see cref="Settlement.Tick"/> reconciles <see cref="Settlement.Citizens"/> against
+        /// <see cref="Settlement.InteriorMap"/> — spawning a newly-Full citizen who is not yet on the map,
+        /// despawning one who no longer qualifies, and dropping anyone who has died (spec §11.2/§11.3's
+        /// physical-presence seam). The same "rare bucket" cadence <see cref="Building.SettlementConstructionInitiative"/>
+        /// already self-gates on, not a bespoke interval — frequent enough that a newborn or a migrant shows
+        /// up on the map without a perceptible delay, cheap enough that scanning a settlement's own (small,
+        /// spec §11.3) <see cref="Settlement.Citizens"/> list every 250 ticks costs nothing. Entering a
+        /// settlement (<see cref="Settlement.EnterMap"/>) also runs this immediately, unconditionally, so a
+        /// freshly-opened settlement never waits out this interval to show its founders.
+        /// </summary>
+        public const int CitizenMapSyncIntervalTicks = GenTicks.TickRareInterval;
+
         /// <summary>
         /// The founding band's size range (spec §5b.3): "twenty to forty people in several households — the
         /// archaeological range for a neolithic founding group, and the smallest number at which demography

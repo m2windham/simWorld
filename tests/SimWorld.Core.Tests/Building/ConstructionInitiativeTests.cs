@@ -363,5 +363,58 @@ namespace SimWorld.Tests.Building
             SettlementConstructionInitiative.Tick();
             Assert.True(BlueprintCount(settlement.InteriorMap!, ConstructionThingDefOf.Bed) > afterFirst);
         }
+
+        // ---- the whole loop end to end: nobody spawned by hand (World.Settlement's own seam) ----
+
+        private static IntVec3 FirstStandableCell(CoreMap map)
+        {
+            foreach (IntVec3 c in map.AllCells)
+            {
+                if (GenGrid.Standable(c, map)) return c;
+            }
+            return IntVec3.Zero;
+        }
+
+        [Fact]
+        public void A_founded_settlements_own_citizens_build_a_queued_bed_with_nobody_spawned_by_hand()
+        {
+            SimWorld.World.World world = GenerateSoloWorld("construction-initiative-citizens-build");
+            Faction faction = world.factions.First();
+            int tile = System.Linq.Enumerable.Range(0, world.grid.TilesCount).First(i => !world.grid.Tiles[i].WaterCovered);
+            Settlement settlement = SettlementFounder.Found(world, tile, faction, SettlementTuning.FoundingBandRange.min, new RandomStream(4343));
+            Find.World = world;
+
+            // Entering is the whole of it: the settlement's own founders are already standing on this map —
+            // nothing here calls GenSpawn.Spawn on a pawn.
+            CoreMap map = settlement.EnterMap(world);
+            Assert.Equal(settlement.Citizens.Count, map.mapPawns.AllPawns.Count);
+
+            // Deterministic construction success, matching this file's own idiom above
+            // (A_settlement_that_needs_a_bed_ends_up_with_one_built_by_a_citizen) — which citizen actually
+            // picks up the job is the initiative's/work system's call, not this test's, so every founder gets
+            // the skill rather than picking one out.
+            foreach (Pawn citizen in settlement.Citizens)
+            {
+                SkillRecord? construction = citizen.skills?.GetSkill(SkillDefOf.Construction);
+                if (construction != null) construction.Level = 20;
+            }
+
+            // Materials are the one thing this test still places by hand: a settlement's starting resources
+            // are credited to Settlement.Stores as a def-count ledger, never spawned as a real Thing
+            // (Sim.Game.NewGame's own documented limitation — no map exists yet when a scenario's starting
+            // items are granted), so nothing in production puts real wood on this ground either.
+            Thing wood = ThingMaker.MakeThing(Def("WoodLog"));
+            wood.stackCount = 400;
+            GenSpawn.Spawn(wood, FirstStandableCell(map), map);
+
+            for (int i = 0; i < 6000; i++)
+            {
+                SettlementConstructionInitiative.Tick();
+                Find.TickManager.DoSingleTick();
+            }
+
+            Assert.True(map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count >= 1,
+                "The settlement's own citizens should have queued and finished a bed with nobody spawned by hand.");
+        }
     }
 }

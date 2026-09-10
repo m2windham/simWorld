@@ -56,18 +56,15 @@ namespace SimWorld.Tests.Integration
                 Assert.NotNull(map.terrainGrid.TerrainAt(map.cellIndices.IndexToCell(i)));
             }
 
-            // The founding band is Full-tier data (spec §11.3) but is never itself spawned onto the interior
-            // map by SettlementFounder — a settlement's citizens live off-map until something places them
-            // there. Prove the map/pawn-generation/needs/AI seam directly the way FullStackTests does, on the
-            // very map Game.EnterSettlement just handed back.
-            var band = new List<Pawn>();
-            IntVec3 origin = FirstWalkable(map);
-            for (int i = 0; i < 4; i++)
-            {
-                Pawn pawn = PawnGenerator.GeneratePawn(new PawnGenerationRequest(PawnKindDefOf.Colonist));
-                GenSpawn.Spawn(pawn, OffsetWalkable(map, origin, i + 1), map);
-                band.Add(pawn);
-            }
+            // The founding band is Full-tier data (spec §11.3), and entering the settlement is now what
+            // places it on the interior map (World.Settlement.SyncCitizenSpawns, called from EnterMap) —
+            // nothing here spawns anyone by hand. Snapshot the roster before ticking: a citizen who dies
+            // during the run is pruned from Settlement.Citizens by the very same sync (SettlementTuning
+            // .CitizenMapSyncIntervalTicks), so the snapshot — not the live property — is what still lets
+            // this test inspect a dead pawn's own health record afterward.
+            var band = settlement.Citizens.ToList();
+            Assert.NotEmpty(band);
+            Assert.All(band, p => Assert.True(p.Spawned && p.Map == map, p.Label + " should already be standing on the settlement's own interior map."));
 
             for (int i = 0; i < 2000; i++) game.TickManager.DoSingleTick();
 
@@ -164,7 +161,12 @@ namespace SimWorld.Tests.Integration
             Assert.NotNull(loadedSettlement.InteriorMap);
             CoreMap loadedMap = loadedSettlement.InteriorMap!;
 
-            Pawn loadedPawn = Assert.Single(loadedMap.mapPawns.AllPawns);
+            // EnterSettlement now also spawns the settlement's own founders onto this map (World.Settlement
+            // .SyncCitizenSpawns), so "extra" is no longer the only pawn here — it is the one manually spawned
+            // above and deliberately kept off the settlement's own roster, to prove *that* pawn (not a
+            // citizen) still round-trips as the map's own Thing, distinct from Citizens' Scribe path.
+            Assert.Equal(loadedSettlement.Citizens.Count + 1, loadedMap.mapPawns.AllPawns.Count);
+            Pawn loadedPawn = Assert.Single(loadedMap.mapPawns.AllPawns, p => !loadedSettlement.Citizens.Contains(p));
             Assert.Equal(foodBeforeSave, loadedPawn.needs.food!.CurLevel, 4);
 
             // The strong claim: the loaded pawn is really back in TickManager's normal tick list, not merely
@@ -186,15 +188,5 @@ namespace SimWorld.Tests.Integration
             return IntVec3.Zero;
         }
 
-        private static IntVec3 OffsetWalkable(CoreMap map, IntVec3 origin, int step)
-        {
-            for (int i = 0; i < map.cellIndices.NumGridCells; i++)
-            {
-                IntVec3 cell = map.cellIndices.IndexToCell((map.cellIndices.CellToIndex(origin) + step * 7 + i)
-                    % map.cellIndices.NumGridCells);
-                if (map.pathGrid.Walkable(cell)) return cell;
-            }
-            return origin;
-        }
     }
 }
