@@ -1896,6 +1896,41 @@ flowchart TB
   (rendering, input, the UI a player actually clicks) is unchanged and
   remains the host's to build.
 
+### 12a. The god view's read model
+
+`God/View` is the seam the host binds to for the god layer, and it is
+deliberately narrow in both directions.
+
+- **Reading** is `GodViewSnapshot.Capture()`: one tick's values — the
+  civilization rollup (§10), every settlement, every edict, the chronicle
+  tail and the curated moments — as plain objects. Not live references.
+  A live reference would be three problems at once: it is a write surface
+  (anything holding an `EdictDef` can reach `EdictDef.Worker`), it tears
+  (the host renders across frames while the sim ticks, so a half-read list
+  shows a civilization that never existed), and it is not a contract (every
+  internal rename becomes a host break, which is most of what being
+  engine-free was for).
+- **Writing** is `GodCommands`, which takes a `defName` and an intent and
+  nothing else. The host never holds a `Def` or a manager, so it cannot
+  reach a worker or mutate state by any route this class does not offer.
+  Widening what a god may do means adding a method here on purpose, rather
+  than a host discovering it could already do it.
+- **Every refusal is explained.** `GodManager.CanActivate` answers a bare
+  yes or no, which is all the simulation needs and strictly less than a UI
+  does — a greyed-out control with no reason is a bug report waiting to be
+  filed. `EdictOption.Availability` carries that same decision with its
+  reason preserved, and `GodCommands` reuses the read model's own wording
+  on a refusal so one rule set never grows two descriptions.
+- **The invariant that makes it trustworthy**: `Availability == Available`
+  agrees with `GodManager.CanActivate` for every edict in content, at both
+  ends of the era ladder and at every slot count between. The view can
+  never offer something the simulation would then refuse — which is the
+  worse of the two failures, because the player already believed it worked.
+- What the snapshot deliberately omits: per-citizen detail (opening every
+  person to paint a civilization is what §11.3's tiering exists to prevent
+  — a named citizen is a different, narrower query) and map or rendering
+  data (a settlement reports only whether its interior exists yet).
+
 ## 13. Determinism & Testing
 
 - All randomness routes through seeded streams, so tests assert exact outcomes.
