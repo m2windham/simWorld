@@ -47,10 +47,31 @@ namespace SimWorld.Health
             {
                 float clamped = GenMath.Clamp(value, def.minSeverity, def.maxSeverity);
                 if (clamped == severityInt) return;
+
+                // Every cached quantity that depends on this hediff at all (pain, bleed rate, core-part
+                // efficiency, total injury severity, all ten capacity levels — docs/perf/baseline.md §10)
+                // is sourced from CurStage, not raw Severity, for every hediff type except Hediff_Injury
+                // (SeverityAffectsCachesWithinStage overrides true there: part health is severity itself).
+                // So a severity nudge that does not cross a stage boundary changes nothing any cache
+                // depends on, and dirtying on it anyway is pure waste — the exact waste that turns a
+                // once-computed cache into one rebuilt on every tick a disease is active
+                // (HediffComp_Immunizable nudges severity every tick it isn't fully immune).
+                bool alwaysDirties = SeverityAffectsCachesWithinStage;
+                int oldStage = alwaysDirties ? -1 : CurStageIndex;
                 severityInt = clamped;
-                pawn?.health?.Notify_HediffChanged(this);
+                bool capacitiesMayHaveChanged = alwaysDirties || CurStageIndex != oldStage;
+                pawn?.health?.Notify_HediffChanged(this, capacitiesMayHaveChanged);
             }
         }
+
+        /// <summary>
+        /// True when this hediff's own severity (not just which stage it falls in) feeds a cached derived
+        /// quantity — currently only <see cref="Hediff_Injury"/>, whose part-health contribution, pain and
+        /// bleed rate are all literally Severity, not CurStage. Everything else (diseases, added parts,
+        /// missing parts) derives pain, bleed rate, capacity modifiers and part-efficiency offset from
+        /// <see cref="CurStage"/> alone, so the base answer is false. See the Severity setter above.
+        /// </summary>
+        protected virtual bool SeverityAffectsCachesWithinStage => false;
 
         public int CurStageIndex => def.StageIndexAtSeverity(Severity);
 
@@ -468,6 +489,13 @@ namespace SimWorld.Health
         }
 
         public InjuryProps Props => def.injuryProps!;
+
+        /// <summary>
+        /// An injury's part-health contribution (<see cref="HediffSet.GetPartHealth"/>, and through it core-part
+        /// efficiency), pain and bleed rate all read raw Severity below, not CurStage — so unlike every other
+        /// hediff type, any severity change here can move a cache even without crossing a stage boundary.
+        /// </summary>
+        protected override bool SeverityAffectsCachesWithinStage => true;
 
         public override float PainOffset
         {
