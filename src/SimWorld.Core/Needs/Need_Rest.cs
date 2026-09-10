@@ -22,6 +22,16 @@ namespace SimWorld.Needs
         public const float BaseRestGainPerTick = 3.8E-05f;
         public const float BaseRestFallPerTick = 1.58333332E-05f;
 
+        /// <summary>
+        /// How much faster a real bed (<see cref="Building.ConstructionThingDefOf.Bed"/>, via
+        /// <c>AI.JobDriver_LayDown</c>) rests a pawn than <see cref="lastRestEffectiveness"/>'s own bare-
+        /// ground default of 1 — not sourced from RimWorld's real bed-effectiveness value (decompiled source
+        /// unavailable in this environment; CLAUDE.md's rule for an unsourced constant), chosen only to sit
+        /// clearly above the ground so building a bed is worth doing, and pinned by a test asserting a bed
+        /// rests a pawn faster than the ground rather than trusting this literal.
+        /// </summary>
+        public const float BedRestEffectiveness = 1.5f;
+
         private int ticksAtZero;
 
         /// <summary>Effectiveness of the current bed; 1 for the ground. Set by the sleeping job.</summary>

@@ -432,6 +432,46 @@ namespace SimWorld.Tests.AI
             Assert.Equal(JobDefOf.LayDown, pawn.jobs.curJob?.def);
         }
 
+        [Fact]
+        public void Tired_pawn_with_a_bed_available_claims_it_and_rests_faster_than_the_ground()
+        {
+            CoreMap map = NewMap(5, 5);
+            var cell = new IntVec3(2, 0, 2);
+            Pawn pawn = SpawnHuman(map, cell);
+            Thing bed = ThingMaker.MakeThing(DefDatabase<ThingDef>.GetNamed("Bed"));
+            GenSpawn.Spawn(bed, cell, map);
+            pawn.needs.rest!.CurLevel = 0.05f;
+
+            RunTicks(10, pawn);
+
+            Assert.True(pawn.Asleep);
+            Assert.Equal(JobDefOf.LayDown, pawn.jobs.curJob?.def);
+            Assert.Same(bed, pawn.jobs.curJob!.GetTarget(TargetIndex.A).Thing);
+            Assert.True(map.reservationManager.IsReservedBy(pawn, bed));
+            Assert.True(pawn.needs.rest!.lastRestEffectiveness > 1f, "A bed should rest a pawn faster than the bare ground.");
+        }
+
+        [Fact]
+        public void Only_one_tired_pawn_claims_a_single_bed_the_other_sleeps_on_the_ground()
+        {
+            CoreMap map = NewMap(5, 5);
+            var bedCell = new IntVec3(2, 0, 2);
+            Thing bed = ThingMaker.MakeThing(DefDatabase<ThingDef>.GetNamed("Bed"));
+            GenSpawn.Spawn(bed, bedCell, map);
+
+            Pawn first = SpawnHuman(map, bedCell, "First");
+            Pawn second = SpawnHuman(map, bedCell, "Second");
+            first.needs.rest!.CurLevel = 0.05f;
+            second.needs.rest!.CurLevel = 0.05f;
+
+            RunTicks(50, first, second);
+
+            bool firstHasBed = map.reservationManager.IsReservedBy(first, bed);
+            bool secondHasBed = map.reservationManager.IsReservedBy(second, bed);
+            Assert.True(firstHasBed ^ secondHasBed, "Exactly one of the two tired pawns should hold the only bed's reservation.");
+            Assert.True(first.Asleep && second.Asleep, "Both pawns should be resting — one in the bed, the other on the ground.");
+        }
+
         // ---- Scribe round trip ----
 
         [Fact]
