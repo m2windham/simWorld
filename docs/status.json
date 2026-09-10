@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-10",
-  "testsTotal": 1224,
+  "testsTotal": 1226,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -594,7 +594,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 62,
+      "tests": 64,
       "items": [
         {
           "id": "health.body",

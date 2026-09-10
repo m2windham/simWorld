@@ -125,9 +125,17 @@ namespace SimWorld.Health
 
         // ---- notifications ----
 
-        public void Notify_HediffChanged(Hediff? hediff)
+        /// <summary>
+        /// A hediff changed; re-derive Downed/Dead. <paramref name="capacitiesMayHaveChanged"/> is true for
+        /// every caller except <see cref="Hediff.Severity"/>'s setter, which already knows a within-stage
+        /// severity nudge on a non-injury hediff cannot have moved anything the capacity/pain/bleed/core-part
+        /// caches read (docs/perf/baseline.md §10) and says so — skipping <see cref="HediffSet.DirtyCache"/>
+        /// there, not skipping this method, so <see cref="CheckForStateChange"/> (and so
+        /// <see cref="Hediff.CauseDeathNow"/>, which is never cached) still runs every time.
+        /// </summary>
+        public void Notify_HediffChanged(Hediff? hediff, bool capacitiesMayHaveChanged = true)
         {
-            hediffSet.DirtyCache();
+            if (capacitiesMayHaveChanged) hediffSet.DirtyCache();
             CheckForStateChange(null, hediff);
         }
 
