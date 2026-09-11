@@ -43,13 +43,23 @@ namespace SimWorld.Needs
     /// microsecond per sample; outdoors it is the whole 3.5 µs, since the retired worker answered "no room, no
     /// thought" there almost for free.
     /// <para/>
-    /// <b>Only beauty is answered.</b> Comfort, Outdoors and RoomSize are environment needs in content too,
-    /// and each returns null here — the need keeps its <c>baseLevel</c> exactly as before this class existed.
-    /// That is deliberate rather than unfinished: comfort in RimWorld is not sampled from surroundings at all
-    /// but pushed by whatever the pawn is sitting or lying on (a comfort <i>hook</i> in the job system, not a
-    /// map sample), and outdoors/room-size want a roof-and-region reading that belongs with whoever ports
-    /// them. Returning null keeps them exactly as dormant as they were rather than inventing numbers for
-    /// them, and the day one is built it is one more branch here.
+    /// <b>Only beauty is answered.</b> Comfort and RoomSize are environment needs in content too, and each
+    /// returns null here — the need keeps its <c>baseLevel</c> exactly as before this class existed, which
+    /// since both start at that level means neither ever moves at all. Stated plainly because the alternative
+    /// is a reader assuming a need with rise/fall rates must be going somewhere:
+    /// <list type="bullet">
+    /// <item><description><b>Comfort</b> is not sampled from surroundings in RimWorld at all. Furniture pushes
+    /// it: <c>Need_Comfort.ComfortUsed(comfort)</c> is called by whatever the pawn is sitting on or lying in,
+    /// and the need chases that value for 15 ticks before falling back to zero. It wants a comfort hook in the
+    /// job system and a Comfort stat on furniture, not a branch here.</description></item>
+    /// <item><description><b>RoomSize</b> does want a branch here: <c>Need_RoomSize</c> counts the cells of
+    /// the citizen's room within a 7.9-cell radius and runs the count through a curve.
+    /// <see cref="Building.RoomTracker"/> can answer that today, so what this is really waiting on is the
+    /// measurement — it is the same radial sample beauty already pays 3.5 µs per citizen-interval for
+    /// outdoors, and a second one is a real cost at <see cref="TieringTuning.FullTierBudget"/>.</description></item>
+    /// </list>
+    /// Outdoors was the third of these and is no longer: RimWorld's <c>Need_Outdoors</c> is not a seeker and
+    /// needs no sampler, so it is now <see cref="Need_Outdoors"/>, reading the roof grid directly.
     /// </summary>
     public sealed class MapEnvironmentSampler : IEnvironmentSampler
     {

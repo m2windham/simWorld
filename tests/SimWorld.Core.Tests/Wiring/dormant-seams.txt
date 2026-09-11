@@ -19,13 +19,13 @@
 
 
 # ---- interface: no implementation the game can ever hold ----
-
-interface SimWorld.Quests.IQuestRewardSink | Blocked on economy/factions: QuestManager.RewardSink is the hook that will actually pay a reward out, and nothing constructs a sink yet. Quests award RewardRecords into the void until then.
+#
+# (Empty. IQuestRewardSink was the only entry; QuestRewardSink now pays every quest reward into the
+# civilization's seat, and QuestManager is born holding one.)
 
 
 # ---- notify: a hook nothing raises ----
 
-notify SimWorld.Director.StoryWatcher_Adaptation.Notify_ColonistDowned | Blocked on downing: Notify_ColonistDied is raised, its downing twin is not, so adaptation only ever eases after a death. Same shape as the Notify_ColonistDied bug this audit was written after.
 notify SimWorld.Scenario.ScenPart.Notify_PawnGenerated | Blocked on pawn generation calling back into the scenario; the method's own doc says nothing calls it yet and it exists for the shape RimWorld gives every ScenPart.
 
 
@@ -58,16 +58,7 @@ content-silent SimWorld.Health.PawnCapacityDef.lethalMechanoids | Blocked on mec
 content-silent SimWorld.Health.PawnCapacityDef.minValue | No shipped capacity declares a floor, so the clamp in Capacities always clamps against zero.
 content-silent SimWorld.MindState.MentalStateDef.colonistsOnly | No shipped mental state is restricted to colonists, so MentalState's eligibility check never narrows on this.
 content-silent SimWorld.Needs.JoyKindDef.neverBuildsTolerance | Ported for parity and declared as such in the field's own doc: vanilla RimWorld has no such joy kind either, so no shipped JoyKindDef sets it.
-content-silent SimWorld.Needs.NeedDef.fallPerDay | Content-side gap worth fixing: the generic per-day decay every Need falls back on is zero for all eight shipped needs. Food, Rest and the seeker needs each carry their own rate (seekerFallPerHour, or an overridden NeedInterval), so the base path in Need.NeedInterval never decays anything.
 content-silent SimWorld.Needs.NeedDef.freezeInMentalState | No shipped need freezes during a mental break, so Need's IsFrozen gate is always open.
-content-silent SimWorld.Pawns.BackstoryDef.disallowedTraits | Content-side gap: PawnGenerator honours backstory trait rules and none of the 23 shipped backstories declares any, so a backstory never shapes the traits a pawn rolls.
-content-silent SimWorld.Pawns.BackstoryDef.forcedTraits | As disallowedTraits: the generator applies forced traits and no shipped backstory forces one.
-content-silent SimWorld.Pawns.PawnKindDef.disallowedTraits | Content-side gap: the same generator path reads it for pawn kinds, and no shipped kind constrains its traits.
-content-silent SimWorld.Pawns.PawnKindDef.forcedTraits | As disallowedTraits, for the forced half — no shipped kind forces a trait on the pawns it generates.
-content-silent SimWorld.Pawns.TraitDef.requiredWorkTags | No shipped trait requires the pawn still be capable of some work before it can be rolled, so PawnGenerator's capability gate never rejects a candidate trait.
-content-silent SimWorld.Pawns.TraitDegreeData.disabledWorkTags | Content-side gap: the per-degree override is read when a trait's work tags are computed, and no shipped trait degree overrides the trait-level tags.
-content-silent SimWorld.Pawns.TraitDegreeData.disallowedMentalBreaks | No shipped trait degree rules a break out, so the mental-break filter never narrows on trait.
-content-silent SimWorld.Pawns.TraitDegreeData.theOnlyAllowedMentalBreaks | As disallowedMentalBreaks: no shipped trait degree pins a pawn to a single break.
 content-silent SimWorld.Quests.QuestNode_Delay.delayTicks | The shipped quest scripts all use delayTicksRef (a slate variable) instead of a literal range, so the literal branch of the delay node is never taken.
 content-silent SimWorld.Quests.QuestNode_GiveReward.silverRef | The shipped reward nodes name a literal silverAmount; the slate-variable form is ported and unused by content.
 content-silent SimWorld.Quests.QuestNode_Set.value | Same shape: the shipped Set nodes all use valueRef, so the literal value branch never runs.
@@ -89,15 +80,7 @@ code-deaf SimWorld.AI.JobDef.reportString | Host-facing text with no reader: the
 code-deaf SimWorld.Combat.ProjectileProperties.stoppingPower | Blocked on stagger, which this port does not model; a hit resolves instantly, so nothing consumes the stagger input.
 code-deaf SimWorld.Crafting.RecipeDef.jobString | Host-facing text ("doing X") for a UI the core does not have and the snapshot does not surface.
 code-deaf SimWorld.Defs.ThingDef.altitudeLayer | Draw order for a renderer. An engine-free core never draws, and the host draws from its own snapshot.
-code-deaf SimWorld.Defs.ThingDef.mineableThing | Blocked on mined-resource content: JobDriver_Mine's doc claims it reads this so a later module only adds the spawn call, but no line does today — the rock is removed and nothing drops.
-code-deaf SimWorld.Defs.ThingDef.mineableYield | The yield half of mineableThing, equally unread: the mining job destroys the edifice and spawns nothing.
 code-deaf SimWorld.Defs.ThingDef.selectable | Host-facing: whether a UI may select the thing. The core has no selection model.
-code-deaf SimWorld.Director.DifficultyDef.allowBigThreats | Blocked on threat sizing: the storyteller does not yet classify an incident as a big threat, so the difficulty switch has nothing to switch off.
-code-deaf SimWorld.Director.DifficultyDef.allowIntroThreats | As allowBigThreats — the intro-threat concept is unported, so the flag gates nothing.
-code-deaf SimWorld.Director.DifficultyDef.colonistMoodOffset | Blocked on difficulty reaching Needs: nothing applies a difficulty mood offset when a pawn's mood is computed.
-code-deaf SimWorld.Director.DifficultyDef.cropYieldFactor | Blocked on difficulty reaching Plants: harvest yield is computed without consulting the difficulty.
-code-deaf SimWorld.Director.DifficultyDef.mineYieldFactor | Blocked on mining yield existing at all (see ThingDef.mineableYield); there is no yield for the factor to scale.
-code-deaf SimWorld.Director.DifficultyDef.questRewardValueFactor | Blocked on rewards being paid: IQuestRewardSink has no implementation, so no reward value exists to scale.
 code-deaf SimWorld.Director.IncidentDef.pointsScaleable | Blocked on points-driven severity: IncidentParms.points is carried but no worker scales its effect by it, so the opt-in flag has no reader.
 code-deaf SimWorld.Director.StorytellerDef.persona | Host-facing flavour: the narrator's in-fiction name, for the host to speak. Its own doc records that the naming is still open.
 code-deaf SimWorld.Economy.TraderKindDef.orbital | Blocked on orbital trade, which needs caravans going up rather than traders arriving; the field's own doc calls it a gating flag only.

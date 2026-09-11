@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Squeamishness is SimWorld's own trait, not a port of a vanilla RimWorld one, and it is here for a reason
+    the other trait files cannot serve: TraitDegreeData.disabledWorkTags is a per-degree override, and no
+    shipped trait had degrees that differed in what they barred, so the override branch of
+    TraitDef.DisabledWorkTagsAtDegree had never run against real content. A trait whose mild degree keeps a
+    person off the wounded and whose deep degree also keeps them off the butchering is the honest content for
+    that field — one incapacity that genuinely widens with severity.
+
+    Note the repetition of Caring on the second degree. The degree REPLACES the trait-level tags rather than
+    adding to them (see DisabledWorkTagsAtDegree), so a degree that lists only Hunting would quietly hand the
+    faint-hearted back their doctoring. WorkTags.None means "no override", so there is deliberately no way for
+    a degree to bar LESS than its trait; a trait needing that shape has to leave the trait level empty and
+    spell every degree out.
+
+    Commonality is this port's own too, sized against the existing singular traits (0.3-0.8) so that roughly
+    one colonist in eleven is squeamish and the faint-hearted stay rare. Pinned by tests as a band and as
+    behaviour, never as the literal.
+  -->
+  <TraitDef>
+    <defName>Squeamishness</defName>
+    <label>squeamishness</label>
+    <commonality>0.4</commonality>
+    <disabledWorkTags>Caring</disabledWorkTags>
+    <degreeDatas>
+      <li>
+        <label>squeamish</label>
+        <description>Cannot stand the sight of an open wound, and will not be the one to close it.</description>
+        <degree>1</degree>
+        <commonality>1</commonality>
+      </li>
+      <li>
+        <label>faint-hearted</label>
+        <description>Turns away from blood of any kind — a patient's or a carcass's.</description>
+        <degree>2</degree>
+        <commonality>0.4</commonality>
+        <disabledWorkTags>Caring, Hunting</disabledWorkTags>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+</Defs>

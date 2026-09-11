@@ -105,7 +105,12 @@ namespace SimWorld.MapGen
                 Thing? existing = map.edificeGrid[cell];
                 existing?.Destroy();
 
-                Thing ore = ThingMaker.MakeThing(MapGenThingDefOf.MineableSteel);
+                // Which vein comes out of the ground is content's decision, weighted by each Def's own
+                // mineableScatterCommonality (RimWorld: GenStep_ScatterLumpsMineable). Steel stays the
+                // fallback for a content set that declares no commonality at all, which is what this step
+                // placed unconditionally before the mining ladder existed.
+                ThingDef veinDef = MineableUtility.RandomVeinDef(rand) ?? MapGenThingDefOf.MineableSteel;
+                Thing ore = ThingMaker.MakeThing(veinDef);
                 GenSpawn.Spawn(ore, cell, map);
             }
         }

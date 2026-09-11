@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Ore veins (system: mining). Everything here parents onto BaseNaturalRock in Buildings_Natural.xml — a
+    ParentName resolves across files, since the loader queues every file before resolving inheritance — so
+    each of these is impassable, indestructible by ordinary damage, and a SimWorld.Things.Mineable, exactly
+    like the rock it sits inside. Its own file rather than additions to Buildings_Natural.xml, per CLAUDE.md.
+
+    The one vein that already existed, MineableSteel, stays where it is. This file is the rest of the ladder;
+    see ThingDefs_Items/Items_Minerals.xml for which era each mineral belongs to and which of them are
+    RimWorld's own (gold, jade, silver, uranium, plasteel) versus this port's additions for the eras RimWorld
+    does not have (flint, salt, copper, tin).
+
+    mineableYield: the RimWorld veins carry RimWorld's own yields as far as they could be recalled here — 40
+    for silver, 20 each for gold, jade, uranium and plasteel — and NONE of them could be checked against
+    RimWorld's real content from this sandbox, so treat every number in this file as unsourced. The port's
+    own four are set in the same family, scaled by how bulk-or-precious the mineral is. What the tests assert
+    is the shape (a precious vein yields less than a bulk one, and every mineable declares a yield at all),
+    never a literal.
+
+    mineableScatterCommonality: relative weight for map generation placing this vein inside natural rock
+    (GenStep_RocksAndMountains, via MineableUtility.RandomVeinDef). MineableSteel carries 3.0 and dominates,
+    as compacted steel does in RimWorld; everything below is weighted by how near the surface and how common
+    the real mineral is, ending at the two that a civilization has no idea what to do with until very late.
+
+    KNOWN GAP, deliberately left to the MapGen lane: the world map already knows where flint, salt, coal and
+    ore are — DepositDefOf.Flint/Salt/Coal/Ore, weighted by era in SiteWeights.xml — but this port's local
+    map generator has exactly one vein step and it is driven by the Ore deposit alone. So a tile rich in coal
+    does not yet produce a map with more coal seams in it; every vein here is drawn from the same Ore-driven
+    pool. Tying each vein to the deposit that predicts it is the obvious next move and belongs with whoever
+    owns GenStep_RocksAndMountains.
+  -->
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineableFlint</defName>
+    <label>flint nodules</label>
+    <description>Bands of hard nodules running through softer rock, prised out whole. The first mine any people ever dug was for this.</description>
+    <mineableThing>Flint</mineableThing>
+    <mineableYield>25</mineableYield>
+    <mineableScatterCommonality>0.30</mineableScatterCommonality>
+    <statBases>
+      <MaxHitPoints>250</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineableSalt</defName>
+    <label>rock salt seam</label>
+    <description>A buried seam of an old dried sea, cut out in blocks. Tastes of the ocean that left it.</description>
+    <mineableThing>Salt</mineableThing>
+    <mineableYield>35</mineableYield>
+    <mineableScatterCommonality>0.20</mineableScatterCommonality>
+    <statBases>
+      <MaxHitPoints>200</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineableCoal</defName>
+    <label>coal seam</label>
+    <description>Black rock that burns. Worth digging for warmth long before anyone works out what it can do to iron.</description>
+    <mineableThing>Coal</mineableThing>
+    <mineableYield>50</mineableYield>
+    <mineableScatterCommonality>0.35</mineableScatterCommonality>
+    <statBases>
+      <MaxHitPoints>250</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineableCopper</defName>
+    <label>copper ore vein</label>
+    <description>Green-stained rock shot through with native copper. The vein that ends the stone age wherever it is found.</description>
+    <mineableThing>Copper</mineableThing>
+    <mineableYield>45</mineableYield>
+    <mineableScatterCommonality>0.30</mineableScatterCommonality>
+    <statBases>
+      <MaxHitPoints>300</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineableTin</defName>
+    <label>tin ore vein</label>
+    <description>Dark, heavy cassiterite. Rare enough that the bronze age is really a story about who could get hold of this.</description>
+    <mineableThing>Tin</mineableThing>
+    <mineableYield>30</mineableYield>
+    <mineableScatterCommonality>0.15</mineableScatterCommonality>
+    <statBases>
+      <MaxHitPoints>300</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineableSilver</defName>
+    <label>silver ore vein</label>
+    <description>A bright seam in the rock, soft enough to work and scarce enough to count with.</description>
+    <mineableThing>Silver</mineableThing>
+    <mineableYield>40</mineableYield>
+    <mineableScatterCommonality>0.10</mineableScatterCommonality>
+    <statBases>
+      <MaxHitPoints>300</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineableGold</defName>
+    <label>gold ore vein</label>
+    <description>A thread of yellow metal in the quartz. Every settlement that finds one changes what it is about.</description>
+    <mineableThing>Gold</mineableThing>
+    <mineableYield>20</mineableYield>
+    <mineableScatterCommonality>0.05</mineableScatterCommonality>
+    <statBases>
+      <MaxHitPoints>300</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineableJade</defName>
+    <label>jade deposit</label>
+    <description>A pocket of dense green stone. Harder than the tools that will be used on it, which is rather the point.</description>
+    <mineableThing>Jade</mineableThing>
+    <mineableYield>20</mineableYield>
+    <mineableScatterCommonality>0.04</mineableScatterCommonality>
+    <statBases>
+      <MaxHitPoints>350</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineableUranium</defName>
+    <label>uranium ore vein</label>
+    <description>Dark, unusually heavy rock. It has been sitting there the whole time, waiting for somebody to understand it.</description>
+    <mineableThing>Uranium</mineableThing>
+    <mineableYield>20</mineableYield>
+    <mineableScatterCommonality>0.03</mineableScatterCommonality>
+    <statBases>
+      <MaxHitPoints>400</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>MineablePlasteel</defName>
+    <label>compacted plasteel</label>
+    <description>Plasteel pressed into the rock in a seam no geology explains. Somebody made this, a very long time ago.</description>
+    <mineableThing>Plasteel</mineableThing>
+    <mineableYield>20</mineableYield>
+    <mineableScatterCommonality>0.03</mineableScatterCommonality>
+    <statBases>
+      <MaxHitPoints>500</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+</Defs>

@@ -8,8 +8,20 @@ namespace SimWorld.Needs
     /// <summary>
     /// A 0–1 gauge that drifts over time and drives behaviour (RimWorld: <c>RimWorld.Need</c>).
     /// <see cref="NeedInterval"/> runs every 150 ticks per pawn, staggered by the pawn's hash.
+    ///
+    /// <para/><b>There is no generic decay here, and there was never meant to be one.</b> This class used to
+    /// carry a base <see cref="NeedInterval"/> that decayed by <c>def.fallPerDay</c>, guarded by
+    /// <c>if (!IsFrozen &amp;&amp; def.fallPerDay &gt; 0f)</c>. Both halves of that guard were dead: no shipped
+    /// <see cref="NeedDef"/> sets <c>fallPerDay</c>, and no shipped <c>needClass</c> reaches the base method
+    /// anyway — all eight override it. In RimWorld the method is <c>public abstract void NeedInterval();</c>
+    /// and <c>fallPerDay</c> is read by exactly one need class, <c>Need_Chemical</c> (see
+    /// <see cref="NeedDef.fallPerDay"/>), which this port has not built. The invented fallback therefore
+    /// modelled nothing, and its <c>&gt; 0f</c> guard made "this need has no generic rate" and "nobody filled
+    /// the rate in" the same silent no-op. Declaring both interval methods abstract restores RimWorld's shape
+    /// and makes the omission impossible: a new need cannot inherit a decay that quietly does nothing, it has
+    /// to say what it does.
     /// </summary>
-    public class Need : IExposable
+    public abstract class Need : IExposable
     {
         public const int IntervalTicks = 150;
 
@@ -17,7 +29,7 @@ namespace SimWorld.Needs
         public NeedDef def = null!;
         protected float curLevelInt;
 
-        public Need(Pawn pawn)
+        protected Need(Pawn pawn)
         {
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
         }
@@ -45,6 +57,19 @@ namespace SimWorld.Needs
 
         public string LabelCap => def.LabelCap;
 
+        /// <summary>
+        /// While true the need holds where it is (RimWorld: <c>Need.IsFrozen</c>). Three of RimWorld's four
+        /// reasons are ported: the pawn is suspended (in a pod or otherwise out of play), the need freezes
+        /// while its owner sleeps (<see cref="NeedDef.freezeWhileSleeping"/> — Joy and the environment needs),
+        /// or it freezes during a mental break (<see cref="NeedDef.freezeInMentalState"/>, which no shipped
+        /// need sets).
+        /// <para/>
+        /// <b>Deliberately not ported: RimWorld's <c>IsPawnInteractableOrVisible</c> clause</b>, which freezes
+        /// every need of a pawn that is neither spawned, nor a caravan member, nor travelling in a pod. Here
+        /// an unspawned pawn still gets hungry, which is what this port's off-map citizens (the Interval and
+        /// Statistical tiers, <c>docs/spec/simworld-spec.md</c> §11.3) need in order to keep being simulated
+        /// at all — RimWorld has no such tier, it simply stops simulating a pawn that leaves the map.
+        /// </summary>
         public virtual bool IsFrozen =>
             pawn.Suspended
             || (def.freezeWhileSleeping && !pawn.Awake())
@@ -58,14 +83,12 @@ namespace SimWorld.Needs
             CurLevel = def.baseLevel;
         }
 
-        /// <summary>Called every <see cref="IntervalTicks"/> ticks.</summary>
-        public virtual void NeedInterval()
-        {
-            if (!IsFrozen && def.fallPerDay > 0f)
-            {
-                CurLevel -= def.fallPerDay / GenDate.TicksPerDay * IntervalTicks;
-            }
-        }
+        /// <summary>
+        /// Called every <see cref="IntervalTicks"/> ticks. Abstract exactly as RimWorld's is: a need's rate is
+        /// its own class's business, and there is no inherited default that can silently do nothing (see the
+        /// class remarks).
+        /// </summary>
+        public abstract void NeedInterval();
 
         /// <summary>
         /// Bulk-equivalent of <see cref="NeedInterval"/> for a pawn ticking at Interval tier
@@ -75,24 +98,26 @@ namespace SimWorld.Needs
         /// tier's own performance point: at the Long-tick cadence (2000 ticks) that is ~13 calls every coarse
         /// tick, which measured out to needs costing Interval-tier citizens nearly as much as continuous
         /// per-tick simulation (`docs/perf/baseline.md` §2 already shows needs at 12.5% of Full's per-pawn
-        /// cost; replaying it wholesale reproduces that same cost instead of amortizing it). This default
-        /// instead applies <paramref name="elapsedTicks"/> in one step, holding <c>def.fallPerDay</c> constant
-        /// across the whole span — exact for the base class, since nothing here depends on the need's own
-        /// current level. A subclass whose fall/rise rate depends on its own level or category (<see cref="Need_Food"/>,
-        /// <see cref="Need_Rest"/>, <see cref="Need_Joy"/>, <see cref="Need_Seeker"/>) overrides this to hold
-        /// its own *current* rate constant across the span instead — an approximation that only drifts from
-        /// true per-tick simulation across a span long enough to cross a rate/category boundary, and Interval
-        /// tier's own Long-tick cadence keeps that span short in practice (see <see cref="Pawns.Pawn_TierTracker.CoarseTick"/>).
-        /// Not a sourced numeric method, only the right shape, per <c>CLAUDE.md</c>'s rule for un-sourced numbers.
+        /// cost; replaying it wholesale reproduces that same cost instead of amortizing it).
+        /// <para/>
+        /// Every implementation instead applies the whole elapsed span in one step, holding its <i>current</i>
+        /// rate — hunger/rest/joy category, or seeker target — constant across it: an approximation that only
+        /// drifts from true per-tick simulation across a span long enough to cross a rate boundary, and
+        /// Interval tier's own Long-tick cadence keeps that span short in practice (see
+        /// <see cref="Pawns.Pawn_TierTracker.CoarseTick"/>). Two rules every implementation owes its caller,
+        /// both pinned by <c>NeedsTests</c>:
+        /// <list type="bullet">
+        /// <item><description>It must consume the <i>whole</i> span, including any part-interval remainder —
+        /// the caller advances its own clock by <paramref name="elapsedTicks"/> regardless, so whatever an
+        /// implementation rounds away is lost for good and the need drifts permanently slower than its
+        /// Full-tier twin.</description></item>
+        /// <item><description>Over a span its rate is constant across, it must land where the per-interval
+        /// path would have.</description></item>
+        /// </list>
+        /// Abstract for the same reason as <see cref="NeedInterval"/>: an inherited no-op here is a need that
+        /// silently stops existing for every citizen the player is not looking at.
         /// </summary>
-        public virtual void NeedIntervalBulk(int elapsedTicks)
-        {
-            if (elapsedTicks <= 0) return;
-            if (!IsFrozen && def.fallPerDay > 0f)
-            {
-                CurLevel -= def.fallPerDay / GenDate.TicksPerDay * elapsedTicks;
-            }
-        }
+        public abstract void NeedIntervalBulk(int elapsedTicks);
 
         public virtual void ExposeData()
         {

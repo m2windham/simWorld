@@ -63,7 +63,25 @@ namespace SimWorld.Needs
             thoughts = new ThoughtHandler(pawn);
         }
 
-        public override float CurInstantLevel => GenMath.Clamp01(0.5f + thoughts.TotalMoodOffset() / 100f);
+        /// <summary>
+        /// 50%, plus the summed thought offsets, plus the difficulty's flat
+        /// <see cref="Director.DifficultyDef.colonistMoodOffset"/> — all three in mood points out of 100,
+        /// which is the unit thoughts and that field are both authored in.
+        ///
+        /// <para/><b>Who gets the offset.</b> RimWorld's own restriction is "colonists": the map also holds
+        /// raiders, visitors and prisoners, and the player's difficulty setting has no business cheering up
+        /// the people attacking them. The same line here is
+        /// <see cref="Pawn.faction"/>'s def being the player one, which is how every other system in this port
+        /// asks the question (<c>FactionManager.OfPlayer</c>). A pawn with no faction at all — a bare test
+        /// pose, or a pawn generated before it is placed — gets nothing, so the offset can never quietly move
+        /// a number nobody set a difficulty for.
+        /// </summary>
+        public override float CurInstantLevel =>
+            GenMath.Clamp01(0.5f + (thoughts.TotalMoodOffset() + DifficultyMoodOffsetFor(pawn)) / 100f);
+
+        /// <summary>The difficulty's mood offset if this pawn is one of the civilization's own, else zero.</summary>
+        private static float DifficultyMoodOffsetFor(Pawn pawn) =>
+            pawn.faction != null && pawn.faction.def.isPlayer ? Director.DifficultyUtility.ColonistMoodOffset : 0f;
 
         public override void NeedInterval()
         {
@@ -71,15 +89,19 @@ namespace SimWorld.Needs
             thoughts.ThoughtInterval();
         }
 
-        /// <summary>O(1) bulk equivalent (see the base class doc): ages/expires memories through one
-        /// <see cref="Thoughts.ThoughtHandler.ThoughtInterval"/> pass rather than one per slice, so a memory
-        /// held through a long Interval-tier span expires more slowly than true per-tick simulation would — a
-        /// documented imprecision (mood memories fading a bit late), not a magnitude-changing one, and mood
-        /// itself is only ever sampled (not bulk-decayed) once a citizen falls all the way to Statistical.</summary>
+        /// <summary>
+        /// O(1) bulk equivalent (see the base class doc): one ageing pass over the memories for the whole
+        /// span, not one per slice, and not — as this used to do — a single interval's worth of ageing
+        /// however long the span was. That older form broke the base class's first rule for this method: a
+        /// coarse tick is 2,000 ticks and an interval 150, so memories aged at a thirteenth of real speed and
+        /// every citizen below <see cref="Pawns.PawnTier.Full"/> stayed anchored to events thirteen times too
+        /// long. The level itself was always right; what was wrong was how long it kept chasing an old
+        /// target.
+        /// </summary>
         public override void NeedIntervalBulk(int elapsedTicks)
         {
             base.NeedIntervalBulk(elapsedTicks);
-            if (elapsedTicks > 0) thoughts.ThoughtInterval();
+            if (elapsedTicks > 0) thoughts.ThoughtIntervalBulk(elapsedTicks);
         }
 
         public override void ExposeData()
@@ -92,8 +114,17 @@ namespace SimWorld.Needs
     }
 
     /// <summary>
-    /// Beauty, comfort, outdoors, room size (RimWorld: <c>Need_Beauty</c>, <c>Need_Comfort</c>,
-    /// <c>Need_Outdoors</c>, <c>Need_RoomSize</c>): seekers whose target is sampled from the surroundings.
+    /// Beauty, comfort, room size (RimWorld: <c>Need_Beauty</c>, <c>Need_Comfort</c>, <c>Need_RoomSize</c>):
+    /// seekers whose target is sampled from the surroundings.
+    /// <para/>
+    /// <b>Comfort and RoomSize hold still, and that is the honest state rather than a hidden one.</b> The
+    /// sampler answers null for both (see <see cref="MapEnvironmentSampler"/> for what each is waiting for),
+    /// null reads as <c>def.baseLevel</c>, and both needs start at that same base level — so the target sits
+    /// exactly where the need already is and neither branch below is ever taken. Their
+    /// <c>seekerRisePerHour</c>/<c>seekerFallPerHour</c> are real and would apply the moment a target moved;
+    /// <c>NeedDef.ConfigErrors</c> now refuses a seeker that left them at zero, so an unfilled rate can no
+    /// longer masquerade as this. Outdoors used to be in this family and is not any more: it is a plain
+    /// <see cref="Need_Outdoors"/> that reads the roof over the citizen's head.
     /// </summary>
     public class Need_Environment : Need_Seeker
     {

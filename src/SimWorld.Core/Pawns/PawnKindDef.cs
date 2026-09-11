@@ -22,7 +22,13 @@ namespace SimWorld.Pawns
         public float combatPower;
         public bool isFighter;
 
+        /// <summary>Traits every pawn of this kind is given outright, before the random roll (RimWorld:
+        /// <c>PawnKindDef.forcedTraits</c>). Contradictions with <see cref="disallowedTraits"/> are a config
+        /// error rather than a silently skipped trait — see <see cref="BackstoryTraitValidation"/>.</summary>
         public List<BackstoryTrait>? forcedTraits;
+
+        /// <summary>Traits a pawn of this kind never rolls (RimWorld: <c>PawnKindDef.disallowedTraits</c>),
+        /// and which a backstory of that pawn cannot force on it either.</summary>
         public List<TraitDef>? disallowedTraits;
 
         // ---- gear (RimWorld: PawnKindDef's weapon/apparel loadout fields) ----
@@ -54,6 +60,7 @@ namespace SimWorld.Pawns
             else if (race.race == null) yield return "kind's race ThingDef '" + race.defName + "' has no RaceProperties.";
             if (weaponMoneyRange.min > weaponMoneyRange.max) yield return "weaponMoneyRange min must not exceed max.";
             if (apparelMoneyRange.min > apparelMoneyRange.max) yield return "apparelMoneyRange min must not exceed max.";
+            foreach (string error in BackstoryTraitValidation.Errors(forcedTraits, disallowedTraits)) yield return error;
         }
     }
 }

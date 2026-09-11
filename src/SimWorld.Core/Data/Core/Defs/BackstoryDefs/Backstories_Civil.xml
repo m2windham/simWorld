@@ -14,6 +14,16 @@
       <li><skill>Intellectual</skill><amount>2</amount></li>
     </skillGains>
     <workDisables>ManualDumb</workDisables>
+    <!--
+      What a life history forbids (SimWorld's own choices throughout these two files; RimWorld's backstory
+      database constrains traits the same way, but its 1000-odd hand-written entries are not ported here).
+      Each entry below is meant to be readable as a sentence about the person, not as a balance lever: a
+      childhood of tutors and comfort is the one upbringing that cannot produce someone with no use for
+      comfort.
+    -->
+    <disallowedTraits>
+      <li>Ascetic</li>
+    </disallowedTraits>
     <spawnCategories><li>Civil</li></spawnCategories>
   </BackstoryDef>
 
@@ -93,6 +103,12 @@
       <li><skill>Intellectual</skill><amount>6</amount></li>
     </skillGains>
     <workDisables>ManualSkilled, Violent</workDisables>
+    <!-- Years of it, and a doctorate at the end: whatever else this person is, they are not slow to learn.
+         Note this backstory already bars Violent, which is what keeps Bloodlust and Brawler (both
+         requiredWorkTags Violent) off a scientist without either being named here. -->
+    <disallowedTraits>
+      <li>SlowLearner</li>
+    </disallowedTraits>
     <spawnCategories><li>Civil</li></spawnCategories>
   </BackstoryDef>
 
@@ -106,6 +122,17 @@
       <li><skill>Shooting</skill><amount>5</amount></li>
       <li><skill>Melee</skill><amount>3</amount></li>
     </skillGains>
+    <!-- The one forced trait here that is not a degree-0 trait, and the reason the degree field on a forced
+         trait is worth having: Nerves is a spectrum (-2 volatile .. 2 iron-willed) and years of drill land a
+         person at 1, steadfast — harder to break than most, without claiming the iron will that degree 2
+         means. A forced trait names the degree it wants; leave it out and every forced trait would be
+         whatever the trait calls 0, which for a spectrum is its middle and for Nerves does not exist. -->
+    <forcedTraits>
+      <li>
+        <def>Nerves</def>
+        <degree>1</degree>
+      </li>
+    </forcedTraits>
     <spawnCategories><li>Civil</li></spawnCategories>
   </BackstoryDef>
 
@@ -130,6 +157,10 @@
     <skillGains>
       <li><skill>Medicine</skill><amount>5</amount></li>
     </skillGains>
+    <!-- Squeamishness bars Caring at every degree, which is the work this entire life history is made of. -->
+    <disallowedTraits>
+      <li>Squeamishness</li>
+    </disallowedTraits>
     <spawnCategories><li>Civil</li></spawnCategories>
   </BackstoryDef>
 
@@ -181,6 +212,15 @@
       <li><skill>Social</skill><amount>2</amount></li>
       <li><skill>Melee</skill><amount>3</amount></li>
     </skillGains>
+    <!-- The one forced trait on the civil side: a career of taking what was not offered is not a thing a
+         person drifts into. Forced traits count against the pawn's trait budget, so a thief rolls one fewer
+         at random than another adulthood would. -->
+    <forcedTraits>
+      <li>
+        <def>Greedy</def>
+        <degree>0</degree>
+      </li>
+    </forcedTraits>
     <spawnCategories><li>Civil</li></spawnCategories>
   </BackstoryDef>
 
@@ -194,6 +234,11 @@
       <li><skill>Social</skill><amount>4</amount></li>
       <li><skill>Intellectual</skill><amount>2</amount></li>
     </skillGains>
+    <!-- A following built out of nothing but words is not built by someone everyone finds grating: Abrasive's
+         flat opinion penalty is the precise opposite of this backstory's skill gain. -->
+    <disallowedTraits>
+      <li>Abrasive</li>
+    </disallowedTraits>
     <spawnCategories><li>Civil</li></spawnCategories>
   </BackstoryDef>
 

@@ -48,31 +48,86 @@ namespace SimWorld.Tests.MindState
             Assert.DoesNotContain("SadisticRage", major);
             Assert.DoesNotContain("Berserk", major);
 
-            p.story.traits.GainTrait(new Trait(Trait("Pyromaniac")));
-            Assert.Contains("FireStartingSpree", p.mindState.mentalBreaker.CurrentPossibleMoodBreaks().Select(b => b.defName));
-
             p.needs.mood.CurLevel = 0.01f;
             List<string> extreme = p.mindState.mentalBreaker.CurrentPossibleMoodBreaks().Select(b => b.defName).ToList();
             Assert.Equal(4, extreme.Count);
             Assert.Contains("Berserk", extreme);
+
+            // The trait's own break, and — since Pyromaniac's shipped degree data now names it as the only
+            // break a pyromaniac ever has — the only one left at any intensity. Asserted last because it
+            // narrows this pawn permanently.
+            p.needs.mood.CurLevel = 0.1f;
+            p.story.traits.GainTrait(new Trait(Trait("Pyromaniac")));
+            Assert.Equal(new[] { "FireStartingSpree" }, p.mindState.mentalBreaker.CurrentPossibleMoodBreaks().Select(b => b.defName));
+
+            p.needs.mood.CurLevel = 0.01f;
+            Assert.Equal(new[] { "FireStartingSpree" }, p.mindState.mentalBreaker.CurrentPossibleMoodBreaks().Select(b => b.defName));
         }
 
+        /// <summary>
+        /// The shipped Pyromaniac degree already pins its holder to one break, so the allowed-set filter is
+        /// exercised by content above. This asserts the other half — that the filter is what is doing it, by
+        /// lifting the restriction off the def and watching the ordinary spread come back.
+        /// <para/>
+        /// Note the restore: the original list is put back, not null. These tests share one loaded
+        /// <c>DefDatabase</c> for the whole run, so a "restore" that writes a default instead of the value it
+        /// found silently un-ships content for every test that runs after it — which is exactly what this
+        /// test used to do, and it hid a changed expectation in the test above for one whole run.
+        /// </summary>
         [Fact]
         public void Trait_data_can_restrict_breaks_to_an_allowed_set()
         {
             Pawn p = NewHuman();
             TraitDef pyro = Trait("Pyromaniac");
-            pyro.DataAtDegree(0).theOnlyAllowedMentalBreaks = new List<MentalBreakDef> { DefDatabase<MentalBreakDef>.GetNamed("FireStartingSpree") };
+            TraitDegreeData data = pyro.DataAtDegree(0);
+            List<MentalBreakDef>? shipped = data.theOnlyAllowedMentalBreaks;
             try
             {
                 p.story.traits.GainTrait(new Trait(pyro));
                 p.needs.mood!.CurLevel = 0.1f;
+
+                data.theOnlyAllowedMentalBreaks = new List<MentalBreakDef> { DefDatabase<MentalBreakDef>.GetNamed("FireStartingSpree") };
                 Assert.Equal(new[] { "FireStartingSpree" }, p.mindState.mentalBreaker.CurrentPossibleMoodBreaks().Select(b => b.defName));
+
+                data.theOnlyAllowedMentalBreaks = null;
+                List<string> unrestricted = p.mindState.mentalBreaker.CurrentPossibleMoodBreaks().Select(b => b.defName).ToList();
+                Assert.Contains("Tantrum", unrestricted);
+                Assert.True(unrestricted.Count > 1, "lifting the restriction should hand back the ordinary spread");
             }
             finally
             {
-                pyro.DataAtDegree(0).theOnlyAllowedMentalBreaks = null;
+                data.theOnlyAllowedMentalBreaks = shipped;
             }
+        }
+
+        /// <summary>The other filter, from the other direction: Kind's shipped degree rules two breaks out,
+        /// and the pawn still breaks — it just never breaks in those two ways.</summary>
+        [Fact]
+        public void A_trait_degree_that_disallows_breaks_narrows_the_spread_without_emptying_it()
+        {
+            // Minor intensity: InsultingSpree, one of the two breaks Kind rules out, lives there, and a plain
+            // pawn really can have it. (At Major the only break either pawn can have is the tantrum, because
+            // the other two majors are gated behind traits neither pawn holds — which would prove nothing.)
+            Pawn plain = NewHuman("Plain");
+            plain.needs.mood!.CurLevel = 0.3f;
+            List<string> ordinary = plain.mindState.mentalBreaker.CurrentPossibleMoodBreaks().Select(b => b.defName).ToList();
+
+            Pawn kind = NewHuman("Kind");
+            kind.story.traits.GainTrait(new Trait(Trait("Kind")));
+            kind.needs.mood!.CurLevel = 0.3f;
+            List<string> kindBreaks = kind.mindState.mentalBreaker.CurrentPossibleMoodBreaks().Select(b => b.defName).ToList();
+
+            List<MentalBreakDef> ruledOut = Trait("Kind").DataAtDegree(0).disallowedMentalBreaks!;
+            Assert.NotEmpty(ruledOut);
+            foreach (MentalBreakDef def in ruledOut)
+            {
+                Assert.DoesNotContain(def.defName, kindBreaks);
+            }
+
+            Assert.NotEmpty(kindBreaks);
+            Assert.True(kindBreaks.Count < ordinary.Count, "a kind pawn should have strictly fewer breaks available than a plain one");
+            Assert.True(ordinary.Intersect(ruledOut.Select(d => d.defName)).Any(),
+                "the breaks Kind rules out have to be ones a plain pawn could actually have had, or this proves nothing");
         }
 
         [Fact]

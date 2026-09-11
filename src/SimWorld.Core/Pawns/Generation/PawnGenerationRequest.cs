@@ -31,9 +31,12 @@ namespace SimWorld.Pawns.Generation
         /// tables instead; this port has none of those tables yet, so the request takes it explicitly). Null
         /// (the default) means Baseliner: no genes at all, and — deliberately — <see cref="Generation.PawnGenerator"/>
         /// then applies none, consuming no extra <see cref="Sim.Rand"/> calls, so a caller that never asks for a
-        /// xenotype gets byte-for-byte the same generation this port had before genes existed. See
-        /// <c>PawnGenerator.GenerateInternal</c>'s own comment on why gene application sits downstream of every
-        /// other roll.
+        /// xenotype gets byte-for-byte the same generation this port had before genes existed.
+        /// <para/>
+        /// A xenotype that IS named is applied before backstories and traits, because a gene that bars work
+        /// has to be on the pawn before the backstory and trait filters ask what work it can still do — see
+        /// <c>PawnGenerator.GenerateInternal</c>'s own comment. It costs no Rand call either way; what such a
+        /// germline does change is which backstories and traits are eligible, which is the point of it.
         /// </summary>
         public XenotypeDef? Xenotype { get; }
 

@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1678,
+  "testsTotal": 1754,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -376,7 +376,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things",
       "status": "ported",
-      "tests": 39,
+      "tests": 56,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -412,6 +412,11 @@
           "id": "mapcore.regions",
           "label": "Region / RegionLink graph over the map's passability (Region, RegionLink, RegionGrid, RegionMaker, RegionAndRoomUpdater), cardinal flood fill with doors as their own Portal regions, torn down and re-flooded only for the region(s) a passability change actually touches — AI's Reachability is the consumer",
           "done": true
+        },
+        {
+          "id": "mapcore.mining",
+          "label": "Mining yields what the rock holds — ThingDef.mineableThing/mineableYield were set by content and read by nothing: JobDriver_Mine destroyed the edifice and spawned air. Mineable/MineableUtility now drop the chunk or ore, GenStep_RocksAndMountains places more than one rock type, and DifficultyDef.mineYieldFactor finally has a yield to scale.",
+          "done": true
         }
       ]
     },
@@ -423,7 +428,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Pawns · Pawns/Generation · Pawns/Genes",
       "status": "ported",
-      "tests": 49,
+      "tests": 65,
       "items": [
         {
           "id": "pawngen.backstory",
@@ -473,6 +478,11 @@
         {
           "id": "pawngen.genes",
           "label": "Genes / xenotypes with inheritance (Biotech): GeneDef (statOffsets/statFactors/capMods/disabledWorkTags/biostatCpx/biostatMet/lifespanBonusYears/exclusionTags) + XenotypeDef (a named germline), Pawn_GeneTracker (endogenes/xenogenes, exclusionTags conflict resolution) reusing StatWorker/PawnCapacityUtility/CombinedDisabledWorkTags/HungerRate rather than a parallel pipeline; PawnGenerationRequest.Xenotype applied by PawnGenerator strictly downstream of every existing roll (zero RNG cost when unset); FamilyManager birth-path inheritance (GeneInheritanceUtility) — shared endogenes breed true, a single-parent endogene is a 50% coin flip, xenogenes never inherit. RimWorld's exact inheritance-selection and metabolism-to-hunger curves were not sourced in this sandbox — see GeneTuning's own doc; pinned by property tests instead of literals. Content: 14 GeneDefs, 4 XenotypeDefs (Baseliner + 3 non-baseline).",
+          "done": true
+        },
+        {
+          "id": "pawngen.traitshaping",
+          "label": "Backstories, kinds and germlines shape traits. Eight seams in one cluster — BackstoryDef and PawnKindDef's forcedTraits/disallowedTraits, TraitDef.requiredWorkTags, and TraitDegreeData's disabledWorkTags/disallowedMentalBreaks/theOnlyAllowedMentalBreaks — were all read by PawnGenerator and set by no shipped content, so every pawn in every game rolled from the same unfiltered table. Content sets all eight, and three code defects surfaced in the wiring: TryForceTrait skipped the capability gate the random path enforces (a backstory could force bloodlust onto a pawn barred from violence); backstories ignored their own requiredWorkTags, so a pacifist could be a tribal hunter; and genes were applied after the two filters that need to read GeneDef.disabledWorkTags, with Pawn_GeneTracker never raising the disabled-work-tags notification. Contradictions in the forced/disallowed pair are a config error now (BackstoryTraitValidation) rather than a generator that silently skips.",
           "done": true
         }
       ]
@@ -562,7 +572,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
       "status": "ported",
-      "tests": 71,
+      "tests": 84,
       "items": [
         {
           "id": "needs.pawn",
@@ -627,6 +637,16 @@
         {
           "id": "needs.filththought",
           "label": "ThoughtWorker_FilthyRoom retired as its own doc instructed: it read room cleanliness directly only because Beauty was unavailable, and keeping it would have charged filth to mood twice. Its tests now assert the same properties through the beauty route",
+          "done": true
+        },
+        {
+          "id": "needs.decaywiring",
+          "label": "Needs that actually move. NeedDef.fallPerDay was zero for all eight needs and no needClass reached the generic decay it fed, so the path was dead twice over — and RimWorld has no such path at all (NeedInterval is abstract there, and fallPerDay's one reader is Need_Chemical, unbuilt here). NeedInterval/NeedIntervalBulk are abstract now, so a need cannot inherit a decay that does nothing. Need_Outdoors ported 1:1 (roof overhead plus open-to-weather, RimWorld's six per-day deltas and the 0.2 thin-roof floor); Comfort and RoomSize still hold still and now say so in their own Def. Two arithmetic defects surfaced: Need_Joy.NeedIntervalBulk took elapsed/150 as an integer and dropped the remainder, losing 50 ticks of decay every 2,000-tick coarse tick, and its category multipliers were nobody's numbers.",
+          "done": true
+        },
+        {
+          "id": "needs.memoryageing",
+          "label": "A memory an unwatched citizen held aged thirteen times too slowly: Need_Seeker.NeedIntervalBulk ran one thought interval (150 ticks) however long the elapsed span was, and an Interval-tier citizen's mood advances once per 2,000-tick coarse tick. The mood LEVEL always agreed between the two paths — which is why the existing agreement test passed — but the memories underneath it expired at a thirteenth of real speed, so most of the civilization stayed anchored to events a fortnight after a watched citizen had forgotten them. ThoughtIntervalBulk(elapsedTicks) is one ageing path for both tiers, O(#memories) either way.",
           "done": true
         }
       ]
@@ -905,7 +925,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 106,
+      "tests": 125,
       "items": [
         {
           "id": "director.personality",
@@ -960,6 +980,26 @@
         {
           "id": "director.romancemoments",
           "label": "Romance was eating the landmark list: it wrote free-form lines with no category prefix, so every romance and divorce read as a first of its kind and was appended forever to MomentCurator.Moments, which is never trimmed, at a rate that grows with population",
+          "done": true
+        },
+        {
+          "id": "director.difficulty",
+          "label": "Choosing a difficulty now does something. Eleven DifficultyDef fields existed and four were wired; six of the seven dormant ones are now consumed — allowBigThreats, allowIntroThreats, colonistMoodOffset, cropYieldFactor, questRewardValueFactor and researchSpeedFactor — all through one DifficultyUtility so the null-difficulty and never-negative handling is written once",
+          "done": true
+        },
+        {
+          "id": "director.difficulty.peaceful",
+          "label": "Peaceful never suppressed raids. DefaultThreatPointsNow clamps up to MinThreatPoints (35), which is exactly RaidEnemy's own minThreatPoints floor, so a threatScale of 0 did not turn threats off — it shrank every raid to the smallest legal war band and fired it on schedule. The clamp is RimWorld's and stays; allowBigThreats is how RimWorld turns the category off",
+          "done": true
+        },
+        {
+          "id": "director.difficulty.auditgap",
+          "label": "The wiring audit has a blind spot this lane fell into: its field checks ask 'content sets it, does code read it' and 'code reads it, does content set it', so a field neither side touches is reported by neither. researchSpeedFactor was exactly that and appears nowhere in the baseline",
+          "done": false
+        },
+        {
+          "id": "director.downedadaptation",
+          "label": "StoryWatcher_Adaptation.Notify_ColonistDowned is raised — Pawn_HealthTracker's downing path now tells the narrator (src/SimWorld.Core/Director/StorytellerPawnEvents.cs), so adaptation eases after a mauling and not only after a funeral. Same shape as the Notify_ColonistDied hook this audit was written after.",
           "done": true
         }
       ]
@@ -1299,7 +1339,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Quests · Scenario · Letters (quests.moments' curator lives in src/SimWorld.Core/Director — see director.chronicle)",
       "status": "translated",
-      "tests": 24,
+      "tests": 35,
       "items": [
         {
           "id": "quests.scenario",
@@ -1329,6 +1369,16 @@
         {
           "id": "quests.orchestrator",
           "label": "Game-start orchestrator to run Scenario.PostGameStart and the quest tick loop — Sim/Game.cs: Game.NewGame founds the settlement then runs PostGameStart against its citizens, and QuestManager.QuestManagerTick is wired into the post-tick order (it had never been driven by anything before)",
+          "done": true
+        },
+        {
+          "id": "quests.rewardsink",
+          "label": "Quest rewards reach the civilization — QuestRewardSink (src/SimWorld.Core/Quests/QuestRewardSink.cs) is the implementation IQuestRewardSink never had, installed on every QuestManager. Before it, QuestPart_Reward.Enable handed its records to a null interface: a completed Quest_LostCaravan reported '200 silver, 5 goodwill' and the seat's stores, the civilization's wealth and the faction's goodwill were all unchanged. Silver banks into CivilizationTarget.Seat's ledger (not the settlement the player is watching, and with no roll at all, since this runs inside QuestManagerTick); goodwill moves the named faction's relation; anything unpayable is counted and said in the chronicle rather than dropped.",
+          "done": true
+        },
+        {
+          "id": "quests.rewardvaluefactor",
+          "label": "DifficultyDef.questRewardValueFactor applies once, at generation (QuestNode_GiveReward), not at payout. Two lanes wired it in the same batch — one at each end — and the merge caught it before a 0.8 difficulty could pay 0.64. Generation is RimWorld's end and also the value Quest.RewardsSummary advertises, so what a quest promises and what the treasury receives are the same number; the sink keeps only the floor that stops a positive award rounding to nothing.",
           "done": true
         }
       ]

@@ -75,7 +75,16 @@ namespace SimWorld.Thoughts
 
         public virtual void ThoughtInterval()
         {
-            age += Need.IntervalTicks;
+            ThoughtIntervalBulk(Need.IntervalTicks);
+        }
+
+        /// <summary>Ages by a whole elapsed span at once, for a citizen below <see cref="Pawns.PawnTier.Full"/>
+        /// whose mood advances once per coarse tick (<see cref="Needs.Need.NeedIntervalBulk"/>). Without it a
+        /// memory held through Interval tier aged 150 ticks per 2,000 elapsed — memories lasting thirteen
+        /// times too long for every citizen nobody was watching.</summary>
+        public virtual void ThoughtIntervalBulk(int elapsedTicks)
+        {
+            age += elapsedTicks;
         }
 
         public void Renew()
