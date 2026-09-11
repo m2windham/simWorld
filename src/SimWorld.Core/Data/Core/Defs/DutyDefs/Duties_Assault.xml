@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Duties (system 9: AI). A duty is a standing goal a pawn carries while it is on somebody else's map, and
+    its thinkNode is the whole of it — see SimWorld.AI.DutyDef for what this replaces (RimWorld's
+    Lord/LordToil/Trigger graph) and exactly what that translation costs.
+
+    The tiers below are read in order and are the phases of an assault, which in RimWorld are separate
+    LordToils with Triggers between them. Here the tree is re-evaluated every time the pawn needs a job, so
+    each tier's own "do I apply?" is asked continuously and the phase change falls out of the ordering:
+    while there is an enemy anywhere on this map, close on it; when there is not — everyone down, or the
+    town sealed off behind something the squad cannot path around — leave.
+
+    The fight tier is NOT in here. It sits above this whole node, in ThinkTrees_Humanlike.xml, because
+    fighting back is not something a pawn needs a duty to do: a raider and a citizen at arm's length both
+    swing, and that tier was already there before duties existed (SimWorld.AI.CombatPostureUtility).
+
+    WHAT IS MISSING BETWEEN THE TWO, and why it is absent rather than stubbed. RimWorld's AssaultColony duty
+    has a JobGiver_AITrashBuildingsDistant here: with no colonist left standing, raiders smash the colony
+    itself. This port cannot ask that question at all — Verse.Thing has a faction and SimWorld.Things.Thing
+    does not, so no building on any map belongs to anybody and "the enemy's structures" has no candidate set
+    to draw from. Wiring a tier to a set that is empty by construction would look like behaviour and be
+    none, so a raid here goes straight from "nobody left to fight" to "go home". Giving Things a faction is
+    the prerequisite, and it is a Things-module change with consequences well beyond raids (ownership,
+    stealing, claiming, turret allegiance), not something to smuggle in through a duty.
+  -->
+
+  <DutyDef>
+    <defName>AssaultSettlement</defName>
+    <thinkNode Class="SimWorld.AI.ThinkNode_Priority">
+      <subNodes>
+        <li Class="SimWorld.AI.JobGiver_AIGotoNearestHostile" />
+        <li Class="SimWorld.AI.JobGiver_ExitMap" />
+      </subNodes>
+    </thinkNode>
+  </DutyDef>
+
+</Defs>

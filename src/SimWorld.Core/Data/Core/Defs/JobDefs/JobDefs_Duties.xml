@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The jobs a duty's tiers issue (system 9: AI — duties). Its own file rather than entries appended to
+    JobDefs_Core.xml: DefLoader.AddDirectory reads every XML file under a Def folder, so an additive JobDef
+    needs no edit to a shared file (CLAUDE.md). Bound by SimWorld.AI.DutyJobDefOf.
+  -->
+
+  <JobDef>
+    <defName>Goto</defName>
+    <driverClass>SimWorld.AI.JobDriver_Goto</driverClass>
+    <reportString>going somewhere.</reportString>
+  </JobDef>
+
+  <!--
+    casualInterruptible stays at its default of true: a raider who has given up and is walking out should
+    still turn and fight if somebody steps in front of it on the way, and the combat tier sits above the
+    duty tier in both the main and the constant think tree.
+  -->
+  <JobDef>
+    <defName>ExitMap</defName>
+    <driverClass>SimWorld.AI.JobDriver_ExitMap</driverClass>
+    <reportString>leaving the map.</reportString>
+  </JobDef>
+
+</Defs>
