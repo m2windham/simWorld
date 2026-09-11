@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Hunting (system 9: AI — hunting). Its own file rather than another entry in JobDefs_Core.xml: DefLoader
+    .AddDirectory loads every XML file under a Def folder recursively, so an additive JobDef needs no edit to
+    a shared file (CLAUDE.md). JobDefs_Hauling.xml / JobDefs_Research.xml alongside it do the same.
+
+    One JobDef covers the whole hunt — approach, kill and butchery at the kill site — because there is no
+    Corpse Thing to hand off to a second job: see JobDriver_Hunt's own doc for that translation, and
+    HuntingInitiative's for what replaces RimWorld's player-painted Designation.Hunt.
+  -->
+
+  <JobDef>
+    <defName>Hunt</defName>
+    <driverClass>SimWorld.AI.JobDriver_Hunt</driverClass>
+    <reportString>hunting.</reportString>
+  </JobDef>
+
+</Defs>

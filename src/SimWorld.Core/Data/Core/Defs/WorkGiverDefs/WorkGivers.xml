@@ -176,6 +176,15 @@
     <requiredCapacities>
       <li>Manipulation</li>
     </requiredCapacities>
+    <!-- Wired to a real scanner (system 9: AI — hunting): a hunter with a ranged weapon shoots a wild animal,
+         then butchers it where it fell. RimWorld's WorkGiver_HunterHunt scans for a player-painted
+         Designation.Hunt and this codebase has no Designation system at all, so what decides which animals
+         get shot is AI.HuntingInitiative — the settlement hunts while short of food and stops when it is not,
+         the same "no player designation exists, so the settlement decides for itself" shape
+         Building.SettlementConstructionInitiative established. See that class's own doc for why counting only
+         Settlement.Stores would leave the gate permanently open, and JobDriver_Hunt's for why the kill is
+         butchered at the site (there is no Corpse Thing in this port to haul). -->
+    <giverClass>SimWorld.AI.WorkGiver_Hunt</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
