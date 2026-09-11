@@ -364,8 +364,8 @@ namespace SimWorld.Tests.Needs
             AssertPathsAgree(10, p => NeedOf(p, "Beauty"), p => p.environment = new FixedEnvironment(0.1f));
 
             // Mood, whose target is the thought total. Nothing expires inside the span, so both paths chase
-            // the same number. (They age that memory by different amounts — the bulk path runs one thought
-            // interval for the whole span, not one per slice — which shows in the memory's age, not here.)
+            // the same number; that they also age the memory underneath it at the same speed is the test
+            // below this one.
             AssertPathsAgree(2, p => p.needs.mood!,
                 p => p.needs.mood!.thoughts.memories.TryGainMemory(DefDatabase<ThoughtDef>.GetNamed("AteWithoutTable")));
         }
@@ -411,6 +411,40 @@ namespace SimWorld.Tests.Needs
 
             Assert.Equal(whole.needs.joy.CurLevel, chunked.needs.joy.CurLevel, 5);
             Assert.True(chunked.needs.joy.CurLevel < 1f);
+        }
+
+        /// <summary>
+        /// Mood's other half. The level agreed between the two paths all along; what did not was how fast the
+        /// memories underneath it aged — the bulk path ran one thought interval however long the span was, so
+        /// a coarse tick aged memories 150 ticks out of 2,000 and an unattended citizen stayed anchored to
+        /// events thirteen times too long. A day of the same elapsed time, both ways, has to leave the memory
+        /// exactly as old and expire it at the same point.
+        /// </summary>
+        [Fact]
+        public void A_memory_ages_at_the_same_speed_whether_the_citizen_is_watched_or_not()
+        {
+            const int CoarseTick = 2000;
+            ThoughtDef def = DefDatabase<ThoughtDef>.GetNamed("AteWithoutTable");
+
+            Pawn watched = NewHuman("Watched");
+            Pawn unwatched = NewHuman("Unwatched");
+            watched.needs.mood!.thoughts.memories.TryGainMemory(def);
+            unwatched.needs.mood!.thoughts.memories.TryGainMemory(def);
+
+            for (int i = 0; i < GenDate.TicksPerDay / Need.IntervalTicks; i++) watched.needs.mood.NeedInterval();
+            for (int i = 0; i < GenDate.TicksPerDay / CoarseTick; i++) unwatched.needs.mood.NeedIntervalBulk(CoarseTick);
+
+            Assert.Single(watched.needs.mood.thoughts.memories.Memories);
+            Assert.Equal(GenDate.TicksPerDay, watched.needs.mood.thoughts.memories.Memories[0].age);
+            Assert.Single(unwatched.needs.mood.thoughts.memories.Memories);
+            Assert.Equal(watched.needs.mood.thoughts.memories.Memories[0].age,
+                unwatched.needs.mood.thoughts.memories.Memories[0].age);
+
+            // ...and the memory, which lasts a day, goes on the next pass for both of them.
+            watched.needs.mood.NeedInterval();
+            unwatched.needs.mood.NeedIntervalBulk(CoarseTick);
+            Assert.Empty(watched.needs.mood.thoughts.memories.Memories);
+            Assert.Empty(unwatched.needs.mood.thoughts.memories.Memories);
         }
 
         private static void AssertPathsAgree(int slices, Func<Pawn, Need> pick, Action<Pawn>? setup = null)

@@ -71,15 +71,19 @@ namespace SimWorld.Needs
             thoughts.ThoughtInterval();
         }
 
-        /// <summary>O(1) bulk equivalent (see the base class doc): ages/expires memories through one
-        /// <see cref="Thoughts.ThoughtHandler.ThoughtInterval"/> pass rather than one per slice, so a memory
-        /// held through a long Interval-tier span expires more slowly than true per-tick simulation would — a
-        /// documented imprecision (mood memories fading a bit late), not a magnitude-changing one, and mood
-        /// itself is only ever sampled (not bulk-decayed) once a citizen falls all the way to Statistical.</summary>
+        /// <summary>
+        /// O(1) bulk equivalent (see the base class doc): one ageing pass over the memories for the whole
+        /// span, not one per slice, and not — as this used to do — a single interval's worth of ageing
+        /// however long the span was. That older form broke the base class's first rule for this method: a
+        /// coarse tick is 2,000 ticks and an interval 150, so memories aged at a thirteenth of real speed and
+        /// every citizen below <see cref="Pawns.PawnTier.Full"/> stayed anchored to events thirteen times too
+        /// long. The level itself was always right; what was wrong was how long it kept chasing an old
+        /// target.
+        /// </summary>
         public override void NeedIntervalBulk(int elapsedTicks)
         {
             base.NeedIntervalBulk(elapsedTicks);
-            if (elapsedTicks > 0) thoughts.ThoughtInterval();
+            if (elapsedTicks > 0) thoughts.ThoughtIntervalBulk(elapsedTicks);
         }
 
         public override void ExposeData()
