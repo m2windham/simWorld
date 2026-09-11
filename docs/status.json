@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1899,
+  "testsTotal": 1964,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -597,7 +597,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
       "status": "ported",
-      "tests": 84,
+      "tests": 89,
       "items": [
         {
           "id": "needs.pawn",
@@ -673,6 +673,16 @@
           "id": "needs.memoryageing",
           "label": "A memory an unwatched citizen held aged thirteen times too slowly: Need_Seeker.NeedIntervalBulk ran one thought interval (150 ticks) however long the elapsed span was, and an Interval-tier citizen's mood advances once per 2,000-tick coarse tick. The mood LEVEL always agreed between the two paths — which is why the existing agreement test passed — but the memories underneath it expired at a thirteenth of real speed, so most of the civilization stayed anchored to events a fortnight after a watched citizen had forgotten them. ThoughtIntervalBulk(elapsedTicks) is one ageing path for both tiers, O(#memories) either way.",
           "done": true
+        },
+        {
+          "id": "needs.breakletters",
+          "label": "A mental break told the player nothing. MentalStateDef.beginLetter and beginLetterLabel were unread while LetterStack shipped and six systems already raised letters through it. MentalState.PostStart raises the letter now, gated on PawnUtility.ShouldSendNotificationAbout (RimWorld's own gate: player-faction pawns and the prisoners they hold), and all eleven shipped break states gained letter text. beginLetterDef was missing from this port and is ported, so aggro breaks arrive as ThreatSmall. SocialFighting deliberately has none — a null beginLetter is how content says 'not news'.",
+          "done": true
+        },
+        {
+          "id": "needs.applicability",
+          "label": "Every pawn got every need. ShouldHaveNeed consulted minIntelligence and needsRest and nothing else, so colonistsOnly, colonistAndPrisonersOnly and neverOnPrisoner were all ignored. Wired, with the second half being WHEN the question is asked: a pawn is built before it is enfactioned, so Pawn.faction's setter re-runs the sweep (RimWorld: SetFaction) and so does CaptureUtility.Capture, which changes the answer without touching the faction. Honest limitation recorded by the lane itself: neverOnPrisoner is correct and tested but game-dormant, because nothing in src/ ever calls CaptureUtility.Capture — the whole prisoner subsystem is reachable only from tests.",
+          "done": true
         }
       ]
     },
@@ -684,7 +694,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 119,
+      "tests": 148,
       "items": [
         {
           "id": "health.body",
@@ -759,6 +769,11 @@
         {
           "id": "health.corpse",
           "label": "Corpses: a pawn that dies is taken off the map and held by a Corpse rather than lingering spawned, so the chronicle, family tree and bereavement keep pointing at the same object. CompRottable drives Fresh/Rotting/Dessicated at a temperature-dependent rate; corpse ThingDefs are generated per race lazily, since DefLoader has no implied-def hook",
+          "done": true
+        },
+        {
+          "id": "health.violentdeath",
+          "label": "Nothing anywhere separated a murder from a heart attack. DamageDef.externalViolence is read by three consumers now: Pawn_HealthTracker.DiedViolently, StorytellerDeathEvents (which charges adaptation for a violent death and composes the death letter, consuming DamageDef.deathMessage and binding the shipped-but-unbound Death LetterDef), and PawnDiedThoughtsUtility, which gives witnesses the shipped WitnessedDeathAlly memory that had no giver. Content had no non-violent damage at all, so Recipe_Surgery killed failed patients with plain Cut and a botched operation read as a murder; SurgicalCut is the same wound with externalViolence false. Deliberately NOT wired into the chronicle: RecordDeath already separates Death:Age from Death:Injury. What the chronicle actually lacks is any path from a map death to FamilyManager at all — a citizen beaten to death on an open map never shrinks a family, never bereaves anyone and never reaches the chronicle. That is a missing wire, not a missing field.",
           "done": true
         }
       ]
@@ -848,7 +863,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 142,
+      "tests": 153,
       "items": [
         {
           "id": "ai.thinktree",
@@ -944,6 +959,16 @@
           "id": "ai.factionlesshostility",
           "label": "Raiders and citizens could not see each other as hostile at all. Measured on a settlement founded the ordinary way with a real RaidEnemy on its interior: 0 of 14 raiders saw a citizen as hostile, 0 of 30 citizens saw a raider, and neither side ever took an attack job. Hostility required both sides to carry a Pawn.faction, and SettlementFounder generates every citizen with a PawnGenerationRequest naming none — PawnGroupMaker, the raider path, is the only caller in src/ that passes one. So a settlement has a faction and not one of its citizens does. FactionDef.hostileToFactionlessHumanlikes is the flag for exactly that pairing and nothing read it; it is read now in AttackTargetsUtility.HostileTo and in AttackTargetsCache's candidate list, since a factionless pawn sits in no faction bucket and the cached scan would otherwise have gone blind where the full scan found a fight. Every combat test passed throughout because each hands its own defenders a faction by hand — the same isolation blindness the wiring audit exists for, one layer deeper than the batch that made Combat reachable from play. STILL OPEN: Tribal and Outlander factions declare the flag false, so their raids find nobody. The real fix is giving settlement citizens their settlement's faction, which is the World module's; turning the flag on for content that did not ask for it would paper over it.",
           "done": true
+        },
+        {
+          "id": "ai.raidapproach",
+          "label": "A raid arrived and stood still. Measured on a generated settlement with 30 citizens and a 200x200 interior: the squad landed 100 cells from the nearest citizen and closed 11 cells in 10,000 ticks, all of it idle wander drift — first contact happened only because a citizen working the map edge walked into them, at tick 6,408. Now: 62 cells closed in 1,000 ticks, first raider attack job at tick 721, raid resolved by tick 14,000. TRANSLATION, recorded: RimWorld drives this with a Lord and this port has none. The graph is split at its load-bearing joint — the shared goal is kept 1:1 (every arriving pawn is handed the same DutyDef the moment it lands, which is what makes a squad move as one) and the toil transitions become think-tree priority order. The cost is named at AI/DutyDef.cs: no phase change can depend on a fact about the squad rather than about the map, so Trigger_FractionPawnsLost is not expressible and a raid fights to a finish rather than breaking and running. Approach is not a raid special case — a DutyDef carries a think node, so a hunting party or caravan is a second Def in content with no new AI code. The fixture asserts the raid lands beyond twice the acquire radius BEFORE it asserts anything about approach, so it cannot be rescued by a kind map.",
+          "done": true
+        },
+        {
+          "id": "ai.pathingshape",
+          "label": "Measured and recorded rather than assumed: RegionPathCorridorCache is about 30 percent SLOWER on a settlement interior (16.06 ms against 12.15 ms for 15 paths to one destination), because the interior is 5 regions over 40,000 cells with one holding 34,285 — a corridor cannot narrow a search when there is one region to name. Nothing was changed on the strength of it (the corridor path already falls back safely and the whole-tick A/B was within noise), but docs/perf/baseline.md section 9's 9.7x speedup is map-shape dependent and the settlement interior is the shape where it does not apply. A raid costs about 0.01 ms per raider per tick; docs/perf/raid-approach.md has the numbers, labelled as Debug/test-harness rather than Release.",
+          "done": false
         }
       ]
     },
@@ -1160,6 +1185,11 @@
           "id": "crafting.billcreators",
           "label": "Still open after stonecutting and the works initiative: cooking, smithing and tailoring have real recipes, a real giver and no bill-creator. The bench-PLACING half now generalises (CountBuiltOrPlanned / TryPlaceBlueprint); the bill half does not, and forcing it would be wrong. What makes StonecutterInitiative work is not its placement but a demand figure derived from a want the settlement already had, and every bench asks a different question there. For smithing and tailoring the honest answer is still zero, because nothing in this port equips a crafted weapon or wears crafted apparel, and a zero-target bill must not be queued. Cooking is the one that is genuinely ready — meals have a real sink.",
           "done": false
+        },
+        {
+          "id": "crafting.guildinitiative",
+          "label": "A settlement establishes, staffs and bills its own guilds. GuildManager.Establish and Guild.StatisticalMembers had no writer in src/ at all. GuildInitiative establishes only when the civilization knows one of the trade's recipes and somebody below Full tier can staff it, and reuses StonecutterInitiative.StandingBillFor so a guild asks for what a bench asks for and a zero-target bill is never queued. Proven end to end by a 14,000-tick test that calls no initiative, work giver, job driver or guild tick — just NewGame, EnterSettlement and ticks — and asserts the ledger's chunk count FALLS, since the only thing that can remove one is a guild consuming it.",
+          "done": true
         }
       ]
     },
@@ -1268,7 +1298,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 149,
+      "tests": 169,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1318,6 +1348,11 @@
         {
           "id": "economy.factionraidrules",
           "label": "Faction raid gating. earliestRaidDays is half-redundant and that is the result: Cassandra holds ThreatBig to day 6 and Phoebe to day 10, past every shipped value, but Randy Random declares no day floor anywhere — so a day-zero raid by a faction whose own content says it waits three days was reachable, and this field was the only thing that would have stopped it. canMakeRandomly's recorded blocker had expired: it blamed FactionGenerator, while EmergenceManager has been picking a FactionDef at random since civilizations started emerging mid-game. isFighter was measured before being changed — 3,866 raiders across 12 faction and budget combinations produced zero non-combatants — so the described consequence never happens and what was missing was the invariant, which is now a config error rather than a filter doing nothing. autoFlee: Combat landed but flight did not, so on the map path the flag still has nothing to switch; translated onto the abstract path as a cap on how much of a war band can be killed before the rest withdraw, since RimWorld expresses it as a Lord-graph transition and this port has no Lord.",
+          "done": true
+        },
+        {
+          "id": "economy.stock",
+          "label": "The map-to-ledger seam (spec 11.2). Nothing a settlement mined, grew or crafted ever reached Settlement.Stores — its only writers were trade, tribute, quest rewards, raid resolution and scenario setup, so a watched settlement's work meant nothing at civilization scale. SettlementStockInitiative MOVES goods resting in a stockpile into the ledger rather than surveying them: the invariant is that a unit is a Thing on a map or a count in Stores, never both, and banking destroys as it credits, which is what keeps the existing readers that sum both halves correct. Two more defects surfaced while tracing it — nothing in src/ had EVER created a Zone_Stockpile, so WorkGiver_Haul (built, tested, listed in content, counted in the work register's 29 of 29) could never produce a job in any game; and GuildManager.Establish had no caller, so every Guild in the repo was made by a test. The settlement paints its own granary, sized by its backlog rather than by an invented capacity. A second invariant covers labour: a citizen either works jobs on a map or works in a guild, never both, or a settlement gets its stonecutting twice out of the same people.",
           "done": true
         }
       ]
@@ -1594,6 +1629,11 @@
           "id": "settlements.citizen-presence",
           "label": "A settlement's Full-tier citizens are actually placed on its interior map, closing the gap every other module worked around: Settlement.EnterMap spawns every not-yet-spawned Full citizen (Settlement.SyncCitizenSpawns), placed by GenRadial nearest-first search out from the centroid of whatever the settlement has already built (the map's own centre before anything has), never a corner. Interval never spawns — no jobs, no mind state, spec §11.3's own words — and a Statistical citizen was never eligible to begin with (no live Pawn exists for one). Re-checked on SettlementTuning.CitizenMapSyncIntervalTicks (the same rare-tick bucket SettlementConstructionInitiative already uses): a citizen who died is dropped from Citizens and taken off the map (no Corpse system yet — Health's territory, not this one); a citizen who falls out of Full (a future attention system's demotion) is taken back off the same way, and one promoted back to Full is placed again — the real, reachable form of \"release\" this design has, since nothing anywhere discards an already-generated InteriorMap. Scribe-safe by construction: a spawned citizen is written as a reference to the one real Pawn the map's own deep Thing list already owns, an unspawned one deep-saved here as before, so a round trip neither duplicates nor loses anyone.",
           "done": true
+        },
+        {
+          "id": "settlements.starvation",
+          "label": "MEASURED AND OPEN, the largest thing this project knows about itself. A generated settlement does not survive its first week, and an unwatched one does not live at all. Probed independently at Game.NewGame(TribalStart, 25 founders), ticked six in-game days with nothing called by hand. Watched (entered through GodCommands.OpenSettlement): mean food falls to 0.00 inside ONE day and never recovers, mood sits near 0.12, and the population goes 25 -> 20 -> 19 -> 18 -> 16 — nine dead in six days, the deaths being citizens in extreme mental breaks beating each other to death. Unwatched: the same 25 citizens are Full tier and unspawned, and their needs do not move AT ALL over six days — food and mood are identical on day 6 and day 0. So a civilization is either frozen or dying, and neither is the intended behaviour. Every module involved is ported, tested and green; this is what they do when a real game runs them.",
+          "done": false
         }
       ]
     },

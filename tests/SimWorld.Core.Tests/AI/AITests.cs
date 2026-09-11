@@ -70,14 +70,19 @@ namespace SimWorld.Tests.AI
             // The combat tier (system 9: AI — combat) was then inserted above needs, filling the "danger"
             // slot this test's own name has always claimed and the tree file's header comment always
             // promised — see JobGiver_AIFightEnemies and CombatPostureUtility.
+            // The duty tier (system 9: AI — duties) came next, between the two: a pawn that arrived here to
+            // do something does it before it eats and after it defends itself. It contributes nothing for a
+            // pawn with no duty, which is everyone who lives here — see SimWorld.AI.DutyDef for what it
+            // replaces (RimWorld's Lord) and Tests.AI.RaidApproachTests for why this slot rather than another.
             var root = (ThinkNode_Priority)ThinkTreeDefOf.Humanlike.thinkRoot;
             Assert.IsType<ThinkNode_ConditionalInMentalState>(root.subNodes[0]);
             Assert.IsType<JobGiver_AIFightEnemies>(root.subNodes[1]);
-            Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[2]);
-            Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[3]);
-            Assert.IsType<JobGiver_DirectedOrder>(root.subNodes[4]);
-            Assert.IsType<global::SimWorld.AI.JobGiver_Edicts>(root.subNodes[5]);
-            Assert.IsType<JobGiver_Work>(root.subNodes[6]);
+            Assert.IsType<ThinkNode_Duty>(root.subNodes[2]);
+            Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[3]);
+            Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[4]);
+            Assert.IsType<JobGiver_DirectedOrder>(root.subNodes[5]);
+            Assert.IsType<global::SimWorld.AI.JobGiver_Edicts>(root.subNodes[6]);
+            Assert.IsType<JobGiver_Work>(root.subNodes[7]);
         }
 
         [Fact]

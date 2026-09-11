@@ -35,9 +35,42 @@ namespace SimWorld.MindState
         {
         }
 
+        /// <summary>
+        /// Entering the state. Raises the Def's begin letter, which is the only thing in this port that tells
+        /// the player one of their people has broken down (RimWorld: <c>MentalState.PostStart</c> does this
+        /// from exactly here, with the same two fields and the same fallback from
+        /// <see cref="MentalStateDef.beginLetterLabel"/> to the state's label).
+        ///
+        /// <para/><b>Two gates, both RimWorld's.</b> No <see cref="MentalStateDef.beginLetter"/> means the
+        /// state is not news — <c>SocialFighting</c> is the shipped example, a scuffle that is over in
+        /// seconds. And <see cref="Pawns.PawnUtility.ShouldSendNotificationAbout"/> keeps the channel to the
+        /// civilization's own people: a raider going berserk in a siege is not a letter, and one per raider
+        /// is how a letter stack stops being read.
+        ///
+        /// <para/><paramref name="startReason"/> is appended when the caller supplied one, so "berserk" and
+        /// "berserk, because they were denied a grave" are the same letter with a second paragraph — the
+        /// same shape RimWorld appends its own reason in.
+        /// </summary>
         public virtual void PostStart(string? startReason)
         {
             reason = startReason;
+            SendBeginLetter();
+        }
+
+        private void SendBeginLetter()
+        {
+            if (string.IsNullOrEmpty(def.beginLetter)) return;
+            if (!Pawns.PawnUtility.ShouldSendNotificationAbout(pawn)) return;
+
+            string label = string.IsNullOrEmpty(def.beginLetterLabel) ? def.LabelCap : def.beginLetterLabel!;
+            string text = Pawns.PawnUtility.FormatWithPawn(def.beginLetter, pawn);
+            if (!string.IsNullOrEmpty(reason)) text = text + "\n\n" + reason;
+
+            Find.LetterStack.ReceiveLetter(
+                label + ": " + pawn.Label,
+                text,
+                def.beginLetterDef ?? Letters.LetterDefOf.NegativeEvent,
+                new List<string> { pawn.GetUniqueLoadID() });
         }
 
         public virtual void PostEnd()
@@ -259,7 +292,11 @@ namespace SimWorld.MindState
             {
                 return false;
             }
-            return chosen.Worker.TryStart(pawn, "mood", causedByMood: true);
+            // Prose, not the bare tag "mood" it used to be: MentalState.PostStart appends this to the letter
+            // the player reads (RimWorld does the same, from a translated string), and "mood" on its own line
+            // under "Maren is in a rage" reads as a debug artefact. causedByMood carries the machine-readable
+            // half and is what every other reader consults.
+            return chosen.Worker.TryStart(pawn, "Their mood has been at breaking point for some time.", causedByMood: true);
         }
 
         public void Notify_RecoveredFromMentalState()
@@ -325,6 +362,21 @@ namespace SimWorld.MindState
         /// <summary><see cref="Sim.TickManager.TicksGame"/> after which <see cref="angryAt"/> no longer applies.</summary>
         public int angryUntilTick = -1;
 
+        // ---- AI module (system 9: AI — duties) ----
+
+        /// <summary>
+        /// The standing goal this pawn is on this map to carry out, or null — which is every pawn who lives
+        /// here (RimWorld: <c>Pawn_MindState.duty</c>, a <c>PawnDuty</c> there because RimWorld's also carries
+        /// a focus target and a radius; this port stores the def alone until something reads more, see
+        /// <see cref="AI.DutyDef"/>). Read by <see cref="AI.ThinkNode_Duty"/> as one tier of the main think
+        /// tree, and written by whatever put the pawn on the map: a raid squad is handed
+        /// <see cref="AI.DutyDefOf.AssaultSettlement"/> as it lands, and that is what walks it to the town.
+        /// <para/>
+        /// A plain field and not a property, unlike <see cref="angryAt"/> beside it: a duty is one pawn's own
+        /// business and nothing indexes it, where a grudge has to be visible to the pawn it names.
+        /// </summary>
+        public AI.DutyDef? duty;
+
         public Pawn_MindState(Pawn pawn)
         {
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
@@ -352,6 +404,12 @@ namespace SimWorld.MindState
             Scribe_References.Look(ref aa, "angryAt");
             angryAt = aa;
             Scribe_Values.Look(ref angryUntilTick, "angryUntilTick", -1);
+
+            // A raid saved mid-approach has to still be a raid when it loads, or reloading would disarm every
+            // squad on the map — the duty is the only thing that makes them march.
+            AI.DutyDef? d = duty;
+            Scribe_Defs.Look(ref d, "duty");
+            duty = d;
         }
     }
 }

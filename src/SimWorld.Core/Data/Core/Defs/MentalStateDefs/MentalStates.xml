@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 
+  <!--
+    beginLetterLabel / beginLetter / beginLetterDef: what the player is told when one of their people breaks
+    down. MentalState.PostStart raises exactly one letter from these three fields, gated on
+    PawnUtility.ShouldSendNotificationAbout, so a raider going berserk in a siege raises nothing.
+
+    The prose is this port's own. RimWorld's own break letters live in its Keyed/ translation files rather
+    than in MentalStates.xml, so the strings could not be sourced; what is ported 1:1 is the shape - a label,
+    a body with {0} for the pawn, and a LetterDef choosing how loudly it arrives. The aggro breaks (Berserk,
+    MurderousRage, SadisticRage, FireStartingSpree) arrive as ThreatSmall because they are a danger to the
+    town rather than only to the person; the rest take the NegativeEvent default MentalState.PostStart falls
+    back to.
+
+    SocialFighting deliberately has none: it is this port's own short scuffle (see its own comment below),
+    over in seconds, and a letter for it would be noise. A null beginLetter is how content says "not news".
+  -->
+
   <MentalStateDef Name="MoodBreakBase" Abstract="True">
     <moodRecoveryThought>Catharsis</moodRecoveryThought>
     <recoverFromSleep>false</recoverFromSleep>
@@ -19,6 +35,8 @@
     <recoveryMtbDays>0.6</recoveryMtbDays>
     <recoverFromSleep>true</recoverFromSleep>
     <baseInspectLine>Mental state: Sad wander</baseInspectLine>
+    <beginLetterLabel>sad wandering</beginLetterLabel>
+    <beginLetter>{0} is wandering in a daze, too low to work. They will come back to themselves in their own time.</beginLetter>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
@@ -30,6 +48,8 @@
     <recoveryMtbDays>0.6</recoveryMtbDays>
     <recoverFromSleep>true</recoverFromSleep>
     <baseInspectLine>Mental state: Hiding in room</baseInspectLine>
+    <beginLetterLabel>hiding away</beginLetterLabel>
+    <beginLetter>{0} has shut themselves away and will not come out. Not hurt, not in danger; simply unable to face anyone today.</beginLetter>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
@@ -40,6 +60,8 @@
     <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.5</recoveryMtbDays>
     <baseInspectLine>Mental state: Food binge</baseInspectLine>
+    <beginLetterLabel>food binge</beginLetterLabel>
+    <beginLetter>{0} has started eating everything they can lay hands on. The stores will be lighter when they stop.</beginLetter>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
@@ -50,6 +72,8 @@
     <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.5</recoveryMtbDays>
     <baseInspectLine>Mental state: Insulting spree</baseInspectLine>
+    <beginLetterLabel>insulting spree</beginLetterLabel>
+    <beginLetter>{0} is going from person to person picking fights with words. Whoever they find will remember it.</beginLetter>
   </MentalStateDef>
 
   <!-- Social (SimWorld.Social, system 17): a brief mutual scuffle an insult can escalate into
@@ -81,6 +105,8 @@
     <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.6</recoveryMtbDays>
     <baseInspectLine>Mental state: Tantrum</baseInspectLine>
+    <beginLetterLabel>tantrum</beginLetterLabel>
+    <beginLetter>{0} is in a rage and smashing whatever is nearest. Things will be broken before this burns out.</beginLetter>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
@@ -91,6 +117,9 @@
     <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.6</recoveryMtbDays>
     <baseInspectLine>Mental state: Sadistic rage</baseInspectLine>
+    <beginLetterLabel>sadistic rage</beginLetterLabel>
+    <beginLetter>{0} has turned cruel and is looking for someone to hurt.</beginLetter>
+    <beginLetterDef>ThreatSmall</beginLetterDef>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
@@ -101,6 +130,9 @@
     <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.5</recoveryMtbDays>
     <baseInspectLine>Mental state: Fire starting spree</baseInspectLine>
+    <beginLetterLabel>fire-starting spree</beginLetterLabel>
+    <beginLetter>{0} is setting fires. Whatever they reach will burn unless somebody stops them.</beginLetter>
+    <beginLetterDef>ThreatSmall</beginLetterDef>
   </MentalStateDef>
 
   <!-- Extreme -->
@@ -113,6 +145,9 @@
     <maxTicksBeforeRecovery>60000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.7</recoveryMtbDays>
     <baseInspectLine>Mental state: Berserk</baseInspectLine>
+    <beginLetterLabel>berserk</beginLetterLabel>
+    <beginLetter>{0} has gone berserk and is attacking everyone in reach. They will not stop of their own accord for some time.</beginLetter>
+    <beginLetterDef>ThreatSmall</beginLetterDef>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
@@ -123,6 +158,9 @@
     <maxTicksBeforeRecovery>60000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.7</recoveryMtbDays>
     <baseInspectLine>Mental state: Murderous rage</baseInspectLine>
+    <beginLetterLabel>murderous rage</beginLetterLabel>
+    <beginLetter>{0} has fixed on killing someone and has gone looking for them.</beginLetter>
+    <beginLetterDef>ThreatSmall</beginLetterDef>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
@@ -134,6 +172,8 @@
     <recoveryMtbDays>2</recoveryMtbDays>
     <recoverFromDowned>false</recoverFromDowned>
     <baseInspectLine>Mental state: Catatonic breakdown</baseInspectLine>
+    <beginLetterLabel>catatonic breakdown</beginLetterLabel>
+    <beginLetter>{0} has collapsed into a catatonic state and no longer responds to anything. This one lasts.</beginLetter>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
@@ -144,6 +184,8 @@
     <maxTicksBeforeRecovery>120000</maxTicksBeforeRecovery>
     <recoveryMtbDays>1</recoveryMtbDays>
     <baseInspectLine>Mental state: Giving up</baseInspectLine>
+    <beginLetterLabel>giving up</beginLetterLabel>
+    <beginLetter>{0} has given up on this place and is walking out of it.</beginLetter>
   </MentalStateDef>
 
 </Defs>

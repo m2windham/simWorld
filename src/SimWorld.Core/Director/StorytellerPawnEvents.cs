@@ -50,9 +50,10 @@ namespace SimWorld.Director
         /// guards with <c>if (!Downed)</c>), so a pawn who stays down through further damage is charged once;
         /// and <c>Pawn_HealthTracker.Kill</c> sets the dead state directly without ever passing through
         /// <c>MakeDowned</c>, so dying never raises this. A citizen who is downed and then killed therefore
-        /// moves the curve once here, and again only if the separate, raid-scoped
-        /// <see cref="StoryWatcher_Adaptation.Notify_ColonistDied"/> call site also fires for them — two
-        /// events at two times, which is what both RimWorld and this port charge separately.
+        /// moves the curve once here and once on the death side
+        /// (<see cref="StorytellerDeathEvents.Notify_PawnDied"/>, or the raid resolver's own
+        /// <see cref="StoryWatcher_Adaptation.Notify_ColonistDied"/> call for a raid it settled abstractly) —
+        /// two events at two times, which is what both RimWorld and this port charge separately.
         /// </summary>
         public static bool Notify_PawnDowned(Pawn pawn)
         {
@@ -61,11 +62,19 @@ namespace SimWorld.Director
             return true;
         }
 
-        /// <summary>Humanlike, alive, and on the roster of a civilization the storyteller is telling a story
-        /// about — see the class doc for why membership is asked this way and not of <c>Pawn.faction</c>.</summary>
-        private static bool IsCivilizationMember(Pawn? pawn)
+        /// <summary>
+        /// Humanlike and on the roster of a civilization the storyteller is telling a story about — see the
+        /// class doc for why membership is asked this way and not of <c>Pawn.faction</c>.
+        ///
+        /// <para/><paramref name="allowDead"/> exists for the death side (<see cref="StorytellerDeathEvents"/>):
+        /// <c>Pawn_HealthTracker.Kill</c> sets the dead state before it notifies anybody, so a hook raised
+        /// from a death is always looking at a pawn who is already dead. The roster still holds them at that
+        /// instant — a settlement drops its dead in a later sweep — which is exactly why the question can
+        /// still be answered. Downing keeps the alive test, where it is a real guard.
+        /// </summary>
+        public static bool IsCivilizationMember(Pawn? pawn, bool allowDead = false)
         {
-            if (pawn == null || pawn.Dead || !pawn.RaceProps.Humanlike) return false;
+            if (pawn == null || (pawn.Dead && !allowDead) || !pawn.RaceProps.Humanlike) return false;
 
             IReadOnlyList<IIncidentTarget> targets = Find.Storyteller.AllIncidentTargets;
             for (int i = 0; i < targets.Count; i++)

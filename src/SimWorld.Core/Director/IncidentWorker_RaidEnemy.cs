@@ -47,8 +47,13 @@ namespace SimWorld.Director
     /// rather than a running game. A civilization with settlements resolves through them.
     /// <para/>
     /// Arrival is RimWorld's <c>PawnsArrivalModeWorker_EdgeWalkIn</c>: one entry cell on a random map edge for
-    /// the group, then each pawn placed on a walkable cell near it (<see cref="ClosewalkRadius"/>). Walking
-    /// the squad from there to the colony is AI's, not this module's.
+    /// the group, then each pawn placed on a walkable cell near it (<see cref="ClosewalkRadius"/>), and then
+    /// — the part that used to be missing, and that left a generated raid standing on the map edge for as
+    /// long as anyone cared to watch — the squad is handed the standing goal that walks it to the town
+    /// (<see cref="SimWorld.AI.DutyDefOf.AssaultSettlement"/>, assigned in <see cref="Arrive"/>). The
+    /// behaviour behind that goal is the AI module's, as it always was; what this module owes it is the
+    /// order, which is RimWorld's own division too (its arrival worker spawns, and <c>LordMaker</c> is called
+    /// beside it).
     /// </summary>
     public sealed class IncidentWorker_RaidEnemy : IncidentWorker
     {
@@ -194,6 +199,14 @@ namespace SimWorld.Director
             {
                 GenSpawn.Spawn(pawns[i], RandomClosewalkCellNear(entry, map, ClosewalkRadius, rand), map);
             }
+
+            // The line this class's own doc used to describe as somebody else's problem ("walking the squad
+            // from there to the colony is AI's, not this module's") — and for two batches nobody owned it, so
+            // a raid landed on the edge of a 200x200 interior 103 cells from the nearest citizen, outside
+            // every acquire radius on either side, and stood there. Handing the squad a duty is this port's
+            // whole replacement for RimWorld's LordMaker.MakeNewLord(faction, new LordJob_AssaultColony(),
+            // map, pawns) at exactly this call site; what that trades away is written out on SimWorld.AI.DutyDef.
+            SimWorld.AI.DutyUtility.AssignToAll(pawns, SimWorld.AI.DutyDefOf.AssaultSettlement);
         }
 
         /// <summary>

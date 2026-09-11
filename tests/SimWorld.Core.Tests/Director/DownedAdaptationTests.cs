@@ -27,6 +27,11 @@ namespace SimWorld.Tests.Director
     /// from <c>FamilyManager.HandleDeath</c>, so that dying of old age would not ease the storyteller.
     /// Downing has no comparable non-threat cause to exclude and exactly one funnel —
     /// <c>Pawn_HealthTracker.MakeDowned</c> — so the hook goes there, which is where RimWorld raises it too.
+    /// <i>The death side has since caught up</i>: <c>DamageDef.externalViolence</c> is the classifier that was
+    /// missing, so <see cref="StorytellerDeathEvents"/> now raises the same hook from the death funnel for a
+    /// violent death and stays silent for age, starvation, disease and a surgery that went wrong — see
+    /// <c>Tests.Health.ViolentDeathTests</c>. The raid resolver still counts its own, because a battle it
+    /// settled arithmetically kills with no <c>DamageInfo</c> at all.
     /// What downing does have, and death did not, is that the funnel runs for raiders and animals as well as
     /// for citizens: the guard those tests pin is the whole reason
     /// <see cref="StorytellerPawnEvents"/> exists as a class rather than as one more line.
@@ -123,7 +128,9 @@ namespace SimWorld.Tests.Director
             Assert.Equal(quiet - StoryWatcher_Adaptation.DownedAdaptDaysPenalty, afterDowning, 4);
 
             // Pawn_HealthTracker.Kill sets the dead state directly and never passes back through MakeDowned,
-            // so the same loss is not charged again on the way out.
+            // so the downing is not charged again on the way out. Nor is the death: this one carries no
+            // DamageInfo, so StorytellerDeathEvents reads it as a death rather than a killing and leaves the
+            // curve alone (ViolentDeathTests covers the case where it does not).
             citizen.health.Kill(null, null);
 
             Assert.True(citizen.Dead);

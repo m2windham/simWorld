@@ -40,6 +40,22 @@
         -->
         <li Class="SimWorld.AI.JobGiver_AIFightEnemies" />
 
+        <!--
+          What this pawn came here to do, if anything (SimWorld.AI.DutyDef — this port's translation of
+          RimWorld's Lord, with the cost of that translation written out at the class). Contributes nothing
+          at all for a pawn with no duty, which is every citizen of a settlement, so this tier is a strict
+          no-op for the people who live here.
+
+          BELOW the fight tier: contact always beats marching, or a squad would drop the enemy in front of it
+          to take one more step toward the enemy behind it. ABOVE needs and work, which is where RimWorld puts
+          its own lord-duty node in the humanlike tree — its exact slot there could not be sourced from here,
+          so the ordering is pinned by test (RaidApproachTests) rather than asserted as a fact about RimWorld.
+          A raid that stopped halfway across the map to eat would be the bug this tier exists to fix wearing a
+          different hat, and a duty ends by itself (the last tier of an assault walks the pawn off the map),
+          so nothing stays above its needs indefinitely.
+        -->
+        <li Class="SimWorld.AI.ThinkNode_Duty" />
+
         <li Class="SimWorld.AI.ThinkNode_ConditionalHungry">
           <subNodes>
             <li Class="SimWorld.AI.JobGiver_GetFood" />
