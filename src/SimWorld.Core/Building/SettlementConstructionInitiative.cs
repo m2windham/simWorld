@@ -110,7 +110,7 @@ namespace SimWorld.Building
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (Find.TickManager.TicksGame % ConstructionInitiativeTuning.IntervalTicks != 0) return;
 
-            List<Need> needs = ComputeNeeds(settlement);
+            List<Need> needs = ComputeNeeds(settlement, map);
             if (needs.Count == 0) return;
 
             HashSet<ThingDef>? biased = CollectEdictBias();
@@ -119,7 +119,7 @@ namespace SimWorld.Building
                 // Stable sort: biased needs move to the front, the unbiased rest keep their original
                 // (survival-first) relative order — exactly the "reorder, don't replace" shape
                 // JobGiver_Edicts already gives prioritizedWork.
-                needs = needs.OrderByDescending(n => biased.Contains(n.EntityDef)).ToList();
+                needs = needs.OrderByDescending(n => IsBiased(biased, n.EntityDef)).ToList();
             }
 
             int placed = 0;
@@ -142,7 +142,7 @@ namespace SimWorld.Building
         /// unbiased default priority: a bed for a person before a wall around them before a shed for their
         /// goods, survival before shelter before property.
         /// </summary>
-        private static List<Need> ComputeNeeds(Settlement settlement)
+        private static List<Need> ComputeNeeds(Settlement settlement, Map.Map map)
         {
             var needs = new List<Need>(3);
 
@@ -155,7 +155,12 @@ namespace SimWorld.Building
                     (int)Math.Ceiling(citizens * ConstructionInitiativeTuning.WallsPerCitizen),
                     ConstructionInitiativeTuning.MinWallShelterCount,
                     ConstructionInitiativeTuning.MaxWallShelterCount);
-                needs.Add(new Need(ConstructionThingDefOf.Wall, wallTarget));
+                // Which material, not how many: the wall need is computed once, here, and
+                // StoneWallMaterials only answers what to cut it from — the toughest stone the settlement has
+                // a whole wall's worth of blocks for, or wood when it has none. See that class for why a
+                // second decider wanting its own stone walls would be the wrong shape, and why
+                // CountBuiltOrPlanned below has to count every wall kind against this one target.
+                needs.Add(new Need(StoneWallMaterials.PreferredWallDef(map), wallTarget));
             }
 
             int storageTarget = StorageTarget(settlement);
@@ -200,24 +205,56 @@ namespace SimWorld.Building
 
         /// <summary>Already-built instances of <paramref name="entityDef"/> plus any Blueprint or Frame
         /// already under way for it — a shortfall counts only what is genuinely still missing, so a settlement
-        /// never queues a second blueprint for something it (or its citizens) already started.</summary>
+        /// never queues a second blueprint for something it (or its citizens) already started.
+        /// <para/>
+        /// A wall is a wall whatever it is cut from: <see cref="StoneWallMaterials.EquivalentsOf"/> widens
+        /// this to every Def that fills the same need (itself, for everything that is not a wall). Without
+        /// that, a settlement whose masons had walled it in granite would still count itself forty wooden
+        /// walls short — the need is one need, and only the material moved.</summary>
         private static int CountBuiltOrPlanned(Map.Map map, ThingDef entityDef)
         {
-            int count = map.listerThings.ThingsOfDef(entityDef).Count;
+            IReadOnlyList<ThingDef> fills = StoneWallMaterials.EquivalentsOf(entityDef);
+
+            int count = 0;
+            for (int i = 0; i < fills.Count; i++) count += map.listerThings.ThingsOfDef(fills[i]).Count;
 
             IReadOnlyList<Thing> blueprints = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
             for (int i = 0; i < blueprints.Count; i++)
             {
-                if (blueprints[i] is Blueprint bp && ReferenceEquals(bp.EntityToBuild, entityDef)) count++;
+                if (blueprints[i] is Blueprint bp && Fills(fills, bp.EntityToBuild)) count++;
             }
 
             IReadOnlyList<Thing> frames = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame);
             for (int i = 0; i < frames.Count; i++)
             {
-                if (frames[i] is Frame f && ReferenceEquals(f.EntityToBuild, entityDef)) count++;
+                if (frames[i] is Frame f && Fills(fills, f.EntityToBuild)) count++;
             }
 
             return count;
+        }
+
+        /// <summary>Whether an active edict prioritises this need. Matched across
+        /// <see cref="StoneWallMaterials.EquivalentsOf"/> for the same reason
+        /// <see cref="CountBuiltOrPlanned"/> counts across it: <c>GreatWorksMandate</c> names <c>Wall</c> by
+        /// defName, and a settlement that had cut enough stone to wall itself in granite would otherwise stop
+        /// being biased by the edict the moment it did — the edict is about walls, not about wood.</summary>
+        private static bool IsBiased(HashSet<ThingDef> biased, ThingDef entityDef)
+        {
+            IReadOnlyList<ThingDef> fills = StoneWallMaterials.EquivalentsOf(entityDef);
+            for (int i = 0; i < fills.Count; i++)
+            {
+                if (biased.Contains(fills[i])) return true;
+            }
+            return false;
+        }
+
+        private static bool Fills(IReadOnlyList<ThingDef> fills, ThingDef? entityDef)
+        {
+            for (int i = 0; i < fills.Count; i++)
+            {
+                if (ReferenceEquals(fills[i], entityDef)) return true;
+            }
+            return false;
         }
 
         /// <summary>

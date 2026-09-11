@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Cut stone blocks for the two rock types that had none (RimWorld: ThingDefs_Items/Items_Resource "Blocks*",
+    one per stone). BlocksSandstone already ships in Items_Resource.xml; these are its granite and limestone
+    siblings, and they exist because mining now drops ChunkGranite and ChunkLimestone (see
+    Buildings_Natural.xml) and nothing could turn either into anything. A settlement on a granite tile mined
+    all day and could cut none of it.
+
+    Their own file rather than another two elements in Items_Resource.xml: the mining lane is editing that
+    file, and a new file cannot conflict (CLAUDE.md). DefLoader.AddDirectory reads every XML under Defs/
+    recursively, so this is loaded exactly as if it sat in the shared one.
+
+    Fields mirror BlocksSandstone exactly, MarketValue included. The three stones deliberately do NOT differ
+    here: the one difference RimWorld actually has between stone types is how much punishment the finished
+    structure takes, and that is expressed once, on the wall Defs in ThingDefs_Buildings/Buildings_Stonework.xml,
+    rather than smeared across block price, cutting time and durability with three invented numbers where one
+    sourced axis will do. RimWorld prices every Blocks* the same and works every Make_Blocks_* recipe for the
+    same 1600 ticks; this keeps both.
+  -->
+
+  <ThingDef>
+    <defName>BlocksGranite</defName>
+    <label>granite blocks</label>
+    <description>Granite cut into blocks, ready for construction. Hard, heavy, and slow to weather.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <thingCategories><li>StoneBlocks</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases>
+      <MarketValue>0.9</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+    <stuffProps>
+      <categories><li>Stony</li></categories>
+      <commonality>1</commonality>
+      <statFactors>
+        <Flammability>0</Flammability>
+      </statFactors>
+    </stuffProps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>BlocksLimestone</defName>
+    <label>limestone blocks</label>
+    <description>Limestone cut into blocks, ready for construction. Easier to dress than granite and a good deal more forgiving than sandstone.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <thingCategories><li>StoneBlocks</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases>
+      <MarketValue>0.9</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+    <stuffProps>
+      <categories><li>Stony</li></categories>
+      <commonality>1</commonality>
+      <statFactors>
+        <Flammability>0</Flammability>
+      </statFactors>
+    </stuffProps>
+  </ThingDef>
+
+</Defs>
