@@ -31,9 +31,19 @@ namespace SimWorld.AI
             {
                 Thing? food = job.GetTarget(TargetIndex.A).Thing;
                 if (food == null || food.Destroyed) return;
+
+                // RimWorld eats a *sitting*, not a unit: Toils_Ingest takes job.count units in one chew, and
+                // job.count is FoodUtility.WillIngestStackCountOf. This port ate one unit per job, which for
+                // every raw foodstuff it ships (0.05 nutrition against a 1.0 stomach) meant a citizen could
+                // not out-eat its own hunger no matter how much food was in front of it. See that method for
+                // the whole argument.
+                int count = SimWorld.Crafting.FoodUtility.WillIngestStackCountOf(pawn, food.def);
+                if (count > food.stackCount) count = food.stackCount;
+                if (count < 1) count = 1;
+
                 float nutrition = food.def.ingestible?.nutrition ?? 0f;
-                pawn.needs.food?.Eat(nutrition);
-                food.stackCount -= 1;
+                pawn.needs.food?.Eat(nutrition * count);
+                food.stackCount -= count;
                 if (food.stackCount <= 0) food.Destroy();
             });
         }

@@ -41,6 +41,16 @@ namespace SimWorld.Crafting
         public FoodTypeFlags foodType = FoodTypeFlags.None;
         public float joy;
 
+        /// <summary>
+        /// Most units of this def a pawn will take in one sitting (RimWorld:
+        /// <c>IngestibleProperties.maxNumToIngestAtOnce</c>, default 20 — the figure this port keeps). It is
+        /// what makes a raw foodstuff edible at all: a berry is 0.05 nutrition and a stomach holds 1.0, so
+        /// without a "take twenty" rule a meal's worth of berries is twenty separate walk-reserve-chew jobs
+        /// and a citizen loses ground to its own hunger while standing in a larder. See
+        /// <see cref="FoodUtility.WillIngestStackCountOf"/>, which is where the cap is applied.
+        /// </summary>
+        public int maxNumToIngestAtOnce = 20;
+
         // joyKind and tasteThought intentionally omitted: no Joy-kind or Thought content for ingestibles yet.
     }
 }

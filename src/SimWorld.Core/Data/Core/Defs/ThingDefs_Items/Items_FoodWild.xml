@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Foraged food (RimWorld: RawBerries in ThingDefs_Items/Items_Food).
+
+    Its own file rather than an entry in Items_Food.xml, per CLAUDE.md: DefLoader.AddDirectory reads every
+    XML file under a Def folder, so additive content never needs an edit to a shared one.
+
+    WHY THIS DEF EXISTS AT ALL. Before it, a generated map carried no nutrition whatsoever. Map generation
+    scattered WildPlant, which has no harvestedThingDef and no ingestible block; nothing else on an interior
+    was edible; the scenarios ship no food; and the two systems that could have produced some — hunting and
+    the growing zones — were both dormant (no wild animal is ever spawned on a map, and nothing in src/ ever
+    created a Zone_Growing). A settlement founded the ordinary way had literally nothing to eat, and its
+    citizens went from 0.8 nutrition to zero in under a day and then beat each other to death in extreme
+    mental breaks. This is the first link of that chain: something edible has to exist.
+
+    nutrition 0.05 matches RimWorld's own RawBerries and this port's other raw foodstuffs (RawPotatoes,
+    RawRice, Meat_Generic), so a cooking recipe measured in nutrition (IngredientValueGetter_Nutrition) needs
+    no special case for it. preferability RawTasty is RimWorld's own for berries — better than RawBad raw
+    produce, worse than any cooked meal — which is what keeps a citizen eating a meal first once there are
+    meals. MarketValue is this port's own (RimWorld's is not sourceable here), placed between RawPotatoes
+    (0.25) and Meat_Generic (0.4) rather than trusted as a literal.
+  -->
+
+  <ThingDef>
+    <defName>RawBerries</defName>
+    <label>berries</label>
+    <description>Wild berries, picked by hand. Sweet, and gone almost as fast as they are gathered.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <thingCategories><li>PlantFoodRaw</li></thingCategories>
+    <stackLimit>75</stackLimit>
+    <statBases><MarketValue>0.3</MarketValue></statBases>
+    <ingestible>
+      <nutrition>0.05</nutrition>
+      <preferability>RawTasty</preferability>
+      <foodType>VegetableOrFruit</foodType>
+    </ingestible>
+  </ThingDef>
+
+</Defs>
