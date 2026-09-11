@@ -1072,6 +1072,36 @@ flowchart TD
   a category filter ("any meat") is refused in `ConfigErrors` rather than
   silently skipped: a def-count ledger has no stockpile to make that choice
   in.
+- **Bills at a workbench, map scale** (`crafting.workbenches`, built): the
+  other half of the same bill queue — what a `Guild` deliberately does not
+  model, per its own remarks above, because it belongs to an open settlement's
+  map rather than to the civilization. `Things.CompBillGiver` makes any
+  spawned `Building` an `IBillGiver` by composition
+  (`CompProperties_BillGiver.workType` names which `WorkTypeDef` it serves),
+  following the Building module's own comp-over-subclass grain
+  (`CompPower`/`CompTurretGun`/`CompTrap`) rather than adding a fourth
+  concrete `Building` subclass. One `Crafting.WorkGiver_DoBill` — matching a
+  candidate bench's `workType` against its own `WorkGiverDef.workType` —
+  serves `DoBillsSmith`/`DoBillsTailor`/`DoBillsArt`/`DoBillsCraft`/
+  `CookMeals` alike, rather than RimWorld's several near-duplicate
+  `WorkGiver_DoBill` subclasses distinguished by
+  `WorkGiverDef.fixedBillGiverDefs` — a field this port does not add, since it
+  would live on the shared `Work.WorkGiverDef` every work-type lane touches.
+  `Crafting.JobDriver_DoBill` spends skill-scaled work ticks on the first
+  runnable bill, then re-resolves ingredients near the bench through the same
+  `BillIngredientsFinder` a guild's bill already resolves them with, consumes
+  the matching real map `Thing`s, spawns the product via `GenRecipe`/
+  `ThingMaker` and grants skill XP. **Ingredient delivery is deliberately out
+  of scope**, mirroring `WorkGiver_ConstructFinishFrame`'s own split from
+  `ConstructDeliverResourcesToFrames`: a bill only runs once its ingredients
+  already sit within `WorkGiver_DoBill.IngredientSearchRadius` of the bench —
+  typically an adjacent stockpile zone `HaulGeneral`'s `WorkGiver_Haul` keeps
+  filled — rather than this driver carrying a queue of distant stacks itself,
+  which this port's three-target `Job` has no room for. Shipped content:
+  `FueledStove`/`TableStonecutter` (already-existing benches, now carrying the
+  comp) plus two new ones, `Smithy` and `TableTailor`, each with one new
+  recipe; `DoBillsArt` is wired with no bench yet, since a sculpture's own
+  beauty/quality/description subsystem is a separate piece of content work.
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.
