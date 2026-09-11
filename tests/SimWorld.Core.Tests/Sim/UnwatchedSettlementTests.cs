@@ -90,8 +90,12 @@ namespace SimWorld.Tests.Sim
             TickDays(game, 6);
 
             Assert.Contains(band, p => !p.Dead);
-            Assert.True(MeanNeed(band, NeedDefOf.Food) < foodBefore,
-                "six days of a settlement nobody entered left its citizens' food exactly where it started");
+            // Changed, not fallen. This read "< foodBefore" until Economy.SettlementLarder gave an off-map
+            // citizen something to eat (Settlement.Stores, the abstract consumption path this lane's own doc
+            // called for): a fed town's mean nutrition now swings above its founding level as well as below
+            // it, so a one-way assertion was pinning "nobody is feeding them" rather than "the clock runs".
+            // Movement is what the tick path owns, which is what this asserts.
+            Assert.NotEqual(foodBefore, MeanNeed(band, NeedDefOf.Food));
             Assert.NotEqual(moodBefore, MeanNeed(band, NeedDefOf.Mood));
             Assert.True(band[0].ageTracker.ageBiologicalTicks > ageBefore, "nobody aged a tick");
         }

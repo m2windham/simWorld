@@ -293,6 +293,15 @@ namespace SimWorld.Sim
                 settlement.AddStore(record.thingDef, record.count);
             }
 
+            // economy.larder: and the band's provisions, which no scenario ships. Measured on shipped
+            // content, a settlement founded here held MeleeWeapon_Knife x2 and nothing edible at all, so a
+            // citizen with no map to forage on — every citizen, until somebody opens the interior — had an
+            // empty ledger to eat from and starved through the first week with nothing wrong anywhere. A band
+            // that has walked for days arrives carrying food; see SettlementLarder.ProvisionFoundingBand for
+            // what and how much (derived from the shipped crops' growDays and the food economy's own
+            // per-eater demand, never a literal). It is a founding act and is called exactly once, here.
+            SimWorld.Economy.SettlementLarder.ProvisionFoundingBand(settlement);
+
             target.Tile = tile;
             SyncCivilizationTarget(game, target);
 
@@ -462,6 +471,14 @@ namespace SimWorld.Sim
             // ever credit. Ordered ahead of the guild tick below so the goods a settlement banked this pass are
             // the goods its industry spends this pass, rather than a guild-interval behind.
             tm.PostTickers.Add(_ => SimWorld.Economy.SettlementStockInitiative.Tick());
+            // economy.larder: the same seam in the other direction — a citizen with no map to act in eats
+            // from Settlement.Stores. The whole food economy is map-based (berries lie on a map, a field is
+            // painted on one, a kitchen is built on one), so once CitizenTickRegistry started ticking off-map
+            // citizens, a settlement nobody had opened starved where it used to merely be frozen. Ordered
+            // immediately after the banking pass above so the surplus a watched settlement banked this pass
+            // is available to its off-map citizens on the same pass rather than an interval behind; for an
+            // unwatched settlement (no map, nothing to bank) the order is immaterial.
+            tm.PostTickers.Add(_ => SimWorld.Economy.SettlementLarder.Tick());
             // crafting.guilds: settlements establish, staff and bill the industries their civilization knows
             // the trades for. GuildManager.Establish had no caller in src/ at all, so the tick below ran over
             // an empty list for the life of every game. Ordered immediately before it for the same reason.
