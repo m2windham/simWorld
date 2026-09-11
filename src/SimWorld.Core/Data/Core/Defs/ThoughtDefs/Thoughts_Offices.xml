@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The mood half of holding a station (system: offices). Situational rather than a granted memory, via
+    ThoughtWorker_HoldsOffice, so each appears exactly when OfficeManager seats someone and disappears exactly
+    when it unseats them — no per-pawn grant or revoke, and nothing left decaying on a citizen who is no
+    longer the steward. Same shape, and the same reasoning, as Thoughts_Edicts.xml.
+
+    baseMoodEffect is this port's own — RimWorld has no station to source one from. Both are small and
+    positive: a station is standing rather than a burden here, and it is held by one person, so it must not be
+    large enough to distort a settlement's mean mood (which the god rollup, migration's settlement quality and
+    the birth roll all read). What the tests pin is the direction and that it ends with the tenure, never the
+    number. The eldership is worth slightly more than the stewardship: it cannot be taken from anyone and
+    cannot be handed on.
+  -->
+
+  <ThoughtDef>
+    <defName>HoldsStewardship</defName>
+    <workerClass>SimWorld.Offices.ThoughtWorker_HoldsOffice</workerClass>
+    <stages>
+      <li>
+        <label>steward</label>
+        <description>They chose me to speak for us.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>HoldsEldership</defName>
+    <workerClass>SimWorld.Offices.ThoughtWorker_HoldsOffice</workerClass>
+    <stages>
+      <li>
+        <label>elder</label>
+        <description>I remember when there was nothing here.</description>
+        <baseMoodEffect>4</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

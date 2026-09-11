@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The standing roles the two shipped stations carry (system: offices, src/SimWorld.Core/Offices). These are
+    ordinary Work.RoleDefs and nothing about the class is special — what makes them different is that an
+    OfficeDef names one, and OfficeManager therefore treats "carries this role" as "holds that seat". They are
+    reserved for their office in the same sense a defName is reserved: assigning one by hand, or sweeping a
+    whole settlement with WorkPolicyUtility.ApplyRoleToPopulation, is corrected on the next office sweep
+    rather than forbidden.
+
+    Its own file rather than an addition to Roles.xml: a new file cannot conflict with another lane's edit,
+    and DefLoader.AddDirectory loads every XML under the folder recursively (CLAUDE.md).
+
+    Both roles are built from the existing 20 core WorkTypeDefs (WorkTypeDefs/WorkTypes.xml) — a role is a
+    lens on work that already exists, which is the rule Roles.xml set for itself and this keeps.
+  -->
+
+  <RoleDef>
+    <defName>Steward</defName>
+    <label>steward</label>
+    <description>Speaks for the settlement: deals with the people who arrive at it, and sees its public works finished. Everything else this citizen is willing to do comes after.</description>
+    <!--
+      A settlement leader's two jobs, in the terms this port already has work types for: the people who turn
+      up at the gate (Warden — recruiting, feeding and holding outsiders) and what the town is building
+      (Construction). Deliberately not Research or Art, which are the eldership's; two stations that
+      emphasized the same work would be one station with two names.
+    -->
+    <emphasizedWorkTypes>
+      <li>Warden</li>
+      <li>Construction</li>
+    </emphasizedWorkTypes>
+  </RoleDef>
+
+  <RoleDef>
+    <defName>Elder</defName>
+    <label>elder</label>
+    <description>Keeps what the civilization knows and how it tells its own story. Everything else this citizen is willing to do comes after.</description>
+    <!--
+      The eldership is memory: Research (what the civilization has worked out) and Art (how it says so).
+      Research is a real mechanic here rather than flavour — WorkGiver_Research drives JobDriver_Research and
+      moves the current project — so a civilization whose last founder has died genuinely loses someone
+      putting research first.
+    -->
+    <emphasizedWorkTypes>
+      <li>Research</li>
+      <li>Art</li>
+    </emphasizedWorkTypes>
+  </RoleDef>
+
+</Defs>

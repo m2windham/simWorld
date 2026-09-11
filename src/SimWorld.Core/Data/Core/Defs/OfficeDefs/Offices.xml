@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Stations: the scarce, named seats a civilization's citizens hold (system: offices,
+    src/SimWorld.Core/Offices/OfficeDef.cs). Two of them, at the two scales this port actually has an identity
+    for — a Settlement has a name and a founding tick, a Faction is the civilization — and they are built to
+    contrast, because "what happens when the holder dies" is the question the module exists to answer and it
+    does not have one answer:
+
+      Steward  a settlement's leader. A job. Refilled for as long as the settlement has an adult in it.
+      Elder    the civilization's eldest, old enough to remember its founding. A fact about history, not a
+               job: once nobody alive is that old there are no candidates, the seat stays empty, and it can
+               never be filled again. It retires itself with no flag to save.
+
+    Precedence puts the civilization's seat first so a citizen who could hold either is asked about the
+    eldership before the stewardship — a citizen holds at most one office, because the role that records the
+    seat is a single field on the pawn.
+  -->
+
+  <OfficeDef>
+    <defName>Elder</defName>
+    <label>eldership</label>
+    <description>The oldest citizen of the civilization who is old enough to remember its founding. Keeps what it knows and how it tells its own story. When the last of them dies, the eldership ends.</description>
+    <scope>Civilization</scope>
+    <precedence>0</precedence>
+    <role>Elder</role>
+    <selectionWorkerClass>SimWorld.Offices.OfficeSelectionWorker_Eldest</selectionWorkerClass>
+    <!-- Seniority decides outright, so a wide pool would only cost a sort: four is enough to prove the pool
+         is applied at all, and the winner is the first of them by construction. -->
+    <candidatePoolSize>4</candidatePoolSize>
+    <holderThought>HoldsEldership</holderThought>
+  </OfficeDef>
+
+  <OfficeDef>
+    <defName>Steward</defName>
+    <label>stewardship</label>
+    <description>Speaks for one settlement. The eldest adults stand for it; the one their neighbours think best of takes it, and keeps it for life.</description>
+    <scope>Settlement</scope>
+    <precedence>1</precedence>
+    <role>Steward</role>
+    <selectionWorkerClass>SimWorld.Offices.OfficeSelectionWorker_Esteem</selectionWorkerClass>
+    <!-- Eight elders stand. Large enough that the settlement's opinion decides rather than age alone; small
+         enough that the esteem sum — the one expensive step, and only paid on a vacancy — stays bounded no
+         matter how large the town grows. -->
+    <candidatePoolSize>8</candidatePoolSize>
+    <holderThought>HoldsStewardship</holderThought>
+  </OfficeDef>
+
+</Defs>

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Weather (RimWorld: Verse/WeatherDefs/Weathers.xml). Its own folder under Defs/ — DefLoader.AddDirectory
+    reads every file recursively, so a new folder needs no registration anywhere and cannot collide with
+    another lane (CLAUDE.md). Bound by SimWorld.Weather.WeatherDefOf.
+
+    Commonalities live HERE rather than on BiomeDef. RimWorld puts the table on the other side
+    (BiomeDef.weatherCommonalities); inverting it keeps World/BiomeDef.cs and BiomeDefs/Biomes.xml — files
+    other lanes are in — completely untouched, and is the inversion CLAUDE.md asks for by name. See
+    WeatherDef.commonality for the full note. Encoding: <commonality> is the weight in any biome,
+    <biomeCommonalities> overrides it where a biome differs, and a biome listed at 0 never sees that weather.
+
+    Three gates decide what actually falls, all of them RimWorld's:
+      - biome commonality (a rainforest is not a desert),
+      - commonalityRainfallCurve over the tile's annual rainfall in mm (a dry tile in a wet biome is dry),
+      - temperatureRange against the map's current outdoor temperature — which is the whole of why a cold
+        map snows and a warm one rains. Nothing lists "snow biomes": cold does that by itself.
+
+    Numbers are RimWorld's shapes recalled, not decompiled in this sandbox (CLAUDE.md). Tests pin the
+    behaviour they produce — rain puts fires out, snow needs cold, a desert is drier than a rainforest,
+    the same seed gives the same weather — and never these literals.
+
+    Not shipped, deliberately: DryThunderstorm and the thunderstorms' eventMakers. What makes a RimWorld
+    thunderstorm worth having is lightning striking the map and starting fires, and this core has no weather
+    event system to strike with; a "thunderstorm" that is only windy rain with a scarier label would be a
+    name pretending to be a mechanic. Sky colours, overlays and ambient sound are presentation, and the core
+    is engine-free by rule.
+  -->
+
+  <WeatherDef>
+    <defName>Clear</defName>
+    <label>clear</label>
+    <description>The sky is clear.</description>
+    <commonality>30</commonality>
+    <durationRange>25000~110000</durationRange>
+    <biomeCommonalities>
+      <li><biome>Desert</biome><commonality>60</commonality></li>
+      <li><biome>ExtremeDesert</biome><commonality>90</commonality></li>
+      <li><biome>AridShrubland</biome><commonality>45</commonality></li>
+      <li><biome>TropicalRainforest</biome><commonality>15</commonality></li>
+      <li><biome>TropicalSwamp</biome><commonality>15</commonality></li>
+    </biomeCommonalities>
+  </WeatherDef>
+
+  <WeatherDef>
+    <defName>Fog</defName>
+    <label>fog</label>
+    <description>A thick fog hangs over everything. It is hard to see far.</description>
+    <commonality>5</commonality>
+    <durationRange>15000~50000</durationRange>
+    <accuracyMultiplier>0.8</accuracyMultiplier>
+    <temperatureOffset>-1</temperatureOffset>
+    <temperatureRange>-20~35</temperatureRange>
+    <biomeCommonalities>
+      <li><biome>Desert</biome><commonality>1</commonality></li>
+      <li><biome>ExtremeDesert</biome><commonality>0.5</commonality></li>
+      <li><biome>ColdBog</biome><commonality>12</commonality></li>
+      <li><biome>TemperateSwamp</biome><commonality>12</commonality></li>
+      <li><biome>TropicalSwamp</biome><commonality>12</commonality></li>
+    </biomeCommonalities>
+  </WeatherDef>
+
+  <WeatherDef>
+    <defName>Rain</defName>
+    <label>rain</label>
+    <description>Rain falls steadily. Anything burning under open sky will not burn for long.</description>
+    <commonality>8</commonality>
+    <durationRange>15000~40000</durationRange>
+    <rainRate>1</rainRate>
+    <windSpeedFactor>1.5</windSpeedFactor>
+    <moveSpeedMultiplier>0.9</moveSpeedMultiplier>
+    <accuracyMultiplier>0.85</accuracyMultiplier>
+    <temperatureOffset>-2</temperatureOffset>
+    <temperatureRange>0~100</temperatureRange>
+    <exposedThought>SoakingWet</exposedThought>
+    <commonalityRainfallCurve>
+      <points>
+        <li>(0, 0.1)</li>
+        <li>(400, 0.5)</li>
+        <li>(1000, 1)</li>
+        <li>(2000, 1.6)</li>
+        <li>(3000, 2)</li>
+      </points>
+    </commonalityRainfallCurve>
+    <biomeCommonalities>
+      <li><biome>Desert</biome><commonality>2</commonality></li>
+      <li><biome>ExtremeDesert</biome><commonality>0.5</commonality></li>
+      <li><biome>IceSheet</biome><commonality>0</commonality></li>
+      <li><biome>TemperateForest</biome><commonality>12</commonality></li>
+      <li><biome>TemperateSwamp</biome><commonality>14</commonality></li>
+      <li><biome>TropicalRainforest</biome><commonality>20</commonality></li>
+      <li><biome>TropicalSwamp</biome><commonality>20</commonality></li>
+    </biomeCommonalities>
+  </WeatherDef>
+
+  <WeatherDef>
+    <defName>FoggyRain</defName>
+    <label>foggy rain</label>
+    <description>Rain falls through a heavy mist.</description>
+    <commonality>3</commonality>
+    <durationRange>15000~35000</durationRange>
+    <rainRate>0.7</rainRate>
+    <windSpeedFactor>0.8</windSpeedFactor>
+    <moveSpeedMultiplier>0.9</moveSpeedMultiplier>
+    <accuracyMultiplier>0.7</accuracyMultiplier>
+    <temperatureOffset>-2</temperatureOffset>
+    <temperatureRange>0~35</temperatureRange>
+    <exposedThought>SoakingWet</exposedThought>
+    <commonalityRainfallCurve>
+      <points>
+        <li>(0, 0.1)</li>
+        <li>(1000, 1)</li>
+        <li>(3000, 2)</li>
+      </points>
+    </commonalityRainfallCurve>
+    <biomeCommonalities>
+      <li><biome>Desert</biome><commonality>0.3</commonality></li>
+      <li><biome>ExtremeDesert</biome><commonality>0</commonality></li>
+      <li><biome>AridShrubland</biome><commonality>0.5</commonality></li>
+      <li><biome>IceSheet</biome><commonality>0</commonality></li>
+      <li><biome>ColdBog</biome><commonality>8</commonality></li>
+      <li><biome>TemperateSwamp</biome><commonality>8</commonality></li>
+      <li><biome>TropicalSwamp</biome><commonality>8</commonality></li>
+    </biomeCommonalities>
+  </WeatherDef>
+
+  <WeatherDef>
+    <defName>RainyThunderstorm</defName>
+    <label>rainy thunderstorm</label>
+    <description>Heavy rain, driven by a hard wind.</description>
+    <commonality>2</commonality>
+    <durationRange>10000~25000</durationRange>
+    <rainRate>1</rainRate>
+    <windSpeedFactor>2.2</windSpeedFactor>
+    <moveSpeedMultiplier>0.85</moveSpeedMultiplier>
+    <accuracyMultiplier>0.7</accuracyMultiplier>
+    <temperatureOffset>-3</temperatureOffset>
+    <temperatureRange>5~100</temperatureRange>
+    <exposedThought>SoakingWet</exposedThought>
+    <commonalityRainfallCurve>
+      <points>
+        <li>(0, 0.05)</li>
+        <li>(1000, 1)</li>
+        <li>(3000, 2.5)</li>
+      </points>
+    </commonalityRainfallCurve>
+    <biomeCommonalities>
+      <li><biome>Desert</biome><commonality>0.5</commonality></li>
+      <li><biome>ExtremeDesert</biome><commonality>0</commonality></li>
+      <li><biome>AridShrubland</biome><commonality>0.5</commonality></li>
+      <li><biome>IceSheet</biome><commonality>0</commonality></li>
+      <li><biome>TropicalRainforest</biome><commonality>6</commonality></li>
+      <li><biome>TropicalSwamp</biome><commonality>6</commonality></li>
+    </biomeCommonalities>
+  </WeatherDef>
+
+  <WeatherDef>
+    <defName>SnowGentle</defName>
+    <label>gentle snow</label>
+    <description>Snow drifts down.</description>
+    <commonality>6</commonality>
+    <durationRange>20000~60000</durationRange>
+    <snowRate>0.5</snowRate>
+    <windSpeedFactor>0.8</windSpeedFactor>
+    <moveSpeedMultiplier>0.95</moveSpeedMultiplier>
+    <accuracyMultiplier>0.9</accuracyMultiplier>
+    <temperatureRange>-100~0</temperatureRange>
+    <commonalityRainfallCurve>
+      <points>
+        <li>(0, 0.2)</li>
+        <li>(1000, 1)</li>
+        <li>(2500, 1.5)</li>
+      </points>
+    </commonalityRainfallCurve>
+  </WeatherDef>
+
+  <WeatherDef>
+    <defName>SnowHard</defName>
+    <label>snowstorm</label>
+    <description>Snow comes down hard, blown sideways by the wind.</description>
+    <commonality>2</commonality>
+    <durationRange>12000~35000</durationRange>
+    <snowRate>1</snowRate>
+    <windSpeedFactor>2.5</windSpeedFactor>
+    <moveSpeedMultiplier>0.85</moveSpeedMultiplier>
+    <accuracyMultiplier>0.75</accuracyMultiplier>
+    <temperatureOffset>-2</temperatureOffset>
+    <temperatureRange>-100~-2</temperatureRange>
+    <commonalityRainfallCurve>
+      <points>
+        <li>(0, 0.2)</li>
+        <li>(1000, 1)</li>
+        <li>(2500, 1.5)</li>
+      </points>
+    </commonalityRainfallCurve>
+    <biomeCommonalities>
+      <li><biome>IceSheet</biome><commonality>6</commonality></li>
+      <li><biome>SeaIce</biome><commonality>6</commonality></li>
+      <li><biome>Tundra</biome><commonality>4</commonality></li>
+    </biomeCommonalities>
+  </WeatherDef>
+
+</Defs>

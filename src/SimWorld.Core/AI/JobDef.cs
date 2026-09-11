@@ -16,6 +16,23 @@ namespace SimWorld.AI
         /// <summary>Shown in an inspect pane once one exists; not otherwise read yet.</summary>
         public string? reportString;
 
+        /// <summary>
+        /// May the constant think tree throw this job away for something it noticed (RimWorld:
+        /// <c>JobDef.casualInterruptible</c>, default true there too)? Read only by
+        /// <see cref="ThinkNode_ConditionalCanDoConstantThinkTreeJobNow"/>, which is the gate every constant
+        /// tree opens with — being <i>hurt</i> is a separate path (<see cref="checkOverrideOnDamage"/>) and
+        /// does not consult this, so a job can be un-droppable for a threat it has merely seen while still
+        /// ending the moment that threat actually connects.
+        /// </summary>
+        public bool casualInterruptible = true;
+
+        /// <summary>
+        /// Whether taking damage makes this job re-ask the think tree whether it is still the right thing to
+        /// be doing (RimWorld: <c>JobDef.checkOverrideOnDamage</c>, with the same default). Handled by
+        /// <see cref="Pawn_JobTracker.Notify_DamageTaken"/>.
+        /// </summary>
+        public CheckJobOverrideOnDamageMode checkOverrideOnDamage = CheckJobOverrideOnDamageMode.OnlyIfInstigatorNotJobTarget;
+
         public JobDriver MakeDriver(Pawn pawn, Job job)
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));

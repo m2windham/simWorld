@@ -63,12 +63,27 @@ namespace SimWorld.Pawns
         /// a settlement-scale event, not one roll per existing citizen, which would make a large population
         /// attract migrants faster purely by being large). On success, generates one adult migrant
         /// (<see cref="GenerateMigrant"/>), founds their household via the existing
-        /// <see cref="FamilyManager.FoundHousehold"/> hook, appends them to <paramref name="population"/>, and
-        /// promotes them to <see cref="PawnTier.Full"/> — a migrant founding a household on arrival is exactly
-        /// the "founder" case <see cref="Pawn_TierTracker.Notify_RoleChanged"/>'s own doc already names as a
-        /// promotion trigger, and (unlike every marriage in a population, which would promote far too many
-        /// people to stay meaningful) an immigrant arrival is rare enough that flagging it does not erode the
-        /// tiering system's whole cost saving.
+        /// <see cref="FamilyManager.FoundHousehold"/> hook, and appends them to <paramref name="population"/>.
+        ///
+        /// <para/><b>A migrant is an ordinary citizen.</b> This used to call
+        /// <see cref="Pawn_TierTracker.Notify_RoleChanged"/> on arrival, reading "founds a household" as the
+        /// "founder" case that method's doc names. The reading was defensible when written and does not
+        /// survive the two systems that landed after it.
+        ///
+        /// <para/><see cref="God.AttentionBudget"/> now ranks citizens by significance and spends a fixed
+        /// Full-tier budget against that order, with <c>hasRole</c> at the very top — and <c>hasRole</c> is
+        /// never cleared. So every migrant ever to arrive would sit permanently above every ordinary citizen,
+        /// unbounded, at roughly 25 per settlement per century: the budget would slowly fill with people whose
+        /// only distinction is having arrived, which is the opposite of what a significance ordering is for.
+        /// And <see cref="Offices.OfficeDef"/> now says what a role-bearing station actually is — scarce,
+        /// seated, and succeeded. Starting a family line is not one.
+        ///
+        /// <para/>Nothing is lost by dropping it. A freshly generated <see cref="Pawn"/> already starts at
+        /// <see cref="PawnTier.Full"/>, so an arrival in a watched settlement is simulated in full from its
+        /// first tick, and one in an unwatched settlement correctly falls to Interval on the next sweep —
+        /// which is exactly what the tiering exists to do. The arrival is still chronicled: being worth a line
+        /// in the chronicle and being worth a permanent seat at Full tier are different claims, and
+        /// <see cref="Pawn_TierTracker"/>'s own doc warns at length against confusing them.
         /// </summary>
         public static bool ProcessArrivals(List<Pawn> population, PawnKindDef migrantKind, EraDef? era = null, string? placeLabel = null)
         {
@@ -82,7 +97,6 @@ namespace SimWorld.Pawns
             Pawn migrant = GenerateMigrant(migrantKind);
             Find.FamilyManager.FoundHousehold(migrant, null, Find.TickManager.TicksGame);
             population.Add(migrant);
-            migrant.tier.Notify_RoleChanged(true);
 
             Find.Storyteller.RecordChronicle(
                 "Migration: " + migrant.Label + " arrives" + Suffix(placeLabel) + " and founds a household.");
@@ -197,8 +211,8 @@ namespace SimWorld.Pawns
             {
                 Pawn migrant = GenerateMigrant(migrantKind);
                 Find.FamilyManager.FoundHousehold(migrant, null, Find.TickManager.TicksGame);
+                // Not a station — see ProcessArrivals' doc for why an arrival is not a role.
                 settlement.AddCitizen(migrant);
-                migrant.tier.Notify_RoleChanged(true);
                 Find.Storyteller.RecordChronicle(
                     "Migration: " + migrant.Label + " arrives at " + settlement.name + " and founds a household.");
                 arrived = true;

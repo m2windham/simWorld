@@ -38,6 +38,19 @@ namespace SimWorld.AI
             };
             sleep.tickAction = () =>
             {
+                // Something woke the pawn (RimWorld: RestUtility.WakeUp, which this port's
+                // Pawn_JobTracker.Notify_DamageTaken calls by clearing the flag). Nothing else in the job
+                // clears it, so finding it clear means an interrupt arrived — and lying here awake is the one
+                // outcome that must not happen: Need_Rest.Resting reads pawn.Asleep, so an awake sleeper's
+                // rest *falls*, the "rested" exit below can never be reached, and the job runs forever. End
+                // instead and let the think tree decide: the danger tier sits above the needs tier, so a pawn
+                // woken by an enemy it can reach fights, and one woken by a stray shot from across the map
+                // simply goes back to bed.
+                if (!pawn.Asleep)
+                {
+                    EndJobWith(JobCondition.InterruptForced);
+                    return;
+                }
                 if (pawn.needs.rest != null && pawn.needs.rest.CurLevel >= 0.999f)
                 {
                     EndJobWith(JobCondition.Succeeded);

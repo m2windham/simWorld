@@ -66,9 +66,16 @@ namespace SimWorld.Map
         /// <summary>Every Area on this map — today, only the home area (system 16: Building — zones).</summary>
         public Building.AreaManager areaManager = null!;
 
+        /// <summary>The weather over this map, its transition to the next, and everything weather does here
+        /// (system: weather — <see cref="SimWorld.Weather.WeatherManager"/>). Constructed with this map's
+        /// other managers, ticked from <see cref="MapTick"/>, saved by <see cref="ExposeData"/>.</summary>
+        public Weather.WeatherManager weatherManager = null!;
+
         /// <summary>Outdoor temperature every unroofed/unenclosed cell tracks directly, and every enclosed
-        /// room equalises toward (system 16: Building). No biome/season model exists yet — see that
-        /// module's report — so this is a flat, settable value rather than one driven by anything.</summary>
+        /// room equalises toward (system 16: Building). Still a plain settable value — but on a map that
+        /// knows its world tile, <see cref="weatherManager"/> now sets it every tick from that tile's annual
+        /// mean, the season, the hour and whatever weather is overhead (<c>Weather.GenTemperature</c>). A map
+        /// with no world tile (most tests) keeps whatever its owner set, exactly as before.</summary>
         public float outdoorTemperature = 21f;
 
         /// <summary>Things read from a save but not yet re-spawned; consumed by <see cref="FinalizeLoading"/>.</summary>
@@ -107,14 +114,20 @@ namespace SimWorld.Map
         }
 
         /// <summary>
-        /// This map's own per-tick systems (system 16: Building) — every spawned Thing itself still ticks
-        /// through <see cref="Find.TickManager"/>'s own tick lists, not this. Nothing calls this
-        /// automatically yet (no game-loop host exists in this codebase): a caller running a map for real
-        /// wires it in as one of <see cref="Sim.TickManager.PostTickers"/>, once per map, exactly as that
-        /// list's own doc comment describes ("map post-tick"); tests call it directly.
+        /// This map's own per-tick systems (weather, power, rooms) — every spawned Thing itself still ticks
+        /// through <see cref="Find.TickManager"/>'s own tick lists, not this. A running game reaches this
+        /// automatically: <c>Sim.Game.WireTickHooks</c> registers <c>TickMaps</c> as one of
+        /// <see cref="Sim.TickManager.PostTickers"/>, which calls this once per live map, exactly as that
+        /// list's own doc comment describes ("map post-tick"). Tests call it directly. (This comment used to
+        /// say nothing called it automatically; that stopped being true when <c>Sim.Game</c> landed, and
+        /// weather depends on it being true — see <see cref="weatherManager"/>.)
         /// </summary>
         public void MapTick()
         {
+            // First, so the rooms equalise toward the outdoor temperature this tick's weather just set
+            // rather than the previous tick's (RimWorld ticks its own weatherManager ahead of the map's
+            // temperature work for the same reason).
+            weatherManager.WeatherManagerTick();
             powerNetManager.PowerNetManagerTick();
             roomTracker.RoomTrackerTick();
         }
@@ -145,6 +158,7 @@ namespace SimWorld.Map
             roomTracker = new Building.RoomTracker(this);
             zoneManager = new Building.ZoneManager(this);
             areaManager = new Building.AreaManager(this);
+            weatherManager = new Weather.WeatherManager(this);
         }
 
         // ---- Scribe ----
@@ -198,6 +212,7 @@ namespace SimWorld.Map
             roomTracker.ExposeTemperatures();
             zoneManager.ExposeData();
             areaManager.ExposeData();
+            weatherManager.ExposeData();
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {

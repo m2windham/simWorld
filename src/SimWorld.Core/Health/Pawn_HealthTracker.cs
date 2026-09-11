@@ -145,6 +145,31 @@ namespace SimWorld.Health
             summaryHealth.Notify_HealthChanged();
         }
 
+        /// <summary>
+        /// One completed application of damage to this pawn, injury and all (RimWorld:
+        /// <c>Pawn_HealthTracker.PostApplyDamage</c>, reached there from <c>Thing.TakeDamage</c> and here from
+        /// <see cref="DamageWorker.Apply"/>, this port's only funnel for damage to a pawn).
+        ///
+        /// <para/>Its one job today is telling the AI layer, which is what lets being shot interrupt whatever
+        /// the victim was doing (<see cref="SimWorld.AI.Pawn_JobTracker.Notify_DamageTaken"/>). A hit that
+        /// killed outright notifies nothing: a dead pawn has already had its job ended by
+        /// <see cref="Pawn.Notify_Died"/>, and starting it another would strand the reservations that ending
+        /// released. RimWorld also raises <c>Pawn_MindState.Notify_DamageTaken</c> from here for its
+        /// harm-driven mental breaks; this port's <see cref="SimWorld.MindState.Pawn_MindState"/> has no such
+        /// hook, and inventing one is the mood module's call, not this one's.
+        /// </summary>
+        /// <param name="dinfo">The hit, including whatever dealt it — the AI layer reads
+        /// <see cref="DamageInfo.Instigator"/> to tell "someone new is shooting me" from "the enemy I am
+        /// already fighting hit me back".</param>
+        /// <param name="totalDamageDealt">How much actually landed after armor; 0 for a deflected hit, which
+        /// still counts as being shot at and still interrupts.</param>
+        public void PostApplyDamage(DamageInfo dinfo, float totalDamageDealt)
+        {
+            if (dinfo == null) throw new ArgumentNullException(nameof(dinfo));
+            if (Dead) return;
+            pawn.jobs?.Notify_DamageTaken(dinfo);
+        }
+
         // ---- ticking ----
 
         public void HealthTick()

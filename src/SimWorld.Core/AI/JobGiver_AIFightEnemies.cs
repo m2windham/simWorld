@@ -27,14 +27,23 @@ namespace SimWorld.AI
         {
             if (!CombatPostureUtility.CanFight(pawn)) return null;
 
-            // Built before the target scan so an unarmed pacifist-by-content pawn — one that has nothing to
-            // attack with at all, which is what NaturalWeaponFor returning null means — pays nothing for a
-            // scan whose answer it could not act on.
-            Verb? verb = AttackVerbUtility.TryGetAttackVerb(pawn);
-            if (verb == null) return null;
-
+            // Scan first, build the verb second — the reverse of how this was first written, and the reason
+            // is that the constant think tree now calls this for every Full-tier pawn every
+            // ConstantThinkTreeTuning.IntervalTicks rather than only when a pawn runs out of work.
+            //
+            // The original order was "verb first, so a pawn that has nothing to attack with pays nothing for
+            // a scan whose answer it could not act on". That guard protects an empty set: NaturalWeaponFor
+            // returns null only for a pawn that is neither Humanlike nor Animal, and no such pawn exists in
+            // shipped content — every pawn has fists or teeth. Meanwhile TryGetAttackVerb allocates a Tool, a
+            // VerbProperties and a Verb on every call, so the guard was charging three allocations to every
+            // peacetime pawn on every evaluation to save a scan for nobody. Reversed, a settlement with no
+            // enemy in it allocates nothing here at all. Same answers either way: both are refusals, and
+            // returning null for the first of two independent reasons or the second is the same null.
             Pawn? target = FindTarget(pawn);
             if (target == null) return null;
+
+            Verb? verb = AttackVerbUtility.TryGetAttackVerb(pawn);
+            if (verb == null) return null;
 
             JobDef def = verb.verbProps.IsMeleeAttack ? CombatAIDefOf.AttackMelee : CombatAIDefOf.AttackStatic;
             return new Job(def, target) { expiryInterval = CombatAITuning.AttackJobExpiryTicks };

@@ -67,8 +67,8 @@ namespace SimWorld.Things
         public const float SpreadToAdjacentChance = 0.8f;
 
         /// <summary>Chance per <see cref="ComplexCalcsInterval"/>, at rain rate 1, that an unroofed fire is
-        /// rained out (RimWorld: <c>Fire.BaseSkyExtinguishChance</c>). See
-        /// <see cref="TryExtinguishFromRain"/> for why nothing calls it yet.</summary>
+        /// rained out (RimWorld: <c>Fire.BaseSkyExtinguishChance</c>). Driven by
+        /// <c>Weather.WeatherManager</c>, on this same interval — see <see cref="TryExtinguishFromRain"/>.</summary>
         public const float BaseSkyExtinguishChance = 0.04f;
 
         /// <summary>How big a fire is, 0.1 to 1.75. Drives its damage, how fast it spreads, and how many
@@ -221,11 +221,11 @@ namespace SimWorld.Things
         /// <c>Fire.DoComplexCalcs</c>, which reads <c>Map.weatherManager.RainRate</c> and only ever puts out
         /// a fire under open sky).
         /// <para/>
-        /// <b>Nothing in this codebase calls this yet, and that is a gap, not an oversight:</b> there is no
-        /// weather module — no <c>WeatherDef</c>, no <c>weatherManager</c>, no rain rate anywhere (see this
-        /// module's report). Widening <see cref="Map.Map"/> with a settable rain rate is the one-field change
-        /// that would wire it up, and <see cref="FireUtility.ExtinguishFiresFromRain"/> is the call site
-        /// waiting for it. The roll itself is ported and tested rather than left to be re-derived later.
+        /// <b>Wired.</b> It was written before any weather existed and documented here as a gap; the weather
+        /// module now drives it. <c>Weather.WeatherManager.WeatherManagerTick</c> calls
+        /// <see cref="FireUtility.ExtinguishFiresFromRain"/> — the call site this was waiting on — once per
+        /// <see cref="ComplexCalcsInterval"/> while it is raining, so a fire gets exactly one roll per
+        /// interval, the same rate RimWorld gives it by rolling inside each fire's own pass.
         /// </summary>
         /// <param name="rainRate">0 (dry) to 1 (downpour).</param>
         /// <returns>True if this call put the fire out.</returns>
