@@ -89,14 +89,11 @@ code-deaf SimWorld.AI.JobDef.reportString | Host-facing text with no reader: the
 code-deaf SimWorld.Combat.ProjectileProperties.stoppingPower | Blocked on stagger, which this port does not model; a hit resolves instantly, so nothing consumes the stagger input.
 code-deaf SimWorld.Crafting.RecipeDef.jobString | Host-facing text ("doing X") for a UI the core does not have and the snapshot does not surface.
 code-deaf SimWorld.Defs.ThingDef.altitudeLayer | Draw order for a renderer. An engine-free core never draws, and the host draws from its own snapshot.
-code-deaf SimWorld.Defs.ThingDef.mineableThing | Blocked on mined-resource content: JobDriver_Mine's doc claims it reads this so a later module only adds the spawn call, but no line does today — the rock is removed and nothing drops.
-code-deaf SimWorld.Defs.ThingDef.mineableYield | The yield half of mineableThing, equally unread: the mining job destroys the edifice and spawns nothing.
 code-deaf SimWorld.Defs.ThingDef.selectable | Host-facing: whether a UI may select the thing. The core has no selection model.
 code-deaf SimWorld.Director.DifficultyDef.allowBigThreats | Blocked on threat sizing: the storyteller does not yet classify an incident as a big threat, so the difficulty switch has nothing to switch off.
 code-deaf SimWorld.Director.DifficultyDef.allowIntroThreats | As allowBigThreats — the intro-threat concept is unported, so the flag gates nothing.
 code-deaf SimWorld.Director.DifficultyDef.colonistMoodOffset | Blocked on difficulty reaching Needs: nothing applies a difficulty mood offset when a pawn's mood is computed.
 code-deaf SimWorld.Director.DifficultyDef.cropYieldFactor | Blocked on difficulty reaching Plants: harvest yield is computed without consulting the difficulty.
-code-deaf SimWorld.Director.DifficultyDef.mineYieldFactor | Blocked on mining yield existing at all (see ThingDef.mineableYield); there is no yield for the factor to scale.
 code-deaf SimWorld.Director.DifficultyDef.questRewardValueFactor | Blocked on rewards being paid: IQuestRewardSink has no implementation, so no reward value exists to scale.
 code-deaf SimWorld.Director.IncidentDef.pointsScaleable | Blocked on points-driven severity: IncidentParms.points is carried but no worker scales its effect by it, so the opt-in flag has no reader.
 code-deaf SimWorld.Director.StorytellerDef.persona | Host-facing flavour: the narrator's in-fiction name, for the host to speak. Its own doc records that the naming is still open.

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Raw minerals a settlement digs out of the ground (system: mining). Its own file rather than more entries
+    in Items_Resource.xml — DefLoader.AddDirectory loads every XML file under a Def folder recursively, so
+    additive content needs no edit to a shared one (CLAUDE.md). The vein each of these comes out of is in
+    ThingDefs_Buildings/Buildings_Mineable.xml.
+
+    WHY THESE, AND WHERE THE NUMBERS COME FROM
+    Before this module exactly one ThingDef in all of content was mineable (MineableSteel) and it dropped
+    nothing, because nothing read mineableThing. One rock and one resource is not a resource economy, and
+    this project's whole arc is sticks and stones to exotic technology, so the set below is chosen to give
+    every era on that ladder something in the ground worth digging for:
+
+      flint      sticks and stones   (research: StoneTools; DepositDefOf.Flint already exists)
+      salt       agrarian/classical  (preservation and trade; DepositDefOf.Salt already exists)
+      copper/tin bronze              (research: Copper, Bronze, BronzeWeapons already exist in the tree)
+      steel      medieval            (already shipped, see Buildings_Natural.xml)
+      silver     classical onward    (already shipped as the trade currency, Items_Currency.xml)
+      gold/jade  classical onward    (prestige goods rather than tools)
+      coal       industrial          (already shipped; SiteWeights.xml already ramps Coal's worth by era)
+      uranium    information/exotic
+      plasteel   exotic
+
+    Gold, jade, silver, uranium and plasteel are RimWorld's own mineables, ported by name. Flint, salt,
+    copper and tin are NOT in RimWorld: RimWorld starts at a tech level this game spends several eras
+    reaching, so its ore table has no bronze age in it. Those four are this port's own additions and are
+    recorded as such here (CLAUDE.md: translations are recorded, not improvised).
+
+    MarketValue: RimWorld's own item values were not available to check against here, so none of the numbers
+    below is sourced. What is deliberate is the ORDERING — flint < salt < tin < copper < steel < gold < jade
+    < uranium < plasteel — hung on the one anchor shipped content already fixed, Steel at 1.9. The tests
+    assert that chain and nothing else about these numbers.
+
+    Two shipped minerals sit outside the chain on purpose and are not asserted against it. Silver is the
+    trade currency and is 1 by definition (Items_Currency.xml explains why), so it is priced by what it is
+    for rather than by where it sits on a ladder. Coal's 1.0 is the Economy module's number: SiteWeights.xml
+    already ramps what a coal deposit is worth from nothing through Classical to a great deal in Industrial,
+    which is era-dependent in a way a single MarketValue cannot be.
+
+    None of these carries stuffProps. They are commodities, not building materials — the same call
+    Items_Resource.xml already made for Coal, and made deliberately: adding new Metallic stuffs would change
+    what every stuff-picking caller in the game rolls.
+  -->
+
+  <!--
+    statBases is deliberately NOT on this parent: every child declares its own complete block, so a reader
+    sees one def's stats in one place and no child has to reason about merging with an inherited list.
+  -->
+  <ThingDef Name="BaseMineral" Abstract="True">
+    <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <stackLimit>75</stackLimit>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>Flint</defName>
+    <label>flint</label>
+    <description>Hard nodules that fracture to a cutting edge. The first thing anyone ever mined, and still the sharpest thing a people without metal can hold.</description>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <statBases>
+      <MarketValue>0.4</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>Salt</defName>
+    <label>salt</label>
+    <description>Rock salt cut from a buried seam. Keeps meat through a winter, which is why people who have it trade it and people who do not walk a long way for it.</description>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <statBases>
+      <MarketValue>0.8</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>Tin</defName>
+    <label>tin</label>
+    <description>A soft, low-melting metal, scarce almost everywhere. Worth little alone and everything beside copper: the two together make bronze.</description>
+    <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
+    <statBases>
+      <MarketValue>1.4</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>Copper</defName>
+    <label>copper</label>
+    <description>The first metal worked at scale — soft enough to hammer cold, common enough to find, and the half of bronze that a settlement can usually dig up itself.</description>
+    <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
+    <statBases>
+      <MarketValue>1.6</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>Gold</defName>
+    <label>gold</label>
+    <description>Heavy, soft and untarnishing. Useless for a tool and unmatched for saying who you are.</description>
+    <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
+    <stackLimit>500</stackLimit>
+    <statBases>
+      <MarketValue>10</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>Jade</defName>
+    <label>jade</label>
+    <description>A dense green stone that takes a deep polish and blunts the tools that shape it. Carved into ornaments by peoples who had nothing harder to carve it with.</description>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <statBases>
+      <MarketValue>12</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>Uranium</defName>
+    <label>uranium</label>
+    <description>Dense, faintly warm ore. Worth nothing at all until a civilization knows what it is, and then worth almost anything.</description>
+    <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
+    <statBases>
+      <MarketValue>18</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>Plasteel</defName>
+    <label>plasteel</label>
+    <description>A metal-ceramic composite far beyond anything a forge can make, found compacted in old rock. Whoever left it there is not around to ask.</description>
+    <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
+    <statBases>
+      <MarketValue>25</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+</Defs>

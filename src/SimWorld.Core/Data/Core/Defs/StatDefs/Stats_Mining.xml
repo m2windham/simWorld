@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Mining yield (system: mining; RimWorld: StatDefOf.MiningYield). Its own file rather than another entry in
+    Stats_Work.xml, which three other lanes have been editing (CLAUDE.md: add a file rather than edit a
+    shared one). Read by Things/MineableUtility.YieldFor for any vein whose def says its yield is wasteable;
+    bound through Stats/MiningStatDefOf.
+
+    RimWorld does scale mined yield by the miner's skill — a poor miner wastes part of the vein — and this
+    port can express that through the same skillNeedFactors pipeline Stats_Work.xml already uses for
+    MiningSpeed. The CURVE, though, is not RimWorld's: as that file's own header says, RimWorld's real
+    StatDefs_Work.xml is not available to check against from here. So this is a SkillNeed_BaseBonus chosen to
+    be monotonic and to land somewhere plausible — a beginner recovers well under half a vein, a level-20
+    miner recovers all of it and no more, because maxValue caps it there. A miner cannot conjure ore that was
+    never in the rock; the skill decides only how much of it survives being dug out.
+
+    The tests assert the trend (a better miner recovers more of the same vein, level 20 recovers all of it),
+    never the numbers below.
+  -->
+
+  <StatDef>
+    <defName>MiningYield</defName>
+    <label>mining yield</label>
+    <description>How much of a mined vein this pawn actually recovers, rather than wasting in the rubble.</description>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0.05</minValue>
+    <maxValue>1</maxValue>
+    <skillNeedFactors>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Mining</skill>
+        <baseValue>0.4</baseValue>
+        <bonusPerLevel>0.03</bonusPerLevel>
+      </li>
+    </skillNeedFactors>
+  </StatDef>
+
+</Defs>
