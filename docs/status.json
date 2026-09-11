@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1837,
+  "testsTotal": 1855,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1079,7 +1079,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "ported",
-      "tests": 58,
+      "tests": 76,
       "items": [
         {
           "id": "crafting.bills",
@@ -1125,6 +1125,16 @@
           "id": "crafting.producematurity",
           "label": "Translation recorded: RimWorld splits produce maturity into LifeStageDef.eggLayer/milkable/shearable alongside reproductive; this port's LifeStageDef ships only reproductive, so one flag gates eggs, milk and wool. Documented at CompHasGatherableBodyResource.ParentIsMature with the fix if a race ever needs the finer split.",
           "done": true
+        },
+        {
+          "id": "crafting.stonework",
+          "label": "Rock to usable material, and the hole was four links long rather than one. Only ChunkSandstone had a cutting recipe, so a settlement on granite mined all day and could cut none of it; TableStonecutter had no Blueprint/Frame pair at all, so it could only ever exist because a test spawned it; NOTHING IN src/ EVER CREATED A BILL — every Bill_Production in the repo was made by a test, so WorkGiver_DoBill never found work on any bench, sandstone included; and the only reader of a Blocks* def was GenStep_Ruins, which strews pre-ruined walls at map generation. All four are closed on the map path: a recipe per chunk type, StonecutterInitiative queuing standing bills in the HuntingInitiative/SettlementConstructionInitiative shape, the bench placed AT the stone (WorkGiver_DoBill only offers a bill whose ingredients lie within 12 cells and nothing in this port creates a stockpile zone, so a bench anywhere else would have been a bench nobody could work), and three stone walls the settlement builds instead of wooden ones. Butchery's recorded reason for bypassing bills — products depending on the individual corpse, which RecipeDef.products cannot express — does not apply to a chunk of granite, so stonecutting is the case the bill system fits and what was missing was a bill-creator, not another bypass.",
+          "done": true
+        },
+        {
+          "id": "crafting.stonework.gaps",
+          "label": "Recorded from the same trace, not chased: the ore ladder has the identical hole one level up — Buildings_Mineable yields Flint, Salt, Coal, Copper, Tin, Silver, Gold, Jade, Uranium and Plasteel, and not one is named by any recipe ingredient or costList in content. Four benches (FueledStove, Smithy, TableTailor, TableButcher) have no Blueprint/Frame pair so nothing can raise them; ResearchBench and Sculpture have pairs but nothing places them, and WorkGiver_Research requires a bench the settlement cannot build. Every other bench's recipes remain where stonecutting was: real recipes, a real giver, no bill. And the civilization-scale path stays dead for a second reason — nothing ever puts a mined chunk into Settlement.Stores, so a guild queue would starve even if GuildManager.Establish were ever called.",
+          "done": false
         }
       ]
     },
@@ -1330,6 +1340,11 @@
         {
           "id": "building.plantregrowth",
           "label": "Wild plants never regrew, and the audit's recorded reason was wrong in the strongest way: it said the plant system regrows on its own schedule, and the plant system did not regrow at all. Map generation scattered undergrowth once and nothing ever replaced a plant, so a map that was cut or burnt stayed bare for the rest of the game. WildPlantSpawner regrows toward the density generation itself placed — the plant-signal formula moved into MapGenTuning so there is one of it rather than two — at desired/(wildPlantRegrowDays x 60000) per tick, stopping at the supported density, and drawing every roll from a map-and-tick-seeded stream so it never perturbs the ambient one.",
+          "done": true
+        },
+        {
+          "id": "building.stonewalls",
+          "label": "Translation recorded: RimWorld has one stuff-chosen Wall, and stuff-based construction is unported here — Blueprint/Frame/WorkGiver_ConstructDeliverResources cost a building through costList only, and a costList entry names one ThingDef. So this ships def-per-material (WallSandstone/WallLimestone/WallGranite), which is what a player sees in RimWorld anyway. The three differ on exactly one axis, MaxHitPoints, because RimWorld prices every Make_Blocks_* identically and puts the difference in the structure; those three numbers are the only invented values in the lane and the tests pin their ordering (granite > limestone > sandstone > wood), never the literals. SettlementConstructionInitiative's wall count and the GreatWorksMandate edict bias both had to widen: the edict names Wall by defName, so it would have silently stopped prioritising walls the moment they became stone.",
           "done": true
         }
       ]
