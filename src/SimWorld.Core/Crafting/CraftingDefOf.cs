@@ -1,8 +1,19 @@
+using SimWorld.AI;
 using SimWorld.Defs;
 using SimWorld.Health;
 
 namespace SimWorld.Crafting
 {
+    /// <summary>The JobDef <see cref="WorkGiver_DoBill"/> issues, bound by defName the same way
+    /// <c>Building.BuildingJobDefOf</c> keeps its own module's JobDefs out of the shared <c>AI.JobDefOf</c> —
+    /// a file the hauling/research/doctoring lanes are concurrently adding their own entries to in this same
+    /// pass (<c>docs/WORK-REGISTER.md</c>).</summary>
+    [DefOf]
+    public static class CraftingJobDefOf
+    {
+        public static JobDef DoBill = null!;
+    }
+
     [DefOf]
     public static class ThingCategoryDefOf
     {

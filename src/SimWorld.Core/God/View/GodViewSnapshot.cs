@@ -49,6 +49,7 @@ namespace SimWorld.God.View
         public const int DefaultRecentHistoryCount = 20;
 
         private GodViewSnapshot(
+            bool contentLoaded,
             int ticksGame,
             string dateLabel,
             CivilizationSummary civilization,
@@ -57,6 +58,7 @@ namespace SimWorld.God.View
             IReadOnlyList<ChronicleLine> recentHistory,
             IReadOnlyList<ChronicleLine> moments)
         {
+            ContentLoaded = contentLoaded;
             TicksGame = ticksGame;
             DateLabel = dateLabel;
             Civilization = civilization;
@@ -65,6 +67,25 @@ namespace SimWorld.God.View
             RecentHistory = recentHistory;
             Moments = moments;
         }
+
+        /// <summary>
+        /// Whether any content has been loaded into <see cref="DefDatabase.Global"/> at all.
+        ///
+        /// <para/>This exists because of a trap a host hits exactly once, and silently. A host that never
+        /// loaded the core's content gets a perfectly valid-looking snapshot back: no edicts, no settlements,
+        /// no era — which is indistinguishable from a game that has not started yet, and is the state a god
+        /// view would legitimately draw at the main menu. The host then reasonably concludes the read model
+        /// is working and the civilization is simply empty.
+        ///
+        /// <para/>It is false only when nothing at all is loaded, so it does not lie for content that
+        /// genuinely ships no edicts. A host should treat false as "I have not loaded content yet" and say so
+        /// on screen, rather than drawing an empty civilization.
+        ///
+        /// <para/>The fix is one call before anything else, which <see cref="Capture()"/>'s own doc spells
+        /// out: <c>CoreContent.Load</c> into a <see cref="DefDatabase"/>, and that database assigned to
+        /// <see cref="DefDatabase.Global"/>.
+        /// </summary>
+        public bool ContentLoaded { get; }
 
         /// <summary>The tick this snapshot was taken at. Every number below is that tick's, not a mixture.</summary>
         public int TicksGame { get; }
@@ -103,6 +124,17 @@ namespace SimWorld.God.View
         ///
         /// <para/>Safe before a world exists — a game at the main menu has no settlements and no era, and this
         /// reports that rather than throwing, because "nothing founded yet" is a state the view has to draw.
+        ///
+        /// <para/><b>Content must be loaded first.</b> The host's very first call, before a game and before
+        /// this, is to load the core's shipped defs and make that database current:
+        /// <code>
+        /// var db = new DefDatabase();
+        /// CoreContent.Load(db, new DefTypeResolver(), new DefLoadOptions { BindDefOfs = true });
+        /// DefDatabase.Global = db;
+        /// </code>
+        /// Skip it and this still returns a snapshot rather than throwing — an empty one, which reads exactly
+        /// like a civilization that has not started. <see cref="ContentLoaded"/> is how a host tells those
+        /// two apart; check it before drawing.
         /// </summary>
         /// <param name="recentHistoryCount">How many chronicle lines to carry. Clamped at zero; a count larger
         /// than the chronicle holds simply yields all of it.</param>
@@ -140,6 +172,7 @@ namespace SimWorld.God.View
             }
 
             return new GodViewSnapshot(
+                DefDatabase.Global.DefCount > 0,
                 ticks,
                 GenDate.DateReadoutStringAt(ticks, 0f),
                 CivilizationSummary.From(god.Rollup, settlements.Count),

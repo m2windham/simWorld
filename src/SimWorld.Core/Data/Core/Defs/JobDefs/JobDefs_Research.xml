@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The Research work type's JobDef (system: Research work). Kept in its own file rather than appended to
+    JobDefs_Core.xml — that file is a shared hotspot every work-type lane's own JobDef lands in this same
+    round of parallel work, and DefLoader.AddDirectory loads every xml file under Data/Core/Defs recursively
+    regardless of which one, so a JobDef needs no shared file to be found. See ResearchWorkDefOf's own doc
+    for the matching reason on the C# DefOf side.
+  -->
+
+  <JobDef>
+    <defName>Research</defName>
+    <driverClass>SimWorld.AI.JobDriver_Research</driverClass>
+    <reportString>researching.</reportString>
+  </JobDef>
+
+</Defs>

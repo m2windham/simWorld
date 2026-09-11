@@ -83,4 +83,18 @@
     <reportString>feeding.</reportString>
   </JobDef>
 
+  <!-- Doctor work: tending, and rescuing a downed patient to a bed (system: health — tending). -->
+
+  <JobDef>
+    <defName>TendPatient</defName>
+    <driverClass>SimWorld.AI.JobDriver_TendPatient</driverClass>
+    <reportString>tending to a patient.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>Rescue</defName>
+    <driverClass>SimWorld.AI.JobDriver_TakeToBed</driverClass>
+    <reportString>rescuing.</reportString>
+  </JobDef>
+
 </Defs>

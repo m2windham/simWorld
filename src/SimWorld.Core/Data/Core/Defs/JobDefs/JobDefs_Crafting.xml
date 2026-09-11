@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Bills at a workbench (system: crafting.workbenches). One JobDef for every WorkGiver_DoBill-driven
+       WorkGiverDef (DoBillsSmith/DoBillsTailor/DoBillsArt/DoBillsCraft/CookMeals) — see that class's own
+       remarks for why five near-identical WorkGiverDefs share one giver and one job. Kept in its own file
+       rather than appended to JobDefs_Core.xml: the content loader reads every file in the directory, and a
+       second file avoids a shared-file edit while the hauling/research lanes are concurrently adding their
+       own JobDefs the same way (JobDefs_Hauling.xml, JobDefs_Research.xml). -->
+
+  <JobDef>
+    <defName>DoBill</defName>
+    <driverClass>SimWorld.Crafting.JobDriver_DoBill</driverClass>
+    <reportString>doing a bill.</reportString>
+  </JobDef>
+
+</Defs>

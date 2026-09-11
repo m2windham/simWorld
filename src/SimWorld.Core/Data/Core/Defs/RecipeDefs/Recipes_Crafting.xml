@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Bills at a workbench (system: crafting.workbenches): the first recipes actually worked through
+    WorkGiver_DoBill/JobDriver_DoBill rather than only queued and inspected. workAmount is this pass's own
+    (unsourced — RimWorld's real Smithing/Tailoring work amounts are not available to check against here);
+    what the driver's own tests pin is the trend (a better crafter finishes sooner), not these literals.
+    Both recipes gate on Crafting, the skill RimWorld's own Smithing and Tailoring work types are driven by
+    — RimWorld has no separate "Smithing skill" or "Tailoring skill"; see SkillDefOf's own list.
+  -->
+
+  <RecipeDef>
+    <defName>Make_MeleeWeapon_Knife</defName>
+    <researchPrerequisites>
+      <li>StoneTools</li>
+    </researchPrerequisites>
+    <label>smith a knife</label>
+    <jobString>Smithing a knife.</jobString>
+    <workAmount>550</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Steel</li></thingDefs></filter>
+        <count>10</count>
+      </li>
+    </ingredients>
+    <products><MeleeWeapon_Knife>1</MeleeWeapon_Knife></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Apparel_Shirt</defName>
+    <label>tailor a shirt</label>
+    <jobString>Tailoring a shirt.</jobString>
+    <workAmount>600</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Cloth</li></thingDefs></filter>
+        <count>40</count>
+      </li>
+    </ingredients>
+    <productHasIngredientStuff>true</productHasIngredientStuff>
+    <products><Apparel_Shirt>1</Apparel_Shirt></products>
+    <recipeUsers><li>TableTailor</li></recipeUsers>
+  </RecipeDef>
+
+</Defs>

@@ -675,7 +675,10 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   `ResearchSpeed` ship as new content, and the already-shipped
   `ShootingAccuracyPawn`/`MeleeHitChance`/`MeleeDodgeChance` (§3a) picked up
   `skillNeedOffsets` too. A `TotallyDisabled` skill (the work-tags rule above)
-  reads as level 0 in every one of these for free.
+  reads as level 0 in every one of these for free. `ResearchSpeed` shipped with
+  no consumer at first (`docs/research/tech-reachability.md` had to model
+  `speed(skill)` by hand for exactly that reason); `JobDriver_Research`
+  (`research.work`, below) is what reads it for real.
 - **Policy (SimWorld translation, `work.policy`, built).** A civilization cannot
   set twelve priority numbers per citizen the way a RimWorld player sets them
   per colonist, so a standing `RoleDef` (Farmer, Miner, Artisan, Scholar ship as
@@ -789,6 +792,28 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   self-service but with nothing reachable — has no distinct case left to cover
   here and stays the `WorkGiver_Pending` placeholder its `WorkGiverDef` shipped
   with.
+- **Hauling** (`HaulGeneral`) is `WorkGiver_Haul` (RimWorld:
+  `RimWorld.WorkGiver_Haul`/`HaulAIUtility`/`JobDriver_HaulToCell`, trimmed to
+  this port's single storage kind): it scans every spawned Item-category
+  `Thing` — this port's own answer for "haulable", since no separate
+  `alwaysHaulable`/`EverHaulable` split exists (nothing here can _hold_ an item
+  the way an equipment/apparel tracker would, so every spawned Item is a
+  candidate) — skips one already resting on a `Zone_Stockpile` cell its
+  `ThingFilter` allows, and carries the rest to the nearest reachable,
+  reservable stockpile cell with room for it (`HaulAIUtility.TryFindBestStockpileCell`,
+  nearest to the _item_, not the pawn, matching RimWorld's own `StoreUtility`).
+  A destination cell already holding a stack of the same def merges the count
+  exactly; an empty one gets a freshly made `Thing` carrying the same `Stuff`.
+  No stockpile at all (or every matching one already full) is this giver's
+  honest "no job" — one storage kind, no priority tiers, so there is nowhere
+  else for `StoreUtility`'s job to send it, and this port does not invent a
+  dumping ground. Carrying itself is modelled the same abstract way
+  `JobDriver_HaulToBuildingSite`/`JobDriver_Warden_Feed` already do it (no
+  carry-tracker exists in this codebase): the source stack's count drops the
+  moment the pawn reaches it, nothing visibly follows the pawn to the
+  stockpile in between. `HaulCorpses`, the other `WorkGiverDef` in the same
+  content file, stays `WorkGiver_Pending`: no `Corpse` class exists anywhere in
+  this codebase, so it cannot be wired honestly.
 
 ```mermaid
 flowchart TD
@@ -1115,9 +1140,10 @@ flowchart TD
   the home area is a separate, non-exclusive `Area` (`AreaManager.Home`) any
   number of which can overlap a cell and a Zone both — RimWorld's own Zone/Area
   split, kept distinct here too. `Zone_Growing` names a plant def to sow;
-  `Zone_Stockpile` carries a real `ThingFilter` but nothing hauls into it yet
-  (general item hauling is unbuilt — `HaulGeneral` stays `WorkGiver_Pending`,
-  unchanged from before this pass).
+  `Zone_Stockpile`'s real `ThingFilter` is now a genuine hauling destination —
+  `HaulGeneral` is wired (§7.4's hauling bullet) to `AI.WorkGiver_Haul`/
+  `AI.JobDriver_HaulToCell`, which read `Zone.cells` and the filter directly
+  rather than through any new member on `Zone` itself.
 - **Plant growth**: `Plant` (RimWorld: `Verse.Plant`) grows on the long tick at
   fertility × light × temperature, RimWorld's own three-factor product —
   fertility straight off `TerrainDef.fertility`, light from `GenDate`'s
@@ -1503,6 +1529,28 @@ the translation and its state per system.
   loaded save can never end up doubly subscribed and double-firing Chronicle
   entries — `GodManager`'s constructor subscribes for a fresh civilization,
   its `ExposeData`'s `PostLoadInit` branch resubscribes for a loaded one.
+- **Research work** (`research.work`, built): the `Research` `WorkTypeDef`
+  finally has a worker. `WorkGiver_Research` (a `WorkGiver_Scanner`, `Research`'s
+  own `giverClass`) scans for a reachable, unclaimed `ResearchBench`
+  (`Data/Core/Defs/ThingDefs_Buildings/Buildings_Research.xml`) and issues
+  `JobDriver_Research`, which walks to it and, every tick, adds
+  `ResearchManager.ResearchPointsPerWorkTick * pawn.GetStatValue(StatDefOf.ResearchSpeed)`
+  to `ResearchManager.CurrentProj` through the real `ResearchPerformed` — the
+  same `points/day = researchers x WorkTicksPerDay x ResearchPointsPerWorkTick x
+  speed(skill)` formula `docs/research/tech-reachability.md` §1.2 had to model
+  by hand, now driven by the `ResearchSpeed` `StatDef` instead of that harness's
+  own stand-in curve. **A bench is required, matching RimWorld**: with none
+  built, or none reachable/unclaimed, the giver simply finds no job, the same
+  "no bench, no job" outcome as a bench that exists but is claimed by another
+  researcher; `ResearchBench` itself carries no `researchPrerequisites`, so this
+  is never a lock a civilization cannot build its way out of. `ShouldSkip`
+  short-circuits the scan entirely when `CurrentProj` is null. A project
+  finishing mid-toil (`ResearchPerformed` itself clears `CurrentProj` the tick
+  progress reaches `baseCost`) ends the job `Succeeded` the same tick rather
+  than leaving the pawn idling at a bench with nothing current. The bench is
+  buildable through the ordinary `Blueprint`/`Frame`/`GenConstruct` pipeline
+  (`ThingDefs_Buildings/Buildings_Research.xml`'s own `Blueprint_ResearchBench`/
+  `Frame_ResearchBench` pair) like any other building.
 - **Aggregation**: per-citizen depth stays, but the god view reads `GodRollup`
   — population by `PawnTier`, mean mood, mean health, a food/industry readout,
   era and research progress — rather than opening every person. `GodRollup`
