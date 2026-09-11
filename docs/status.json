@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1587,
+  "testsTotal": 1604,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -470,7 +470,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
       "status": "ported",
-      "tests": 85,
+      "tests": 102,
       "items": [
         {
           "id": "simcore.tick",
@@ -521,6 +521,21 @@
           "id": "simcore.scribe-stream",
           "label": "Streaming XmlWriter save path: ScribeSaver drives a System.Xml.XmlWriter rather than building an XDocument, which is what RimWorld's own saver always did. Scribe.SaveToStream/SaveToFile write straight to a sink, so content leaves as the writer's buffer fills and peak memory stops tracking save size; Scribe.SaveToXDocument/SaveToString keep their exact shape and text by pointing the same writer at an XDocument. Streaming adds one rule the port already obeyed — an attribute must precede its node's child content — and WriteAttribute now throws rather than silently dropping one. Loading still parses whole: the three-pass load re-reads nodes after cross-refs resolve, which a forward-only reader cannot serve",
           "done": true
+        },
+        {
+          "id": "simcore.intrange",
+          "label": "Rand.Range(IntRange) was max-exclusive while RandomStream.Range(IntRange) was max-inclusive — same name, same parameter type, different distribution, and RimWorld's IntRange.RandomInRange is inclusive, so the static one was the odd one out. Both overloads now delegate rather than re-derive, so they cannot drift again. A degenerate range also used to consume no draw where RimWorld's does, so the stream now matches",
+          "done": true
+        },
+        {
+          "id": "simcore.hashphasing",
+          "label": "Pawn.HashOffsetTicks multiplied the thing id by 3, so gcd(3,30) put every pawn on a third of the available phases at 3x the intended peak for every hash-interval system. Now hashed. Measured at 500 pawns on a real map: peak tick fell from 41% above the mean to 10% above (1.80ms to 1.39ms), with the mean unmoved as the control — phasing moves work between ticks and never removes any, so a moved mean would have meant the measurement was wrong",
+          "done": true
+        },
+        {
+          "id": "simcore.hashphasing.turret",
+          "label": "CompTurretGun and Fire open-code the same thingIDNumber * 3 and cluster identically. Left for one shared helper rather than three copies; populations there are orders of magnitude smaller",
+          "done": false
         }
       ]
     },
