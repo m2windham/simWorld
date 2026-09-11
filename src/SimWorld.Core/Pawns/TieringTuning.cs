@@ -55,5 +55,42 @@ namespace SimWorld.Pawns
         /// a literal.
         /// </summary>
         public const int IntervalSettleTicks = GenDate.TicksPerYear;
+
+        /// <summary>
+        /// How many citizens of the focused settlement may sit at <see cref="PawnTier.Full"/> at once —
+        /// the Full-tier budget <see cref="God.AttentionBudget"/> fills, most significant first.
+        ///
+        /// <para/><b>SimWorld's own; it could not be sourced from RimWorld.</b> RimWorld has no middle tier
+        /// and therefore no budget to spend: a pawn is on the map (full) or it is a world pawn (frozen), and
+        /// the number of pawns on a map is bounded by the map, not by a policy. §11.5 lists tier budgets as
+        /// explicitly undecided and says where the answer has to come from — "measurement, not guesswork" —
+        /// so this is read off <c>docs/perf/baseline.md</c> rather than chosen for roundness.
+        ///
+        /// <para/><b>500, and what that is defended with.</b> Two independent readings of the same report
+        /// land either side of it:
+        /// <list type="bullet">
+        /// <item><description><b>The last flat point on the measured curve.</b> baseline.md §1 times whole
+        /// pawn-days at seven populations, and per-pawn cost is <i>not</i> flat: 14.0-14.1 ms/pawn-day
+        /// through N=500, then 17.4 at N=1,000 and 21.7 at N=2,500 as GC and cache pressure start being paid
+        /// (§4's ~4.2 MB/pawn-day is the mechanism). N=500 is the largest measured population at which one
+        /// more citizen still costs what the last one did, which is the property a budget wants — past it,
+        /// the marginal citizen is quietly more expensive than the average one, and a budget set there would
+        /// be spending money it had not counted.</description></item>
+        /// <item><description><b>Inside the sick-population ceiling, not the healthy one.</b> The healthy
+        /// 15x ceiling is a measured 2,500-5,000 (§1), but "Where the ceiling is" is blunt that a colony
+        /// where everyone is hale is not the normal case; folding in §10's post-fix 3.26x multiplier for
+        /// wounds-and-a-disease puts a realistically sick population's 15x ceiling at a projected
+        /// 750-1,500. 500 sits below the low end of that projection with room, so the budget holds at turbo
+        /// speed in the state a settlement actually spends its life in, not only in the best case.
+        /// A budget defended by a projection should sit under it, not on it.</description></item>
+        /// </list>
+        ///
+        /// <para/>It is also large enough to be a town rather than a cast list — §11.4's point is that the
+        /// tier a citizen lived at is what the chronicle can ever say about them, so a budget tight enough to
+        /// be comfortable would be buying performance with history. Pinned by behaviour
+        /// (<c>AttentionBudgetTests</c> builds rosters relative to this constant and asserts the shape of
+        /// what is kept), never by the literal 500 appearing in an assertion.
+        /// </summary>
+        public const int FullTierBudget = 500;
     }
 }

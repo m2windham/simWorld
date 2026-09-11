@@ -1828,6 +1828,35 @@ their minute-by-minute computation stops. Full falls to Interval the instant
 none of the four hold. The further fall, Interval to Statistical, is
 deliberately **not automatic** — see §11.5.
 
+**The four reasons are ranked, and the Full tier has a budget.** Attention alone
+bounds Full tier to one settlement's roster, which is a bound in space and none
+at all in time: demography adds ~4.5% a year, so that roster doubles about every
+17 years and crosses the measured Full ceiling around year 115-125 (67 citizens
+at year 10, 1,412 at year 100, 16,868 at year 160). `God.AttentionBudget` caps
+it — the `TieringTuning.FullTierBudget` most significant citizens of the focused
+settlement hold Full, and the rest stay where they are **even while attended**.
+The ordering, most significant first, is `hasRole` → `chronicleNamed` →
+`relatedToPromoted` → `attending`, tie-broken by `thingIDNumber` ascending
+(stable across a save, monotone in creation order, so it reads as seniority and
+a newborn can never displace an incumbent). The reasoning is the shape of the
+sets rather than a hierarchy of worth: the first three are properties of _the
+person_ and are held by few, while the fourth is a property of _the camera_ and
+is held by the whole roster at once, so attention is the only one that can
+outgrow a budget and therefore the first that must yield. The cap holds back the
+merely-looked-at, never the leader.
+
+Three invariants it does not touch. It is a **demotion constraint, never a
+promotion clock** — nothing here promotes anybody, so a citizen the budget
+cannot seat stays at exactly the tier they were already at (Interval, or
+Statistical if they had already settled there). It is **lossless in identity** —
+a held-back citizen keeps their real `Pawn` and is never spilled into
+`Settlement.StatisticalPopulation`, the bare count with no `Pawn` behind a
+person. And it **does not thrash**: the ordering reads only the four
+significance flags and an immutable id, never the tier it is about to set, so a
+stable roster produces the same seating on every sweep and across a save
+boundary — a citizen promoted and demoted on alternating sweeps would be worse
+than no cap at all, because every promotion pays catch-up.
+
 **Tier-aware ticking is dispatch by tick list, not a skip inside one.**
 `Thing.TickerType` (previously `def.tickerType`, fixed per content def) is now
 virtual; `Pawn` overrides it to read the tier tracker, so a demoted pawn
@@ -1984,14 +2013,27 @@ flowchart TB
 
 ### 11.5 What this section deliberately does not decide
 
-- **Tier budgets.** How many citizens each tier can afford comes from
-  measurement, not guesswork. What is now measured (§11.3): the Full tier is
-  affordable in the low hundreds once injury and illness are normal rather than
-  exceptional (`docs/perf/baseline.md`), and demography's own growth — 4.5% a
-  year, doubling every ~16 years — crosses that from a 20-40 person founding
-  band somewhere around year 40; Interval and Statistical sustain roughly two
-  to three orders of magnitude more (projected ~385,000 and ~2.3M respectively
-  at 15x) precisely because they are cheap rather than absent. Still not
+- **Tier budgets — the Full one is now decided; the other two are not.** How
+  many citizens each tier can afford comes from measurement, not guesswork.
+  What is measured (`docs/perf/baseline.md` §1): per-pawn cost is flat at
+  14.0-14.1 ms/pawn-day through N=500 and degrades past it (17.4 at N=1,000,
+  21.7 at N=2,500) as GC and cache pressure start being paid, and the healthy-
+  population 15x ceiling sits between 2,500 and 5,000. A population carrying
+  the wounds and illness that are the normal state rather than the exception is
+  more expensive: folding in §10's post-fix 3.26x multiplier projects a 15x
+  ceiling of roughly 750-1,500. (An earlier revision of this bullet said "the
+  low hundreds", which was that same arithmetic done with the _pre_-fix 24.8x
+  multiplier; baseline.md §10 revised it upward when the two findings it rested
+  on closed, and this bullet had not caught up.) `TieringTuning.FullTierBudget`
+  is set from those two readings at **500** — the last measured population at
+  which one more citizen still costs what the last one did, and comfortably
+  under the low end of the sick-population projection. Demography's own growth
+  — 4.5% a year, doubling every ~16-17 years — crosses it from a 20-40 person
+  founding band somewhere around year 80; §11.3's cap is what holds it there
+  rather than letting the roster carry on doubling. Interval and Statistical
+  sustain roughly two to three orders of magnitude more (projected ~385,000 and
+  ~2.3M respectively at 15x) precisely because they are cheap rather than
+  absent, and neither has a budget yet — nothing has needed one. Still not
   decided: the exact population curve a real campaign needs across an era, and
   what fraction of citizens a director would realistically keep Full/Interval
   at once — those need the director itself (§11.1) to measure against.

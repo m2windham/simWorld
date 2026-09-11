@@ -23,6 +23,15 @@ namespace SimWorld.Pawns
     /// four hold, but the further fall to <see cref="PawnTier.Statistical"/> is never automatic — see
     /// <see cref="DemoteToStatistical"/>.
     /// <para/>
+    /// <b>One of the four can be held back, and only one.</b> Attention is a property of the camera rather
+    /// than of the person, so the whole roster of an open settlement holds it at once and it alone can
+    /// outgrow what Full tier costs. <see cref="Notify_AttentionChanged(bool,bool)"/> therefore carries the
+    /// Full-tier budget's answer with it: a citizen the budget could not seat is still
+    /// <see cref="Attending"/>, but that attention does not count toward <see cref="Significant"/>
+    /// (<see cref="God.AttentionBudget"/> decides who, in significance order). Role, chronicle mention and
+    /// relation are properties of the person, are held by few, and are never withheld by anything — the cap
+    /// holds back the merely-looked-at, never the leader.
+    /// <para/>
     /// <b>The one thing here that knows about elapsed time is <see cref="InsignificantSinceTick"/>, and it can
     /// only ever push a citizen down.</b> It records <i>when</i> this citizen last stopped being significant so
     /// that a director (<see cref="God.AttentionManager"/> is the one that exists) can express "insignificant
@@ -42,6 +51,7 @@ namespace SimWorld.Pawns
 
         private PawnTier tier = PawnTier.Full;
         private bool attending;
+        private bool attentionWithheld;
         private bool hasRole;
         private bool chronicleNamed;
         private bool relatedToPromoted;
@@ -63,13 +73,34 @@ namespace SimWorld.Pawns
 
         public PawnTier Tier => tier;
 
+        /// <summary>The player is attending this citizen's settlement. Says nothing about whether that
+        /// attention is <i>counting</i> for them — a citizen the Full-tier budget held back is still attended,
+        /// and still reports true here. See <see cref="AttentionWithheld"/>.</summary>
         public bool Attending => attending;
+
+        /// <summary>This citizen is attended, but the Full-tier budget gave their seat to someone more
+        /// significant, so attention does not count toward <see cref="Significant"/> for them
+        /// (<see cref="TieringTuning.FullTierBudget"/>, filled by <see cref="God.AttentionBudget"/>). Only ever
+        /// true while <see cref="Attending"/> is — the two-argument
+        /// <see cref="Notify_AttentionChanged(bool,bool)"/> clears it on the way out of attention, so a
+        /// citizen can never carry a stale withholding into a settlement nobody is looking at.</summary>
+        public bool AttentionWithheld => attentionWithheld;
+
         public bool HasRole => hasRole;
         public bool ChronicleNamed => chronicleNamed;
         public bool RelatedToPromoted => relatedToPromoted;
 
-        /// <summary>Any of the four promotion reasons currently holds.</summary>
-        public bool Significant => attending || hasRole || chronicleNamed || relatedToPromoted;
+        /// <summary>
+        /// Any of the four promotion reasons currently holds. Attention is the one of the four that can be
+        /// held back: it counts only while it is within the Full-tier budget, because it is the only reason
+        /// the whole roster holds at once (see <see cref="God.AttentionBudget"/> for the ordering and why
+        /// attention is the reason that yields). The other three are properties of the person and are never
+        /// withheld by anything.
+        /// </summary>
+        public bool Significant => AttentionCounts || hasRole || chronicleNamed || relatedToPromoted;
+
+        /// <summary>Attention, after the budget has had its say.</summary>
+        private bool AttentionCounts => attending && !attentionWithheld;
 
         /// <summary>
         /// The game tick at which this citizen last stopped being <see cref="Significant"/>, or
@@ -104,10 +135,47 @@ namespace SimWorld.Pawns
 
         /// <summary>The player is (or is no longer) attending this citizen's settlement. The one trigger that
         /// can promote directly and also the one whose absence, combined with no role/mention/relation, demotes
-        /// Full back to Interval.</summary>
+        /// Full back to Interval. Attention granted this way always counts — see the overload for the form the
+        /// Full-tier budget uses.</summary>
         public void Notify_AttentionChanged(bool isAttending)
         {
+            Notify_AttentionChanged(isAttending, withinBudget: true);
+        }
+
+        /// <summary>
+        /// The same notification, carrying the Full-tier budget's answer alongside it:
+        /// <paramref name="withinBudget"/> false means the player is attending this citizen's settlement but
+        /// the budget gave their seat to someone more significant, so attention does not count toward
+        /// <see cref="Significant"/> and they stay where they are rather than being promoted to
+        /// <see cref="PawnTier.Full"/>.
+        ///
+        /// <para/><b>Why a second argument rather than the director simply not notifying them.</b> Passing
+        /// <c>false</c> for <paramref name="isAttending"/> to a citizen whose settlement is open would be the
+        /// smaller change — no field, no Scribe line — and it is wrong: this method means what it says, and
+        /// <see cref="Attending"/> is read as "the player is looking at this citizen's settlement", which
+        /// would become a lie for exactly the citizens the cap touches. It would also silently hand them to
+        /// <see cref="God.AttentionManager"/>'s settle policy, which keys off "not attended" and would sink
+        /// the overflow of an <i>open</i> settlement into the Statistical cohort a year later — thinning what
+        /// the chronicle can ever say about them (§11.4) as a side effect of a performance cap. Keeping the
+        /// two facts separate — attended, and within budget — keeps both readable and keeps the demotion a
+        /// demotion rather than a lie about where the camera is.
+        ///
+        /// <para/>Withholding is never sticky: leaving attention clears it, so the flag cannot outlive the
+        /// focus that produced it.
+        ///
+        /// <para/>One consequence worth stating rather than discovering: a withheld citizen is insignificant
+        /// by <see cref="Significant"/>, so their <see cref="InsignificantSinceTick"/> clock runs while they
+        /// are held back. Nothing settles them while the settlement is open (the settle policy keys off the
+        /// settlement being unattended), but a citizen held back for longer than
+        /// <see cref="TieringTuning.IntervalSettleTicks"/> can settle on the first sweep <i>after</i> the god
+        /// looks away rather than serving a fresh year first. That is the honest reading of the clock — they
+        /// genuinely had no individual significance for that whole span — and not an accident of where the
+        /// flag lives.
+        /// </summary>
+        public void Notify_AttentionChanged(bool isAttending, bool withinBudget)
+        {
             attending = isAttending;
+            attentionWithheld = isAttending && !withinBudget;
             Recompute();
         }
 
@@ -344,6 +412,7 @@ namespace SimWorld.Pawns
         {
             Scribe_Values.Look(ref tier, "tier", PawnTier.Full);
             Scribe_Values.Look(ref attending, "attending");
+            Scribe_Values.Look(ref attentionWithheld, "attentionWithheld");
             Scribe_Values.Look(ref hasRole, "hasRole");
             Scribe_Values.Look(ref chronicleNamed, "chronicleNamed");
             Scribe_Values.Look(ref relatedToPromoted, "relatedToPromoted");
