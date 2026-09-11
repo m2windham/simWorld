@@ -106,6 +106,43 @@ them; this side does not assign work across the boundary.
 5. **Do not touch** `src/SimWorld.Core/**`. If the host needs something the core does
    not expose, that is a request to this side, not an edit.
 
+## Host: landed, and what is next
+
+The host session has a first slice working: a Unity 6000.5.0f1 project at
+`A:\dev\simWorld.Host` with its own git repo, referencing `com.simworld.core` as a local
+UPM package by relative path, and a `GodViewBootstrap` calling `GodViewSnapshot.Capture()`
+on a timer. It verified the result by reading the rendered text back in Play mode rather
+than trusting a screenshot, and did not call `Game.NewGame`, so the empty read was honest
+rather than staged. Read-only so far; nothing wired to `GodCommands`.
+
+It also reported **zero edicts**, which is a real bug and was this side's. Five edicts
+ship and `Capture()` returns every one regardless of availability, so zero is impossible —
+the host had never loaded the core's content, and nothing in the contract said it had to.
+`GodViewSnapshot.ContentLoaded` now distinguishes "content never loaded" from "a
+civilization that has not started", which were indistinguishable before, and `Capture()`'s
+doc carries the load call.
+
+Proposed next, in order. As above these are proposals with reasons, not assignments.
+
+1. **Load content before anything else.** `CoreContent.Load` into a `DefDatabase`, that
+   database assigned to `DefDatabase.Global`. `ContentLoaded` should flip true and five
+   edicts should appear, each with an `Availability` and a `Reason`. If they do not, the
+   package is not shipping its `Data/` directory into the Unity build — that is a
+   packaging problem on this side and worth reporting immediately rather than working
+   around.
+2. **Start a real game** (`Game.NewGame`, tribal start, solo) and **report what the
+   snapshot actually contains** — population by tier, era and progress, whether the means
+   look sane, whether the chronicle fills. The ask here is a report rather than a feature:
+   the host can see this and the core cannot. The last number that looked wrong found a
+   bug.
+3. **Then the write path.** One edict button through `GodCommands.IssueEdict(defName)`,
+   and surface `EdictOption.Reason` on the disabled ones — every refusal already carries a
+   sentence, and a greyed-out control with no explanation is the exact failure that field
+   exists to prevent. Do not reimplement the availability rules to explain them; a
+   reimplemented rule drifts from the one the simulation enforces. At a tribal start
+   exactly one edict is issuable and four are era-locked, so both states appear on screen
+   without contriving anything.
+
 ## The honest summary
 
 Phase 1 built every system in isolation and tested it there. The count of ported
