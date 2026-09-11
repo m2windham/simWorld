@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1754,
+  "testsTotal": 1855,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -272,7 +272,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/World · Noise · Factions (minimal) · World.EmergenceManager",
       "status": "ported",
-      "tests": 39,
+      "tests": 46,
       "items": [
         {
           "id": "worldgen.tiles",
@@ -307,6 +307,11 @@
         {
           "id": "worldgen.civscale",
           "label": "Translation: many rival civilizations at planet scale — population scaling and era seeding — World.EmergenceManager, MTB-paced off OverallPopulation and gated by Research.ResearchManager.CurrentEra so nothing emerges more advanced than the world's own most advanced known civilization",
+          "done": true
+        },
+        {
+          "id": "worldgen.biomeshapes",
+          "label": "A biome did not shape the world it is part of. allowRivers and allowRoads were set by content and read by nothing, so rivers were written onto ocean tiles and roads pathed across sea ice; both are gated now, the river gate per-end rather than per-link because every river ends in water and dropping the whole link would have left coastal tiles with no downhill neighbour. isExtremeBiome gates SiteScorer's necessity multiplier rather than the one caller that picks a starting tile, so every automatic founding path — player start, emergence and expansion — is covered and a fourth caller cannot forget it. canAutoChoose stays dormant: its own doc contradicts wiring it into a scored pick, and the only unweighted tile pick in the codebase chooses region seeds, which are named areas rather than sites.",
           "done": true
         }
       ]
@@ -428,7 +433,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Pawns · Pawns/Generation · Pawns/Genes",
       "status": "ported",
-      "tests": 65,
+      "tests": 78,
       "items": [
         {
           "id": "pawngen.backstory",
@@ -484,6 +489,11 @@
           "id": "pawngen.traitshaping",
           "label": "Backstories, kinds and germlines shape traits. Eight seams in one cluster — BackstoryDef and PawnKindDef's forcedTraits/disallowedTraits, TraitDef.requiredWorkTags, and TraitDegreeData's disabledWorkTags/disallowedMentalBreaks/theOnlyAllowedMentalBreaks — were all read by PawnGenerator and set by no shipped content, so every pawn in every game rolled from the same unfiltered table. Content sets all eight, and three code defects surfaced in the wiring: TryForceTrait skipped the capability gate the random path enforces (a backstory could force bloodlust onto a pawn barred from violence); backstories ignored their own requiredWorkTags, so a pacifist could be a tribal hunter; and genes were applied after the two filters that need to read GeneDef.disabledWorkTags, with Pawn_GeneTracker never raising the disabled-work-tags notification. Contradictions in the forced/disallowed pair are a config error now (BackstoryTraitValidation) rather than a generator that silently skips.",
           "done": true
+        },
+        {
+          "id": "pawngen.lifestage",
+          "label": "A life stage shaped nothing about the pawn living it. LifeStageDef carries seven scaling fields; four were set by every shipped stage and read by no line of src/. foodMaxFactor is wired into Need_Food.MaxLevel (it was BodySize flat, so only body size separated an infant's stomach from an adult's); alwaysDowned sits beside forceDowned in Pawn_HealthTracker rather than zeroing the Moving capacity, because a capacity worker computes from the HediffSet and zeroing Moving would encode 'too young to walk' as 'the legs do not work' — one content edit from killing every newborn through ShouldBeDeadFromRequiredCapacity; and reproductive gates both FamilyManager.EligibleForBirth and CompHasGatherableBodyResource, which knew only fullness and gender, so a chicken laid its first egg on hatch day and a newborn muffalo gave milk. Two of the audit's recorded blockers were corrected rather than repeated: foodMaxFactor's had expired, and reproductive's named the wrong module. Pawn.Notify_LifeStageStarted is raised at the crossing so the latched state (downed) follows the stage rather than persisting; MakeDowned is re-entrancy guarded because reading a life stage can recompute it, and the storyteller's adaptation hook is skipped while the stage is what holds the pawn down — wiring it unguarded would have charged the 'a colonist went down' curve for every child born.",
+          "done": true
         }
       ]
     },
@@ -495,7 +505,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
       "status": "ported",
-      "tests": 102,
+      "tests": 112,
       "items": [
         {
           "id": "simcore.tick",
@@ -559,8 +569,8 @@
         },
         {
           "id": "simcore.hashphasing.turret",
-          "label": "CompTurretGun and Fire open-code the same thingIDNumber * 3 and cluster identically. Left for one shared helper rather than three copies; populations there are orders of magnitude smaller",
-          "done": false
+          "label": "CompTurretGun and Fire open-coded the same thingIDNumber * 3 and clustered identically — recorded as a follow-up rather than fixed in place, so the fix would be one shared helper and not a third copy. Sim.HashInterval is that helper, and the clustering was real: turret scans run every 15 ticks so every turret landed on one of 5 reachable phases instead of 15, and fire's complex calcs every 150 so every fire landed on one of 50 instead of 150 — three deep in both cases, and a burning quarter is precisely what that interval exists to spread. Pawn.HashOffsetTicks delegates to the same helper and keeps the bench's legacy-offset hatch. The test states the old behaviour at both intervals, so the coverage assertions are demonstrably sensitive to what they rule out rather than passing vacuously.",
+          "done": true
         }
       ]
     },
@@ -823,7 +833,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 136,
+      "tests": 142,
       "items": [
         {
           "id": "ai.thinktree",
@@ -914,6 +924,11 @@
           "id": "ai.combat.targets",
           "label": "AttackTargetsCache: BestAttackTarget no longer walks the population. Spawned pawns are filed by faction on MapPawns plus a grudge list, so a searcher visits only hostile buckets — none in peacetime, and zero edits to Map.cs. The index is a superset and never an answer: every predicate still runs on every candidate, so only an omission could change behaviour, and the test asserts the cached scan against a whole-map scan over 40 random map states. Measured: the call stops reading population at all — about 10ns peacetime and 72ns under raid at any N, against 3ns x N before",
           "done": true
+        },
+        {
+          "id": "ai.factionlesshostility",
+          "label": "Raiders and citizens could not see each other as hostile at all. Measured on a settlement founded the ordinary way with a real RaidEnemy on its interior: 0 of 14 raiders saw a citizen as hostile, 0 of 30 citizens saw a raider, and neither side ever took an attack job. Hostility required both sides to carry a Pawn.faction, and SettlementFounder generates every citizen with a PawnGenerationRequest naming none — PawnGroupMaker, the raider path, is the only caller in src/ that passes one. So a settlement has a faction and not one of its citizens does. FactionDef.hostileToFactionlessHumanlikes is the flag for exactly that pairing and nothing read it; it is read now in AttackTargetsUtility.HostileTo and in AttackTargetsCache's candidate list, since a factionless pawn sits in no faction bucket and the cached scan would otherwise have gone blind where the full scan found a fight. Every combat test passed throughout because each hands its own defenders a faction by hand — the same isolation blindness the wiring audit exists for, one layer deeper than the batch that made Combat reachable from play. STILL OPEN: Tribal and Outlander factions declare the flag false, so their raids find nobody. The real fix is giving settlement citizens their settlement's faction, which is the World module's; turning the flag on for content that did not ask for it would paper over it.",
+          "done": true
         }
       ]
     },
@@ -925,7 +940,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 125,
+      "tests": 135,
       "items": [
         {
           "id": "director.personality",
@@ -1001,6 +1016,16 @@
           "id": "director.downedadaptation",
           "label": "StoryWatcher_Adaptation.Notify_ColonistDowned is raised — Pawn_HealthTracker's downing path now tells the narrator (src/SimWorld.Core/Director/StorytellerPawnEvents.cs), so adaptation eases after a mauling and not only after a funeral. Same shape as the Notify_ColonistDied hook this audit was written after.",
           "done": true
+        },
+        {
+          "id": "director.diseasebiome",
+          "label": "Disease fired at the same rate everywhere. The recorded blocker had expired — CivilizationTarget has carried real settlements on real world tiles since the multi-settlement work, while StorytellerCompProperties_Disease.baseMtbDays still carried the doc 'SimWorld has no biomes yet'. Translation: RimWorld rolls per map, and a civilization is several places, so per-settlement biome rates sum — three towns catch three times as much. baseMtbDays survives as the storyteller's appetite relative to its own declared default, and remains the whole answer for a settlement-less target. Measured: 10 days everywhere before; ~11 for one swamp town and ~55 for one tundra town after.",
+          "done": true
+        },
+        {
+          "id": "director.pointsscaleable",
+          "label": "IncidentDef.pointsScaleable was a dropped if: StorytellerComp_RandomMain jittered whatever it picked, scaleable or not. Numerically inert against shipped content — only threat categories carry points and both point-carrying incidents declare the flag — but it spent a draw on incidents with nothing to scale, and of the two flagged incidents only RaidEnemy has severity to scale at all.",
+          "done": true
         }
       ]
     },
@@ -1054,7 +1079,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "ported",
-      "tests": 58,
+      "tests": 76,
       "items": [
         {
           "id": "crafting.bills",
@@ -1095,6 +1120,21 @@
           "id": "crafting.workbenches",
           "label": "Bills at a workbench, map-scale: CompBillGiver (Things/CompBillGiver.cs) makes a spawned Building an IBillGiver by composition, following the Building module's own comp-over-subclass grain (CompPower/CompTurretGun/CompTrap); CompProperties_BillGiver.workType is matched against a WorkGiverDef's own workType so one WorkGiver_DoBill (Crafting/WorkGiver_DoBill.cs) serves DoBillsSmith/DoBillsTailor/DoBillsArt/DoBillsCraft/CookMeals instead of five near-copies — RimWorld's own WorkGiverDef.fixedBillGiverDefs would have needed a shared Work/WorkGiverDef.cs edit this pass avoided. JobDriver_DoBill spends skill-scaled work ticks, then re-resolves ingredients near the bench through the existing BillIngredientsFinder, consumes the real map Things, spawns the product via GenRecipe/ThingMaker and grants skill XP. Ingredient delivery to the bench is deliberately out of scope — mirrors WorkGiver_ConstructFinishFrame/ConstructDeliverResourcesToFrames' own split; a bill only runs once ingredients already sit within WorkGiver_DoBill.IngredientSearchRadius, which HaulGeneral's WorkGiver_Haul can stock via an adjacent stockpile zone. Content: FueledStove and TableStonecutter (existing benches) and two new ones, Smithy and TableTailor, each carrying the comp; two new recipes (Make_MeleeWeapon_Knife, Make_Apparel_Shirt). DoBillsArt ships wired with no bench yet — a Sculpture/ArtDef content system is its own piece of work, not a mechanism gap.",
           "done": true
+        },
+        {
+          "id": "crafting.producematurity",
+          "label": "Translation recorded: RimWorld splits produce maturity into LifeStageDef.eggLayer/milkable/shearable alongside reproductive; this port's LifeStageDef ships only reproductive, so one flag gates eggs, milk and wool. Documented at CompHasGatherableBodyResource.ParentIsMature with the fix if a race ever needs the finer split.",
+          "done": true
+        },
+        {
+          "id": "crafting.stonework",
+          "label": "Rock to usable material, and the hole was four links long rather than one. Only ChunkSandstone had a cutting recipe, so a settlement on granite mined all day and could cut none of it; TableStonecutter had no Blueprint/Frame pair at all, so it could only ever exist because a test spawned it; NOTHING IN src/ EVER CREATED A BILL — every Bill_Production in the repo was made by a test, so WorkGiver_DoBill never found work on any bench, sandstone included; and the only reader of a Blocks* def was GenStep_Ruins, which strews pre-ruined walls at map generation. All four are closed on the map path: a recipe per chunk type, StonecutterInitiative queuing standing bills in the HuntingInitiative/SettlementConstructionInitiative shape, the bench placed AT the stone (WorkGiver_DoBill only offers a bill whose ingredients lie within 12 cells and nothing in this port creates a stockpile zone, so a bench anywhere else would have been a bench nobody could work), and three stone walls the settlement builds instead of wooden ones. Butchery's recorded reason for bypassing bills — products depending on the individual corpse, which RecipeDef.products cannot express — does not apply to a chunk of granite, so stonecutting is the case the bill system fits and what was missing was a bill-creator, not another bypass.",
+          "done": true
+        },
+        {
+          "id": "crafting.stonework.gaps",
+          "label": "Recorded from the same trace, not chased: the ore ladder has the identical hole one level up — Buildings_Mineable yields Flint, Salt, Coal, Copper, Tin, Silver, Gold, Jade, Uranium and Plasteel, and not one is named by any recipe ingredient or costList in content. Four benches (FueledStove, Smithy, TableTailor, TableButcher) have no Blueprint/Frame pair so nothing can raise them; ResearchBench and Sculpture have pairs but nothing places them, and WorkGiver_Research requires a bench the settlement cannot build. Every other bench's recipes remain where stonecutting was: real recipes, a real giver, no bill. And the civilization-scale path stays dead for a second reason — nothing ever puts a mined chunk into Settlement.Stores, so a guild queue would starve even if GuildManager.Establish were ever called.",
+          "done": false
         }
       ]
     },
@@ -1198,7 +1238,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 132,
+      "tests": 149,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1244,6 +1284,11 @@
           "id": "economy.billreservation",
           "label": "Bills reserve their chosen ingredient stacks, not just the bench: Job target queues, ReservationManager stack counts and Toils_Reserve.ReserveQueue ported from RimWorld, so two crafters can no longer both spend one pile",
           "done": true
+        },
+        {
+          "id": "economy.factionraidrules",
+          "label": "Faction raid gating. earliestRaidDays is half-redundant and that is the result: Cassandra holds ThreatBig to day 6 and Phoebe to day 10, past every shipped value, but Randy Random declares no day floor anywhere — so a day-zero raid by a faction whose own content says it waits three days was reachable, and this field was the only thing that would have stopped it. canMakeRandomly's recorded blocker had expired: it blamed FactionGenerator, while EmergenceManager has been picking a FactionDef at random since civilizations started emerging mid-game. isFighter was measured before being changed — 3,866 raiders across 12 faction and budget combinations produced zero non-combatants — so the described consequence never happens and what was missing was the invariant, which is now a config error rather than a filter doing nothing. autoFlee: Combat landed but flight did not, so on the map path the flag still has nothing to switch; translated onto the abstract path as a cap on how much of a war band can be killed before the rest withdraw, since RimWorld expresses it as a Lord-graph transition and this port has no Lord.",
+          "done": true
         }
       ]
     },
@@ -1255,7 +1300,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
       "status": "translated",
-      "tests": 66,
+      "tests": 75,
       "items": [
         {
           "id": "building.zones",
@@ -1290,6 +1335,16 @@
         {
           "id": "building.initiative",
           "label": "Translation: citizen-initiated construction under edicts — SettlementConstructionInitiative reads a settlement's real Citizens count (never StatisticalPopulation: a Statistical citizen has no individual Pawn to physically house, by the tiering system's own design — see the class's own remarks), what is already built or already planned on its InteriorMap, and what its Stores ledger holds, then derives a small, concrete need list (a Bed per citizen, a handful of Wall blueprints once there is anyone to shelter, a StorageHut once Stores holds enough to want one) and places blueprints for the shortfall through the existing GenConstruct/Blueprint/Frame pipeline — nothing decided to place a blueprint before this pass. Placement samples cells at random off the ambient RandomStream rather than scanning the map, validated entirely by GenConstruct.CanPlaceBlueprintAt (never overlapping or blocking what is already there), throttled to ConstructionInitiativeTuning.MaxBlueprintsPerTick per gated call so a settlement with a large shortfall grows over many ticks rather than flooding its map at once. Self-gated on GenTicks.TickRareInterval, the same 'rare bucket, not a per-tick scan' shape GodManager.GodTick/Storyteller.StorytellerTick/Settlement.GrowthTick already use; a settlement nobody has entered has no InteriorMap and this is a deliberate no-op there, never a triggered generation. The edict seam: EdictDef.prioritizedConstruction (new field, same declarative/read-live shape as prioritizedWork) reorders which unmet need a settlement fills first while an edict naming it is active — GreatWorksMandate ships it as real content ('quarry and building site before anything else') — with no activation-time side effect, so deactivating leaves no trace. New buildable content: Bed and StorageHut ThingDefs with Blueprint/Frame pairs alongside the existing Wall. Bed is now wired into Need_Rest/JobGiver_GetRest (AI.RestUtility.FindBedFor, AI.JobDriver_LayDown — see ai.rest): a citizen actually claims and sleeps in the bed this system builds for them, resting faster than the ground. SettlementConstructionInitiative.Tick() is wired into Sim/Game.cs's WireTickHooks as a normal PostTicker, the civilization-wide entry point a host loop calls once per tick (mirroring God.GodTick()); a settlement's own Full-tier citizens are what actually walk over and build what it queues, once Settlement.SyncCitizenSpawns (settlements.citizen-presence) puts them on its interior map in the first place.",
+          "done": true
+        },
+        {
+          "id": "building.plantregrowth",
+          "label": "Wild plants never regrew, and the audit's recorded reason was wrong in the strongest way: it said the plant system regrows on its own schedule, and the plant system did not regrow at all. Map generation scattered undergrowth once and nothing ever replaced a plant, so a map that was cut or burnt stayed bare for the rest of the game. WildPlantSpawner regrows toward the density generation itself placed — the plant-signal formula moved into MapGenTuning so there is one of it rather than two — at desired/(wildPlantRegrowDays x 60000) per tick, stopping at the supported density, and drawing every roll from a map-and-tick-seeded stream so it never perturbs the ambient one.",
+          "done": true
+        },
+        {
+          "id": "building.stonewalls",
+          "label": "Translation recorded: RimWorld has one stuff-chosen Wall, and stuff-based construction is unported here — Blueprint/Frame/WorkGiver_ConstructDeliverResources cost a building through costList only, and a costList entry names one ThingDef. So this ships def-per-material (WallSandstone/WallLimestone/WallGranite), which is what a player sees in RimWorld anyway. The three differ on exactly one axis, MaxHitPoints, because RimWorld prices every Make_Blocks_* identically and puts the difference in the structure; those three numbers are the only invented values in the lane and the tests pin their ordering (granite > limestone > sandstone > wood), never the literals. SettlementConstructionInitiative's wall count and the GreatWorksMandate edict bias both had to widen: the edict names Wall by defName, so it would have silently stopped prioritising walls the moment they became stone.",
           "done": true
         }
       ]
@@ -1339,7 +1394,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Quests · Scenario · Letters (quests.moments' curator lives in src/SimWorld.Core/Director — see director.chronicle)",
       "status": "translated",
-      "tests": 35,
+      "tests": 46,
       "items": [
         {
           "id": "quests.scenario",
@@ -1379,6 +1434,11 @@
         {
           "id": "quests.rewardvaluefactor",
           "label": "DifficultyDef.questRewardValueFactor applies once, at generation (QuestNode_GiveReward), not at payout. Two lanes wired it in the same batch — one at each end — and the merge caught it before a 0.8 difficulty could pay 0.64. Generation is RimWorld's end and also the value Quest.RewardsSummary advertises, so what a quest promises and what the treasury receives are the same number; the sink keeps only the floor that stops a positive award rounding to nothing.",
+          "done": true
+        },
+        {
+          "id": "quests.tribute",
+          "label": "A tribute demand that can be answered. Quest_Tribute shipped for four batches as a script that set demandSilver from the threat points, sent a letter, waited out the offer and ended Fail — always, identically, whether the civilization was rich or destitute. Nothing read demandSilver, no coin moved either way, and refusing cost nothing, so 'or threatens reprisal' in its own description had no mechanism behind it: the exact mirror of the reward-sink defect, with value unable to leave the civilization as it had been unable to enter. QuestPart_Tribute answers out of the same seat a reward is paid into (QuestCivilization, extracted from the reward sink so both directions provably touch one ledger), and QuestNode_Tribute branches at runtime, which QuestNode_IsSet/IsTrue cannot — they branch during generation, before the quest has run. All or nothing, since a part-payment would need a fraction-to-goodwill rule nobody could source; paid if affordable, since there is no player-input model at this seam; the reprisal applied by the tribute part rather than through QuestPart_Reward, because that part feeds Quest.RewardsSummary and a reprisal is not a reward; and deliberately not scaled by questRewardValueFactor, which is a factor on reward value, not on a cost.",
           "done": true
         }
       ]

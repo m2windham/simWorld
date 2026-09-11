@@ -32,7 +32,12 @@ namespace SimWorld.Factions
         /// <summary>Never at peace with anyone; always hostile.</summary>
         public bool permanentEnemy;
 
-        /// <summary>Eligible to be created by the random faction-count roll, as opposed to only ever created to satisfy <see cref="requiredCountAtGameStart"/>.</summary>
+        /// <summary>
+        /// Eligible to be created by the random faction-count roll, as opposed to only ever created to satisfy
+        /// <see cref="requiredCountAtGameStart"/>. Read by <c>World.EmergenceManager.EligibleFactionDefs</c>,
+        /// which is this port's random faction-creation roll: a civilization emerging mid-game picks its def
+        /// at random, weighted by <see cref="settlementGenerationWeight"/>.
+        /// </summary>
         public bool canMakeRandomly = true;
 
         /// <summary>The (singular) player civilization def.</summary>
@@ -82,17 +87,34 @@ namespace SimWorld.Factions
         /// <summary>False for non-sapient factions (insect hives, mechanoid clusters); affects nothing yet, kept for parity with content that may set it.</summary>
         public bool humanlikeFaction = true;
 
-        /// <summary>Whether this faction is naturally hostile to humanlike pawns with no faction of their own. Not yet consumed — no factionless-pawn population exists.</summary>
+        /// <summary>
+        /// Whether this faction is naturally hostile to humanlike pawns with no faction of their own — read by
+        /// <c>AI.AttackTargetsUtility.HostileTo</c>. Far from a corner case in this port: every settlement
+        /// citizen is factionless, so for a raider this is the difference between a fight and a pantomime.
+        /// See that method for the measurement.
+        /// </summary>
         public bool hostileToFactionlessHumanlikes;
 
-        /// <summary>Whether this faction's raiders retreat once critically wounded/outmatched. Not yet consumed — raid AI lands with Combat.</summary>
+        /// <summary>
+        /// Whether this faction's war bands break off once they have lost enough of themselves, rather than
+        /// fighting to the last raider. Read by <see cref="FactionRaidRules.MaxRaidersLost"/>, which is where
+        /// the translation of RimWorld's Lord-graph transition into this port's abstract raid resolution is
+        /// written down. A raid the god is <i>watching</i> still has no flight behaviour on either side — see
+        /// <c>AI.CombatPostureUtility</c>, which records that gap as its own.
+        /// </summary>
         public bool autoFlee = true;
 
         public string? pawnSingular;
 
         public string? pawnsPlural;
 
-        /// <summary>Days after world start before this faction may raid. Not yet consumed — raid incidents don't yet key off the originating faction.</summary>
+        /// <summary>
+        /// Days after world start before this faction may raid. Read by
+        /// <see cref="FactionRaidRules.CanRaidYet"/>, which <see cref="Director.IncidentWorker_RaidEnemy"/>
+        /// hands to <see cref="FactionManager.RandomEnemyFaction"/> as its validator — so a faction too young
+        /// to raid is filtered out before the <see cref="raidCommonality"/> weight roll, as RimWorld filters
+        /// its own. Not redundant with the storyteller's pacing: Randy Random declares no day floor at all.
+        /// </summary>
         public int earliestRaidDays;
 
         // ---- squad composition (RimWorld: FactionDef.pawnGroupMakers) ----

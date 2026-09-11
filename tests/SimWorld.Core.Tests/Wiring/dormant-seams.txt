@@ -59,6 +59,8 @@ content-silent SimWorld.Health.PawnCapacityDef.minValue | No shipped capacity de
 content-silent SimWorld.MindState.MentalStateDef.colonistsOnly | No shipped mental state is restricted to colonists, so MentalState's eligibility check never narrows on this.
 content-silent SimWorld.Needs.JoyKindDef.neverBuildsTolerance | Ported for parity and declared as such in the field's own doc: vanilla RimWorld has no such joy kind either, so no shipped JoyKindDef sets it.
 content-silent SimWorld.Needs.NeedDef.freezeInMentalState | No shipped need freezes during a mental break, so Need's IsFrozen gate is always open.
+content-silent SimWorld.Quests.QuestNode_Tribute.goodwillOnPayment | Authored zero, not an unfilled field: Quest_Tribute sets it explicitly to 0 because paying protection money buys the absence of a reprisal, not a friendship (the part's own doc records the decision). The knob exists so content — core or a mod — can say otherwise; nothing is broken by it reading zero, and the refusal half carries the whole mechanic.
+content-silent SimWorld.Quests.QuestNode_Tribute.silverAmount | The literal alternative to silverRef, and the shipped script uses the ref so the demand scales with the threat points the storyteller bought the quest at. Exactly the shape already baselined for QuestNode_GiveReward.silverRef and QuestNode_Set.value, mirrored: the node supports both forms and content needs one.
 content-silent SimWorld.Quests.QuestNode_Delay.delayTicks | The shipped quest scripts all use delayTicksRef (a slate variable) instead of a literal range, so the literal branch of the delay node is never taken.
 content-silent SimWorld.Quests.QuestNode_GiveReward.silverRef | The shipped reward nodes name a literal silverAmount; the slate-variable form is ported and unused by content.
 content-silent SimWorld.Quests.QuestNode_Set.value | Same shape: the shipped Set nodes all use valueRef, so the literal value branch never runs.
@@ -81,13 +83,8 @@ code-deaf SimWorld.Combat.ProjectileProperties.stoppingPower | Blocked on stagge
 code-deaf SimWorld.Crafting.RecipeDef.jobString | Host-facing text ("doing X") for a UI the core does not have and the snapshot does not surface.
 code-deaf SimWorld.Defs.ThingDef.altitudeLayer | Draw order for a renderer. An engine-free core never draws, and the host draws from its own snapshot.
 code-deaf SimWorld.Defs.ThingDef.selectable | Host-facing: whether a UI may select the thing. The core has no selection model.
-code-deaf SimWorld.Director.IncidentDef.pointsScaleable | Blocked on points-driven severity: IncidentParms.points is carried but no worker scales its effect by it, so the opt-in flag has no reader.
 code-deaf SimWorld.Director.StorytellerDef.persona | Host-facing flavour: the narrator's in-fiction name, for the host to speak. Its own doc records that the naming is still open.
 code-deaf SimWorld.Economy.TraderKindDef.orbital | Blocked on orbital trade, which needs caravans going up rather than traders arriving; the field's own doc calls it a gating flag only.
-code-deaf SimWorld.Factions.FactionDef.autoFlee | Blocked on raid AI, which lands with Combat — the field's own doc says so.
-code-deaf SimWorld.Factions.FactionDef.canMakeRandomly | Blocked on faction generation choosing randomly: FactionGenerator creates the shipped set outright, so nothing filters on the flag.
-code-deaf SimWorld.Factions.FactionDef.earliestRaidDays | Blocked on raids keying off the originating faction, per the field's own doc.
-code-deaf SimWorld.Factions.FactionDef.hostileToFactionlessHumanlikes | Blocked on a factionless-pawn population existing, per the field's own doc.
 code-deaf SimWorld.Factions.FactionDef.leaderTitle | Host-facing flavour text; the snapshot does not carry a leader title for the host to show.
 code-deaf SimWorld.Factions.FactionDef.pawnSingular | Host-facing text ("a tribesperson"); nothing in the core composes a sentence.
 code-deaf SimWorld.Factions.FactionDef.pawnsPlural | As pawnSingular, for the plural form.
@@ -112,11 +109,7 @@ code-deaf SimWorld.Needs.NeedDef.listPriority | Host-facing: the order needs app
 code-deaf SimWorld.Needs.NeedDef.major | Host-facing: whether a UI draws the need prominently.
 code-deaf SimWorld.Needs.NeedDef.threshPercents | Host-facing: threshold markers drawn on a need bar, per the field's own doc.
 code-deaf SimWorld.Pawns.BackstoryDef.baseDesc | Host-facing text: the backstory blurb, for a character tab the core does not render.
-code-deaf SimWorld.Pawns.LifeStageDef.alwaysDowned | Blocked on infants: nothing forces a life stage to be permanently downed, so a baby walks.
-code-deaf SimWorld.Pawns.LifeStageDef.foodMaxFactor | Blocked on life stage reaching Needs: Need_Food sizes its bar without the life stage's factor, so a puppy eats an adult's meal.
-code-deaf SimWorld.Pawns.LifeStageDef.marketValueFactor | Blocked on trade pricing reading the life stage; Tradeable prices a pawn without it.
-code-deaf SimWorld.Pawns.LifeStageDef.reproductive | Blocked on animal breeding: nothing checks whether a life stage may reproduce.
-code-deaf SimWorld.Pawns.PawnKindDef.isFighter | Blocked on raid composition: PawnGroupMakerUtility does not yet separate fighters from non-combatants.
+code-deaf SimWorld.Pawns.LifeStageDef.marketValueFactor | Blocked on a pawn having a market value at all, which is upstream of trade reading the life stage: TradeUtility prices a ThingDef rather than a thing, no race ThingDef carries a MarketValue statBase, Tradeable holds a def plus a count with nowhere to put a pawn, and Targets.PlayerWealthForStoryteller excludes people on purpose. A factor has nothing to multiply until pawn pricing exists.
 code-deaf SimWorld.Pawns.TrainableDef.defaultTrainable | Deliberate, and documented on the field: this port has no player-facing "wanted" checkbox, so every learnable def is always pursued.
 code-deaf SimWorld.Research.ResearchProjectDef.discoveredLetterText | Host-facing text for a completion letter; the research manager mints no letter.
 code-deaf SimWorld.Research.ResearchProjectDef.discoveredLetterTitle | The title half of discoveredLetterText, equally unread.
@@ -135,12 +128,7 @@ code-deaf SimWorld.Work.WorkTypeDef.alwaysStartActive | Blocked on work-priority
 code-deaf SimWorld.Work.WorkTypeDef.gerundLabel | Host-facing text for a work type ("hauling").
 code-deaf SimWorld.Work.WorkTypeDef.labelShort | Host-facing text: the short column header for a work type.
 code-deaf SimWorld.Work.WorkTypeDef.requireCapableColonist | Blocked on the colony-wide "nobody can do this work" warning, which is a host-side notification.
-code-deaf SimWorld.World.BiomeDef.allowRivers | Blocked on world generation placing rivers per biome; the river step does not consult the biome.
-code-deaf SimWorld.World.BiomeDef.allowRoads | Blocked on world generation placing roads per biome; the road step does not consult the biome.
 code-deaf SimWorld.World.BiomeDef.canAutoChoose | Blocked on site selection: nothing picks a tile by unweighted random pick yet, so the exclusion never applies.
-code-deaf SimWorld.World.BiomeDef.diseaseMtbDays | Blocked on disease incidents keying off the settlement's biome; the disease worker picks without one.
-code-deaf SimWorld.World.BiomeDef.isExtremeBiome | Blocked on starting-site selection excluding extreme biomes, per the field's own doc.
-code-deaf SimWorld.World.BiomeDef.wildPlantRegrowDays | Blocked on wild plant regrowth: the plant system regrows on its own schedule without asking the biome.
 code-deaf SimWorld.World.RiverDef.degradeThreshold | Deliberate, and documented on the field: a rendering hint this port's generator does not enforce.
 code-deaf SimWorld.World.RoadDef.worldTransitionSameRoadPriority | Blocked on world pathing rewarding staying on one road; caravan path cost does not yet look at which road a tile carries.
 code-deaf SimWorld.World.WorldObjectDef.worldObjectClass | Blocked on world objects being built from their def: every world object in play is constructed directly, so the class handle is never used to make one.

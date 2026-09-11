@@ -95,6 +95,25 @@ namespace SimWorld.Needs
             BindDirectNeedFields();
         }
 
+        /// <summary>
+        /// The pawn crossed into a new life stage, so any need whose ceiling is stage-scaled now has a
+        /// different one (<see cref="Need_Food.MaxLevel"/> is the only such need today). Re-clamping through
+        /// the <see cref="Need.CurLevel"/> setter is the whole job: growing up raises the ceiling and leaves
+        /// the level untouched — that is what makes a newly-grown pawn hungry rather than resetting it — and
+        /// a ceiling that dropped pulls the level down with it, so <see cref="Need.CurLevelPercentage"/> can
+        /// never report more than 100% of a stomach the pawn no longer has.
+        /// </summary>
+        public void Notify_LifeStageStarted()
+        {
+            for (int i = 0; i < needs.Count; i++)
+            {
+                // Through the setter on purpose: that is where the clamp to [0, MaxLevel] lives, and
+                // MaxLevel is what just changed.
+                float level = needs[i].CurLevel;
+                needs[i].CurLevel = level;
+            }
+        }
+
         private void BindDirectNeedFields()
         {
             mood = TryGetNeed<Need_Mood>();

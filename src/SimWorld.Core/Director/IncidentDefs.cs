@@ -55,8 +55,14 @@ namespace SimWorld.Director
         /// for an incident a civilization outgrows.</summary>
         public Research.EraDef? maxEra;
 
-        /// <summary>Whether <c>IncidentParms.points</c> should scale this incident's severity (raids do; a
-        /// single-effect incident like weather does not).</summary>
+        /// <summary>
+        /// Whether <c>IncidentParms.points</c> should scale this incident's severity (raids do; a
+        /// single-effect incident like weather does not). Read by
+        /// <see cref="StorytellerComp_RandomMain"/>, the one place in this port that multiplies points by
+        /// anything random: only a scaleable incident is jittered by
+        /// <see cref="StorytellerCompProperties_RandomMain.randomPointsFactorRange"/>, and an incident with
+        /// nothing to scale costs no draw from the seeded stream.
+        /// </summary>
         public bool pointsScaleable;
 
         /// <summary>Hediff <see cref="IncidentWorker_Disease"/> gives to a candidate pawn.</summary>

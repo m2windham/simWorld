@@ -28,6 +28,13 @@ namespace SimWorld.Pawns
         private long lifeStageValidFromTicks = long.MaxValue;
         private long lifeStageValidUntilTicks = long.MinValue;
 
+        // Re-entrancy guard for the life-stage notification below. Notifying re-derives the pawn's downed/dead
+        // state, and doing that reads HealthScale, which reads CurLifeStage, which lands back in the property
+        // that started this. The cache is already written by then so the inner read is answered from it and
+        // cannot recurse further — but without this flag the *notification* would fire a second time from
+        // inside itself. Not serialized: it is only ever true inside one call.
+        private bool notifyingLifeStage;
+
         // ---- Hidden lifespan budget (death from age) ----
         //
         // Deliberate design, not an oversight: this pawn's age of death is rolled once (RollLifespanBudget,
@@ -104,11 +111,26 @@ namespace SimWorld.Pawns
         /// <c>hitPoints * HealthScale</c> — so an injured pawn's part efficiency changes at the boundary
         /// without any hediff changing. Anything cached off that has to be told, or a child who grows up
         /// carrying an old wound keeps a stale efficiency forever.
+        ///
+        /// <para/>That is why the crossing raises <see cref="Pawn.Notify_LifeStageStarted"/> rather than just
+        /// dirtying one cache (RimWorld does the same from its own <c>RecalculateLifeStageIndex</c>): every
+        /// field a <see cref="LifeStageDef"/> scales — stomach size, hit points, whether the pawn can be on
+        /// its feet at all — has to be re-derived the moment the pawn grows into or out of a stage, and the
+        /// only code that knows the crossing happened is here. Reading the factor at spawn and never again
+        /// is how a puppy grows into a dog that still eats a puppy's meal.
+        ///
+        /// <para/>The very first computation is not a crossing: a tracker that has never resolved a stage is
+        /// learning where it already was, not moving, so <c>previous == -2</c> raises nothing. This also
+        /// keeps Scribe quiet — a tracker built during load resolves its stage for the first time after the
+        /// saved age arrives, which would otherwise announce a growth spurt on every load.
         /// </summary>
         private int RecomputeLifeStage()
         {
             List<LifeStageAge>? stages = RaceLifeStages;
             int previous = cachedLifeStageIndex;
+            LifeStageDef? previousStage = previous >= 0 && stages != null && previous < stages.Count
+                ? stages[previous].def
+                : null;
             if (stages == null || stages.Count == 0)
             {
                 cachedLifeStageIndex = -1;
@@ -131,9 +153,17 @@ namespace SimWorld.Pawns
                     : long.MaxValue;
             }
 
-            if (previous != -2 && previous != cachedLifeStageIndex)
+            if (previous != -2 && previous != cachedLifeStageIndex && !notifyingLifeStage)
             {
-                pawn.health?.hediffSet?.DirtyCache();
+                notifyingLifeStage = true;
+                try
+                {
+                    pawn.Notify_LifeStageStarted(previousStage);
+                }
+                finally
+                {
+                    notifyingLifeStage = false;
+                }
             }
             return cachedLifeStageIndex;
         }
@@ -186,12 +216,20 @@ namespace SimWorld.Pawns
         {
         }
 
-        /// <summary>Test/debug helper: sets both clocks to the same age.</summary>
+        /// <summary>
+        /// Test/debug helper: sets both clocks to the same age. Resolves the life stage on the spot rather
+        /// than leaving it to the next lazy read, so a caller that jumps a pawn across a stage boundary sees
+        /// the consequences (<see cref="Pawn.Notify_LifeStageStarted"/>: health caches, need ceilings, downed)
+        /// on the line after the jump instead of whenever something else next happens to ask its age. A
+        /// ticking pawn gets that for free — its health tick reads the stage every tick — and this is what
+        /// gives a pawn that is not ticking the same answer.
+        /// </summary>
         public void DebugSetAge(float years)
         {
             long ticks = (long)(years * GenDate.TicksPerYear);
             ageBiologicalTicks = ticks;
             ageChronologicalTicks = ticks;
+            RecomputeLifeStage();
         }
 
         // ---- Hidden lifespan budget (death from age) ----

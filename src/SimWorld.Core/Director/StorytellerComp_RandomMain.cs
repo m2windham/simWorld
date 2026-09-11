@@ -69,7 +69,24 @@ namespace SimWorld.Director
             if (usable.Count == 0) yield break;
             if (!GenCollection.TryRandomElementByWeight(usable, d => IncidentChanceFinal(d, target), Rand.Current, out IncidentDef picked)) yield break;
 
-            parms.points *= Rand.Range(Props.randomPointsFactorRange);
+            // IncidentDef.pointsScaleable, which no line of src/ read until now — and this is the only place
+            // in the port that multiplies IncidentParms.points by anything random, so it is the only place
+            // the flag can mean what its own doc says ("whether points should scale this incident's
+            // severity"). RimWorld gates exactly this multiply on exactly this flag; the port dropped the
+            // `if` and jittered every incident Randy picked, scaleable or not.
+            //
+            // Numerically that changed nothing yet: StorytellerUtility.DefaultParmsNow only gives points to
+            // the two threat categories, and the two shipped incidents that carry points (RaidEnemy,
+            // ManhunterPack) both declare pointsScaleable — so every multiply that ever reached a non-zero
+            // number was one this gate allows. What it did change is the seeded stream: a draw was taken for
+            // a weather incident that had nothing to scale, moving every roll after it. Restoring the gate
+            // moves those rolls back, which is a deliberate re-pinning and not a free change.
+            //
+            // Of the two flagged incidents only RaidEnemy has severity to scale today (it spends the points
+            // through PawnGroupMakerUtility); ManhunterPack's worker is IncidentWorker_ThreatEvent, which
+            // validates the points and does nothing with them, so the flag is honest content waiting on a
+            // worker rather than a second live reader.
+            if (picked.pointsScaleable) parms.points *= Rand.Range(Props.randomPointsFactorRange);
             yield return new FiringIncident(picked, this, parms);
         }
     }

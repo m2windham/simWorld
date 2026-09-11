@@ -75,8 +75,12 @@ namespace SimWorld.Building
             verb.TryStartCastOn(target, distance);
         }
 
-        /// <summary>Spreads every turret's scan tick across the interval by its own id (RimWorld: <c>Gen.IsHashIntervalTick</c>; matches <see cref="Pawns.Pawn.IsHashIntervalTick"/>'s own offset idiom) so many turrets never all scan on the same tick.</summary>
-        private bool IsHashIntervalTick(int interval) => GenMath.PositiveMod(Find.TickManager.TicksGame + parent.thingIDNumber * 3, interval) == 0;
+        /// <summary>Spreads every turret's scan tick across the interval by its own id, through the shared
+        /// <see cref="HashInterval"/> (RimWorld: <c>Gen.IsHashIntervalTick</c>). This used to open-code
+        /// <c>thingIDNumber * 3</c>, and <see cref="ScanIntervalTicks"/> is 15 — divisible by 3, so every
+        /// turret landed on one of five reachable phases instead of fifteen, three deep. See the helper's own
+        /// doc for the arithmetic and the measurement.</summary>
+        private bool IsHashIntervalTick(int interval) => HashInterval.IsHashIntervalTick(parent.thingIDNumber, interval);
 
         /// <summary>Nearest in-range, line-of-sight, hostile pawn (RimWorld: <c>Verse.AI.AttackTargetFinder.BestAttackTarget</c>, simplified to nearest — that finder also weighs threat/exposure/allowed-area, none of which this pass models).</summary>
         private Pawn? FindTarget()

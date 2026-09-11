@@ -23,6 +23,10 @@ namespace SimWorld.AI
         /// <see cref="FactionRelationKind.Hostile"/> to one another. A pawn with no faction at all — every
         /// wild animal, and any pawn generated outside a faction — is nobody's enemy by relation, which is
         /// what keeps a hunt a hunt rather than a war.</item>
+        /// <item><b>A faction that attacks factionless people.</b> One side is a humanlike with no faction and
+        /// the other belongs to a faction whose def sets
+        /// <see cref="FactionDef.hostileToFactionlessHumanlikes"/> — see <see cref="HostileToFactionless"/>
+        /// for the measurement that made this a defect rather than a nicety.</item>
         /// <item><b>A personal grudge.</b> One of them is currently <see cref="HuntUtility.IsAngry"/> at the
         /// other (<see cref="MindState.Pawn_MindState.angryAt"/> — set by a failed tame or by wounding prey).
         /// RimWorld's manhunter is hostile to <i>everybody</i>; this port's <c>angryAt</c> names one specific
@@ -63,8 +67,42 @@ namespace SimWorld.AI
 
             Faction? fa = a.faction;
             Faction? fb = b.faction;
-            return fa != null && fb != null && fa.HostileTo(fb);
+            if (fa != null && fb != null) return fa.HostileTo(fb);
+            return HostileToFactionless(fa, b) || HostileToFactionless(fb, a);
         }
+
+        /// <summary>
+        /// <see cref="FactionDef.hostileToFactionlessHumanlikes"/>'s reader: <paramref name="faction"/> — if it
+        /// exists and its def says so — attacks <paramref name="other"/> when <paramref name="other"/> is a
+        /// humanlike belonging to no faction at all.
+        ///
+        /// <para/><b>Why this was a defect and not a nicety.</b> The audit recorded this flag as blocked on
+        /// "a factionless-pawn population existing". One exists, and it is not a corner case: it is every
+        /// civilian in the game. <c>World.SettlementFounder</c> generates each founding citizen through a
+        /// <c>PawnGenerationRequest</c> that names no faction, and <c>Factions.PawnGroupMaker</c> is the only
+        /// thing in <c>src/</c> that ever passes one — so a settlement has a faction and not one of its
+        /// citizens does. With hostility resting on both sides having a faction, that made a raid on a
+        /// watched settlement a pantomime. Measured on a shipped-content settlement founded the ordinary way
+        /// and a real <c>RaidEnemy</c> firing onto its interior: <b>30 citizens, 14 raiders standing on the
+        /// same map, 0 of 14 raiders saw a citizen as hostile, 0 of 30 citizens saw a raider as hostile, and
+        /// not one pawn on either side reached for an attack job.</b> Everybody kept farming. The combat
+        /// module was reachable from play and this pairing could never reach it, because every combat test
+        /// hands its own pawns a faction by hand.
+        ///
+        /// <para/>RimWorld puts the same rule in the same place — its <c>GenHostility</c> treats a factionless
+        /// humanlike as hostile to any faction whose def sets the flag — though its factionless population is
+        /// wild men and quest pawns rather than everybody. Wiring it fixes the pairing the content actually
+        /// asks for: <c>RoughOutlanders</c>, the one shipped faction that sets the flag, and also the one
+        /// that is <see cref="FactionDef.permanentEnemy"/> and raids most often. It does <i>not</i> fix
+        /// <c>TribalCivilization</c> or <c>OutlanderCivilization</c> raids, which set it false and therefore
+        /// still find nobody to fight — that residue is a citizen-faction gap in the World module, recorded
+        /// rather than papered over here by turning the flag on for content that did not ask for it.
+        /// </summary>
+        private static bool HostileToFactionless(Faction? faction, Pawn other) =>
+            faction != null
+            && faction.def.hostileToFactionlessHumanlikes
+            && other.faction == null
+            && other.RaceProps.Humanlike;
 
         /// <summary>True when either of these two is currently held prisoner by the other's faction — see
         /// <see cref="HostileTo"/>'s own remarks for why that ends the fight rather than starting one.</summary>
@@ -154,7 +192,8 @@ namespace SimWorld.AI
 
             // 1. Every faction hostile to ours, and nobody else's. In peacetime there is one faction on the
             //    map and it is not hostile to itself, so this loop ends having looked at no pawn at all —
-            //    which is the entire reason this class has a cache.
+            //    which is the entire reason this class has a cache. 1b and 1c below are the same question
+            //    asked of the third hostility rule, which no faction bucket can answer.
             Faction? ours = searcher.faction;
             if (ours != null)
             {
@@ -163,6 +202,33 @@ namespace SimWorld.AI
                 {
                     Faction other = present[f];
                     if (!ours.HostileTo(other)) continue;
+                    IReadOnlyList<Pawn> bucket = cache.PawnsInFaction(other);
+                    for (int i = 0; i < bucket.Count; i++) scan.Consider(bucket[i]);
+                }
+
+                // 1b. Everyone here who belongs to nobody, when our own faction attacks such people
+                //     (FactionDef.hostileToFactionlessHumanlikes). No faction bucket can offer them — they
+                //     are in none — so without this the index would be a strict subset of the true candidate
+                //     set for a raider of such a faction, which is the one way this class is allowed to be
+                //     wrong and is not.
+                if (ours.def.hostileToFactionlessHumanlikes)
+                {
+                    IReadOnlyList<Pawn> loose = cache.FactionlessHumanlikes;
+                    for (int i = 0; i < loose.Count; i++) scan.Consider(loose[i]);
+                }
+            }
+            else if (searcher.RaceProps.Humanlike)
+            {
+                // 1c. The mirror, and the half that actually matters in a generated game: *we* are the
+                //     factionless humanlike (every settlement citizen is — see AttackTargetsUtility.HostileTo)
+                //     and step 1 above cannot run at all for us, because we have no faction whose hostiles to
+                //     look up. A citizen therefore has to ask the other way round: which factions standing
+                //     here attack people like me?
+                IReadOnlyList<Faction> present = cache.FactionsPresent;
+                for (int f = 0; f < present.Count; f++)
+                {
+                    Faction other = present[f];
+                    if (!other.def.hostileToFactionlessHumanlikes) continue;
                     IReadOnlyList<Pawn> bucket = cache.PawnsInFaction(other);
                     for (int i = 0; i < bucket.Count; i++) scan.Consider(bucket[i]);
                 }

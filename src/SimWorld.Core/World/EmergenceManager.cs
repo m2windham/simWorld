@@ -113,6 +113,18 @@ namespace SimWorld.World
         /// (reused as a total-instance ceiling, not only a game-start one: the same authored cap that would
         /// have bounded this def's count at world generation bounds how many of it can ever exist). Public and
         /// pure so era-gating is directly testable without depending on a probabilistic MTB roll.
+        ///
+        /// <para/><b><see cref="FactionDef.canMakeRandomly"/> is read here, and this is the site the wiring
+        /// audit's recorded reason had wrong.</b> That reason said the flag was blocked on "faction
+        /// generation choosing randomly: FactionGenerator creates the shipped set outright". It does — but
+        /// <see cref="FactionGenerator"/> stopped being the only thing that creates a faction the moment this
+        /// class landed: <see cref="TryEmergeNewCivilization"/> picks a <see cref="FactionDef"/> at random,
+        /// weighted by <see cref="FactionDef.settlementGenerationWeight"/>, every time a new civilization
+        /// emerges during play. That <i>is</i> the random faction-count roll the flag exists to be excluded
+        /// from, and it was not excluding anybody. On shipped content the filter changes nothing — the only
+        /// def declaring <c>canMakeRandomly false</c> is the player's own, which the <c>isPlayer</c> test
+        /// above already removes — so the flag is load-bearing for content rather than for today's behaviour:
+        /// a scenario-only or placeholder def would otherwise have emerged on its own.
         /// </summary>
         public static IReadOnlyList<FactionDef> EligibleFactionDefs(World world)
         {
@@ -121,7 +133,7 @@ namespace SimWorld.World
             var result = new List<FactionDef>();
             foreach (FactionDef def in DefDatabase<FactionDef>.AllDefsListForReading)
             {
-                if (def.hidden || def.isPlayer) continue;
+                if (def.hidden || def.isPlayer || !def.canMakeRandomly) continue;
                 if (def.techLevel > ceiling) continue;
                 int existingCount = world.factions.Count(f => f.def == def);
                 if (existingCount >= def.maxCountAtGameStart) continue;

@@ -44,10 +44,31 @@ namespace SimWorld.Crafting
 
         public CompProperties_HasGatherableBodyResource Properties => (CompProperties_HasGatherableBodyResource)props;
 
-        /// <summary>Full, and (for a female-only comp) the parent actually is one.</summary>
-        public bool Active => fullness >= 1f && (!Properties.femaleOnly || IsFemale);
+        /// <summary>Full, grown, and (for a female-only comp) the parent actually is female.</summary>
+        public bool Active => fullness >= 1f && (!Properties.femaleOnly || IsFemale) && ParentIsMature;
 
         private bool IsFemale => !(parent is Pawn pawn) || pawn.gender == Gender.Female;
+
+        /// <summary>
+        /// The parent has reached a life stage that can produce at all — <see cref="LifeStageDef.reproductive"/>,
+        /// which for the shipped animals means <c>AnimalAdult</c> and not <c>AnimalBaby</c> or
+        /// <c>AnimalJuvenile</c>. Without it a chick lays an egg on the day it hatches and a newborn muffalo
+        /// gives milk, because nothing else here has ever asked how old the animal is.
+        ///
+        /// <para/><b>A recorded translation, not a 1:1 port.</b> RimWorld splits this three ways —
+        /// <c>LifeStageDef.eggLayer</c>/<c>milkable</c>/<c>shearable</c> alongside <c>reproductive</c> — so
+        /// that a stage can be milkable without being fertile. This port's <see cref="LifeStageDef"/> ships
+        /// only <c>reproductive</c>, and the honest choice is to use the flag the content actually carries
+        /// rather than invent three more and leave them unset: "old enough to breed" is the right order of
+        /// magnitude for "old enough to lay, milk or shear", and it is exactly what RimWorld's own
+        /// <c>CompEggLayer</c> reads. If a race ever needs the finer split, adding those fields is the fix
+        /// and this property is the one place that changes.
+        ///
+        /// <para/>Growth follows by itself: the stage is read live, so a pullet starts counting toward its
+        /// first egg on the tick it becomes an adult hen.
+        /// </summary>
+        private bool ParentIsMature =>
+            !(parent is Pawn pawn) || (pawn.ageTracker?.CurLifeStage?.reproductive ?? true);
 
         public override void CompTick()
         {
@@ -55,6 +76,9 @@ namespace SimWorld.Crafting
             if (fullness >= 1f) return;
             if (!(parent is Pawn pawn) || pawn.Dead || !pawn.Spawned) return;
             if (!pawn.IsHashIntervalTick(HusbandryTuning.ProduceCheckIntervalTicks)) return;
+            // Checked after the interval gate, not before: this is the only line here that resolves a life
+            // stage, and doing it on the comp's slow cadence keeps it off the per-tick path.
+            if (!ParentIsMature) return;
 
             float gainPerTick = 1f / (Properties.resourceIntervalDays * GenDate.TicksPerDay);
             fullness = GenMath.Clamp01(fullness + gainPerTick * HusbandryTuning.ProduceCheckIntervalTicks);

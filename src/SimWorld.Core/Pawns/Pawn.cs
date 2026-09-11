@@ -239,6 +239,36 @@ namespace SimWorld.Pawns
             workSettings?.Notify_DisabledWorkTypesChanged();
         }
 
+        /// <summary>
+        /// This pawn just grew into (or, after a debug age change, back into) a different life stage
+        /// (RimWorld: <c>LifeStageWorker.Notify_LifeStageStarted</c>, raised from the same place —
+        /// <see cref="Pawn_AgeTracker"/>'s recompute). <paramref name="previousLifeStage"/> is the stage it
+        /// left, null when the race defines none.
+        ///
+        /// <para/>A life stage is not read once and kept: every factor on it scales something that is
+        /// recomputed constantly (<see cref="BodySize"/>, <see cref="HealthScale"/>,
+        /// <see cref="HungerRate"/>, <c>Need_Food.MaxLevel</c>) and those all follow on their own. What does
+        /// not follow on its own is anything <i>cached</i> off them, and anything that is a latched state
+        /// rather than a computed value. Both are settled here, which is why this exists at all:
+        /// <list type="bullet">
+        /// <item><description>the health caches, because part max health is <c>hitPoints * HealthScale</c>
+        /// and the crossing just changed it with no hediff involved;</description></item>
+        /// <item><description>need levels, which are absolute amounts under a stage-scaled ceiling
+        /// (<see cref="Needs.Pawn_NeedsTracker.Notify_LifeStageStarted"/>);</description></item>
+        /// <item><description>downed, which is a latched state — a pawn held down by
+        /// <see cref="LifeStageDef.alwaysDowned"/> gets up by leaving the stage, and nothing else would
+        /// notice it had.</description></item>
+        /// </list>
+        /// </summary>
+        public virtual void Notify_LifeStageStarted(LifeStageDef? previousLifeStage)
+        {
+            health?.hediffSet?.DirtyCache();
+            needs?.Notify_LifeStageStarted();
+            // Last, and after the cache drop above: this re-derives downed and dead, and both are read off
+            // the caches this call just invalidated.
+            health?.CheckForStateChange(null, null);
+        }
+
         public virtual void Notify_Downed()
         {
             // A downed pawn cannot walk (CapableOf(Moving) fails), but a job with no pathing step left
@@ -281,13 +311,10 @@ namespace SimWorld.Pawns
         /// tree's 30, needs and mental-break checks at 150, bleeding at 60, healing at 600). Hashing the id
         /// spreads it over the whole modulus for any interval, which is what the idiom was for.
         ///
-        /// <para/>RimWorld's exact hash constants could not be sourced, so this uses this codebase's own
-        /// <see cref="Rand.HashInt"/> (MurmurHash's finaliser, a bijection on the id). The behaviour that
-        /// matters — full coverage of the modulus, an even share per phase, and the same answer for the same
-        /// id every time — is pinned by <c>PawnHashIntervalTests</c> rather than by the constants.
-        ///
-        /// <para/>Masked rather than <c>Math.Abs</c>'d: the hash really can return <see cref="int.MinValue"/>,
-        /// and <c>Math.Abs</c> of that throws.
+        /// <para/>The hash itself lives in <see cref="Sim.HashInterval"/>, shared with every other periodic
+        /// system — <c>Building.CompTurretGun</c> and <c>Things.Fire</c> open-coded the same <c>* 3</c> and
+        /// clustered the same way until they were brought onto it. See that helper for the constants, why the
+        /// result is masked rather than <c>Math.Abs</c>'d, and what the behaviour is pinned by.
         ///
         /// <para/><see cref="HashOffsetTuning.UseLegacyMultiplyOffset"/> puts the old offset back for the
         /// bench's A/B and is never assigned by the sim; what that measured is in
@@ -296,7 +323,7 @@ namespace SimWorld.Pawns
         public int HashOffsetTicks() =>
             HashOffsetTuning.UseLegacyMultiplyOffset
                 ? HashOffsetTuning.LegacyOffsetTicks(thingIDNumber)
-                : Rand.HashInt(thingIDNumber) & int.MaxValue;
+                : Sim.HashInterval.OffsetTicks(thingIDNumber);
 
         protected virtual void InitializeTrackers()
         {

@@ -6,7 +6,9 @@ namespace SimWorld.World.Siting
     /// Scores a candidate settlement tile: hard necessities (multiplicative, able to zero the score) times
     /// era-weighted advantages (spec §5b.2). Advisory for the player's own founding, decisive for emergent
     /// and NPC foundings — this class only produces the number; which of those two readings applies is a
-    /// later system's call.
+    /// later system's call. The necessities include the biome itself: an
+    /// <see cref="BiomeDef.isExtremeBiome"/> tile is never a site anything chooses on its own (see
+    /// <see cref="NecessityMultiplier"/>).
     /// </summary>
     public static class SiteScorer
     {
@@ -28,8 +30,29 @@ namespace SimWorld.World.Siting
             return necessity * AdvantageSum(tile, weights, tradePositionScore);
         }
 
+        /// <summary>
+        /// Hard necessities, multiplied: fresh water in reach, food in reach, a survivable climate — and a
+        /// biome the group would not choose to found in at all.
+        ///
+        /// <para/><b>The biome gate (<see cref="BiomeDef.isExtremeBiome"/>).</b> RimWorld marks its ice sheet
+        /// and extreme desert this way and keeps them out of ordinary starting-site selection; the exact call
+        /// site is not sourceable in this sandbox, so what is ported is the rule rather than a copied line,
+        /// and it is pinned by a test asserting an extreme tile scores zero however good its deposits are.
+        /// It sits here, in the score, rather than in <c>Sim.Game.PickStartingTile</c>, because every
+        /// automatic founding path in this port — the player's start, <see cref="EmergenceManager"/>'s new
+        /// civilizations and its expansions — chooses its tile by this number, so one gate covers all three
+        /// and a fourth caller cannot forget it. A player who names a starting tile explicitly
+        /// (<c>Game.NewGame</c>'s <c>startTile</c>) still gets it, exactly as RimWorld lets you settle an ice
+        /// sheet on purpose; what stops is the game <em>choosing</em> one for you.
+        ///
+        /// <para/>Deliberately not applied to <c>Gen.WorldGenStep_Factions</c>, which places NPC settlements
+        /// by <see cref="BiomeDef.settlementSelectionWeight"/> instead: content gives the ice sheet a small
+        /// but non-zero weight on purpose, so a world can still have somebody living up there.
+        /// </summary>
         private static float NecessityMultiplier(WorldGrid grid, int tileId, Tile tile)
         {
+            if (tile.biome != null && tile.biome.isExtremeBiome) return 0f;
+
             float water = GenMath.Clamp01(BestNearbyMagnitude(grid, tileId, DepositDefOf.FreshWater) / SiteTuning.FreshWaterNecessityFloor);
             if (water <= 0f) return 0f;
 

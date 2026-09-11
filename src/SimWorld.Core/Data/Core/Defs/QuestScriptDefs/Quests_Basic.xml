@@ -18,6 +18,18 @@
     <minRefireDays>10</minRefireDays>
     <expireDaysRange>4~8</expireDaysRange>
     <autoAccept>false</autoAccept>
+    <!--
+      This script used to set demandSilver, send the letter, wait out the offer and end Fail — always.
+      Nothing read demandSilver, no coin moved either way, and refusing cost nothing, so "or threatens
+      reprisal" in the description above was a sentence with no mechanism behind it. QuestNode_Tribute is
+      that mechanism: the demand is answered at the moment the offer would have lapsed, out of the same seat
+      a quest reward is paid into, and the two answers end the quest differently.
+
+      goodwillOnPayment is 0 on purpose: protection money buys the absence of a reprisal, not a friendship.
+      Both goodwill figures are this port's own — RimWorld has no tribute quest to source them from (see
+      QuestPart_Tribute's translation note) — so the tests pin the ordering and the direction, never these
+      literals.
+    -->
     <root Class="SimWorld.Quests.QuestNode_Sequence">
       <nodes>
         <li Class="SimWorld.Quests.QuestNode_Set">
@@ -31,8 +43,35 @@
         </li>
         <li Class="SimWorld.Quests.QuestNode_Delay">
           <delayTicksRef>expireTicks</delayTicksRef>
-          <node Class="SimWorld.Quests.QuestNode_End">
-            <outcome>Fail</outcome>
+          <node Class="SimWorld.Quests.QuestNode_Tribute">
+            <silverRef>demandSilver</silverRef>
+            <factionDefName>OutlanderCivilization</factionDefName>
+            <goodwillOnPayment>0</goodwillOnPayment>
+            <goodwillOnRefusal>-15</goodwillOnRefusal>
+            <paidNode Class="SimWorld.Quests.QuestNode_Sequence">
+              <nodes>
+                <li Class="SimWorld.Quests.QuestNode_Letter">
+                  <letterDef>NeutralEvent</letterDef>
+                  <label>Tribute paid</label>
+                  <text>The tribute was handed over. The threat passes.</text>
+                </li>
+                <li Class="SimWorld.Quests.QuestNode_End">
+                  <outcome>Success</outcome>
+                </li>
+              </nodes>
+            </paidNode>
+            <refusedNode Class="SimWorld.Quests.QuestNode_Sequence">
+              <nodes>
+                <li Class="SimWorld.Quests.QuestNode_Letter">
+                  <letterDef>ThreatSmall</letterDef>
+                  <label>Tribute refused</label>
+                  <text>The demand went unmet. The rival takes it badly.</text>
+                </li>
+                <li Class="SimWorld.Quests.QuestNode_End">
+                  <outcome>Fail</outcome>
+                </li>
+              </nodes>
+            </refusedNode>
           </node>
         </li>
       </nodes>

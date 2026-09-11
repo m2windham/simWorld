@@ -10,6 +10,9 @@ namespace SimWorld.World.Gen
     /// downhill neighbour is fixed by elevation alone, so tributaries that share a lower reach automatically
     /// merge and accumulate flow; a source that dead-ends at a local minimum without reaching water
     /// (an inland basin — not modelled as a lake here) is simply discarded.
+    /// <para/>
+    /// Where the water ends up is the flow network's business; whether a tile may carry a river at all is the
+    /// biome's (<see cref="BiomeDef.allowRivers"/> — see <see cref="AllowsRivers"/>).
     /// </summary>
     public class WorldGenStep_Rivers : WorldGenStep
     {
@@ -47,11 +50,42 @@ namespace SimWorld.World.Gen
                 {
                     continue;
                 }
+                if (!AllowsRivers(grid.Tiles[i]))
+                {
+                    continue;
+                }
                 RiverDef chosen = ChooseRiverDef(riverDefs, flow[i]);
                 grid.Tiles[i].potentialRivers.Add(new RiverLink(next, chosen));
-                grid.Tiles[next].potentialRivers.Add(new RiverLink(i, chosen));
+                if (AllowsRivers(grid.Tiles[next]))
+                {
+                    grid.Tiles[next].potentialRivers.Add(new RiverLink(i, chosen));
+                }
             }
         }
+
+        /// <summary>
+        /// Whether a river may be written <em>onto</em> this tile (RimWorld: <c>BiomeDef.allowRivers</c>,
+        /// which its own river generation consults per tile — the exact call site is not sourceable in this
+        /// sandbox, so what is ported is the rule, pinned by tests rather than copied).
+        ///
+        /// <para/><b>Why the two ends of a link are asked separately.</b> The shipped content refuses rivers
+        /// on exactly the water biomes — ocean, lake, sea ice — and every river in the world ends by running
+        /// into one of them. Dropping the whole link at a river's mouth would leave its last land tile with
+        /// no downhill river neighbour at all, which is both wrong on the map and a break of the invariant
+        /// that a river tile can always be followed to water. So each end is written only if its own biome
+        /// permits a river: the coastal land tile keeps its link out to sea, the ocean tile itself carries no
+        /// river. A river crossing sea ice mid-course, by contrast, loses the sea-ice tile entirely and the
+        /// network simply ends there.
+        ///
+        /// <para/>A tile with no biome allows rivers: the Biomes step runs at order 200 and this one at 300,
+        /// so in the shipped pipeline every tile already has one, and a caller running this step alone (a
+        /// test, a future pipeline) gets the behaviour it had before the biome was consulted.
+        ///
+        /// <para/>This only ever <em>filters</em> links the flow network already decided on — flow
+        /// accumulation, the downhill pointers and the <see cref="RiverDef"/> choice are untouched, and this
+        /// step draws no randomness at all — so consulting the biome cannot move the world seed's sequence.
+        /// </summary>
+        private static bool AllowsRivers(Tile tile) => tile.biome == null || tile.biome.allowRivers;
 
         /// <summary>For every tile, its single strictly-lower-elevation neighbour (or -1 at a local minimum). A pure function of elevation, so it never depends on which source discovers it first.</summary>
         private static int[] BuildDownstreamPointers(WorldGrid grid)

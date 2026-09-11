@@ -215,6 +215,110 @@ with `checked((ushort)…)`, so a process minting more than 65,535 `ResearchProj
 throws — about 2,700 ages in, unreachable in play, but it is a ceiling on something the
 design calls endless.
 
+### 4. The audit found 131 seams, and the first sixteen were real
+
+The wiring audit landed because the defect this project keeps shipping is a module that
+is complete, tested and called by nothing — and a suite that tests each module in
+isolation is structurally blind to it. Isolation *is* the defect. The audit asks six
+questions over reflection, a token index of `src/` and the loaded content graph: an
+interface with no implementation the game can hold, a `Notify_` hook nothing raises, a Def
+field naming a placeholder worker, a field code reads that no Def sets, a field content
+sets that no code reads, and state read but never written.
+
+It shipped green against a reviewed baseline of 131 dormant seams, each carrying a
+hand-written reason. The file can only shrink: a stale line fails the audit too, so a lane
+that claims a fix it did not make is caught at merge rather than believed.
+
+**Sixteen lines came off in one batch, and behind them were defects nobody had a symptom
+for.**
+
+- **Peaceful never suppressed raids.** `DefaultThreatPointsNow` clamps up to 35 and 35 is
+  exactly `RaidEnemy`'s own floor, so a `threatScale` of 0 did not turn threats off — it
+  shrank every raid to the smallest legal war band and fired it on schedule. Six of seven
+  dormant `DifficultyDef` fields are consumed now.
+- **Mining destroyed the rock and spawned air.** `mineableThing`/`mineableYield` were set
+  by content and read by nothing, while `JobDriver_Mine`'s own doc claimed it read them.
+- **A completed quest enriched nobody.** `QuestPart_Reward.Enable` handed its rewards to an
+  interface no type implemented. Measured on a real game: the quest reported "200 silver, 5
+  goodwill", and the seat's stores, the civilization's wealth and the faction's goodwill
+  were unchanged.
+- **Three needs never moved**, and tracing why turned up two arithmetic bugs worse than the
+  seam: recreation lost 50 ticks of decay every coarse tick to an integer division, and a
+  memory an unwatched citizen held aged at **a thirteenth of real speed** — so most of the
+  civilization stayed anchored to events a fortnight after a watched citizen had forgotten
+  them.
+- **A backstory, a kind and a germline shaped no traits.** Eight fields read by
+  `PawnGenerator` and set by nothing, so every pawn in every game rolled from one
+  unfiltered table.
+
+**Three lessons worth carrying, none of them about the specific bugs.**
+
+*An audit's recorded reason expires.* Two of the baseline's own explanations were wrong by
+the time a lane reached them — one blocker had been cleared a batch earlier, another
+misidentified which end of the pipeline a field belonged at. A recorded reason is evidence,
+not a verdict; check it against the code as it stands.
+
+*A clean textual merge is not a correct one.* Two lanes wired
+`DifficultyDef.questRewardValueFactor` in the same batch, one at reward generation and one
+at payout. Different files, different methods, no conflict — and the result would have
+squared the factor, paying 0.64 on a 0.8 difficulty. Nothing but reading both sites would
+have caught it.
+
+*The audit has a blind spot, and it is recorded rather than fixed.* Its two field checks
+ask "content sets it, does code read it?" and "code reads it, does content set it?". A
+field that **neither** side touches is reported by neither. `researchSpeedFactor` was
+exactly that: no preset set it, no line read it, and it appears nowhere in the baseline. A
+third check is the open follow-up.
+
+### 5. A module can be wired and still unable to act
+
+Batch six went back to the audit's list and two lanes came back with something the
+audit had not asked about. Both are the same shape, and it is one level past what §4
+describes.
+
+**Raiders and citizens could not see each other as hostile.** Measured on a settlement
+founded the ordinary way, with a real `RaidEnemy` on its interior: **0 of 14 raiders saw
+a citizen as hostile, 0 of 30 citizens saw a raider**, and neither side ever took an
+attack job. Hostility required both sides to carry a `Pawn.faction`, and
+`SettlementFounder.GenerateFoundingBand` builds its `PawnGenerationRequest` naming none —
+`PawnGroupMaker`, the raider path, is the only caller in `src/` that passes one. A
+settlement has a faction; not one of its citizens does.
+
+§1b of this register says the combat module was complete, tested and unreachable from
+play, and records that being closed. It was reachable after that and **still inert**. Every
+combat test passed throughout, because each hands its own defenders a faction by hand.
+
+**Nothing in `src/` ever created a bill.** Every `Bill_Production` in the repository was
+made by a test, so `WorkGiver_DoBill` — wired, given a real giver, listed in content, and
+counted in §1's "29 of 29" — never found work on any bench in any game. Cooking, smithing
+and tailoring are still in that state; stonecutting was fixed because a lane happened to
+trace the whole chain from rock to wall rather than stopping at the missing recipe.
+
+**What this changes about the method.** §1 counts givers with a `giverClass`, and §4 counts
+seams nothing reaches. Both counts were honest and both missed these, because the question
+they ask is "is this thing connected?" and the question that finds these is **"put a real
+game in front of it and watch what happens."** Every one of these was found by measuring a
+generated settlement, not by reading a call graph. The audit narrowed the search; it did
+not answer it.
+
+The corollary is uncomfortable and worth writing down: a passing suite of 1,855 tests, a
+green audit, and 29 of 29 work givers wired were all simultaneously true while no bench had
+work on it and no citizen could see a raider.
+
+### The next item, and it is a World-module job
+
+**Give a settlement's citizens their settlement's faction.** The batch-six fix wired
+`FactionDef.hostileToFactionlessHumanlikes`, which is the flag for the factionless pairing
+and was genuinely unread — but Tribal and Outlander content declares it `false`, so those
+raids still find nobody. Turning the flag on for content that did not ask for it would
+paper over the real gap.
+
+It is not a one-line change and should not be taken as one. Citizens carrying a faction
+changes hostility resolution, `AttackTargetsCache`'s faction buckets, `MapPawns` filing,
+and anything that reads `Pawn.faction` for a social or trade decision. It wants its own
+lane, its own measurement of a generated settlement before and after, and a check that the
+Statistical and Interval tiers do not pay for it.
+
 ## Immediate steps: the host repo — unclaimed, proposed
 
 These are proposed rather than assigned. The host session claims, amends or rejects
@@ -312,7 +416,17 @@ remote is not pushing to the shared repo — a narrower thing is being held than
 ## The honest summary
 
 Phase 1 built every system in isolation and tested it there. The count of ported
-systems is real. What has never been true is that they add up to a played game: the
-work economy is a third wired, nothing drives the tiering, and there is no surface to
-look at. Those three are the distance between a tested library and a game, and they
-are what the next stretch is for.
+systems is real. What has never been true is that they add up to a played game — and
+the three things that were furthest from true have moved unevenly.
+
+The work economy is wired: 29 of 29 work givers carry a real `giverClass`, up from 10
+of 28. The tiering is driven, and bounded in time as well as space. There is still no
+surface to look at, and that is now the largest single gap — the host repo's section
+above is where it gets closed.
+
+What replaced "a third wired" as the recurring defect is subtler and is what §4 is
+about: a system can be complete, tested, wired *and still unreachable*, because the
+content that would exercise it sets nothing, or the one caller that would reach it was
+never written. Sixteen of those came off the list in one batch. A hundred and fifteen
+reviewed seams remain, most of them honestly blocked — but the batch before proved that
+"blocked" is a claim with a shelf life.

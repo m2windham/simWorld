@@ -78,6 +78,33 @@ namespace SimWorld.Health
         /// <summary>Pain at or above the pawn's shock threshold downs it.</summary>
         public bool InPainShock => hediffSet.PainTotal >= pawn.PainShockThreshold;
 
+        /// <summary>
+        /// This pawn is too young to be on its feet at all (<see cref="Pawns.LifeStageDef.alwaysDowned"/>,
+        /// which <c>HumanlikeBaby</c> is the one shipped stage to set). An infant is not injured and is not
+        /// unconscious; it simply cannot stand yet, and the stage it is in says so.
+        ///
+        /// <para/><b>Why this is a gate here and not a capacity answer.</b> The obvious alternative is to have
+        /// <see cref="PawnCapacityWorker_Moving"/> return zero for such a stage, and it would cooperate with
+        /// more of the simulation for free — everything that already asks "can this body move" would agree
+        /// without being told. It is still the wrong place, because of what a capacity <i>is</i> here: every
+        /// <see cref="PawnCapacityWorker"/> is handed a <see cref="HediffSet"/> and nothing else, and computes
+        /// its answer from the parts in it. Zeroing Moving would encode "too young to walk" as "the legs do
+        /// not work", and from then on every consumer of that number is reasoning about an injury that is not
+        /// there: <see cref="ShouldBeDeadFromRequiredCapacity"/> is one content edit (<c>lethalFlesh</c> on
+        /// Moving) away from killing every newborn, a surgeon looking for what to repair finds a whole body
+        /// and a dead capacity, and the pawn's own health summary reports a cripple. A baby's legs are fine.
+        /// So it sits beside <see cref="ForceDowned"/> instead — the seam that already exists for "down for a
+        /// reason the body does not know about" — and the capacity system keeps telling the truth.
+        ///
+        /// <para/><b>And it is not permanent, which is the other half of getting it right.</b> The stage is
+        /// what holds the pawn down, so the pawn gets up by leaving the stage: <c>HumanlikeBaby</c> ends at
+        /// age three and this returns false from that tick on. <see cref="Pawns.Pawn_AgeTracker"/> raises
+        /// <see cref="Pawn.Notify_LifeStageStarted"/> at the crossing, which re-runs
+        /// <see cref="CheckForStateChange"/>, so the pawn stands up at the boundary rather than whenever
+        /// something else next happens to disturb its health.
+        /// </summary>
+        public bool LifeStageForcesDowned => pawn.ageTracker?.CurLifeStage?.alwaysDowned ?? false;
+
         // ---- adding and removing ----
 
         public Hediff AddHediff(HediffDef def, BodyPartRecord? part = null)
@@ -332,13 +359,22 @@ namespace SimWorld.Health
         public bool ShouldBeDowned()
         {
             if (forceDowned) return true;
+            if (LifeStageForcesDowned) return true;
             if (InPainShock) return true;
             if (!capacities.CanBeAwake) return true;
             return !capacities.CapableOf(PawnCapacityDefOf.Moving);
         }
 
+        /// <summary>
+        /// Guarded against re-entry, not only against its caller's own <c>if (!Downed)</c>: reading a life
+        /// stage can recompute it (<see cref="Pawns.Pawn_AgeTracker.CurLifeStage"/> is lazy), and recomputing
+        /// it into a new stage calls <see cref="CheckForStateChange"/> back — so this can be reached from
+        /// inside <see cref="ShouldBeDowned"/>'s own evaluation. Without the guard that pawn would be
+        /// announced downed twice, and the storyteller charged twice for one event.
+        /// </summary>
         private void MakeDowned()
         {
+            if (healthState != PawnHealthState.Mobile) return;
             healthState = PawnHealthState.Down;
             pawn.Notify_Downed();
 
@@ -346,11 +382,18 @@ namespace SimWorld.Health
             // exactly here). Reached through Director only to ask it the question — that class decides whether
             // this pawn is one of the civilization's, because this funnel runs for raiders and animals as well;
             // see StorytellerPawnEvents for why the test is roster membership and not Pawn.faction.
-            SimWorld.Director.StorytellerPawnEvents.Notify_PawnDowned(pawn);
+            //
+            // Except when the life stage is what put them down. Adaptation counts casualties — "how badly is
+            // this colony being hurt" — and an infant being an infant is not a casualty. Nothing harmed it,
+            // nothing can heal it, and it will get up on its third birthday; charging the curve for every
+            // baby born would read the arrival of a child as a colonist going down under fire, which is the
+            // same kind of backwards this hook's own doc warns about for downed raiders.
+            if (!LifeStageForcesDowned) SimWorld.Director.StorytellerPawnEvents.Notify_PawnDowned(pawn);
         }
 
         private void MakeUndowned()
         {
+            if (healthState != PawnHealthState.Down) return;
             healthState = PawnHealthState.Mobile;
         }
 
