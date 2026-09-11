@@ -26,7 +26,21 @@ namespace SimWorld.Needs
         {
         }
 
-        public override float MaxLevel => pawn.BodySize;
+        /// <summary>
+        /// How much nutrition this stomach holds (RimWorld: <c>Need_Food.MaxLevel</c> is
+        /// <c>pawn.BodySize * pawn.ageTracker.CurLifeStage.foodMaxFactor</c>). Body size alone is not the
+        /// answer: a life stage scales the two independently, so a puppy that is 0.4 of a dog by size eats
+        /// 0.5 of a dog's meal, and the factor is what says so.
+        ///
+        /// <para/><b>Read live, never cached, and that is the growth edge.</b> The level a pawn carries is
+        /// absolute nutrition; the percentage every hunger category is decided from is that level over this
+        /// maximum. So when a pup becomes a dog the same nutrition inside it becomes a smaller fraction of a
+        /// bigger stomach and it gets hungry — which is the behaviour, not a rounding artefact. Shrinking the
+        /// other way (a race whose later stage eats less, or a debug age change) would leave the level above
+        /// the new ceiling, so <see cref="Pawn_NeedsTracker.Notify_LifeStageStarted"/> re-clamps every need
+        /// at the crossing rather than letting a percentage over 100% escape.
+        /// </summary>
+        public override float MaxLevel => pawn.BodySize * (pawn.ageTracker?.CurLifeStage?.foodMaxFactor ?? 1f);
 
         public float NutritionWanted => MaxLevel - CurLevel;
 

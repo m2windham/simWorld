@@ -112,10 +112,7 @@ code-deaf SimWorld.Needs.NeedDef.listPriority | Host-facing: the order needs app
 code-deaf SimWorld.Needs.NeedDef.major | Host-facing: whether a UI draws the need prominently.
 code-deaf SimWorld.Needs.NeedDef.threshPercents | Host-facing: threshold markers drawn on a need bar, per the field's own doc.
 code-deaf SimWorld.Pawns.BackstoryDef.baseDesc | Host-facing text: the backstory blurb, for a character tab the core does not render.
-code-deaf SimWorld.Pawns.LifeStageDef.alwaysDowned | Blocked on infants: nothing forces a life stage to be permanently downed, so a baby walks.
-code-deaf SimWorld.Pawns.LifeStageDef.foodMaxFactor | Blocked on life stage reaching Needs: Need_Food sizes its bar without the life stage's factor, so a puppy eats an adult's meal.
-code-deaf SimWorld.Pawns.LifeStageDef.marketValueFactor | Blocked on trade pricing reading the life stage; Tradeable prices a pawn without it.
-code-deaf SimWorld.Pawns.LifeStageDef.reproductive | Blocked on animal breeding: nothing checks whether a life stage may reproduce.
+code-deaf SimWorld.Pawns.LifeStageDef.marketValueFactor | Blocked on a pawn having a market value at all, which is upstream of trade reading the life stage: TradeUtility prices a ThingDef rather than a thing, no race ThingDef carries a MarketValue statBase, Tradeable holds a def plus a count with nowhere to put a pawn, and Targets.PlayerWealthForStoryteller excludes people on purpose. A factor has nothing to multiply until pawn pricing exists.
 code-deaf SimWorld.Pawns.PawnKindDef.isFighter | Blocked on raid composition: PawnGroupMakerUtility does not yet separate fighters from non-combatants.
 code-deaf SimWorld.Pawns.TrainableDef.defaultTrainable | Deliberate, and documented on the field: this port has no player-facing "wanted" checkbox, so every learnable def is always pursued.
 code-deaf SimWorld.Research.ResearchProjectDef.discoveredLetterText | Host-facing text for a completion letter; the research manager mints no letter.
