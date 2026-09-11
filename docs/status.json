@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1531,
+  "testsTotal": 1587,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -678,8 +678,8 @@
         },
         {
           "id": "health.fire.rain",
-          "label": "Rain extinguishment is ported and tested but nothing drives it — there is no weather module, no WeatherDef and no rain rate anywhere. Waiting on a one-field Map.rainRate",
-          "done": false
+          "label": "Rain extinguishment is live: the weather module drives it through FireUtility.ExtinguishFiresFromRain, the path the fire lane ported in full and left waiting on a rain rate",
+          "done": true
         },
         {
           "id": "health.corpse",
@@ -768,7 +768,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 113,
+      "tests": 125,
       "items": [
         {
           "id": "ai.thinktree",
@@ -842,12 +842,17 @@
         },
         {
           "id": "ai.combat.interrupt",
-          "label": "Nothing interrupts a job in flight: the think tree is consulted only when curJob is null, so a sleeping pawn under fire never wakes. RimWorld reaches this with a constant think tree and JobDef.checkOverrideOnDamage, neither of which exists here",
-          "done": false
+          "label": "Jobs can be interrupted. A constant think tree runs on a 30-tick hash interval whether or not a job is running, and JobDef.checkOverrideOnDamage plus Pawn_JobTracker.Notify_DamageTaken re-ask the main tree when a pawn is hit. The cadence is not a translation: RimWorld gates its own constant tree behind IsHashIntervalTick(30), so fidelity and affordability were the same choice — measured at 500 pawns on a real map, every-tick costs +123% of the pawn-tick budget and 1-in-30 costs +3.7%",
+          "done": true
         },
         {
           "id": "ai.corpses",
           "label": "Corpses haul and butcher: WorkGiver_HaulCorpses, and butchery at a bench as a work giver rather than a bill — a bill's products are a fixed def+count list that cannot express a per-individual yield, and nothing in this port ever creates a bill, so bill-gated butchery would be content that can never fire",
+          "done": true
+        },
+        {
+          "id": "ai.combat.perf",
+          "label": "Two measured wins found while benchmarking the above: AttackTargetFinder tested its expensive faction-hostility predicate before the cheap range check (1.98x per evaluation, and a raid used to make every citizen's evaluation dearer), and JobGiver_AIFightEnemies built a Verb before it had a target, allocating per evaluation to guard an empty set",
           "done": true
         }
       ]
@@ -1327,6 +1332,11 @@
           "id": "demography.migration",
           "label": "Migration and household founding by immigration: arrivals scale with a settlement’s own mood/food quality and its era, founding households through FamilyManager.FoundHousehold’s single-founder hook; departures remove a distressed family from a caller-owned roster, and a settlement’s Statistical cohort moves in both directions (Settlement.RemoveStatisticalPeople), so somewhere worth leaving is as expressible as somewhere worth going. A settlement’s live Citizens list has no departure path — removing a named citizen is the settlement’s own business, and the caller-owned-list overload is what that case is for",
           "done": true
+        },
+        {
+          "id": "demography.migrantrole",
+          "label": "A migrant is an ordinary citizen. MigrationManager flagged every arrival with Notify_RoleChanged, which is never cleared and outranks every other reason in the Full-tier ordering — so arrivals accumulated permanently at the top, unbounded, at roughly 25 per settlement per century, filling the budget with people whose only distinction was having arrived",
+          "done": true
         }
       ]
     },
@@ -1503,6 +1513,75 @@
           "id": "god.opensettlement",
           "label": "GodCommands.OpenSettlement/GenerateSettlementInterior close the seam: the host is told to bind to God/View and never reach into Game, and God/View had no way to generate an interior map at all — so a host could focus a town, hold attention with no map, and have raids resolve mapless forever, with nothing in the seam to do about it. Open focuses then enters, in that order: only a Full-tier citizen is ever placed on an interior and only attention holds an ordinary citizen at Full, so entering first draws an empty town that self-corrects on the next sync sweep — a failure that reads as a rendering glitch. A test proves the order matters by reversing it",
           "done": true
+        }
+      ]
+    },
+    {
+      "id": "offices",
+      "n": 23,
+      "rimworld": "No direct equivalent. RoyalTitleDef is granted by an outside faction and has no succession; Precept_Role is about belief and is already ported as IdeoRoleDef.",
+      "translation": "SimWorld's own. Work.RoleDef already existed and says what a citizen does; what was missing is the seat — scarcity, a place, a selection rule and succession. An OfficeDef names a Work.RoleDef the way GuildDef already does, so a station is a role plus a seat. Wiring Work.RoleDef straight into Pawn_TierTracker.Notify_RoleChanged would have been wrong: WorkPolicyUtility.ApplyRoleToPopulation sweeps a whole settlement, so 'has a role' would have ranked the entire roster top and collapsed the ordering AttentionBudget spends its budget against. Selection is a pure function of ages, ids and opinions — nothing touches Rand at all, seeded or otherwise, so two runs from one save seat the same citizen. The module is stateless: the holder is the role-carrier, and its whole footprint in a file it does not own is one PostTickers line.",
+      "translationState": "recorded",
+      "module": "src/SimWorld.Core/Offices",
+      "status": "translated",
+      "tests": 20,
+      "items": [
+        {
+          "id": "offices.def",
+          "label": "OfficeDef, OfficeSelectionWorker and OfficeManager: a seated station that names a Work.RoleDef for what its holder does",
+          "done": true
+        },
+        {
+          "id": "offices.steward",
+          "label": "Steward, per settlement: candidacy by years lived, selection by summed opinion from a bounded electorate, tenure for life, and the seat always refilled — a town always needs someone to speak for it",
+          "done": true
+        },
+        {
+          "id": "offices.elder",
+          "label": "Elder, per civilization: eligible only while old enough to remember the founding, so once the last such citizen dies the office retires permanently and needs no saved flag to stay retired",
+          "done": true
+        },
+        {
+          "id": "offices.consequence",
+          "label": "A holder's work priorities change through the existing SetRole, a situational thought reaches mood and everything downstream, and accession and succession are written for the MomentCurator",
+          "done": true
+        },
+        {
+          "id": "offices.edicts",
+          "label": "Gating edicts on a seated leader is the strongest remaining consequence and needs GodManager.CanActivate",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "weather",
+      "n": 24,
+      "rimworld": "Verse.WeatherDef, WeatherManager, WeatherDecider, GenTemperature",
+      "translation": "Commonalities live on WeatherDef rather than BiomeDef.weatherCommonalities — the relationship is inverted so a biome added later needs no edit to any weather, and no biome file had to be touched. WeatherDef.temperatureOffset is SimWorld's own: RimWorld's swings are GameConditionDefs, a system this port lacks, and this is the seam one would plug into. Rain rolls against fire map-wide on Fire.ComplexCalcsInterval rather than inside each fire's own pass, same rate per fire without editing Fire.cs. Weather exists only where a Map exists — the settlement the player opened — because everything weather moves (a fire, a room, a plant, a mood) only exists on a generated map, so the god layer is deliberately not widened to carry it.",
+      "translationState": "recorded",
+      "module": "src/SimWorld.Core/Weather",
+      "status": "translated",
+      "tests": 21,
+      "items": [
+        {
+          "id": "weather.def",
+          "label": "WeatherDef and WeatherManager: current and outgoing weather with every rate lerped across the transition, chosen by biome commonality, tile rainfall and current outdoor temperature through the seeded stream",
+          "done": true
+        },
+        {
+          "id": "weather.temperature",
+          "label": "GenTemperature: seasonal cosine by latitude with the southern hemisphere flipped, a daily sun cycle and the weather offset — a pure function of tick and tile with no randomness. It drives Map.outdoorTemperature, which rooms, plant growth and corpse rot already read",
+          "done": true
+        },
+        {
+          "id": "weather.consumers",
+          "label": "Wired to what exists: rain extinguishes fire through the path the fire lane wrote and left waiting, ShotReport.factorFromWeather stops defaulting to 1, movement slows in the open, and being rained on is a thought",
+          "done": true
+        },
+        {
+          "id": "weather.snow",
+          "label": "Snow accumulation, lightning and weather events are left out: there is no snow grid and no weather-event system, and a thunderstorm that is only windy rain would be a name pretending to be a mechanic",
+          "done": false
         }
       ]
     }
