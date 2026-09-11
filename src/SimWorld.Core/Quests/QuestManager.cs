@@ -17,8 +17,18 @@ namespace SimWorld.Quests
         private readonly List<Quest> quests = new List<Quest>();
         private readonly Dictionary<QuestScriptDef, int> lastFireTicks = new Dictionary<QuestScriptDef, int>();
 
-        /// <summary>Optional hook a future economy/faction system sets to actually apply rewards; see <see cref="IQuestRewardSink"/>.</summary>
-        public IQuestRewardSink? RewardSink { get; set; }
+        /// <summary>
+        /// Who actually applies a reward's effects; see <see cref="IQuestRewardSink"/>.
+        ///
+        /// <para/><b>Defaulted, not left null.</b> It was null on every path — a new game, a load, a bare
+        /// test — and <see cref="QuestPart_Reward.Enable"/>'s <c>?.</c> turned every payout into nothing (see
+        /// <see cref="QuestRewardSink"/> for the measured before-numbers). A field initialiser rather than a
+        /// wiring line in <see cref="Game"/> because it has to hold on all three of those paths and this is
+        /// the only place all three pass through: Scribe's deep load constructs a
+        /// <see cref="QuestManager"/> the same way <see cref="Find"/> and <see cref="Game"/> do. Settable,
+        /// and settable to null, so a host or a test can replace or silence it.
+        /// </summary>
+        public IQuestRewardSink? RewardSink { get; set; } = new QuestRewardSink();
 
         public IReadOnlyList<Quest> QuestsListForReading => quests;
 

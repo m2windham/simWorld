@@ -19,13 +19,13 @@
 
 
 # ---- interface: no implementation the game can ever hold ----
-
-interface SimWorld.Quests.IQuestRewardSink | Blocked on economy/factions: QuestManager.RewardSink is the hook that will actually pay a reward out, and nothing constructs a sink yet. Quests award RewardRecords into the void until then.
+#
+# (Empty. IQuestRewardSink was the only entry; QuestRewardSink now pays every quest reward into the
+# civilization's seat, and QuestManager is born holding one.)
 
 
 # ---- notify: a hook nothing raises ----
 
-notify SimWorld.Director.StoryWatcher_Adaptation.Notify_ColonistDowned | Blocked on downing: Notify_ColonistDied is raised, its downing twin is not, so adaptation only ever eases after a death. Same shape as the Notify_ColonistDied bug this audit was written after.
 notify SimWorld.Scenario.ScenPart.Notify_PawnGenerated | Blocked on pawn generation calling back into the scenario; the method's own doc says nothing calls it yet and it exists for the shape RimWorld gives every ScenPart.
 
 

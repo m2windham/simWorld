@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1688,
+  "testsTotal": 1725,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -376,7 +376,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things",
       "status": "ported",
-      "tests": 39,
+      "tests": 56,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -411,6 +411,11 @@
         {
           "id": "mapcore.regions",
           "label": "Region / RegionLink graph over the map's passability (Region, RegionLink, RegionGrid, RegionMaker, RegionAndRoomUpdater), cardinal flood fill with doors as their own Portal regions, torn down and re-flooded only for the region(s) a passability change actually touches — AI's Reachability is the consumer",
+          "done": true
+        },
+        {
+          "id": "mapcore.mining",
+          "label": "Mining yields what the rock holds — ThingDef.mineableThing/mineableYield were set by content and read by nothing: JobDriver_Mine destroyed the edifice and spawned air. Mineable/MineableUtility now drop the chunk or ore, GenStep_RocksAndMountains places more than one rock type, and DifficultyDef.mineYieldFactor finally has a yield to scale.",
           "done": true
         }
       ]
@@ -905,7 +910,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 116,
+      "tests": 125,
       "items": [
         {
           "id": "director.personality",
@@ -976,6 +981,11 @@
           "id": "director.difficulty.auditgap",
           "label": "The wiring audit has a blind spot this lane fell into: its field checks ask 'content sets it, does code read it' and 'code reads it, does content set it', so a field neither side touches is reported by neither. researchSpeedFactor was exactly that and appears nowhere in the baseline",
           "done": false
+        },
+        {
+          "id": "director.downedadaptation",
+          "label": "StoryWatcher_Adaptation.Notify_ColonistDowned is raised — Pawn_HealthTracker's downing path now tells the narrator (src/SimWorld.Core/Director/StorytellerPawnEvents.cs), so adaptation eases after a mauling and not only after a funeral. Same shape as the Notify_ColonistDied hook this audit was written after.",
+          "done": true
         }
       ]
     },
@@ -1314,7 +1324,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Quests · Scenario · Letters (quests.moments' curator lives in src/SimWorld.Core/Director — see director.chronicle)",
       "status": "translated",
-      "tests": 24,
+      "tests": 35,
       "items": [
         {
           "id": "quests.scenario",
@@ -1344,6 +1354,16 @@
         {
           "id": "quests.orchestrator",
           "label": "Game-start orchestrator to run Scenario.PostGameStart and the quest tick loop — Sim/Game.cs: Game.NewGame founds the settlement then runs PostGameStart against its citizens, and QuestManager.QuestManagerTick is wired into the post-tick order (it had never been driven by anything before)",
+          "done": true
+        },
+        {
+          "id": "quests.rewardsink",
+          "label": "Quest rewards reach the civilization — QuestRewardSink (src/SimWorld.Core/Quests/QuestRewardSink.cs) is the implementation IQuestRewardSink never had, installed on every QuestManager. Before it, QuestPart_Reward.Enable handed its records to a null interface: a completed Quest_LostCaravan reported '200 silver, 5 goodwill' and the seat's stores, the civilization's wealth and the faction's goodwill were all unchanged. Silver banks into CivilizationTarget.Seat's ledger (not the settlement the player is watching, and with no roll at all, since this runs inside QuestManagerTick); goodwill moves the named faction's relation; anything unpayable is counted and said in the chronicle rather than dropped.",
+          "done": true
+        },
+        {
+          "id": "quests.rewardvaluefactor",
+          "label": "DifficultyDef.questRewardValueFactor applies once, at generation (QuestNode_GiveReward), not at payout. Two lanes wired it in the same batch — one at each end — and the merge caught it before a 0.8 difficulty could pay 0.64. Generation is RimWorld's end and also the value Quest.RewardsSummary advertises, so what a quest promises and what the treasury receives are the same number; the sink keeps only the floor that stops a positive award rounding to nothing.",
           "done": true
         }
       ]

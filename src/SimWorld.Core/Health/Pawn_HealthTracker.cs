@@ -341,6 +341,12 @@ namespace SimWorld.Health
         {
             healthState = PawnHealthState.Down;
             pawn.Notify_Downed();
+
+            // The storyteller hears about it too (RimWorld: MakeDowned raises the same adaptation event from
+            // exactly here). Reached through Director only to ask it the question — that class decides whether
+            // this pawn is one of the civilization's, because this funnel runs for raiders and animals as well;
+            // see StorytellerPawnEvents for why the test is roster membership and not Pawn.faction.
+            SimWorld.Director.StorytellerPawnEvents.Notify_PawnDowned(pawn);
         }
 
         private void MakeUndowned()
