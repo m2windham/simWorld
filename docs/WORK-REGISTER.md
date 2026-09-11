@@ -414,15 +414,71 @@ reason and nobody had looked:
 Every one of those has passing unit tests. Every one of those tests hands its own pawn a
 faction by hand.
 
+### 8. The two halves of the game are joined, and the chain had three breaks, not one
+
+§7's second item — *nothing ever puts a mined or crafted thing into `Settlement.Stores`* — is
+done, in the map→ledger direction. The other direction (the ledger supplying a map) is
+deliberately not: it needs goods to materialise on a map from an abstract count, which is a
+caravan system or a spawn-from-nowhere, while map→ledger needed no new mechanism at all — the
+goods already exist as Things, the ledger already exists as counts, and all that was missing
+was the rule for crossing.
+
+**The rule, and the invariant it exists to make true.** *A unit of goods is either a `Thing` on
+a settlement's interior map or a count in that settlement's `Stores`, never both.*
+`Economy.SettlementStockInitiative.BankStoredGoods` is the only thing that moves a unit across,
+and it moves by destroying the map-side stack in the same step that credits the ledger. It never
+surveys and never estimates — which is the one thing a `WealthWatcher`-shaped answer could not
+have given, because a survey that sums both halves double-counts everything the ledger already
+holds the moment trade or a guild touches it. What crosses is what is *resting in storage*, the
+same thing `HaulAIUtility.IsInValidStorage` already calls stored; loose goods are left for the
+map's own systems, a reserved stack is never taken out from under the citizen who claimed it,
+and the settlement keeps `HuntingInitiative.NutritionWanted` of food physically on the map,
+because the map is where people eat.
+
+**The chain had three breaks and two of them were nobody's list item.** Tracing "a citizen mines
+granite, hauls it to a stockpile" turned up two more systems in exactly §5's shape — complete,
+tested, counted as wired, and unreachable from play:
+
+- **Nothing in `src/` had ever created a `Zone_Stockpile`.** Every one in the repository was
+  made by a test, so `HaulAIUtility.TryFindBestStockpileCell` had nowhere to point and
+  `AI.WorkGiver_Haul` — built, tested, listed in `WorkGivers.xml`, and inside §1's "29 of 29" —
+  **could never produce a job in any game.** A settlement now paints its own granary, in the
+  same "RimWorld asks the player and there is no player" shape `StonecutterInitiative` and
+  `SettlementConstructionInitiative` established.
+- **Nothing in `src/` had ever called `GuildManager.Establish`** (§7's own follow-up item,
+  confirmed). `GuildManager.GuildManagerTick` ran every long tick over an empty list for the
+  life of every game, and `Guild.StatisticalMembers` had no writer either. `Crafting.GuildInitiative`
+  establishes, staffs and bills the guilds a civilization knows the trades for.
+
+**The labour partition is the tiering invariant, and it matters as much as the goods one.** A
+citizen either works jobs on a map or works in a guild, never both: spec §11.3 makes Full the
+only tier with jobs at all, and `SyncCitizenSpawns` puts exactly the Full-tier citizens on the
+interior — so a guild seats only citizens *below* Full and releases one the instant attention
+promotes them. Without it a settlement would get its stonecutting twice out of the same people,
+once at the bench and once in the guild. The rule lives in the initiative, not in `Guild.Members`:
+a guild should answer "who carries my role", not "who is allowed to".
+
+**Measured end to end through `Game`'s own tick loop, with nothing called by hand** — stone on
+the ground the way mining leaves it, a citizen who hauls it into a granary the settlement painted
+itself, the seam that banks it, and a masons' guild the settlement established itself that cuts
+it. The ledger's chunk count *falling* is what makes it the guild's work: a bench consumes chunks
+off the map, and the only thing that can take one out of `Stores` is `Guild.ConsumeIngredients`.
+
+Three tiering states, all answered, none of which grows a map: a live watched map runs the whole
+chain; a generated-but-unwatched one has nobody to haul, so nothing new arrives but what is
+already in the granary is still banked; a settlement nobody has entered has no map and is a
+no-op, its ledger being its entire stock — which is exactly what `Guild` was written for.
+
 ### What is next
 
 1. **A watched raid still does nothing on the tick it lands.** Both sides can now see and
    attack each other, but the squad spawns ~120 cells from the nearest citizen on a 200x200
    interior, outside `CombatAITuning.TargetAcquireRadius`, and nothing walks it toward the
    town. `CombatAITests`' raid test passes only because its map is 40x40.
-2. **Nothing ever puts a mined or crafted thing into `Settlement.Stores`.** Confirmed by two
-   lanes independently. The civilization-scale guild path starves by construction —
-   `MasonsGuild` lists `Make_Blocks_Sandstone` and can never obtain a chunk.
+2. **The ledger cannot yet supply a map.** §8 does map→ledger only. A builder short of blocks,
+   or a guild's output reaching the walls it was cut for, needs the return trip — and that needs
+   a delivery mechanism (caravans, or a settlement-scale "draw from stores" job) rather than
+   another rule about counting.
 3. **Cooking is the bench that is genuinely ready.** Meals have a real sink; smithing and
    tailoring do not, because nothing in this port equips a crafted weapon or wears crafted
    apparel, and a zero-target bill must not be queued.
