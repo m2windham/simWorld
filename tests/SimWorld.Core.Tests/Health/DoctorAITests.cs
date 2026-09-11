@@ -101,10 +101,10 @@ namespace SimWorld.Tests.Health
             Assert.IsType<WorkGiver_FeedPatient>(DefDatabase<WorkGiverDef>.GetNamed("DoctorFeedHumanlikes").Worker);
             Assert.IsType<WorkGiver_RescueDowned>(DefDatabase<WorkGiverDef>.GetNamed("DoctorRescue").Worker);
 
-            // Deliberate: see WorkGiver_FeedPatient's own doc and this WorkGiverDef's XML comment — a downed,
-            // hungry prisoner is already WardenFeed's case, and an ambulatory one already reaches food on its
-            // own, so RimWorld's DeliverFood counterpart has no distinct case left to cover in this port.
-            Assert.IsType<SimWorld.Work.WorkGiver_Pending>(DefDatabase<WorkGiverDef>.GetNamed("WardenDeliverFood").Worker);
+            // WardenDeliverFood is wired too now (Building.RoomTracker gave it the room screen it was
+            // waiting on), and it still does not overlap this lane's feeding giver by one patient: this one
+            // excludes prisoners outright. See WorkGiver_Warden_DeliverFood's own doc and WardenDeliverFoodTests.
+            Assert.IsType<WorkGiver_Warden_DeliverFood>(DefDatabase<WorkGiverDef>.GetNamed("WardenDeliverFood").Worker);
         }
 
         // ---- WorkGiver_Tend ----

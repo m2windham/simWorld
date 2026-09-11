@@ -59,11 +59,13 @@ namespace SimWorld.AI
     /// selection checks guest status or faction at all (a captured pawn keeps its original <see cref="Pawn.faction"/>;
     /// only a <see cref="Faction.prisoners"/> lookup says who holds it — see <c>Pawn_GuestTracker</c>'s own
     /// remarks), so a merely-hungry-but-ambulatory prisoner is already served exactly like a colonist would be.
-    /// That is also why <c>WardenDeliverFood</c> — RimWorld's counterpart for a prisoner capable of
-    /// self-service but with nothing reachable to eat — stays a <see cref="WorkGiver_Pending"/> placeholder in
-    /// this pass's content: this port's job selection carries no per-room "is there food already reachable
-    /// here" distinction for <see cref="WorkGiver_Warden_Feed"/> to fall back from in the first place (see this
-    /// module's report).
+    /// <c>WardenDeliverFood</c> — RimWorld's counterpart for a prisoner capable of self-service — is the
+    /// other side of exactly this <see cref="Pawn.Downed"/> split, and is now wired
+    /// (<see cref="WorkGiver_Warden_DeliverFood"/>). It was left a <see cref="WorkGiver_Pending"/> placeholder
+    /// for two passes on the grounds stated here — that this port's job selection carried no per-room "is
+    /// there food already here" distinction for this giver to fall back from — which was true until
+    /// <see cref="Building.RoomTracker"/> landed and stopped being true after. The two givers never share a
+    /// patient: downed is this one's, ambulatory is that one's.
     /// </summary>
     public sealed class WorkGiver_Warden_Feed : WorkGiver_Scanner
     {

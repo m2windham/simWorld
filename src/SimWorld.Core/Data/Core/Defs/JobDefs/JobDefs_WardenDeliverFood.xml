@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The job behind the WardenDeliverFood WorkGiverDef (system 12: Factions — capture). Its own file rather
+    than another element in JobDefs_Core.xml: DefLoader.AddDirectory reads every XML file under a Def folder,
+    so an additive JobDef never needs an edit to a file another lane may also be editing (CLAUDE.md).
+
+    RimWorld's own defName for this job is DeliverFood and its driver is RimWorld.JobDriver_FoodDeliver —
+    both kept 1:1. It is emphatically *not* FeedPatient: feeding puts the nutrition into the patient, and
+    delivering puts the meal down where the prisoner can pick it up themselves. See
+    WorkGiver_Warden_DeliverFood's own doc for why that difference is the whole point of this giver.
+  -->
+
+  <JobDef>
+    <defName>DeliverFood</defName>
+    <driverClass>SimWorld.AI.JobDriver_FoodDeliver</driverClass>
+    <reportString>delivering food.</reportString>
+  </JobDef>
+
+</Defs>

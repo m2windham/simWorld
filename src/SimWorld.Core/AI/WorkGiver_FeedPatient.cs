@@ -23,14 +23,13 @@ namespace SimWorld.AI
     /// race two doctors for one reservation, never cover a case neither already does.
     /// <para/>
     /// <b>Why <c>WardenDeliverFood</c> (RimWorld's other feeding <c>WorkGiverDef</c>) is not a third copy of
-    /// this shape:</b> real RimWorld's <c>WardenDeliverFood</c> exists for a prisoner capable of walking to
-    /// their own food but with none reachable inside their own cell/room — a distinction that needs a
-    /// room/prison-cell system this port does not have. Every prisoner this port can even represent is either
-    /// downed (this giver's own sibling, <see cref="WorkGiver_Warden_Feed"/>, already covers "downed and
-    /// hungry") or ambulatory, in which case it already reaches food entirely on its own through the ordinary
-    /// <see cref="JobGiver_GetFood"/> tier — nothing in this port's job selection checks guest status or
-    /// faction at all. So <c>WardenDeliverFood</c> has no distinct case left to fill and stays the
-    /// <c>WorkGiver_Pending</c> placeholder its content shipped with — see this module's report.
+    /// this shape:</b> it is not a feeding giver at all. Real RimWorld's <c>WardenDeliverFood</c> exists for a
+    /// prisoner capable of walking to their own food but with none reachable inside their own room, and it
+    /// <i>delivers</i> — puts a meal down for the prisoner to pick up — rather than putting nutrition in.
+    /// This class's earlier remark that it "has no distinct case left to fill" was written when this port had
+    /// no room system to draw that distinction with; <see cref="Building.RoomTracker"/> has since landed and
+    /// <see cref="WorkGiver_Warden_DeliverFood"/> is now wired on top of it. It still does not overlap this
+    /// giver by so much as one patient — this one excludes prisoners outright, and that is all it takes.
     /// </summary>
     public sealed class WorkGiver_FeedPatient : WorkGiver_Scanner
     {

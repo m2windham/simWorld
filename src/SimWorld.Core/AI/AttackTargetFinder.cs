@@ -34,6 +34,19 @@ namespace SimWorld.AI
         /// Symmetric on purpose: a pawn one of whose neighbours has decided to kill it is at war whether it
         /// agreed or not, so the hunter who provoked an animal may fight back without needing a grudge of its
         /// own.
+        ///
+        /// <para/><b>Custody outranks both</b> (RimWorld: <c>GenHostility</c> never returns a colony's own
+        /// prisoner as an enemy of that colony). A captured pawn keeps the <see cref="Pawn.faction"/> it came
+        /// from — only a <see cref="Faction.prisoners"/> lookup says who holds it, see <c>Pawn_GuestTracker</c>
+        /// — so by faction relation alone a warden and the prisoner it is feeding are still at war, and were:
+        /// until <see cref="WorkGiver_Warden_DeliverFood"/> there was no warden job whose patient was ever
+        /// <i>not</i> <see cref="Pawn.Downed"/>, and <see cref="ThreatDisabled"/> screens the downed out, so
+        /// nothing ever reached this. The first job to walk a warden up to a prisoner still on its feet had
+        /// the warden punch it — through the constant think tree's own "anyone at all fights back at arm's
+        /// length" floor (<see cref="CombatPostureUtility"/> rule 2), mid-delivery. Held and holder do not
+        /// fight, in either direction: a prison break — RimWorld's one case where they do — is a mechanic
+        /// this port does not have, and inventing it here to justify the faction relation would be inventing
+        /// it in the wrong place.
         /// </summary>
         public static bool HostileTo(Pawn a, Pawn b)
         {
@@ -41,11 +54,25 @@ namespace SimWorld.AI
             if (b == null) throw new ArgumentNullException(nameof(b));
             if (ReferenceEquals(a, b)) return false;
 
+            if (InCustodyOfEachOther(a, b)) return false;
+
             if (IsAngryAt(a, b) || IsAngryAt(b, a)) return true;
 
             Faction? fa = a.faction;
             Faction? fb = b.faction;
             return fa != null && fb != null && fa.HostileTo(fb);
+        }
+
+        /// <summary>True when either of these two is currently held prisoner by the other's faction — see
+        /// <see cref="HostileTo"/>'s own remarks for why that ends the fight rather than starting one.</summary>
+        private static bool InCustodyOfEachOther(Pawn a, Pawn b) =>
+            IsHeldBy(a, b.faction) || IsHeldBy(b, a.faction);
+
+        private static bool IsHeldBy(Pawn prisoner, Faction? captors)
+        {
+            if (captors == null) return false;
+            Faction? host = CaptureUtility.FindHostFaction(prisoner);
+            return host != null && ReferenceEquals(host, captors);
         }
 
         /// <summary>Currently holding an unexpired grudge against this specific pawn.</summary>
