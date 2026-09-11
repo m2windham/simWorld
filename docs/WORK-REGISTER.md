@@ -100,11 +100,29 @@ Two related holes, both unclaimed: `Notify_RoleChanged` has no caller because no
 system exists, and `Notify_ChronicleNamed` has no policy for what earns a citizen
 individual distinction. Attention is currently the only one of the four actually driven.
 
-### 3. "Endless" is three tracks deep
+### 3. "Endless" is endless now
 
-`EndlessResearch` generates three tracks of three authored titles before falling back to
-appending numerals. "Endless technology" is a stated pillar; a player who reaches the end
-of the authored tree currently finds Roman numerals. A lane is on this.
+**Done.** A generated label is `{age register} {track substrate} {form}` — "holographic
+attention first principles" — with the three word lists disjoint per age, per track and
+per role, so distinctness inside an age is structural rather than checked. Age to theme is
+injective for 20 ages and then compounds with particles (`post-holographic`,
+`meta-post-granular`), a base-8 numeral written in words, so the supply has no ceiling.
+Verified by reading, not just asserting: ~1,000 generated names across two seeds, which is
+what caught the leaves reading like an odometer.
+
+Cost went from geometric to polynomial — depth 20 was 1,796,772 points, **three times the
+entire authored tree**, and is now 95,454.
+
+Two real bugs fell out. The generated tree was a pure function of content, so **no two
+civilizations ever diverged past the ladder**; and because the `DefDatabase` is
+process-wide, a second game in one process read the first game's unfinished generated
+projects as startable and so never extended past the authored tree at all. Both fixed by
+deriving from the world seed.
+
+One literal bound is recorded rather than fixed: `DefDatabase.Add` narrows `Def.index`
+with `checked((ushort)…)`, so a process minting more than 65,535 `ResearchProjectDef`s
+throws — about 2,700 ages in, unreachable in play, but it is a ceiling on something the
+design calls endless.
 
 ## Immediate steps: the host repo — unclaimed, proposed
 
