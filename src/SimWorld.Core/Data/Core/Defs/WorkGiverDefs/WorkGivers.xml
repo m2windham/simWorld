@@ -184,7 +184,24 @@
     <verb>Repair</verb>
     <gerund>repairing</gerund>
     <workType>Construction</workType>
-    <priorityInType>100</priorityInType>
+    <!-- Below the three Construct* givers below (95/90/85), not above them at the 100 this placeholder
+         carried while it was inert. Finishing what the settlement decided it needs comes before patching up
+         what it already has, and here that is not a nicety: without a faction to scan by (see below) this
+         giver also finds every weathered ruin wall MapGen.GenStep_Ruins scattered across a generated map,
+         each hundreds of hit points short of whole. At 100 those ruins monopolise every builder from the
+         first tick and nothing new ever gets built — a real regression this pass's own test run caught in
+         ConstructionInitiativeTests. Like the sibling numbers around it, this is SimWorld's own figure, not
+         a sourced RimWorld one; what it claims is only the ordering. -->
+    <priorityInType>80</priorityInType>
+    <!-- Wired to a real scanner (system: work — the Construction work type's maintenance half): finds a
+         damaged artificial building and restores its HitPoints a point at a time. RimWorld scans the pawn's
+         own faction's repairable buildings; nothing here has a faction to scan by (this port's Thing carries
+         no faction field at all), so the predicate is "damaged, not natural rock" instead — the same shape
+         Mine's own giver used when it translated designations away and mined any reachable mineable edifice.
+         See WorkGiver_Repair's own doc for that translation, and for what in this codebase can damage a
+         building in the first place. NB: the comment immediately below this def still names Repair as an
+         unwired placeholder; that is now stale. -->
+    <giverClass>SimWorld.AI.WorkGiver_Repair</giverClass>
   </WorkGiverDef>
 
   <!-- Wired to real scanners with system 16 (Building) — the placeholders above/below this comment that
@@ -264,6 +281,13 @@
     <gerund>cutting</gerund>
     <workType>PlantCutting</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner (system: work — the PlantCutting work type): clears a plant that is in
+         something's way. RimWorld drives this from cut/harvest designations, which do not exist anywhere in
+         this codebase, so the two reasons the settlement can derive for itself stand in: a plant blocking a
+         growing zone's own crop, and a plant standing where a Blueprint or Frame is going up. Both are cases
+         RimWorld really does cut for — see WorkGiver_PlantsCut's own doc for where it reaches each of them
+         from, and why neither is already served here. -->
+    <giverClass>SimWorld.AI.WorkGiver_PlantsCut</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>

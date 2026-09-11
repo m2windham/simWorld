@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Plant cutting (the PlantCutting work type). Its own file, for the same reason JobDefs_Repair.xml is —
+       see that file's own remark. Bound by SimWorld.AI.PlantCuttingJobDefOf. -->
+
+  <JobDef>
+    <defName>CutPlant</defName>
+    <driverClass>SimWorld.AI.JobDriver_PlantWork</driverClass>
+    <reportString>cutting plant.</reportString>
+  </JobDef>
+
+</Defs>
