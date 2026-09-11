@@ -187,9 +187,27 @@ namespace SimWorld.Combat
                 factorFromShootingAccuracy = (float)Math.Pow(accuracy, Math.Max(0f, distance)),
                 factorFromEquipment = verb.verbProps.AdjustedAccuracy(distance),
                 factorFromTargetSize = Math.Max(0.5f, target.BodySize),
+                factorFromWeather = WeatherAccuracyFactor(caster, target),
                 forcedMissRadius = verb.verbProps.forcedMissRadius,
                 passCoverChance = CoverUtility.PassChance(cover),
             };
+        }
+
+        /// <summary>
+        /// The weather's penalty to this shot (RimWorld: <c>ShotReport.HitReportFor</c> reads
+        /// <c>Map.weatherManager.CurWeatherAccuracyMultiplier</c> when either end of the shot is under open
+        /// sky, and leaves a shot fired entirely indoors alone). <see cref="factorFromWeather"/> was written
+        /// with this in mind and had defaulted to 1 because no weather module existed; clear weather is still
+        /// exactly 1, so nothing that was tuned against fair-weather shooting moves.
+        /// </summary>
+        private static float WeatherAccuracyFactor(Thing caster, Pawn target)
+        {
+            Map.Map? map = caster.Map;
+            if (map == null) return 1f;
+            bool casterSheltered = Map.GenGrid.Roofed(caster.Position, map);
+            bool targetSheltered = !ReferenceEquals(target.Map, map) || Map.GenGrid.Roofed(target.Position, map);
+            if (casterSheltered && targetSheltered) return 1f;
+            return map.weatherManager.CurWeatherAccuracyMultiplier;
         }
     }
 }

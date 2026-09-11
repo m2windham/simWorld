@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    weather: what being caught out in the rain does to somebody's mood (RimWorld: ThoughtDefOf.SoakingWet,
+    reached through WeatherDef.exposedThought — the same route here). Its own file rather than an addition to
+    Thoughts_Memories.xml, for the reason CLAUDE.md gives: the loader reads every file under this directory
+    and a new file cannot conflict with another lane mid-edit on the shared one.
+
+    A memory rather than a situational thought, as RimWorld's is: a pawn who runs inside is still wet for a
+    while. durationDays and baseMoodEffect are RimWorld's shapes recalled, not sourced; the weather tests pin
+    that standing out in the rain costs mood and that going inside stops it getting worse, never the numbers.
+    WeatherManager.ExposedThoughtIntervalTicks decides how often a pawn still outside renews it, and
+    stackLimit 1 means renewing never stacks.
+  -->
+
+  <ThoughtDef>
+    <defName>SoakingWet</defName>
+    <durationDays>0.25</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>soaking wet</label>
+        <description>I am drenched. Water is running down my back.</description>
+        <baseMoodEffect>-8</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>
