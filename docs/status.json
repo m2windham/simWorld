@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1296,
+  "testsTotal": 1350,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -666,7 +666,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Work · Pawns · Stats",
       "status": "translated",
-      "tests": 37,
+      "tests": 65,
       "items": [
         {
           "id": "work.skills",
@@ -716,6 +716,11 @@
         {
           "id": "work.policy",
           "label": "Translation: policy/role-driven priorities at civ scale — RoleDef.emphasizedWorkTypes; Pawn_WorkSettings.SetRole/ApplyRole write emphasized types to top priority and everything else to default, skipping any work type a caller set directly (manualPriorities) so a role never overwrites a person's own preference and un-assigning one leaves no trace; WorkPolicyUtility.ApplyRoleToPopulation applies a role across a whole population at once. Four roles ship as content (Farmer, Miner, Artisan, Scholar).",
+          "done": true
+        },
+        {
+          "id": "work.repairplantscut",
+          "label": "Repair and PlantsCut wired (23 of 28 work givers now carry a real giverClass). Both translate away a Designation system this port does not have: Repair scans any damaged artificial building because Thing carries no faction field, PlantsCut derives its targets from growing zones and construction cells",
           "done": true
         }
       ]
@@ -1023,7 +1028,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 124,
+      "tests": 132,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1063,6 +1068,11 @@
         {
           "id": "economy.diplomacy",
           "label": "Translation: civilization diplomacy — treaties, wars and trade routes between civilizations",
+          "done": true
+        },
+        {
+          "id": "economy.billreservation",
+          "label": "Bills reserve their chosen ingredient stacks, not just the bench: Job target queues, ReservationManager stack counts and Toils_Reserve.ReserveQueue ported from RimWorld, so two crafters can no longer both spend one pile",
           "done": true
         }
       ]
@@ -1353,11 +1363,11 @@
       "id": "god",
       "n": 22,
       "rimworld": "God Layer & Civilization Translation",
-      "translation": "SimWorld's own — RimWorld has no equivalent to port. The re-focus from §10: the player is not a colony overseer but a god directing one civilization, so the player's own verb changes from drafting individuals to issuing standing civilization-scale edicts and reading aggregate rollups. Kept in RimWorld's own declarative shapes throughout even though the concept is new: Def + Worker + Class= polymorphism for EdictDef/EdictWorker (mirroring WorkGiverDef/WorkGiver and ThoughtDef/ThoughtWorker), IExposable for GodManager, a Find service exactly like Find.Storyteller/Find.ResearchManager, and a think-tree job-giver node for the work push rather than a bespoke priority mechanism. The mood consequence reuses the existing situational-thought pipeline (ThoughtWorker_UnderEdict) instead of inventing a second one, so an edict's cost to public mood appears and disappears with activation on its own, the same way every other situational thought already does.",
+      "translation": "SimWorld's own — RimWorld has no equivalent to port. The re-focus from §10: the player is not a colony overseer but a god directing one civilization, so the player's own verb changes from drafting individuals to issuing standing civilization-scale edicts and reading aggregate rollups. Kept in RimWorld's own declarative shapes throughout even though the concept is new: Def + Worker + Class= polymorphism for EdictDef/EdictWorker (mirroring WorkGiverDef/WorkGiver and ThoughtDef/ThoughtWorker), IExposable for GodManager, a Find service exactly like Find.Storyteller/Find.ResearchManager, and a think-tree job-giver node for the work push rather than a bespoke priority mechanism. The mood consequence reuses the existing situational-thought pipeline (ThoughtWorker_UnderEdict) instead of inventing a second one, so an edict's cost to public mood appears and disappears with activation on its own, the same way every other situational thought already does. Attention, the trigger the citizen tiering was built around, is defined as the god's focus: zero or one settlement the player has open, named across the host seam by its world tile because Settlement.name is not unique. God.AttentionManager applies focus changes immediately and reconciles periodically from GodManager.GodTick, so a settlement founded or a citizen born between focus changes is still placed at the right tier. A second, narrower translation rides with it: the Interval->Statistical settle is by elapsed insignificance (TieringTuning.IntervalSettleTicks, one game year, SimWorld's own — RimWorld has no middle tier to wait in), while promotion stays by significance alone.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/God · EdictDef · EdictWorker · EdictWorker_ExemptMinors · ThoughtWorker_UnderEdict · GodManager · GodRollup · GodTuning; src/SimWorld.Core/AI/JobGiver_Edicts.cs · WorkGiverScanUtility.cs (shared with JobGiver_Work)",
       "status": "translated",
-      "tests": 42,
+      "tests": 60,
       "items": [
         {
           "id": "god.edicts",
@@ -1403,6 +1413,16 @@
           "id": "god.era-transitions",
           "label": "GodManager subscribes to ResearchManager.EraReached (constructor for a fresh civilization, ExposeData's PostLoadInit branch for a loaded one, both through the idempotent EnsureSubscribedToEraTransitions so a loaded save can never end up doubly subscribed — proved by test) and reacts on every crossing: EdictDef gained obsoleteEra, the mirror of requiredEra (same minEra/maxEra symmetry as IncidentDef in Director/IncidentDefs.cs, but >= rather than >, since reaching the named era is itself the retirement moment per the brief) — an active edict past its obsoleteEra auto-deactivates with its own \"Edict outgrown\" Chronicle line. Separately, one \"New edicts available\" Chronicle line names every edict the crossing newly unlocks (never one per edict, never written when nothing unlocked). HuntersMandate ships with obsoleteEra=Agrarian as real content proving the mechanism, not just an ad-hoc test def.",
           "done": true
+        },
+        {
+          "id": "god.attention",
+          "label": "Attention wired: God.AttentionManager drives Pawn_TierTracker.Notify_AttentionChanged from a settlement focus, GodCommands.FocusSettlement/ClearSettlementFocus is the host's write path, GodViewSnapshot.FocusedSettlementTile reads it back, and unattended citizens settle Interval->Statistical after a year of insignificance",
+          "done": true
+        },
+        {
+          "id": "god.fullcap",
+          "label": "Measured: focus bounds Full-tier to one settlement's live roster, which is itself unbounded in time — demography doubles it about every 17 years, crossing the spec's Full ceiling around year 115-125. A per-settlement Full cap needs a significance ordering that does not exist yet; recorded, not invented",
+          "done": false
         }
       ]
     }

@@ -270,7 +270,7 @@ namespace SimWorld.Sim
 
             SimWorld.Factions.Faction playerFaction = ResolvePlayerFaction(scenario, world);
 
-            int tile = startTile ?? PickStartingTile(world.grid);
+            int tile = startTile ?? PickStartingTile(world);
             int actualBandSize = bandSize ?? Rand.Current.Range(SimWorld.World.SettlementTuning.FoundingBandRange);
             var foundingRand = new RandomStream(SimWorld.World.GenText.StableStringHash(seedString + "|founding"));
 
@@ -355,21 +355,62 @@ namespace SimWorld.Sim
             throw new InvalidOperationException("World generation produced no factions to found a settlement for.");
         }
 
-        /// <summary>Best-scored non-water tile by the earliest loaded <see cref="SimWorld.World.Siting.SiteWeightDef"/>
+        /// <summary>
+        /// Best-scored non-water tile by the earliest loaded <see cref="SimWorld.World.Siting.SiteWeightDef"/>
         /// (the same convention <c>SettlementTests.BestScoredTile</c>/<c>FullStackTests</c> already use for a
-        /// deterministic default founding site).</summary>
-        private static int PickStartingTile(SimWorld.World.WorldGrid grid)
+        /// deterministic default founding site), at least
+        /// <see cref="SimWorld.World.Gen.WorldGenStep_Factions.MinSettlementDistance"/> tiles from every
+        /// settlement the world already placed.
+        ///
+        /// <para/><b>The spacing rule is not decoration.</b> Every other founding path obeys it —
+        /// <see cref="SimWorld.World.Gen.WorldGenStep_Factions"/> at world generation and
+        /// <see cref="SimWorld.World.EmergenceManager"/> for settlements that emerge later — and this one did
+        /// not, so on a non-solo start the player's settlement could be founded on, or beside, a
+        /// world-generated one. Besides being implausible, a shared tile breaks the uniqueness that
+        /// <see cref="God.AttentionManager"/> relies on to name a settlement by its tile: focusing that tile
+        /// would attend both.
+        ///
+        /// <para/>Falls back to the best-scored habitable tile when no candidate clears the spacing — a
+        /// crowded world should still start a game rather than refuse to, and the fallback is the behaviour
+        /// this method had before the rule existed.
+        /// </summary>
+        private static int PickStartingTile(SimWorld.World.World world)
         {
+            SimWorld.World.WorldGrid grid = world.grid;
             SimWorld.World.Siting.SiteWeightDef weights = DefDatabase<SimWorld.World.Siting.SiteWeightDef>.AllDefsListForReading
                 .OrderBy(w => w.era?.order ?? int.MaxValue)
                 .First();
 
+            var taken = new List<int>();
+            foreach (SimWorld.World.WorldObject obj in world.worldObjects)
+            {
+                if (obj is SimWorld.World.Settlement) taken.Add(obj.tile);
+            }
+            int minDistance = SimWorld.World.Gen.WorldGenStep_Factions.MinSettlementDistance(grid.TilesCount);
+
             int best = -1;
             float bestScore = float.NegativeInfinity;
+            int bestIgnoringSpacing = -1;
+            float bestScoreIgnoringSpacing = float.NegativeInfinity;
+
             for (int i = 0; i < grid.TilesCount; i++)
             {
                 if (grid.Tiles[i].WaterCovered) continue;
                 float score = SimWorld.World.Siting.SiteScorer.Score(grid, i, weights);
+
+                if (score > bestScoreIgnoringSpacing)
+                {
+                    bestScoreIgnoringSpacing = score;
+                    bestIgnoringSpacing = i;
+                }
+
+                bool tooClose = false;
+                for (int t = 0; t < taken.Count; t++)
+                {
+                    if (grid.ApproxDistanceInTiles(i, taken[t]) < minDistance) { tooClose = true; break; }
+                }
+                if (tooClose) continue;
+
                 if (score > bestScore)
                 {
                     bestScore = score;
@@ -377,8 +418,9 @@ namespace SimWorld.Sim
                 }
             }
 
-            if (best < 0) throw new InvalidOperationException("World generation produced no habitable tile to found a settlement on.");
-            return best;
+            if (best >= 0) return best;
+            if (bestIgnoringSpacing >= 0) return bestIgnoringSpacing;
+            throw new InvalidOperationException("World generation produced no habitable tile to found a settlement on.");
         }
 
         // ---- tick order (spec §4: pre-tickers -> normal -> rare -> long -> post-tickers) ----
