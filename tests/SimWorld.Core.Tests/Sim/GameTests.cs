@@ -140,10 +140,11 @@ namespace SimWorld.Tests.Sim
             Game game = NewSoloGame();
 
             Assert.Single(game.TickManager.PreTickers);
-            // 14 since the works initiative joined them (SimWorld.Building.SettlementWorksInitiative.Tick —
-            // the research bench and the art), after the stonework initiative
-            // (SimWorld.Crafting.StonecutterInitiative.Tick) made it 13.
-            Assert.Equal(14, game.TickManager.PostTickers.Count);
+            // 16 since the map-to-ledger seam and the industry it feeds joined them
+            // (SimWorld.Economy.SettlementStockInitiative.Tick and SimWorld.Crafting.GuildInitiative.Tick),
+            // after the works initiative (SimWorld.Building.SettlementWorksInitiative.Tick) made it 14 and the
+            // stonework initiative (SimWorld.Crafting.StonecutterInitiative.Tick) made it 13.
+            Assert.Equal(16, game.TickManager.PostTickers.Count);
         }
 
         [Fact]

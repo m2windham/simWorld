@@ -445,6 +445,16 @@ namespace SimWorld.Sim
             tm.PostTickers.Add(_ => Storyteller.StorytellerTick());
             tm.PostTickers.Add(_ => SocialTick());
             tm.PostTickers.Add(_ => God.GodTick());
+            // economy.stock: the seam between the two halves of the game. What a watched settlement mines,
+            // grows and crafts and then hauls into its own granary stops being a Thing on a map and becomes a
+            // count in Settlement.Stores — the civilization's ledger, which until now nothing on any map could
+            // ever credit. Ordered ahead of the guild tick below so the goods a settlement banked this pass are
+            // the goods its industry spends this pass, rather than a guild-interval behind.
+            tm.PostTickers.Add(_ => SimWorld.Economy.SettlementStockInitiative.Tick());
+            // crafting.guilds: settlements establish, staff and bill the industries their civilization knows
+            // the trades for. GuildManager.Establish had no caller in src/ at all, so the tick below ran over
+            // an empty list for the life of every game. Ordered immediately before it for the same reason.
+            tm.PostTickers.Add(_ => SimWorld.Crafting.GuildInitiative.Tick());
             tm.PostTickers.Add(_ => Guilds.GuildManagerTick());
             // building.initiative: settlements decide what they lack and queue the blueprints for it. Self
             // gated on the rare tick like the managers above, so a tick it is not due on costs a modulo.
