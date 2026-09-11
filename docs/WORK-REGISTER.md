@@ -39,76 +39,72 @@ Unclaimed items below are open. Taking one means claiming it first.
 
 ## Immediate steps: this repo (core)
 
-Ordered by what blocks the most. The first is much larger than the other two and is
-the honest state of the game right now.
+Ordered by what blocks the most. The history below each heading is kept deliberately —
+the original finding is what makes the progress legible.
 
-### 1. Seven work types have no worker — down from eighteen
+### 1. Four work types have no worker — down from eighteen
 
-**Updated.** Four lanes wired eleven of the eighteen: hauling, research, the four
-crafting-bill givers plus cooking, and four of the doctor family. Work givers carrying a
-real `giverClass` went from 10 of 28 to **21 of 28**.
+Work givers carrying a real `giverClass` have gone **10 of 28 → 24 of 28** across two
+batches. A settlement can now haul, research at a bench, craft and cook, treat, rescue
+and feed its wounded, hunt, repair what it built and clear plants out of its own way.
 
-A settlement can now haul, research at a bench, craft and cook at benches, and treat,
-rescue and feed its wounded — none of which it could do before.
+Four remain bare, and three are not work to do. `HaulCorpses`, `CleanFilth` and
+`FightFires` have no `Corpse`, `Filth` or `Fire` class anywhere in this codebase: they
+are blocked on systems that do not exist, and a stub worker would be worse than the
+honest gap. `WardenDeliverFood` is deliberately left — `DoctorFeedHumanlikes` reuses its
+mechanism with a different target filter.
 
-Seven remain bare, and three of those are not work to do. `HaulCorpses`, `CleanFilth` and
-`FightFires` have no `Corpse`, `Filth` or `Fire` class anywhere in this codebase: they are
-blocked on systems that do not exist, and a stub worker would be worse than the honest
-gap. `WardenDeliverFood` is deliberately left — `DoctorFeedHumanlikes` reuses its
-mechanism with a different target filter, and the two would race one reservation.
-`Hunt`, `Repair` and `PlantsCut` are simply next.
+**Hunting was wired and dormant for one batch.** `WorkGiver_Hunt` requires a ranged
+weapon, `SettlementFounder` generates every citizen as `Tribesperson`, and that kind
+shipped with no `weaponTags` — so no citizen in any generated game held a weapon. Every
+unit test of the mechanism passed, because they arm their own pawns. Worth remembering as
+a shape: a wired giver plus content that cannot reach it looks exactly like a finished
+feature.
 
-Known gaps inside what did land, recorded rather than discovered later: crafting reserves
-the bench but not individual ingredient stacks, so a second consumer can take the pile
-between a job being offered and finishing; `DoBillsArt` is wired but has no bench, since a
-sculpture needs a beauty and quality subsystem this port has not built; a pawn never tends
-itself, matching RimWorld, so a lone injured citizen with nobody else around goes
-untended.
+Known gaps inside what landed: `DoBillsArt` is wired with no bench, since sculpture needs
+a beauty and quality subsystem this port has not built; a pawn never tends itself,
+matching RimWorld, so a lone injured citizen with nobody around goes untended; a hunted
+animal cannot fight back, because no attack `Job` or `JobGiver` exists anywhere. Bill
+ingredient reservation, listed here as a gap last batch, is **closed**.
 
 ### The original finding, for the record
 
-### 1. Eighteen work types have no worker
+Ten `WorkGiverDef`s carried a `giverClass`. **Eighteen carried none at all**, so the work
+type existed in content, appeared in a pawn's priorities, and could never produce a job. A
+settlement could build, farm, mine, tame animals and hold prisoners, and could not haul,
+cook, craft at a bench, treat an injury, or research anything — the tech tree, the era
+ladder and the divergence work all stood above a research work type no citizen could
+perform.
 
-Ten `WorkGiverDef`s in `Data/Core/Defs/WorkGiverDefs/` carry a `giverClass`.
-**Eighteen carry none at all**, so the work type exists in content, appears in a
-pawn's priorities, and can never produce a job.
+### 2. Attention drives the tiering — done, and it does not bound enough
 
-Wired: `ConstructFinishFrames`, `ConstructDeliverResourcesToFrames`,
-`ConstructDeliverResourcesToBlueprints`, `GrowerSow`, `GrowerHarvest`, `Mine`,
-`TameAnimals`, `TrainAnimals`, `WardenFeed`, `WardenAttemptRecruit`.
+**Wired.** Attention is the god's focus: zero or one settlement, named across the host
+seam by world tile. `God.AttentionManager` applies focus changes immediately and
+reconciles from `GodManager.GodTick`; citizens of unattended settlements fall to Interval
+and settle to Statistical after a year of continuous insignificance.
 
-Unwired: `HaulGeneral`, `HaulCorpses`, `CookMeals`, `Research`, `DoBillsSmith`,
-`DoBillsTailor`, `DoBillsArt`, `DoBillsCraft`, `DoctorTend`, `DoctorTendEmergency`,
-`DoctorRescue`, `DoctorFeedHumanlikes`, `WardenDeliverFood`, `CleanFilth`, `Repair`,
-`PlantsCut`, `Hunt`, `FightFires`.
+What the measurement then showed is the part that matters. Focus bounds Full-tier to **one
+settlement's live roster**, which is itself unbounded in time — demography doubles it
+about every 17 years, and it crosses the spec's Full ceiling around **year 115–125**:
 
-A settlement can therefore build, farm, mine, tame animals and hold prisoners, and
-cannot haul, cook, craft at a bench, treat an injury, or research anything. The tech
-tree, the era ladder and the divergence work all exist above a research work type
-that no citizen can perform.
+| year             | 10 | 40  | 60  | 80  | 100   | 120   | 160    |
+| ---------------- | -- | --- | --- | --- | ----- | ----- | ------ |
+| Full-tier roster | 67 | 163 | 300 | 656 | 1,412 | 3,179 | 16,868 |
 
-Suggested order, by what unlocks the most behind it: `HaulGeneral` (most other work
-assumes things can be moved), then `Research` (it gates the whole progression
-pillar), then `DoBills*` (the crafting module has recipes and benches and no one to
-run them), then `CookMeals` and the `Doctor*` family.
+The fix is a Full-tier cap **inside** the focused settlement — keep the N most significant
+at Full, hold the rest at Interval even while attended. It is unclaimed and it needs a
+decision first: a **significance ordering** between the four promotion reasons (role,
+chronicle mention, relation, attention), which does not exist. Nothing ranks them today.
 
-### 2. Attention never changes a citizen's tier
-
-`Pawn_TierTracker.Notify_AttentionChanged` is not called anywhere. The promote and
-demote mechanism is built and tested; nothing drives it. In practice every founded
-citizen stays Full forever, so the tiering that exists to bound Full-tier population
-does not bound anything. This is what the `HealthTick` work (PR #45) bought headroom
-for, and the headroom is currently unspent.
-
-Wiring it means deciding what "attention" is — entering a settlement, a camera
-scope, an explicit selection — which is a design decision touching both repos, not a
-mechanical fix.
+Two related holes, both unclaimed: `Notify_RoleChanged` has no caller because no Role
+system exists, and `Notify_ChronicleNamed` has no policy for what earns a citizen
+individual distinction. Attention is currently the only one of the four actually driven.
 
 ### 3. "Endless" is three tracks deep
 
-`EndlessResearch` generates three tracks of three authored titles before it falls
-back to appending numerals. "Endless technology" is a stated pillar of the game; a
-player who reaches the end of the authored tree currently finds Roman numerals.
+`EndlessResearch` generates three tracks of three authored titles before falling back to
+appending numerals. "Endless technology" is a stated pillar; a player who reaches the end
+of the authored tree currently finds Roman numerals. A lane is on this.
 
 ## Immediate steps: the host repo — unclaimed, proposed
 
@@ -177,19 +173,32 @@ remote is not pushing to the shared repo — a narrower thing is being held than
 
 ### Proposed next, in order
 
-1. **Start a real game and report what the snapshot contains.** `Game.NewGame`, tribal start,
-   run long enough that something happens. Population by tier, era and progress, whether the
-   means look sane, whether the chronicle fills, whether settlements come with interior maps.
-   This is a report rather than a feature: the host can see it and the core cannot, and two
-   core bugs have now been found this way.
-2. **Expect every citizen to read as `Full`.** Nothing drives the tiering yet. A core lane is
-   fixing that and will land a focus concept — the god focuses zero or one settlement, and that
-   is what attention means. **The host should not build its own notion of a selected
-   settlement**; two disagreeing ideas of what the player is looking at is a bug that will take
-   a week to find.
-3. **Then the civilization view proper.** Settlements, population, era, chronicle.
-   `GodViewSnapshot` carries all of it, and `RecentHistory` versus `Moments` deserves different
-   treatment on screen — running news against the civilization's landmarks.
+1. **Load content — the core now finds it by itself.** `CoreContent` could never locate
+   content inside a Unity package: it probed `SIMWORLD_DATA`, a `Data/` beside the
+   assembly, and a walk up for `src/SimWorld.Core/Data`, and from
+   `Library/ScriptAssemblies` every one of those stays inside the host project. A package
+   resolved by relative path to a sibling repo was unreachable by construction. Fixed:
+   `TryResolveFromUnityPackageManifest` reads `Packages/manifest.json` and resolves `file:`
+   dependencies against the `Packages` folder. Also new: an explicit `dataDirectory`
+   argument on `Load`/`AddCoreDefs` (better than the environment variable), a hard throw on
+   a Defs directory with no XML, and `DescribeSearch()` for the failure message. The host's
+   own zero-edict guard is worth keeping — it checks the outcome, not the mechanism.
+2. **Start a real game and report what the snapshot contains.** `Game.NewGame`, tribal
+   start, run long enough that something happens. Population by tier, era and progress,
+   whether the chronicle fills, whether settlements come with interior maps. A report
+   rather than a feature: the host can see this and the core cannot, and two core bugs
+   have now been found this way.
+3. **Focus has landed — drive it, do not reinvent it.** The earlier note said to expect
+   every citizen at `Full` because nothing drove the tiering. That is no longer true.
+   `GodCommands.FocusSettlement(int tile)` and `ClearSettlementFocus()` are the write path,
+   `GodViewSnapshot.FocusedSettlementTile` reads it back, and a settlement is named by its
+   **world tile** rather than its name, which is not unique. The host should not carry its
+   own idea of a selected settlement: two disagreeing notions of what the player is looking
+   at is a bug that takes a week to find. Expect a focused settlement's citizens at `Full`
+   and everyone else falling to `Interval`, then `Statistical` after a year.
+4. **Then the civilization view proper.** Settlements, population by tier, era, chronicle.
+   `GodViewSnapshot` carries all of it, and `RecentHistory` versus `Moments` deserves
+   different treatment on screen — running news against the civilization's landmarks.
 
 ## The honest summary
 
