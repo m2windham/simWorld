@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1350,
+  "testsTotal": 1374,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -720,7 +720,7 @@
         },
         {
           "id": "work.repairplantscut",
-          "label": "Repair and PlantsCut wired (23 of 28 work givers now carry a real giverClass). Both translate away a Designation system this port does not have: Repair scans any damaged artificial building because Thing carries no faction field, PlantsCut derives its targets from growing zones and construction cells",
+          "label": "Repair and PlantsCut wired (24 of 28 work givers (Hunt landed alongside) now carry a real giverClass). Both translate away a Designation system this port does not have: Repair scans any damaged artificial building because Thing carries no faction field, PlantsCut derives its targets from growing zones and construction cells",
           "done": true
         }
       ]
@@ -729,11 +729,11 @@
       "id": "ai",
       "n": 10,
       "rimworld": "AI: Think Tree / Job System",
-      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor.",
+      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor. Hunting carries two civilization-scale translations of its own. There is no Designation system, so AI.HuntingInitiative decides for the settlement: hunt while short of food, stop when not — the shape SettlementConstructionInitiative already set. And there is no Corpse class, so the hunt's last toil butchers at the kill site through the shipped recipe and HaulGeneral carries the meat home, reaching RimWorld's end state by the only route this port has.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 69,
+      "tests": 93,
       "items": [
         {
           "id": "ai.thinktree",
@@ -788,6 +788,16 @@
         {
           "id": "ai.rest",
           "label": "JobGiver_GetRest claims a real bed before falling back to the ground: AI.RestUtility.FindBedFor is a trim of RimWorld's own RestUtility.FindBedFor (nearest reachable, unclaimed Building.ConstructionThingDefOf.Bed — no owned/medical/prisoner bed distinctions exist yet, so every bed is open to anyone), reserved like any other claimed target (Toils_Reserve.Reserve) so two pawns never converge on the same one. JobDriver_LayDown walks to whichever target it got — a bed or the pawn's own position — and sets Need_Rest.lastRestEffectiveness from Need_Rest.BedRestEffectiveness (unsourced constant, chosen only to sit above the ground's own documented 1 and pinned by a test that a bed rests a pawn faster than the ground, never trusted as the literal) once there. No ownership/assignment UI — RimWorld's own CompAssignableToPawn — was built; a bed is first-come, matching what this port's Bed content actually needs.",
+          "done": true
+        },
+        {
+          "id": "ai.hunt",
+          "label": "Hunt wired (WorkGiver_Hunt, JobDriver_Hunt, HuntingInitiative). Combat drives from a toil with no change to the Verb module; prey more than twice the hunter's BodySize is refused; an animal's revenge breaks off the hunt but it cannot fight back — no attack Job or JobGiver exists anywhere in this codebase",
+          "done": true
+        },
+        {
+          "id": "ai.hunt.dormancy",
+          "label": "Shipped content can actually hunt: Tribesperson, the kind SettlementFounder generates every citizen as, carried no weaponTags, so no citizen in any generated game held a weapon and the Hunt giver was wired and permanently dormant. Guarded by a test that arms nobody",
           "done": true
         }
       ]

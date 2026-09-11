@@ -39,6 +39,21 @@
     </backstoryCategories>
     <combatPower>50</combatPower>
     <isFighter>true</isFighter>
+    <!-- SettlementFounder generates every founding citizen as a Tribesperson, and this kind carried no
+         weaponTags at all — so PawnWeaponGenerator returned early for all of them and no citizen anywhere
+         in a generated game held a weapon. That made the Hunt work giver permanently dormant: it requires a
+         ranged weapon, as RimWorld's HasHuntingWeapon does. The work type was wired and could never fire.
+
+         A hunting band carries bows. Both tags are listed rather than Neolithic alone because
+         PawnWeaponGenerator already caps candidates at ThingDef.techLevel <= faction.def.techLevel, so one
+         kind covers a civilization at any rung of the ladder without a second PawnKindDef — RimWorld's own
+         mechanism for keeping a neolithic faction off assault rifles. The budget stops short of one (350):
+         these are hunters, not soldiers. -->
+    <weaponTags>
+      <li>NeolithicRangedWeapon</li>
+      <li>IndustrialRangedWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>0~200</weaponMoneyRange>
     <apparelTags>
       <li>Tribal</li>
     </apparelTags>
