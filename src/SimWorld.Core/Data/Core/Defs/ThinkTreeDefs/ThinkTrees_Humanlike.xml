@@ -29,6 +29,17 @@
           </subNodes>
         </li>
 
+        <!--
+          The danger tier the header above already promised ("danger/mental-state overrides needs") and this
+          file did not have until the combat lane added it: a hostile within reach outranks eating, sleeping,
+          a directed order, an edict and routine work. Above needs deliberately — RimWorld puts reaction to
+          threat high, and a citizen who stops to eat while a raider closes is not modelling anything. Below
+          the mental-state tier because that one pre-empts the whole tree by design (see its own comment), and
+          a berserk pawn is already doing something violent. Who this actually fires for is
+          SimWorld.AI.CombatPostureUtility's subject — it is where the draft went.
+        -->
+        <li Class="SimWorld.AI.JobGiver_AIFightEnemies" />
+
         <li Class="SimWorld.AI.ThinkNode_ConditionalHungry">
           <subNodes>
             <li Class="SimWorld.AI.JobGiver_GetFood" />

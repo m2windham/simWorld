@@ -67,13 +67,17 @@ namespace SimWorld.Tests.AI
             // — see JobGiver_Edicts's own doc for why that position is §10's "citizens keep full agency"
             // clause made concrete: a need or a queued order still pre-empts a standing edict, and an edict
             // still only ever pre-empts routine work, never the other way around.
+            // The combat tier (system 9: AI — combat) was then inserted above needs, filling the "danger"
+            // slot this test's own name has always claimed and the tree file's header comment always
+            // promised — see JobGiver_AIFightEnemies and CombatPostureUtility.
             var root = (ThinkNode_Priority)ThinkTreeDefOf.Humanlike.thinkRoot;
             Assert.IsType<ThinkNode_ConditionalInMentalState>(root.subNodes[0]);
-            Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[1]);
-            Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[2]);
-            Assert.IsType<JobGiver_DirectedOrder>(root.subNodes[3]);
-            Assert.IsType<global::SimWorld.AI.JobGiver_Edicts>(root.subNodes[4]);
-            Assert.IsType<JobGiver_Work>(root.subNodes[5]);
+            Assert.IsType<JobGiver_AIFightEnemies>(root.subNodes[1]);
+            Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[2]);
+            Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[3]);
+            Assert.IsType<JobGiver_DirectedOrder>(root.subNodes[4]);
+            Assert.IsType<global::SimWorld.AI.JobGiver_Edicts>(root.subNodes[5]);
+            Assert.IsType<JobGiver_Work>(root.subNodes[6]);
         }
 
         [Fact]

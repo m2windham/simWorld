@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The think tree's combat tier (system 9: AI — combat). Its own file rather than two more entries in
+    JobDefs_Core.xml: DefLoader.AddDirectory loads every XML file under a Def folder recursively, so an
+    additive JobDef needs no edit to a shared file (CLAUDE.md). JobDefs_Hunting.xml / JobDefs_Hauling.xml /
+    JobDefs_Research.xml alongside it do the same. Bound by SimWorld.AI.CombatAIDefOf.
+
+    Two jobs and not one, matching RimWorld: which one a pawn gets is decided once, by
+    JobGiver_AIFightEnemies, from the verb it is going to use — a job that changed its mind mid-run about
+    whether it was a melee or a ranged fight could not be saved coherently.
+  -->
+
+  <JobDef>
+    <defName>AttackMelee</defName>
+    <driverClass>SimWorld.AI.JobDriver_AttackMelee</driverClass>
+    <reportString>attacking.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>AttackStatic</defName>
+    <driverClass>SimWorld.AI.JobDriver_AttackStatic</driverClass>
+    <reportString>shooting.</reportString>
+  </JobDef>
+
+</Defs>

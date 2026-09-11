@@ -17,11 +17,28 @@
     <thinkRoot Class="SimWorld.AI.ThinkNode_Priority">
       <subNodes>
 
+        <!--
+          The angry tier now has somewhere to route to. It was always meant to be a manhunter: both a failed
+          tame and wounded prey set angryAt, and this tier read it — but with no attack job in the codebase
+          the only honest thing to route to was a wander (HuntUtility.TryProvokeRevenge says so in as many
+          words: "The animal does not fight back"). JobGiver_Manhunter is that job; the wander stays behind it
+          so a grudge whose target has died, gone down or left the map still falls through to something rather
+          than dropping the animal to the flee tier below.
+        -->
         <li Class="SimWorld.AI.ThinkNode_ConditionalAngryAtHandler">
           <subNodes>
+            <li Class="SimWorld.AI.JobGiver_Manhunter" />
             <li Class="SimWorld.AI.JobGiver_WanderAnywhere" />
           </subNodes>
         </li>
+
+        <!--
+          A tamed animal defends its own faction, above fleeing and above its own needs — the same danger-over-
+          needs ordering the humanlike tree uses. A wild animal has no faction, so nothing is ever hostile to
+          it by relation (SimWorld.AI.AttackTargetsUtility.HostileTo) and this tier is a strict no-op for one:
+          a wild animal still flees on the next tier down, exactly as it always did.
+        -->
+        <li Class="SimWorld.AI.JobGiver_AIFightEnemies" />
 
         <li Class="SimWorld.AI.JobGiver_AnimalFlee" />
 
