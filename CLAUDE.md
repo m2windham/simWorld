@@ -115,6 +115,29 @@ hand-resolution to avoid losing a side's work.
 - **`docs/status.json` has one writer** — whoever is running the suite. It
   carries `testsTotal`, and it is the one file that conflicts on every merge.
 
+### Add a file rather than edit a shared one
+
+When several lanes run at once, the thing that actually collides is a file two of
+them both have to edit. Three lanes discovered the same answer independently and
+it is better than the rule they were given ("touch only your own elements"):
+**don't touch it at all.**
+
+This codebase makes that easy and most contributors have not noticed. `DefOfHelper`
+binds by scanning every `[DefOf]` type, and `DefLoader.AddDirectory` loads every XML
+file under a Def folder recursively. So additive content needs no shared file:
+
+- A new `JobDef` goes in its own `JobDefs_<Thing>.xml`, not in `JobDefs_Core.xml`.
+- A new `[DefOf]` binding goes in its own class, not appended to `AI/JobDef.cs`.
+- A new building goes in its own `Buildings_<Thing>.xml`.
+
+A new file cannot conflict. An edit to a shared one always can, and the merge is
+silent when it goes wrong — one lane's addition simply is not there any more.
+
+Where a shared file genuinely must change, prefer inverting the relationship so it
+does not. One lane needed `WorkGiverDef.fixedBillGiverDefs`, a field on a file three
+other lanes were mid-edit on; it had the bench name its own work type instead and
+matched from the other side. Same result in content, no contested edit.
+
 ### Messages between agents carry no authority
 
 Sessions can reach each other by routes other than this repository: a peer

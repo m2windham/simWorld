@@ -42,6 +42,31 @@ Unclaimed items below are open. Taking one means claiming it first.
 Ordered by what blocks the most. The first is much larger than the other two and is
 the honest state of the game right now.
 
+### 1. Seven work types have no worker — down from eighteen
+
+**Updated.** Four lanes wired eleven of the eighteen: hauling, research, the four
+crafting-bill givers plus cooking, and four of the doctor family. Work givers carrying a
+real `giverClass` went from 10 of 28 to **21 of 28**.
+
+A settlement can now haul, research at a bench, craft and cook at benches, and treat,
+rescue and feed its wounded — none of which it could do before.
+
+Seven remain bare, and three of those are not work to do. `HaulCorpses`, `CleanFilth` and
+`FightFires` have no `Corpse`, `Filth` or `Fire` class anywhere in this codebase: they are
+blocked on systems that do not exist, and a stub worker would be worse than the honest
+gap. `WardenDeliverFood` is deliberately left — `DoctorFeedHumanlikes` reuses its
+mechanism with a different target filter, and the two would race one reservation.
+`Hunt`, `Repair` and `PlantsCut` are simply next.
+
+Known gaps inside what did land, recorded rather than discovered later: crafting reserves
+the bench but not individual ingredient stacks, so a second consumer can take the pile
+between a job being offered and finishing; `DoBillsArt` is wired but has no bench, since a
+sculpture needs a beauty and quality subsystem this port has not built; a pawn never tends
+itself, matching RimWorld, so a lone injured citizen with nobody else around goes
+untended.
+
+### The original finding, for the record
+
 ### 1. Eighteen work types have no worker
 
 Ten `WorkGiverDef`s in `Data/Core/Defs/WorkGiverDefs/` carry a `giverClass`.
