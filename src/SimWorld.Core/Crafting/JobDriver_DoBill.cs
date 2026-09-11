@@ -8,10 +8,14 @@ using SimWorld.Things;
 namespace SimWorld.Crafting
 {
     /// <summary>
-    /// Spends work ticks on the bill <see cref="WorkGiver_DoBill"/> found runnable, then consumes ingredients
-    /// and spawns the product (RimWorld: <c>RimWorld.JobDriver_DoBill</c>, trimmed to this port's
-    /// single-target <see cref="Job"/> — see <see cref="WorkGiver_DoBill"/>'s own remarks for why ingredient
-    /// delivery is not this driver's job). One iteration per job, the same shape every other work-and-produce
+    /// Spends work ticks on the bill <see cref="WorkGiver_DoBill"/> found runnable, then consumes the exact
+    /// ingredient stacks that bill was offered on and spawns the product (RimWorld:
+    /// <c>RimWorld.JobDriver_DoBill</c>, minus the walk out to fetch them — see <see cref="WorkGiver_DoBill"/>'s
+    /// own remarks for why ingredient delivery is not this driver's job). Those stacks arrive on the job in
+    /// <see cref="Job.targetQueueB"/>/<see cref="Job.countQueue"/> and are reserved by
+    /// <see cref="Toils_Reserve.ReserveQueue"/> before a single tick of work is spent, which is what keeps a
+    /// second bench's bill — or a hauler — from spending the same pile mid-recipe.
+    /// One iteration per job, the same shape every other work-and-produce
     /// driver this port ships uses (<see cref="Building.JobDriver_ConstructFinishFrame"/>,
     /// <see cref="Building.JobDriver_Harvest"/>): <see cref="AI.JobGiver_Work"/> simply re-issues this
     /// WorkGiver on its next scan if the bill still wants doing.
@@ -36,16 +40,42 @@ namespace SimWorld.Crafting
             new CurvePoint(20, 1.8f),
         });
 
-        public override bool TryMakePreToilReservations() =>
-            pawn.Map != null && pawn.Map.reservationManager.CanReserve(pawn, job.GetTarget(TargetIndex.A));
+        /// <summary>
+        /// The bench and every ingredient stack the giver chose must be claimable before this job starts
+        /// (RimWorld: <c>JobDriver_DoBill.TryMakePreToilReservations</c> reserves target A and then calls
+        /// <c>ReserveAsManyAsPossible</c> over target queue B).
+        /// <b>Deviation:</b> RimWorld tolerates losing some of the queue there, because its pawn walks out and
+        /// picks the ingredients up — whatever it is holding when it reaches the bench is what the recipe gets.
+        /// This port leaves them on the ground until the recipe finishes (see <see cref="WorkGiver_DoBill"/>'s
+        /// remarks), so an ingredient it cannot claim is one the recipe will not have at the finish line, and
+        /// the honest answer is to refuse the job now rather than burn the work.
+        /// </summary>
+        public override bool TryMakePreToilReservations()
+        {
+            Map.Map? map = pawn.Map;
+            if (map == null) return false;
+            if (!map.reservationManager.CanReserve(pawn, job.GetTarget(TargetIndex.A))) return false;
+
+            List<LocalTargetInfo> ingredients = job.GetTargetQueue(TargetIndex.B);
+            for (int i = 0; i < ingredients.Count; i++)
+            {
+                if (!map.reservationManager.CanReserve(pawn, ingredients[i])) return false;
+            }
+            return true;
+        }
 
         public override IEnumerable<Toil> MakeNewToils()
         {
             yield return Toils_Reserve.Reserve(TargetIndex.A);
+            yield return Toils_Reserve.ReserveQueue(TargetIndex.B);
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
 
             var work = new Toil { defaultCompleteMode = ToilCompleteMode.Never };
             work.FailOnDespawnedOrNull(TargetIndex.A);
+            // An ingredient vanishing under a live claim should not happen, but a recipe cannot finish without
+            // it either; stop the moment it does rather than working to the end and finding out (RimWorld:
+            // JobDriver_DoBill.FailOnDespawnedNullOrForbiddenPlacedThings).
+            work.FailOn(() => !IngredientsStillPresent(work.Job));
             float workDone = 0f;
             work.tickAction = () =>
             {
@@ -64,10 +94,8 @@ namespace SimWorld.Crafting
                 workDone += BaseWorkPerTick * WorkSpeedFactorFromSkillLevel.Evaluate(skillLevel);
                 if (workDone < bill.recipe.WorkAmountTotal()) return;
 
-                if (!WorkGiver_DoBill.TryFindIngredients(billGiverThing, bill, out List<(Thing thing, int count)> takes))
+                if (!TryTakeReservedIngredients(work.Job, out List<(Thing thing, int count)> takes))
                 {
-                    // Someone else emptied the pile while this pawn worked — a genuine, if rare, race between
-                    // the offer and the finish (see WorkGiver_DoBill.TryFindIngredients's own remarks).
                     EndJobWith(JobCondition.Incompletable);
                     return;
                 }
@@ -97,6 +125,47 @@ namespace SimWorld.Crafting
                 work.actor.ReadyForNextToil();
             };
             yield return work;
+        }
+
+        /// <summary>
+        /// Every entry of <see cref="Job.targetQueueB"/> is still on the map holding at least the count this
+        /// job claimed for it. Runs once a tick as a fail condition, so it answers without allocating; the
+        /// list itself is only built at the finish, by <see cref="TryTakeReservedIngredients"/>.
+        /// </summary>
+        private static bool IngredientsStillPresent(Job job)
+        {
+            List<LocalTargetInfo> queue = job.GetTargetQueue(TargetIndex.B);
+            List<int>? counts = job.countQueue;
+            for (int i = 0; i < queue.Count; i++)
+            {
+                Thing? ingredient = queue[i].Thing;
+                int count = counts != null && i < counts.Count ? counts[i] : 0;
+                if (ingredient == null || ingredient.Destroyed || !ingredient.Spawned || count <= 0 || ingredient.stackCount < count)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Pairs up <see cref="Job.targetQueueB"/> with <see cref="Job.countQueue"/> into the stacks this job
+        /// reserved and how much of each it may spend — the port's stand-in for RimWorld reading the
+        /// ingredients out of the pawn's carry tracker, where they would be by now. Answers false and hands
+        /// back nothing if any entry has gone, so a recipe is never paid for half its ingredients.
+        /// </summary>
+        private static bool TryTakeReservedIngredients(Job job, out List<(Thing thing, int count)> takes)
+        {
+            List<LocalTargetInfo> queue = job.GetTargetQueue(TargetIndex.B);
+            takes = new List<(Thing, int)>(queue.Count);
+            if (!IngredientsStillPresent(job)) return false;
+
+            List<int>? counts = job.countQueue;
+            for (int i = 0; i < queue.Count; i++)
+            {
+                takes.Add((queue[i].Thing!, counts![i]));
+            }
+            return true;
         }
     }
 }

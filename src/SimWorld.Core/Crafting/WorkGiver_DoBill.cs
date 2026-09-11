@@ -34,9 +34,11 @@ namespace SimWorld.Crafting
     /// <b>Ingredients, and the seam this leaves for hauling:</b> a bill's ingredients must already be lying
     /// within <see cref="IngredientSearchRadius"/> cells of the bench — this giver does not itself walk a
     /// pawn out to fetch them first. RimWorld's own <c>JobDriver_DoBill</c> carries a queue of chosen
-    /// ingredient Things and hauls each to the bench before working the recipe; this port's <see cref="AI.Job"/>
-    /// has room for exactly three fixed targets (see its own remarks) and has no queue to carry that in, and
-    /// a second lane is concurrently building the general hauling path (<c>HaulGeneral</c>'s
+    /// ingredient Things and hauls each to the bench before working the recipe. The queue half of that is
+    /// ported (<see cref="AI.Job.targetQueueB"/>, <see cref="AI.Job.countQueue"/>, reserved by
+    /// <see cref="AI.Toils_Reserve.ReserveQueue"/>) because the claim it carries is what stops a second
+    /// consumer spending the same pile; the walking-and-fetching half is not, because a second lane is
+    /// concurrently building the general hauling path (<c>HaulGeneral</c>'s
     /// <see cref="AI.WorkGiver_Haul"/>) this pass must not duplicate. The result mirrors
     /// <see cref="Building.WorkGiver_ConstructFinishFrame"/>'s own split from
     /// <c>ConstructDeliverResourcesToFrames</c>: this giver only finishes work whose materials are already
@@ -80,7 +82,7 @@ namespace SimWorld.Crafting
             if (!pawn.Map!.reservationManager.CanReserve(pawn, thing)) return false;
 
             Bill_Production? bill = FindBill(pawn, comp);
-            return bill != null && TryFindIngredients(thing, bill, out _);
+            return bill != null && TryFindBestBillIngredients(bill, pawn, thing, out _);
         }
 
         public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false)
@@ -88,8 +90,26 @@ namespace SimWorld.Crafting
             CompBillGiver? comp = BillGiverFor(thing);
             if (comp == null) return null;
             Bill_Production? bill = FindBill(pawn, comp);
-            if (bill == null || !TryFindIngredients(thing, bill, out _)) return null;
-            return new Job(CraftingJobDefOf.DoBill, thing);
+            if (bill == null || !TryFindBestBillIngredients(bill, pawn, thing, out List<(Thing thing, int count)> chosen))
+            {
+                return null;
+            }
+
+            // The chosen stacks ride along on the job so the driver spends those exact Things — and, before it
+            // spends a tick of work, claims them (RimWorld: WorkGiver_DoBill.TryStartNewDoBillJob fills
+            // targetQueueB/countQueue the same way, and JobDriver_DoBill reserves the queue).
+            var job = new Job(CraftingJobDefOf.DoBill, thing)
+            {
+                targetQueueB = new List<LocalTargetInfo>(chosen.Count),
+                countQueue = new List<int>(chosen.Count),
+                haulMode = HaulMode.ToCellNonStorage,
+            };
+            for (int i = 0; i < chosen.Count; i++)
+            {
+                job.targetQueueB.Add(chosen[i].thing);
+                job.countQueue.Add(chosen[i].count);
+            }
+            return job;
         }
 
         internal static CompBillGiver? BillGiverFor(Thing thing) => (thing as ThingWithComps)?.GetComp<CompBillGiver>();
@@ -114,16 +134,19 @@ namespace SimWorld.Crafting
 
         /// <summary>
         /// Finds real map Things near <paramref name="billGiver"/> that satisfy <paramref name="bill"/>'s
-        /// recipe, through the same <see cref="BillIngredientsFinder"/> a bench or a guild bill already
-        /// resolves ingredients with — that finder answers in (def, piece-count) terms rather than "which
-        /// physical stack", so this replays its totals per def against the same candidate list, in the same
-        /// order, to decide which real Things actually get consumed.
+        /// recipe (RimWorld: <c>WorkGiver_DoBill.TryFindBestBillIngredients</c>), through the same
+        /// <see cref="BillIngredientsFinder"/> a bench or a guild bill already resolves ingredients with —
+        /// that finder answers in (def, piece-count) terms rather than "which physical stack", so this
+        /// replays its totals per def against the same candidate list, in the same order, to decide which
+        /// real Things actually get consumed.
         /// <para/>
-        /// Re-run fresh both at job-offer time and again when the work toil finishes; nothing reserves an
-        /// individual ingredient stack in between (only the bench itself is reserved), so a second consumer
-        /// of the same pile in that window is a known, accepted gap — see this module's own report.
+        /// Only stacks <paramref name="pawn"/> could claim are candidates, exactly as RimWorld's own
+        /// <c>baseValidator</c> ends in <c>pawn.CanReserve(t)</c>: a pile another pawn's job is already
+        /// spending is not available to this one, however close to the bench it lies. The caller turns the
+        /// answer into <see cref="Job.targetQueueB"/> and the driver then reserves it, which is what closes
+        /// the window between a bill being offered and its ingredients being consumed.
         /// </summary>
-        internal static bool TryFindIngredients(Thing billGiver, Bill_Production bill, out List<(Thing thing, int count)> takes)
+        internal static bool TryFindBestBillIngredients(Bill_Production bill, Pawn pawn, Thing billGiver, out List<(Thing thing, int count)> takes)
         {
             takes = new List<(Thing, int)>();
             List<IngredientCount>? need = bill.recipe.ingredients;
@@ -138,7 +161,9 @@ namespace SimWorld.Crafting
             {
                 foreach (Thing t in map.thingGrid.ThingsAt(cell))
                 {
-                    if (t.def.category == ThingCategory.Item && t.stackCount > 0) candidates.Add(t);
+                    if (t.def.category != ThingCategory.Item || t.stackCount <= 0) continue;
+                    if (!map.reservationManager.CanReserve(pawn, t)) continue;
+                    candidates.Add(t);
                 }
             }
             if (candidates.Count == 0) return false;
