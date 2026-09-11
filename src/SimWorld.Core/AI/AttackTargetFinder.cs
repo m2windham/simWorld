@@ -96,13 +96,21 @@ namespace SimWorld.AI
             for (int i = 0; i < pawnsOnMap.Count; i++)
             {
                 if (!(pawnsOnMap[i] is Pawn candidate)) continue;
-                if (AttackTargetsUtility.ThreatDisabled(candidate)) continue;
-                if (!AttackTargetsUtility.HostileTo(searcher, candidate)) continue;
-                if (validator != null && !validator(candidate)) continue;
 
+                // Cheapest tests first, and the order is load-bearing rather than cosmetic (see this class's
+                // remarks on cost): the constant think tree calls this for every Full-tier pawn every
+                // ConstantThinkTreeTuning.IntervalTicks, so this loop runs O(population) times per pawn and
+                // O(population squared) times per interval across a settlement. Distance is two int
+                // subtractions; AttackTargetsUtility.HostileTo is two grudge checks and a faction-relation
+                // lookup. Every one of these is a pure predicate with no side effect, so reordering them
+                // cannot change which pawn is returned — only what it costs to find out. Measured at the
+                // Full-tier budget in docs/perf/constant-think-tree.md.
                 float distSq = (candidate.Position - searcher.Position).LengthHorizontalSquared;
                 if (distSq > maxRangeSquared) continue;
                 if (best != null && !Closer(distSq, candidate, bestDistSq, best)) continue;
+                if (AttackTargetsUtility.ThreatDisabled(candidate)) continue;
+                if (!AttackTargetsUtility.HostileTo(searcher, candidate)) continue;
+                if (validator != null && !validator(candidate)) continue;
 
                 // Reachability last: it rebuilds regions on demand, so it is the one expensive test here and
                 // is only paid for a candidate that has already won on distance.

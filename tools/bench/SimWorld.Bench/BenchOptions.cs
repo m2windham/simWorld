@@ -14,6 +14,12 @@ namespace SimWorld.Bench
         public int[] Subdivisions { get; set; } = { 3, 4, 5, 6 };
         public int[] PathingNs { get; set; } = { 100, 400, 1000 };
 
+        /// <summary>Ticks per trial for the constant-think-tree A/B (--suite interrupts). A tenth of an
+        /// in-game day: the A/B is a ratio between three cadences over the same span, so the span only has to
+        /// be long enough to be steady and short enough that three cadences x (warmup + runs) trials fit
+        /// inside the guard at the Full-tier budget.</summary>
+        public int ConstantTreeTicks { get; set; } = 6000;
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }
