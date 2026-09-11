@@ -7,6 +7,7 @@ using SimWorld.Director;
 using SimWorld.Factions;
 using SimWorld.Map;
 using SimWorld.Pawns;
+using SimWorld.Pawns.Generation;
 using SimWorld.Sim;
 using SimWorld.Tests.Content;
 using SimWorld.Things;
@@ -35,6 +36,14 @@ namespace SimWorld.Tests.AI
     /// map, <b>0 of 14 raiders saw a citizen as hostile, 0 of 30 citizens saw a raider as hostile</b>, and no
     /// pawn on either side took an attack job. Every existing combat test passed throughout, because each one
     /// hands its own defenders a faction.
+    ///
+    /// <para/><b>Since then, the real fix landed.</b> A settlement's citizens carry their settlement's faction
+    /// (<c>World.CitizenFactionTests</c>, which re-runs the measurement above and records the after numbers),
+    /// so a raid on a town is now a fight by faction relation and this flag is no longer what carries it.
+    /// The flag is still wired, still read, and still reachable — the factionless-humanlike population it is
+    /// aimed at is now released prisoners (<c>Factions.Pawn_GuestTracker.Release</c> clears the faction) and
+    /// pawns generated outside any settlement, rather than every civilian in the game — so these tests were
+    /// re-aimed at one of those rather than deleted.
     ///
     /// <para/>These tests arm and enfaction nobody by hand: the citizens are whoever
     /// <c>SettlementFounder</c> made, and the raiders are whoever <c>PawnGroupMakerUtility</c> bought.
@@ -114,42 +123,63 @@ namespace SimWorld.Tests.AI
             job != null
             && (ReferenceEquals(job.def, CombatAIDefOf.AttackMelee) || ReferenceEquals(job.def, CombatAIDefOf.AttackStatic));
 
-        // ---- the condition the defect rests on ----
+        /// <summary>A humanlike belonging to no faction at all, standing on the town's interior. Since
+        /// <c>World.CitizenFactionTests</c> landed, a settlement's citizens are no longer that population —
+        /// released prisoners (<c>Factions.Pawn_GuestTracker.Release</c> clears the faction outright) and
+        /// pawns generated outside any settlement are, so the rule under test is exercised against one of
+        /// those instead of against a civilian who now has a civilization.</summary>
+        private static Pawn FactionlessHumanlikeBeside(Pawn neighbour, global::SimWorld.Map.Map map)
+        {
+            // mustBeCapableOfViolence so the test does not ride on a backstory roll: a pawn whose adulthood
+            // disables Violent work never takes an attack job whatever it can see, which is RimWorld's rule
+            // and not the thing under test here.
+            Pawn drifter = PawnGenerator.GeneratePawn(new PawnGenerationRequest(
+                DefDatabase<PawnKindDef>.GetNamed("Drifter"), fixedBiologicalAge: 30f, mustBeCapableOfViolence: true));
+            Assert.Null(drifter.faction);
+            Assert.True(drifter.RaceProps.Humanlike);
+            GenSpawn.Spawn(drifter, FreeCellNear(neighbour.Position, map), map);
+            return drifter;
+        }
+
+        // ---- the condition the defect rested on, and what replaced it ----
 
         [Fact]
-        public void Every_citizen_of_a_founded_settlement_belongs_to_no_faction()
+        public void Every_citizen_of_a_founded_settlement_carries_its_settlements_faction()
         {
-            // Not an accusation, a fact to build on: the settlement is the player's and its people are
-            // nobody's. If this ever stops being true the two tests below stop testing what they say, and
-            // this is where that would show.
+            // This used to assert the opposite, and the assertion was the defect: the settlement was the
+            // player's and its people were nobody's, which is what made a raid on a watched town a pantomime.
+            // The real fix landed in the World module — a citizen belongs to its civilization — and
+            // World.CitizenFactionTests is its measurement. What survives here is the flag's own rule, now
+            // aimed at the population that is still genuinely factionless.
             FoundedTown town = Found("factionless-citizens");
 
             Assert.NotNull(town.Settlement.faction);
             Assert.NotEmpty(town.Settlement.Citizens);
-            Assert.All(town.Settlement.Citizens, c => Assert.Null(c.faction));
+            Assert.All(town.Settlement.Citizens, c => Assert.Same(town.Settlement.faction, c.faction));
             Assert.All(town.Settlement.Citizens, c => Assert.True(c.RaceProps.Humanlike));
         }
 
         // ---- the fix ----
 
         [Fact]
-        public void A_faction_that_attacks_factionless_people_fights_a_settlements_citizens()
+        public void A_faction_that_attacks_factionless_people_fights_a_factionless_humanlike()
         {
             FoundedTown town = Found("rough-raid");
             Faction rough = Raiders(town, "RoughOutlanders", "Rough");
             Assert.True(rough.def.hostileToFactionlessHumanlikes, "the shipped content this test rests on changed");
 
             Pawn citizen = town.Settlement.Citizens.First(c => c.Spawned);
-            Pawn raider = RaiderBeside(rough, citizen, town.Interior);
+            Pawn drifter = FactionlessHumanlikeBeside(citizen, town.Interior);
+            Pawn raider = RaiderBeside(rough, drifter, town.Interior);
 
-            Assert.True(AttackTargetsUtility.HostileTo(raider, citizen), "the raider does not see the citizen as an enemy");
-            Assert.True(AttackTargetsUtility.HostileTo(citizen, raider), "the citizen does not see the raider as an enemy");
+            Assert.True(AttackTargetsUtility.HostileTo(raider, drifter), "the raider does not see the factionless humanlike as an enemy");
+            Assert.True(AttackTargetsUtility.HostileTo(drifter, raider), "the factionless humanlike does not see the raider as an enemy");
 
             raider.jobs.TryFindAndStartJob();
-            citizen.jobs.TryFindAndStartJob();
+            drifter.jobs.TryFindAndStartJob();
 
-            Assert.True(IsAttackJob(raider.jobs.curJob), "the raider walked into a settlement and went about its day");
-            Assert.True(IsAttackJob(citizen.jobs.curJob), "a citizen with a raider at arm's length kept working");
+            Assert.True(IsAttackJob(raider.jobs.curJob), "the raider walked up to a stranger and went about its day");
+            Assert.True(IsAttackJob(drifter.jobs.curJob), "a factionless humanlike with a raider at arm's length kept working");
         }
 
         [Fact]
@@ -162,35 +192,49 @@ namespace SimWorld.Tests.AI
             Faction rough = Raiders(town, "RoughOutlanders", "Rough");
 
             Pawn citizen = town.Settlement.Citizens.First(c => c.Spawned);
-            Pawn raider = RaiderBeside(rough, citizen, town.Interior);
+            Pawn drifter = FactionlessHumanlikeBeside(citizen, town.Interior);
+            Pawn raider = RaiderBeside(rough, drifter, town.Interior);
 
             const float Radius = 40f;
             Assert.Same(
                 AttackTargetFinder.BestAttackTargetUncached(raider, Radius),
                 AttackTargetFinder.BestAttackTarget(raider, Radius));
             Assert.Same(
+                AttackTargetFinder.BestAttackTargetUncached(drifter, Radius),
+                AttackTargetFinder.BestAttackTarget(drifter, Radius));
+            Assert.Same(
                 AttackTargetFinder.BestAttackTargetUncached(citizen, Radius),
                 AttackTargetFinder.BestAttackTarget(citizen, Radius));
             Assert.NotNull(AttackTargetFinder.BestAttackTarget(raider, Radius));
+
+            // The factionless half of the index still has an occupant, and it is no longer "most of the map".
+            Assert.Equal(new[] { drifter }, town.Interior.mapPawns.AttackTargets.FactionlessHumanlikes);
         }
 
         [Fact]
-        public void A_faction_that_does_not_attack_factionless_people_still_does_not()
+        public void A_faction_that_does_not_attack_factionless_people_still_does_not_but_fights_a_citizen()
         {
-            // The residue, asserted rather than left to be discovered: the flag is content's statement about
-            // one faction, not a blanket rule. TribalCivilization and OutlanderCivilization declare it false,
-            // so their raids on a settlement of factionless citizens still find nobody — the real fix for
-            // those is a citizen faction, which belongs to the World module and not here. This test exists so
-            // that gap is visible and pinned instead of silent.
+            // The flag is content's statement about one faction, not a blanket rule: TribalCivilization and
+            // OutlanderCivilization declare it false and still walk past a stranger who belongs to nobody.
+            //
+            // The residue this test used to pin is gone. It read "their raids on a settlement of factionless
+            // citizens still find nobody — the real fix for those is a citizen faction, which belongs to the
+            // World module and not here". That fix landed; the second half below is it, asserted from this
+            // side so the two halves cannot drift apart. A tribal raid on a town is a fight now, and it is a
+            // fight by faction relation rather than by this flag.
             FoundedTown town = Found("tribal-raid");
             Faction tribal = Raiders(town, "TribalCivilization", "Tribal");
             Assert.False(tribal.def.hostileToFactionlessHumanlikes);
 
             Pawn citizen = town.Settlement.Citizens.First(c => c.Spawned);
-            Pawn raider = RaiderBeside(tribal, citizen, town.Interior);
+            Pawn drifter = FactionlessHumanlikeBeside(citizen, town.Interior);
+            Pawn raider = RaiderBeside(tribal, drifter, town.Interior);
 
-            Assert.False(AttackTargetsUtility.HostileTo(raider, citizen));
-            Assert.False(AttackTargetsUtility.HostileTo(citizen, raider));
+            Assert.False(AttackTargetsUtility.HostileTo(raider, drifter));
+            Assert.False(AttackTargetsUtility.HostileTo(drifter, raider));
+
+            Assert.True(AttackTargetsUtility.HostileTo(raider, citizen));
+            Assert.True(AttackTargetsUtility.HostileTo(citizen, raider));
         }
 
         [Fact]

@@ -21,9 +21,13 @@ namespace SimWorld.Director
     /// it wrong is not a small bug: an unguarded hook would ease the storyteller every time the colony
     /// knocked down an attacker, which is backwards.
     ///
-    /// <para/><b>Who counts as ours.</b> Not <c>Pawn.faction</c> — a settlement's own citizens are generated
-    /// without one in this port (<c>World.SettlementFounder.GenerateFoundingBand</c> makes no faction
-    /// request), so a faction test would exempt precisely the people the curve is about. The civilization's
+    /// <para/><b>Who counts as ours.</b> Not <c>Pawn.faction</c>, and the reason has changed since this was
+    /// written. It used to be that a faction test would exempt precisely the people the curve is about, because
+    /// a settlement's citizens were generated without a faction at all; they carry their settlement's faction
+    /// now (<c>World.SettlementFounder</c>), so that argument is gone. The roster test stays on its own
+    /// merits: a faction can own several civilizations' worth of settlements and the storyteller tells a story
+    /// about the ones registered with it, so roster membership is the narrower and more honest question.
+    /// The civilization's
     /// people are whoever <see cref="IIncidentTarget.PlayerPawnsForStoryteller"/> reports across the targets
     /// registered with the storyteller — the identical roster the threat curve itself reads
     /// (<see cref="StorytellerUtility.DefaultThreatPointsNow"/>), so "whose downing moves adaptation" and
