@@ -23,19 +23,22 @@ Unclaimed items below are open. Taking one means claiming it first.
 
 ## Claimed
 
-| Owner                 | Repo       | Paths                                                     | Work                                            |
-| --------------------- | ---------- | --------------------------------------------------------- | ----------------------------------------------- |
-| `simworld-37` (cloud) | `simWorld` | `src/SimWorld.Core/**`, `tests/**`, `tools/**`, `docs/**` | The engine-free core, its tests, and these docs |
+| Owner                   | Repo            | Paths                                                     | Work                                                         |
+| ------------------------ | --------------- | ---------------------------------------------------------- | -------------------------------------------------------------- |
+| `simworld-37` (cloud)   | `simWorld`      | `src/SimWorld.Core/**`, `tests/**`, `tools/**`, `docs/**` | The engine-free core, its tests, and these docs               |
+| `mcp-bridge-fc` (local) | `simWorld.Host` | `Assets/**`, `Packages/**`, `ProjectSettings/**`          | The Unity host: the god view, read and write, and its tests  |
 
 `docs/status.json` has exactly one writer: whoever runs the suite and measures
 `testsTotal`. It conflicts on every merge otherwise.
 
 ## Landed
 
-| Owner | Repo       | Work                                                    | PR  |
-| ----- | ---------- | ------------------------------------------------------- | --- |
-| cloud | `simWorld` | God-view read model (`God/View`), spec §12a             | #46 |
-| cloud | `simWorld` | Core/host split and the provenance rule, in `CLAUDE.md` | #47 |
+| Owner | Repo            | Work                                                                                    | PR  |
+| ----- | --------------- | ---------------------------------------------------------------------------------------- | --- |
+| cloud | `simWorld`      | God-view read model (`God/View`), spec §12a                                             | #46 |
+| cloud | `simWorld`      | Core/host split and the provenance rule, in `CLAUDE.md`                                 | #47 |
+| local | `simWorld.Host` | Project scaffold, `com.simworld.core` as a local package, Pipeline+MCP Editor reachability | (this PR) |
+| local | `simWorld.Host` | God view read (`GodViewBootstrap`) and write (`EdictPanel` → `GodCommands.IssueEdict`), 3 EditMode tests, `ContentLoaded` adopted | (this PR) |
 
 ## Immediate steps: this repo (core)
 
@@ -133,40 +136,48 @@ them; this side does not assign work across the boundary.
 
 ## Host: landed, and what is next
 
-The host session has a first slice working: a Unity 6000.5.0f1 project at
-`A:\dev\simWorld.Host` with its own git repo, referencing `com.simworld.core` as a local
-UPM package by relative path, and a `GodViewBootstrap` calling `GodViewSnapshot.Capture()`
-on a timer. It verified the result by reading the rendered text back in Play mode rather
-than trusting a screenshot, and did not call `Game.NewGame`, so the empty read was honest
-rather than staged. Read-only so far; nothing wired to `GodCommands`.
+**Updated.** The host caught up past the proposed order below — items 1 and 3 landed
+before item 2 did, since content-loading turned out to block the write path too, not
+just the read side.
 
-It also reported **zero edicts**, which is a real bug and was this side's. Five edicts
-ship and `Capture()` returns every one regardless of availability, so zero is impossible —
-the host had never loaded the core's content, and nothing in the contract said it had to.
-`GodViewSnapshot.ContentLoaded` now distinguishes "content never loaded" from "a
-civilization that has not started", which were indistinguishable before, and `Capture()`'s
-doc carries the load call.
+`A:\dev\simWorld.Host`, own git repo (not pushed to a remote yet), references
+`com.simworld.core` as a local package by the relative path this file asked for.
+`CoreContentBootstrap.EnsureLoaded()` loads the shipped content into
+`DefDatabase.Global` — pointing `SIMWORLD_DATA` at this repo explicitly, since
+`CoreContent`'s own upward directory walk never finds a sibling repo. First attempt used
+`[RuntimeInitializeOnLoadMethod(BeforeSceneLoad)]` and fired too early: `CoreContent.Load`
+returned success with zero defs, no error — exactly the trap `ContentLoaded` now exists
+to catch, hit from the other direction. Moved to run from each consumer's `Awake()`
+instead, adopted `ContentLoaded` once it landed here, and made a zero-edict load a hard
+failure so that failure mode cannot go quiet again on either side.
 
-Proposed next, in order. As above these are proposals with reasons, not assignments.
+Both halves of spec §12a are wired and verified live, not just from source: a
+`GodViewBootstrap` reads `GodViewSnapshot.Capture()` on a timer (never calls
+`Game.NewGame`, so the pre-world read stays honest); an `EdictPanel` writes through
+`GodCommands.IssueEdict`, one row per `EdictOption`, button interactable only when
+`Availability == Available`, `Reason` surfaced verbatim rather than re-derived. Clicked
+the one real available edict (`HuntersMandate`) through code, got `Done: Hunter's
+mandate issued.` back, and the next read showed it flip to `Active` with `Reason` now
+`In force.` Three EditMode tests cover this (content loads, `Capture` safe pre-world,
+issue round-trips through a fresh snapshot) and pass, run via the official Unity
+Pipeline CLI's `run_tests` against the live Editor instance rather than a fresh
+batchmode process (which conflicts with an Editor that already has the project open).
 
-1. **Load content before anything else.** `CoreContent.Load` into a `DefDatabase`, that
-   database assigned to `DefDatabase.Global`. `ContentLoaded` should flip true and five
-   edicts should appear, each with an `Availability` and a `Reason`. If they do not, the
-   package is not shipping its `Data/` directory into the Unity build — that is a
-   packaging problem on this side and worth reporting immediately rather than working
-   around.
-2. **Start a real game** (`Game.NewGame`, tribal start, solo) and **report what the
+Still open on this side:
+
+1. **Start a real game** (`Game.NewGame`, tribal start, solo) and report what the
+   snapshot actually contains — not done yet, still the proposal below.
+2. Visual polish. Everything so far is legacy `UnityEngine.UI.Text`, default anchoring
+   just barely made sane. Functionally proven, not close to a real UI yet.
+3. No remote for `simWorld.Host` yet, so nothing here is a link anyone else can pull.
+
+Proposed next, unchanged from before since it was not reached:
+
+1. **Start a real game** (`Game.NewGame`, tribal start, solo) and **report what the
    snapshot actually contains** — population by tier, era and progress, whether the means
    look sane, whether the chronicle fills. The ask here is a report rather than a feature:
    the host can see this and the core cannot. The last number that looked wrong found a
    bug.
-3. **Then the write path.** One edict button through `GodCommands.IssueEdict(defName)`,
-   and surface `EdictOption.Reason` on the disabled ones — every refusal already carries a
-   sentence, and a greyed-out control with no explanation is the exact failure that field
-   exists to prevent. Do not reimplement the availability rules to explain them; a
-   reimplemented rule drifts from the one the simulation enforces. At a tribal start
-   exactly one edict is issuable and four are era-locked, so both states appear on screen
-   without contriving anything.
 
 ## The honest summary
 
