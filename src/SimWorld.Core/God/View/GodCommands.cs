@@ -142,6 +142,73 @@ namespace SimWorld.God.View
                 : GodCommandResult.NoChange(settlement.name + " already has the god's attention.");
         }
 
+        /// <summary>
+        /// Opens a settlement: moves the god's attention to it <b>and</b> generates its interior map, in that
+        /// order. This is the command a host binds to "the player opened this town".
+        ///
+        /// <para/><b>Why this exists as well as <see cref="FocusSettlement"/>.</b> Attention and the interior
+        /// are deliberately separate decisions in the simulation — a map can exist unattended, and a
+        /// settlement can be attended with no map — and <c>Game.EnterSettlement</c> documents that. But the
+        /// host is told to bind to this seam and never reach into <c>Game</c>, and this seam had no way to
+        /// generate an interior at all. So the separation was not a choice a host could make; it was a wall.
+        /// The two narrow commands stay for a host that genuinely wants one without the other, and this is the
+        /// one that matches what a player actually did.
+        ///
+        /// <para/><b>The order is load-bearing, which is the other reason to have this.</b> Only a
+        /// <see cref="PawnTier.Full"/> citizen is ever placed on an interior
+        /// (<c>Settlement.SyncCitizenSpawns</c>), and for an ordinary citizen only attention holds them at
+        /// Full. Entering before focusing therefore draws an <i>empty town</i> — it corrects itself on the
+        /// next citizen-sync sweep, so it reads as a rendering glitch rather than a bug, which is the worst
+        /// way for it to fail. Focusing first means the citizens are already Full when the map is built.
+        ///
+        /// <para/>Re-opening a settlement that is already open is <see cref="GodCommandOutcome.NoChange"/>
+        /// rather than a failure: the attention did not move and the map was already there.
+        /// </summary>
+        public static GodCommandResult OpenSettlement(int tile)
+        {
+            World.Settlement? settlement = AttentionManager.SettlementAt(tile);
+            if (settlement == null) return GodCommandResult.UnknownSettlement(tile);
+
+            Game? game = Find.CurrentGame;
+            if (game == null) return GodCommandResult.Refused("No game is running, so no settlement can be opened.");
+
+            bool moved = Find.God.Attention.Focus(settlement);
+            bool hadMap = settlement.InteriorMap != null;
+
+            // After the focus, never before — see the order note above.
+            game.EnterSettlement(settlement);
+
+            if (moved || !hadMap)
+            {
+                return GodCommandResult.Done(
+                    settlement.name + (hadMap ? " opened." : " opened, and its interior was generated."));
+            }
+            return GodCommandResult.NoChange(settlement.name + " was already open.");
+        }
+
+        /// <summary>
+        /// Generates a settlement's interior map without moving the god's attention — the narrow half of
+        /// <see cref="OpenSettlement"/>, for a host that wants a map built for a settlement nobody is
+        /// watching.
+        ///
+        /// <para/>Read <see cref="OpenSettlement"/>'s note on ordering before reaching for this: a settlement
+        /// given a map while unattended holds no Full-tier citizens, so it draws empty, and that is correct
+        /// rather than broken. <c>GodViewSnapshot</c>'s <c>SettlementSummary.HasInteriorMap</c> is how a host
+        /// tells "no map yet" from "a map with nobody on it".
+        /// </summary>
+        public static GodCommandResult GenerateSettlementInterior(int tile)
+        {
+            World.Settlement? settlement = AttentionManager.SettlementAt(tile);
+            if (settlement == null) return GodCommandResult.UnknownSettlement(tile);
+            if (settlement.InteriorMap != null) return GodCommandResult.NoChange(settlement.name + " already has an interior.");
+
+            Game? game = Find.CurrentGame;
+            if (game == null) return GodCommandResult.Refused("No game is running, so no interior can be generated.");
+
+            game.EnterSettlement(settlement);
+            return GodCommandResult.Done("Generated the interior of " + settlement.name + ".");
+        }
+
         /// <summary>Steps back to civilization scope: no settlement is open, so nobody is attended and every
         /// citizen held at Full by attention alone falls to Interval. Clearing a focus that was never set is a
         /// no-op, not a failure — the same treatment <see cref="RescindEdict"/> gives an edict nobody
