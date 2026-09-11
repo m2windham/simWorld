@@ -5,12 +5,16 @@
     Natural rock (RimWorld: mineable ThingDefs on the Mountain layer). Not destroyable by ordinary damage —
     real RimWorld removes it only through mining, a dedicated job the Building module adds later — so
     destroyable stays false here; Things/tests exercise TakeDamage-destroys with a hand-built ThingDef instead.
+
+    thingClass is SimWorld.Things.Mineable (system: mining), not the bare Thing it was: mining a cell out has
+    to drop what the cell held, and Mineable.DestroyMined is the one path that does it. Every rock and vein
+    below inherits it, and the ore ladder in Buildings_Mineable.xml parents onto this same node.
   -->
 
   <ThingDef Name="BaseNaturalRock" Abstract="True">
     <category>Building</category>
     <tickerType>Never</tickerType>
-    <thingClass>SimWorld.Things.Thing</thingClass>
+    <thingClass>SimWorld.Things.Mineable</thingClass>
     <passability>Impassable</passability>
     <fillPercent>1</fillPercent>
     <altitudeLayer>Building</altitudeLayer>
@@ -20,9 +24,24 @@
     <mineable>true</mineable>
   </ThingDef>
 
+  <!--
+    Each rock type drops its own loose chunk when mined out (RimWorld: every natural rock Def names a Chunk*
+    as its mineableThing). The chunks already existed as items — GenStep_Scatterers has been strewing them
+    across generated maps since MapGen landed — and nothing produced one any other way until mining could.
+
+    mineableDropChance is 0.1: a tunnel through a mountain leaves a scattering of chunks behind rather than
+    one per cell. RimWorld's own number for rock could not be sourced here, so the tests pin the band (some
+    cells drop, not all) rather than this literal. mineableYieldWasteable is off because a chunk is one
+    chunk however good the miner is — there is nothing in it to waste.
+  -->
+
   <ThingDef ParentName="BaseNaturalRock">
     <defName>Sandstone</defName>
     <label>sandstone</label>
+    <mineableThing>ChunkSandstone</mineableThing>
+    <mineableYield>1</mineableYield>
+    <mineableDropChance>0.1</mineableDropChance>
+    <mineableYieldWasteable>false</mineableYieldWasteable>
     <statBases>
       <MaxHitPoints>400</MaxHitPoints>
     </statBases>
@@ -31,6 +50,10 @@
   <ThingDef ParentName="BaseNaturalRock">
     <defName>Granite</defName>
     <label>granite</label>
+    <mineableThing>ChunkGranite</mineableThing>
+    <mineableYield>1</mineableYield>
+    <mineableDropChance>0.1</mineableDropChance>
+    <mineableYieldWasteable>false</mineableYieldWasteable>
     <statBases>
       <MaxHitPoints>900</MaxHitPoints>
     </statBases>
@@ -39,6 +62,10 @@
   <ThingDef ParentName="BaseNaturalRock">
     <defName>Limestone</defName>
     <label>limestone</label>
+    <mineableThing>ChunkLimestone</mineableThing>
+    <mineableYield>1</mineableYield>
+    <mineableDropChance>0.1</mineableDropChance>
+    <mineableYieldWasteable>false</mineableYieldWasteable>
     <statBases>
       <MaxHitPoints>700</MaxHitPoints>
     </statBases>
@@ -55,6 +82,12 @@
     <description>A vein of metal-bearing rock, ready to be mined for steel.</description>
     <mineableThing>Steel</mineableThing>
     <mineableYield>60</mineableYield>
+    <!--
+      The commonality every other vein in Buildings_Mineable.xml is weighted against, and by a wide margin
+      the most common thing in the rock — same shape as RimWorld, where compacted steel dwarfs every other
+      vein. The gradient across the whole table, not this number, is what the mining module's tests assert.
+    -->
+    <mineableScatterCommonality>3.0</mineableScatterCommonality>
     <statBases>
       <MaxHitPoints>300</MaxHitPoints>
     </statBases>
