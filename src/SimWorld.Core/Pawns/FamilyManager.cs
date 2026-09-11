@@ -182,8 +182,29 @@ namespace SimWorld.Pawns
             }
         }
 
+        /// <summary>
+        /// Whether this pawn can father or bear a child right now. Two independent questions, and neither
+        /// subsumes the other:
+        /// <list type="bullet">
+        /// <item><description><b>Is this body capable of it at all?</b> The race's content answers that, per
+        /// life stage, with <see cref="LifeStageDef.reproductive"/> — the flag every shipped life stage sets
+        /// and, until now, nothing read. A race whose stages disagree with humans' (a species mature at three
+        /// months, or one with a post-fertile old age) gets the right answer from its own content instead of
+        /// from a constant written for people. A race that declares no life stages at all is not refused:
+        /// there is no stage to have said no.</description></item>
+        /// <item><description><b>Is this pawn in the window SimWorld models?</b> That is the constant pair,
+        /// and it stays. <see cref="DemographyTuning.MinMarriageAgeYears"/> is deliberately stricter than the
+        /// life stage for humans — <c>HumanlikeTeenager</c> is flagged reproductive from thirteen, as
+        /// RimWorld's own biology model has it, and this port chooses not to model teen parenthood; that
+        /// decision is recorded on the constant itself and the stage flag does not overrule it.</description></item>
+        /// </list>
+        /// Read fresh on every demography sweep, so a pawn that ages out of a reproductive stage stops being
+        /// eligible the sweep after it does.
+        /// </summary>
         private static bool EligibleForBirth(Pawn p)
         {
+            LifeStageDef? stage = p.ageTracker.CurLifeStage;
+            if (stage != null && !stage.reproductive) return false;
             float age = p.ageTracker.AgeBiologicalYearsFloat;
             return age >= DemographyTuning.MinMarriageAgeYears && age <= DemographyTuning.MaxFertilityAgeYears;
         }

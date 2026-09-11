@@ -19,13 +19,40 @@ namespace SimWorld.Pawns
     public class LifeStageDef : Def
     {
         public bool visible = true;
+
+        /// <summary>
+        /// This stage's body may breed. Read by <see cref="FamilyManager"/>'s birth sweep and, as the
+        /// maturity gate for animal produce, by <c>CompHasGatherableBodyResource</c> — see that property for
+        /// why one flag covers eggs, milk and wool here where RimWorld has four.
+        /// </summary>
         public bool reproductive;
+
         public float bodySizeFactor = 1f;
         public float healthScaleFactor = 1f;
         public float hungerRateFactor = 1f;
+
+        /// <summary>Scales how much nutrition the stomach holds, on top of body size
+        /// (<see cref="Needs.Need_Food.MaxLevel"/>).</summary>
         public float foodMaxFactor = 1f;
+
+        /// <summary>
+        /// Scales what a pawn in this stage is worth (RimWorld: read by the market-value stat when the thing
+        /// being priced is a pawn).
+        /// <para/><b>Nothing reads this yet, and the reason is upstream of this def.</b> No pawn in this port
+        /// has a market value at all: <c>TradeUtility</c> prices a <c>ThingDef</c> rather than a thing, no
+        /// race ThingDef carries a <c>MarketValue</c> statBase, <c>Tradeable</c> holds a def and a count with
+        /// nowhere to put a pawn, and the civilization's wealth term deliberately excludes people. A factor
+        /// has nothing to multiply until a pawn can be priced; see the wiring audit's baseline entry.
+        /// </summary>
         public float marketValueFactor = 1f;
+
+        /// <summary>
+        /// A pawn in this stage cannot be on its feet (an infant). Read by
+        /// <c>Pawn_HealthTracker.LifeStageForcesDowned</c>, which explains why it is a gate beside
+        /// <c>ForceDowned</c> rather than an answer from the capacity system.
+        /// </summary>
         public bool alwaysDowned;
+
         public DevelopmentalStage developmentalStage = DevelopmentalStage.Adult;
     }
 
