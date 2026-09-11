@@ -79,13 +79,22 @@ namespace SimWorld.Research
         /// <summary>
         /// Adds <paramref name="amount"/> research points (already in points, e.g. from <see cref="PointsFromWorkTicks"/>)
         /// to <see cref="CurrentProj"/>, reduced by its <see cref="ResearchProjectDef.CostFactor"/> against
-        /// <see cref="ResearcherTechLevel"/>. Finishes the project once its cost is reached. A no-op with no current project.
+        /// <see cref="ResearcherTechLevel"/> and scaled by the difficulty's
+        /// <see cref="Director.DifficultyDef.researchSpeedFactor"/>. Finishes the project once its cost is
+        /// reached. A no-op with no current project.
+        /// <para/>
+        /// The difficulty factor goes here rather than on <see cref="Stats.StatDefOf.ResearchSpeed"/> — the
+        /// same placement RimWorld uses — for two reasons: this is the one funnel every source of research
+        /// progress passes through (a work tick today, anything else later), and the stat is a property *of a
+        /// pawn*, which a game-wide setting is not. A pawn's research speed should not change because the
+        /// player picked a harder game.
         /// </summary>
         public void ResearchPerformed(float amount, Pawn? researcher)
         {
             if (currentProj == null) return;
             float factor = currentProj.CostFactor(researcherTechLevel);
             float applied = factor > 0f ? amount / factor : amount;
+            applied *= Director.DifficultyUtility.ResearchSpeedFactor;
             float newProgress = GetProgress(currentProj) + applied;
             progress[currentProj] = newProgress;
             if (newProgress >= currentProj.baseCost)

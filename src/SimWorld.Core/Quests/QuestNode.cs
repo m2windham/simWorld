@@ -177,6 +177,17 @@ namespace SimWorld.Quests
             Slate slate = QuestGen.slate;
             float silver = silverAmount ?? (silverRef != null ? slate.Get(silverRef, 0f) : 0f);
 
+            // DifficultyDef.questRewardValueFactor, applied where RimWorld applies it: when the reward is
+            // *generated*, not when it is paid. That distinction is what makes this wirable today. Paying a
+            // reward out needs an IQuestRewardSink and nothing implements one yet — but the reward's value is
+            // already real without a sink: QuestPart_Reward hands it to Quest.Notify_RewardsGiven, and
+            // Quest.RewardsGiven/RewardsSummary are what a quest is worth, sink or no sink.
+            //
+            // Silver only. Goodwill is the other reward kind here and it is diplomatic standing, not market
+            // value: RimWorld's factor scales what a reward is worth in silver, and scaling a faction's
+            // opinion of you by the difficulty setting would be a different mechanic wearing this one's name.
+            silver *= Director.DifficultyUtility.QuestRewardValueFactor;
+
             var part = new QuestPart_Reward { inSignal = CurrentInSignal };
             if (silver > 0f) part.rewards.Add(new RewardRecord("silver", silver));
             if (goodwillAmount != 0f) part.rewards.Add(new RewardRecord("goodwill", goodwillAmount, goodwillFactionDefName));

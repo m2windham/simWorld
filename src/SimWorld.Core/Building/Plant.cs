@@ -88,7 +88,15 @@ namespace SimWorld.Building
             int yield = 0;
             if (props?.harvestedThingDef != null && props.harvestYield > 0)
             {
-                yield = GenMath.RoundRandom(props.harvestYield * growth, Rand.Current);
+                // DifficultyDef.cropYieldFactor, the last multiplier before the rounding — RimWorld applies it
+                // the same way at the end of Plant.YieldNow, after growth and before the random round, so a
+                // difficulty that halves yields halves the *expected* harvest rather than shifting where the
+                // rounding lands. (Its exact RimWorld call site is not sourced here; the ordering between two
+                // difficulties is what the test pins, not this expression.) Still one draw from the seeded
+                // stream either way, so a scaled harvest consumes exactly as much randomness as an unscaled
+                // one and no other roll in the tick moves.
+                float amount = props.harvestYield * growth * Director.DifficultyUtility.CropYieldFactor;
+                yield = GenMath.RoundRandom(amount, Rand.Current);
             }
 
             Destroy(DestroyMode.Vanish);

@@ -5,6 +5,13 @@
     Difficulty presets (RimWorld: DifficultyDef). threatScale values follow RimWorld's built-in presets;
     the yield/mood/disease factors are documented approximations of RimWorld's tuning rather than exact
     ports, since this port only carries a subset of RimWorld's real difficulty knobs (see DifficultyDef).
+
+    researchSpeedFactor is the same kind of approximation, and is here for a specific reason: the field
+    existed on DifficultyDef and *no preset set it and no line of code read it*, so it was invisible to
+    both halves of the wiring audit (which asks "content sets it, does code read it?" and "code reads it,
+    does content set it?" — never "does anyone touch it at all?"). It is wired now, in
+    ResearchManager.ResearchPerformed, and these values are what make the wiring mean something. They are
+    deliberately milder than the crop factors: research pace compounds over a whole game.
   -->
 
   <DifficultyDef>
@@ -15,6 +22,7 @@
     <allowBigThreats>false</allowBigThreats>
     <allowIntroThreats>false</allowIntroThreats>
     <colonistMoodOffset>6</colonistMoodOffset>
+    <researchSpeedFactor>1.15</researchSpeedFactor>
     <diseaseIntervalFactor>2</diseaseIntervalFactor>
   </DifficultyDef>
 
@@ -24,6 +32,7 @@
     <description>Gentler threats and better yields for a relaxed game.</description>
     <threatScale>0.65</threatScale>
     <colonistMoodOffset>6</colonistMoodOffset>
+    <researchSpeedFactor>1.15</researchSpeedFactor>
     <diseaseIntervalFactor>1.5</diseaseIntervalFactor>
   </DifficultyDef>
 
@@ -42,6 +51,7 @@
     <colonistMoodOffset>-6</colonistMoodOffset>
     <cropYieldFactor>0.85</cropYieldFactor>
     <mineYieldFactor>0.85</mineYieldFactor>
+    <researchSpeedFactor>0.9</researchSpeedFactor>
     <diseaseIntervalFactor>0.8</diseaseIntervalFactor>
   </DifficultyDef>
 
@@ -53,6 +63,7 @@
     <colonistMoodOffset>-12</colonistMoodOffset>
     <cropYieldFactor>0.7</cropYieldFactor>
     <mineYieldFactor>0.7</mineYieldFactor>
+    <researchSpeedFactor>0.8</researchSpeedFactor>
     <diseaseIntervalFactor>0.6</diseaseIntervalFactor>
     <questRewardValueFactor>1.15</questRewardValueFactor>
   </DifficultyDef>
