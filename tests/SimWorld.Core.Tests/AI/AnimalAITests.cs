@@ -60,12 +60,16 @@ namespace SimWorld.Tests.AI
         {
             Assert.NotSame(ThinkTreeDefOf.Humanlike, ThinkTreeDefOf.Animal);
 
+            // The combat tier (system 9: AI — combat) sits between the angry tier and fleeing: a tamed animal
+            // defends its faction rather than running, and a wild one finds nothing hostile to it and still
+            // flees on the next tier down.
             var root = (ThinkNode_Priority)ThinkTreeDefOf.Animal.thinkRoot;
             Assert.IsType<ThinkNode_ConditionalAngryAtHandler>(root.subNodes[0]);
-            Assert.IsType<JobGiver_AnimalFlee>(root.subNodes[1]);
-            Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[2]);
-            Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[3]);
-            Assert.IsType<JobGiver_WanderAnywhere>(root.subNodes[4]);
+            Assert.IsType<JobGiver_AIFightEnemies>(root.subNodes[1]);
+            Assert.IsType<JobGiver_AnimalFlee>(root.subNodes[2]);
+            Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[3]);
+            Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[4]);
+            Assert.IsType<JobGiver_WanderAnywhere>(root.subNodes[5]);
 
             // No colonist-work tiers at all: an animal never does routine work or takes a directed order.
             Assert.DoesNotContain(root.subNodes, n => n is JobGiver_Work || n is JobGiver_DirectedOrder || n is global::SimWorld.AI.JobGiver_Edicts);

@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1390,
+  "testsTotal": 1501,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -532,7 +532,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
       "status": "ported",
-      "tests": 34,
+      "tests": 62,
       "items": [
         {
           "id": "needs.pawn",
@@ -583,6 +583,16 @@
           "id": "needs.rollup",
           "label": "Translation: population mood rollups for the god view. Satisfied by God/GodRollup.cs's MeanMood — a population-weighted mean of Need_Mood.CurLevelPercentage, tier-aware (a Statistical citizen's need is cohort-sampled the same as any other, real or folded from a Settlement's bare StatisticalPopulation count), cached with a recompute cadence and an explicit dirty flag, fed by a real Settlement (or several, for a civilization) as of god.settlement-population. See docs/spec/simworld-spec.md §10's Aggregation bullet.",
           "done": true
+        },
+        {
+          "id": "needs.filth",
+          "label": "Filth: Verse.Filth and FilthMaker, with cleaning bounded by the home area when one is set and any enclosed roofed room when none is — the home area shipped dormant, so bounding on it alone would have made every fire of the giver impossible. Feeds room cleanliness into surgery and a filthy-room thought",
+          "done": true
+        },
+        {
+          "id": "needs.beauty",
+          "label": "The Beauty need is dormant end to end: NeedDefOf.Beauty, Need_Environment and IEnvironmentSampler all exist and nothing in src implements the sampler, so Beauty sits at its base level forever. When a sampler lands, ThoughtWorker_FilthyRoom should be deleted rather than left to double-count",
+          "done": false
         }
       ]
     },
@@ -594,7 +604,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 86,
+      "tests": 119,
       "items": [
         {
           "id": "health.body",
@@ -655,6 +665,21 @@
           "id": "health.tending-work",
           "label": "Doctor work givers close the 'no one tends an injury' gap (docs/WORK-REGISTER.md's work-economy item): WorkGiver_Tend backs both DoctorTendEmergency and DoctorTend (one class, split by the WorkGiverDef's own emergency flag against TendUtility.NeedsEmergencyTend — bleeding or life-threatening), JobDriver_TendPatient tends at a quality read from StatDefOf.MedicalTendQuality (work.stats) capped at TendUtility.MaxQualityNoMedicine (no medicine ThingDef ships yet). WorkGiver_RescueDowned/JobDriver_TakeToBed carry a downed patient to AI.RestUtility.FindBedFor's nearest reachable bed, or produce no job at all when the map has none — tended and fed in place rather than invented a ground fallback. WorkGiver_FeedPatient (DoctorFeedHumanlikes) reuses WardenFeed's own FeedPatient JobDef/JobDriver unchanged for a downed, hungry non-prisoner, explicitly excluding prisoners (WardenFeed's own patient) rather than racing it for the same reservation — the same reasoning leaves WardenDeliverFood unwired, unchanged from before this item. Eligibility (colonist of the doctor's own faction, or a prisoner it holds) is shared by Tend and Rescue via AI.DoctorUtility. Deliberately out of scope: self-tend (RimWorld's own reduced-quality solo-colonist mechanic — a pawn is never its own patient here, same as RimWorld's WorkGiver_Tend). Code: src/SimWorld.Core/AI/WorkGiver_Tend.cs, JobDriver_TendPatient.cs, WorkGiver_RescueDowned.cs, JobDriver_TakeToBed.cs, WorkGiver_FeedPatient.cs, DoctorUtility.cs; TendUtility.NeedsEmergencyTend in src/SimWorld.Core/Health/TendUtility.cs. Tests: tests/SimWorld.Core.Tests/Health/DoctorAITests.cs.",
           "done": true
+        },
+        {
+          "id": "health.fire",
+          "label": "Fire: Verse.Fire ported as an AttachableThing that grows, damages, spreads and is beaten out, with BaseFlammability through the real stat pipeline. ThingDef carried no flammability field at all and no content was flammable, so a stone or steel wall now survives what a wooden one does not — the settlement's building choices are a real fire-risk decision. A Flame DamageDef burns pawns through the existing health pipeline",
+          "done": true
+        },
+        {
+          "id": "health.fire.rain",
+          "label": "Rain extinguishment is ported and tested but nothing drives it — there is no weather module, no WeatherDef and no rain rate anywhere. Waiting on a one-field Map.rainRate",
+          "done": false
+        },
+        {
+          "id": "health.corpse",
+          "label": "Corpses: a pawn that dies is taken off the map and held by a Corpse rather than lingering spawned, so the chronicle, family tree and bereavement keep pointing at the same object. CompRottable drives Fresh/Rotting/Dessicated at a temperature-dependent rate; corpse ThingDefs are generated per race lazily, since DefLoader has no implied-def hook",
+          "done": true
         }
       ]
     },
@@ -666,7 +691,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Work · Pawns · Stats",
       "status": "translated",
-      "tests": 65,
+      "tests": 75,
       "items": [
         {
           "id": "work.skills",
@@ -720,7 +745,12 @@
         },
         {
           "id": "work.repairplantscut",
-          "label": "Repair and PlantsCut wired (24 of 28 work givers (Hunt landed alongside) now carry a real giverClass). Both translate away a Designation system this port does not have: Repair scans any damaged artificial building because Thing carries no faction field, PlantsCut derives its targets from growing zones and construction cells",
+          "label": "Repair and PlantsCut wired (28 of 29 work givers now carry a real giverClass). Both translate away a Designation system this port does not have: Repair scans any damaged artificial building because Thing carries no faction field, PlantsCut derives its targets from growing zones and construction cells",
+          "done": true
+        },
+        {
+          "id": "work.allwired",
+          "label": "Every work type in content can produce a job except one. HaulCorpses, FightFires and CleanFilth were blocked on Corpse, Fire and Filth classes that did not exist; all three systems landed together rather than being stubbed. WardenDeliverFood is the single remaining bare giver, left deliberately because DoctorFeedHumanlikes reuses its mechanism with a different target filter",
           "done": true
         }
       ]
@@ -729,11 +759,11 @@
       "id": "ai",
       "n": 10,
       "rimworld": "AI: Think Tree / Job System",
-      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor. Hunting carries two civilization-scale translations of its own. There is no Designation system, so AI.HuntingInitiative decides for the settlement: hunt while short of food, stop when not — the shape SettlementConstructionInitiative already set. And there is no Corpse class, so the hunt's last toil butchers at the kill site through the shipped recipe and HaulGeneral carries the meat home, reaching RimWorld's end state by the only route this port has.",
+      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor. Hunting carries two civilization-scale translations of its own. There is no Designation system, so AI.HuntingInitiative decides for the settlement: hunt while short of food, stop when not — the shape SettlementConstructionInitiative already set. And there is no Corpse class, so the hunt's last toil butchers at the kill site through the shipped recipe and HaulGeneral carries the meat home, reaching RimWorld's end state by the only route this port has. Combat AI, which the port had none of: the whole Combat module was complete, tested and unreachable from play, because no JobGiver or JobDriver anywhere ever attacked and the humanlike think tree had no danger tier at all. Who fights is SimWorld's own, since there is no draft to port: anyone armed engages a hostile within acquire radius, anyone at all fights back within melee reach (RimWorld 1:1), and the new TakeUpArms edict raises an unarmed citizen to the first rule. Violence-disabled refuses regardless. A grudge stays personal rather than RimWorld's hostile-to-everyone manhunter, so a provoked animal charges its hunter and walks past everyone else.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 93,
+      "tests": 113,
       "items": [
         {
           "id": "ai.thinktree",
@@ -798,6 +828,21 @@
         {
           "id": "ai.hunt.dormancy",
           "label": "Shipped content can actually hunt: Tribesperson, the kind SettlementFounder generates every citizen as, carried no weaponTags, so no citizen in any generated game held a weapon and the Hunt giver was wired and permanently dormant. Guarded by a test that arms nobody",
+          "done": true
+        },
+        {
+          "id": "ai.combat",
+          "label": "Pawns fight: JobGiver_AIFightEnemies above needs in both think trees, JobDriver_AttackMelee/AttackStatic, AttackTargetFinder, and natural weapons synthesised in code because no race in content defines tools. Hunted animals now fight back — the hunting lane left that open because no attack job existed",
+          "done": true
+        },
+        {
+          "id": "ai.combat.interrupt",
+          "label": "Nothing interrupts a job in flight: the think tree is consulted only when curJob is null, so a sleeping pawn under fire never wakes. RimWorld reaches this with a constant think tree and JobDef.checkOverrideOnDamage, neither of which exists here",
+          "done": false
+        },
+        {
+          "id": "ai.corpses",
+          "label": "Corpses haul and butcher: WorkGiver_HaulCorpses, and butchery at a bench as a work giver rather than a bill — a bill's products are a fixed def+count list that cannot express a per-individual yield, and nothing in this port ever creates a bill, so bill-gated butchery would be content that can never fire",
           "done": true
         }
       ]
@@ -1387,7 +1432,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/God · EdictDef · EdictWorker · EdictWorker_ExemptMinors · ThoughtWorker_UnderEdict · GodManager · GodRollup · GodTuning; src/SimWorld.Core/AI/JobGiver_Edicts.cs · WorkGiverScanUtility.cs (shared with JobGiver_Work)",
       "status": "translated",
-      "tests": 60,
+      "tests": 70,
       "items": [
         {
           "id": "god.edicts",
@@ -1441,8 +1486,8 @@
         },
         {
           "id": "god.fullcap",
-          "label": "Measured: focus bounds Full-tier to one settlement's live roster, which is itself unbounded in time — demography doubles it about every 17 years, crossing the spec's Full ceiling around year 115-125. A per-settlement Full cap needs a significance ordering that does not exist yet; recorded, not invented",
-          "done": false
+          "label": "Full-tier budget with a significance ordering. AttentionBudget seats the TieringTuning.FullTierBudget most significant citizens of the focused settlement at Full and withholds attention from the rest, ordered hasRole > chronicleNamed > relatedToPromoted > attending: the first three are properties of the person and held by few, the fourth is a property of the camera and held by the whole roster, so it yields first. Ties break on thingIDNumber ascending, which is unique, unchanging across a save, and monotone in creation order — so every new citizen sorts below every incumbent and demography can add a thousand people without displacing anyone, which is what makes it thrash-free under growth. A measured century run holds Full flat at the budget from year 80 while the roster passes 1,132",
+          "done": true
         }
       ]
     }

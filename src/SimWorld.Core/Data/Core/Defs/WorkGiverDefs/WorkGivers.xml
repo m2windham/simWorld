@@ -12,6 +12,9 @@
     <workType>Firefighter</workType>
     <priorityInType>100</priorityInType>
     <emergency>true</emergency>
+    <!-- Wired to a real scanner (system: fire). Until this pass there was no Fire class in the codebase at
+         all, so this def had no worker and nothing it could ever have targeted. -->
+    <giverClass>SimWorld.AI.WorkGiver_FightFires</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -363,7 +366,13 @@
     <verb>Haul</verb>
     <gerund>hauling</gerund>
     <workType>Hauling</workType>
-    <priorityInType>90</priorityInType>
+    <!-- Above HaulGeneral (100), not below it as this placeholder sat while it was inert. A corpse is an
+         ordinary haulable Item in this port, so HaulGeneral would find one too; the point of a separate
+         giver — RimWorld ships one for the same reason — is that bodies are cleared before loose clutter.
+         Wired to a real scanner (system: corpses): Things.Corpse exists now, which is the only thing this
+         def was ever waiting for. See WorkGiver_HaulCorpses's own doc. -->
+    <priorityInType>110</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_HaulCorpses</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -373,6 +382,10 @@
     <gerund>cleaning</gerund>
     <workType>Cleaning</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner (system: filth). Before this there was no Filth class in the codebase at
+         all, so the whole Cleaning work type had nothing it could ever target. See WorkGiver_CleanFilth
+         for the scan and CleaningBounds for what stops cleaning running forever. -->
+    <giverClass>SimWorld.Filth.WorkGiver_CleanFilth</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>

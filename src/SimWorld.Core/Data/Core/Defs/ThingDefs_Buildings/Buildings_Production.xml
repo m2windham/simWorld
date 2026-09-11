@@ -39,6 +39,12 @@
     <label>butcher table</label>
     <description>A table for butchering carcasses into meat and other resources.</description>
     <category>Building</category>
+    <!-- The one bench the workbenches pass above left without a thingClass, because butchery had nothing to
+         butcher: ThingMaker.MakeThing throws on a ThingDef with no thingClass, so this bench could be named
+         by a recipe (ButcherAnimal's recipeUsers) but never actually built. Corpses make it real work
+         (system: corpses — AI.WorkGiver_ButcherCorpse finds a bench by asking which buildings a butchery
+         recipe names, so no comp is needed for that; see its own doc). -->
+    <thingClass>SimWorld.Building.Building</thingClass>
     <statBases><MarketValue>150</MarketValue></statBases>
   </ThingDef>
 

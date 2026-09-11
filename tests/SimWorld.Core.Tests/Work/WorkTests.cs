@@ -39,10 +39,12 @@ namespace SimWorld.Tests.Work
             Assert.Empty(Content.Result.Errors);
             Assert.Equal(12, DefDatabase<SkillDef>.DefCount);
             Assert.Equal(20, DefDatabase<WorkTypeDef>.DefCount);
-            // 28: the capture loop (system 12: Factions) added WardenAttemptRecruit and wired WardenFeed —
-            // see src/SimWorld.Core/Data/Core/Defs/WorkGiverDefs/WorkGivers.xml. AI/** owns that content this
-            // round; Work/** does not, so only this literal count moved.
-            Assert.Equal(28, DefDatabase<WorkGiverDef>.DefCount);
+            // 29: the corpse module (system: corpses) added ButcherCorpses in its own
+            // WorkGiverDefs/WorkGivers_Butchery.xml and wired HaulCorpses, which had been a WorkGiver_Pending
+            // placeholder since there was no Corpse class for it to find. Before that, 28 — the capture loop
+            // (system 12: Factions) adding WardenAttemptRecruit and wiring WardenFeed. Work/** owns none of
+            // that content; only this literal count moves.
+            Assert.Equal(29, DefDatabase<WorkGiverDef>.DefCount);
         }
 
         [Fact]

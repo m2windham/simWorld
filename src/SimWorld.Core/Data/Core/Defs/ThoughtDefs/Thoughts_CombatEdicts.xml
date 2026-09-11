@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The mood consequence of the TakeUpArms edict (EdictDefs/Edicts_Combat.xml, system 9: AI — combat). Its own
+    file rather than an addition to Thoughts_Edicts.xml, for the reason CLAUDE.md gives: the loader reads
+    every file under this directory, and a new file cannot conflict with another lane mid-edit on the shared
+    one. Same situational ThoughtWorker_UnderEdict shape as the five there, so it appears and disappears
+    exactly with GodManager.Activate/Deactivate and leaves nothing behind.
+
+    Steeper than any of them (-3 to -4 there, scaled by how much routine work an edict displaces) because
+    this one does not displace work at all — it asks people to go and meet an armed enemy with whatever is in
+    their hands.
+  -->
+
+  <ThoughtDef>
+    <defName>UnderTakeUpArms</defName>
+    <workerClass>SimWorld.God.ThoughtWorker_UnderEdict</workerClass>
+    <stages>
+      <li>
+        <label>called to arms</label>
+        <description>We are all soldiers now, whether we have a weapon or not.</description>
+        <baseMoodEffect>-6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

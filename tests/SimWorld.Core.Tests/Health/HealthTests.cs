@@ -60,7 +60,8 @@ namespace SimWorld.Tests.Health
             Assert.Equal(2, DefDatabase<BodyDef>.DefCount);
             Assert.Equal(11, DefDatabase<PawnCapacityDef>.DefCount);
             Assert.Equal(23, DefDatabase<BodyPartTagDef>.DefCount);
-            Assert.Equal(6, DefDatabase<DamageDef>.DefCount);
+            // Cut/Stab/Blunt/Bullet/Bite/Burn, plus Flame (system: fire — Damages_Fire.xml).
+            Assert.Equal(7, DefDatabase<DamageDef>.DefCount);
             Assert.True(DefDatabase<HediffDef>.DefCount >= 16);
             Assert.NotNull(HediffDefOf.MissingBodyPart);
             Assert.NotNull(PawnCapacityDefOf.Moving);

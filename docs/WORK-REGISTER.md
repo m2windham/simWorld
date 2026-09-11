@@ -42,30 +42,38 @@ Unclaimed items below are open. Taking one means claiming it first.
 Ordered by what blocks the most. The history below each heading is kept deliberately —
 the original finding is what makes the progress legible.
 
-### 1. Four work types have no worker — down from eighteen
+### 1. One work type has no worker — down from eighteen
 
-Work givers carrying a real `giverClass` have gone **10 of 28 → 24 of 28** across two
-batches. A settlement can now haul, research at a bench, craft and cook, treat, rescue
-and feed its wounded, hunt, repair what it built and clear plants out of its own way.
+Work givers carrying a real `giverClass` have gone **10 of 28 → 24 of 28 → 28 of 29**
+across three batches. Counted from content, not asserted: one `WorkGiverDef` is bare, and
+it is `WardenDeliverFood`, left deliberately because `DoctorFeedHumanlikes` reuses its
+mechanism with a different target filter and the two would race one reservation.
 
-Four remain bare, and three are not work to do. `HaulCorpses`, `CleanFilth` and
-`FightFires` have no `Corpse`, `Filth` or `Fire` class anywhere in this codebase: they
-are blocked on systems that do not exist, and a stub worker would be worse than the
-honest gap. `WardenDeliverFood` is deliberately left — `DoctorFeedHumanlikes` reuses its
-mechanism with a different target filter.
+A settlement now hauls, researches, crafts, cooks, treats, rescues and feeds its wounded,
+hunts, repairs what it built, clears plants out of its own way, carries its dead away,
+butchers a carcass at a bench, puts out fires and cleans up after itself.
 
-**Hunting was wired and dormant for one batch.** `WorkGiver_Hunt` requires a ranged
-weapon, `SettlementFounder` generates every citizen as `Tribesperson`, and that kind
-shipped with no `weaponTags` — so no citizen in any generated game held a weapon. Every
-unit test of the mechanism passed, because they arm their own pawns. Worth remembering as
-a shape: a wired giver plus content that cannot reach it looks exactly like a finished
-feature.
+**The last three came off the list by building what they were blocked on.** `HaulCorpses`,
+`FightFires` and `CleanFilth` had no `Corpse`, `Fire` or `Filth` class anywhere in this
+codebase — the oldest entries here, and the block was real rather than a missing decision.
+All three systems landed together. The shape worth keeping: a giver blocked on a missing
+*system* is not the same kind of gap as one blocked on a missing *decision*, and this
+register did not distinguish them for two batches.
 
-Known gaps inside what landed: `DoBillsArt` is wired with no bench, since sculpture needs
-a beauty and quality subsystem this port has not built; a pawn never tends itself,
-matching RimWorld, so a lone injured citizen with nobody around goes untended; a hunted
-animal cannot fight back, because no attack `Job` or `JobGiver` exists anywhere. Bill
-ingredient reservation, listed here as a gap last batch, is **closed**.
+**A wired giver plus content that cannot reach it looks exactly like a finished feature.**
+Hunting was wired and dormant for a full batch because `Tribesperson` shipped with no
+`weaponTags`, so no citizen in any generated game held a weapon — and every unit test
+passed throughout, because they arm their own pawns. The two lanes after it went looking
+for the same trap in their own work and both found it: `ThingDef` carried no flammability
+field at all and nothing in content was flammable, so fire could not have spread; and
+`AreaManager.Home` shipped dormant and has never been populated, so RimWorld's home-area
+gate on cleaning would have made every fire of that giver impossible. Both were closed
+before shipping rather than after.
+
+Known gaps inside what landed: `DoBillsArt` is wired with no bench; a pawn never tends
+itself, matching RimWorld; **nothing interrupts a job in flight**, so a sleeping pawn under
+fire never wakes; and rain extinguishment is ported and tested with no weather module to
+drive it.
 
 ### The original finding, for the record
 
@@ -76,29 +84,88 @@ cook, craft at a bench, treat an injury, or research anything — the tech tree,
 ladder and the divergence work all stood above a research work type no citizen could
 perform.
 
-### 2. Attention drives the tiering — done, and it does not bound enough
+### 1b. The combat module was unreachable from play
+
+Worth its own entry because it was larger than the work-giver gap and nobody had noticed
+it. `Combat/` — verbs, armour, cover, downing, death, capture — was complete and tested.
+**Nothing in the AI layer ever attacked.** No `JobGiver_*Attack*`, no `JobDriver_*Attack*`
+anywhere, and the humanlike think tree ran mental state → food → rest → orders → edicts →
+work → wander with no danger tier at all. A raid arrived and everyone kept farming.
+
+Closed. Who fights is SimWorld's own, since there is no draft to port: anyone armed engages
+a hostile within acquire radius, anyone at all fights back within melee reach, and a new
+`TakeUpArms` edict raises an unarmed citizen to the first rule.
+
+**Two things this left open, both on the host seam.** Raids do reach a map, but only a map
+that exists — and `GodCommands.FocusSettlement` moves attention **without generating the
+interior**, while `Game.EnterSettlement` is host-facing and called by nothing inside the
+core. A host that opens a town through the god view without also entering it has attention,
+no map, and raids that resolve mapless forever. Separately, `ChooseTargetSettlement` weights
+across all of a civilization's settlements, so even with one town open a raid often picks an
+unopened one. **These are the next things to close**, and the first is squarely this repo's.
+
+Also open: nothing interrupts a job in flight. The think tree is consulted only when
+`curJob` is null, so a pawn mid-job does not react until that job ends — concretely, a
+sleeping pawn under fire never wakes. RimWorld reaches this with a constant think tree and
+`JobDef.checkOverrideOnDamage`; neither exists here, and both need edits to
+`Pawn_JobTracker` and `Pawn_HealthTracker`.
+
+### 2. Attention drives the tiering, and the Full tier is now bounded in time as well as space
 
 **Wired.** Attention is the god's focus: zero or one settlement, named across the host
 seam by world tile. `God.AttentionManager` applies focus changes immediately and
 reconciles from `GodManager.GodTick`; citizens of unattended settlements fall to Interval
 and settle to Statistical after a year of continuous insignificance.
 
-What the measurement then showed is the part that matters. Focus bounds Full-tier to **one
-settlement's live roster**, which is itself unbounded in time — demography doubles it
-about every 17 years, and it crosses the spec's Full ceiling around **year 115–125**:
+**Capped.** Focus bounded Full-tier to one settlement's live roster, which is a bound in
+space and none at all in time — demography doubles that roster about every 17 years, and
+it crossed the spec's Full ceiling around year 115–125. `God.AttentionBudget` closes it:
+the `TieringTuning.FullTierBudget` most significant citizens of the focused settlement
+hold Full and the rest stay where they are **even while attended**.
+
+The decision it needed was a **significance ordering** between the four promotion
+reasons, which nothing expressed. It is now `hasRole` → `chronicleNamed` →
+`relatedToPromoted` → `attending`, tie-broken by `thingIDNumber` ascending. The first
+three are properties of the person and are held by few; the fourth is a property of the
+camera and is held by the whole roster at once, so attention is the only one that can
+outgrow a budget and the first that must yield. The cap holds back the merely-looked-at,
+never the leader. Spec §11.3 carries the full reasoning and the three invariants it does
+not touch (demotion constraint not promotion clock, lossless in identity, no thrash).
+
+**The budget is 500**, read off `docs/perf/baseline.md` rather than chosen: it is the
+largest measured population at which per-pawn cost is still flat (14.0–14.1 ms/pawn-day
+through N=500, degrading to 17.4 at N=1,000), and it sits under the low end of §10's
+projected 750–1,500 ceiling for a population actually carrying wounds and illness.
+
+The finding that motivated the lane, unchanged — the Full-tier roster with attention as
+the only bound:
 
 | year             | 10 | 40  | 60  | 80  | 100   | 120   | 160    |
 | ---------------- | -- | --- | --- | --- | ----- | ----- | ------ |
 | Full-tier roster | 67 | 163 | 300 | 656 | 1,412 | 3,179 | 16,868 |
 
-The fix is a Full-tier cap **inside** the focused settlement — keep the N most significant
-at Full, hold the rest at Interval even while attended. It is unclaimed and it needs a
-decision first: a **significance ordering** between the four promotion reasons (role,
-chronicle mention, relation, attention), which does not exist. Nothing ranks them today.
+And a century of real demography through the cap
+(`AttentionBudgetTests.A_century_of_demography_holds_the_Full_tier_flat_instead_of_doubling_it`
+— a different seed and band from the run above, so its roster climbs more slowly; the
+load-bearing row is the second one):
 
-Two related holes, both unclaimed: `Notify_RoleChanged` has no caller because no Role
-system exists, and `Notify_ChronicleNamed` has no policy for what earns a citizen
-individual distinction. Attention is currently the only one of the four actually driven.
+| year      | 10 | 40  | 60  | 80  | 100   |
+| --------- | -- | --- | --- | --- | ----- |
+| roster    | 51 | 127 | 257 | 555 | 1,132 |
+| Full tier | 51 | 127 | 257 | 500 | 500   |
+
+The roster more than doubles over the century's second half; the Full tier reaches the
+budget at year 80 and stops. Past year 100 it holds by construction rather than by
+measurement — the test asserts the budget is never exceeded at any sweep, not only at the
+decade samples — and the run was stopped at a century because that is where the finding
+was.
+
+Two related holes remain. `Notify_RoleChanged` now has one caller — `MigrationManager`
+marks an arriving migrant a founder — but no Role system elects a leader, and
+`Notify_ChronicleNamed` fires only for a death the `MomentCurator` judged worth
+remembering, which is a policy for the dead and none at all for the living. Both are
+still unclaimed, and both now matter more than they did: they are the top of the
+ordering the cap spends its budget on.
 
 ### 3. "Endless" is endless now
 

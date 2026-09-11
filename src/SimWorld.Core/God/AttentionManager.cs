@@ -42,6 +42,13 @@ namespace SimWorld.God
     /// insignificant), or a focused settlement that has ceased to exist are all states no focus-change event
     /// ever fired for. Both are idempotent — re-notifying a citizen who already holds the flag recomputes to
     /// the tier they are already at and changes nothing.
+    ///
+    /// <para/><b>Focus bounds Full tier to one settlement; it does not bound it.</b> A roster grows —
+    /// demography doubles it about every 17 years — so "the focused settlement" is a bound in space and none
+    /// at all in time. Both paths therefore hand the arriving settlement to <see cref="AttentionBudget"/>,
+    /// which seats <see cref="TieringTuning.FullTierBudget"/> citizens in significance order and tells the
+    /// rest their attention does not count. Everything about that decision — the ordering, the tie-break, and
+    /// why attention is the reason that yields — lives there rather than here.
     /// </summary>
     public sealed class AttentionManager : IExposable
     {
@@ -64,9 +71,10 @@ namespace SimWorld.God
 
         /// <summary>
         /// Moves the god's attention to <paramref name="settlement"/>: every citizen of the settlement losing
-        /// focus is told it left, then every citizen of the new one is told it arrived. Returns false — and
-        /// notifies nobody — when that settlement is already the focus, so a host that re-sends its current
-        /// state cannot churn the tier system.
+        /// focus is told it left, then every citizen of the new one is told it arrived — the ones
+        /// <see cref="AttentionBudget"/> could seat with their attention counting, the rest with it withheld.
+        /// Returns false — and notifies nobody — when that settlement is already the focus, so a host that
+        /// re-sends its current state cannot churn the tier system.
         /// </summary>
         public bool Focus(World.Settlement settlement)
         {
@@ -76,8 +84,8 @@ namespace SimWorld.God
             World.Settlement? previous = SettlementAt(focusedTile);
             focusedTile = settlement.tile;
 
-            if (previous != null) SetAttending(previous, false);
-            SetAttending(settlement, true);
+            if (previous != null) SetUnattended(previous);
+            AttentionBudget.Apply(settlement);
             return true;
         }
 
@@ -92,7 +100,7 @@ namespace SimWorld.God
             World.Settlement? previous = SettlementAt(focusedTile);
             focusedTile = NoFocus;
 
-            if (previous != null) SetAttending(previous, false);
+            if (previous != null) SetUnattended(previous);
             return true;
         }
 
@@ -106,7 +114,9 @@ namespace SimWorld.God
         /// <para/>Cost is O(settlements) + O(every Full/Interval citizen), never O(Statistical population):
         /// a settlement's bare <see cref="World.Settlement.StatisticalPopulation"/> has no citizen to walk,
         /// by that tier's own design, and is skipped rather than materialised — the same guarantee
-        /// <see cref="GodRollup"/> makes for the read model.
+        /// <see cref="GodRollup"/> makes for the read model. The focused settlement adds an O(R log R) sort
+        /// of its own roster on top, and only once that roster is over budget — see
+        /// <see cref="AttentionBudget.Apply"/>, which does no ordering at all below it.
         /// </summary>
         public void Reconcile()
         {
@@ -120,7 +130,16 @@ namespace SimWorld.God
                 if (!(objects[i] is World.Settlement settlement)) continue;
 
                 bool attended = focusedTile != NoFocus && settlement.tile == focusedTile;
-                if (attended) focusStillExists = true;
+                if (attended)
+                {
+                    focusStillExists = true;
+
+                    // The focused settlement's roster is the one place attention can outgrow what Full tier
+                    // costs, so it is the one place a budget is spent — see AttentionBudget for the ordering
+                    // and the tie-break.
+                    AttentionBudget.Apply(settlement);
+                    continue;
+                }
 
                 IReadOnlyList<Pawn> citizens = settlement.Citizens;
                 for (int c = 0; c < citizens.Count; c++)
@@ -128,8 +147,8 @@ namespace SimWorld.God
                     Pawn citizen = citizens[c];
                     if (citizen.Dead) continue;
 
-                    citizen.tier.Notify_AttentionChanged(attended);
-                    if (!attended) SettlePolicy(citizen);
+                    citizen.tier.Notify_AttentionChanged(false);
+                    SettlePolicy(citizen);
                 }
             }
 
@@ -153,14 +172,18 @@ namespace SimWorld.God
             citizen.tier.DemoteToStatistical();
         }
 
-        private static void SetAttending(World.Settlement settlement, bool attending)
+        /// <summary>Tells every living citizen of a settlement the god has stepped away from that nobody is
+        /// looking any more. The mirror of <see cref="AttentionBudget.Apply"/>, and deliberately not the same
+        /// method with a flag: losing attention has no budget to spend and no ordering to compute — everyone
+        /// loses it at once — while gaining it has both.</summary>
+        private static void SetUnattended(World.Settlement settlement)
         {
             IReadOnlyList<Pawn> citizens = settlement.Citizens;
             for (int i = 0; i < citizens.Count; i++)
             {
                 Pawn citizen = citizens[i];
                 if (citizen.Dead) continue;
-                citizen.tier.Notify_AttentionChanged(attending);
+                citizen.tier.Notify_AttentionChanged(false);
             }
         }
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Corpse work (system: corpses). Its own file, like JobDefs_Hunting.xml / JobDefs_Hauling.xml alongside it.
+
+    Hauling a corpse needs no JobDef of its own: a corpse is an ordinary haulable Item, so WorkGiver_HaulCorpses
+    issues the same HaulToCell job (JobDefs_Hauling.xml) every other haul uses — see that giver's own doc.
+  -->
+
+  <JobDef>
+    <defName>ButcherCorpse</defName>
+    <driverClass>SimWorld.AI.JobDriver_ButcherCorpse</driverClass>
+    <reportString>butchering a carcass.</reportString>
+  </JobDef>
+
+</Defs>

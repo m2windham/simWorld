@@ -54,6 +54,27 @@ label saying which module they land with.
 - Every `[DefOf]` field must exist in content — the content test asserts the load
   produces zero config and zero DefOf errors.
 
+## Never build and test at the same time in one tree
+
+`dotnet test` copies `src/SimWorld.Core/Data/` next to the test assembly, and the
+content tests load defs from *that* copy. A `dotnet build` running at the same
+time rewrites that copy while a test process is holding an assembly built from
+the old source — so the XML names a type the loaded DLL does not have yet, and
+the load reports:
+
+```text
+Could not find type 'SimWorld.AI.JobDriver_ButcherCorpse' for <driverClass>
+```
+
+It surfaces as `CorePackTests.The_shipped_content_loads_through_the_pack_path…`
+failing with a non-empty error collection, intermittently, on a commit that
+passes when you re-run it. It is not a flake and not a product bug: it is two
+processes sharing `artifacts/`. It cost one lane a "could not reproduce" report
+and three separate investigations before the error text named the file.
+
+CI is unaffected — it builds and then tests, in one job, serially. This only
+bites locally, and only when you overlap the two. Run them one after the other.
+
 ## Namespaces that shadow their own types
 
 `SimWorld.Map` is both a namespace and, inside it, the class `Map`. Same for
