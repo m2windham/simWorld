@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Corpse categories (system: corpses). Its own file rather than more entries in the core category tree:
+    DefLoader.AddDirectory loads every XML file under a Def folder recursively, so additive content needs no
+    edit to a shared file (CLAUDE.md).
+
+    Nothing in content names a corpse ThingDef directly, because there is no corpse ThingDef in content: one
+    is generated per race at runtime (Things.CorpseDefGenerator, RimWorld's own ThingDefGenerator_Corpses).
+    These categories are how content and a player still get a handle on them — "this stockpile accepts animal
+    corpses" is one category, whatever races the world turns out to have.
+  -->
+
+  <ThingCategoryDef>
+    <defName>Corpses</defName>
+    <label>corpses</label>
+    <parent>Root</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>CorpsesAnimal</defName>
+    <label>animal corpses</label>
+    <parent>Corpses</parent>
+  </ThingCategoryDef>
+
+  <ThingCategoryDef>
+    <defName>CorpsesHumanlike</defName>
+    <label>humanlike corpses</label>
+    <parent>Corpses</parent>
+  </ThingCategoryDef>
+
+</Defs>

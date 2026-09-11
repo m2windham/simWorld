@@ -409,7 +409,16 @@ namespace SimWorld.World
             // Citizens once that reference resolves (ResolvingCrossRefs) — by which point LoadingVars has
             // already run for the *entire* save (interiorMap's own deep list included, wherever in the
             // document it sits), so the one real Pawn instance both sides point at already exists.
-            List<Pawn>? unspawned = Scribe.mode == LoadSaveMode.Saving ? citizens.Where(p => !p.Spawned).ToList() : citizens;
+            // "Owned by something else" is the real test, and being spawned is only the common case of it: a
+            // citizen who has just died is neither spawned nor gone from the roster yet (PruneDeadCitizens
+            // runs on the rare sync, not at the moment of death), but their body is already inside a
+            // Things.Corpse that the map's own Thing list deep-saves — so deep-saving them here as well
+            // would reconstruct the same citizen twice on load, the exact duplication the comment above
+            // exists to prevent. They are simply left out: the next sync would drop them from the roster
+            // anyway, and the one real copy of them lives on in the corpse.
+            List<Pawn>? unspawned = Scribe.mode == LoadSaveMode.Saving
+                ? citizens.Where(p => !p.Spawned && p.corpse == null).ToList()
+                : citizens;
             Scribe_Collections.Look(ref unspawned, "citizens", LookMode.Deep);
             if (Scribe.mode == LoadSaveMode.LoadingVars) citizens = unspawned ?? new List<Pawn>();
 

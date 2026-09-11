@@ -69,6 +69,15 @@ namespace SimWorld.Pawns
         /// <summary>Environment sampler for seeker needs (beauty, comfort, outdoors, room); the map supplies it later.</summary>
         public IEnvironmentSampler? environment;
 
+        /// <summary>
+        /// The <see cref="Things.Corpse"/> holding this pawn's body, once it has died on a map (RimWorld:
+        /// <c>Pawn.Corpse</c>, which reads the ThingOwner holding the pawn — this port has no container
+        /// layer, so the corpse writes the link here instead; see <see cref="Things.Corpse.InnerPawn"/>).
+        /// Null for a living pawn and for one that died unspawned, which leaves no body. Never Scribed: the
+        /// corpse re-establishes it on load from the side that deep-saves the pawn.
+        /// </summary>
+        [Unsaved] public Things.Corpse? corpse;
+
         public Pawn()
         {
         }
@@ -207,9 +216,21 @@ namespace SimWorld.Pawns
             if (jobs?.curJob != null) jobs.EndCurrentJob(JobCondition.Incompletable, startNewJob: false);
         }
 
+        /// <summary>
+        /// The one funnel every death in this port passes through (<see cref="Pawn_HealthTracker.Kill"/>
+        /// calls it however the pawn died) — and therefore where the body is made.
+        /// <para/>
+        /// The current job is ended <b>before</b> the body goes into the corpse, and that order is
+        /// load-bearing: <see cref="Pawn_JobTracker.EndCurrentJob"/> releases this pawn's reservations
+        /// through <c>pawn.Map</c>, which is null the moment <see cref="Things.CorpseMaker"/> takes it off
+        /// the map — so ending afterwards would strand every claim this pawn held (a bench, a bed, the
+        /// stockpile cell it was walking to) permanently reserved by a dead man.
+        /// </summary>
         public virtual void Notify_Died()
         {
             mindState?.mentalStateHandler.ClearMentalStateDirect();
+            if (jobs?.curJob != null) jobs.EndCurrentJob(JobCondition.Incompletable, startNewJob: false);
+            Things.CorpseMaker.MakeAndSpawnCorpseFor(this);
         }
 
         /// <summary>Spreads per-pawn periodic work across ticks (RimWorld: <c>Gen.IsHashIntervalTick</c>).</summary>
