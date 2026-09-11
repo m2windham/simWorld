@@ -26,9 +26,12 @@ namespace SimWorld.Director
     /// "reaching an era is an event, not just a readout" — every era crossing is a moment, not only the first,
     /// because the era ladder is itself small and fixed (bounded by content, not by how long the game runs), so
     /// marking every one costs nothing toward the century test.</item>
-    /// <item><b>Records.</b> <see cref="ConsiderDeathRecord"/> tracks the longest lifespan reached at death so
-    /// far and marks a moment only when that record is broken — a ratchet that, by definition, fires less and
-    /// less often the longer a game runs (each new record must beat every one before it), never more.</item>
+    /// <item><b>Records.</b> <see cref="ConsiderDeathRecord"/> and <see cref="ConsiderLifeRecord"/> share one
+    /// ratchet — the longest life this civilization has ever known, completed or still running — and mark a
+    /// moment only when it is broken. By definition that fires less and less often the longer a game runs
+    /// (each new record must beat every one before it), never more. The two halves are one number on purpose:
+    /// a life is not a record for having ended, and a civilization that has watched someone reach ninety does
+    /// not find an eighty-year-old remarkable afterwards.</item>
     /// </list>
     /// </summary>
     public sealed class MomentCurator : IExposable
@@ -42,7 +45,13 @@ namespace SimWorld.Director
         };
 
         private readonly HashSet<string> seenCategories = new HashSet<string>();
-        private float longestLifespanYearsAtDeath = -1f;
+
+        /// <summary>The longest life this civilization has ever known — completed (<see cref="ConsiderDeathRecord"/>)
+        /// or still being lived (<see cref="ConsiderLifeRecord"/>). One ratchet for both; see the class doc.
+        /// Its Scribe label is still <c>longestLifespanYearsAtDeath</c>, from when a death was the only thing
+        /// that could move it, so saves written before the living half existed still load.</summary>
+        private float longestLifeYearsKnown = -1f;
+
         private readonly List<ChronicleEntry> moments = new List<ChronicleEntry>();
 
         /// <summary>The curated history: every entry this curator has ever flagged, kept separately from
@@ -51,6 +60,11 @@ namespace SimWorld.Director
         /// enough routine chronicle entries came after it — the whole point of a moments list is that it reads
         /// back as history, not as a log with a retention window.</summary>
         public IReadOnlyList<ChronicleEntry> Moments => moments;
+
+        /// <summary>The longest life this civilization has ever known, in years, or a negative number before
+        /// it has known any. Read by <see cref="ChronicleFame"/>, which is the policy that decides what a
+        /// living citizen passing it means; this class only keeps the number.</summary>
+        public float LongestLifeYearsKnown => longestLifeYearsKnown;
 
         /// <summary>
         /// Considers one freshly-recorded chronicle entry under the "first of its kind" / "always" rules
@@ -70,21 +84,47 @@ namespace SimWorld.Director
         }
 
         /// <summary>
-        /// The "records" rule: flags <paramref name="entry"/> only when <paramref name="ageYearsAtDeath"/>
-        /// beats every death this curator has seen before. Safe to call alongside <see cref="Consider"/> on the
-        /// same entry (a death that is both a "first death by this cause" and a new longevity record is only
-        /// added to <see cref="Moments"/> once — the <see cref="ChronicleEntry.isMoment"/> guard prevents the
-        /// double-add).
+        /// The "records" rule at a death: flags <paramref name="entry"/> only when
+        /// <paramref name="ageYearsAtDeath"/> beats every life this curator has known — which, since
+        /// <see cref="ConsiderLifeRecord"/> exists, includes the ones still being lived. Safe to call
+        /// alongside <see cref="Consider"/> on the same entry (a death that is both a "first death by this
+        /// cause" and a new longevity record is only added to <see cref="Moments"/> once — the
+        /// <see cref="ChronicleEntry.isMoment"/> guard prevents the double-add).
         /// </summary>
-        public void ConsiderDeathRecord(ChronicleEntry entry, float ageYearsAtDeath)
+        public void ConsiderDeathRecord(ChronicleEntry entry, float ageYearsAtDeath) =>
+            ConsiderLifeRecord(entry, ageYearsAtDeath);
+
+        /// <summary>
+        /// The same "records" rule read off a life still being lived: flags <paramref name="ageYears"/> as a
+        /// moment only when it beats every life this civilization has known, dead or living, and advances the
+        /// ratchet when it does. <see cref="ConsiderDeathRecord"/> is this method under its older name —
+        /// there is one record and two ways to reach it, not two records.
+        /// <para/>
+        /// Silently advancing the ratchet without a moment is not a case this method has: a caller that wants
+        /// to keep the number current for a citizen already distinguished passes no entry — see
+        /// <see cref="AdvanceLifeRecord"/>.
+        /// </summary>
+        public void ConsiderLifeRecord(ChronicleEntry entry, float ageYears)
         {
             if (entry == null) throw new ArgumentNullException(nameof(entry));
-            if (ageYearsAtDeath <= longestLifespanYearsAtDeath) return;
-            longestLifespanYearsAtDeath = ageYearsAtDeath;
+            if (!AdvanceLifeRecord(ageYears)) return;
 
             if (entry.isMoment) return; // already flagged via Consider; do not add it to Moments twice.
             entry.isMoment = true;
             moments.Add(entry);
+        }
+
+        /// <summary>
+        /// Moves the ratchet to <paramref name="ageYears"/> if that beats it, and answers whether it did,
+        /// writing nothing either way. This is how the reigning record-holder's own ageing keeps the number
+        /// honest: every year they live is a new longest life, and the civilization does not remark on it a
+        /// second time (<see cref="ChronicleFame"/>'s own doc).
+        /// </summary>
+        public bool AdvanceLifeRecord(float ageYears)
+        {
+            if (ageYears <= longestLifeYearsKnown) return false;
+            longestLifeYearsKnown = ageYears;
+            return true;
         }
 
         /// <summary>Derives a stable category from a free-form chronicle line: the text before its first colon
@@ -105,7 +145,7 @@ namespace SimWorld.Director
             seenCategories.Clear();
             if (categoryList != null) foreach (string c in categoryList) seenCategories.Add(c);
 
-            Scribe_Values.Look(ref longestLifespanYearsAtDeath, "longestLifespanYearsAtDeath", -1f);
+            Scribe_Values.Look(ref longestLifeYearsKnown, "longestLifespanYearsAtDeath", -1f);
 
             List<ChronicleEntry>? momentList = new List<ChronicleEntry>(moments);
             Scribe_Collections.Look(ref momentList, "moments", LookMode.Deep);

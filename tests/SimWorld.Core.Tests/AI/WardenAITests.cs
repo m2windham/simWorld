@@ -79,13 +79,14 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
-        public void WardenDeliverFood_stays_the_pending_placeholder()
+        public void WardenDeliverFood_is_the_other_side_of_this_givers_own_Downed_split()
         {
-            // Deliberate: see WorkGiver_Warden_Feed's own doc and this WorkGiverDef's XML comment for why —
-            // a non-downed prisoner already reaches food entirely on its own via JobGiver_GetFood in this
-            // port, so there is no ambulatory-prisoner case left for RimWorld's DeliverFood to cover here.
+            // It was the pending placeholder for two passes, on the grounds recorded in this file's own doc —
+            // no room system, therefore no distinct case. Building.RoomTracker landed and it has one: the
+            // ambulatory prisoner whose room holds nothing to eat. The two givers still never share a
+            // patient, which is what this assertion is really about. See WardenDeliverFoodTests.
             WorkGiverDef deliverFood = DefDatabase<WorkGiverDef>.GetNamed("WardenDeliverFood");
-            Assert.IsType<WorkGiver_Pending>(deliverFood.Worker);
+            Assert.IsType<WorkGiver_Warden_DeliverFood>(deliverFood.Worker);
         }
 
         // ---- WorkGiver_Warden_AttemptRecruit ----

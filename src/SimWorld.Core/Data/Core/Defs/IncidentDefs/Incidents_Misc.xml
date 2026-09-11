@@ -2,9 +2,11 @@
 <Defs>
 
   <!--
-    Everyday incidents. Most use IncidentWorker_Placeholder: they validate and record that they fired, but
-    their real effect (spawning a wanderer pawn, weather changing the map) belongs to systems that don't
-    exist yet (see IncidentWorker_Placeholder's doc comment). TraderCaravanArrival now picks a real,
+    Everyday incidents. Some still use IncidentWorker_Placeholder: they validate and record that they fired,
+    but their real effect (spawning a wanderer pawn, darkening the sky) belongs to systems that don't
+    exist yet (see IncidentWorker_Placeholder's doc comment). HeatWave, ColdSnap and Flashstorm no longer do
+    - they make real GameConditions (see Conditions/IncidentWorker_MakeGameCondition and the matching
+    GameConditionDefs, which is where their duration lives). TraderCaravanArrival picks a real,
     non-hostile faction that can trade and generates it a real, priced stock (see
     IncidentWorker_TraderCaravanArrival) — actually walking a caravan onto the world map and opening a
     session at a specific settlement is Caravans/World's to build on top of that, see the worker's own doc.
@@ -75,8 +77,9 @@
     <description>A heat wave raises the temperature.</description>
     <category>Misc</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
-    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <workerClass>SimWorld.Conditions.IncidentWorker_MakeGameCondition</workerClass>
     <baseChance>0.5</baseChance>
+    <minRefireDays>15</minRefireDays>
   </IncidentDef>
 
   <IncidentDef>
@@ -85,8 +88,9 @@
     <description>A cold snap drops the temperature.</description>
     <category>Misc</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
-    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <workerClass>SimWorld.Conditions.IncidentWorker_MakeGameCondition</workerClass>
     <baseChance>0.5</baseChance>
+    <minRefireDays>15</minRefireDays>
   </IncidentDef>
 
   <IncidentDef>
@@ -95,8 +99,9 @@
     <description>A flashstorm brings sudden lightning.</description>
     <category>Misc</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
-    <workerClass>SimWorld.Director.IncidentWorker_Placeholder</workerClass>
+    <workerClass>SimWorld.Conditions.IncidentWorker_MakeGameCondition</workerClass>
     <baseChance>0.3</baseChance>
+    <minRefireDays>10</minRefireDays>
   </IncidentDef>
 
 </Defs>

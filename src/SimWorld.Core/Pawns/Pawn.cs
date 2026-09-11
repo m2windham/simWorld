@@ -61,10 +61,31 @@ namespace SimWorld.Pawns
         public PawnKindDef? kindDef;
         public Name? Name;
 
-        /// <summary>The civilization/faction this pawn belongs to, if any (RimWorld: <c>Pawn.Faction</c>). Set
+        private Faction? factionInt;
+
+        /// <summary>
+        /// The civilization/faction this pawn belongs to, if any (RimWorld: <c>Pawn.Faction</c>). Set
         /// by <see cref="Generation.PawnGenerator"/> from <see cref="Generation.PawnGenerationRequest.Faction"/>;
-        /// a pawn built directly (<c>new Pawn(def, name)</c>) has none.</summary>
-        public Faction? faction;
+        /// a pawn built directly (<c>new Pawn(def, name)</c>) has none.
+        /// <para/>
+        /// <b>A property rather than the plain field it was, for one reason:</b> a spawned pawn's faction is
+        /// what files it in <see cref="AI.AttackTargetsCache"/>, and a change made behind that index's back
+        /// would leave it looking for a raider in the wrong bucket. Recruiting a prisoner, releasing one and
+        /// taming an animal all write this while the pawn stands on a map (RimWorld funnels the same three
+        /// through <c>Pawn.SetFaction</c>, which notifies the same cache). Every read and every write is
+        /// unchanged at the call site; only spawned writes now cost a re-file.
+        /// </summary>
+        public Faction? faction
+        {
+            get => factionInt;
+            set
+            {
+                if (ReferenceEquals(factionInt, value)) return;
+                Faction? old = factionInt;
+                factionInt = value;
+                Map?.mapPawns.AttackTargets.Notify_FactionChanged(this, old);
+            }
+        }
 
         /// <summary>Environment sampler for seeker needs (beauty, comfort, outdoors, room); the map supplies it later.</summary>
         public IEnvironmentSampler? environment;
@@ -239,7 +260,34 @@ namespace SimWorld.Pawns
             return GenMath.PositiveMod(Find.TickManager.TicksGame + HashOffsetTicks(), interval) == 0;
         }
 
-        public int HashOffsetTicks() => thingIDNumber * 3;
+        /// <summary>
+        /// This pawn's fixed phase within any hash interval (RimWorld: <c>Gen.HashOffset</c>, which hashes the
+        /// thing id — it does not scale it).
+        ///
+        /// <para/><b>Why a hash and not a multiply.</b> This used to be <c>thingIDNumber * 3</c>, and ids are
+        /// handed out consecutively, so the offsets were an arithmetic progression with step 3. Against an
+        /// interval divisible by 3 only <c>interval / 3</c> phases were reachable at all, and the pawns piled
+        /// three-deep onto each of them — three times the intended peak-tick cost for every system that
+        /// spreads itself this way, and every one of the busy intervals is divisible by 3 (the constant think
+        /// tree's 30, needs and mental-break checks at 150, bleeding at 60, healing at 600). Hashing the id
+        /// spreads it over the whole modulus for any interval, which is what the idiom was for.
+        ///
+        /// <para/>RimWorld's exact hash constants could not be sourced, so this uses this codebase's own
+        /// <see cref="Rand.HashInt"/> (MurmurHash's finaliser, a bijection on the id). The behaviour that
+        /// matters — full coverage of the modulus, an even share per phase, and the same answer for the same
+        /// id every time — is pinned by <c>PawnHashIntervalTests</c> rather than by the constants.
+        ///
+        /// <para/>Masked rather than <c>Math.Abs</c>'d: the hash really can return <see cref="int.MinValue"/>,
+        /// and <c>Math.Abs</c> of that throws.
+        ///
+        /// <para/><see cref="HashOffsetTuning.UseLegacyMultiplyOffset"/> puts the old offset back for the
+        /// bench's A/B and is never assigned by the sim; what that measured is in
+        /// <c>docs/perf/hash-phasing.md</c>.
+        /// </summary>
+        public int HashOffsetTicks() =>
+            HashOffsetTuning.UseLegacyMultiplyOffset
+                ? HashOffsetTuning.LegacyOffsetTicks(thingIDNumber)
+                : Rand.HashInt(thingIDNumber) & int.MaxValue;
 
         protected virtual void InitializeTrackers()
         {

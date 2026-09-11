@@ -1,0 +1,173 @@
+# Dormant seams in src/SimWorld.Core — reviewed, and green on purpose.
+#
+# Every line names a seam nothing in src/ reaches, and says why that is acceptable today. The audit
+# (tests/SimWorld.Core.Tests/Wiring/WiringAuditTests.cs) fails on any seam that is NOT on this list, and
+# fails again on any line here that has since been wired up. So the file only ever shrinks, and a line
+# disappearing is a system that started working.
+#
+# Format:  <check> <identity> | why it is dormant
+#   interface       an interface with no implementation the game can ever hold
+#   notify          a Notify_* hook nothing raises
+#   worker          a Def field naming a placeholder, abstract or missing worker class
+#   content-silent  code reads the field; every shipped Def leaves it null/false/zero/empty
+#   code-deaf       shipped content sets the field; no line of src/ reads it
+#   unwritten       code reads the state; nothing in src/ ever writes it
+#
+# Adding a line is a decision, not a formality. "Blocked on a module nobody has built" and "the host
+# supplies it" are reasons; "the test was noisy" is not. If a check produces something you cannot explain,
+# the check is wrong — fix or drop it rather than padding this file.
+
+
+# ---- interface: no implementation the game can ever hold ----
+
+interface SimWorld.Quests.IQuestRewardSink | Blocked on economy/factions: QuestManager.RewardSink is the hook that will actually pay a reward out, and nothing constructs a sink yet. Quests award RewardRecords into the void until then.
+
+
+# ---- notify: a hook nothing raises ----
+
+notify SimWorld.Director.StoryWatcher_Adaptation.Notify_ColonistDowned | Blocked on downing: Notify_ColonistDied is raised, its downing twin is not, so adaptation only ever eases after a death. Same shape as the Notify_ColonistDied bug this audit was written after.
+notify SimWorld.Scenario.ScenPart.Notify_PawnGenerated | Blocked on pawn generation calling back into the scenario; the method's own doc says nothing calls it yet and it exists for the shape RimWorld gives every ScenPart.
+
+
+# ---- worker: a Def pointing at a worker that does nothing ----
+
+worker SimWorld.Director.IncidentDef.workerClass = SimWorld.Director.IncidentWorker_Placeholder | Blocked on weather and visitor systems: VisitorGroup, Eclipse, ToxicFallout, HeatWave, ColdSnap and Flashstorm fire, record the firing, and change nothing. Declared as such in Incidents_Misc.xml.
+
+
+# ---- content-silent: code reads it, no shipped Def sets it ----
+
+content-silent SimWorld.Combat.VerbProperties.meleeArmorPenetrationBase | Melee verbs are built at runtime from a Tool (Combat/Tools.cs), which fills this in; no VerbProperties declared in content carries a melee verb of its own.
+content-silent SimWorld.Combat.VerbProperties.meleeDamageBaseAmount | Same as meleeArmorPenetrationBase: every melee verb in play comes from a Tool, so the content-declared field stays zero and AdjustedMeleeDamageAmount never reads a real value from XML.
+content-silent SimWorld.Combat.VerbProperties.minRange | No shipped weapon has a minimum range, so the too-close check in VerbProperties can never refuse a shot. Wired and waiting for content that needs it.
+content-silent SimWorld.Crafting.RecipeDef.defaultIngredientFilter | No shipped recipe declares ingredient filters; every recipe uses its fixed ingredient list instead, so the filter pair is schema only.
+content-silent SimWorld.Crafting.RecipeDef.fixedIngredientFilter | As defaultIngredientFilter — the filter machinery is ported and no shipped recipe reaches it.
+content-silent SimWorld.Crafting.StuffProperties.statOffsets | The four shipped stuffs carry statFactors only; no material adds a flat stat offset, so the offset half of the stuff maths never runs.
+content-silent SimWorld.Defs.StatDef.postProcessCurve | Optional final-value curve; none of the 26 shipped stats uses one, so StatWorker's post-process step is a no-op in practice.
+content-silent SimWorld.Defs.ThingDef.terrainAffordanceNeeded | Content-side gap: GenConstruct enforces terrain affordances, and no shipped building or plant asks for one, so nothing is ever refused a cell for its terrain.
+content-silent SimWorld.Director.IncidentDef.maxEra | No shipped incident is outgrown by a civilization; the ceiling is ported for parity and no content uses it yet.
+content-silent SimWorld.Director.IncidentDef.minPopulation | No shipped incident declares a population floor, so IncidentWorker's population gate never blocks a firing.
+content-silent SimWorld.Director.StorytellerCompProperties_OnOffCycle.acceptFractionByDaysPassedCurve | RimWorld's early-game ramp: no shipped storyteller comp declares the curve, so incident rates are flat from day one.
+content-silent SimWorld.Director.StorytellerCompProperties_OnOffCycle.incident | The "always fire exactly this def" shortcut; every shipped OnOffCycle comp picks by category instead.
+content-silent SimWorld.Factions.FactionDef.hidden | Blocked on faction content: the flag exists for scenario-only and placeholder factions and none of the four shipped factions is one.
+content-silent SimWorld.Health.BodyPartDef.conceptual | No shipped body part is conceptual (RimWorld uses it for parts like "torso core"); BodyDefs reads it when assembling a body and always sees false.
+content-silent SimWorld.Health.HediffDef.minSeverity | No shipped hediff declares a severity floor, so Hediff's clamp is always against zero.
+content-silent SimWorld.Health.HediffStage.hungerRateFactorOffset | Content-side gap: no shipped hediff stage changes hunger rate, so HediffSet's hunger aggregation only ever sums zeroes.
+content-silent SimWorld.Health.HediffStage.partEfficiencyOffset | Content-side gap: no shipped hediff stage changes part efficiency, so the capacity calculation's stage contribution is always zero.
+content-silent SimWorld.Health.HediffStage.restFallFactorOffset | Content-side gap: no shipped hediff stage changes rest fall rate; the reader in HediffSet is live and the content is silent.
+content-silent SimWorld.Health.PawnCapacityDef.lethalMechanoids | Blocked on mechanoids, which this port has no content for; the humanlike lethality flag is the one that fires.
+content-silent SimWorld.Health.PawnCapacityDef.minValue | No shipped capacity declares a floor, so the clamp in Capacities always clamps against zero.
+content-silent SimWorld.MindState.MentalStateDef.colonistsOnly | No shipped mental state is restricted to colonists, so MentalState's eligibility check never narrows on this.
+content-silent SimWorld.Needs.JoyKindDef.neverBuildsTolerance | Ported for parity and declared as such in the field's own doc: vanilla RimWorld has no such joy kind either, so no shipped JoyKindDef sets it.
+content-silent SimWorld.Needs.NeedDef.fallPerDay | Content-side gap worth fixing: the generic per-day decay every Need falls back on is zero for all eight shipped needs. Food, Rest and the seeker needs each carry their own rate (seekerFallPerHour, or an overridden NeedInterval), so the base path in Need.NeedInterval never decays anything.
+content-silent SimWorld.Needs.NeedDef.freezeInMentalState | No shipped need freezes during a mental break, so Need's IsFrozen gate is always open.
+content-silent SimWorld.Pawns.BackstoryDef.disallowedTraits | Content-side gap: PawnGenerator honours backstory trait rules and none of the 23 shipped backstories declares any, so a backstory never shapes the traits a pawn rolls.
+content-silent SimWorld.Pawns.BackstoryDef.forcedTraits | As disallowedTraits: the generator applies forced traits and no shipped backstory forces one.
+content-silent SimWorld.Pawns.PawnKindDef.disallowedTraits | Content-side gap: the same generator path reads it for pawn kinds, and no shipped kind constrains its traits.
+content-silent SimWorld.Pawns.PawnKindDef.forcedTraits | As disallowedTraits, for the forced half — no shipped kind forces a trait on the pawns it generates.
+content-silent SimWorld.Pawns.TraitDef.requiredWorkTags | No shipped trait requires the pawn still be capable of some work before it can be rolled, so PawnGenerator's capability gate never rejects a candidate trait.
+content-silent SimWorld.Pawns.TraitDegreeData.disabledWorkTags | Content-side gap: the per-degree override is read when a trait's work tags are computed, and no shipped trait degree overrides the trait-level tags.
+content-silent SimWorld.Pawns.TraitDegreeData.disallowedMentalBreaks | No shipped trait degree rules a break out, so the mental-break filter never narrows on trait.
+content-silent SimWorld.Pawns.TraitDegreeData.theOnlyAllowedMentalBreaks | As disallowedMentalBreaks: no shipped trait degree pins a pawn to a single break.
+content-silent SimWorld.Quests.QuestNode_Delay.delayTicks | The shipped quest scripts all use delayTicksRef (a slate variable) instead of a literal range, so the literal branch of the delay node is never taken.
+content-silent SimWorld.Quests.QuestNode_GiveReward.silverRef | The shipped reward nodes name a literal silverAmount; the slate-variable form is ported and unused by content.
+content-silent SimWorld.Quests.QuestNode_Set.value | Same shape: the shipped Set nodes all use valueRef, so the literal value branch never runs.
+content-silent SimWorld.Quests.QuestScriptDef.rootMinPoints | All three shipped quests declare 0, so the points floor in IncidentWorker_GiveQuest never excludes a quest.
+content-silent SimWorld.Research.ResearchProjectDef.hiddenPrerequisites | None of the 245 shipped projects has an off-tree prerequisite; EraDef reads the field when building the ladder and always finds it empty.
+content-silent SimWorld.Scenario.ScenPart_ForcedTrait.degree | The one shipped forced-trait scen part forces a degree-0 trait, so the non-default branch of the degree lookup is never exercised by content.
+content-silent SimWorld.Stats.PawnCapacityFactor.allowedDefect | No shipped stat's capacity factor tolerates a defect, so that arm of PawnCapacityFactor.GetFactor is dead in shipped content.
+content-silent SimWorld.Stats.PawnCapacityFactor.useReciprocal | As allowedDefect: no shipped capacity factor inverts, so the reciprocal arm of GetFactor never runs.
+content-silent SimWorld.Thoughts.ThoughtDef.nullifyingHediffs | No shipped thought is suppressed by a hediff, so the nullifying check in ThoughtHandlers always passes.
+content-silent SimWorld.Thoughts.ThoughtDef.thoughtClass | An optional override: all 50 shipped thoughts let ThoughtDef.ThoughtClass fall back to Thought_Memory or Thought_Situational, which is the intended shape.
+content-silent SimWorld.Weather.WeatherDef.repeatable | No shipped weather may follow itself, so WeatherDecider's repeat check always rejects the incumbent — the flag exists for content that wants the opposite.
+content-silent SimWorld.Weather.WeatherDef.windSpeedOffset | Content-side gap: WeatherManager adds this to base wind speed and all seven shipped weathers leave it at zero, so wind never varies by weather.
+content-silent SimWorld.Work.SkillDef.neverDisabledBasedOnWorkTypes | No shipped skill opts out of work-type-driven disabling, so SkillDef's exemption never applies.
+
+
+# ---- code-deaf: content sets it, nothing in src/ reads it ----
+
+code-deaf SimWorld.AI.JobDef.reportString | Host-facing text with no reader: the field's own doc says it is for an inspect pane once one exists, and God/View does not carry job text.
+code-deaf SimWorld.Combat.ProjectileProperties.stoppingPower | Blocked on stagger, which this port does not model; a hit resolves instantly, so nothing consumes the stagger input.
+code-deaf SimWorld.Crafting.RecipeDef.jobString | Host-facing text ("doing X") for a UI the core does not have and the snapshot does not surface.
+code-deaf SimWorld.Defs.ThingDef.altitudeLayer | Draw order for a renderer. An engine-free core never draws, and the host draws from its own snapshot.
+code-deaf SimWorld.Defs.ThingDef.mineableThing | Blocked on mined-resource content: JobDriver_Mine's doc claims it reads this so a later module only adds the spawn call, but no line does today — the rock is removed and nothing drops.
+code-deaf SimWorld.Defs.ThingDef.mineableYield | The yield half of mineableThing, equally unread: the mining job destroys the edifice and spawns nothing.
+code-deaf SimWorld.Defs.ThingDef.selectable | Host-facing: whether a UI may select the thing. The core has no selection model.
+code-deaf SimWorld.Director.DifficultyDef.allowBigThreats | Blocked on threat sizing: the storyteller does not yet classify an incident as a big threat, so the difficulty switch has nothing to switch off.
+code-deaf SimWorld.Director.DifficultyDef.allowIntroThreats | As allowBigThreats — the intro-threat concept is unported, so the flag gates nothing.
+code-deaf SimWorld.Director.DifficultyDef.colonistMoodOffset | Blocked on difficulty reaching Needs: nothing applies a difficulty mood offset when a pawn's mood is computed.
+code-deaf SimWorld.Director.DifficultyDef.cropYieldFactor | Blocked on difficulty reaching Plants: harvest yield is computed without consulting the difficulty.
+code-deaf SimWorld.Director.DifficultyDef.mineYieldFactor | Blocked on mining yield existing at all (see ThingDef.mineableYield); there is no yield for the factor to scale.
+code-deaf SimWorld.Director.DifficultyDef.questRewardValueFactor | Blocked on rewards being paid: IQuestRewardSink has no implementation, so no reward value exists to scale.
+code-deaf SimWorld.Director.IncidentDef.pointsScaleable | Blocked on points-driven severity: IncidentParms.points is carried but no worker scales its effect by it, so the opt-in flag has no reader.
+code-deaf SimWorld.Director.StorytellerDef.persona | Host-facing flavour: the narrator's in-fiction name, for the host to speak. Its own doc records that the naming is still open.
+code-deaf SimWorld.Economy.TraderKindDef.orbital | Blocked on orbital trade, which needs caravans going up rather than traders arriving; the field's own doc calls it a gating flag only.
+code-deaf SimWorld.Factions.FactionDef.autoFlee | Blocked on raid AI, which lands with Combat — the field's own doc says so.
+code-deaf SimWorld.Factions.FactionDef.canMakeRandomly | Blocked on faction generation choosing randomly: FactionGenerator creates the shipped set outright, so nothing filters on the flag.
+code-deaf SimWorld.Factions.FactionDef.earliestRaidDays | Blocked on raids keying off the originating faction, per the field's own doc.
+code-deaf SimWorld.Factions.FactionDef.hostileToFactionlessHumanlikes | Blocked on a factionless-pawn population existing, per the field's own doc.
+code-deaf SimWorld.Factions.FactionDef.leaderTitle | Host-facing flavour text; the snapshot does not carry a leader title for the host to show.
+code-deaf SimWorld.Factions.FactionDef.pawnSingular | Host-facing text ("a tribesperson"); nothing in the core composes a sentence.
+code-deaf SimWorld.Factions.FactionDef.pawnsPlural | As pawnSingular, for the plural form.
+code-deaf SimWorld.Health.BodyPartDef.beautyRelated | Blocked on appearance-driven social thoughts: nothing weighs a scar on a beauty-related part.
+code-deaf SimWorld.Health.BodyPartDef.canSuggestAmputation | Blocked on surgery bills: no code offers an amputation, so nothing asks which parts may be suggested.
+code-deaf SimWorld.Health.DamageDef.deathMessage | Host-facing text for a death letter the core does not compose.
+code-deaf SimWorld.Health.DamageDef.hasForcefulImpact | Blocked on knockback/stagger, unported, so nothing asks whether a damage type shoves.
+code-deaf SimWorld.Health.DamageDef.isRanged | Blocked on anything distinguishing ranged from melee damage after the fact; the verb already knows which it fired.
+code-deaf SimWorld.Health.DamageDef.makesBlood | Blocked on the filth side of damage: BloodFilthUtility decides from the pawn, not from the damage def.
+code-deaf SimWorld.Health.HediffCompProperties_GetsPermanent.permanentLabel | Host-facing text: the name a permanent injury takes ("scar"), for a health tab the core does not render.
+code-deaf SimWorld.Health.HediffDef.chronic | Blocked on chronic-disease handling; nothing treats a chronic hediff differently yet.
+code-deaf SimWorld.Health.HediffDef.countsAsAddedPartOrImplant | Blocked on prosthetics/implants, which no content ships and no code installs.
+code-deaf SimWorld.Health.HediffDef.displayWound | Host-facing: whether a wound is drawn on the pawn. The core never draws.
+code-deaf SimWorld.Health.HediffDef.everCurableByItem | Blocked on curative items (medicine that removes a hediff outright); no recipe or item does that yet.
+code-deaf SimWorld.Health.HediffDef.isBad | Blocked on anything sorting hediffs into good and bad — the health tab and the "is this pawn ill" summary both live host-side.
+code-deaf SimWorld.Health.InjuryProps.destroyedLabel | Host-facing text for a destroyed part, for a health tab the core does not render.
+code-deaf SimWorld.Health.PawnCapacityDef.showOnAnimals | Host-facing: which capacities a UI lists for an animal.
+code-deaf SimWorld.Map.RoofDef.isNatural | Blocked on mountain/overhead-rock generation: no map generator distinguishes a natural roof from a built one yet.
+code-deaf SimWorld.Map.TerrainDef.takeFootprints | Blocked on terrain-aware filth: FilthMaker places filth without asking whether the terrain accepts marks.
+code-deaf SimWorld.MindState.MentalStateDef.blockNormalThoughts | Blocked on mental states suppressing thoughts; the thought handler does not consult the pawn's mental state.
+code-deaf SimWorld.Needs.NeedDef.listPriority | Host-facing: the order needs appear in a UI list.
+code-deaf SimWorld.Needs.NeedDef.major | Host-facing: whether a UI draws the need prominently.
+code-deaf SimWorld.Needs.NeedDef.threshPercents | Host-facing: threshold markers drawn on a need bar, per the field's own doc.
+code-deaf SimWorld.Pawns.BackstoryDef.baseDesc | Host-facing text: the backstory blurb, for a character tab the core does not render.
+code-deaf SimWorld.Pawns.LifeStageDef.alwaysDowned | Blocked on infants: nothing forces a life stage to be permanently downed, so a baby walks.
+code-deaf SimWorld.Pawns.LifeStageDef.foodMaxFactor | Blocked on life stage reaching Needs: Need_Food sizes its bar without the life stage's factor, so a puppy eats an adult's meal.
+code-deaf SimWorld.Pawns.LifeStageDef.marketValueFactor | Blocked on trade pricing reading the life stage; Tradeable prices a pawn without it.
+code-deaf SimWorld.Pawns.LifeStageDef.reproductive | Blocked on animal breeding: nothing checks whether a life stage may reproduce.
+code-deaf SimWorld.Pawns.PawnKindDef.isFighter | Blocked on raid composition: PawnGroupMakerUtility does not yet separate fighters from non-combatants.
+code-deaf SimWorld.Pawns.TrainableDef.defaultTrainable | Deliberate, and documented on the field: this port has no player-facing "wanted" checkbox, so every learnable def is always pursued.
+code-deaf SimWorld.Research.ResearchProjectDef.discoveredLetterText | Host-facing text for a completion letter; the research manager mints no letter.
+code-deaf SimWorld.Research.ResearchProjectDef.discoveredLetterTitle | The title half of discoveredLetterText, equally unread.
+code-deaf SimWorld.Research.ResearchProjectDef.researchViewX | Host-facing: a position in the research tree UI, which lives entirely host-side.
+code-deaf SimWorld.Research.ResearchProjectDef.researchViewY | The other coordinate of researchViewX.
+code-deaf SimWorld.Research.ResearchTabDef.generalDescription | Host-facing text for a research tab header.
+code-deaf SimWorld.Research.ResearchTabDef.generalTitle | Host-facing text for a research tab header.
+code-deaf SimWorld.Scenario.Scenario.summary | Host-facing text: the blurb shown when choosing a scenario.
+code-deaf SimWorld.Scenario.ScenarioDef.isScenarioDefault | Host-facing: which scenario a chooser pre-selects. Game.NewGame is always told which scenario to run.
+code-deaf SimWorld.Social.Ideology.PreceptDef.unlocksRitual | Deliberate, and documented on the field: purely informational, recording why a ritual exists in an ideoligion's content; nothing gates performing a ritual on it.
+code-deaf SimWorld.Social.PawnRelationDef.familial | Deliberate, and documented on the field: demography's own relation ids already imply which relations are familial, so nothing needs to ask.
+code-deaf SimWorld.Work.SkillDef.pawnLabel | Host-facing text: what a pawn skilled in this is called.
+code-deaf SimWorld.Work.SkillDef.skillLabel | Host-facing text: the skill's name in a character tab.
+code-deaf SimWorld.Work.WorkGiverDef.gerund | Host-facing text ("hauling"), for an inspect line the core does not compose.
+code-deaf SimWorld.Work.WorkTypeDef.alwaysStartActive | Blocked on work-priority initialisation reading it: Pawn_WorkSettings gives every work type the same starting priority, so the opt-in never applies.
+code-deaf SimWorld.Work.WorkTypeDef.gerundLabel | Host-facing text for a work type ("hauling").
+code-deaf SimWorld.Work.WorkTypeDef.labelShort | Host-facing text: the short column header for a work type.
+code-deaf SimWorld.Work.WorkTypeDef.requireCapableColonist | Blocked on the colony-wide "nobody can do this work" warning, which is a host-side notification.
+code-deaf SimWorld.World.BiomeDef.allowRivers | Blocked on world generation placing rivers per biome; the river step does not consult the biome.
+code-deaf SimWorld.World.BiomeDef.allowRoads | Blocked on world generation placing roads per biome; the road step does not consult the biome.
+code-deaf SimWorld.World.BiomeDef.canAutoChoose | Blocked on site selection: nothing picks a tile by unweighted random pick yet, so the exclusion never applies.
+code-deaf SimWorld.World.BiomeDef.diseaseMtbDays | Blocked on disease incidents keying off the settlement's biome; the disease worker picks without one.
+code-deaf SimWorld.World.BiomeDef.isExtremeBiome | Blocked on starting-site selection excluding extreme biomes, per the field's own doc.
+code-deaf SimWorld.World.BiomeDef.wildPlantRegrowDays | Blocked on wild plant regrowth: the plant system regrows on its own schedule without asking the biome.
+code-deaf SimWorld.World.RiverDef.degradeThreshold | Deliberate, and documented on the field: a rendering hint this port's generator does not enforce.
+code-deaf SimWorld.World.RoadDef.worldTransitionSameRoadPriority | Blocked on world pathing rewarding staying on one road; caravan path cost does not yet look at which road a tile carries.
+code-deaf SimWorld.World.WorldObjectDef.worldObjectClass | Blocked on world objects being built from their def: every world object in play is constructed directly, so the class handle is never used to make one.
+
+
+# ---- unwritten: read somewhere, assigned nowhere ----
+
+unwritten SimWorld.Combat.Verb_LaunchProjectile.CoverLookup | Injection point for a map-side cover query, left for the Map module to set; until then TryCastShot falls back to DefaultCover, which is the right answer for two unspawned pawns.
+unwritten SimWorld.Defs.DefLoadOptions.DefOfTypes | Caller-facing loader option: every load inside the core takes the default (scan the assemblies). Tests and hosts set it to bind a narrower set.
+unwritten SimWorld.Defs.DefLoadOptions.ThrowOnError | Caller-facing loader option, as DefOfTypes: core call sites collect errors rather than throwing, so nothing in src/ turns it on.
+unwritten SimWorld.Defs.PatchOperationConditional.nomatch | The else-branch of a patch operation. No shipped content has a Patches/ folder at all, so neither branch is set by anything in this repository.
+unwritten SimWorld.Defs.PatchOperationFindMod.nomatch | As PatchOperationConditional.nomatch: the else-branch of a mod-presence patch, and no shipped content patches anything.
+unwritten SimWorld.Pawns.Pawn.environment | Per-pawn override of the environment sampler. Nothing in src/ sets it, and nothing should: Need_Seeker falls back to MapEnvironmentSampler.Instance, and the field exists so a host or a test can substitute its own.

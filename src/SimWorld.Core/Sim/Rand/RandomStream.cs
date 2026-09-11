@@ -70,6 +70,9 @@ namespace SimWorld.Sim
             return Value * (max - min) + min;
         }
 
+        /// <summary>Inclusive of <c>max</c> (RimWorld: <c>IntRange.RandomInRange</c>). A degenerate range still
+        /// draws, exactly as <c>Rand.Range(min, min + 1)</c> does there, so a stream's position does not depend
+        /// on whether a tuned range happened to collapse.</summary>
         public int Range(IntRange range) => Range(range.min, range.max + 1);
 
         public float Range(FloatRange range) => Range(range.min, range.max);

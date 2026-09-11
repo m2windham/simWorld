@@ -789,13 +789,24 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   the warden's own faction and carries the nearest reachable food to them,
   feeding them directly (`JobDriver_Warden_Feed`, `FeedPatient` `JobDef`) —
   standing in for RimWorld's own "in bed and needs medical rest" trigger, since
-  this port has no bed/room system. A prisoner that is _not_ downed already
-  reaches food entirely on its own through the ordinary `JobGiver_GetFood` tier
-  (nothing in job selection checks guest status or faction at all), so RimWorld's
-  `WardenDeliverFood` counterpart — food left for a prisoner capable of
-  self-service but with nothing reachable — has no distinct case left to cover
-  here and stays the `WorkGiver_Pending` placeholder its `WorkGiverDef` shipped
-  with.
+  this port has no bed system. `WorkGiver_Warden_DeliverFood`
+  (`WardenDeliverFood`) is the other side of that same `Downed` split and
+  completes the set: for a prisoner that is _not_ downed, it carries one meal
+  into the `Room` the prisoner is standing in and puts it down
+  (`JobDriver_FoodDeliver`, `DeliverFood` `JobDef`), and produces no job at all
+  when that room already holds something edible — RimWorld's own
+  `FoodAvailableInRoomTo` screen, reachable here since `Building.RoomTracker`
+  landed. It was the last bare `WorkGiverDef` of the twenty-nine, left so for two
+  passes on the reasoning that this port has no room system and that a prisoner
+  who is not downed already reaches food through `JobGiver_GetFood`; the second
+  half of that is still true and is not the point — what delivery changes is
+  _where_ the prisoner eats, since a stocked cell is nearer than the kitchen.
+  Wiring it also exposed a real hostility bug: a captured pawn keeps its own
+  faction, so by faction relation a warden and an **ambulatory** prisoner were
+  enemies, and every earlier warden job's patient was downed (which
+  `AttackTargetsUtility.ThreatDisabled` screens out) so nothing had ever reached
+  it. Custody now outranks faction relation in `AttackTargetsUtility.HostileTo`,
+  in both directions.
 - **Doctor work** closes this pass's other named gap in the work economy
   (`docs/WORK-REGISTER.md`): `WorkGiver_Tend` backs both `DoctorTendEmergency`
   and `DoctorTend` — one class, exactly as RimWorld's own single
@@ -817,10 +828,13 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   applied to feeding: it reuses `WardenFeed`'s own `FeedPatient` `JobDef`/
   `JobDriver_Warden_Feed` completely unchanged, scanning for a downed, hungry
   **non-prisoner** of the doctor's own faction — a downed, hungry prisoner is
-  already `WardenFeed`'s patient, and RimWorld's `WardenDeliverFood`
-  counterpart (food left for a prisoner capable of self-service but with
-  nothing reachable in its own cell) has, by the same reasoning as the Warden
-  work bullet above, no distinct case left to cover, so it stays unwired too.
+  already `WardenFeed`'s patient, and an ambulatory one is
+  `WardenDeliverFood`'s (see the Warden work bullet above), so no two of the
+  three feeding givers ever reach the same patient. They do compete for the
+  same food, and that is settled by the `ReservationManager`: each picks its
+  stack through a search that skips anything it cannot reserve, and each claims
+  it in its driver's first toil, so the second of them to look never sees a
+  meal already spoken for.
   `AI.DoctorUtility` is the one eligibility check both `WorkGiver_Tend` and
   `WorkGiver_RescueDowned` share: a patient of the carer's own faction, or a
   prisoner that faction currently holds (the same host-faction lookup
@@ -1494,12 +1508,23 @@ already tracks durably (a trait, worn apparel, a granted role).
   civilization's _history_: the first occurrence of a category (an incident's
   own `defName`, a death cause, or a free-form line's own category), every era
   transition without exception (`§10`: "reaching an era is an event, not just
-  a readout"), and a new record for longevity at death. Each rule is bounded in
+  a readout"), and a new record for longevity — one ratchet covering both a
+  life that has ended and one still being lived. Each rule is bounded in
   count on its own terms — by how many distinct categories ever occur, by the
   fixed size of the era ladder, or by a monotonic ratchet — so a moment that
   fires on everything (a log with extra steps) is exactly what this design
   avoids: a simulated routine century produces a handful of moments, not
   hundreds.
+- **Who the chronicle names** (`Director.ChronicleFame`): the landmarks are also
+  where `Pawn_TierTracker.Notify_ChronicleNamed` gets its policy, and the
+  longevity record is the whole of it. The oldest living citizen is named when
+  they outlive every life the civilization has known; nothing else names a
+  living citizen. A record is the only one of the curator's three rules that can
+  be broken more than once, so it is the only one that keeps producing figures
+  past a civilization's opening years — and while the holder lives the record
+  rises with them, so at most one living citizen holds the distinction at a
+  time, which is one seat of `§11.3`'s Full-tier budget. The flag is never
+  cleared, so that bound is the design rather than a detail.
 
 ```mermaid
 flowchart TD

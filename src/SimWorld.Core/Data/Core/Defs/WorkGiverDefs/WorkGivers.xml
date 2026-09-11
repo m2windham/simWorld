@@ -123,15 +123,16 @@
     <gerund>delivering food</gerund>
     <workType>Warden</workType>
     <priorityInType>90</priorityInType>
-    <!-- Stays WorkGiver_Pending, deliberately: RimWorld's own WorkGiver_Warden_DeliverFood exists for a
-         prisoner capable of self-service but with no food reachable in its own room — a distinction this
-         port cannot draw (no room/prison-cell system). Here, a prisoner that is not Downed already reaches
-         food entirely on its own through the ordinary JobGiver_GetFood tier of its think tree (nothing in
-         this port's job selection checks guest status or faction at all), so there is no ambulatory-prisoner
-         case left uncovered for this giver to fill — see WorkGiver_Warden_Feed's own doc and this module's
-         report. Still true now that DoctorFeedHumanlikes (system: health — tending) is wired alongside it:
-         that giver explicitly excludes prisoners (WardenFeed's own patient), so it neither fills this gap nor
-         needs this def to fill one of its own — see WorkGiver_FeedPatient's own doc. -->
+    <!-- Wired to a real scanner (system 12: Factions — capture), the last of the twenty-nine shipped
+         WorkGiverDefs to get one. Two earlier passes left it WorkGiver_Pending on the grounds that RimWorld's
+         DeliverFood needs "food reachable in the prisoner's own room" and "this port has no room/prison-cell
+         system" — a correct reading that Building.RoomTracker has since made obsolete: RoomTracker.RoomAt
+         answers exactly that question now, so the screen that makes this a distinct giver upstream is
+         expressible here. What it adds over the ambulatory prisoner feeding itself is *where* it eats — see
+         WorkGiver_Warden_DeliverFood's own doc for the full argument, for how it partitions cleanly from
+         WardenFeed (Downed) and DoctorFeedHumanlikes (non-prisoners), and for why the food stack is settled
+         by the ReservationManager rather than by hoping. -->
+    <giverClass>SimWorld.AI.WorkGiver_Warden_DeliverFood</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Standing conditions over the whole civilization (RimWorld: GameConditionDef). Each one names the
+    IncidentDef that brings it about rather than the incident naming it - see GameConditionDef's own doc
+    comment for why the relationship is inverted (it kept Director/IncidentDefs.cs out of this entirely).
+
+    HeatWave and ColdSnap share one conditionClass and differ only in temperatureOffset. Those two numbers
+    carry RimWorld's shape - a heat wave that makes a temperate summer dangerous, a cold snap that drops a
+    mild day below freezing - recalled rather than sourced from a decompile in this sandbox, so the tests
+    pin what they do (plants stop growing, rot speeds up or stops dead) and never the literals.
+  -->
+
+  <GameConditionDef>
+    <defName>HeatWave</defName>
+    <label>heat wave</label>
+    <description>Unusual heat lies over the whole civilization. Plants struggle, food spoils faster, and the shade is the only comfortable place to be.</description>
+    <conditionClass>SimWorld.Conditions.GameCondition_TemperatureOffset</conditionClass>
+    <incident>HeatWave</incident>
+    <durationDays>2~8</durationDays>
+    <temperatureOffset>17</temperatureOffset>
+    <letterDef>NegativeEvent</letterDef>
+    <endMessage>The heat wave has passed.</endMessage>
+  </GameConditionDef>
+
+  <GameConditionDef>
+    <defName>ColdSnap</defName>
+    <label>cold snap</label>
+    <description>Unusual cold lies over the whole civilization. Growing stops, and anything left outdoors freezes rather than spoils.</description>
+    <conditionClass>SimWorld.Conditions.GameCondition_TemperatureOffset</conditionClass>
+    <incident>ColdSnap</incident>
+    <durationDays>2~8</durationDays>
+    <temperatureOffset>-20</temperatureOffset>
+    <letterDef>NegativeEvent</letterDef>
+    <endMessage>The cold snap has passed.</endMessage>
+  </GameConditionDef>
+
+  <!--
+    Shorter than the two temperature conditions because it is an event rather than a season: a flashstorm
+    that ran for a week would be throwing hundreds of strikes. See GameCondition_Flashstorm for the strike
+    cadence and for what an unwatched storm does (and deliberately does not do).
+  -->
+  <GameConditionDef>
+    <defName>Flashstorm</defName>
+    <label>flashstorm</label>
+    <description>A dry lightning storm. Strikes fall on open ground and set alight whatever they find.</description>
+    <conditionClass>SimWorld.Conditions.GameCondition_Flashstorm</conditionClass>
+    <incident>Flashstorm</incident>
+    <durationDays>0.4~1.2</durationDays>
+    <letterDef>NegativeEvent</letterDef>
+    <endMessage>The flashstorm has blown itself out.</endMessage>
+  </GameConditionDef>
+
+</Defs>

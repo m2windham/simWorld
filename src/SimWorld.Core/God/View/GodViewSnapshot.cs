@@ -56,6 +56,7 @@ namespace SimWorld.God.View
             IReadOnlyList<SettlementSummary> settlements,
             int? focusedSettlementTile,
             IReadOnlyList<EdictOption> edicts,
+            IReadOnlyList<ConditionLine> conditions,
             IReadOnlyList<ChronicleLine> recentHistory,
             IReadOnlyList<ChronicleLine> moments)
         {
@@ -66,6 +67,7 @@ namespace SimWorld.God.View
             Settlements = settlements;
             FocusedSettlementTile = focusedSettlementTile;
             Edicts = edicts;
+            Conditions = conditions;
             RecentHistory = recentHistory;
             Moments = moments;
         }
@@ -117,6 +119,11 @@ namespace SimWorld.God.View
         /// <summary>Every edict in content — including ones that cannot be issued right now, each carrying why
         /// not. A view that only received the issuable ones could draw a menu but never explain it.</summary>
         public IReadOnlyList<EdictOption> Edicts { get; }
+
+        /// <summary>Every condition standing over the whole civilization right now — a heat wave, a cold
+        /// snap, a flashstorm — empty when nothing is in force. See <see cref="ConditionLine"/> for why this
+        /// is here at all when weather deliberately is not.</summary>
+        public IReadOnlyList<ConditionLine> Conditions { get; }
 
         /// <summary>The tail of the chronicle, oldest first, so it reads as history rather than a stack.</summary>
         public IReadOnlyList<ChronicleLine> RecentHistory { get; }
@@ -200,6 +207,7 @@ namespace SimWorld.God.View
                 settlementSummaries,
                 focusedTile,
                 BuildEdictOptions(god),
+                ConditionLine.ActiveOn(world?.gameConditionManager),
                 ChronicleLine.TailOf(Find.Storyteller.Chronicle, recentHistoryCount),
                 ChronicleLine.TailOf(Find.Storyteller.Moments, recentHistoryCount));
         }
