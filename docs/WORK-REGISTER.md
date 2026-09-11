@@ -42,39 +42,38 @@ Unclaimed items below are open. Taking one means claiming it first.
 Ordered by what blocks the most. The history below each heading is kept deliberately —
 the original finding is what makes the progress legible.
 
-### 1. Three work types have no worker — down from eighteen
+### 1. One work type has no worker — down from eighteen
 
-Work givers carrying a real `giverClass` have gone **10 of 28 → 24 of 28 → 26 of 29**
-across three batches. A settlement can now haul, research at a bench, craft and cook,
-treat, rescue and feed its wounded, hunt, repair what it built, clear plants out of its
-own way, carry its dead to storage and butcher a carcass at a bench.
+Work givers carrying a real `giverClass` have gone **10 of 28 → 24 of 28 → 28 of 29**
+across three batches. Counted from content, not asserted: one `WorkGiverDef` is bare, and
+it is `WardenDeliverFood`, left deliberately because `DoctorFeedHumanlikes` reuses its
+mechanism with a different target filter and the two would race one reservation.
 
-Three remain bare, and two are not work to do. `CleanFilth` and `FightFires` have no
-`Filth` or `Fire` class anywhere in this codebase: they are blocked on systems that do
-not exist, and a stub worker would be worse than the honest gap. `WardenDeliverFood` is
-deliberately left — `DoctorFeedHumanlikes` reuses its mechanism with a different target
-filter.
+A settlement now hauls, researches, crafts, cooks, treats, rescues and feeds its wounded,
+hunts, repairs what it built, clears plants out of its own way, carries its dead away,
+butchers a carcass at a bench, puts out fires and cleans up after itself.
 
-**`HaulCorpses` came off that list by building what it was blocked on.** It was the
-oldest entry here — a work giver with nothing it could ever target — and the block was
-real: no `Corpse` class existed anywhere. The corpses module (`Things/Corpse.cs`) added
-one, and the giver needed thirty lines on top of the hauling path that was already
-there. The shape worth keeping: a giver blocked on a missing *system* is not the same
-kind of gap as one blocked on a missing *decision*, and the register did not distinguish
-them.
+**The last three came off the list by building what they were blocked on.** `HaulCorpses`,
+`FightFires` and `CleanFilth` had no `Corpse`, `Fire` or `Filth` class anywhere in this
+codebase — the oldest entries here, and the block was real rather than a missing decision.
+All three systems landed together. The shape worth keeping: a giver blocked on a missing
+*system* is not the same kind of gap as one blocked on a missing *decision*, and this
+register did not distinguish them for two batches.
 
-**Hunting was wired and dormant for one batch.** `WorkGiver_Hunt` requires a ranged
-weapon, `SettlementFounder` generates every citizen as `Tribesperson`, and that kind
-shipped with no `weaponTags` — so no citizen in any generated game held a weapon. Every
-unit test of the mechanism passed, because they arm their own pawns. Worth remembering as
-a shape: a wired giver plus content that cannot reach it looks exactly like a finished
-feature.
+**A wired giver plus content that cannot reach it looks exactly like a finished feature.**
+Hunting was wired and dormant for a full batch because `Tribesperson` shipped with no
+`weaponTags`, so no citizen in any generated game held a weapon — and every unit test
+passed throughout, because they arm their own pawns. The two lanes after it went looking
+for the same trap in their own work and both found it: `ThingDef` carried no flammability
+field at all and nothing in content was flammable, so fire could not have spread; and
+`AreaManager.Home` shipped dormant and has never been populated, so RimWorld's home-area
+gate on cleaning would have made every fire of that giver impossible. Both were closed
+before shipping rather than after.
 
-Known gaps inside what landed: `DoBillsArt` is wired with no bench, since sculpture needs
-a beauty and quality subsystem this port has not built; a pawn never tends itself,
-matching RimWorld, so a lone injured citizen with nobody around goes untended; a hunted
-animal cannot fight back, because no attack `Job` or `JobGiver` exists anywhere. Bill
-ingredient reservation, listed here as a gap last batch, is **closed**.
+Known gaps inside what landed: `DoBillsArt` is wired with no bench; a pawn never tends
+itself, matching RimWorld; **nothing interrupts a job in flight**, so a sleeping pawn under
+fire never wakes; and rain extinguishment is ported and tested with no weather module to
+drive it.
 
 ### The original finding, for the record
 
@@ -84,6 +83,32 @@ settlement could build, farm, mine, tame animals and hold prisoners, and could n
 cook, craft at a bench, treat an injury, or research anything — the tech tree, the era
 ladder and the divergence work all stood above a research work type no citizen could
 perform.
+
+### 1b. The combat module was unreachable from play
+
+Worth its own entry because it was larger than the work-giver gap and nobody had noticed
+it. `Combat/` — verbs, armour, cover, downing, death, capture — was complete and tested.
+**Nothing in the AI layer ever attacked.** No `JobGiver_*Attack*`, no `JobDriver_*Attack*`
+anywhere, and the humanlike think tree ran mental state → food → rest → orders → edicts →
+work → wander with no danger tier at all. A raid arrived and everyone kept farming.
+
+Closed. Who fights is SimWorld's own, since there is no draft to port: anyone armed engages
+a hostile within acquire radius, anyone at all fights back within melee reach, and a new
+`TakeUpArms` edict raises an unarmed citizen to the first rule.
+
+**Two things this left open, both on the host seam.** Raids do reach a map, but only a map
+that exists — and `GodCommands.FocusSettlement` moves attention **without generating the
+interior**, while `Game.EnterSettlement` is host-facing and called by nothing inside the
+core. A host that opens a town through the god view without also entering it has attention,
+no map, and raids that resolve mapless forever. Separately, `ChooseTargetSettlement` weights
+across all of a civilization's settlements, so even with one town open a raid often picks an
+unopened one. **These are the next things to close**, and the first is squarely this repo's.
+
+Also open: nothing interrupts a job in flight. The think tree is consulted only when
+`curJob` is null, so a pawn mid-job does not react until that job ends — concretely, a
+sleeping pawn under fire never wakes. RimWorld reaches this with a constant think tree and
+`JobDef.checkOverrideOnDamage`; neither exists here, and both need edits to
+`Pawn_JobTracker` and `Pawn_HealthTracker`.
 
 ### 2. Attention drives the tiering, and the Full tier is now bounded in time as well as space
 
