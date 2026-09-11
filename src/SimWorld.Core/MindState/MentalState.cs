@@ -325,6 +325,21 @@ namespace SimWorld.MindState
         /// <summary><see cref="Sim.TickManager.TicksGame"/> after which <see cref="angryAt"/> no longer applies.</summary>
         public int angryUntilTick = -1;
 
+        // ---- AI module (system 9: AI — duties) ----
+
+        /// <summary>
+        /// The standing goal this pawn is on this map to carry out, or null — which is every pawn who lives
+        /// here (RimWorld: <c>Pawn_MindState.duty</c>, a <c>PawnDuty</c> there because RimWorld's also carries
+        /// a focus target and a radius; this port stores the def alone until something reads more, see
+        /// <see cref="AI.DutyDef"/>). Read by <see cref="AI.ThinkNode_Duty"/> as one tier of the main think
+        /// tree, and written by whatever put the pawn on the map: a raid squad is handed
+        /// <see cref="AI.DutyDefOf.AssaultSettlement"/> as it lands, and that is what walks it to the town.
+        /// <para/>
+        /// A plain field and not a property, unlike <see cref="angryAt"/> beside it: a duty is one pawn's own
+        /// business and nothing indexes it, where a grudge has to be visible to the pawn it names.
+        /// </summary>
+        public AI.DutyDef? duty;
+
         public Pawn_MindState(Pawn pawn)
         {
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
@@ -352,6 +367,12 @@ namespace SimWorld.MindState
             Scribe_References.Look(ref aa, "angryAt");
             angryAt = aa;
             Scribe_Values.Look(ref angryUntilTick, "angryUntilTick", -1);
+
+            // A raid saved mid-approach has to still be a raid when it loads, or reloading would disarm every
+            // squad on the map — the duty is the only thing that makes them march.
+            AI.DutyDef? d = duty;
+            Scribe_Defs.Look(ref d, "duty");
+            duty = d;
         }
     }
 }
