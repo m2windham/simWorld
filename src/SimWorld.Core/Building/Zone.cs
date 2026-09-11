@@ -79,9 +79,9 @@ namespace SimWorld.Building
     }
 
     /// <summary>A stockpile zone: hauling targets it under a <see cref="ThingFilter"/> (RimWorld: <c>RimWorld.Zone_Stockpile</c>).
-    /// <b>Scope:</b> this pass ports the shape only — no <c>WorkGiver</c> reads it yet, since general item
-    /// hauling into a stockpile is not itself built here (see this module's report: <c>HaulGeneral</c> stays
-    /// <c>WorkGiver_Pending</c>, same as before this pass).</summary>
+    /// <c>HaulGeneral</c>'s <c>WorkGiver_Haul</c> (system 9: AI — hauling) reads <see cref="Zone.cells"/> and
+    /// <see cref="filter"/> directly through <see cref="AI.HaulAIUtility"/> to decide where a haulable item
+    /// goes; this class itself still owns no behaviour beyond the cell set and the filter.</summary>
     public sealed class Zone_Stockpile : Zone
     {
         public ThingFilter filter = new ThingFilter();

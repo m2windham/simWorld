@@ -49,6 +49,10 @@ namespace SimWorld.AI
         /// <summary>Spends work ticks on a fully-materialed Frame until it completes or fails (system 16: Building).</summary>
         public static JobDef ConstructFinishFrame = null!;
 
+        /// <summary>Carries one haulable item stack to a stockpile cell and merges or drops it there
+        /// (system 9: AI — hauling; see <see cref="WorkGiver_Haul"/>/<see cref="JobDriver_HaulToCell"/>).</summary>
+        public static JobDef HaulToCell = null!;
+
         /// <summary>One taming attempt on a wild animal (system: ai.animals).</summary>
         public static JobDef Tame = null!;
 
@@ -62,7 +66,17 @@ namespace SimWorld.AI
 
         /// <summary>Carries food to a downed prisoner and feeds them directly (system: ai — see
         /// <see cref="WorkGiver_Warden_Feed"/>'s own doc for why this is the one Warden feeding case this
-        /// port's job system covers; RimWorld: <c>JobDefOf.FeedPatient</c>).</summary>
+        /// port's job system covers; RimWorld: <c>JobDefOf.FeedPatient</c>). Also the driver
+        /// <see cref="WorkGiver_FeedPatient"/> (system: health) reuses unchanged for a downed, hungry
+        /// non-prisoner — see that class's own doc.</summary>
         public static JobDef FeedPatient = null!;
+
+        /// <summary>Walks to a patient and tends their most urgent hediff (system: health — see
+        /// <see cref="WorkGiver_Tend"/>'s own doc; RimWorld: <c>JobDefOf.TendPatient</c>).</summary>
+        public static JobDef TendPatient = null!;
+
+        /// <summary>Carries a downed patient to a bed (system: health — see
+        /// <see cref="WorkGiver_RescueDowned"/>'s own doc; RimWorld: <c>JobDefOf.Rescue</c>).</summary>
+        public static JobDef Rescue = null!;
     }
 }

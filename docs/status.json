@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-09-10",
-  "testsTotal": 1241,
+  "updated": "2026-09-11",
+  "testsTotal": 1286,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -594,7 +594,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 64,
+      "tests": 86,
       "items": [
         {
           "id": "health.body",
@@ -649,6 +649,11 @@
         {
           "id": "health.prosthetic-items",
           "label": "Prosthetics as real items: SimpleProstheticLeg ThingDef (Item, hasQuality + CompProperties_Quality, MarketValue set) ships tradeable — no crafting recipe, since no fabrication workbench exists yet (the same \"craftable or tradeable\" allowance this item took). InstallSimpleProstheticLeg ships as content, naming the item as a RecipeDef.ingredients entry; SurgeryUtility.PerformNextSurgery gained an optional ingredientsOnHand parameter so a bill naming ingredients only fires once a matching Thing is supplied and consumed (decremented/destroyed) — every ingredient-less surgery (amputate, excise) is unaffected, matching RecipeDef.ConfigErrors' existing surgery/non-surgery split. Tests: tests/SimWorld.Core.Tests/Health/SurgeryTests.cs.",
+          "done": true
+        },
+        {
+          "id": "health.tending-work",
+          "label": "Doctor work givers close the 'no one tends an injury' gap (docs/WORK-REGISTER.md's work-economy item): WorkGiver_Tend backs both DoctorTendEmergency and DoctorTend (one class, split by the WorkGiverDef's own emergency flag against TendUtility.NeedsEmergencyTend — bleeding or life-threatening), JobDriver_TendPatient tends at a quality read from StatDefOf.MedicalTendQuality (work.stats) capped at TendUtility.MaxQualityNoMedicine (no medicine ThingDef ships yet). WorkGiver_RescueDowned/JobDriver_TakeToBed carry a downed patient to AI.RestUtility.FindBedFor's nearest reachable bed, or produce no job at all when the map has none — tended and fed in place rather than invented a ground fallback. WorkGiver_FeedPatient (DoctorFeedHumanlikes) reuses WardenFeed's own FeedPatient JobDef/JobDriver unchanged for a downed, hungry non-prisoner, explicitly excluding prisoners (WardenFeed's own patient) rather than racing it for the same reservation — the same reasoning leaves WardenDeliverFood unwired, unchanged from before this item. Eligibility (colonist of the doctor's own faction, or a prisoner it holds) is shared by Tend and Rescue via AI.DoctorUtility. Deliberately out of scope: self-tend (RimWorld's own reduced-quality solo-colonist mechanic — a pawn is never its own patient here, same as RimWorld's WorkGiver_Tend). Code: src/SimWorld.Core/AI/WorkGiver_Tend.cs, JobDriver_TendPatient.cs, WorkGiver_RescueDowned.cs, JobDriver_TakeToBed.cs, WorkGiver_FeedPatient.cs, DoctorUtility.cs; TendUtility.NeedsEmergencyTend in src/SimWorld.Core/Health/TendUtility.cs. Tests: tests/SimWorld.Core.Tests/Health/DoctorAITests.cs.",
           "done": true
         }
       ]
@@ -723,7 +728,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 61,
+      "tests": 69,
       "items": [
         {
           "id": "ai.thinktree",
@@ -768,6 +773,11 @@
         {
           "id": "ai.warden",
           "label": "The Warden work type wired to real scanners: WorkGiver_Warden_AttemptRecruit (WardenAttemptRecruit WorkGiverDef, JobDriver_Warden_AttemptRecruit + the PrisonerAttemptRecruit JobDef) drives the recruit/chat interaction combat.capture's Pawn_GuestTracker/WardenUtility already implemented but nothing called outside a test; WorkGiver_Warden_Feed (WardenFeed WorkGiverDef, JobDriver_Warden_Feed + FeedPatient) carries food to a downed, hungry prisoner and feeds it directly. WardenDeliverFood stays the WorkGiver_Pending placeholder — see that WorkGiverDef's own XML comment: this port has no room/prison-cell system, so a non-downed prisoner already reaches food entirely on its own via the ordinary JobGiver_GetFood tier, leaving RimWorld's ambulatory-prisoner DeliverFood case with nothing distinct to cover here. A downed hostile captured by CaptureUtility now ends up recruited (or its resistance worn down) purely through a colonist's own work-giver scan, not a utility called directly by a test.",
+          "done": true
+        },
+        {
+          "id": "ai.hauling",
+          "label": "HaulGeneral wired to a real scanner: WorkGiver_Haul finds a spawned Item-category Thing (this port's own ThingDef.EverHaulable, since no separate alwaysHaulable/held-vs-loose distinction exists — nothing here can hold an item the way an equipment/apparel tracker would) not already sitting in a Zone_Stockpile cell whose ThingFilter allows it, and JobDriver_HaulToCell (HaulToCell JobDef) carries it to the nearest reachable, reservable stockpile cell with room (HaulAIUtility.TryFindBestStockpileCell) — nearest to the item, not the pawn, matching RimWorld's own StoreUtility. A destination cell already holding the same def merges the stack (count exactly summed); an empty one gets a freshly made Thing carrying the same Stuff. No matching stockpile (or every one already full) is an honest 'no job', not an invented dumping ground — this port has one storage kind and no priority tiers, so that is StoreUtility's whole job here. Carrying itself is modelled the same abstract way JobDriver_HaulToBuildingSite and JobDriver_Warden_Feed already do (no carry-tracker exists): the source stack's count drops the moment the pawn reaches it, nothing visibly follows the pawn to the stockpile. HaulCorpses (same WorkGivers.xml file) stays WorkGiver_Pending — no Corpse class exists anywhere in this codebase, so it cannot be wired honestly.",
           "done": true
         },
         {
@@ -879,7 +889,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "ported",
-      "tests": 53,
+      "tests": 58,
       "items": [
         {
           "id": "crafting.bills",
@@ -915,6 +925,11 @@
           "id": "crafting.guilds",
           "label": "Translation: guilds and industries as bill queues at civilization scale. A GuildDef names the RoleDef that staffs a guild, the skill its craftsmen are measured by and the recipes it may queue; a Guild holds a real BillStack — repeat modes and target-count hysteresis unchanged — but belongs to a Settlement, draws fixed ingredients from that settlement's Stores ledger and puts products back into it. Members are the settlement's citizens carrying the role, plus an assigned share of the Statistical cohort whose skill is one deterministic cohort sample, GodRollup's own idiom. Labour banks across intervals (WorkAccumulated) so a batch costing more than one interval can be finished at all, and a guild with no runnable bill banks nothing. Not modelled, all for the same reason — it belongs to the settlement interior: no workbench Thing, no hauling, no job driver. A recipe whose ingredients are a category filter is refused in ConfigErrors rather than silently skipped: a def-count ledger has no stockpile to choose between candidates in",
           "done": true
+        },
+        {
+          "id": "crafting.workbenches",
+          "label": "Bills at a workbench, map-scale: CompBillGiver (Things/CompBillGiver.cs) makes a spawned Building an IBillGiver by composition, following the Building module's own comp-over-subclass grain (CompPower/CompTurretGun/CompTrap); CompProperties_BillGiver.workType is matched against a WorkGiverDef's own workType so one WorkGiver_DoBill (Crafting/WorkGiver_DoBill.cs) serves DoBillsSmith/DoBillsTailor/DoBillsArt/DoBillsCraft/CookMeals instead of five near-copies — RimWorld's own WorkGiverDef.fixedBillGiverDefs would have needed a shared Work/WorkGiverDef.cs edit this pass avoided. JobDriver_DoBill spends skill-scaled work ticks, then re-resolves ingredients near the bench through the existing BillIngredientsFinder, consumes the real map Things, spawns the product via GenRecipe/ThingMaker and grants skill XP. Ingredient delivery to the bench is deliberately out of scope — mirrors WorkGiver_ConstructFinishFrame/ConstructDeliverResourcesToFrames' own split; a bill only runs once ingredients already sit within WorkGiver_DoBill.IngredientSearchRadius, which HaulGeneral's WorkGiver_Haul can stock via an adjacent stockpile zone. Content: FueledStove and TableStonecutter (existing benches) and two new ones, Smithy and TableTailor, each carrying the comp; two new recipes (Make_MeleeWeapon_Knife, Make_Apparel_Shirt). DoBillsArt ships wired with no bench yet — a Sculpture/ArtDef content system is its own piece of work, not a mechanism gap.",
+          "done": true
         }
       ]
     },
@@ -926,7 +941,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects) · tools/content/gen_techtree.py",
       "status": "ported",
-      "tests": 66,
+      "tests": 77,
       "items": [
         {
           "id": "research.dag",
@@ -991,6 +1006,11 @@
         {
           "id": "research.endless",
           "label": "Translation: procedural tech past the authored tree. An EndlessResearchDef is content naming a tag of the authored tree to continue, title fragments to name refinements with, and a cost that grows; EndlessResearch mints a ResearchProjectDef per track per tier into the global DefDatabase, so every consumer — cost, gating, progress, the letter on completion — handles a generated project with exactly the code that handles an authored one. Derived rather than rolled: defName, label, cost and prerequisite are pure functions of track and tier, so a save stores one integer (the tier reached) and reloads byte-identical tech instead of a growing list of invented defs. Minted only when nothing in the authored tree can be started, so it costs a civilization that has not finished the tree nothing. Generated projects carry no era and so cannot hold the ladder open — the era ladder is a finite authored artefact that ends at Exotic, and this is what comes after it",
+          "done": true
+        },
+        {
+          "id": "research.work",
+          "label": "The Research WorkTypeDef gets a real worker: WorkGiver_Research (a WorkGiver_Scanner, Research's own giverClass in WorkGivers.xml) scans for a reachable, unclaimed ResearchBench and issues JobDriver_Research, which walks to it and every tick adds ResearchManager.ResearchPointsPerWorkTick * pawn.GetStatValue(StatDefOf.ResearchSpeed) to CurrentProj through the real ResearchManager.ResearchPerformed — the ResearchSpeed StatDef's first real consumer, replacing the stand-in speed(skill) curve docs/research/tech-reachability.md had to model by hand. A bench is required, matching RimWorld: none built, or none reachable/unclaimed, and the giver simply finds no job; ResearchBench (Data/Core/Defs/ThingDefs_Buildings/Buildings_Research.xml) carries no researchPrerequisites of its own, so this can never be a lock a civilization cannot build its way out of, and it is buildable through the ordinary Blueprint/Frame/GenConstruct pipeline like any other building. ShouldSkip short-circuits the scan when CurrentProj is null; a project finishing mid-toil ends the job Succeeded the same tick rather than leaving the pawn idling with nothing current. Also grants Intellectual xp per tick (0.1, RimWorld's own JobDriver_Research value, named in tech-reachability.md's own assumption table)",
           "done": true
         }
       ]
@@ -1059,7 +1079,7 @@
       "items": [
         {
           "id": "building.zones",
-          "label": "Zone/Zone_Stockpile/Zone_Growing/ZoneManager (one zone per cell, Scribe round-trip with cells) plus a map-wide Area/AreaManager for the home area, kept distinct from Zone per RimWorld's own split; WorkGiver_GrowerSow (cell-scanning) sows an active growing zone's empty cells, WorkGiver_GrowerHarvest harvests any harvestable-now Plant map-wide — Zone_Stockpile carries a real ThingFilter but nothing hauls into it yet (HaulGeneral stays WorkGiver_Pending, unchanged from before this pass — see this system's report)",
+          "label": "Zone/Zone_Stockpile/Zone_Growing/ZoneManager (one zone per cell, Scribe round-trip with cells) plus a map-wide Area/AreaManager for the home area, kept distinct from Zone per RimWorld's own split; WorkGiver_GrowerSow (cell-scanning) sows an active growing zone's empty cells, WorkGiver_GrowerHarvest harvests any harvestable-now Plant map-wide — Zone_Stockpile's ThingFilter is now a real hauling destination too: HaulGeneral is wired (system 9: AI — see ai.hauling) to AI.WorkGiver_Haul/AI.JobDriver_HaulToCell, which read Zone.cells and Zone_Stockpile.filter directly rather than through any new member on this class",
           "done": true
         },
         {

@@ -25,6 +25,10 @@
     <requiredCapacities>
       <li>Manipulation</li>
     </requiredCapacities>
+    <!-- Wired to a real scanner (system: health — tending): WorkGiver_Tend also backs the ordinary
+         DoctorTend below it; this def's own <emergency> flag is what tells the two apart, read via
+         TendUtility.NeedsEmergencyTend (bleeding or life-threatening) — see that class's own doc. -->
+    <giverClass>SimWorld.AI.WorkGiver_Tend</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -37,6 +41,8 @@
     <requiredCapacities>
       <li>Manipulation</li>
     </requiredCapacities>
+    <!-- Same WorkGiver_Tend class as DoctorTendEmergency above — see that def's own comment. -->
+    <giverClass>SimWorld.AI.WorkGiver_Tend</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -46,6 +52,17 @@
     <gerund>feeding</gerund>
     <workType>Doctor</workType>
     <priorityInType>80</priorityInType>
+    <!-- requiredCapacities added for consistency with the other three Doctor givers in this file (carrying
+         food to a patient needs working hands too); not independently re-verified against a live RimWorld
+         dump for this specific def. -->
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+    <!-- Wired to a real scanner (system: health — tending): finds a downed, hungry, non-prisoner humanlike
+         of the doctor's own faction and reuses WardenFeed's own JobDef/JobDriver unchanged — see
+         WorkGiver_FeedPatient's own doc for why this collapses onto that one mechanism instead of copying
+         it, and for why WardenDeliverFood below stays unwired. -->
+    <giverClass>SimWorld.AI.WorkGiver_FeedPatient</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -55,6 +72,15 @@
     <gerund>rescuing</gerund>
     <workType>Doctor</workType>
     <priorityInType>70</priorityInType>
+    <!-- See DoctorFeedHumanlikes' own comment on requiredCapacities above — carrying a downed patient needs
+         working hands the same way. -->
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+    <!-- Wired to a real scanner (system: health — tending): finds a downed patient of the rescuer's own
+         faction (or a prisoner it holds) and carries them to RestUtility.FindBedFor's nearest reachable bed
+         — see WorkGiver_RescueDowned's own doc for what happens with no bed on the map at all. -->
+    <giverClass>SimWorld.AI.WorkGiver_RescueDowned</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -100,7 +126,9 @@
          food entirely on its own through the ordinary JobGiver_GetFood tier of its think tree (nothing in
          this port's job selection checks guest status or faction at all), so there is no ambulatory-prisoner
          case left uncovered for this giver to fill — see WorkGiver_Warden_Feed's own doc and this module's
-         report. -->
+         report. Still true now that DoctorFeedHumanlikes (system: health — tending) is wired alongside it:
+         that giver explicitly excludes prisoners (WardenFeed's own patient), so it neither fills this gap nor
+         needs this def to fill one of its own — see WorkGiver_FeedPatient's own doc. -->
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -131,6 +159,11 @@
     <gerund>cooking</gerund>
     <workType>Cooking</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner (system: crafting.workbenches — bills at a workbench): works the first
+         runnable bill on any spawned bench whose CompProperties_BillGiver.workType matches this giver's own
+         workType (FueledStove, for this one) — see WorkGiver_DoBill's own doc for why one class serves this
+         and the four DoBills* givers below instead of five near-copies. -->
+    <giverClass>SimWorld.Crafting.WorkGiver_DoBill</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -240,6 +273,8 @@
     <gerund>smithing</gerund>
     <workType>Smithing</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner (system: crafting.workbenches — bills at a workbench): see CookMeals above. -->
+    <giverClass>SimWorld.Crafting.WorkGiver_DoBill</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -249,6 +284,8 @@
     <gerund>tailoring</gerund>
     <workType>Tailoring</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner (system: crafting.workbenches — bills at a workbench): see CookMeals above. -->
+    <giverClass>SimWorld.Crafting.WorkGiver_DoBill</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -258,6 +295,10 @@
     <gerund>making art</gerund>
     <workType>Art</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner (system: crafting.workbenches — bills at a workbench): see CookMeals above.
+         No bench ships yet for this work type — see Buildings_Production.xml's own remarks — so this giver
+         currently finds nothing to work; the mechanism is in place for whenever an Art bench/recipe lands. -->
+    <giverClass>SimWorld.Crafting.WorkGiver_DoBill</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -267,6 +308,8 @@
     <gerund>crafting</gerund>
     <workType>Crafting</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner (system: crafting.workbenches — bills at a workbench): see CookMeals above. -->
+    <giverClass>SimWorld.Crafting.WorkGiver_DoBill</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -276,6 +319,10 @@
     <gerund>hauling</gerund>
     <workType>Hauling</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner (system 9: AI — hauling): carries any not-yet-stored haulable item to the
+         nearest Zone_Stockpile cell with room for it. See WorkGiver_Haul/HaulAIUtility's own docs for what
+         "haulable" and "nowhere to put it" mean in this port. -->
+    <giverClass>SimWorld.AI.WorkGiver_Haul</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
@@ -303,6 +350,10 @@
     <gerund>researching</gerund>
     <workType>Research</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner (system: Research work): a pawn walks to a ResearchBench and advances
+         Find.ResearchManager.CurrentProj there. See WorkGiver_Research's own doc for why a bench is
+         required — matching RimWorld — and JobDriver_Research's for how points-per-tick is computed. -->
+    <giverClass>SimWorld.AI.WorkGiver_Research</giverClass>
   </WorkGiverDef>
 
 </Defs>

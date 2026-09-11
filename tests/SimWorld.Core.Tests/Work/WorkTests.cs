@@ -433,11 +433,16 @@ namespace SimWorld.Tests.Work
         [Fact]
         public void WorkGiver_worker_is_lazily_created_and_checks_required_capacities()
         {
-            WorkGiverDef doctorTend = DefDatabase<WorkGiverDef>.GetNamed("DoctorTend");
-            WorkGiver worker = doctorTend.Worker;
-            Assert.Same(worker, doctorTend.Worker);
+            // DoctorTend used to be this test's placeholder-and-requiredCapacities example, back when every
+            // Doctor WorkGiverDef still defaulted to WorkGiver_Pending; the health lane wired it to a real
+            // WorkGiver_Tend scanner (docs/status.json's health.tending item). Hunt still carries the same
+            // requiredCapacities shape (Manipulation) and, unlike DoctorTend, is not claimed by any of this
+            // pass's active lanes (docs/WORK-REGISTER.md), so it stays WorkGiver_Pending for this generic check.
+            WorkGiverDef hunt = DefDatabase<WorkGiverDef>.GetNamed("Hunt");
+            WorkGiver worker = hunt.Worker;
+            Assert.Same(worker, hunt.Worker);
             Assert.IsType<WorkGiver_Pending>(worker);
-            Assert.Same(doctorTend, worker.def);
+            Assert.Same(hunt, worker.def);
 
             Pawn p = NewHuman();
             Assert.False(worker.MissingRequiredCapacity(p));

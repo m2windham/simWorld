@@ -614,6 +614,10 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   unconsciousness or lost legs; dead from a lethal capacity at zero, core part
   destruction, lethal severity, or total damage past threshold.
 - Disease is a severity-versus-immunity race, modified by tend quality.
+  `TendUtility.NeedsEmergencyTend` names what makes a patient an emergency
+  (bleeding or life-threatening) rather than routine, for the work givers that
+  actually walk a doctor over to a patient — see the "Doctor work" bullet in
+  §7.4.
 - **Surgery** is a `RecipeDef` with `isSurgery`, queued as a `Bill_Medical` on
   the patient's own bill stack rather than a workbench's, and carried out by a
   `Recipe_Surgery` worker selected by `workerClass` — amputation, excision of a
@@ -675,7 +679,10 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   `ResearchSpeed` ship as new content, and the already-shipped
   `ShootingAccuracyPawn`/`MeleeHitChance`/`MeleeDodgeChance` (§3a) picked up
   `skillNeedOffsets` too. A `TotallyDisabled` skill (the work-tags rule above)
-  reads as level 0 in every one of these for free.
+  reads as level 0 in every one of these for free. `ResearchSpeed` shipped with
+  no consumer at first (`docs/research/tech-reachability.md` had to model
+  `speed(skill)` by hand for exactly that reason); `JobDriver_Research`
+  (`research.work`, below) is what reads it for real.
 - **Policy (SimWorld translation, `work.policy`, built).** A civilization cannot
   set twelve priority numbers per citizen the way a RimWorld player sets them
   per colonist, so a standing `RoleDef` (Farmer, Miner, Artisan, Scholar ship as
@@ -789,6 +796,63 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   self-service but with nothing reachable — has no distinct case left to cover
   here and stays the `WorkGiver_Pending` placeholder its `WorkGiverDef` shipped
   with.
+- **Doctor work** closes this pass's other named gap in the work economy
+  (`docs/WORK-REGISTER.md`): `WorkGiver_Tend` backs both `DoctorTendEmergency`
+  and `DoctorTend` — one class, exactly as RimWorld's own single
+  `WorkGiver_Tend` backs both WorkGiverDefs — told apart only by the def's own
+  `emergency` flag against `TendUtility.NeedsEmergencyTend` (§7.2): bleeding or
+  life-threatening sorts a patient to the emergency giver, everything else
+  tendable to the ordinary one, never both. `JobDriver_TendPatient` then tends
+  at a quality read from `StatDefOf.MedicalTendQuality` (§7.3's `work.stats`)
+  capped at `TendUtility.MaxQualityNoMedicine`, since no medicine `ThingDef`
+  ships yet. `WorkGiver_RescueDowned`/`JobDriver_TakeToBed` (`DoctorRescue`)
+  find a downed patient and carry them to `AI.RestUtility.FindBedFor`'s nearest
+  reachable bed — reused, not reimplemented, from `JobGiver_GetRest`'s own
+  search; with no bed anywhere on the map this giver simply produces no job,
+  the same honest "nothing to do" RimWorld's own rescue job reaches once every
+  bed type it scores has failed, rather than an invented ground-cell fallback.
+  A downed pawn nobody can carry anywhere is still tended and fed exactly where
+  they fell, since neither of those needs a bed. `WorkGiver_FeedPatient`
+  (`DoctorFeedHumanlikes`) is that same "collapse rather than copy" shape
+  applied to feeding: it reuses `WardenFeed`'s own `FeedPatient` `JobDef`/
+  `JobDriver_Warden_Feed` completely unchanged, scanning for a downed, hungry
+  **non-prisoner** of the doctor's own faction — a downed, hungry prisoner is
+  already `WardenFeed`'s patient, and RimWorld's `WardenDeliverFood`
+  counterpart (food left for a prisoner capable of self-service but with
+  nothing reachable in its own cell) has, by the same reasoning as the Warden
+  work bullet above, no distinct case left to cover, so it stays unwired too.
+  `AI.DoctorUtility` is the one eligibility check both `WorkGiver_Tend` and
+  `WorkGiver_RescueDowned` share: a patient of the carer's own faction, or a
+  prisoner that faction currently holds (the same host-faction lookup
+  `WorkGiver_Warden_Feed` already uses) — prisoners are cared for exactly as
+  readily as colonists, since this port has no per-prisoner medical-care
+  setting to gate on. **Self-tend is out of scope**: a pawn is never its own
+  patient through `WorkGiver_Tend`, matching RimWorld's own refusal there —
+  RimWorld's separate reduced-quality solo-colonist "auto-tend" mechanic does
+  not exist in this port, so a lone injured pawn with nobody else to reach them
+  simply goes untended.
+- **Hauling** (`HaulGeneral`) is `WorkGiver_Haul` (RimWorld:
+  `RimWorld.WorkGiver_Haul`/`HaulAIUtility`/`JobDriver_HaulToCell`, trimmed to
+  this port's single storage kind): it scans every spawned Item-category
+  `Thing` — this port's own answer for "haulable", since no separate
+  `alwaysHaulable`/`EverHaulable` split exists (nothing here can _hold_ an item
+  the way an equipment/apparel tracker would, so every spawned Item is a
+  candidate) — skips one already resting on a `Zone_Stockpile` cell its
+  `ThingFilter` allows, and carries the rest to the nearest reachable,
+  reservable stockpile cell with room for it (`HaulAIUtility.TryFindBestStockpileCell`,
+  nearest to the _item_, not the pawn, matching RimWorld's own `StoreUtility`).
+  A destination cell already holding a stack of the same def merges the count
+  exactly; an empty one gets a freshly made `Thing` carrying the same `Stuff`.
+  No stockpile at all (or every matching one already full) is this giver's
+  honest "no job" — one storage kind, no priority tiers, so there is nowhere
+  else for `StoreUtility`'s job to send it, and this port does not invent a
+  dumping ground. Carrying itself is modelled the same abstract way
+  `JobDriver_HaulToBuildingSite`/`JobDriver_Warden_Feed` already do it (no
+  carry-tracker exists in this codebase): the source stack's count drops the
+  moment the pawn reaches it, nothing visibly follows the pawn to the
+  stockpile in between. `HaulCorpses`, the other `WorkGiverDef` in the same
+  content file, stays `WorkGiver_Pending`: no `Corpse` class exists anywhere in
+  this codebase, so it cannot be wired honestly.
 
 ```mermaid
 flowchart TD
@@ -1008,6 +1072,36 @@ flowchart TD
   a category filter ("any meat") is refused in `ConfigErrors` rather than
   silently skipped: a def-count ledger has no stockpile to make that choice
   in.
+- **Bills at a workbench, map scale** (`crafting.workbenches`, built): the
+  other half of the same bill queue — what a `Guild` deliberately does not
+  model, per its own remarks above, because it belongs to an open settlement's
+  map rather than to the civilization. `Things.CompBillGiver` makes any
+  spawned `Building` an `IBillGiver` by composition
+  (`CompProperties_BillGiver.workType` names which `WorkTypeDef` it serves),
+  following the Building module's own comp-over-subclass grain
+  (`CompPower`/`CompTurretGun`/`CompTrap`) rather than adding a fourth
+  concrete `Building` subclass. One `Crafting.WorkGiver_DoBill` — matching a
+  candidate bench's `workType` against its own `WorkGiverDef.workType` —
+  serves `DoBillsSmith`/`DoBillsTailor`/`DoBillsArt`/`DoBillsCraft`/
+  `CookMeals` alike, rather than RimWorld's several near-duplicate
+  `WorkGiver_DoBill` subclasses distinguished by
+  `WorkGiverDef.fixedBillGiverDefs` — a field this port does not add, since it
+  would live on the shared `Work.WorkGiverDef` every work-type lane touches.
+  `Crafting.JobDriver_DoBill` spends skill-scaled work ticks on the first
+  runnable bill, then re-resolves ingredients near the bench through the same
+  `BillIngredientsFinder` a guild's bill already resolves them with, consumes
+  the matching real map `Thing`s, spawns the product via `GenRecipe`/
+  `ThingMaker` and grants skill XP. **Ingredient delivery is deliberately out
+  of scope**, mirroring `WorkGiver_ConstructFinishFrame`'s own split from
+  `ConstructDeliverResourcesToFrames`: a bill only runs once its ingredients
+  already sit within `WorkGiver_DoBill.IngredientSearchRadius` of the bench —
+  typically an adjacent stockpile zone `HaulGeneral`'s `WorkGiver_Haul` keeps
+  filled — rather than this driver carrying a queue of distant stacks itself,
+  which this port's three-target `Job` has no room for. Shipped content:
+  `FueledStove`/`TableStonecutter` (already-existing benches, now carrying the
+  comp) plus two new ones, `Smithy` and `TableTailor`, each with one new
+  recipe; `DoBillsArt` is wired with no bench yet, since a sculpture's own
+  beauty/quality/description subsystem is a separate piece of content work.
 - Trade price = market value × price type × relation and negotiator modifiers.
 - Faction goodwill crosses thresholds → hostile / neutral / ally.
 - Caravans path the world tile graph at a cost from hilliness, biome and roads.
@@ -1115,9 +1209,10 @@ flowchart TD
   the home area is a separate, non-exclusive `Area` (`AreaManager.Home`) any
   number of which can overlap a cell and a Zone both — RimWorld's own Zone/Area
   split, kept distinct here too. `Zone_Growing` names a plant def to sow;
-  `Zone_Stockpile` carries a real `ThingFilter` but nothing hauls into it yet
-  (general item hauling is unbuilt — `HaulGeneral` stays `WorkGiver_Pending`,
-  unchanged from before this pass).
+  `Zone_Stockpile`'s real `ThingFilter` is now a genuine hauling destination —
+  `HaulGeneral` is wired (§7.4's hauling bullet) to `AI.WorkGiver_Haul`/
+  `AI.JobDriver_HaulToCell`, which read `Zone.cells` and the filter directly
+  rather than through any new member on `Zone` itself.
 - **Plant growth**: `Plant` (RimWorld: `Verse.Plant`) grows on the long tick at
   fertility × light × temperature, RimWorld's own three-factor product —
   fertility straight off `TerrainDef.fertility`, light from `GenDate`'s
@@ -1503,6 +1598,28 @@ the translation and its state per system.
   loaded save can never end up doubly subscribed and double-firing Chronicle
   entries — `GodManager`'s constructor subscribes for a fresh civilization,
   its `ExposeData`'s `PostLoadInit` branch resubscribes for a loaded one.
+- **Research work** (`research.work`, built): the `Research` `WorkTypeDef`
+  finally has a worker. `WorkGiver_Research` (a `WorkGiver_Scanner`, `Research`'s
+  own `giverClass`) scans for a reachable, unclaimed `ResearchBench`
+  (`Data/Core/Defs/ThingDefs_Buildings/Buildings_Research.xml`) and issues
+  `JobDriver_Research`, which walks to it and, every tick, adds
+  `ResearchManager.ResearchPointsPerWorkTick * pawn.GetStatValue(StatDefOf.ResearchSpeed)`
+  to `ResearchManager.CurrentProj` through the real `ResearchPerformed` — the
+  same `points/day = researchers x WorkTicksPerDay x ResearchPointsPerWorkTick x
+  speed(skill)` formula `docs/research/tech-reachability.md` §1.2 had to model
+  by hand, now driven by the `ResearchSpeed` `StatDef` instead of that harness's
+  own stand-in curve. **A bench is required, matching RimWorld**: with none
+  built, or none reachable/unclaimed, the giver simply finds no job, the same
+  "no bench, no job" outcome as a bench that exists but is claimed by another
+  researcher; `ResearchBench` itself carries no `researchPrerequisites`, so this
+  is never a lock a civilization cannot build its way out of. `ShouldSkip`
+  short-circuits the scan entirely when `CurrentProj` is null. A project
+  finishing mid-toil (`ResearchPerformed` itself clears `CurrentProj` the tick
+  progress reaches `baseCost`) ends the job `Succeeded` the same tick rather
+  than leaving the pawn idling at a bench with nothing current. The bench is
+  buildable through the ordinary `Blueprint`/`Frame`/`GenConstruct` pipeline
+  (`ThingDefs_Buildings/Buildings_Research.xml`'s own `Blueprint_ResearchBench`/
+  `Frame_ResearchBench` pair) like any other building.
 - **Aggregation**: per-citizen depth stays, but the god view reads `GodRollup`
   — population by `PawnTier`, mean mood, mean health, a food/industry readout,
   era and research progress — rather than opening every person. `GodRollup`

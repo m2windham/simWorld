@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Hauling (system 9: AI). Kept in its own file rather than added to JobDefs_Core.xml: several other
+       lanes add their own JobDefs to that shared file in the same pass, and a new file can never conflict
+       with theirs the way editing a shared one could. -->
+
+  <JobDef>
+    <defName>HaulToCell</defName>
+    <driverClass>SimWorld.AI.JobDriver_HaulToCell</driverClass>
+    <reportString>hauling.</reportString>
+  </JobDef>
+
+</Defs>

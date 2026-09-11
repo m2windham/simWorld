@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The research bench (system: Research work) — RimWorld splits this into a "simple research bench" and a
+    later "hi-tech research bench"/"multi-analyzer" tier gated behind their own research; this port ships one
+    tier only, ungated, the same simplification Buildings_Production.xml's stove/tables already accept for
+    their own multi-tier RimWorld originals. Ungated deliberately, not just for simplicity: research itself
+    has to be bootstrappable — nothing can ever be researched to unlock the very bench research requires, so
+    unlike FueledStove/TableButcher/TableStonecutter above (each gated by researchPrerequisites) this one
+    carries none, the same way Wall/Door/Bed/StorageHut in Buildings_Structural.xml are ungated as things no
+    civilization should be blocked from ever reaching. MaxHitPoints/WorkToBuild/costList are this port's own
+    figures, not sourced from RimWorld (unreachable from this sandbox) — sized between Bed and StorageHut's
+    own unsourced figures in that same file, for the same "somewhere plausible, not a literal to trust" reason
+    their own comment gives; pinned by the construction pipeline test in tests/SimWorld.Core.Tests/Research,
+    not by these numbers themselves (CLAUDE.md's rule for untraceable values).
+
+    Blueprint_ResearchBench/Frame_ResearchBench follow Buildings_BlueprintsAndFrames.xml's own hand-authored
+    pattern (see that file's own remarks for why a pair is authored per buildable Def rather than generated) —
+    kept here instead of there because this file is this module's own to add to under the multi-lane work
+    register; the shape is otherwise identical to every other pair in that file.
+  -->
+
+  <ThingDef>
+    <defName>ResearchBench</defName>
+    <label>research bench</label>
+    <description>A bench for studying and advancing research projects.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <statBases>
+      <MaxHitPoints>150</MaxHitPoints>
+      <WorkToBuild>250</WorkToBuild>
+    </statBases>
+    <costList>
+      <WoodLog>10</WoodLog>
+    </costList>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_ResearchBench</defName>
+    <label>research bench (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>ResearchBench</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_ResearchBench</defName>
+    <label>research bench (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>ResearchBench</entityToBuild>
+  </ThingDef>
+
+</Defs>

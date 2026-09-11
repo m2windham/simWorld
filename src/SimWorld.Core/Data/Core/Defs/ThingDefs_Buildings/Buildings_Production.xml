@@ -4,6 +4,14 @@
   <!--
     Crafting workbenches (RimWorld: ThingDefs_Buildings/Buildings_Production) — the recipeUsers our
     first recipes reference. Placement, power draw and furniture stats land with the Buildings module.
+
+    thingClass + CompProperties_BillGiver are added here by the bills-at-a-workbench pass (system:
+    crafting.workbenches): FueledStove/TableStonecutter previously had no thingClass at all (the same
+    latent gap Items_Resource.xml's own comment notes for its own Defs — nothing had ever tried to spawn
+    one), so neither could actually be placed on a map or carry a comp. CompProperties_BillGiver.workType
+    is how SimWorld.Crafting.WorkGiver_DoBill decides which WorkGiverDef's pawns may work a given bench —
+    see that class's own remarks for why the match runs this direction instead of RimWorld's own
+    WorkGiverDef.fixedBillGiverDefs.
   -->
 
   <ThingDef>
@@ -14,7 +22,13 @@
     <label>fueled stove</label>
     <description>A wood-fueled stove for cooking meals.</description>
     <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
     <statBases><MarketValue>240</MarketValue></statBases>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_BillGiver">
+        <workType>Cooking</workType>
+      </li>
+    </comps>
   </ThingDef>
 
   <ThingDef>
@@ -36,7 +50,55 @@
     <label>stonecutter's table</label>
     <description>A table for cutting stone chunks into blocks suitable for construction.</description>
     <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
     <statBases><MarketValue>180</MarketValue></statBases>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_BillGiver">
+        <!-- RimWorld's own stonecutting table is worked under the "Crafting" work type, the same as a
+             machining table or a drug lab — Make_Blocks_Sandstone (RecipeDefs/Recipes_Production.xml)
+             already recipeUsers this bench and needs no new content of its own. -->
+        <workType>Crafting</workType>
+      </li>
+    </comps>
   </ThingDef>
+
+  <ThingDef>
+    <defName>Smithy</defName>
+    <researchPrerequisites>
+      <li>StoneTools</li>
+    </researchPrerequisites>
+    <label>smithy</label>
+    <description>A forge for smithing metal goods.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <statBases><MarketValue>280</MarketValue></statBases>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_BillGiver">
+        <workType>Smithing</workType>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>TableTailor</defName>
+    <label>tailoring bench</label>
+    <description>A workbench for tailoring cloth into apparel.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <statBases><MarketValue>220</MarketValue></statBases>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_BillGiver">
+        <workType>Tailoring</workType>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <!--
+    No bench ships yet for DoBillsArt (WorkTypeDefOf.Art): RimWorld's own sculpting recipes produce an
+    ArtDef-carrying Sculpture with its own beauty/quality/description-generation subsystem, none of which
+    this port has built. WorkGiver_DoBill is already wired for DoBillsArt in WorkGiverDefs/WorkGivers.xml
+    so a bench and recipe can be added later as pure content, with no mechanism work left to do — see this
+    module's report.
+  -->
 
 </Defs>
