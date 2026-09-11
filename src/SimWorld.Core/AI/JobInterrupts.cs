@@ -55,7 +55,7 @@ namespace SimWorld.AI
         /// runs it every tick; the default is <see cref="IntervalTicks"/>, which is what ships.
         /// See <c>tools/bench/SimWorld.Bench/Suites/ConstantThinkTreeSuite.cs</c>.
         /// </summary>
-        public static int MeasuredIntervalTicks = IntervalTicks;
+        public static int IntervalTicksOverride = IntervalTicks;
     }
 
     /// <summary>

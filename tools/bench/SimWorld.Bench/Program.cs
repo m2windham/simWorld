@@ -69,6 +69,9 @@ namespace SimWorld.Bench
                 case "pathing":
                     PathingSuite.Run(opt, opt.PathingNs);
                     break;
+                case "interrupts":
+                    ConstantThinkTreeSuite.Run(opt);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -99,6 +102,7 @@ namespace SimWorld.Bench
             WorldGenSuite.Run(opt);
             SaveLoadSuite.Run(opt);
             PathingSuite.Run(opt, opt.PathingNs);
+            ConstantThinkTreeSuite.Run(opt);
         }
 
         /// <summary>
@@ -155,6 +159,9 @@ namespace SimWorld.Bench
                     case "--pathing-ns":
                         opt.PathingNs = ParseIntList(Next(args, ref i), "--pathing-ns");
                         break;
+                    case "--constant-tree-ticks":
+                        opt.ConstantTreeTicks = ParseInt(Next(args, ref i), "--constant-tree-ticks");
+                        break;
                     default:
                         throw new ArgumentException("unrecognized argument '" + a + "'.");
                 }
@@ -163,6 +170,7 @@ namespace SimWorld.Bench
             if (opt.Days <= 0) throw new ArgumentException("--days must be positive.");
             if (opt.Runs <= 0) throw new ArgumentException("--runs must be positive.");
             if (opt.Warmup < 0) throw new ArgumentException("--warmup cannot be negative.");
+            if (opt.ConstantTreeTicks <= 0) throw new ArgumentException("--constant-tree-ticks must be positive.");
             return opt;
         }
 
@@ -210,7 +218,7 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
   --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc.
   --seed <N>              RandomStream seed (default 12345).
@@ -220,6 +228,7 @@ OPTIONS
   --ns <csv>              N sweep for --suite scaling (default 100,250,500,1000,2500,5000,10000).
   --subdivisions <csv>    subdivision sweep for --suite worldgen (default 3,4,5,6).
   --pathing-ns <csv>      N sweep for --suite pathing (default 100,400,1000).
+  --constant-tree-ticks <N>  ticks per trial for --suite interrupts (default 6000).
   --help, -h              show this text.
 
 SUITES
@@ -233,6 +242,8 @@ SUITES
   saveload      Measurement 6: Scribe save/load time and serialized size for --pawns pawns.
   pathing       Measurement 9: N pawns to a shared destination, before (no region-graph sharing) vs after,
                 across --pathing-ns.
+  interrupts    Measurement 11: what the constant think tree costs at TieringTuning.FullTierBudget — one
+                evaluation in isolation, and the whole tick loop off / at the shipped interval / every tick.
   all           Runs every suite in sequence (scaling first; attribution's N is derived from its result).
 
 EXAMPLES

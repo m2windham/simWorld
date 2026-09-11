@@ -176,10 +176,12 @@ namespace SimWorld.AI
         /// <item><b>Being hurt re-asks the think tree</b>, if this job's <see cref="JobDef.checkOverrideOnDamage"/>
         /// says so and the throttle allows it.</item>
         /// </list>
-        /// Nothing here runs for an Interval or Statistical citizen: they have no jobs at all
-        /// (<c>Pawn.Tick</c> never reaches <see cref="JobTrackerTick"/> for them), so a damaged one would be
-        /// paying a think-tree pass to start a job nothing would ever tick. The tier check makes that
-        /// explicit rather than leaving it to the <c>curJob == null</c> line above it.
+        /// Nothing here runs for an Interval or Statistical citizen, and the tier check is the first thing
+        /// past the death check for that reason. Damage is the one path into this class that does <i>not</i>
+        /// come from the tick loop — a fire, a collapsing roof or a trap reaches a citizen at any tier — and
+        /// a coarse-tier citizen has no jobs at all (<c>Pawn.Tick</c> never reaches
+        /// <see cref="JobTrackerTick"/> for them), so waking one or starting it a job would create state
+        /// nothing would ever tick again.
         /// </summary>
         public void Notify_DamageTaken(DamageInfo dinfo)
         {
@@ -225,7 +227,7 @@ namespace SimWorld.AI
         /// </summary>
         private void ConstantThinkTreeTick()
         {
-            int interval = ConstantThinkTreeTuning.MeasuredIntervalTicks;
+            int interval = ConstantThinkTreeTuning.IntervalTicksOverride;
             if (interval <= 0 || !pawn.IsHashIntervalTick(interval)) return;
             if (pawn.Dead || pawn.Downed) return;
 
