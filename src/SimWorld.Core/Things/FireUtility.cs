@@ -166,8 +166,9 @@ namespace SimWorld.Things
 
         /// <summary>
         /// Rolls every unroofed fire on <paramref name="map"/> against the rain (RimWorld: the rain branch of
-        /// <c>Fire.DoComplexCalcs</c>). See <see cref="Fire.TryExtinguishFromRain"/> for why no weather
-        /// module calls this yet.
+        /// <c>Fire.DoComplexCalcs</c>). Called by <c>Weather.WeatherManager.WeatherManagerTick</c> once per
+        /// <see cref="Fire.ComplexCalcsInterval"/> while <c>RainRate</c> is above zero — see
+        /// <see cref="Fire.TryExtinguishFromRain"/>.
         /// </summary>
         /// <returns>How many fires the rain put out.</returns>
         public static int ExtinguishFiresFromRain(Map.Map map, float rainRate)

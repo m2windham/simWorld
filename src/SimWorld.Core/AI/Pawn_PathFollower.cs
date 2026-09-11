@@ -39,12 +39,24 @@ namespace SimWorld.AI
         public bool Failed { get; private set; }
 
         /// <summary>Ticks to move one cardinal cell at the pawn's current <see cref="StatDefOf.MoveSpeed"/>
-        /// (RimWorld: <c>Pawn_PathFollower.TicksPerMoveCardinal</c> — 60 ticks/second ÷ cells/second).</summary>
+        /// (RimWorld: <c>Pawn_PathFollower.TicksPerMoveCardinal</c> — 60 ticks/second ÷ cells/second), scaled
+        /// by the weather when the pawn is out under it.</summary>
         public int TicksPerMoveCardinal
         {
             get
             {
                 float speed = pawn.GetStatValue(StatDefOf.MoveSpeed);
+
+                // Weather slows a pawn only under open sky (RimWorld: Pawn.TicksPerMove divides by
+                // Map.weatherManager.CurMoveSpeedMultiplier for an unroofed pawn — the one place that
+                // multiplier is read). Clear weather multiplies by exactly 1, so a map that never sees bad
+                // weather moves at precisely the speed it always did.
+                Map.Map? weatherMap = pawn.Map;
+                if (weatherMap != null && !GenGrid.Roofed(pawn.Position, weatherMap))
+                {
+                    speed *= weatherMap.weatherManager.CurMoveSpeedMultiplier;
+                }
+
                 if (speed <= 0f) speed = 0.01f;
                 return Math.Max(1, (int)Math.Round(GenTicks.TicksPerRealSecond / speed, MidpointRounding.AwayFromZero));
             }
