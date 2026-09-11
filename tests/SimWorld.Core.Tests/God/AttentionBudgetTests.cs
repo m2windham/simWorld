@@ -391,9 +391,20 @@ namespace SimWorld.Tests.God
 
         /// <summary>
         /// A century of real demography on the settlement the god is watching. Before the cap the Full-tier
-        /// roster was the settlement's whole live population, which doubles about every 17 years — 67 citizens
-        /// at year 10, 1,412 at year 100 — and crossed §11.3's measured Full ceiling around year 115-125. The
-        /// population still grows here; what stops growing is the part that costs a full tick.
+        /// roster was the settlement's whole live population, which doubles roughly every 18 years and crossed
+        /// §11.3's measured Full ceiling well inside a century. The population still grows here; what stops
+        /// growing is the part that costs a full tick.
+        /// <para/>
+        /// Run over several founding seeds, and that is not thoroughness for its own sake. A century of
+        /// compounding births is chaotic in the founding band's random stream: measured across eight founding
+        /// seeds the final roster ranges from about 100 to about 1,500, and adding a single new TraitDef —
+        /// content that cannot affect demography at all, and only moves where each founder's rolls land in
+        /// that stream — moved one seed's century from 1,132 people to 624 and another's from 1,404 to 1,575.
+        /// This test used to assert its premise ("a century really does outgrow the budget") against one seed,
+        /// and so was one unrelated content addition away from failing for a reason that had nothing to do
+        /// with the cap it exists to prove. The premise is now asked of the set: some century outgrows the
+        /// budget several times over. The conclusion — the Full tier never exceeds the budget, and goes flat
+        /// once it reaches it — is asked of every one of them, which is strictly more than before.
         /// <para/>
         /// Years are advanced with the same <c>AgeTickMothballed</c> shortcut <c>SettlementTests</c> and
         /// <c>DemographyTests</c> use rather than by single-stepping 6,000,000 ticks, and
@@ -404,17 +415,87 @@ namespace SimWorld.Tests.God
         [Fact]
         public void A_century_of_demography_holds_the_Full_tier_flat_instead_of_doubling_it()
         {
-            CoreWorld world = NewWorld("budget-century");
+            List<CenturyRun> runs = new[] { 905, 906, 907, 908, 909 }.Select(RunOneCentury).ToList();
+
+            // The conclusion, asked of every century: the Full tier never overran the budget, nobody was
+            // spilled into the bare Statistical cohort, and the roster only ever grew.
+            foreach (CenturyRun run in runs)
+            {
+                Assert.True(run.PeakFull <= TieringTuning.FullTierBudget,
+                    $"seed {run.Seed}: the Full tier overran the budget at some point in the century (peak {run.PeakFull})");
+                Assert.Equal(0, run.StatisticalPopulation);
+                Assert.Equal(run.FinalRoster, run.TotalPopulation);
+                Assert.True(run.FinalRoster > run.StartingRoster,
+                    $"seed {run.Seed}: expected a century to leave more people than it started with; {run.StartingRoster} -> {run.FinalRoster}");
+            }
+
+            // The premise of the lane, asked of the set rather than of one seed: a century of demography really
+            // does outgrow the budget several times over. If this ever fails for every seed at once, demography
+            // changed and the rest of this test proves nothing.
+            CenturyRun biggest = runs.OrderByDescending(r => r.FinalRoster).First();
+            Assert.True(biggest.FinalRoster > TieringTuning.FullTierBudget * 2,
+                "expected at least one century to grow the roster well past the budget; got "
+                + string.Join(", ", runs.Select(r => r.Seed + ":" + r.FinalRoster)));
+            Assert.True(biggest.FinalRoster > biggest.StartingRoster * 8,
+                $"expected demographic growth over a century; {biggest.StartingRoster} -> {biggest.FinalRoster}");
+
+            // Flat, not merely capped: in every century that reached the budget, the Full count stops moving
+            // there while the roster behind it does not.
+            int reachedBudget = 0;
+            foreach (CenturyRun run in runs)
+            {
+                int firstAtBudget = run.FullByDecade.FindIndex(n => n == TieringTuning.FullTierBudget);
+                if (firstAtBudget < 0) continue;
+                reachedBudget++;
+
+                for (int i = firstAtBudget; i < run.FullByDecade.Count; i++)
+                {
+                    Assert.Equal(TieringTuning.FullTierBudget, run.FullByDecade[i]);
+                }
+                Assert.True(run.RosterByDecade[run.RosterByDecade.Count - 1] > run.RosterByDecade[firstAtBudget],
+                    $"seed {run.Seed}: expected the roster to outgrow the budget it was pinned to");
+            }
+            Assert.True(reachedBudget > 0, "no century reached the budget — see the premise above");
+        }
+
+        /// <summary>What one century leaves behind, so the assertions can be made over the set of them.</summary>
+        private sealed class CenturyRun
+        {
+            public int Seed;
+            public int StartingRoster;
+            public int FinalRoster;
+            public int TotalPopulation;
+            public int StatisticalPopulation;
+            public int PeakFull;
+            public List<int> FullByDecade = new List<int>();
+            public List<int> RosterByDecade = new List<int>();
+        }
+
+        /// <summary>
+        /// One settlement, founded and then aged a hundred years. Resets the thread-static services first, the
+        /// same way <see cref="ContentTestBase"/>'s constructor does, so each century is genuinely independent
+        /// of the one before it rather than inheriting a focused settlement and a spent clock.
+        /// </summary>
+        private static CenturyRun RunOneCentury(int seed)
+        {
+            Find.Reset();
+            Find.TickManager = new TickManager();
+            Rand.Current = new RandomStream(seed);
+            Pawn.ResetThingIdCounter();
+            NameUseChecker.Clear();
+
+            CoreWorld world = NewWorld("budget-century-" + seed.ToString(System.Globalization.CultureInfo.InvariantCulture));
             Find.World = world;
-            Settlement home = Found(world, 908, "Century", bandSize: 24);
+            Settlement home = Found(world, seed, "Century", bandSize: 24);
             Find.God.Attention.Focus(home);
 
-            int startingRoster = home.Citizens.Count;
-            Assert.Equal(startingRoster, home.PopulationOf(PawnTier.Full));
-
-            var fullByDecade = new List<int>();
-            var rosterByDecade = new List<int>();
-            int peakFull = home.PopulationOf(PawnTier.Full);
+            var run = new CenturyRun
+            {
+                Seed = seed,
+                StartingRoster = home.Citizens.Count,
+                PeakFull = home.PopulationOf(PawnTier.Full),
+            };
+            Assert.Equal(run.StartingRoster, home.PopulationOf(PawnTier.Full));
 
             int tick = 0;
             for (int year = 1; year <= 100; year++)
@@ -430,44 +511,18 @@ namespace SimWorld.Tests.God
                 home.SyncCitizenSpawns();
                 Find.God.Attention.Reconcile();
 
-                peakFull = System.Math.Max(peakFull, home.PopulationOf(PawnTier.Full));
+                run.PeakFull = System.Math.Max(run.PeakFull, home.PopulationOf(PawnTier.Full));
                 if (year % 10 == 0)
                 {
-                    fullByDecade.Add(home.PopulationOf(PawnTier.Full));
-                    rosterByDecade.Add(home.Citizens.Count);
+                    run.FullByDecade.Add(home.PopulationOf(PawnTier.Full));
+                    run.RosterByDecade.Add(home.Citizens.Count);
                 }
             }
 
-            // The premise of the lane: a century of demography really does outgrow the budget several times
-            // over. If this ever fails, demography changed and the rest of this test proves nothing.
-            Assert.True(home.Citizens.Count > TieringTuning.FullTierBudget * 2,
-                $"expected a century to grow the roster well past the budget; got {home.Citizens.Count}");
-            Assert.True(home.Citizens.Count > startingRoster * 8,
-                $"expected demographic growth over a century; {startingRoster} -> {home.Citizens.Count}");
-
-            // The conclusion: the Full tier stopped growing when it reached the budget and stayed there, at
-            // every sample and at every intermediate sweep, while the population it is drawn from kept going.
-            Assert.True(peakFull <= TieringTuning.FullTierBudget,
-                $"the Full tier overran the budget at some point in the century (peak {peakFull})");
-            Assert.Equal(TieringTuning.FullTierBudget, fullByDecade[fullByDecade.Count - 1]);
-            Assert.True(rosterByDecade[rosterByDecade.Count - 1] > rosterByDecade[4],
-                "expected the roster to keep growing in the century's second half");
-
-            // Flat, not merely capped: once the budget is reached the Full count stops moving, while the
-            // roster behind it does not.
-            int firstAtBudget = fullByDecade.FindIndex(n => n == TieringTuning.FullTierBudget);
-            Assert.True(firstAtBudget >= 0, "the roster never reached the budget — see the premise above");
-            for (int i = firstAtBudget; i < fullByDecade.Count; i++)
-            {
-                Assert.Equal(TieringTuning.FullTierBudget, fullByDecade[i]);
-            }
-            Assert.True(rosterByDecade[rosterByDecade.Count - 1] > rosterByDecade[firstAtBudget],
-                "expected the roster to outgrow the budget it was pinned to");
-
-            // Everyone the cap held back is still a real citizen of this settlement: nobody was spilled into
-            // the bare Statistical cohort, which has no Pawn behind a person and no way back.
-            Assert.Equal(0, home.StatisticalPopulation);
-            Assert.Equal(home.Citizens.Count, home.TotalPopulation);
+            run.FinalRoster = home.Citizens.Count;
+            run.TotalPopulation = home.TotalPopulation;
+            run.StatisticalPopulation = home.StatisticalPopulation;
+            return run;
         }
     }
 }

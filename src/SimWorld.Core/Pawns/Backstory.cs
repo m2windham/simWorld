@@ -62,6 +62,7 @@ namespace SimWorld.Pawns
         {
             foreach (string error in base.ConfigErrors()) yield return error;
             if (string.IsNullOrEmpty(title)) yield return "backstory has no title.";
+            foreach (string error in BackstoryTraitValidation.Errors(forcedTraits, disallowedTraits)) yield return error;
         }
     }
 }

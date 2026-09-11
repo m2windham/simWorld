@@ -224,7 +224,16 @@ namespace SimWorld.Pawns
             }
         }
 
-        public virtual void Notify_TraitsChanged()
+        public virtual void Notify_TraitsChanged() => Notify_DisabledWorkTagsChanged();
+
+        /// <summary>
+        /// Drops every cache that was computed from <see cref="CombinedDisabledWorkTags"/>. Traits are one
+        /// input; genes are the other, and <see cref="Genes.Pawn_GeneTracker"/> raises this for the same reason
+        /// <see cref="Notify_TraitsChanged"/> does. Without it a gene that bars work lands silently: the skill
+        /// record has already cached "not disabled" from before the gene arrived, so the pawn keeps reporting a
+        /// rolled level for work its germline forbids.
+        /// </summary>
+        public virtual void Notify_DisabledWorkTagsChanged()
         {
             skills?.Notify_SkillDisablesChanged();
             workSettings?.Notify_DisabledWorkTypesChanged();

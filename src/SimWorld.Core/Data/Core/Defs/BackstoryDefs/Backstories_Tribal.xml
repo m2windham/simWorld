@@ -67,6 +67,12 @@
       <li><skill>Animals</skill><amount>2</amount></li>
     </skillGains>
     <requiredWorkTags>Violent</requiredWorkTags>
+    <!-- Tracking and killing game for a living, then carrying it home and opening it up. The faint-hearted
+         degree of Squeamishness bars Hunting outright and the mild one bars tending the wounded, neither of
+         which survives this life. -->
+    <disallowedTraits>
+      <li>Squeamishness</li>
+    </disallowedTraits>
     <spawnCategories><li>Tribal</li></spawnCategories>
   </BackstoryDef>
 
@@ -107,6 +113,15 @@
       <li><skill>Social</skill><amount>5</amount></li>
     </skillGains>
     <workDisables>Violent</workDisables>
+    <!-- Decades of settling other people's disputes and going without so the camp did not: the tribal
+         counterpart of the thief's forced greed, pointing the other way. Note the pairing with workDisables
+         above — an elder can never be given Bloodlust or Brawler either, because both require Violent. -->
+    <forcedTraits>
+      <li>
+        <def>Ascetic</def>
+        <degree>0</degree>
+      </li>
+    </forcedTraits>
     <spawnCategories><li>Tribal</li></spawnCategories>
   </BackstoryDef>
 

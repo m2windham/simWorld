@@ -11,6 +11,18 @@
         <label>pyromaniac</label>
         <description>Loves fire and is prone to starting it.</description>
         <degree>0</degree>
+        <!-- RimWorld's own pairing: a pyromaniac's mood break is always the fire-starting spree and never
+             anything else. Recalled from vanilla's Traits_Singular.xml rather than read off decompiled
+             source here, so it is pinned by behaviour (a pyromaniac's possible breaks are exactly this one,
+             and a pawn without the trait still has the ordinary spread) rather than by the list itself.
+
+             The consequence is deliberate and worth knowing before adding to this list: MentalBreaker walks
+             DOWN from the pawn's current intensity, so a pyromaniac in extreme despair finds no eligible
+             extreme break, falls through to major, and burns something. A minor slump finds nothing at all
+             below it and passes without a break. -->
+        <theOnlyAllowedMentalBreaks>
+          <li>FireStartingSpree</li>
+        </theOnlyAllowedMentalBreaks>
       </li>
     </degreeDatas>
   </TraitDef>
@@ -19,6 +31,11 @@
     <defName>Bloodlust</defName>
     <label>bloodlust</label>
     <commonality>0.6</commonality>
+    <!-- Recalled as RimWorld's own gate on this trait, not verified against decompiled source in this
+         environment: a pawn whose backstory, trait or germline has already barred violence never rolls a
+         trait about enjoying it. Pinned by a test over many seeds (no violence-disabled pawn ever holds it),
+         not by the literal tag. -->
+    <requiredWorkTags>Violent</requiredWorkTags>
     <degreeDatas>
       <li>
         <label>bloodlust</label>
@@ -57,6 +74,15 @@
              choice, a positive counterpart to Abrasive's -15 sized to matter without dominating a relation or
              memory. Pinned by a test asserting Kind beats a plain pawn's opinion score, not the literal value. -->
         <opinionOffset>10</opinionOffset>
+        <!-- Recalled as RimWorld's own (vanilla's Kind trait rules the insulting spree out); the sadistic
+             rage is this port's own addition on the same reasoning — Kind does not conflict with Bloodlust,
+             so a kind pawn can hold the trait that unlocks that break, and taking pleasure in another's pain
+             is the one thing this trait says the pawn does not do. Unlike theOnlyAllowedMentalBreaks above
+             this only narrows the spread, so a kind pawn still breaks; it just breaks in another way. -->
+        <disallowedMentalBreaks>
+          <li>InsultingSpree</li>
+          <li>SadisticRage</li>
+        </disallowedMentalBreaks>
       </li>
     </degreeDatas>
   </TraitDef>

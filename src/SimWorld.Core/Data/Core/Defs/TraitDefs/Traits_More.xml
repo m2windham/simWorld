@@ -31,6 +31,10 @@
     <defName>Brawler</defName>
     <label>brawler</label>
     <commonality>0.3</commonality>
+    <!-- As Bloodlust: recalled as RimWorld's own gate, not verified here. A pawn who cannot do violence at
+         all has no business preferring to do it up close, and the melee skill bonus below would be dead
+         weight on one. Pinned by behaviour over seeds. -->
+    <requiredWorkTags>Violent</requiredWorkTags>
     <degreeDatas>
       <li>
         <label>brawler</label>

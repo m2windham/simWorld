@@ -60,14 +60,6 @@ content-silent SimWorld.MindState.MentalStateDef.colonistsOnly | No shipped ment
 content-silent SimWorld.Needs.JoyKindDef.neverBuildsTolerance | Ported for parity and declared as such in the field's own doc: vanilla RimWorld has no such joy kind either, so no shipped JoyKindDef sets it.
 content-silent SimWorld.Needs.NeedDef.fallPerDay | Content-side gap worth fixing: the generic per-day decay every Need falls back on is zero for all eight shipped needs. Food, Rest and the seeker needs each carry their own rate (seekerFallPerHour, or an overridden NeedInterval), so the base path in Need.NeedInterval never decays anything.
 content-silent SimWorld.Needs.NeedDef.freezeInMentalState | No shipped need freezes during a mental break, so Need's IsFrozen gate is always open.
-content-silent SimWorld.Pawns.BackstoryDef.disallowedTraits | Content-side gap: PawnGenerator honours backstory trait rules and none of the 23 shipped backstories declares any, so a backstory never shapes the traits a pawn rolls.
-content-silent SimWorld.Pawns.BackstoryDef.forcedTraits | As disallowedTraits: the generator applies forced traits and no shipped backstory forces one.
-content-silent SimWorld.Pawns.PawnKindDef.disallowedTraits | Content-side gap: the same generator path reads it for pawn kinds, and no shipped kind constrains its traits.
-content-silent SimWorld.Pawns.PawnKindDef.forcedTraits | As disallowedTraits, for the forced half — no shipped kind forces a trait on the pawns it generates.
-content-silent SimWorld.Pawns.TraitDef.requiredWorkTags | No shipped trait requires the pawn still be capable of some work before it can be rolled, so PawnGenerator's capability gate never rejects a candidate trait.
-content-silent SimWorld.Pawns.TraitDegreeData.disabledWorkTags | Content-side gap: the per-degree override is read when a trait's work tags are computed, and no shipped trait degree overrides the trait-level tags.
-content-silent SimWorld.Pawns.TraitDegreeData.disallowedMentalBreaks | No shipped trait degree rules a break out, so the mental-break filter never narrows on trait.
-content-silent SimWorld.Pawns.TraitDegreeData.theOnlyAllowedMentalBreaks | As disallowedMentalBreaks: no shipped trait degree pins a pawn to a single break.
 content-silent SimWorld.Quests.QuestNode_Delay.delayTicks | The shipped quest scripts all use delayTicksRef (a slate variable) instead of a literal range, so the literal branch of the delay node is never taken.
 content-silent SimWorld.Quests.QuestNode_GiveReward.silverRef | The shipped reward nodes name a literal silverAmount; the slate-variable form is ported and unused by content.
 content-silent SimWorld.Quests.QuestNode_Set.value | Same shape: the shipped Set nodes all use valueRef, so the literal value branch never runs.
