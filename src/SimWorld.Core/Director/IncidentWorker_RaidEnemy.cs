@@ -21,17 +21,34 @@ namespace SimWorld.Director
     /// every generated pawn's weapon is separately capped at the same faction's tech level
     /// (<see cref="Pawns.Generation.PawnWeaponGenerator"/>) as a second, independent check.
     /// <para/>
-    /// <b>Where this stops — read before assuming a raid does anything to the player:</b> nothing in the
-    /// civilization-scale incident model (<see cref="IIncidentTarget"/> / <see cref="CivilizationTarget"/>)
-    /// carries a reachable <c>Map.Map</c> for raiders to fight on — local maps
-    /// (<c>MapGen.MapGenerator</c>) are generated per settlement, on demand, and never handed back to the
-    /// storyteller or its targets. <see cref="CivilizationTarget.Map"/> is a settable hook for whichever
-    /// future work wires a physical map to the player's civilization; every game today leaves it null. When
-    /// it <i>is</i> set, this worker spawns the squad at a random map edge (RimWorld's usual raid entry
-    /// point) rather than reaching into AI/Reachability for a real approach path, which this module does not
-    /// own. Until that hook is set, the squad is fully generated, equipped and attributed to its faction and
-    /// handed to the caller through <see cref="LastRaidPawns"/> — the arrival-and-fight-the-player loop is
-    /// Map/AI's to build on top of this.
+    /// <b>Every raid resolves, and exactly one of two ways.</b> A civilization is several settlements and the
+    /// player has at most one of them open, so most raids land somewhere nobody is looking — that is by
+    /// design (<see cref="CivilizationTarget.ChooseTargetSettlement"/> weights by population and excludes
+    /// nobody, and it deliberately still does, because a world that is only raided where the camera points is
+    /// a stage set). What was wrong was the *other* half: a raid on a settlement with no reachable map
+    /// generated a full squad, spawned nobody, changed nothing and returned true, so the chronicle recorded a
+    /// raid on a world that had not moved. The two paths now are:
+    /// <list type="bullet">
+    /// <item><b>On the watched settlement's own interior</b> — the squad spawns and fights for real. This is
+    /// the only physical path, and the condition is attention rather than merely "a map exists": only a
+    /// <see cref="PawnTier.Full"/> citizen is ever placed on an interior
+    /// (<c>World.Settlement.SyncCitizenSpawns</c>), and for an ordinary citizen only attention holds them
+    /// there (spec §11.2/§11.3). Spawning raiders onto the cached-but-unattended interior of a town the
+    /// player once opened would put them in an empty map with nobody to fight — the same silent nothing in a
+    /// different costume, and one <c>GodCommands.GenerateSettlementInterior</c> makes directly reachable.</item>
+    /// <item><b>Anywhere else</b> — <see cref="SettlementRaidResolver"/> resolves it abstractly against the
+    /// settlement's own ability to defend itself, kills on both sides, takes goods if it got in, and says so
+    /// in the chronicle. See that class for why the alternative (generating the interior on demand) is
+    /// rejected.</item>
+    /// </list>
+    /// <para/>
+    /// <see cref="CivilizationTarget.Map"/> — the settable hook nothing in the core has ever set — survives as
+    /// exactly what it is: the arrival map for a target that has no settlements at all, which is a test pose
+    /// rather than a running game. A civilization with settlements resolves through them.
+    /// <para/>
+    /// Arrival is RimWorld's <c>PawnsArrivalModeWorker_EdgeWalkIn</c>: one entry cell on a random map edge for
+    /// the group, then each pawn placed on a walkable cell near it (<see cref="ClosewalkRadius"/>). Walking
+    /// the squad from there to the colony is AI's, not this module's.
     /// </summary>
     public sealed class IncidentWorker_RaidEnemy : IncidentWorker
     {
@@ -49,6 +66,19 @@ namespace SimWorld.Director
         /// had none attached. A diagnostic of the last fire like the other <c>Last*</c> members here, not
         /// saved state.</summary>
         public SimWorld.World.Settlement? LastRaidSettlement { get; private set; }
+
+        /// <summary>What the most recent firing did when it resolved abstractly, or null when it resolved on a
+        /// map (or had no settlement to resolve against). A diagnostic like the other <c>Last*</c> members.</summary>
+        public SettlementRaidOutcome? LastRaidOutcome { get; private set; }
+
+        /// <summary>RimWorld's own <c>PawnsArrivalModeWorker_EdgeWalkIn</c> constant: each arriving pawn is
+        /// placed on a walkable cell within this radius of the group's entry cell.</summary>
+        public const int ClosewalkRadius = 8;
+
+        /// <summary>Tries before <see cref="RandomClosewalkCellNear"/> gives up and uses the entry cell itself
+        /// — RimWorld's <c>CellFinder.RandomClosewalkCellNear</c> bails to the root the same way rather than
+        /// searching exhaustively for a cell a raid does not need to be on.</summary>
+        private const int ClosewalkTries = 30;
 
         protected override bool CanFireNowSub(IncidentParms parms) => parms.points > 0f && ResolveFaction(parms) != null;
 
@@ -69,19 +99,28 @@ namespace SimWorld.Director
             List<Pawn> pawns = PawnGroupMakerUtility.GeneratePawns(groupParms);
             if (pawns.Count == 0) return false;
 
-            // Which settlement the raid falls on, and therefore which map it arrives at: a civilization of
-            // several towns is raided somewhere in particular, weighted by where its people are. A settlement
-            // nobody has entered has no interior map, so the raid still resolves without one — the squad is
-            // generated and handed back unspawned exactly as it was before settlements existed.
+            // Which settlement the raid falls on: a civilization of several towns is raided somewhere in
+            // particular, weighted by where its people are. Selection is deliberately left alone — it still
+            // reaches every settlement, watched or not — because the fix for "raids land where nobody is
+            // looking" is to make those raids real, not to aim them at the camera.
             var civ = parms.target as CivilizationTarget;
             LastRaidSettlement = civ?.ChooseTargetSettlement(Rand.Current);
-            Map.Map? map = civ?.MapFor(LastRaidSettlement);
+            LastRaidOutcome = null;
+
+            Map.Map? map = ArrivalMapFor(civ, LastRaidSettlement);
             if (map != null)
             {
-                IntVec3 edge = RandomEdgeCell(map, Rand.Current);
-                foreach (Pawn pawn in pawns) GenSpawn.Spawn(pawn, edge, map);
+                Arrive(pawns, map, Rand.Current);
+            }
+            else if (LastRaidSettlement != null)
+            {
+                LastRaidOutcome = SettlementRaidResolver.Resolve(LastRaidSettlement, pawns, faction, Rand.Current);
             }
 
+            // Neither path taken means the target has no settlement and no map hook — a bare
+            // CivilizationTarget, which is a test pose rather than a state a running game reaches (Game's own
+            // SyncCivilizationTargetIfDue attaches the player's settlements every storyteller interval). There
+            // is genuinely nothing there to raid, so the squad is handed back through LastRaidPawns as before.
             parms.faction = faction;
             LastRaidFaction = faction;
             LastRaidStrategy = strategy;
@@ -103,8 +142,67 @@ namespace SimWorld.Director
                 : usable[0];
         }
 
+        /// <summary>
+        /// The map this raid physically arrives on, or null when it must resolve abstractly.
+        ///
+        /// <para/>A settlement's interior counts only while the god is watching that settlement — see the
+        /// class doc. With no settlement at all (a target posed by hand), the bare
+        /// <see cref="CivilizationTarget.Map"/> hook is still honoured through
+        /// <see cref="CivilizationTarget.MapFor"/>, which is the one caller it has ever had.
+        /// </summary>
+        private static Map.Map? ArrivalMapFor(CivilizationTarget? civ, SimWorld.World.Settlement? settlement)
+        {
+            if (civ == null) return null;
+            if (settlement == null) return civ.MapFor(null);
+            return IsWatched(settlement) ? civ.MapFor(settlement) : null;
+        }
+
+        /// <summary>
+        /// Whether the god currently has this settlement open. Asked of the god layer rather than answered
+        /// here, through the same <see cref="Find"/> service locator <c>Pawns.FamilyManager</c> already uses
+        /// to reach the Director layer from outside it, so "which settlement is being watched" keeps having
+        /// exactly one definition (<c>God.AttentionManager</c>'s own class doc) instead of a second one that
+        /// drifts.
+        /// </summary>
+        private static bool IsWatched(SimWorld.World.Settlement settlement) =>
+            Find.God.Attention.FocusedTile == settlement.tile;
+
+        /// <summary>
+        /// RimWorld's <c>PawnsArrivalModeWorker_EdgeWalkIn.Arrive</c>: one entry cell for the group, then
+        /// <c>CellFinder.RandomClosewalkCellNear(spawnCenter, map, 8)</c> per pawn. The port previously
+        /// computed the edge cell once and spawned the whole squad on that single cell — a bug, not a
+        /// simplification: a raid arrived as one stack of pawns standing inside each other.
+        /// </summary>
+        private static void Arrive(IReadOnlyList<Pawn> pawns, Map.Map map, RandomStream rand)
+        {
+            IntVec3 entry = RandomEdgeCell(map, rand);
+            for (int i = 0; i < pawns.Count; i++)
+            {
+                GenSpawn.Spawn(pawns[i], RandomClosewalkCellNear(entry, map, ClosewalkRadius, rand), map);
+            }
+        }
+
+        /// <summary>
+        /// A standable cell within <paramref name="radius"/> of <paramref name="root"/> (RimWorld:
+        /// <c>Verse.CellFinder.RandomClosewalkCellNear</c>), falling back to <paramref name="root"/> after
+        /// <see cref="ClosewalkTries"/> misses. RimWorld additionally requires the cell to be in the same
+        /// region and reachable; that check is not made here, because the entry cell is a map edge and the
+        /// squad's approach to the colony is AI's to own — see the class doc.
+        /// </summary>
+        private static IntVec3 RandomClosewalkCellNear(IntVec3 root, Map.Map map, int radius, RandomStream rand)
+        {
+            IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
+            int inRadius = GenRadial.NumCellsInRadius(radius);
+            for (int i = 0; i < ClosewalkTries; i++)
+            {
+                IntVec3 candidate = root + pattern[rand.Range(0, inRadius)];
+                if (GenGrid.InBounds(candidate, map) && GenGrid.Standable(candidate, map)) return candidate;
+            }
+            return root;
+        }
+
         /// <summary>A random cell on one of the four map edges (RimWorld's usual raid entry point) — the
-        /// closest this module gets to real arrival logic; see the class doc for why it stops here.</summary>
+        /// group's entry point, which <see cref="Arrive"/> then scatters around.</summary>
         private static IntVec3 RandomEdgeCell(Map.Map map, RandomStream rand)
         {
             switch (rand.Range(0, 4))

@@ -1453,15 +1453,38 @@ already tracks durably (a trait, worn apparel, a granted role).
   by the tactic's `pointsFactor`, and spends the result against that
   faction's squad composition (§8.1) — every generated raider is a full,
   gear-equipped `Pawn` attributed to its faction (`Pawn.faction`), not a stat
-  block. **Where it stops:** nothing yet links a
-  physical `Map.Map` to the civilization-scale incident target unless someone
-  has entered the settlement the raid picked — the raid resolves to that
-  settlement's `InteriorMap` when it has one, falling back to the settable
-  `CivilizationTarget.Map` hook; when a map is found, the squad spawns at a
-  random map edge, otherwise it is generated and handed back unspawned.
-  Generating a map just to stage an off-screen raid would be the tail wagging
-  the dog, so an unentered settlement is raided without one. Actually walking the squad to the
-  colony and fighting is the AI/Map systems' to build on top of this.
+  block. **Every raid then resolves, one of exactly two ways.** Selection is
+  deliberately left alone — it still weights across every settlement and
+  excludes nobody, because a world raided only where the camera points is a
+  stage set, which is the thing §11's tiering exists to prevent — so most raids
+  land on a town nobody has open, and the fix is to make _those_ real:
+  - **On the watched settlement's interior**, the squad arrives physically:
+    one entry cell on a random map edge for the group, then each pawn placed on
+    a walkable cell near it (RimWorld's
+    `PawnsArrivalModeWorker_EdgeWalkIn` / `CellFinder.RandomClosewalkCellNear`,
+    radius 8). The condition is attention, not merely "a map exists": only a
+    `Full`-tier citizen is ever placed on an interior and only attention holds
+    an ordinary citizen there (§11.2/§11.3), so a cached-but-unattended
+    interior — which `GodCommands.GenerateSettlementInterior` makes directly
+    reachable — would be an empty town for raiders to wander.
+  - **Anywhere else**, `SettlementRaidResolver` resolves it abstractly: the
+    defence is priced in the same `PawnKindDef.combatPower` the raid was bought
+    in (live citizens at their kind's power scaled by health and combat skill;
+    a share of the `StatisticalPopulation` mustered at a flat value per head,
+    the cohort never enumerated), the defenders hold with probability
+    `defence / (defence + raid)`, and the result is spent on what a settlement
+    has to lose — citizens (through `FamilyManager.HandleDeath`, the same path
+    a death from age takes, so demography, the family tree and the chronicle
+    cannot disagree about who is alive), cohort heads through
+    `Settlement.RemoveStatisticalPeople`, and a share of its stores if the raid
+    got in. Whoever lost the engagement always loses at least one body, and
+    every resolution writes a `Raid:` line to the chronicle. Generating a map
+    just to stage an off-screen raid would be the tail wagging the dog — and
+    would make the size of a save scale with the narrator's dice rather than
+    with the player's attention.
+
+  What a raid still does not do is walk the squad to the colony and fight for
+  it on the physical path; that is the AI/Map systems' to build on top of this.
 - **The Chronicle** (SimWorld translation): every fired incident appends a
   narrator record. The persona name is still open — see §15.
 - **Moments** (SimWorld translation, `quests.moments`, built): the Chronicle
