@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Beauty (RimWorld: StatDefOf.Beauty). The per-Thing contribution BeautyUtility sums over a cell and
+    averages over the cells a citizen can perceive, which Need_Beauty turns into a need level and
+    ThoughtWorker_NeedBeauty turns into mood. Bound by SimWorld.Needs.BeautyStatDefOf.
+
+    Its own file rather than an addition to StatDefs_Things.xml: the loader reads every file under this
+    directory, so a new file cannot collide with another lane mid-edit on the shared one (CLAUDE.md) - the
+    same reason Stats_Cleanliness.xml and Stats_Fire.xml sit beside it.
+
+    defaultBaseValue 0 is RimWorld's own and is what makes this stat shippable without touching a single
+    existing content file: a Thing that has said nothing about beauty contributes nothing, so a bare room
+    averages exactly 0 and reads as "unremarkable" rather than as "ugly". Only two kinds of Thing say
+    otherwise in this port's content today - filth (negative, in ThingDefs_Filth/Filth.xml) and sculptures
+    (positive, in ThingDefs_Buildings/Buildings_Art.xml).
+
+    minValue/maxValue are wide enough for both ends of RimWorld's own range (its ugliest filth and its
+    grandest sculpture both sit inside +-100) without a clamp ever being the thing that decides a value.
+  -->
+
+  <StatDef>
+    <defName>Beauty</defName>
+    <label>beauty</label>
+    <description>How much this improves or spoils the look of the place it stands in. Filth is negative; art is positive.</description>
+    <category>Basics</category>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>-100</minValue>
+    <maxValue>100</maxValue>
+  </StatDef>
+
+</Defs>

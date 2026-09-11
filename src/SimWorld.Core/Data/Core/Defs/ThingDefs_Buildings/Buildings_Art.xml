@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Art (system: needs.beauty) - the one thing in this port's content that exists to be looked at.
+
+    Why it ships with the beauty sampler rather than later. A beauty stat whose content has nothing positive
+    in it averages zero or below everywhere, which makes the whole need a one-way misery gauge and, if filth
+    had not landed first, a system that is dormant on arrival - the trap this project has now hit four times
+    (citizen tiering, combat, the home area, and the beauty need itself). The fire lane's flammability and the
+    filth lane's cleanliness both closed it the same way: ship the content that makes the number non-zero in
+    the same change as the code that reads it. So: one sculpture, and a room with a few of them in it reads as
+    pretty.
+
+    Its own file, not an addition to any existing Buildings_*.xml, so nothing shared is touched (CLAUDE.md).
+
+    Beauty 25, WorkToBuild, MaxHitPoints and the cost are SimWorld's own figures - RimWorld's real sculpture
+    numbers were not sourceable here (its sculptures also carry a quality level this port does not have, which
+    is most of where their beauty range comes from). BeautyTests pins the trend, not these: a room with art in
+    it reads prettier than a bare one, and prettier still with more of it.
+
+    The Blueprint_/Frame_ pair follows the hand-authored pattern every other buildable Def uses (see
+    Buildings_BlueprintsAndFrames.xml's own remarks); without it a sculpture could be spawned but never built,
+    which would be a smaller version of the same dormancy problem.
+  -->
+
+  <ThingDef>
+    <defName>Sculpture</defName>
+    <label>sculpture</label>
+    <description>A carved figure, made to be looked at rather than used.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0.4</fillPercent>
+    <statBases>
+      <MaxHitPoints>100</MaxHitPoints>
+      <WorkToBuild>900</WorkToBuild>
+      <Beauty>25</Beauty>
+    </statBases>
+    <costList>
+      <WoodLog>25</WoodLog>
+    </costList>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Sculpture</defName>
+    <label>sculpture (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Sculpture</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Sculpture</defName>
+    <label>sculpture (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0.4</fillPercent>
+    <entityToBuild>Sculpture</entityToBuild>
+  </ThingDef>
+
+</Defs>

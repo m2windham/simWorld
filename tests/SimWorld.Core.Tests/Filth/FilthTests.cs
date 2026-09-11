@@ -605,33 +605,53 @@ namespace SimWorld.Tests.Filth
                 $"Operating in filth should fail more often: {dirty} failures in squalor against {clean} in a clean room.");
         }
 
+        // ---- filth reaching mood, through beauty ----
+        //
+        // These two were written against ThoughtWorker_FilthyRoom, a situational thought that read room
+        // cleanliness directly because nothing implemented IEnvironmentSampler when this module landed. The
+        // beauty module has since retired that worker — filth now carries a negative Beauty stat and reaches
+        // mood the way RimWorld's does — so the same two properties are asserted here through the route that
+        // actually runs. What is being pinned is unchanged: living in filth costs mood, more filth costs
+        // more, and cleaning the room takes the cost away again.
+
         [Fact]
         public void Living_in_filth_is_a_mood_thought_and_a_clean_room_is_not()
         {
             CoreMap map = NewMap(16, 16);
             BuildRoom(map, new CellRect(2, 2, 10, 10));
             Pawn pawn = SpawnHuman(map, new IntVec3(5, 0, 5), "Resident");
-            var thought = DefDatabase<global::SimWorld.Thoughts.ThoughtDef>.GetNamed("FilthyRoom");
-            var worker = (ThoughtWorker_FilthyRoom)thought.Worker!;
+            var thought = DefDatabase<global::SimWorld.Thoughts.ThoughtDef>.GetNamed("Beauty");
+            global::SimWorld.Thoughts.ThoughtWorker worker = thought.Worker!;
+            var beauty = pawn.needs.TryGetNeed<global::SimWorld.Needs.Need_Beauty>()!;
 
-            Assert.False(worker.CurrentState(pawn).Active, "A clean room should carry no thought at all.");
+            // Sample without ticking: CurInstantLevel is the target the surroundings ask for right now, so
+            // the room can be dirtied between readings without the pawn wandering off in the meantime.
+            beauty.CurLevel = beauty.CurInstantLevel;
+            float clean = beauty.CurLevel;
+            Assert.False(worker.CurrentState(pawn).Active, "A clean, bare room should carry no thought at all.");
 
             foreach (IntVec3 c in new CellRect(3, 3, 4, 4).Cells)
             {
                 FilthMaker.TryMakeFilth(c, map, FilthDefOf.Filth_Dirt, "test");
             }
+            beauty.CurLevel = beauty.CurInstantLevel;
+            float dirtyLevel = beauty.CurLevel;
             global::SimWorld.Thoughts.ThoughtState dirty = worker.CurrentState(pawn);
+            Assert.True(dirtyLevel < clean, "Dirt underfoot should read as uglier than a bare floor.");
             Assert.True(dirty.Active, "A dirty room should be a thought.");
 
             foreach (IntVec3 c in new CellRect(3, 3, 8, 8).Cells)
             {
                 for (int k = 0; k < 3; k++) FilthMaker.TryMakeFilth(c, map, FilthDefOf.Filth_AnimalFilth, "test");
             }
+            beauty.CurLevel = beauty.CurInstantLevel;
             global::SimWorld.Thoughts.ThoughtState squalid = worker.CurrentState(pawn);
+            Assert.True(beauty.CurLevel < dirtyLevel, "More, and worse, filth should read uglier still.");
             Assert.True(squalid.Active);
 
-            // Worse squalor is a worse stage, and therefore a worse mood offset.
-            Assert.True(squalid.StageIndex > dirty.StageIndex);
+            // Worse squalor is a worse mood offset. Asserted on the offset rather than the stage index:
+            // this Def's stages run worst-first, the opposite of the retired FilthyRoom Def's, and the
+            // ordering that matters is the one mood actually reads.
             Assert.True(thought.stages[squalid.StageIndex].baseMoodEffect < thought.stages[dirty.StageIndex].baseMoodEffect);
         }
 
@@ -648,16 +668,18 @@ namespace SimWorld.Tests.Filth
                 FilthMaker.TryMakeFilth(c, map, FilthDefOf.Filth_Dirt, "test");
             }
             Pawn citizen = SpawnHuman(map, new IntVec3(5, 0, 5), "Resident");
-            var worker = (ThoughtWorker_FilthyRoom)DefDatabase<global::SimWorld.Thoughts.ThoughtDef>
-                .GetNamed("FilthyRoom").Worker!;
+            global::SimWorld.Thoughts.ThoughtWorker worker = DefDatabase<global::SimWorld.Thoughts.ThoughtDef>
+                .GetNamed("Beauty").Worker!;
+            var beauty = citizen.needs.TryGetNeed<global::SimWorld.Needs.Need_Beauty>()!;
 
+            beauty.CurLevel = beauty.CurInstantLevel;
             Assert.True(worker.CurrentState(citizen).Active);
 
             RunTicks(30000, citizen);
 
             Assert.Equal(0, FilthCount(map));
             Assert.False(worker.CurrentState(citizen).Active,
-                "Once the room is clean the thought that read its cleanliness should be gone.");
+                "Once the room is clean, the beauty the filth was spoiling should have recovered with it.");
         }
 
         // ---- Scribe ----
