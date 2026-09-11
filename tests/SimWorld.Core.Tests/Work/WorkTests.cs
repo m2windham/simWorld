@@ -424,7 +424,18 @@ namespace SimWorld.Tests.Work
             Assert.All(normal, g => Assert.False(g.emergency));
 
             Assert.True(IndexOf(normal, "DoctorTend") < IndexOf(normal, "CookMeals"));
-            Assert.True(IndexOf(normal, "Repair") < IndexOf(normal, "ConstructFinishFrames"));
+
+            // Repair and the three Construct* givers all share the Construction work type, so priorityInType
+            // alone decides their order. This used to read "Repair before ConstructFinishFrames", from back
+            // when Repair was an unwired placeholder sitting at 100; wiring it moved it below the givers that
+            // actually build something (see its own comment in WorkGivers.xml and RepairAITests' own ordering
+            // test for why that matters). Asserted against the defs rather than hardcoded, so this stays a
+            // test of the ordering rule and not of one content number.
+            WorkGiverDef repair = DefDatabase<WorkGiverDef>.GetNamed("Repair");
+            WorkGiverDef finishFrames = DefDatabase<WorkGiverDef>.GetNamed("ConstructFinishFrames");
+            Assert.Same(repair.workType, finishFrames.workType);
+            Assert.True(repair.priorityInType < finishFrames.priorityInType);
+            Assert.True(IndexOf(normal, "ConstructFinishFrames") < IndexOf(normal, "Repair"));
             Assert.True(IndexOf(normal, "ConstructFinishFrames") < IndexOf(normal, "ConstructDeliverResourcesToFrames"));
 
             Assert.Equal(DefDatabase<WorkGiverDef>.DefCount, emergency.Count + normal.Count);

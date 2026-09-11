@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Repair work (the Construction work type's maintenance half). Its own file rather than an addition to
+       JobDefs_Core.xml: the loader reads every file under this directory, so a new file cannot collide with
+       another lane mid-edit on the shared one (CLAUDE.md). Bound by SimWorld.AI.RepairJobDefOf. -->
+
+  <JobDef>
+    <defName>Repair</defName>
+    <driverClass>SimWorld.AI.JobDriver_Repair</driverClass>
+    <reportString>repairing.</reportString>
+  </JobDef>
+
+</Defs>
