@@ -20,6 +20,16 @@ namespace SimWorld.Bench
         /// inside the guard at the Full-tier budget.</summary>
         public int ConstantTreeTicks { get; set; } = 6000;
 
+        /// <summary>Population sweep for --suite targets: what finding an enemy costs as N moves. Straddles
+        /// TieringTuning.FullTierBudget (500) on both sides, because the claim under test is about the shape
+        /// of the curve and a single point has no shape.</summary>
+        public int[] TargetNs { get; set; } = { 100, 250, 500, 1000, 2000 };
+
+        /// <summary>Population sweep for --suite targets' whole-tick-loop A/B. A shorter list than
+        /// <see cref="TargetNs"/>: a tick-loop trial costs seconds where an isolated scan costs
+        /// milliseconds.</summary>
+        public int[] TargetTickNs { get; set; } = { 250, 500, 1000 };
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }

@@ -72,6 +72,9 @@ namespace SimWorld.Bench
                 case "interrupts":
                     ConstantThinkTreeSuite.Run(opt);
                     break;
+                case "targets":
+                    AttackTargetScanSuite.Run(opt);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -103,6 +106,7 @@ namespace SimWorld.Bench
             SaveLoadSuite.Run(opt);
             PathingSuite.Run(opt, opt.PathingNs);
             ConstantThinkTreeSuite.Run(opt);
+            AttackTargetScanSuite.Run(opt);
         }
 
         /// <summary>
@@ -162,6 +166,12 @@ namespace SimWorld.Bench
                     case "--constant-tree-ticks":
                         opt.ConstantTreeTicks = ParseInt(Next(args, ref i), "--constant-tree-ticks");
                         break;
+                    case "--target-ns":
+                        opt.TargetNs = ParseIntList(Next(args, ref i), "--target-ns");
+                        break;
+                    case "--target-tick-ns":
+                        opt.TargetTickNs = ParseIntList(Next(args, ref i), "--target-tick-ns");
+                        break;
                     default:
                         throw new ArgumentException("unrecognized argument '" + a + "'.");
                 }
@@ -218,7 +228,7 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | targets | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
   --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc.
   --seed <N>              RandomStream seed (default 12345).
@@ -228,7 +238,9 @@ OPTIONS
   --ns <csv>              N sweep for --suite scaling (default 100,250,500,1000,2500,5000,10000).
   --subdivisions <csv>    subdivision sweep for --suite worldgen (default 3,4,5,6).
   --pathing-ns <csv>      N sweep for --suite pathing (default 100,400,1000).
-  --constant-tree-ticks <N>  ticks per trial for --suite interrupts (default 6000).
+  --constant-tree-ticks <N>  ticks per trial for --suite interrupts and --suite targets (default 6000).
+  --target-ns <csv>       N sweep for --suite targets' scan measurements (default 100,250,500,1000,2000).
+  --target-tick-ns <csv>  N sweep for --suite targets' tick-loop A/B (default 250,500,1000).
   --help, -h              show this text.
 
 SUITES
@@ -244,6 +256,8 @@ SUITES
                 across --pathing-ns.
   interrupts    Measurement 11: what the constant think tree costs at TieringTuning.FullTierBudget — one
                 evaluation in isolation, and the whole tick loop off / at the shipped interval / every tick.
+  targets       Measurement 12: what finding an attack target costs as population moves — the scan alone,
+                one constant-tree evaluation, and the tick loop A/B, swept across --target-ns.
   all           Runs every suite in sequence (scaling first; attribution's N is derived from its result).
 
 EXAMPLES

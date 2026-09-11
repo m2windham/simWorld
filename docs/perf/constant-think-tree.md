@@ -173,10 +173,17 @@ on the average, and this headless core has no frame to miss, so it is recorded
 here rather than fixed: `HashOffsetTicks` is shared with the health module's heal
 and bleed intervals, and changing it would silently re-phase those too.
 
-**`BestAttackTarget` is still O(population) per call.** RimWorld avoids this with
-a per-map `AttackTargetsCache` keyed by faction; this port has no such cache, so
-finding the nearest enemy means walking the map's pawn list. Cheapest-first
-ordering makes each step of that walk very cheap, but it is still a walk, and it
-is the reason the per-evaluation cost is a function of settlement size rather
-than a constant. A cache is the next real step if the constant tree ever needs to
-run more often than it does.
+**`BestAttackTarget` was still O(population) per call.** RimWorld avoids this with
+a per-map `AttackTargetsCache` keyed by faction; this port had no such cache, so
+finding the nearest enemy meant walking the map's pawn list. Cheapest-first
+ordering made each step of that walk very cheap, but it was still a walk, and it
+was the reason the per-evaluation cost was a function of settlement size rather
+than a constant.
+
+That cache was the next real step, and it is now in: see
+[`attack-targets-cache.md`](attack-targets-cache.md), which sweeps the population
+rather than measuring at one N and A/B's the index in one process. The short
+version, at this file's own N of 500: one evaluation falls from about 1,470 ns to
+about 74 ns in peacetime, and stops depending on settlement size at all. The
+numbers in the tables above are the ones that were measured here, before it
+landed, and are left as they were taken.
