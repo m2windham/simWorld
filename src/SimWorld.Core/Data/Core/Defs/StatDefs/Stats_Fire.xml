@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    How readily a Thing catches and sustains fire (system: fire). Its own file rather than an addition to
+    StatDefs_Things.xml: the loader reads every file under this directory, so a new file cannot collide with
+    another lane mid-edit on the shared one (CLAUDE.md). Bound by SimWorld.Things.FireStatDefOf.
+
+    defaultBaseValue 1 is RimWorld's own: in RimWorld everything burns unless its Def says otherwise, and
+    ordinary wood/cloth/plant matter sits at exactly 1. Two whole categories of Thing that RimWorld zeroes
+    one Def at a time — natural rock, and things with no physical substance such as fire itself — are zeroed
+    here instead by StatPart_Flammability; see that class for why. Everything else is per-Def content the
+    RimWorld way: a statBases entry, or a stuffProps statFactor on the material (steel and stone blocks carry
+    a zero factor in Items_Resource.xml, which is what makes a stone wall not burn while a wooden one does).
+  -->
+
+  <StatDef>
+    <defName>Flammability</defName>
+    <label>flammability</label>
+    <description>How readily this catches fire and how fiercely it burns. 0 never burns.</description>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0</minValue>
+    <parts>
+      <li Class="SimWorld.Stats.StatPart_Flammability" />
+    </parts>
+  </StatDef>
+
+</Defs>

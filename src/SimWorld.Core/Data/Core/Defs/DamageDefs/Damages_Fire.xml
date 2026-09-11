@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Flame: what a fire deals, and the one damage in this codebase that sets what it hits alight (system:
+    fire). Its own file, not an addition to Damages.xml, for the usual reason (CLAUDE.md). Bound by
+    SimWorld.Things.FireDamageDefOf.
+
+    Distinct from the pre-existing Burn DamageDef, exactly as RimWorld ships both: Burn is plain heat damage
+    with no ignition and stays untouched; Flame is fire's own, and adds DamageWorker_Flame on top. Both leave
+    the same Burn injury and roll against the same Heat armor.
+  -->
+
+  <DamageDef>
+    <defName>Flame</defName>
+    <label>flame</label>
+    <workerClass>SimWorld.Health.DamageWorker_Flame</workerClass>
+    <hediff>Burn</hediff>
+    <makesBlood>false</makesBlood>
+    <hasForcefulImpact>false</hasForcefulImpact>
+    <armorCategory>Heat</armorCategory>
+    <deathMessage>{0} has burned to death.</deathMessage>
+  </DamageDef>
+
+</Defs>

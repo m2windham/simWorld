@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Fire itself (RimWorld: ThingDefs_Special/Special_Fire.xml). Its own folder under Defs/ — DefLoader
+    .AddDirectory reads every file recursively, so a new folder needs no registration anywhere and cannot
+    collide with another lane (CLAUDE.md). Bound by SimWorld.Things.FireThingDefOf.
+
+    category Ethereal: a fire has no substance. That keeps it out of every ListerThings group (so nothing
+    hauls, repairs or mines it), makes GenExplosion skip it, and — through StatPart_Flammability — stops a
+    fire counting as fuel for itself or for its neighbours.
+
+    tickerType Normal is RimWorld's; see SimWorld.Things.Fire's own remarks on what that actually costs here
+    (a null check and one modulo per fire per tick; everything real runs once per 150 ticks).
+
+    useHitPoints false: fire is not damaged, it is extinguished — by rain, by running out of fuel, or by
+    somebody beating it out.
+  -->
+
+  <ThingDef>
+    <defName>Fire</defName>
+    <label>fire</label>
+    <description>A fire. It spreads to anything flammable nearby and burns what it stands on.</description>
+    <thingClass>SimWorld.Things.Fire</thingClass>
+    <category>Ethereal</category>
+    <tickerType>Normal</tickerType>
+    <altitudeLayer>Projectile</altitudeLayer>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <pathCost>0</pathCost>
+    <useHitPoints>false</useHitPoints>
+    <destroyable>true</destroyable>
+    <selectable>false</selectable>
+    <rotatable>false</rotatable>
+  </ThingDef>
+
+</Defs>
