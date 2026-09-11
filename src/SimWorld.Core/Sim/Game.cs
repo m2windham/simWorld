@@ -445,6 +445,17 @@ namespace SimWorld.Sim
             tm.PostTickers.Add(_ => Storyteller.StorytellerTick());
             tm.PostTickers.Add(_ => SocialTick());
             tm.PostTickers.Add(_ => God.GodTick());
+            // demography.lod: a citizen who is not standing on a generated interior map was on no tick list at
+            // all, at any tier — tick-list membership was granted only by Thing.SpawnSetup — so a settlement
+            // the player had never opened was frozen in time, its citizens' needs and ages byte-identical
+            // after six in-game days. This puts every citizen on the list their tier names whether or not they
+            // have a map, which is what spec §11.3 means by Interval and Statistical "sitting on the Long
+            // bucket". Position in this list barely matters and deliberately so: it is a safety net behind the
+            // incremental paths (Thing.SpawnSetup, and Pawn_TierTracker's own re-registration on a tier
+            // change), both tick guards already refuse to do a tier's work on the wrong list, and the two
+            // sweeps run on the same cadence a tick apart anyway — so the worst a stale read costs is one
+            // coarse interval served on the old list.
+            tm.PostTickers.Add(_ => CitizenTickRegistry.Tick());
             // economy.stock: the seam between the two halves of the game. What a watched settlement mines,
             // grows and crafts and then hauls into its own granary stops being a Thing on a map and becomes a
             // count in Settlement.Stores — the civilization's ledger, which until now nothing on any map could

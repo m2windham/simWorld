@@ -140,11 +140,13 @@ namespace SimWorld.Tests.Sim
             Game game = NewSoloGame();
 
             Assert.Single(game.TickManager.PreTickers);
-            // 16 since the map-to-ledger seam and the industry it feeds joined them
-            // (SimWorld.Economy.SettlementStockInitiative.Tick and SimWorld.Crafting.GuildInitiative.Tick),
-            // after the works initiative (SimWorld.Building.SettlementWorksInitiative.Tick) made it 14 and the
-            // stonework initiative (SimWorld.Crafting.StonecutterInitiative.Tick) made it 13.
-            Assert.Equal(16, game.TickManager.PostTickers.Count);
+            // 17 since the off-map citizen registry joined them (SimWorld.Sim.CitizenTickRegistry.Tick, which
+            // is what keeps a settlement nobody has opened ticking at all), after the map-to-ledger seam and
+            // the industry it feeds made it 16 (SimWorld.Economy.SettlementStockInitiative.Tick and
+            // SimWorld.Crafting.GuildInitiative.Tick), the works initiative
+            // (SimWorld.Building.SettlementWorksInitiative.Tick) made it 14 and the stonework initiative
+            // (SimWorld.Crafting.StonecutterInitiative.Tick) made it 13.
+            Assert.Equal(17, game.TickManager.PostTickers.Count);
         }
 
         [Fact]

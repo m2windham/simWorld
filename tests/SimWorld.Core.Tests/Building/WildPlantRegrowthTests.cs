@@ -220,8 +220,15 @@ namespace SimWorld.Tests.Building
             (global::SimWorld.Map.Map map, _) = MapOn("TemperateForest", "plants-determinism");
             var runs = new List<List<global::SimWorld.Map.IntVec3>>();
 
-            // The same map, cleared and replayed from the same tick: the spawner's rolls are seeded from the
-            // map and the clock alone, so the replay has to land the same plants in the same cells.
+            // The biome's whole regrow window, not one day of it. The window is by definition the span a
+            // map's worth of plants comes back over, so it is the span that reliably grows something; one
+            // day of a temperate forest expects ~1.4 plants, and a Poisson zero there is an ordinary
+            // outcome rather than a defect. That mattered because the spawner seeds its rolls from
+            // map.uniqueID, which is allocated from a process-global counter — so which rolls this map got
+            // depended on how many Maps any earlier test in the run happened to have made, and the
+            // NotEmpty guard below flipped red or green on nothing but test ordering. Widening the span
+            // takes the guard out of that lottery without weakening what the test is actually for.
+            int window = RegrowWindowTicks("TemperateForest");
             for (int run = 0; run < 2; run++)
             {
                 ClearPlants(map);
@@ -229,7 +236,7 @@ namespace SimWorld.Tests.Building
 
                 Rand.Current = new RandomStream(99);
                 uint before = Rand.Current.Iterations;
-                RunSpawnerTicks(GenDate.TicksPerDay, map);
+                RunSpawnerTicks(window, map);
                 Assert.Equal(before, Rand.Current.Iterations);
 
                 runs.Add(map.listerThings.ThingsOfDef(WildPlantDefOf.WildPlant)

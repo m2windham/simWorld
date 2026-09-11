@@ -58,16 +58,29 @@ namespace SimWorld.Sim
             return id < 0 ? id + TickInterval : id;
         }
 
+        /// <summary>
+        /// Adds <paramref name="tickable"/> to its bucket, or does nothing if it is already there.
+        ///
+        /// <para/><b>Idempotent on purpose.</b> Two independent callers now decide membership:
+        /// <see cref="Things.Thing.SpawnSetup"/>, for anything standing on a map, and
+        /// <see cref="CitizenTickRegistry"/>, for the citizens who are on no map at all and whom the spawn path
+        /// therefore never reaches. They overlap for exactly one moment — a citizen the registry has already
+        /// seated being spawned onto a freshly generated interior — and a duplicate entry there would tick that
+        /// pawn twice per tick for the rest of the game: needs falling at double rate, two think-tree passes, a
+        /// silent 2x on everything. A membership set is the right shape for "is this thing ticking", and the
+        /// alternative (teaching every caller to look first) is the rule that gets forgotten once.
+        /// </summary>
         public void RegisterThing(ITickable tickable)
         {
             if (tickable == null) throw new ArgumentNullException(nameof(tickable));
+            List<ITickable> bucket = buckets[BucketOf(tickable)];
             if (ticking)
             {
-                toRegister.Add(tickable);
+                if (!toRegister.Contains(tickable) && !bucket.Contains(tickable)) toRegister.Add(tickable);
             }
-            else
+            else if (!bucket.Contains(tickable))
             {
-                buckets[BucketOf(tickable)].Add(tickable);
+                bucket.Add(tickable);
             }
         }
 
