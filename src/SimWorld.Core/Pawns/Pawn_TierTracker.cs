@@ -194,9 +194,17 @@ namespace SimWorld.Pawns
         /// <i>every</i> birth and death unconditionally, so treating "has a chronicle entry" as "the chronicle
         /// named them" would make every citizen significant from the moment they are born — the tier would
         /// never demote anyone, which defeats the module. Call this only when something decides a citizen
-        /// deserves individual distinction, not routine demographic bookkeeping; deciding what qualifies is a
-        /// director-policy question this module deliberately leaves open (see the class doc and the module's
-        /// own report). One-directional: a chronicle entry is never un-written, so this never clears.
+        /// deserves individual distinction, not routine demographic bookkeeping. One-directional: a chronicle
+        /// entry is never un-written, so this never clears.
+        /// <para/>
+        /// <b>Two directors now answer "what qualifies", and both read <see cref="Director.MomentCurator"/>
+        /// rather than the chronicle itself</b> — the curated landmarks, not the rolling news:
+        /// <see cref="Director.Storyteller.RecordDeath"/> names a pawn whose death the curator flagged as a
+        /// moment, and <see cref="Director.ChronicleFame"/> names the living citizen who has outlived every
+        /// life the civilization has ever known. The second exists because the first is a policy for the dead
+        /// and none at all for the living, and a tier that decides how much simulation a citizen gets has
+        /// nothing to say about someone who has stopped being simulated. See <c>ChronicleFame</c>'s own doc
+        /// for why a record, of everything the curator knows, is the one shape that stays rare for ever.
         /// </summary>
         public void Notify_ChronicleNamed()
         {

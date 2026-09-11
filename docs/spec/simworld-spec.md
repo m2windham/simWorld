@@ -1508,12 +1508,23 @@ already tracks durably (a trait, worn apparel, a granted role).
   civilization's _history_: the first occurrence of a category (an incident's
   own `defName`, a death cause, or a free-form line's own category), every era
   transition without exception (`§10`: "reaching an era is an event, not just
-  a readout"), and a new record for longevity at death. Each rule is bounded in
+  a readout"), and a new record for longevity — one ratchet covering both a
+  life that has ended and one still being lived. Each rule is bounded in
   count on its own terms — by how many distinct categories ever occur, by the
   fixed size of the era ladder, or by a monotonic ratchet — so a moment that
   fires on everything (a log with extra steps) is exactly what this design
   avoids: a simulated routine century produces a handful of moments, not
   hundreds.
+- **Who the chronicle names** (`Director.ChronicleFame`): the landmarks are also
+  where `Pawn_TierTracker.Notify_ChronicleNamed` gets its policy, and the
+  longevity record is the whole of it. The oldest living citizen is named when
+  they outlive every life the civilization has known; nothing else names a
+  living citizen. A record is the only one of the curator's three rules that can
+  be broken more than once, so it is the only one that keeps producing figures
+  past a civilization's opening years — and while the holder lives the record
+  rises with them, so at most one living citizen holds the distinction at a
+  time, which is one seat of `§11.3`'s Full-tier budget. The flag is never
+  cleared, so that bound is the design rather than a detail.
 
 ```mermaid
 flowchart TD

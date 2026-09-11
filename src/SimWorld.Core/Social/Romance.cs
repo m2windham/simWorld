@@ -126,7 +126,13 @@ namespace SimWorld.Social
             SocialUtility.AddMutualRelation(a, b, PawnRelationDefOf.Lover);
             a.needs.mood?.thoughts.memories.TryGainMemory(SocialThoughtDefOf.BecameLovers, b);
             b.needs.mood?.thoughts.memories.TryGainMemory(SocialThoughtDefOf.BecameLovers, a);
-            Find.Storyteller?.RecordChronicle(a.Label + " and " + b.Label + " became lovers.");
+            // "Category: detail", like every other free-form line in this codebase. Without the prefix
+            // MomentCurator.CategoryForFreeform takes the whole sentence as the category, and since every
+            // couple's sentence is unique, *every* romance was a "first of its kind" and went into
+            // MomentCurator.Moments — a list that is deliberately never trimmed. The civilization's
+            // landmarks were filling up with who was seeing whom, unboundedly, at a rate that grows with the
+            // population. Found while writing ChronicleFame, which reads that list.
+            Find.Storyteller?.RecordChronicle("Romance: " + a.Label + " and " + b.Label + " became lovers.");
         }
 
         /// <summary>
@@ -145,7 +151,8 @@ namespace SimWorld.Social
                 SocialUtility.RemoveMutualRelation(a, b, PawnRelationDefOf.Lover);
                 SocialUtility.AddMutualRelation(a, b, PawnRelationDefOf.ExSpouse);
                 GainBothWays(a, b, SocialThoughtDefOf.Divorced);
-                Find.Storyteller?.RecordChronicle(a.Label + " and " + b.Label + " divorced.");
+                // Prefixed for the same reason as BecomeLovers' own line above — see that comment.
+                Find.Storyteller?.RecordChronicle("Divorce: " + a.Label + " and " + b.Label + " divorced.");
                 return true;
             }
 
