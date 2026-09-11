@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1678,
+  "testsTotal": 1688,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -905,7 +905,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 106,
+      "tests": 116,
       "items": [
         {
           "id": "director.personality",
@@ -961,6 +961,21 @@
           "id": "director.romancemoments",
           "label": "Romance was eating the landmark list: it wrote free-form lines with no category prefix, so every romance and divorce read as a first of its kind and was appended forever to MomentCurator.Moments, which is never trimmed, at a rate that grows with population",
           "done": true
+        },
+        {
+          "id": "director.difficulty",
+          "label": "Choosing a difficulty now does something. Eleven DifficultyDef fields existed and four were wired; six of the seven dormant ones are now consumed — allowBigThreats, allowIntroThreats, colonistMoodOffset, cropYieldFactor, questRewardValueFactor and researchSpeedFactor — all through one DifficultyUtility so the null-difficulty and never-negative handling is written once",
+          "done": true
+        },
+        {
+          "id": "director.difficulty.peaceful",
+          "label": "Peaceful never suppressed raids. DefaultThreatPointsNow clamps up to MinThreatPoints (35), which is exactly RaidEnemy's own minThreatPoints floor, so a threatScale of 0 did not turn threats off — it shrank every raid to the smallest legal war band and fired it on schedule. The clamp is RimWorld's and stays; allowBigThreats is how RimWorld turns the category off",
+          "done": true
+        },
+        {
+          "id": "director.difficulty.auditgap",
+          "label": "The wiring audit has a blind spot this lane fell into: its field checks ask 'content sets it, does code read it' and 'code reads it, does content set it', so a field neither side touches is reported by neither. researchSpeedFactor was exactly that and appears nowhere in the baseline",
+          "done": false
         }
       ]
     },
