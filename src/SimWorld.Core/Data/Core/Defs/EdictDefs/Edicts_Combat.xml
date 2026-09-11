@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The one edict the combat tier reads (system 9: AI — combat, docs/spec/simworld-spec.md §10). Its own file
+    rather than an addition to Edicts.xml: the loader reads every file under this directory, so a new edict
+    needs no edit to a file another lane may be mid-edit on (CLAUDE.md).
+
+    This is where RimWorld's draft went. There, the player selects a colonist and drafts them; here the god
+    issues a standing order and every citizen it applies to changes posture for as long as it stands. It
+    carries no prioritizedWork at all — unlike every other edict, what it changes is not which work gets done
+    first but whether an unarmed citizen goes looking for the enemy or waits to be cornered (see
+    SimWorld.AI.CombatPostureUtility for exactly what it does and does not change; an armed citizen and a
+    cornered one already fight without it, and no edict overrides a pawn whose violence is disabled).
+
+    No requiredEra: a civilization can always call its people to arms, in any age. No obsoleteEra either —
+    nothing about growing up makes "everyone fight" stop being a thing a civilization can demand.
+
+    The mood cost is the steepest of the five shipped edicts, and deliberately: the other four ask people to
+    work harder at something, this one asks them to go and be killed.
+  -->
+
+  <EdictDef>
+    <defName>TakeUpArms</defName>
+    <label>take up arms</label>
+    <description>Every hand that can hold a weapon meets the enemy, armed or not. Nobody waits to be found.</description>
+    <moodThought>UnderTakeUpArms</moodThought>
+  </EdictDef>
+
+</Defs>

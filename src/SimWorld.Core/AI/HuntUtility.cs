@@ -22,18 +22,7 @@ namespace SimWorld.AI
         /// <see cref="Pawn_EquipmentTracker.Primary"/> — this port's documented stand-in for "the weapon this
         /// pawn currently wields".
         /// </summary>
-        public static VerbProperties? RangedVerbPropsFor(Pawn pawn)
-        {
-            if (pawn == null) throw new ArgumentNullException(nameof(pawn));
-            ThingWithComps? primary = pawn.equipment?.Primary;
-            List<VerbProperties>? verbs = primary?.def.verbs;
-            if (verbs == null) return null;
-            for (int i = 0; i < verbs.Count; i++)
-            {
-                if (!verbs[i].IsMeleeAttack) return verbs[i];
-            }
-            return null;
-        }
+        public static VerbProperties? RangedVerbPropsFor(Pawn pawn) => AttackVerbUtility.RangedVerbPropsFor(pawn);
 
         /// <summary>
         /// RimWorld: <c>WorkGiver_HunterHunt.HasHuntingWeapon</c> — a hunter needs a <b>ranged</b> weapon, and
@@ -108,23 +97,14 @@ namespace SimWorld.AI
         /// <para/>
         /// A fresh <see cref="Verb"/> per call: it carries warmup/burst/cooldown state, so a caller driving an
         /// attack must build one and keep it, not call this every tick.
+        /// <para/>
+        /// <b>The body of this moved.</b> The combat lane needed the same selection and extracted it to
+        /// <see cref="AttackVerbUtility.TryGetAttackVerb"/> rather than write a second copy, so the hunt and
+        /// the fight can never disagree about which verb a pawn swings. The hunt's one real difference is the
+        /// argument below: no natural-weapon fallback, for exactly the reason this doc already gave.
         /// </summary>
-        public static Verb? MakeHuntVerb(Pawn hunter)
-        {
-            if (hunter == null) throw new ArgumentNullException(nameof(hunter));
-
-            VerbProperties? ranged = RangedVerbPropsFor(hunter);
-            if (ranged != null) return VerbUtility.MakeVerb(hunter, ranged);
-
-            List<Tool>? tools = hunter.equipment?.Primary?.def.tools;
-            if (tools == null) return null;
-            for (int i = 0; i < tools.Count; i++)
-            {
-                Verb_MeleeAttack? melee = MeleeVerbUtility.MakeVerb(hunter, tools[i]);
-                if (melee != null) return melee;
-            }
-            return null;
-        }
+        public static Verb? MakeHuntVerb(Pawn hunter) =>
+            AttackVerbUtility.TryGetAttackVerb(hunter, allowNaturalWeapon: false);
 
         /// <summary>
         /// How close the hunter must be for <paramref name="verb"/> to reach, in cells. A ranged verb answers
@@ -132,11 +112,7 @@ namespace SimWorld.AI
         /// <see cref="MeleeVerbUtility"/> never sets that field and it keeps its 90-cell ranged default — see
         /// <see cref="HuntingTuning.MeleeReachCells"/>.
         /// </summary>
-        public static float EffectiveRange(Verb verb)
-        {
-            if (verb == null) throw new ArgumentNullException(nameof(verb));
-            return verb.verbProps.IsMeleeAttack ? HuntingTuning.MeleeReachCells : verb.verbProps.range;
-        }
+        public static float EffectiveRange(Verb verb) => AttackVerbUtility.EffectiveRange(verb);
 
         /// <summary>
         /// Whether the shot/swing that resolved this very tick actually drew blood. Gated on
@@ -159,13 +135,14 @@ namespace SimWorld.AI
         /// wildness, and expressed through the <see cref="MindState.Pawn_MindState.angryAt"/> field the
         /// animals module already uses for a failed tame's identical consequence.
         /// <para/>
-        /// <b>What this port does not do.</b> The animal does not fight back. The think tree tier that reads
-        /// <c>angryAt</c> (<see cref="ThinkNode_ConditionalAngryAtHandler"/>) routes the animal to
-        /// <see cref="JobGiver_WanderAnywhere"/>, because nothing in this codebase has an attack
-        /// <see cref="Job"/> or an attack <see cref="ThinkNode_JobGiver"/> to route it to — combat AI is
-        /// genuinely absent, not merely unwired (see this module's report). The real consequences a hunter
-        /// does feel are that the hunt breaks off (<see cref="JobDriver_Hunt"/> ends the job) and that
-        /// <see cref="IsSafeToHunt"/> then refuses that animal until the anger expires.
+        /// <b>The animal now fights back.</b> This doc used to end "the animal does not fight back": the
+        /// think tree tier that reads <c>angryAt</c> (<see cref="ThinkNode_ConditionalAngryAtHandler"/>)
+        /// routed it to <see cref="JobGiver_WanderAnywhere"/>, because nothing in this codebase had an attack
+        /// <see cref="Job"/> or an attack <see cref="ThinkNode_JobGiver"/> to route it to. The combat lane
+        /// added both, and that tier now leads with <see cref="JobGiver_Manhunter"/> — provoked prey turns
+        /// and comes for the hunter with real damage behind it. The other two consequences are unchanged: the
+        /// hunt breaks off (<see cref="JobDriver_Hunt"/> ends the job) and <see cref="IsSafeToHunt"/> refuses
+        /// that animal until the anger expires.
         /// </summary>
         /// <returns>True if the animal was provoked by this hit.</returns>
         public static bool TryProvokeRevenge(Pawn animal, Pawn hunter)
