@@ -180,12 +180,16 @@ measurement — the test asserts the budget is never exceeded at any sweep, not 
 decade samples — and the run was stopped at a century because that is where the finding
 was.
 
-Two related holes remain. `Notify_RoleChanged` now has one caller — `MigrationManager`
-marks an arriving migrant a founder — but no Role system elects a leader, and
-`Notify_ChronicleNamed` fires only for a death the `MomentCurator` judged worth
-remembering, which is a policy for the dead and none at all for the living. Both are
-still unclaimed, and both now matter more than they did: they are the top of the
-ordering the cap spends its budget on.
+Both of the holes this section used to list are now closed. `Notify_RoleChanged` is the
+`Offices` module's — a station is seated, held and succeeded — and `MigrationManager` no
+longer marks every arrival a founder. `Notify_ChronicleNamed` had a policy for the dead
+and none for the living; `Director.ChronicleFame` is the living half: the oldest citizen
+alive is named when they outlive every life the civilization has ever known, dead or
+living, which is `MomentCurator`'s own record ratchet read one step earlier. It is rare
+because a ratchet fires less and less often, and because while the holder lives the record
+rises with them, so **at most one living citizen holds it at a time** — one seat of the
+500. Measured over a century of real demography, on two seeds: 4 people ever named against
+a roster of 1,463, and 3 against 1,404 (`ChronicleFameTests`).
 
 ### 3. "Endless" is endless now
 

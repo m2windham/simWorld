@@ -91,6 +91,13 @@ namespace SimWorld.Pawns
             if (Find.TickManager.TicksGame % DemographyTuning.DemographyIntervalTicks != 0) return;
 
             ProcessDeathsFromAge(population);
+
+            // After the deaths, so the oldest living citizen really is living. This is the cadence a
+            // civilization-scale "has anyone outlived everyone before them" question wants — once a year,
+            // over a whole population — and demography is the only sweep with both. See ChronicleFame for
+            // what it does and, at more length, for why it is the one thing that names a living citizen.
+            Director.ChronicleFame.ConsiderDoyen(population);
+
             ProcessMarriages(population);
             ProcessBirths(population);
         }

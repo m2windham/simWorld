@@ -169,13 +169,20 @@ namespace SimWorld.Director
         /// so far) append a free-form line to the chronicle. Reuses <see cref="ChronicleEntry.incidentDefName"/>
         /// to hold the text rather than adding a field, since every consumer already treats that field as the
         /// entry's headline.
+        /// <para/>
+        /// Hands the entry it wrote back to the caller. Almost every call site ignores it; the one that does
+        /// not is <see cref="ChronicleFame"/>, which needs the entry in order to put it through a
+        /// <see cref="MomentCurator"/> rule the line's own category cannot express — see that class's doc.
+        /// A return value rather than a second overload taking a rule, because the alternative is this method
+        /// knowing about every rule there will ever be.
         /// </summary>
-        public void RecordChronicle(string text)
+        public ChronicleEntry RecordChronicle(string text)
         {
             var entry = new ChronicleEntry(Find.TickManager.TicksGame, text, "", 0f);
             chronicle.Add(entry);
             while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
             moments.Consider(entry, MomentCurator.CategoryForFreeform(text));
+            return entry;
         }
 
         /// <summary>

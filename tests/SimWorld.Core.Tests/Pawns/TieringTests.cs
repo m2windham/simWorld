@@ -226,7 +226,15 @@ namespace SimWorld.Tests.Pawns
             Assert.True(population.Count > founders.Count,
                 "expected at least one birth to have grown the population; got " + population.Count);
             Assert.Contains(founders, p => p.relations.IsMarried);
-            Assert.All(founders, p => Assert.NotEqual(PawnTier.Full, p.tier.Tier)); // nobody was ever attended
+            // Nobody was ever attended. Asserted on the attention flag itself rather than on the tier,
+            // because the tier now has another way up that this harness reaches: Director.ChronicleFame names
+            // the oldest living citizen when they outlive every life the civilization has known, and in a
+            // six-person founding band somebody is that on the first sweep. (It cascades here in a way it
+            // cannot in a game: these pawns are ticked by hand through TickLong, which Pawn_TierTracker.CoarseTick
+            // skips for a Full-tier pawn, so a promoted citizen stops ageing and the next-oldest overtakes the
+            // frozen record. A real Full-tier citizen is in the Normal tick list and ages every tick.)
+            Assert.All(founders, p => Assert.False(p.tier.Attending));
+            Assert.All(founders, p => Assert.False(p.tier.HasRole));
         }
 
         [Fact]
