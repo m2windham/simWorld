@@ -19,15 +19,23 @@ namespace SimWorld.AI
         public LocalTargetInfo target;
         public int maxClaimants = 1;
 
+        /// <summary>
+        /// How many pieces out of the target's stack this claim covers, or
+        /// <see cref="ReservationManager.StackCount_All"/> for the whole Thing (RimWorld:
+        /// <c>Reservation.StackCount</c>). A cell target is one piece by definition.
+        /// </summary>
+        public int stackCount = ReservationManager.StackCount_All;
+
         public Reservation()
         {
         }
 
-        public Reservation(Pawn claimant, LocalTargetInfo target, int maxClaimants)
+        public Reservation(Pawn claimant, LocalTargetInfo target, int maxClaimants, int stackCount = ReservationManager.StackCount_All)
         {
             this.claimant = claimant ?? throw new ArgumentNullException(nameof(claimant));
             this.target = target;
             this.maxClaimants = maxClaimants;
+            this.stackCount = stackCount;
         }
 
         public void ExposeData()
@@ -36,6 +44,7 @@ namespace SimWorld.AI
             Scribe_References.Look(ref p, "claimant");
             Scribe_Targets.Look(ref target, "target");
             Scribe_Values.Look(ref maxClaimants, "maxClaimants", 1);
+            Scribe_Values.Look(ref stackCount, "stackCount", ReservationManager.StackCount_All);
             if (Scribe.mode == LoadSaveMode.ResolvingCrossRefs || Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 claimant = p!;
@@ -48,41 +57,87 @@ namespace SimWorld.AI
     /// A target with <see cref="Reservation.maxClaimants"/> already met refuses further claims until one is
     /// released — which happens automatically whenever a pawn's job ends (<see cref="Pawn_JobTracker.EndCurrentJob"/>),
     /// not per-toil, so a job never needs to remember to clean up after itself.
+    /// <para/>
+    /// A claim can cover part of a stack rather than the whole Thing (<see cref="Reservation.stackCount"/>), so
+    /// two jobs that each want some of one pile can both have what they asked for while a third that would
+    /// overdraw it is refused. Every caller that does not pass a count gets <see cref="StackCount_All"/> and
+    /// therefore exclusive use, which is what the bench, bed and stockpile-cell claims all want.
     /// </summary>
     public sealed class ReservationManager : IExposable
     {
+        /// <summary>The <c>stackCount</c> meaning "the whole Thing, however big the stack is" (RimWorld:
+        /// <c>ReservationManager.StackCount_All</c>). The default for every caller that does not care.</summary>
+        public const int StackCount_All = -1;
+
         private List<Reservation> reservations = new List<Reservation>();
 
-        /// <summary>True if <paramref name="claimant"/> could reserve <paramref name="target"/> right now
-        /// (already holding it counts as able to).</summary>
-        public bool CanReserve(Pawn claimant, LocalTargetInfo target, int maxClaimants = 1)
+        /// <summary>
+        /// True if <paramref name="claimant"/> could reserve <paramref name="stackCount"/> pieces of
+        /// <paramref name="target"/> right now (RimWorld: <c>ReservationManager.CanReserve</c>). Already
+        /// holding a big enough claim counts as able to. Two claimants may share one stack only when
+        /// <paramref name="maxClaimants"/> leaves room for both <i>and</i> their counts together fit inside it.
+        /// <para/>
+        /// <b>Not ported:</b> RimWorld also rejects a claimant that is unspawned or on another map, consults a
+        /// separate <c>physicalInteractionReservationManager</c>, and lets a player-forced job bump another
+        /// pawn's claim. This manager has no map of its own and this port has no physical-interaction layer,
+        /// so those three screens have nothing to read yet.
+        /// </summary>
+        public bool CanReserve(Pawn claimant, LocalTargetInfo target, int maxClaimants = 1, int stackCount = StackCount_All)
         {
             if (claimant == null) throw new ArgumentNullException(nameof(claimant));
             if (!target.IsValid) return false;
 
-            int heldByOthers = 0;
+            int available = AvailablePieces(target);
+            int wanted = stackCount == StackCount_All ? available : stackCount;
+            if (wanted > available) return false;
+            if (IsAlreadyReserved(claimant, target, wanted)) return true;
+
+            int otherClaimants = 0;
+            int claimedByOthers = 0;
             for (int i = 0; i < reservations.Count; i++)
             {
                 Reservation r = reservations[i];
-                if (!r.target.Equals(target)) continue;
-                if (ReferenceEquals(r.claimant, claimant)) return true;
-                heldByOthers++;
+                if (!r.target.Equals(target) || ReferenceEquals(r.claimant, claimant)) continue;
+                if (r.maxClaimants != maxClaimants) return false;
+                otherClaimants++;
+                claimedByOthers += r.stackCount == StackCount_All ? available : r.stackCount;
+                if (otherClaimants >= maxClaimants) return false;
+                if (wanted + claimedByOthers > available) return false;
             }
-            return heldByOthers < maxClaimants;
+            return true;
         }
 
-        public bool Reserve(Pawn claimant, LocalTargetInfo target, int maxClaimants = 1)
+        public bool Reserve(Pawn claimant, LocalTargetInfo target, int maxClaimants = 1, int stackCount = StackCount_All)
         {
-            if (!CanReserve(claimant, target, maxClaimants)) return false;
+            if (claimant == null) throw new ArgumentNullException(nameof(claimant));
+            if (!target.IsValid) return false;
+
+            int wanted = stackCount == StackCount_All ? AvailablePieces(target) : stackCount;
+            // A claim this pawn already holds that is at least this big is the reservation — don't stack a
+            // second one on top of it (RimWorld keys that check on the claiming Job as well; see this class's
+            // own remarks for why there is no Job here to key on).
+            if (IsAlreadyReserved(claimant, target, wanted)) return true;
+            if (!CanReserve(claimant, target, maxClaimants, stackCount)) return false;
+
+            reservations.Add(new Reservation(claimant, target, maxClaimants, stackCount));
+            return true;
+        }
+
+        /// <summary>How many pieces of <paramref name="target"/> there are to go round: a stack's count, or
+        /// one for a bare cell (RimWorld does exactly this inline in both CanReserve and Reserve).</summary>
+        private static int AvailablePieces(LocalTargetInfo target) => target.HasThing ? target.Thing!.stackCount : 1;
+
+        /// <summary>True when <paramref name="claimant"/> already holds a claim on <paramref name="target"/>
+        /// covering at least <paramref name="wanted"/> pieces (RimWorld: <c>ReservationManager.IsAlreadyReserved</c>).</summary>
+        private bool IsAlreadyReserved(Pawn claimant, LocalTargetInfo target, int wanted)
+        {
             for (int i = 0; i < reservations.Count; i++)
             {
-                if (ReferenceEquals(reservations[i].claimant, claimant) && reservations[i].target.Equals(target))
-                {
-                    return true;
-                }
+                Reservation r = reservations[i];
+                if (!ReferenceEquals(r.claimant, claimant) || !r.target.Equals(target)) continue;
+                if (r.stackCount == StackCount_All || r.stackCount >= wanted) return true;
             }
-            reservations.Add(new Reservation(claimant, target, maxClaimants));
-            return true;
+            return false;
         }
 
         public bool IsReservedBy(Pawn claimant, LocalTargetInfo target)
