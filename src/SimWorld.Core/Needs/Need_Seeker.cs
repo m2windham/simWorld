@@ -92,8 +92,17 @@ namespace SimWorld.Needs
     }
 
     /// <summary>
-    /// Beauty, comfort, outdoors, room size (RimWorld: <c>Need_Beauty</c>, <c>Need_Comfort</c>,
-    /// <c>Need_Outdoors</c>, <c>Need_RoomSize</c>): seekers whose target is sampled from the surroundings.
+    /// Beauty, comfort, room size (RimWorld: <c>Need_Beauty</c>, <c>Need_Comfort</c>, <c>Need_RoomSize</c>):
+    /// seekers whose target is sampled from the surroundings.
+    /// <para/>
+    /// <b>Comfort and RoomSize hold still, and that is the honest state rather than a hidden one.</b> The
+    /// sampler answers null for both (see <see cref="MapEnvironmentSampler"/> for what each is waiting for),
+    /// null reads as <c>def.baseLevel</c>, and both needs start at that same base level — so the target sits
+    /// exactly where the need already is and neither branch below is ever taken. Their
+    /// <c>seekerRisePerHour</c>/<c>seekerFallPerHour</c> are real and would apply the moment a target moved;
+    /// <c>NeedDef.ConfigErrors</c> now refuses a seeker that left them at zero, so an unfilled rate can no
+    /// longer masquerade as this. Outdoors used to be in this family and is not any more: it is a plain
+    /// <see cref="Need_Outdoors"/> that reads the roof over the citizen's head.
     /// </summary>
     public class Need_Environment : Need_Seeker
     {

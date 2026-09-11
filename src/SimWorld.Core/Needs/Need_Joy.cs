@@ -49,16 +49,18 @@ namespace SimWorld.Needs
 
         public void NeedInterval()
         {
-            NeedIntervalBulk(1);
+            NeedIntervalBulk(1f);
         }
 
-        /// <summary>Decays every tolerance by <paramref name="slices"/> intervals' worth in one pass — O(#kinds
-        /// held), never O(slices), so an Interval-tier citizen's coarse tick costs the same regardless of how
-        /// many <see cref="Need.IntervalTicks"/>-sized slices the elapsed span holds.</summary>
-        public void NeedIntervalBulk(int slices)
+        /// <summary>Decays every tolerance by <paramref name="intervals"/> intervals' worth in one pass —
+        /// O(#kinds held), never O(intervals), so an Interval-tier citizen's coarse tick costs the same
+        /// regardless of how long the elapsed span is. Fractional on purpose: a coarse tick is 2000 ticks and
+        /// an interval is 150, so a whole number of intervals would throw away 50 ticks of decay every single
+        /// coarse tick (see <see cref="Need_Joy.NeedIntervalBulk"/>).</summary>
+        public void NeedIntervalBulk(float intervals)
         {
-            if (slices <= 0 || tolerances.Count == 0) return;
-            float decay = ToleranceDecayPerInterval * slices;
+            if (intervals <= 0f || tolerances.Count == 0) return;
+            float decay = ToleranceDecayPerInterval * intervals;
             var keys = new List<JoyKindDef>(tolerances.Keys);
             for (int i = 0; i < keys.Count; i++)
             {
@@ -108,19 +110,24 @@ namespace SimWorld.Needs
             }
         }
 
-        /// <summary>Decay eases when joy is already low so deprivation is gradual.</summary>
+        /// <summary>
+        /// Decay eases in the two low bands so deprivation is gradual, and is flat everywhere else
+        /// (RimWorld: <c>Need_Joy.FallPerInterval</c>, whose switch reads
+        /// <c>Empty =&gt; 0.0015f, VeryLow =&gt; 0.0006f, Low =&gt; 0.00105f, Satisfied/High/Extreme =&gt; 0.0015f</c>
+        /// — i.e. the base rate, ×0.4 and ×0.7).
+        /// <para/>
+        /// This used to read <c>Empty =&gt; 0</c>, <c>High =&gt; ×1.4</c> and <c>Extreme =&gt; ×2</c>, which is
+        /// nobody's numbers: a well-entertained pawn lost recreation nearly twice as fast as RimWorld's does.
+        /// </summary>
         public float FallPerInterval
         {
             get
             {
                 switch (CurCategory)
                 {
-                    case JoyCategory.Empty: return 0f;
                     case JoyCategory.VeryLow: return BaseFallPerInterval * 0.4f;
                     case JoyCategory.Low: return BaseFallPerInterval * 0.7f;
-                    case JoyCategory.Satisfied: return BaseFallPerInterval;
-                    case JoyCategory.High: return BaseFallPerInterval * 1.4f;
-                    default: return BaseFallPerInterval * 2f;
+                    default: return BaseFallPerInterval;
                 }
             }
         }
@@ -145,18 +152,24 @@ namespace SimWorld.Needs
 
         /// <summary>O(1) bulk equivalent (see the base class doc): <see cref="FallPerInterval"/> is already
         /// scaled to one <see cref="Need.IntervalTicks"/> slice rather than a per-tick rate, so this multiplies
-        /// by the slice count instead of raw ticks, holding the current joy-category rate constant across the
-        /// span.</summary>
+        /// by the number of slices in the span instead of raw ticks, holding the current joy-category rate
+        /// constant across it.
+        /// <para/>
+        /// <b>Fractional slices, deliberately.</b> This used to take <c>elapsedTicks / IntervalTicks</c> as an
+        /// integer and return early below one whole slice, which silently dropped the remainder every time:
+        /// the Interval tier calls this once per Long tick (2000 ticks = 13.33 slices) and then advances its
+        /// clock by the full 2000, so 50 ticks of decay went missing on every single coarse tick and joy fell
+        /// 2.5% slower for every citizen nobody was watching — the base class's first rule for this method.
+        /// </summary>
         public override void NeedIntervalBulk(int elapsedTicks)
         {
             if (elapsedTicks <= 0) return;
-            int slices = elapsedTicks / IntervalTicks;
-            if (slices <= 0) return;
+            float intervals = elapsedTicks / (float)IntervalTicks;
             if (!IsFrozen)
             {
-                CurLevel -= FallPerInterval * slices;
+                CurLevel -= FallPerInterval * intervals;
             }
-            tolerances.NeedIntervalBulk(slices);
+            tolerances.NeedIntervalBulk(intervals);
         }
 
         public override void ExposeData()

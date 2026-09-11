@@ -58,7 +58,6 @@ content-silent SimWorld.Health.PawnCapacityDef.lethalMechanoids | Blocked on mec
 content-silent SimWorld.Health.PawnCapacityDef.minValue | No shipped capacity declares a floor, so the clamp in Capacities always clamps against zero.
 content-silent SimWorld.MindState.MentalStateDef.colonistsOnly | No shipped mental state is restricted to colonists, so MentalState's eligibility check never narrows on this.
 content-silent SimWorld.Needs.JoyKindDef.neverBuildsTolerance | Ported for parity and declared as such in the field's own doc: vanilla RimWorld has no such joy kind either, so no shipped JoyKindDef sets it.
-content-silent SimWorld.Needs.NeedDef.fallPerDay | Content-side gap worth fixing: the generic per-day decay every Need falls back on is zero for all eight shipped needs. Food, Rest and the seeker needs each carry their own rate (seekerFallPerHour, or an overridden NeedInterval), so the base path in Need.NeedInterval never decays anything.
 content-silent SimWorld.Needs.NeedDef.freezeInMentalState | No shipped need freezes during a mental break, so Need's IsFrozen gate is always open.
 content-silent SimWorld.Pawns.BackstoryDef.disallowedTraits | Content-side gap: PawnGenerator honours backstory trait rules and none of the 23 shipped backstories declares any, so a backstory never shapes the traits a pawn rolls.
 content-silent SimWorld.Pawns.BackstoryDef.forcedTraits | As disallowedTraits: the generator applies forced traits and no shipped backstory forces one.
