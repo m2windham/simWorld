@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Cleanliness (RimWorld: StatDefOf.Cleanliness). A per-Thing contribution that RoomCleanlinessUtility
+    averages over a room's cells to get the room's cleanliness, the same shape RimWorld's
+    RoomStatDefOf.Cleanliness uses. Filth carries a negative value; a sterile floor would carry a positive
+    one, once this port ships floors that claim to be sterile.
+
+    Its own file rather than an addition to StatDefs_Things.xml - the loader reads every file under this
+    directory, so a new file cannot collide with another lane mid-edit on the shared one (CLAUDE.md). Bound
+    by SimWorld.Filth.FilthStatDefOf.
+
+    defaultBaseValue 0 is what makes this work without touching any existing content: every Thing that has
+    said nothing about cleanliness contributes nothing, which is exactly right - a chair does not make a
+    room dirty. minValue is left at its own default so filth can be negative.
+  -->
+
+  <StatDef>
+    <defName>Cleanliness</defName>
+    <label>cleanliness</label>
+    <description>How much this helps or hurts the cleanliness of the room it is in. Filth is negative.</description>
+    <category>Basics</category>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>-100</minValue>
+  </StatDef>
+
+</Defs>

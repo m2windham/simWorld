@@ -56,6 +56,15 @@ namespace SimWorld.Crafting
                     leather.stackCount = leatherCount;
                     GenSpawn.Spawn(leather, pos, map);
                 }
+
+                // system: filth — butchering makes a mess (RimWorld: Corpse.ButcherProducts spawns
+                // RaceProps.BloodDef filth at the butcher's feet). A flesh carcass only; a mechanoid has no
+                // blood to spill, which is the same test RimWorld's BloodDef being null does for it.
+                if (race.IsFlesh)
+                {
+                    SimWorld.Filth.FilthMaker.TryMakeFilth(
+                        pos, map, SimWorld.Filth.FilthDefOf.Filth_Blood, pawn.Label, count: 2);
+                }
             }
 
             if (recipe.workSkill != null && billDoer != null)

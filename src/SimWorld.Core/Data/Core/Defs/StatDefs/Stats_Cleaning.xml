@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    CleaningSpeed (RimWorld: StatDefOf.CleaningSpeed), read per work tick by JobDriver_CleanFilth.
+
+    Deliberately has no skillNeedFactors: cleaning is one of the few RimWorld jobs with no skill behind it
+    at all, so a pawn never gets better at it and the stat varies only with what the body can still do.
+    That is what capacityFactors below model - a pawn with a mangled hand or a bad leg cleans slower, which
+    is RimWorld's own behaviour and needs no new machinery here (StatDefs_Pawns.xml already uses the same
+    field the same way for RestRateMultiplier).
+
+    The weights are SimWorld's own, not sourced; the cleaning tests pin the trend (an injured cleaner is
+    slower than a whole one) rather than these numbers (CLAUDE.md).
+
+    Its own file rather than an addition to a shared stat file - the loader reads every file under this
+    directory (CLAUDE.md). Bound by SimWorld.Filth.CleaningStatDefOf.
+  -->
+
+  <StatDef>
+    <defName>CleaningSpeed</defName>
+    <label>cleaning speed</label>
+    <description>How fast this pawn cleans filth away.</description>
+    <category>BasicsPawn</category>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0.05</minValue>
+    <capacityFactors>
+      <li>
+        <capacity>Manipulation</capacity>
+        <weight>0.5</weight>
+      </li>
+      <li>
+        <capacity>Moving</capacity>
+        <weight>0.25</weight>
+      </li>
+    </capacityFactors>
+  </StatDef>
+
+</Defs>

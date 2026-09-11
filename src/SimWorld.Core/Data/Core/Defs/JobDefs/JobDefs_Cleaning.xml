@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Cleaning work (the Cleaning work type's only giver). Its own file rather than an addition to
+       JobDefs_Core.xml: the loader reads every file under this directory, so a new file cannot collide with
+       another lane mid-edit on the shared one (CLAUDE.md). Bound by SimWorld.Filth.CleaningJobDefOf. -->
+
+  <JobDef>
+    <defName>Clean</defName>
+    <driverClass>SimWorld.Filth.JobDriver_CleanFilth</driverClass>
+    <reportString>cleaning.</reportString>
+  </JobDef>
+
+</Defs>

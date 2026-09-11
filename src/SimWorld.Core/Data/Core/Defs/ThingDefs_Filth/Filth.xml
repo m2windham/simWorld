@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Filth (RimWorld: ThingDefs_Misc/Filth.xml). Its own directory under Defs/, which DefLoader.AddDirectory
+    picks up recursively, so nothing shared had to change to ship it.
+
+    Every filth def is category Filth, which ListerThings already indexes as ThingRequestGroup.Filth and
+    ThingGrid already allows to coexist with whatever else is in the cell. altitudeLayer Filth likewise
+    already existed in ThingEnums - the scaffolding for this was in place before the class was.
+
+    Numbers below are SimWorld's own, not sourced from RimWorld's content: maxThickness 3 is RimWorld's own
+    documented default, but cleaningWorkToReduceThickness, the disappear ranges and the cleanliness offsets
+    are not values this port could source. The filth tests therefore pin trends and bands - thicker filth
+    takes longer to clean, blood goes away on its own and dirt does not, more filth means a dirtier room -
+    rather than any literal here (CLAUDE.md).
+
+    useHitPoints is false on all three: filth is not something you can shoot, and leaving hit points on would
+    let the repair work giver and the explosion damage sweep both treat it as a Thing with a health bar.
+  -->
+
+  <ThingDef Name="FilthBase" Abstract="True">
+    <category>Filth</category>
+    <thingClass>SimWorld.Filth.Filth</thingClass>
+    <altitudeLayer>Filth</altitudeLayer>
+    <useHitPoints>false</useHitPoints>
+  </ThingDef>
+
+  <ThingDef ParentName="FilthBase">
+    <defName>Filth_Dirt</defName>
+    <label>dirt</label>
+    <description>Loose dirt, tracked in on somebody's boots or worked up off a bare floor.</description>
+    <statBases>
+      <Cleanliness>-2</Cleanliness>
+    </statBases>
+    <filth>
+      <maxThickness>3</maxThickness>
+      <cleaningWorkToReduceThickness>40</cleaningWorkToReduceThickness>
+      <!--
+        The inverted TerrainDef.generatedFilth (see FilthProperties.sourceTerrains). Every bare, unfloored
+        terrain a pawn can walk on is here; water and the stone/asphalt roads are not, which is what makes
+        laying a floor the thing that stops a room getting dirty by itself.
+      -->
+      <sourceTerrains>
+        <li>Soil</li>
+        <li>SoilRich</li>
+        <li>Gravel</li>
+        <li>Sand</li>
+        <li>Mud</li>
+        <li>MarshyTerrain</li>
+        <li>StreetDirtPath</li>
+        <li>StreetDirtRoad</li>
+      </sourceTerrains>
+    </filth>
+  </ThingDef>
+
+  <ThingDef ParentName="FilthBase">
+    <defName>Filth_Blood</defName>
+    <label>blood</label>
+    <description>A splash of blood.</description>
+    <statBases>
+      <Cleanliness>-3</Cleanliness>
+    </statBases>
+    <filth>
+      <maxThickness>3</maxThickness>
+      <cleaningWorkToReduceThickness>40</cleaningWorkToReduceThickness>
+      <!-- Dries and flakes away on its own; dirt does not. Rolled per pile, so a massacre's worth of blood
+           does not all vanish on the same tick. -->
+      <disappearsInDays>2~5</disappearsInDays>
+      <canFilthAttach>false</canFilthAttach>
+    </filth>
+  </ThingDef>
+
+  <ThingDef ParentName="FilthBase">
+    <defName>Filth_AnimalFilth</defName>
+    <label>animal filth</label>
+    <description>Droppings left by an animal that got indoors.</description>
+    <statBases>
+      <Cleanliness>-4</Cleanliness>
+    </statBases>
+    <filth>
+      <maxThickness>2</maxThickness>
+      <cleaningWorkToReduceThickness>60</cleaningWorkToReduceThickness>
+      <disappearsInDays>6~10</disappearsInDays>
+    </filth>
+  </ThingDef>
+
+</Defs>
