@@ -624,6 +624,67 @@ assert that the population is untouched, because that would be asserting four ot
 are healthy and would go red for reasons a food test cannot explain. On the pre-fix core its
 very first assertion fails.
 
+### 9a. What §9 got wrong, and what is actually killing them
+
+Two lanes took §9 apart. The food half of it was real and is fixed. **The framing was wrong,
+and it was wrong in the direction that matters: food was never what killed anyone.**
+
+**There was no food on the map. Zero.** Not "not much" — a `TribalStart` interior at tick 0
+held 12,991 granite, 822 wild plants and **0.0 nutrition**. `WildPlant` carries no
+`harvestedThingDef` and no `ingestible`, so `Plant.HarvestableNow` was false for every plant
+on every map ever generated. `BiomeDef.forageability` — authored for all eleven land biomes,
+its own doc reading "how much food a forager can find here" — was read by exactly one line of
+the core, as a dryness proxy for where to paint sand.
+
+Three more links behind it: **nothing in `src/` had ever created a `Zone_Growing`** (zones,
+both grower givers, both drivers and two crops, all built and tested and unreachable);
+`FueledStove` had no Blueprint/Frame pair so no kitchen could be raised by anything; and
+`JobDriver_Ingest` ate **one unit** per job — 0.05 nutrition against a 1.0 stomach and a
+1.6/day fall, so a citizen standing in a full larder lost ground to its own hunger.
+
+All four are closed. Foraging, farming, cooking and eating-your-fill now work, and the larder
+is fuller on day seven than day one.
+
+**And the death toll did not move.** Fifteen alive on day six, before and after. Every death,
+both runs, is `"X has been beaten to death"`.
+
+#### What is actually killing them
+
+**Nothing in this codebase can raise `Need_Joy`.** `GainJoy` has exactly one caller in all of
+`src/` and it is `CompDrug`. The only recreation available to a citizen is narcotics. So joy
+sits at its worst stage — −20 mood points — on every citizen from day two, and the humanlike
+think tree has no recreation tier to fix it.
+
+That is not the whole story either. With joy pinned full by hand the same settlement **still
+loses 8 of 25**, because `Insulted` (−8.8) and `Divorced` (−5.3) are the social *fallout of
+the fights themselves*. `MentalState_SocialFighting` killed ten of twenty-five in a week with
+a full larder. Brawling feeds itself.
+
+#### A regression this batch introduced, measured and named
+
+Fixing the tick path (§9's right-hand column) had a consequence the lane that did it predicted
+in as many words. Measured after both lanes merged, eight in-game days:
+
+| Day | Unwatched: alive / food | Watched: alive / food |
+| --- | --- | --- |
+| 0 | 25 / 0.80 | 25 / 0.80 |
+| 1 | 25 / **0.00** | 25 / 0.23 |
+| 4 | 21 / 0.00 | 18 / 0.43 |
+| 8 | **18** / 0.00 | 13 / 0.40 |
+
+**An unwatched settlement now starves where it used to be frozen.** The cause is exact:
+`Game.NewGame` focuses the settlement it founds, so its citizens tick at **Full** — but nothing
+has opened the interior, so there is no map, and **the entire food economy above is
+map-based**. Berries lie on a map. A growing zone is painted on a map. A kitchen is built on a
+map. A Full-tier citizen with no map has needs that decay at full speed and no world in which
+to satisfy them.
+
+The fix is the one the tick lane named before the problem existed: **an abstract consumption
+path from `Settlement.Stores`**, the ledger batch eight built and nothing yet draws from. The
+two halves were built in the right order and have simply not been joined.
+
+Until they are, this branch is not "the settlement fixed" and must not be described as such.
+
 ## Immediate steps: the host repo — unclaimed, proposed
 
 These are proposed rather than assigned. The host session claims, amends or rejects

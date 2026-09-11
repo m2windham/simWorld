@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1964,
+  "testsTotal": 2006,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -520,7 +520,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
       "status": "ported",
-      "tests": 112,
+      "tests": 123,
       "items": [
         {
           "id": "simcore.tick",
@@ -586,6 +586,11 @@
           "id": "simcore.hashphasing.turret",
           "label": "CompTurretGun and Fire open-coded the same thingIDNumber * 3 and clustered identically — recorded as a follow-up rather than fixed in place, so the fix would be one shared helper and not a third copy. Sim.HashInterval is that helper, and the clustering was real: turret scans run every 15 ticks so every turret landed on one of 5 reachable phases instead of 15, and fire's complex calcs every 150 so every fire landed on one of 50 instead of 150 — three deep in both cases, and a burning quarter is precisely what that interval exists to spread. Pawn.HashOffsetTicks delegates to the same helper and keeps the bench's legacy-offset hatch. The test states the old behaviour at both intervals, so the coverage assertions are demonstrably sensitive to what they rule out rather than passing vacuously.",
           "done": true
+        },
+        {
+          "id": "simcore.offmaptick",
+          "label": "A settlement nobody had opened was frozen in time — its citizens' needs were IDENTICAL on day six and day zero. Root cause: tick-list membership was granted in exactly one place (Thing.SpawnSetup) and revoked in one (Thing.DeSpawn). Correct for a Thing, which is on a map or nowhere; wrong for a Pawn, whose tiers are designed to exist off every map. A settlement with no interior has nobody spawned, so nobody on any tick list at any tier — Pawn.Tick, Pawn.TickLong, Pawn_TierTracker.CoarseTick, Need.NeedIntervalBulk and AgeTickMothballed were all unreachable. The tiering module built the dispatch and the work and never built the membership. Proven twice over: clearing focus correctly demoted 23 of 25 to Interval and they still never ticked, because the demotion moved them off a list they had never been on. CitizenTickRegistry reads Pawn.TickerType and obeys it, touching no tier, so the focused settlement pays Full (bounded by FullTierBudget) and every other rests at Interval — spec 11.1's 'abstracted by default'. The alternative (demoting Full-with-no-map in TickerType) was tried first and backed out: an unspawned Full pawn is a deliberate state here and it broke 32 tests. Measured at 220-420 microseconds per off-map citizen per in-game day.",
+          "done": true
         }
       ]
     },
@@ -597,7 +602,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
       "status": "ported",
-      "tests": 89,
+      "tests": 95,
       "items": [
         {
           "id": "needs.pawn",
@@ -683,6 +688,16 @@
           "id": "needs.applicability",
           "label": "Every pawn got every need. ShouldHaveNeed consulted minIntelligence and needsRest and nothing else, so colonistsOnly, colonistAndPrisonersOnly and neverOnPrisoner were all ignored. Wired, with the second half being WHEN the question is asked: a pawn is built before it is enfactioned, so Pawn.faction's setter re-runs the sweep (RimWorld: SetFaction) and so does CaptureUtility.Capture, which changes the answer without touching the faction. Honest limitation recorded by the lane itself: neverOnPrisoner is correct and tested but game-dormant, because nothing in src/ ever calls CaptureUtility.Capture — the whole prisoner subsystem is reachable only from tests.",
           "done": true
+        },
+        {
+          "id": "needs.foodchain",
+          "label": "There was NO FOOD on a generated map. Not scarce — zero: a TribalStart interior at tick 0 held 12,991 granite, 822 wild plants and 0.0 nutrition, because WildPlant carries no harvestedThingDef and no ingestible, so Plant.HarvestableNow was false for every plant on every map ever generated. BiomeDef.forageability, authored for all eleven land biomes and documented as 'how much food a forager can find here', was read by one line of the core as a dryness proxy for painting sand. Four links closed: berry plants scattered at that field's density and regrown at the biome's pace (WorkGiver_GrowerHarvest already scans every plant, so food-bearing wild growth simply IS foraging); FarmingInitiative, because nothing in src/ had ever created a Zone_Growing and the zones, both grower givers, both drivers and two crops were all built, tested and unreachable; CookingInitiative plus a Blueprint/Frame pair for FueledStove, which had none so no kitchen could be raised by anything; and JobDriver_Ingest eating its fill rather than ONE UNIT per job (0.05 nutrition against a 1.0 stomach and a 1.6/day fall, so a citizen in a full larder lost ground to its own hunger).",
+          "done": true
+        },
+        {
+          "id": "needs.joy.unreachable",
+          "label": "OPEN, and the actual cause of death. Nothing in this codebase can raise Need_Joy: GainJoy has exactly one caller in all of src/ and it is CompDrug, so the only recreation available to a citizen is narcotics, and the humanlike think tree has no recreation tier. Joy therefore sits at its worst stage (-20 mood) on every citizen from day two. Fixing the food economy did not move the death toll at all — fifteen alive on day six either way, and every death in both runs is 'beaten to death'. With joy pinned full by hand the same settlement still loses 8 of 25, because Insulted (-8.8) and Divorced (-5.3) are the social fallout of the fights themselves: MentalState_SocialFighting killed ten of twenty-five in a week with a full larder. Two chains, both open.",
+          "done": false
         }
       ]
     },
@@ -1119,7 +1134,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "ported",
-      "tests": 95,
+      "tests": 105,
       "items": [
         {
           "id": "crafting.bills",
@@ -1365,7 +1380,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
       "status": "translated",
-      "tests": 75,
+      "tests": 90,
       "items": [
         {
           "id": "building.zones",
@@ -1633,6 +1648,11 @@
         {
           "id": "settlements.starvation",
           "label": "MEASURED AND OPEN, the largest thing this project knows about itself. A generated settlement does not survive its first week, and an unwatched one does not live at all. Probed independently at Game.NewGame(TribalStart, 25 founders), ticked six in-game days with nothing called by hand. Watched (entered through GodCommands.OpenSettlement): mean food falls to 0.00 inside ONE day and never recovers, mood sits near 0.12, and the population goes 25 -> 20 -> 19 -> 18 -> 16 — nine dead in six days, the deaths being citizens in extreme mental breaks beating each other to death. Unwatched: the same 25 citizens are Full tier and unspawned, and their needs do not move AT ALL over six days — food and mood are identical on day 6 and day 0. So a civilization is either frozen or dying, and neither is the intended behaviour. Every module involved is ported, tested and green; this is what they do when a real game runs them.",
+          "done": false
+        },
+        {
+          "id": "settlements.abstractconsumption",
+          "label": "OPEN, and a regression this batch introduced rather than found. Now that off-map citizens tick, a settlement that is FOCUSED but never entered starves: Game.NewGame focuses the settlement it founds, so its citizens run at Full tier, but nothing has opened the interior, so there is no map — and the entire food economy is map-based (berries lie on a map, a growing zone is painted on one, a kitchen is built on one). Measured over eight in-game days: unwatched goes 25 alive to 18 with food 0.00 from day one, against watched holding food near 0.4. A Full-tier citizen with no map has needs that decay at full speed and no world in which to satisfy them. The fix is the one the tick lane named before the problem existed: an abstract consumption path from Settlement.Stores, the ledger batch eight built and nothing yet draws from. The two halves were built in the right order and have not been joined.",
           "done": false
         }
       ]
