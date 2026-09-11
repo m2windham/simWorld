@@ -133,40 +133,63 @@ them; this side does not assign work across the boundary.
 
 ## Host: landed, and what is next
 
-The host session has a first slice working: a Unity 6000.5.0f1 project at
-`A:\dev\simWorld.Host` with its own git repo, referencing `com.simworld.core` as a local
-UPM package by relative path, and a `GodViewBootstrap` calling `GodViewSnapshot.Capture()`
-on a timer. It verified the result by reading the rendered text back in Play mode rather
-than trusting a screenshot, and did not call `Game.NewGame`, so the empty read was honest
-rather than staged. Read-only so far; nothing wired to `GodCommands`.
+The host session has the read/write loop of spec §12a proven live. A Unity 6000.5.0f1 project
+at `A:\dev\simWorld.Host` with its own git repo references `com.simworld.core` as a local UPM
+package by relative path. It loads content, reads `GodViewSnapshot.Capture()`, and drives
+`GodCommands.IssueEdict` from an `EdictPanel` whose buttons are interactable only when
+`Availability == Available` and which surfaces `Reason` verbatim. It verified the write end to
+end — issued the one edict a tribal start allows, got `Done` back, and saw the next read flip it
+to active and non-interactable — and added three EditMode tests mirroring `GodViewTests.cs`.
 
-It also reported **zero edicts**, which is a real bug and was this side's. Five edicts
-ship and `Capture()` returns every one regardless of availability, so zero is impossible —
-the host had never loaded the core's content, and nothing in the contract said it had to.
-`GodViewSnapshot.ContentLoaded` now distinguishes "content never loaded" from "a
-civilization that has not started", which were indistinguishable before, and `Capture()`'s
-doc carries the load call.
+Five commits, all local: `simWorld.Host` has no remote yet. That is the user's call to make, but
+it means a proven loop currently lives on exactly one disk.
 
-Proposed next, in order. As above these are proposals with reasons, not assignments.
+### The content-loading bug was ours, and it is fixed at the root
 
-1. **Load content before anything else.** `CoreContent.Load` into a `DefDatabase`, that
-   database assigned to `DefDatabase.Global`. `ContentLoaded` should flip true and five
-   edicts should appear, each with an `Availability` and a `Reason`. If they do not, the
-   package is not shipping its `Data/` directory into the Unity build — that is a
-   packaging problem on this side and worth reporting immediately rather than working
-   around.
-2. **Start a real game** (`Game.NewGame`, tribal start, solo) and **report what the
-   snapshot actually contains** — population by tier, era and progress, whether the means
-   look sane, whether the chronicle fills. The ask here is a report rather than a feature:
-   the host can see this and the core cannot. The last number that looked wrong found a
-   bug.
-3. **Then the write path.** One edict button through `GodCommands.IssueEdict(defName)`,
-   and surface `EdictOption.Reason` on the disabled ones — every refusal already carries a
-   sentence, and a greyed-out control with no explanation is the exact failure that field
-   exists to prevent. Do not reimplement the availability rules to explain them; a
-   reimplemented rule drifts from the one the simulation enforces. At a tribal start
-   exactly one edict is issuable and four are era-locked, so both states appear on screen
-   without contriving anything.
+The host reported zero edicts for content that ships five. The cause was never on their side:
+`CoreContent`'s class doc claimed "The Unity host sees it inside the package folder" and
+`Locate()` never implemented it. It tried `SIMWORLD_DATA`, a `Data/` beside the assembly, and a
+walk up for `src/SimWorld.Core/Data` — and from a Unity project's `Library/ScriptAssemblies`
+every one of those stays inside the host project. A package resolved by relative path to a
+**sibling repository** was unreachable by construction, and the load then reported success with
+zero defs, which reads exactly like a civilization that has not started.
+
+Four changes close it:
+
+- `CoreContent.TryResolveFromUnityPackageManifest` walks up for `Packages/manifest.json` and
+  resolves each `file:` dependency against the `Packages` folder — Unity's own rule, not the
+  project root — accepting whichever one actually carries `Data/Core`. Not keyed on the package
+  being named `com.simworld.core`, so renaming it cannot break this.
+- `CoreContent.Load(db, types, options, dataDirectory)` and `AddCoreDefs(loader, dataDirectory)`
+  take an explicit directory. The host wanted this and had only an environment variable to reach
+  for; a process-global that must be set before anything reads it is what produced their
+  `RuntimeInitializeOnLoadMethod` misfire.
+- A Defs directory that exists and holds **no XML** now throws instead of loading zero defs.
+- `CoreContent.DescribeSearch()` returns every place it looked and what was there, for printing
+  in the failure.
+
+The host's own guard — treating a zero-edict load as a hard failure — is worth keeping anyway,
+because it checks the outcome rather than the mechanism.
+
+Two corrections to how the host is reading this file. The claim-by-PR protocol governs **this**
+repo; `simWorld.Host` is theirs and needs no PR here. And pushing `simWorld.Host` to its own
+remote is not pushing to the shared repo — a narrower thing is being held than they think.
+
+### Proposed next, in order
+
+1. **Start a real game and report what the snapshot contains.** `Game.NewGame`, tribal start,
+   run long enough that something happens. Population by tier, era and progress, whether the
+   means look sane, whether the chronicle fills, whether settlements come with interior maps.
+   This is a report rather than a feature: the host can see it and the core cannot, and two
+   core bugs have now been found this way.
+2. **Expect every citizen to read as `Full`.** Nothing drives the tiering yet. A core lane is
+   fixing that and will land a focus concept — the god focuses zero or one settlement, and that
+   is what attention means. **The host should not build its own notion of a selected
+   settlement**; two disagreeing ideas of what the player is looking at is a bug that will take
+   a week to find.
+3. **Then the civilization view proper.** Settlements, population, era, chronicle.
+   `GodViewSnapshot` carries all of it, and `RecentHistory` versus `Moments` deserves different
+   treatment on screen — running news against the civilization's landmarks.
 
 ## The honest summary
 
