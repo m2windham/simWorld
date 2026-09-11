@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1725,
+  "testsTotal": 1754,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -428,7 +428,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Pawns · Pawns/Generation · Pawns/Genes",
       "status": "ported",
-      "tests": 49,
+      "tests": 65,
       "items": [
         {
           "id": "pawngen.backstory",
@@ -478,6 +478,11 @@
         {
           "id": "pawngen.genes",
           "label": "Genes / xenotypes with inheritance (Biotech): GeneDef (statOffsets/statFactors/capMods/disabledWorkTags/biostatCpx/biostatMet/lifespanBonusYears/exclusionTags) + XenotypeDef (a named germline), Pawn_GeneTracker (endogenes/xenogenes, exclusionTags conflict resolution) reusing StatWorker/PawnCapacityUtility/CombinedDisabledWorkTags/HungerRate rather than a parallel pipeline; PawnGenerationRequest.Xenotype applied by PawnGenerator strictly downstream of every existing roll (zero RNG cost when unset); FamilyManager birth-path inheritance (GeneInheritanceUtility) — shared endogenes breed true, a single-parent endogene is a 50% coin flip, xenogenes never inherit. RimWorld's exact inheritance-selection and metabolism-to-hunger curves were not sourced in this sandbox — see GeneTuning's own doc; pinned by property tests instead of literals. Content: 14 GeneDefs, 4 XenotypeDefs (Baseliner + 3 non-baseline).",
+          "done": true
+        },
+        {
+          "id": "pawngen.traitshaping",
+          "label": "Backstories, kinds and germlines shape traits. Eight seams in one cluster — BackstoryDef and PawnKindDef's forcedTraits/disallowedTraits, TraitDef.requiredWorkTags, and TraitDegreeData's disabledWorkTags/disallowedMentalBreaks/theOnlyAllowedMentalBreaks — were all read by PawnGenerator and set by no shipped content, so every pawn in every game rolled from the same unfiltered table. Content sets all eight, and three code defects surfaced in the wiring: TryForceTrait skipped the capability gate the random path enforces (a backstory could force bloodlust onto a pawn barred from violence); backstories ignored their own requiredWorkTags, so a pacifist could be a tribal hunter; and genes were applied after the two filters that need to read GeneDef.disabledWorkTags, with Pawn_GeneTracker never raising the disabled-work-tags notification. Contradictions in the forced/disallowed pair are a config error now (BackstoryTraitValidation) rather than a generator that silently skips.",
           "done": true
         }
       ]
@@ -567,7 +572,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
       "status": "ported",
-      "tests": 71,
+      "tests": 84,
       "items": [
         {
           "id": "needs.pawn",
@@ -632,6 +637,16 @@
         {
           "id": "needs.filththought",
           "label": "ThoughtWorker_FilthyRoom retired as its own doc instructed: it read room cleanliness directly only because Beauty was unavailable, and keeping it would have charged filth to mood twice. Its tests now assert the same properties through the beauty route",
+          "done": true
+        },
+        {
+          "id": "needs.decaywiring",
+          "label": "Needs that actually move. NeedDef.fallPerDay was zero for all eight needs and no needClass reached the generic decay it fed, so the path was dead twice over — and RimWorld has no such path at all (NeedInterval is abstract there, and fallPerDay's one reader is Need_Chemical, unbuilt here). NeedInterval/NeedIntervalBulk are abstract now, so a need cannot inherit a decay that does nothing. Need_Outdoors ported 1:1 (roof overhead plus open-to-weather, RimWorld's six per-day deltas and the 0.2 thin-roof floor); Comfort and RoomSize still hold still and now say so in their own Def. Two arithmetic defects surfaced: Need_Joy.NeedIntervalBulk took elapsed/150 as an integer and dropped the remainder, losing 50 ticks of decay every 2,000-tick coarse tick, and its category multipliers were nobody's numbers.",
+          "done": true
+        },
+        {
+          "id": "needs.memoryageing",
+          "label": "A memory an unwatched citizen held aged thirteen times too slowly: Need_Seeker.NeedIntervalBulk ran one thought interval (150 ticks) however long the elapsed span was, and an Interval-tier citizen's mood advances once per 2,000-tick coarse tick. The mood LEVEL always agreed between the two paths — which is why the existing agreement test passed — but the memories underneath it expired at a thirteenth of real speed, so most of the civilization stayed anchored to events a fortnight after a watched citizen had forgotten them. ThoughtIntervalBulk(elapsedTicks) is one ageing path for both tiers, O(#memories) either way.",
           "done": true
         }
       ]
