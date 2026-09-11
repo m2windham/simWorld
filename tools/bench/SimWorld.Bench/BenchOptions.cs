@@ -20,6 +20,12 @@ namespace SimWorld.Bench
         /// inside the guard at the Full-tier budget.</summary>
         public int ConstantTreeTicks { get; set; } = 6000;
 
+        /// <summary>Repetitions of the 600-tick hash cycle per trial for --suite phasing. The suite folds tick
+        /// t into bucket t % 600 and averages, so this is the sample count behind every bucket: enough
+        /// repetitions and the periodic signal separates from per-tick timer noise. 10 is 6,000 ticks, the
+        /// same span the constant-tree A/B uses.</summary>
+        public int PhasingCycles { get; set; } = 10;
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }

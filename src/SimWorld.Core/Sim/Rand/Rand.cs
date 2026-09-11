@@ -33,8 +33,13 @@ namespace SimWorld.Sim
         public static int Range(int min, int max) => Current.Range(min, max);
         public static int RangeInclusive(int min, int max) => Current.RangeInclusive(min, max);
         public static float Range(float min, float max) => Current.Range(min, max);
-        public static int Range(IntRange range) => Current.Range(range.min, range.max);
-        public static float Range(FloatRange range) => Current.Range(range.min, range.max);
+        /// <summary>Inclusive of <c>max</c>, as RimWorld's <c>IntRange.RandomInRange</c> is. Delegates to
+        /// <see cref="RandomStream.Range(IntRange)"/> rather than re-deriving the bound, so the facade and
+        /// the stream cannot drift apart again — they did, and this one was the max-exclusive odd one out.</summary>
+        public static int Range(IntRange range) => Current.Range(range);
+        /// <summary>Delegates for the same reason the <see cref="IntRange"/> overload above does: the two
+        /// happen to agree today, and re-deriving the bound here is how that stopped being true last time.</summary>
+        public static float Range(FloatRange range) => Current.Range(range);
         public static bool Chance(float chance) => Current.Chance(chance);
         public static T Element<T>(T a, T b) => Current.Element(a, b);
         public static T Element<T>(T a, T b, T c) => Current.Element(a, b, c);

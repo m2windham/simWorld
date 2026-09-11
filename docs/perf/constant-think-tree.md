@@ -173,6 +173,11 @@ on the average, and this headless core has no frame to miss, so it is recorded
 here rather than fixed: `HashOffsetTicks` is shared with the health module's heal
 and bleed intervals, and changing it would silently re-phase those too.
 
+> **Since fixed.** `HashOffsetTicks` now hashes the id instead of scaling it, and
+> the re-phasing turned out to break nothing — the suite passes unchanged. The
+> busiest tick at interval 30 went from 50 pawns to 24 and the peak tick got ~30%
+> cheaper; measured in [`hash-phasing.md`](hash-phasing.md).
+
 **`BestAttackTarget` is still O(population) per call.** RimWorld avoids this with
 a per-map `AttackTargetsCache` keyed by faction; this port has no such cache, so
 finding the nearest enemy means walking the map's pawn list. Cheapest-first
