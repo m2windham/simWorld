@@ -265,6 +265,64 @@ namespace SimWorld.Tests.Wiring
             Assert.DoesNotContain(seams, s => s.Id.EndsWith(".fixtureLabel", StringComparison.Ordinal));
         }
 
+        /// <summary>
+        /// The quadrant the pair above leaves out, and the reason this check exists: nobody sets it, nobody
+        /// reads it, and neither of the other two will look at it because each waits for the other side to
+        /// speak first.
+        /// </summary>
+        [Fact]
+        public void A_field_neither_content_sets_nor_code_reads_is_reported()
+        {
+            SourceIndex source = Source("class FixtureSystem { void Run(FixtureDef d) { } }");
+            ContentSurvey survey = SurveyOf(new FixtureDef { defName = "Fixture" });
+
+            IReadOnlyList<Seam> seams = WiringAudit.ContentFieldsNobodyTouches(survey, source);
+
+            Assert.Contains(seams, s => s.Id.EndsWith(".fixtureSpare", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// <c>researchSpeedFactor</c> was declared <c>= 1f</c>. A check that excused a field for carrying a
+        /// deliberate initialiser would have walked straight past the one case that proved the gap.
+        /// </summary>
+        [Fact]
+        public void A_field_left_at_a_non_zero_initialiser_that_nobody_touches_is_still_reported()
+        {
+            SourceIndex source = Source("class FixtureSystem { void Run(FixtureDef d) { } }");
+            ContentSurvey survey = SurveyOf(new FixtureDef { defName = "Fixture" });
+
+            IReadOnlyList<Seam> seams = WiringAudit.ContentFieldsNobodyTouches(survey, source);
+
+            Assert.Contains(seams, s => s.Id.EndsWith(".fixtureKnob", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void A_field_something_reads_is_not_reported_as_untouched()
+        {
+            SourceIndex source = Source("class FixtureSystem { float Run(FixtureDef d) { return d.fixtureKnob; } }");
+            ContentSurvey survey = SurveyOf(new FixtureDef { defName = "Fixture" });
+
+            IReadOnlyList<Seam> seams = WiringAudit.ContentFieldsNobodyTouches(survey, source);
+
+            Assert.DoesNotContain(seams, s => s.Id.EndsWith(".fixtureKnob", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// One gap, one line. A field content sets and nothing reads belongs to <c>code-deaf</c>; reporting it
+        /// here as well would put a single defect on two baseline entries that then have to be deleted in
+        /// step, and the second one to go would look like a stale line rather than a fix.
+        /// </summary>
+        [Fact]
+        public void A_field_content_sets_is_left_to_the_code_deaf_check()
+        {
+            SourceIndex source = Source("class FixtureSystem { void Run(FixtureDef d) { } }");
+            ContentSurvey survey = SurveyOf(new FixtureDef { defName = "Fixture", fixtureLabel = "set in content" });
+
+            IReadOnlyList<Seam> seams = WiringAudit.ContentFieldsNobodyTouches(survey, source);
+
+            Assert.DoesNotContain(seams, s => s.Id.EndsWith(".fixtureLabel", StringComparison.Ordinal));
+        }
+
         [Fact]
         public void State_the_code_reads_and_never_writes_is_reported()
         {
@@ -347,5 +405,11 @@ namespace SimWorld.Tests.Wiring
         public Type workerClass = typeof(FixtureWorker);
         public string? fixtureLabel;
         public bool fixtureFlag;
+
+        /// <summary>Stands in for a field neither side touches — the quadrant the two field checks miss.</summary>
+        public string? fixtureSpare;
+
+        /// <summary>The same, but with a deliberate initialiser: <c>DifficultyDef.researchSpeedFactor</c>'s shape.</summary>
+        public float fixtureKnob = 1f;
     }
 }

@@ -11,6 +11,7 @@
 #   worker          a Def field naming a placeholder, abstract or missing worker class
 #   content-silent  code reads the field; every shipped Def leaves it null/false/zero/empty
 #   code-deaf       shipped content sets the field; no line of src/ reads it
+#   untouched       neither: no shipped Def moves it off the default and no line of src/ reads it
 #   unwritten       code reads the state; nothing in src/ ever writes it
 #
 # Adding a line is a decision, not a formality. "Blocked on a module nobody has built" and "the host
@@ -142,3 +143,70 @@ unwritten SimWorld.Defs.DefLoadOptions.ThrowOnError | Caller-facing loader optio
 unwritten SimWorld.Defs.PatchOperationConditional.nomatch | The else-branch of a patch operation. No shipped content has a Patches/ folder at all, so neither branch is set by anything in this repository.
 unwritten SimWorld.Defs.PatchOperationFindMod.nomatch | As PatchOperationConditional.nomatch: the else-branch of a mod-presence patch, and no shipped content patches anything.
 unwritten SimWorld.Pawns.Pawn.environment | Per-pawn override of the environment sampler. Nothing in src/ sets it, and nothing should: Need_Seeker falls back to MapEnvironmentSampler.Instance, and the field exists so a host or a test can substitute its own.
+
+
+# ---- untouched: neither content nor code touches it ----
+#
+# The third field check, added after DifficultyDef.researchSpeedFactor turned out to be invisible to the
+# other two: content-silent waits for code to read a field before it looks at the content, and code-deaf
+# waits for content to set one before it looks at the code, so a field NEITHER side touches was reported
+# by neither. It was found by a person reading the Def class, at the cost the audit exists to avoid.
+#
+# 48 entries at the measurement that decided this check shipped, out of 774 content fields surveyed.
+# Sixteen are marked "Real gap" below: a knob somebody meant to matter, whose consumer could be written
+# today against systems that already run. `grep "untouched.*Real gap"` is that to-do list, and it is the
+# only part of this section anyone needs to read twice. The rest are RimWorld fields carried for parity
+# whose consumer is a view, or whose system nobody has built.
+#
+# Four of these reasons were written after checking that an older one had expired — apparel, temperature,
+# prisoners and the letter stack all exist now, and four declarations in src/ still say they do not. That
+# is the §4 lesson (a recorded reason is evidence, not a verdict) arriving on schedule.
+
+untouched SimWorld.Combat.Tool.chanceFactor | Per-tool selection weight. Nothing picks between a pawn's tools — Tools.cs turns each into a verb and the caller takes the first — so there is no weighted draw for this to weight.
+untouched SimWorld.Combat.Tool.linkedBodyPartsGroup | Ties a tool to the part that wields it, so a severed hand loses the punch. Needs the same tool-selection step chanceFactor does; both land together.
+untouched SimWorld.Crafting.RecipeDef.workSpeedStat | Real gap — which stat scales this recipe's work. Guild.cs charges a flat recipe workAmount against the labour pool, so a master smith and a novice cost the guild exactly the same and no skill ever pays off in throughput.
+untouched SimWorld.Defs.StatDef.hideAtValue | Presentation: whether a stat is omitted from a readout at a given value. Its consumer is God/View's stat panel, which today reports every stat it is asked for.
+untouched SimWorld.Defs.StatDef.hideAtValueThreshold | The threshold hideAtValue compares against; dormant for the same reason and lands in the same edit.
+untouched SimWorld.Defs.ThingDef.costStuffCount | Real gap — how much stuff a stuff-built thing costs. Stuff exists (StatWorker reads stuffProps), and Frame.cs delivers costList and only costList, so anything priced in stuff is built out of nothing.
+untouched SimWorld.Defs.ThingDef.rotatable | Real gap — Blueprint and Frame already carry a Rot4 and pass it along, and nothing checks whether the def being placed permits a rotation other than North. Small, and it wants the placement validator that does not exist yet.
+untouched SimWorld.Director.IncidentCategoryDef.refireDays | A mis-port, and the declaration says so: RimWorld's IncidentCategoryDef carries only defName/label/description, and per-category spacing lives on IncidentDef.minRefireDays, which is read. This field should be deleted rather than wired.
+untouched SimWorld.Director.StorytellerCompProperties_OnOffCycle.acceptPercentFactorPerThreatPointsCurve | Documented deviation at the declaration: RimWorld scales accept chance down for unusually large threat-point rolls, and this port loads the curve for content fidelity without applying it.
+untouched SimWorld.Director.StorytellerCompProperties_RandomMain.skipThreatBigIfRaidBeacon | Documented deviation: raid beacons are not modelled, so there is nothing for a forced ThreatBig to be skipped for.
+untouched SimWorld.Director.StorytellerDef.populationIntentFactorFromPopAdaptDays | Documented deviation at the declaration: the population-adaptation smoothing curve is loaded for fidelity and StorytellerUtilityPopulation deliberately does not apply it.
+untouched SimWorld.Economy.TraderKindDef.requestable | Nothing sends for a trader — there is no comms request path — so the gate has no caller. Traders.xml does name the field, at the declared default, which is why code-deaf cannot see it either.
+untouched SimWorld.Economy.TraderKindDef.tradeCurrency | Every trade settles in silver by construction and no line reads the currency. Traders.xml spells out Silver, which is the declared default, so the content survey reads it as untouched.
+untouched SimWorld.Factions.FactionDef.allowedArrivalTemperatureRange | Real gap — the declaration says "no weather/temperature system exists to gate arrivals against it" and that has expired: Weather/GenTemperature ships. Nothing gates an arriving caravan on the band it declares.
+untouched SimWorld.Health.AddedBodyPartProps.betterThanNatural | Prosthetics that beat the original part. No surgery installs an added part yet, so nothing can ask whether this one is an upgrade; lands with the bionics module.
+untouched SimWorld.Health.BodyPartDef.alive | Separates flesh from a mechanical part for rot, bleeding and corpse checks. Every shipped part is alive and no site branches on it; lands with bionics, alongside betterThanNatural.
+untouched SimWorld.Health.BodyPartDef.frostbiteVulnerability | Temperature exists now but cold injury does not: there is no frostbite hediff or worker for this to weight. Lands with the hypothermia module.
+untouched SimWorld.Health.BodyPartDef.socketed | Marks a part that takes an implant without amputation. Surgery is unbuilt, so nothing asks the question this answers.
+untouched SimWorld.Health.BodyPartGroupDef.labelShort | The abbreviated group name for cramped health and combat text. God/View reports parts by full label and never abbreviates; lands with the view's health panel.
+untouched SimWorld.Health.DamageDef.consideredHelpful | Marks surgical and tending damage so it never reads as an attack. Only hostile damage defs ship, so no site has had to tell the two apart.
+untouched SimWorld.Health.DamageDef.externalViolence | Real gap — this is how RimWorld decides whether a death was violent, which drives the death thought, the combat log entry and "died of natural causes". Deaths, thoughts and a letter stack all run here; nothing distinguishes a murder from a heart attack.
+untouched SimWorld.Health.DamageDef.harmAllLayersUntilOutside | Real gap — the declaration's "data only until apparel exists" has expired: Pawn_ApparelTracker and Combat/Armor.cs both ship, so an explosion punching every layer down to the skin is buildable today and armour simply never sees the flag.
+untouched SimWorld.Health.DamageDef.isExplosive | Nothing in src/ raises an explosion, so the flag has no caller to gate. Lands with the explosion module, which is also what would make harmAllLayersUntilOutside worth reading.
+untouched SimWorld.Health.HediffCompProperties_TendDuration.showTendQuality | Presentation: whether a tended wound reports the quality of the tend. Consumer is God/View's health panel.
+untouched SimWorld.Health.HediffDef.labelNoun | The noun form a hediff takes inside a sentence ("a broken leg"). No text path in the core builds that sentence; lands with the view.
+untouched SimWorld.Health.HediffDef.priceImpact | Real gap — a hediff that changes what a pawn is worth. Market value and trade both run (Economy/), so nothing blocks this except a reader at the valuation site.
+untouched SimWorld.Health.HediffStage.forgetMemoryThoughtMtbDays | Real gap — a stage that makes a pawn forget memories on a mean time. Memories age and expire already; this is a stage tick consulting one more field.
+untouched SimWorld.Health.HediffStage.mentalBreakMtbDays | Real gap — a stage that triggers mental breaks on a mean time. MindState runs breaks today, so a hediff stage that should drive a pawn to one is a single call site short of working.
+untouched SimWorld.Health.InjuryProps.alwaysUseDestroyedLabel | Naming detail for a destroyed part: which of two label forms to use. Nothing in the core picks between them; lands with the view's health panel.
+untouched SimWorld.Health.InjuryProps.destroyedOutLabel | The alternative label alwaysUseDestroyedLabel selects. Same consumer, same edit.
+untouched SimWorld.Health.PawnCapacityDef.showOnHumanlikes | Presentation: which capacities a health panel lists for which kind of pawn. God/View has no capacity readout yet.
+untouched SimWorld.Health.PawnCapacityDef.showOnMechanoids | As showOnHumanlikes, and doubly dormant: mechanoids are not modelled at all, so there is no pawn this could be true for.
+untouched SimWorld.Map.TerrainDef.underTerrain | Real gap — what is revealed when a floor is removed. Terrain is written at map gen and never taken back up, so the layer beneath is never asked for; lands with floor removal, which the mining job's own chain wants anyway.
+untouched SimWorld.MindState.MentalStateDef.beginLetter | Real gap — Letters/LetterStack ships and six systems raise letters through it, and MentalState.PostStart raises none. A citizen goes berserk and the player is told nothing.
+untouched SimWorld.MindState.MentalStateDef.beginLetterLabel | Real gap — the label half of the letter beginLetter never sends. One edit at MentalState.PostStart consumes both.
+untouched SimWorld.MindState.MentalStateDef.prisonersCanDo | Real gap — prisoners exist (Pawn_GuestTracker.IsPrisoner), and MentalState.CanDo already gates on the sibling field colonistsOnly. This is the prisoner half of the same gate, and no line reads it.
+untouched SimWorld.Needs.NeedDef.colonistAndPrisonersOnly | Real gap — Pawn_NeedsTracker.ShouldHaveNeed consults minIntelligence and needsRest and nothing else, so every applicability flag NeedDef carries is ignored and every pawn is given every need.
+untouched SimWorld.Needs.NeedDef.neverOnPrisoner | Real gap — the other half of the same omission in ShouldHaveNeed, and prisoners exist to be excluded. Both flags land in one edit.
+untouched SimWorld.Needs.NeedDef.scaleBar | Presentation: whether the need bar is drawn to scale rather than filled. God/View reports need levels as numbers, so there is no bar to scale.
+untouched SimWorld.Pawns.TraitDef.allowOnHostileSpawn | Real gap — PawnGenerator filters traits by backstory, kind and germline now, but not by whether a hostile spawn may roll them, so a raider can still roll a trait the flag exists to keep off one.
+untouched SimWorld.Quests.QuestScriptDef.isRootSpecial | Declared reserved at the field: a "fires once, hand-authored" tier of quest script that root selection does not implement and no shipped script claims.
+untouched SimWorld.Scenario.ScenPartDef.maxUses | Declared kept-for-parity at the field: how many of a part one scenario may carry. No scenario editor exists to violate the limit.
+untouched SimWorld.Thoughts.ThoughtDef.showBubble | Presentation: whether the thought pops a bubble over the pawn. Pure view, and the core draws nothing.
+untouched SimWorld.Work.SkillDef.usuallyDefinedWorkTypes | The declaration says documentation only: a content-authoring hint about which work a skill goes with, not a rule anything is meant to enforce.
+untouched SimWorld.Work.WorkGiverDef.canBeDoneByNonColonists | A duplicated port: this and nonColonistsCanDo are two fields with one meaning and neither is read. RimWorld has canBeDoneByNonColonists; the other should be deleted rather than both wired.
+untouched SimWorld.Work.WorkGiverDef.nonColonistsCanDo | The duplicate of canBeDoneByNonColonists, with no RimWorld counterpart. Whichever is kept, this pair is a deletion and not a wiring job.
+untouched SimWorld.Work.WorkGiverDef.prioritizeSustains | RimWorld keeps a manually-prioritised job prioritised across a sustained work session; this port has no sustain concept and no manual prioritisation to carry, so there is nothing for the flag to preserve.
+untouched SimWorld.Work.WorkTypeDef.disabledForSlaves | Slavery is not modelled: no pawn can be a slave, so nothing can be disabled for one.

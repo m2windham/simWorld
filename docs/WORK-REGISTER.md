@@ -268,7 +268,7 @@ have caught it.
 ask "content sets it, does code read it?" and "code reads it, does content set it?". A
 field that **neither** side touches is reported by neither. `researchSpeedFactor` was
 exactly that: no preset set it, no line read it, and it appears nowhere in the baseline. A
-third check is the open follow-up.
+third check is the open follow-up. **Closed in §6.**
 
 ### 5. A module can be wired and still unable to act
 
@@ -304,6 +304,66 @@ not answer it.
 The corollary is uncomfortable and worth writing down: a passing suite of 1,855 tests, a
 green audit, and 29 of 29 work givers wired were all simultaneously true while no bench had
 work on it and no citizen could see a raider.
+
+### 6. The audit's blind spot is closed, and it cost 48 lines to close
+
+§4's last lesson recorded a follow-up: the two field checks are a pair, and a pair is not a
+partition. Each waits for one side to speak before it looks at the other, so the quadrant
+where **neither** speaks is reported by neither. That is where `researchSpeedFactor` sat.
+
+`untouched` is that third check — *no shipped Def moves this field off its declared default,
+and no line of `src/` reads it.* The interesting part was never the code; it was whether the
+answer could be believed.
+
+**The measurement, which is what decided it shipped.** 774 content fields surveyed: 623 set by
+content, 103 unset but read, **48 touched by neither**. That is the same order as the checks
+either side of it (54 `code-deaf`, 38 `content-silent`) and not the 177 and 106 of the two
+variants that were built and dropped for noise. For **46 of the 48** the field name occurs
+exactly *once* in the whole of `src/` — its own declaration — so there is no judgement call
+about whether some sighting counts as a use, which is precisely what sank the "public method
+with no caller" check. Every one of the 48 was read by hand before a baseline line was written
+for it. There were no false reports to argue about, only a spread of real reasons.
+
+One deliberate imprecision, recorded rather than papered over: the survey compares loaded
+objects against a freshly-built one, so a Def that spells out the default value
+(`<rotatable>false</rotatable>`) reads as untouched. Three entries are like that. They are
+invisible to `code-deaf` for exactly the same reason, so the check is not inventing them — it
+is picking up three that the existing pair also drops. The detail line says what was measured
+rather than claiming the XML never names the field.
+
+**Sixteen of the 48 are real gaps**, and they are a better batch-seven list than anything §4
+left. `grep "untouched.*Real gap" tests/SimWorld.Core.Tests/Wiring/dormant-seams.txt` is the
+list; the ones worth naming here:
+
+- **A mental break tells the player nothing.** `Letters/LetterStack` ships and six systems
+  raise letters through it. `MentalState.PostStart` raises none, and `beginLetter`/
+  `beginLetterLabel` have sat there since the module landed.
+- **Every pawn gets every need.** `Pawn_NeedsTracker.ShouldHaveNeed` consults
+  `minIntelligence` and `needsRest` and nothing else, so all four applicability flags on
+  `NeedDef` are ignored — and prisoners exist now for `neverOnPrisoner` to exclude.
+- **A hediff stage cannot cause a mental break or a forgotten memory.** `mentalBreakMtbDays`
+  and `forgetMemoryThoughtMtbDays` are one stage-tick call site short each, on top of systems
+  that already run.
+- **Skill buys no throughput in the guild.** `RecipeDef.workSpeedStat` is unread, so `Guild.cs`
+  charges a flat `workAmount` and a master smith costs exactly what a novice does.
+- **Stuff-built things are free.** `ThingDef.costStuffCount` is unread and `Frame.cs` delivers
+  `costList` only.
+- **No death is violent.** `DamageDef.externalViolence` is what RimWorld branches on for the
+  death thought and the combat log; nothing here separates a murder from a heart attack.
+
+**Four of those reasons only became gaps because an older one expired.** Apparel, temperature,
+prisoners and the letter stack all exist now, and four declarations in `src/` still say in so
+many words that they do not. §4's "a recorded reason is evidence, not a verdict" arrived
+exactly on schedule, in the comments rather than the baseline this time.
+
+**Two entries are deletions, not wirings.** `IncidentCategoryDef.refireDays` has no RimWorld
+counterpart to port — RimWorld's category def carries only defName/label/description, and
+spacing lives on `IncidentDef.minRefireDays`, which is read. And `WorkGiverDef` carries both
+`canBeDoneByNonColonists` and `nonColonistsCanDo`: two fields, one meaning, neither read. A
+later batch should delete rather than wire both.
+
+**What did not get done, on purpose.** None of the sixteen is wired here. The lane was the
+instrument, not the repairs, and three other lanes were live in the same batch.
 
 ### The next item, and it is a World-module job
 
