@@ -594,7 +594,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 64,
+      "tests": 86,
       "items": [
         {
           "id": "health.body",
@@ -649,6 +649,11 @@
         {
           "id": "health.prosthetic-items",
           "label": "Prosthetics as real items: SimpleProstheticLeg ThingDef (Item, hasQuality + CompProperties_Quality, MarketValue set) ships tradeable — no crafting recipe, since no fabrication workbench exists yet (the same \"craftable or tradeable\" allowance this item took). InstallSimpleProstheticLeg ships as content, naming the item as a RecipeDef.ingredients entry; SurgeryUtility.PerformNextSurgery gained an optional ingredientsOnHand parameter so a bill naming ingredients only fires once a matching Thing is supplied and consumed (decremented/destroyed) — every ingredient-less surgery (amputate, excise) is unaffected, matching RecipeDef.ConfigErrors' existing surgery/non-surgery split. Tests: tests/SimWorld.Core.Tests/Health/SurgeryTests.cs.",
+          "done": true
+        },
+        {
+          "id": "health.tending-work",
+          "label": "Doctor work givers close the 'no one tends an injury' gap (docs/WORK-REGISTER.md's work-economy item): WorkGiver_Tend backs both DoctorTendEmergency and DoctorTend (one class, split by the WorkGiverDef's own emergency flag against TendUtility.NeedsEmergencyTend — bleeding or life-threatening), JobDriver_TendPatient tends at a quality read from StatDefOf.MedicalTendQuality (work.stats) capped at TendUtility.MaxQualityNoMedicine (no medicine ThingDef ships yet). WorkGiver_RescueDowned/JobDriver_TakeToBed carry a downed patient to AI.RestUtility.FindBedFor's nearest reachable bed, or produce no job at all when the map has none — tended and fed in place rather than invented a ground fallback. WorkGiver_FeedPatient (DoctorFeedHumanlikes) reuses WardenFeed's own FeedPatient JobDef/JobDriver unchanged for a downed, hungry non-prisoner, explicitly excluding prisoners (WardenFeed's own patient) rather than racing it for the same reservation — the same reasoning leaves WardenDeliverFood unwired, unchanged from before this item. Eligibility (colonist of the doctor's own faction, or a prisoner it holds) is shared by Tend and Rescue via AI.DoctorUtility. Deliberately out of scope: self-tend (RimWorld's own reduced-quality solo-colonist mechanic — a pawn is never its own patient here, same as RimWorld's WorkGiver_Tend). Code: src/SimWorld.Core/AI/WorkGiver_Tend.cs, JobDriver_TendPatient.cs, WorkGiver_RescueDowned.cs, JobDriver_TakeToBed.cs, WorkGiver_FeedPatient.cs, DoctorUtility.cs; TendUtility.NeedsEmergencyTend in src/SimWorld.Core/Health/TendUtility.cs. Tests: tests/SimWorld.Core.Tests/Health/DoctorAITests.cs.",
           "done": true
         }
       ]

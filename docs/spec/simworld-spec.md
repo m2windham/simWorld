@@ -614,6 +614,10 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   unconsciousness or lost legs; dead from a lethal capacity at zero, core part
   destruction, lethal severity, or total damage past threshold.
 - Disease is a severity-versus-immunity race, modified by tend quality.
+  `TendUtility.NeedsEmergencyTend` names what makes a patient an emergency
+  (bleeding or life-threatening) rather than routine, for the work givers that
+  actually walk a doctor over to a patient — see the "Doctor work" bullet in
+  §7.4.
 - **Surgery** is a `RecipeDef` with `isSurgery`, queued as a `Bill_Medical` on
   the patient's own bill stack rather than a workbench's, and carried out by a
   `Recipe_Surgery` worker selected by `workerClass` — amputation, excision of a
@@ -792,6 +796,41 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   self-service but with nothing reachable — has no distinct case left to cover
   here and stays the `WorkGiver_Pending` placeholder its `WorkGiverDef` shipped
   with.
+- **Doctor work** closes this pass's other named gap in the work economy
+  (`docs/WORK-REGISTER.md`): `WorkGiver_Tend` backs both `DoctorTendEmergency`
+  and `DoctorTend` — one class, exactly as RimWorld's own single
+  `WorkGiver_Tend` backs both WorkGiverDefs — told apart only by the def's own
+  `emergency` flag against `TendUtility.NeedsEmergencyTend` (§7.2): bleeding or
+  life-threatening sorts a patient to the emergency giver, everything else
+  tendable to the ordinary one, never both. `JobDriver_TendPatient` then tends
+  at a quality read from `StatDefOf.MedicalTendQuality` (§7.3's `work.stats`)
+  capped at `TendUtility.MaxQualityNoMedicine`, since no medicine `ThingDef`
+  ships yet. `WorkGiver_RescueDowned`/`JobDriver_TakeToBed` (`DoctorRescue`)
+  find a downed patient and carry them to `AI.RestUtility.FindBedFor`'s nearest
+  reachable bed — reused, not reimplemented, from `JobGiver_GetRest`'s own
+  search; with no bed anywhere on the map this giver simply produces no job,
+  the same honest "nothing to do" RimWorld's own rescue job reaches once every
+  bed type it scores has failed, rather than an invented ground-cell fallback.
+  A downed pawn nobody can carry anywhere is still tended and fed exactly where
+  they fell, since neither of those needs a bed. `WorkGiver_FeedPatient`
+  (`DoctorFeedHumanlikes`) is that same "collapse rather than copy" shape
+  applied to feeding: it reuses `WardenFeed`'s own `FeedPatient` `JobDef`/
+  `JobDriver_Warden_Feed` completely unchanged, scanning for a downed, hungry
+  **non-prisoner** of the doctor's own faction — a downed, hungry prisoner is
+  already `WardenFeed`'s patient, and RimWorld's `WardenDeliverFood`
+  counterpart (food left for a prisoner capable of self-service but with
+  nothing reachable in its own cell) has, by the same reasoning as the Warden
+  work bullet above, no distinct case left to cover, so it stays unwired too.
+  `AI.DoctorUtility` is the one eligibility check both `WorkGiver_Tend` and
+  `WorkGiver_RescueDowned` share: a patient of the carer's own faction, or a
+  prisoner that faction currently holds (the same host-faction lookup
+  `WorkGiver_Warden_Feed` already uses) — prisoners are cared for exactly as
+  readily as colonists, since this port has no per-prisoner medical-care
+  setting to gate on. **Self-tend is out of scope**: a pawn is never its own
+  patient through `WorkGiver_Tend`, matching RimWorld's own refusal there —
+  RimWorld's separate reduced-quality solo-colonist "auto-tend" mechanic does
+  not exist in this port, so a lone injured pawn with nobody else to reach them
+  simply goes untended.
 - **Hauling** (`HaulGeneral`) is `WorkGiver_Haul` (RimWorld:
   `RimWorld.WorkGiver_Haul`/`HaulAIUtility`/`JobDriver_HaulToCell`, trimmed to
   this port's single storage kind): it scans every spawned Item-category
