@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1855,
+  "testsTotal": 1899,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -170,7 +170,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Defs · Defs/Patches · Content (ModContentPack, ModLoadOrder)",
       "status": "ported",
-      "tests": 103,
+      "tests": 107,
       "items": [
         {
           "id": "defs.xml",
@@ -261,6 +261,16 @@
           "id": "defs.wiringaudit.findings",
           "label": "129 dormant seams found that nobody knew about. The ones that matter: NeedDef.fallPerDay is zero for all eight needs so the generic decay path can never fire; StoryWatcher_Adaptation.Notify_ColonistDowned has no caller — the exact twin of the Notify_ColonistDied bug the audit was written after; IQuestRewardSink has no implementation, so quests compute rewards into nothing; ThingDef.mineableThing and mineableYield are read by nothing while JobDriver_Mine's own doc claims it reads them, so mining destroys rock and drops nothing; trait shaping never happens (forcedTraits, disallowedTraits, requiredWorkTags all unset in content); and difficulty is nearly inert — cropYieldFactor, mineYieldFactor, colonistMoodOffset and questRewardValueFactor are all set in content and read by nothing",
           "done": false
+        },
+        {
+          "id": "defs.wiringaudit.untouched",
+          "label": "The audit's blind spot is closed. Its two field checks asked 'content sets it, does code read it' and 'code reads it, does content set it', so a field NEITHER side touches was reported by neither — which is how DifficultyDef.researchSpeedFactor stayed out of the 131-line baseline entirely and was found by a lane reading the Def class by hand. The third check raises 48 of 774 content fields, the same order as the 54 and 38 of the checks either side and nowhere near the 177 and 106 of the two variants this audit previously built and dropped. The decisive evidence is precision rather than count: for 46 of the 48 the field name occurs exactly once in all of src/, its own declaration, so there is no judgement call about whether a sighting counts as a use — which is exactly what sank the dropped checks. All 48 were read by hand before a baseline line was written: zero false reports, no two sharing a reason. Triage: 16 real gaps, 2 that want deleting rather than wiring (IncidentCategoryDef.refireDays has no RimWorld counterpart; WorkGiverDef carries two fields with one meaning), 30 parity ports. Both absences raise the seam, so both searches are the generous ones, and the content test is SetByContent alone — deliberately not also excusing EverNonDefault, because researchSpeedFactor was declared = 1f and excusing initialisers would have missed the one confirmed case.",
+          "done": true
+        },
+        {
+          "id": "defs.wiringaudit.untouched.gaps",
+          "label": "The 16 real gaps the third check found, for a later batch. The ones worth naming: a mental break tells the player nothing (LetterStack ships and six systems raise letters through it; MentalState.PostStart raises none); every pawn gets every need (ShouldHaveNeed consults intelligence and rest and nothing else, so every applicability flag on NeedDef is ignored — including neverOnPrisoner, now that prisoners exist); a HediffStage cannot cause a mental break or a forgotten memory; skill buys no throughput (RecipeDef.workSpeedStat unread, so a master smith costs what a novice does); stuff-built things are free (costStuffCount unread); and no death is violent (DamageDef.externalViolence unread, so nothing separates a murder from a heart attack). Four of the sixteen are gaps only because a recorded reason expired — apparel, temperature, prisoners and the letter stack all exist now and four declarations in src/ still say they do not. Two further blind spots are recorded rather than papered over: SourceIndex is keyed by bare identifier, so NeedDef.colonistsOnly is silenced by MentalStateDef.colonistsOnly being read; and ContentSurvey compares to a freshly-built object, so XML spelling out a default reads as untouched (three of the 48, and invisible to code-deaf for the same reason).",
+          "done": false
         }
       ]
     },
@@ -272,7 +282,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/World · Noise · Factions (minimal) · World.EmergenceManager",
       "status": "ported",
-      "tests": 46,
+      "tests": 59,
       "items": [
         {
           "id": "worldgen.tiles",
@@ -312,6 +322,11 @@
         {
           "id": "worldgen.biomeshapes",
           "label": "A biome did not shape the world it is part of. allowRivers and allowRoads were set by content and read by nothing, so rivers were written onto ocean tiles and roads pathed across sea ice; both are gated now, the river gate per-end rather than per-link because every river ends in water and dropping the whole link would have left coastal tiles with no downhill neighbour. isExtremeBiome gates SiteScorer's necessity multiplier rather than the one caller that picks a starting tile, so every automatic founding path — player start, emergence and expansion — is covered and a fourth caller cannot forget it. canAutoChoose stays dormant: its own doc contradicts wiring it into a scored pick, and the only unweighted tile pick in the codebase chooses region seeds, which are named areas rather than sites.",
+          "done": true
+        },
+        {
+          "id": "worldgen.citizenfaction",
+          "label": "A citizen carries its settlement's faction, and four more systems turned out to be inert without it. Measured on a generated settlement with a real TribalCivilization raid, nothing armed or enfactioned by hand: 0 of 15 raiders saw a citizen as hostile before and 15 of 15 after; 0 of 30 citizens saw a raider before and 30 of 30 after; attack jobs went from none on either side to 15 of 15 raiders and 24 of 30 citizens, the six abstainers being the pawns whose backstories disable Violent work. The faction is taken at generation rather than stamped on afterwards, which is load-bearing: the gear generators read request.Faction as a tech-level ceiling, so enfactioning after the fact leaves a neolithic founder holding a revolver. All four doors covered — founding band, migrants through AddCitizen, newborns at the birth site since births never pass through AddCitizen, and a sweep as backstop — and AdoptCitizen only ever fills a null so it cannot undo a recruitment. A leaver keeps its faction deliberately: emigrating is not renouncing a civilization, and clearing it would make walking out of town turn a household into prey for hostileToFactionlessHumanlikes. The bigger half was the four systems nobody had looked at: medicine (DoctorUtility.IsCaredForBy returns false on a null faction, so no citizen could tend, rescue or feed another), taming (the animal inherited the tamer's null, stayed wild and huntable, and could never be trained), wardens, and capture in both directions. Every one had passing unit tests; every one of those tests hands its own pawn a faction by hand.",
           "done": true
         }
       ]
@@ -1079,7 +1094,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "ported",
-      "tests": 76,
+      "tests": 95,
       "items": [
         {
           "id": "crafting.bills",
@@ -1135,6 +1150,16 @@
           "id": "crafting.stonework.gaps",
           "label": "Recorded from the same trace, not chased: the ore ladder has the identical hole one level up — Buildings_Mineable yields Flint, Salt, Coal, Copper, Tin, Silver, Gold, Jade, Uranium and Plasteel, and not one is named by any recipe ingredient or costList in content. Four benches (FueledStove, Smithy, TableTailor, TableButcher) have no Blueprint/Frame pair so nothing can raise them; ResearchBench and Sculpture have pairs but nothing places them, and WorkGiver_Research requires a bench the settlement cannot build. Every other bench's recipes remain where stonecutting was: real recipes, a real giver, no bill. And the civilization-scale path stays dead for a second reason — nothing ever puts a mined chunk into Settlement.Stores, so a guild queue would starve even if GuildManager.Establish were ever called.",
           "done": false
+        },
+        {
+          "id": "crafting.oreconsumers",
+          "label": "Two of the ten mined minerals have a consumer. Buildings_Mineable.xml yields Flint, Salt, Coal, Copper, Tin, Silver, Gold, Jade, Uranium and Plasteel, and not one was named by any recipe ingredient or costList — the whole file was write-only, with Steel (from Buildings_Natural.xml, predating the ore ladder) the only mined thing anything consumed. Gold and jade sculptures close it for the two that had a terminal sink one step away, with SculptureMaterials choosing the best the settlement can afford, the same shape as StoneWallMaterials. The remaining eight stay open: Copper+Tin to Bronze is the port's own recorded era story and the research projects exist, but it needs a new item AND a sink for it, which is two hops.",
+          "done": true
+        },
+        {
+          "id": "crafting.billcreators",
+          "label": "Still open after stonecutting and the works initiative: cooking, smithing and tailoring have real recipes, a real giver and no bill-creator. The bench-PLACING half now generalises (CountBuiltOrPlanned / TryPlaceBlueprint); the bill half does not, and forcing it would be wrong. What makes StonecutterInitiative work is not its placement but a demand figure derived from a want the settlement already had, and every bench asks a different question there. For smithing and tailoring the honest answer is still zero, because nothing in this port equips a crafted weapon or wears crafted apparel, and a zero-target bill must not be queued. Cooking is the one that is genuinely ready — meals have a real sink.",
+          "done": false
         }
       ]
     },
@@ -1146,7 +1171,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects) · tools/content/gen_techtree.py",
       "status": "ported",
-      "tests": 93,
+      "tests": 101,
       "items": [
         {
           "id": "research.dag",
@@ -1227,6 +1252,11 @@
           "id": "research.endless.indexceiling",
           "label": "Literal bound on 'endless', recorded not fixed: DefDatabase.Add narrows Def.index with checked((ushort)(count-1)), so a process minting more than 65,535 ResearchProjectDefs throws. About 2,700 ages in, each project around 4e8 points — unreachable in play, but it is a ceiling and it is not in the design",
           "done": false
+        },
+        {
+          "id": "research.agenda",
+          "label": "A settlement could not research at all, for two reasons rather than one. ResearchBench had a Blueprint/Frame pair and nothing ever placed one — and exactly ONE line in all of src/ ever assigned ResearchManager.CurrentProj: GodManager.Activate, for five era-gated edicts capped by MaxActiveEdicts, against 245 authored projects, while WorkGiver_Research.ShouldSkip returns immediately on a null project. So the tech tree, the era ladder, the reachability study and the endless tail all stood on a project that was almost never set. SettlementWorksInitiative places the bench and ResearchAgenda picks the cheapest startable project when none is set — defName settling ties, never overriding the god's edict focus, extending the endless tail rather than stalling. Translation recorded: RimWorld's player picks the project by hand and this port's god does so only through edicts, so the agenda is SimWorld's own. ResearchBenchesWanted is 2, derived rather than invented: WorkGiver_Research reserves its bench so benches are researchers, and docs/research/tech-reachability.md sized the authored tree against two researcher-equivalents — population-scaling it would exhaust 245 projects inside the first in-game year.",
+          "done": true
         }
       ]
     },

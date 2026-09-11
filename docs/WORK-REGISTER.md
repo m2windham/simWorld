@@ -53,6 +53,16 @@ A settlement now hauls, researches, crafts, cooks, treats, rescues and feeds its
 hunts, repairs what it built, clears plants out of its own way, carries its dead away,
 butchers a carcass at a bench, puts out fires and cleans up after itself.
 
+> **Correction, written two batches later.** That sentence was true of the tests and false
+> of a game, and it stayed on this page for three batches saying so. `DoctorUtility.IsCaredForBy`
+> opens `if (carer.faction == null) return false`, and `WorkGiver_Tend`, `WorkGiver_RescueDowned`
+> and `WorkGiver_FeedPatient` all route through it — so while citizens carried no faction
+> (§7), **no citizen in any generated game could tend, rescue or feed another.** "Researches"
+> was hollow for a different reason: exactly one line in `src/` ever set a research project.
+> Both are fixed now, and the sentence is finally true. It is left standing, with this note
+> under it, because the failure it records is the one this register keeps having to learn:
+> **counting what is wired is not the same as watching what a game does.**
+
 **The last three came off the list by building what they were blocked on.** `HaulCorpses`,
 `FightFires` and `CleanFilth` had no `Corpse`, `Fire` or `Filth` class anywhere in this
 codebase — the oldest entries here, and the block was real rather than a missing decision.
@@ -365,19 +375,61 @@ later batch should delete rather than wire both.
 **What did not get done, on purpose.** None of the sixteen is wired here. The lane was the
 instrument, not the repairs, and three other lanes were live in the same batch.
 
-### The next item, and it is a World-module job
+### 7. Citizens carry a faction, and four more systems turned out to be inert
 
-**Give a settlement's citizens their settlement's faction.** The batch-six fix wired
-`FactionDef.hostileToFactionlessHumanlikes`, which is the flag for the factionless pairing
-and was genuinely unread — but Tribal and Outlander content declares it `false`, so those
-raids still find nobody. Turning the flag on for content that did not ask for it would
-paper over the real gap.
+The item this section used to *propose* is done. A citizen now carries its settlement's
+faction, taken at generation rather than stamped on afterwards — which is load-bearing,
+because the gear generators read `request.Faction` as a tech-level ceiling and enfactioning
+after the fact leaves a neolithic founder holding a revolver. All four doors are covered:
+the founding band, migrants through `AddCitizen`, newborns at the birth site (births never
+pass through `AddCitizen`), and a sweep as backstop. A leaver **keeps** it, deliberately:
+emigrating is not renouncing a civilization, and clearing it would make walking out of town
+turn you into prey for the very flag §5 describes.
 
-It is not a one-line change and should not be taken as one. Citizens carrying a faction
-changes hostility resolution, `AttackTargetsCache`'s faction buckets, `MapPawns` filing,
-and anything that reads `Pawn.faction` for a social or trade decision. It wants its own
-lane, its own measurement of a generated settlement before and after, and a check that the
-Statistical and Interval tiers do not pay for it.
+Measured on a generated settlement with a real `TribalCivilization` raid, nothing armed or
+enfactioned by hand:
+
+| Measured on a generated settlement | before | after |
+| --- | --- | --- |
+| raiders seeing a citizen as hostile | 0 of 15 | 15 of 15 |
+| citizens seeing a raider as hostile | 0 of 30 | 30 of 30 |
+| raiders taking an attack job | 0 | 15 of 15 |
+| citizens taking an attack job | 0 | 24 of 30 |
+
+The six who do not fight are the pawns whose backstories disable `Violent` work, which is
+RimWorld's own rule; the test asserts "everyone who can, does" rather than a count.
+
+**But the hostility fix was the smaller half.** Four more systems were inert for the same
+reason and nobody had looked:
+
+- **Medicine.** See the correction in §1. Tend, rescue and feed were all dead in play.
+- **Taming.** `animal.faction = tamer.faction` inherited the tamer's null, so a tamed animal
+  stayed wild, stayed huntable, and `CanBeTrained` refused it forever. A settlement could
+  tame the same muffalo every day and never own one.
+- **Wardens.** `WorkGiver_Warden*` opens `if (pawn.faction == null) yield break`. No citizen
+  could ever be a warden.
+- **Capture.** `Pawn_GuestTracker.TryCapture` needs a faction on both sides, so a citizen
+  could neither take a prisoner nor be taken as one.
+
+Every one of those has passing unit tests. Every one of those tests hands its own pawn a
+faction by hand.
+
+### What is next
+
+1. **A watched raid still does nothing on the tick it lands.** Both sides can now see and
+   attack each other, but the squad spawns ~120 cells from the nearest citizen on a 200x200
+   interior, outside `CombatAITuning.TargetAcquireRadius`, and nothing walks it toward the
+   town. `CombatAITests`' raid test passes only because its map is 40x40.
+2. **Nothing ever puts a mined or crafted thing into `Settlement.Stores`.** Confirmed by two
+   lanes independently. The civilization-scale guild path starves by construction —
+   `MasonsGuild` lists `Make_Blocks_Sandstone` and can never obtain a chunk.
+3. **Cooking is the bench that is genuinely ready.** Meals have a real sink; smithing and
+   tailoring do not, because nothing in this port equips a crafted weapon or wears crafted
+   apparel, and a zero-target bill must not be queued.
+4. **The 16 real gaps §6's check found**, of which four are gaps only because a recorded
+   reason expired — in the source comments this time, not the baseline.
+5. **`CompTurretGun` with no owner now shoots the town.** Latent (nothing builds a turret),
+   but it became wrong the moment civilians got a faction.
 
 ## Immediate steps: the host repo — unclaimed, proposed
 
