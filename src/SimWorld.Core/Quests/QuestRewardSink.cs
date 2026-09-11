@@ -141,25 +141,12 @@ namespace SimWorld.Quests
         /// threat points and refire spacing all already read "the civilization" off the storyteller's own
         /// target list, and a reward is the same question asked by a different system.
         /// </summary>
-        public CivilizationTarget? Civilization
-        {
-            get
-            {
-                if (explicitCivilization != null) return explicitCivilization;
-                Game? game = Find.CurrentGame;
-                if (game != null) return game.CivilizationTarget;
+        public CivilizationTarget? Civilization => explicitCivilization ?? QuestCivilization.Current;
 
-                IReadOnlyList<IIncidentTarget> targets = Find.Storyteller.AllIncidentTargets;
-                for (int i = 0; i < targets.Count; i++)
-                {
-                    if (targets[i] is CivilizationTarget civ) return civ;
-                }
-                return null;
-            }
-        }
-
-        /// <summary>Where goods land — see the class doc. Null when the civilization holds no settlements.</summary>
-        public Settlement? Treasury => Civilization?.Seat;
+        /// <summary>Where goods land — see the class doc. Null when the civilization holds no settlements.
+        /// The same ledger <see cref="QuestPart_Tribute"/> takes a tribute out of, through the same helper:
+        /// value entering and leaving by different doors would be two civilizations wearing one name.</summary>
+        public Settlement? Treasury => QuestCivilization.TreasuryOf(Civilization);
 
         /// <summary>
         /// Always 1. <see cref="DifficultyDef.questRewardValueFactor"/> is applied when a reward is
