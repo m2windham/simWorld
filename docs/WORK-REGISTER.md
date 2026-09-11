@@ -270,6 +270,55 @@ field that **neither** side touches is reported by neither. `researchSpeedFactor
 exactly that: no preset set it, no line read it, and it appears nowhere in the baseline. A
 third check is the open follow-up.
 
+### 5. A module can be wired and still unable to act
+
+Batch six went back to the audit's list and two lanes came back with something the
+audit had not asked about. Both are the same shape, and it is one level past what §4
+describes.
+
+**Raiders and citizens could not see each other as hostile.** Measured on a settlement
+founded the ordinary way, with a real `RaidEnemy` on its interior: **0 of 14 raiders saw
+a citizen as hostile, 0 of 30 citizens saw a raider**, and neither side ever took an
+attack job. Hostility required both sides to carry a `Pawn.faction`, and
+`SettlementFounder.GenerateFoundingBand` builds its `PawnGenerationRequest` naming none —
+`PawnGroupMaker`, the raider path, is the only caller in `src/` that passes one. A
+settlement has a faction; not one of its citizens does.
+
+§1b of this register says the combat module was complete, tested and unreachable from
+play, and records that being closed. It was reachable after that and **still inert**. Every
+combat test passed throughout, because each hands its own defenders a faction by hand.
+
+**Nothing in `src/` ever created a bill.** Every `Bill_Production` in the repository was
+made by a test, so `WorkGiver_DoBill` — wired, given a real giver, listed in content, and
+counted in §1's "29 of 29" — never found work on any bench in any game. Cooking, smithing
+and tailoring are still in that state; stonecutting was fixed because a lane happened to
+trace the whole chain from rock to wall rather than stopping at the missing recipe.
+
+**What this changes about the method.** §1 counts givers with a `giverClass`, and §4 counts
+seams nothing reaches. Both counts were honest and both missed these, because the question
+they ask is "is this thing connected?" and the question that finds these is **"put a real
+game in front of it and watch what happens."** Every one of these was found by measuring a
+generated settlement, not by reading a call graph. The audit narrowed the search; it did
+not answer it.
+
+The corollary is uncomfortable and worth writing down: a passing suite of 1,855 tests, a
+green audit, and 29 of 29 work givers wired were all simultaneously true while no bench had
+work on it and no citizen could see a raider.
+
+### The next item, and it is a World-module job
+
+**Give a settlement's citizens their settlement's faction.** The batch-six fix wired
+`FactionDef.hostileToFactionlessHumanlikes`, which is the flag for the factionless pairing
+and was genuinely unread — but Tribal and Outlander content declares it `false`, so those
+raids still find nobody. Turning the flag on for content that did not ask for it would
+paper over the real gap.
+
+It is not a one-line change and should not be taken as one. Citizens carrying a faction
+changes hostility resolution, `AttackTargetsCache`'s faction buckets, `MapPawns` filing,
+and anything that reads `Pawn.faction` for a social or trade decision. It wants its own
+lane, its own measurement of a generated settlement before and after, and a check that the
+Statistical and Interval tiers do not pay for it.
+
 ## Immediate steps: the host repo — unclaimed, proposed
 
 These are proposed rather than assigned. The host session claims, amends or rejects
