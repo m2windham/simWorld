@@ -9,7 +9,9 @@ namespace SimWorld.World.Gen
     /// Links each settlement to its 1-2 nearest neighbours by the cheapest passable route (RimWorld:
     /// <c>Verse.WorldGenStep_Roads</c>, here Dijkstra instead of RimWorld's exact pathfinder). Cost per tile
     /// is its biome's <see cref="BiomeDef.movementDifficulty"/> scaled by <see cref="Hilliness"/>; a tile
-    /// that is impassable (biome or hilliness) is never part of the graph, so a road can never cross one.
+    /// that is impassable (biome or hilliness), or whose biome refuses roads outright
+    /// (<see cref="BiomeDef.allowRoads"/> — see <see cref="RoadsForbidden"/>), is never part of the graph, so
+    /// a road can never cross one.
     /// The cost function and the search itself live in <see cref="TilePathfinder"/>, shared with
     /// <c>Siting.TradePositionScorer</c> (spec §5b.2).
     /// </summary>
@@ -44,7 +46,7 @@ namespace SimWorld.World.Gen
                         continue;
                     }
 
-                    List<int>? path = TilePathfinder.ShortestPath(grid, settlement.tile, target.tile, maxPathLength);
+                    List<int>? path = TilePathfinder.ShortestPath(grid, settlement.tile, target.tile, maxPathLength, RoadsForbidden);
                     if (path == null)
                     {
                         continue;
@@ -59,6 +61,23 @@ namespace SimWorld.World.Gen
                 }
             }
         }
+
+        /// <summary>
+        /// A tile no road may be laid across (RimWorld: <c>BiomeDef.allowRoads</c>, consulted by its own road
+        /// generation — the exact call site is not sourceable in this sandbox, so the shape is pinned by
+        /// tests rather than copied). The two endpoints are settlements, and a settlement only ever stands on
+        /// a <see cref="BiomeDef.canBuildBase"/> tile, so this only ever removes tiles from the middle of a
+        /// route.
+        ///
+        /// <para/>It is an exclusion from the graph rather than a check on the finished path on purpose: a
+        /// road that would have crossed sea ice should go round it if there is a way round, and only fail to
+        /// link when there is not. A tile with no biome stays allowed, which is what the step did before the
+        /// biome was consulted.
+        ///
+        /// <para/>This step draws no randomness — it is settlement positions and Dijkstra — so consulting the
+        /// biome here cannot move the world seed's sequence for any later step.
+        /// </summary>
+        private static bool RoadsForbidden(Tile tile) => tile.biome != null && !tile.biome.allowRoads;
 
         private static List<WorldObject> NearestOthers(WorldGrid grid, List<WorldObject> settlements, WorldObject from, int count)
         {

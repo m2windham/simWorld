@@ -22,9 +22,10 @@ namespace SimWorld.MapGen
             Tile tile = ctx.tile;
 
             float stoneMagnitude = tile.DepositMagnitude(DepositDefOf.Stone);
-            float timberMagnitude = tile.DepositMagnitude(DepositDefOf.Timber);
-            float plantDensity = tile.biome?.plantDensity ?? 0f;
-            float plantSignal = GenMath.Clamp01(plantDensity * 0.5f + timberMagnitude * 0.5f);
+
+            // The plant signal itself lives in MapGenTuning because Building.WildPlantSpawner regrows this
+            // map's plants toward the same density afterwards, and the two must not drift apart.
+            float plantSignal = MapGenTuning.WildPlantSignal(tile);
 
             ScatterThings(ctx, rand, MapGenTuning.ChunkCellsPerItem(stoneMagnitude), PickChunkDef(rand), requireFertile: false);
             if (plantSignal > 0f)

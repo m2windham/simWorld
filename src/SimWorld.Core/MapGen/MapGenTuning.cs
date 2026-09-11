@@ -115,6 +115,22 @@ namespace SimWorld.MapGen
         public static float PlantCellsPerItem(float plantSignal) =>
             GenMath.Lerp(PlantCellsPerItemSparse, PlantCellsPerItemDense, GenMath.Clamp01(plantSignal));
 
+        /// <summary>
+        /// How thick the undergrowth on a tile should be, 0..1: the biome's own <see cref="BiomeDef.plantDensity"/>
+        /// blended evenly with how much Timber the tile carries. Lives here, rather than inline in
+        /// <see cref="GenStep_Scatterers"/> where it started, because the map's wild plants are placed by
+        /// generation and then *maintained* by <c>Building.WildPlantSpawner</c> — and a map that regrows
+        /// toward a different density than it was generated at would drift away from its own tile over time.
+        /// One formula, two readers.
+        /// </summary>
+        public static float WildPlantSignal(Tile tile)
+        {
+            if (tile == null) return 0f;
+            float plantDensity = tile.biome?.plantDensity ?? 0f;
+            float timberMagnitude = tile.DepositMagnitude(DepositDefOf.Timber);
+            return GenMath.Clamp01(plantDensity * 0.5f + timberMagnitude * 0.5f);
+        }
+
         // ---- Ruins (GenStep_Ruins): wall rectangles with gaps and rubble, weathered rather than pristine.
         // See that class's own doc comment for what of RimWorld's real ruin generation (RuleDef/SymbolResolver,
         // GenStep_ScatterShrines) this deliberately does not port. Every number below is this port's own

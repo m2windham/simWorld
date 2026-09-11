@@ -135,12 +135,7 @@ code-deaf SimWorld.Work.WorkTypeDef.alwaysStartActive | Blocked on work-priority
 code-deaf SimWorld.Work.WorkTypeDef.gerundLabel | Host-facing text for a work type ("hauling").
 code-deaf SimWorld.Work.WorkTypeDef.labelShort | Host-facing text: the short column header for a work type.
 code-deaf SimWorld.Work.WorkTypeDef.requireCapableColonist | Blocked on the colony-wide "nobody can do this work" warning, which is a host-side notification.
-code-deaf SimWorld.World.BiomeDef.allowRivers | Blocked on world generation placing rivers per biome; the river step does not consult the biome.
-code-deaf SimWorld.World.BiomeDef.allowRoads | Blocked on world generation placing roads per biome; the road step does not consult the biome.
 code-deaf SimWorld.World.BiomeDef.canAutoChoose | Blocked on site selection: nothing picks a tile by unweighted random pick yet, so the exclusion never applies.
-code-deaf SimWorld.World.BiomeDef.diseaseMtbDays | Blocked on disease incidents keying off the settlement's biome; the disease worker picks without one.
-code-deaf SimWorld.World.BiomeDef.isExtremeBiome | Blocked on starting-site selection excluding extreme biomes, per the field's own doc.
-code-deaf SimWorld.World.BiomeDef.wildPlantRegrowDays | Blocked on wild plant regrowth: the plant system regrows on its own schedule without asking the biome.
 code-deaf SimWorld.World.RiverDef.degradeThreshold | Deliberate, and documented on the field: a rendering hint this port's generator does not enforce.
 code-deaf SimWorld.World.RoadDef.worldTransitionSameRoadPriority | Blocked on world pathing rewarding staying on one road; caravan path cost does not yet look at which road a tile carries.
 code-deaf SimWorld.World.WorldObjectDef.worldObjectClass | Blocked on world objects being built from their def: every world object in play is constructed directly, so the class handle is never used to make one.
