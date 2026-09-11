@@ -197,9 +197,13 @@ namespace SimWorld.Research
 
         /// <summary>
         /// Debug/testing: instantly finishes every loaded project. Endless extension is suppressed while it
-        /// runs — otherwise finishing the last authored project would mint a tier, which this loop would then
-        /// finish, which would mint another, forever. The civilization is left exactly where the authored tree
+        /// runs — otherwise finishing the last authored project would open an age, which this loop would then
+        /// finish, which would open another, forever. The civilization is left exactly where the authored tree
         /// ends, with nothing to research, which is the state endless tech is the answer to.
+        /// <para/>
+        /// Note that "every loaded project" includes another civilization's generated tail if one is in the
+        /// same process, which is why a test that wants a clean start on the tail seeds the authored tree with
+        /// <see cref="SetProjectFinishedForSetup"/> instead.
         /// </summary>
         public void DebugSetAllProjectsFinished()
         {
@@ -272,9 +276,11 @@ namespace SimWorld.Research
         {
             // First, and deliberately: a generated project is a real Def in the database, so every reference
             // below — the current project, every key of the progress dictionary — can only resolve once the
-            // tier count is known and the tree has been re-minted. Read the count, rebuild, then read the
-            // references that point into it.
-            Scribe_Values.Look(ref endlessTier, "endlessTier");
+            // seed and the age count are known and the tail has been re-minted. Read those two, rebuild, then
+            // read the references that point into it.
+            Scribe_Values.Look(ref endlessSeed, "endlessSeed");
+            Scribe_Values.Look(ref endlessSeedCaptured, "endlessSeedCaptured", false);
+            Scribe_Values.Look(ref endlessAges, "endlessAges");
             if (Scribe.mode == LoadSaveMode.LoadingVars) RemintEndlessTree();
 
             Scribe_Defs.Look(ref currentProj, "currentProj");
@@ -286,71 +292,183 @@ namespace SimWorld.Research
 
         // ---- Endless tech (research.endless) ----
 
-        private int endlessTier;
+        private int endlessAges;
+
+        private int endlessSeed;
+
+        /// <summary>Whether <see cref="endlessSeed"/> is the seed this civilization's tail was actually
+        /// derived from, or merely a zero nobody has resolved yet.</summary>
+        private bool endlessSeedCaptured;
 
         /// <summary>Set while a bulk finish is in progress; see <see cref="DebugSetAllProjectsFinished"/>.
         /// Not saved: it is only ever true inside one call.</summary>
         private bool suppressEndlessExtension;
 
         /// <summary>
-        /// How many procedural tiers exist past the authored tree. Zero for every civilization that has not
-        /// finished it, which is nearly all of them — endless tech costs nothing until it is reached.
+        /// Raised when the civilization opens an age past the end of the authored ladder: the age's index and
+        /// its generated label. Fires once per age, and only from an age actually being opened during play —
+        /// never from loading a save, which re-mints the same ages silently.
         /// </summary>
-        public int EndlessTier => endlessTier;
+        public event Action<int, string>? EndlessAgeOpened;
 
         /// <summary>
-        /// True when nothing in the authored tree can be started: everything reachable is finished. This is
-        /// the condition endless tech exists for, and it is deliberately about <i>reachability</i> rather
-        /// than about completion — a project whose prerequisites can never be met is not something a
-        /// civilization is still able to work on.
+        /// How many ages exist past the authored tree. Zero for every civilization that has not finished it,
+        /// which is nearly all of them — endless tech costs nothing until it is reached.
+        /// </summary>
+        public int EndlessAges => endlessAges;
+
+        /// <summary>How many generated projects exist along each track: the tail's depth.</summary>
+        public int EndlessDepth => AgeRegister == null ? 0 : endlessAges * AgeRegister.projectsPerTrack;
+
+        /// <summary>
+        /// The label of the furthest age this civilization has opened, or null while it is still inside the
+        /// authored ladder. The god view's continuation of <see cref="CurrentEra"/>: past Exotic, this is what
+        /// a civilization would say the present age is called.
+        /// </summary>
+        public string? CurrentEndlessAgeLabel =>
+            endlessAges <= 0 || AgeRegister == null ? null : AgeRegister.LabelFor(endlessAges - 1, EndlessSeed);
+
+        /// <summary>
+        /// The seed the generated tail is derived from: the world's own, captured the first time anything asks
+        /// and saved from then on.
+        ///
+        /// <para/>Before this existed the tail was a pure function of content, so every civilization that ever
+        /// finished the authored tree researched the same inventions in the same order. Deriving from the
+        /// world seed instead is what makes two games diverge past the ladder and two games on one seed agree;
+        /// it is saved rather than re-read from the world so that re-minting on load cannot depend on which
+        /// manager the save happens to restore first.
+        /// </summary>
+        public int EndlessSeed
+        {
+            get
+            {
+                if (!endlessSeedCaptured)
+                {
+                    endlessSeed = Find.World?.info.seed ?? 0;
+                    endlessSeedCaptured = true;
+                }
+                return endlessSeed;
+            }
+            set
+            {
+                endlessSeed = value;
+                endlessSeedCaptured = true;
+            }
+        }
+
+        /// <summary>The one register the endless tail names its ages in, or null when content ships none.</summary>
+        private static EndlessAgeDef? AgeRegister
+        {
+            get
+            {
+                IReadOnlyList<EndlessAgeDef> all = DefDatabase<EndlessAgeDef>.AllDefsListForReading;
+                return all.Count > 0 ? all[0] : null;
+            }
+        }
+
+        /// <summary>
+        /// True when nothing this civilization could be working on can be started: everything reachable is
+        /// finished. This is the condition endless tech exists for, and it is deliberately about
+        /// <i>reachability</i> rather than about completion — a project whose prerequisites can never be met
+        /// is not something a civilization is still able to work on.
+        ///
+        /// <para/>Generated projects belonging to <i>another</i> civilization are skipped. The
+        /// <see cref="DefDatabase"/> is process-wide and outlives a game, so without that a second game in the
+        /// same process reads the first one's unfinished tail as its own remaining work and never extends past
+        /// the authored tree at all.
         /// </summary>
         public bool NothingLeftToResearch
         {
             get
             {
+                int seed = EndlessSeed;
                 IReadOnlyList<ResearchProjectDef> all = DefDatabase<ResearchProjectDef>.AllDefsListForReading;
                 for (int i = 0; i < all.Count; i++)
                 {
-                    if (all[i].CanStartNow) return false;
+                    ResearchProjectDef project = all[i];
+                    if (EndlessResearch.IsGenerated(project) && !EndlessResearch.BelongsTo(project, seed)) continue;
+                    if (project.CanStartNow) return false;
                 }
                 return true;
             }
         }
 
         /// <summary>
-        /// Mints one more tier along every endless track. Ordinarily called for you — see
+        /// True once every foundation of the newest age is finished: the civilization has pushed the leading
+        /// edge of the tail as far as it currently goes, whether or not it bothered with that age's optional
+        /// work. False while no age exists at all.
+        /// </summary>
+        public bool EndlessFrontierReached
+        {
+            get
+            {
+                EndlessAgeDef? ages = AgeRegister;
+                if (ages == null || endlessAges <= 0) return false;
+                IReadOnlyList<EndlessResearchDef> tracks = DefDatabase<EndlessResearchDef>.AllDefsListForReading;
+                if (tracks.Count == 0) return false;
+
+                // Asks, never mints: a property that quietly extended the tree by being read would make the
+                // frontier depend on who looked at it.
+                for (int i = 0; i < tracks.Count; i++)
+                {
+                    ResearchProjectDef? foundation =
+                        EndlessResearch.Existing(ages, tracks[i], endlessAges - 1, 0, EndlessSeed, DefDatabase.Global);
+                    if (foundation == null || !IsFinished(foundation)) return false;
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Opens one more age past the authored tree. Ordinarily called for you — see
         /// <see cref="EnsureSomethingToResearch"/> — but public so a scenario or a test can reach past the
         /// authored tree deliberately.
         /// </summary>
         public void ExtendEndlessTree()
         {
+            EndlessAgeDef? ages = AgeRegister;
             IReadOnlyList<EndlessResearchDef> tracks = DefDatabase<EndlessResearchDef>.AllDefsListForReading;
-            if (tracks.Count == 0) return;
-            endlessTier++;
-            DefDatabase database = DefDatabase.Global;
-            for (int i = 0; i < tracks.Count; i++)
-            {
-                EndlessResearch.MintOrGet(tracks[i], endlessTier, database);
-            }
+            if (ages == null || tracks.Count == 0) return;
+
+            int opened = endlessAges;
+            endlessAges++;
+            EndlessResearch.MintAge(ages, tracks, opened, EndlessSeed, DefDatabase.Global);
+            Notify_EndlessAgeOpened(ages, opened);
+            EndlessAgeOpened?.Invoke(opened, ages.LabelFor(opened, EndlessSeed));
         }
 
         /// <summary>
-        /// Extends the tree if and only if there is nothing left to research. Called after every finished
-        /// project, so a civilization that has exhausted the authored tree always has a next thing to work
-        /// on and never silently stops — which is what "endless" has to mean mechanically.
+        /// Hook for subclasses to react to an age opening. The base implementation writes the chronicle line
+        /// and the letter (see <see cref="EndlessAgeUtility"/>); override to replace those, or subscribe to
+        /// <see cref="EndlessAgeOpened"/> to add to them.
+        /// </summary>
+        protected virtual void Notify_EndlessAgeOpened(EndlessAgeDef ages, int ageIndex)
+        {
+            EndlessAgeUtility.Notify_AgeOpened(ages, ageIndex, EndlessSeed);
+        }
+
+        /// <summary>
+        /// Opens an age when the civilization has reached the frontier — either because there is nothing at
+        /// all left to start, or because it has finished every foundation of the newest age and the tail's
+        /// leading edge is where it is standing. Called after every finished project, so a civilization that
+        /// has exhausted the authored tree always has a next thing to work on and never silently stops, which
+        /// is what "endless" has to mean mechanically.
+        ///
+        /// <para/>The second condition is what stops the tail collapsing into a queue. Without it an age only
+        /// opens once every optional project in the one before it has been bought, so there is never a choice
+        /// between pressing on and consolidating — the same failure the authored tree was restructured to fix
+        /// (<c>docs/research/tech-reachability.md</c> §11).
         /// </summary>
         public void EnsureSomethingToResearch()
         {
             if (suppressEndlessExtension) return;
+            if (AgeRegister == null) return;
             if (DefDatabase<EndlessResearchDef>.AllDefsListForReading.Count == 0) return;
 
-            // Extends until something is startable rather than exactly once. The DefDatabase is process-wide
-            // while endlessTier belongs to this civilization, so a tier this civilization has never reached
-            // can already exist in the database — minted by another game in the same process, or by a test —
-            // and be finished as far as this manager is concerned. Walking forward until the tail is actually
-            // open is the only answer that does not depend on being the only game ever loaded.
+            // A loop rather than a single extension: a civilization loading a save, or one whose scenario
+            // seeded it deep, can be several ages behind where its own progress already stands.
             int guard = 0;
-            while (NothingLeftToResearch && guard++ < MaxEndlessCatchUpTiers)
+            while ((NothingLeftToResearch || EndlessFrontierReached) && guard++ < MaxEndlessCatchUpAges)
             {
                 ExtendEndlessTree();
             }
@@ -358,21 +476,27 @@ namespace SimWorld.Research
 
         /// <summary>A bound on the catch-up loop above, so a content set with no workable track cannot spin
         /// forever minting projects nothing can start.</summary>
-        private const int MaxEndlessCatchUpTiers = 64;
+        private const int MaxEndlessCatchUpAges = 64;
 
-        /// <summary>Rebuilds every tier a save says exists. Idempotent: a tier already in the database is
-        /// returned rather than duplicated, so loading twice into one process is harmless.</summary>
+        /// <summary>
+        /// Rebuilds every age a save says exists, without announcing any of them: a loaded civilization has
+        /// already lived its ages, and narrating them on load would open every reloaded game with a stack of
+        /// letters for history the player watched happen. The same rule
+        /// <see cref="SetProjectFinishedForSetup"/> follows for a seeded era.
+        /// <para/>
+        /// Idempotent: an age already in the database is returned rather than duplicated, so loading twice
+        /// into one process is harmless.
+        /// </summary>
         private void RemintEndlessTree()
         {
-            if (endlessTier <= 0) return;
+            if (endlessAges <= 0) return;
+            EndlessAgeDef? ages = AgeRegister;
             IReadOnlyList<EndlessResearchDef> tracks = DefDatabase<EndlessResearchDef>.AllDefsListForReading;
-            DefDatabase database = DefDatabase.Global;
-            for (int i = 0; i < tracks.Count; i++)
+            if (ages == null || tracks.Count == 0) return;
+
+            for (int ageIndex = 0; ageIndex < endlessAges; ageIndex++)
             {
-                for (int tier = 1; tier <= endlessTier; tier++)
-                {
-                    EndlessResearch.MintOrGet(tracks[i], tier, database);
-                }
+                EndlessResearch.MintAge(ages, tracks, ageIndex, EndlessSeed, DefDatabase.Global);
             }
         }
     }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Its own file rather than an addition to Letters.xml: DefLoader.AddDirectory reads every XML file under a
+    Def folder, so additive content never has to touch a file another lane may be mid-edit on (CLAUDE.md,
+    "add a file rather than edit a shared one").
+
+    Separate from EraReached on purpose. The two read the same to a player - a new age has begun - but only
+    one of them moved the EraDef ladder, and anything reading the letter stack has to be able to tell which.
+  -->
+
+  <LetterDef>
+    <defName>EndlessAgeOpened</defName>
+    <label>a new age</label>
+    <description>The civilization has opened an age past the end of the authored era ladder.</description>
+  </LetterDef>
+
+</Defs>
