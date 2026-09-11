@@ -140,7 +140,8 @@ namespace SimWorld.Tests.Sim
             Game game = NewSoloGame();
 
             Assert.Single(game.TickManager.PreTickers);
-            Assert.Equal(11, game.TickManager.PostTickers.Count);
+            // 12 since the offices sweep joined them (SimWorld.Offices.OfficeManager.Tick).
+            Assert.Equal(12, game.TickManager.PostTickers.Count);
         }
 
         [Fact]
