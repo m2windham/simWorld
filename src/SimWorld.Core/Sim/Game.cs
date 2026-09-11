@@ -296,6 +296,14 @@ namespace SimWorld.Sim
             target.Tile = tile;
             SyncCivilizationTarget(game, target);
 
+            // A new game opens on the settlement it just founded, which is what keeps that founding band at
+            // Full tier: spec §5b.3 says the founders are "Full-tier from the first tick", and §11.3 says the
+            // only thing that holds an ordinary citizen there is attention. Those two are one statement, so
+            // the focus has to be set here — left unset, the first attention sweep (God.GodTick ->
+            // AttentionManager.Reconcile) would correctly conclude nobody is watching and settle the founders
+            // to Interval before the host ever got a frame up.
+            game.God.Attention.Focus(settlement);
+
             game.WireTickHooks();
             return game;
         }
@@ -305,7 +313,15 @@ namespace SimWorld.Sim
         /// switch (world view to settlement view) has one call to make through <see cref="Game"/> rather than
         /// needing <see cref="World"/> handed around separately. The returned map is picked up by
         /// <see cref="Maps"/>/the post-tick map sweep automatically on the very next tick — nothing further
-        /// to register.</summary>
+        /// to register.
+        /// <para/>
+        /// <b>This generates the interior; it does not move the god's attention.</b> The two are deliberately
+        /// separate decisions — a host may want a map built without anyone attending it — but they are easy to
+        /// confuse, and getting it wrong is quiet rather than loud: only a <see cref="PawnTier.Full"/> citizen
+        /// is ever placed on an interior (<see cref="SimWorld.World.Settlement.SyncCitizenSpawns"/>), and only
+        /// attention holds an ordinary citizen at Full, so a settlement opened without being focused draws an
+        /// empty town. A host switching the player's scope calls
+        /// <see cref="God.View.GodCommands.FocusSettlement"/> alongside this.</summary>
         public SimWorld.Map.Map EnterSettlement(SimWorld.World.Settlement settlement)
         {
             if (settlement == null) throw new ArgumentNullException(nameof(settlement));

@@ -54,6 +54,7 @@ namespace SimWorld.God.View
             string dateLabel,
             CivilizationSummary civilization,
             IReadOnlyList<SettlementSummary> settlements,
+            int? focusedSettlementTile,
             IReadOnlyList<EdictOption> edicts,
             IReadOnlyList<ChronicleLine> recentHistory,
             IReadOnlyList<ChronicleLine> moments)
@@ -63,6 +64,7 @@ namespace SimWorld.God.View
             DateLabel = dateLabel;
             Civilization = civilization;
             Settlements = settlements;
+            FocusedSettlementTile = focusedSettlementTile;
             Edicts = edicts;
             RecentHistory = recentHistory;
             Moments = moments;
@@ -98,6 +100,19 @@ namespace SimWorld.God.View
 
         /// <summary>Every settlement of the world, in world-object order.</summary>
         public IReadOnlyList<SettlementSummary> Settlements { get; }
+
+        /// <summary>
+        /// The <see cref="SettlementSummary.Tile"/> of the settlement the god currently has open, or null at
+        /// civilization scope. This is the read-back half of
+        /// <see cref="GodCommands.FocusSettlement"/>/<see cref="GodCommands.ClearSettlementFocus"/>, and it is
+        /// here because the simulation can move the focus without being asked to: the settlement in focus can
+        /// be destroyed, in which case attention falls back to civilization scope on its own
+        /// (<see cref="AttentionManager.Reconcile"/>). A view that only ever remembered what it last sent
+        /// would keep drawing a settlement nobody is attending — and, worse, keep believing that settlement's
+        /// citizens are still being simulated at <see cref="Pawns.PawnTier.Full"/>, which is the one thing
+        /// focus actually decides.
+        /// </summary>
+        public int? FocusedSettlementTile { get; }
 
         /// <summary>Every edict in content — including ones that cannot be issued right now, each carrying why
         /// not. A view that only received the issuable ones could draw a menu but never explain it.</summary>
@@ -171,12 +186,19 @@ namespace SimWorld.God.View
                     s.InteriorMap != null));
             }
 
+            // Reported only when a settlement actually sits on the focused tile: a focus whose settlement has
+            // been destroyed reads as "nothing focused" here from the instant it is gone, rather than after
+            // whenever the next GodTick happens to clear the stale tile. The view and the simulation agree at
+            // every tick that way, not merely eventually.
+            int? focusedTile = god.Attention.FocusedSettlement?.tile;
+
             return new GodViewSnapshot(
                 DefDatabase.Global.DefCount > 0,
                 ticks,
                 GenDate.DateReadoutStringAt(ticks, 0f),
                 CivilizationSummary.From(god.Rollup, settlements.Count),
                 settlementSummaries,
+                focusedTile,
                 BuildEdictOptions(god),
                 ChronicleLine.TailOf(Find.Storyteller.Chronicle, recentHistoryCount),
                 ChronicleLine.TailOf(Find.Storyteller.Moments, recentHistoryCount));
