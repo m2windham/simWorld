@@ -129,9 +129,10 @@ namespace SimWorld.Tests.Integration
             // The tick order must have been rebuilt (PreTickers/PostTickers can't themselves be Scribed), not
             // merely the data underneath it.
             Assert.Single(loaded.TickManager.PreTickers);
-            // 13 since the stonework initiative joined them (SimWorld.Crafting.StonecutterInitiative.Tick),
-            // after the offices sweep (SimWorld.Offices.OfficeManager.Tick) made it 12.
-            Assert.Equal(13, loaded.TickManager.PostTickers.Count);
+            // 14 since the works initiative joined them (SimWorld.Building.SettlementWorksInitiative.Tick —
+            // the research bench and the art), after the stonework initiative
+            // (SimWorld.Crafting.StonecutterInitiative.Tick) made it 13.
+            Assert.Equal(14, loaded.TickManager.PostTickers.Count);
 
             // And the loaded game must actually keep running: tick it as far past the load as it ran before
             // the save, and confirm nothing throws and time keeps moving forward.
