@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1508,
+  "testsTotal": 1531,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -532,7 +532,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
       "status": "ported",
-      "tests": 62,
+      "tests": 71,
       "items": [
         {
           "id": "needs.pawn",
@@ -591,8 +591,13 @@
         },
         {
           "id": "needs.beauty",
-          "label": "The Beauty need is dormant end to end: NeedDefOf.Beauty, Need_Environment and IEnvironmentSampler all exist and nothing in src implements the sampler, so Beauty sits at its base level forever. When a sampler lands, ThoughtWorker_FilthyRoom should be deleted rather than left to double-count",
-          "done": false
+          "label": "The Beauty need samples the map for real. IEnvironmentSampler had no implementation in src at all — only a test fake — so Beauty sat at its base level forever for every citizen in every game. MapEnvironmentSampler answers from the citizen's Room when enclosed and a 6.9 radius otherwise, gated to Full tier so the coarse-tick path costs nothing. Shipped content had no Beauty stat at all, which would have averaged zero everywhere and left the system dormant on arrival, so filth and a buildable sculpture now carry one. Measured at 0.35s per in-game day at the Full-tier budget, most of it not new spending",
+          "done": true
+        },
+        {
+          "id": "needs.filththought",
+          "label": "ThoughtWorker_FilthyRoom retired as its own doc instructed: it read room cleanliness directly only because Beauty was unavailable, and keeping it would have charged filth to mood twice. Its tests now assert the same properties through the beauty route",
+          "done": true
         }
       ]
     },
@@ -855,7 +860,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 58,
+      "tests": 72,
       "items": [
         {
           "id": "director.personality",
@@ -884,7 +889,7 @@
         },
         {
           "id": "director.raids",
-          "label": "Raid squad generator: IncidentWorker_RaidEnemy picks a hostile faction and a tech-gated RaidStrategyDef, spends points against that faction's own PawnGroupMaker/PawnGenOption roster (PawnGroupMakerUtility.ChoosePawnGenOptionsByPoints) so a neolithic faction structurally cannot field an industrial raider, and generates full, armed, faction-attributed pawns. Spawns them at a map edge when CivilizationTarget.Map is wired (no game wires one yet — nothing links a physical Map to the civilization-scale incident target); otherwise the squad is generated and handed back unspawned. The actual arrival-and-fight-the-player loop needs AI/Map and is not this item's scope.",
+          "label": "Raids resolve wherever they land. A raid on the settlement the god is watching spawns real pawns scattered from one edge cell and is fought on the map; a raid anywhere else resolves abstractly through SettlementRaidResolver — §11.3's 'real but not individually simulated' applied to an engagement rather than a person. Defence is priced in the same PawnKindDef.combatPower the raid is bought in, so the two sides are commensurable by construction; the Statistical cohort musters a share without ever being enumerated; casualties are bounded by what the enemy could inflict rather than by the defender's own size, so a city of 40,000 does not lose forty times a hamlet's dead to the same war band. Citizens die through FamilyManager.HandleDeath, the same path a death from age takes, so the chronicle and the family tree never disagree about who is alive",
           "done": true
         },
         {
@@ -895,6 +900,11 @@
         {
           "id": "director.multi-settlement",
           "label": "Translation: the storyteller targets a civilization of several settlements. CivilizationTarget stops being told what the civilization is and derives it from the player faction's own Settlements — the roster is their citizens, the seat is the oldest one (ties broken by tile, so list order never decides), and PlayerWealthForStoryteller is the market value of what they hold, the wealth term EraDef.threatPointsFactor was written as a stand-in for. An incident that has to happen somewhere picks a settlement weighted by population, never below weight 1 so an emptied town cannot vanish from the story, and a raid arrives at that settlement's interior map when someone has entered it. One StoryState still covers the whole civilization: a raid this decade is a fact about the civilization, not about a town. Fixes in passing a roster that counted every citizen on the planet, rival civilizations included, once EmergenceManager started founding them",
+          "done": true
+        },
+        {
+          "id": "director.raids.unwatched",
+          "label": "Measured before it was fixed: a raid on an unwatched settlement generated twelve raiders, spawned none, changed no population and no stores, and still wrote 'RaidEnemy fired' to the chronicle. Target selection is deliberately left alone — biasing raids toward the watched settlement would make the bug rarer rather than gone, and the tiering exists so unwatched settlements stay real",
           "done": true
         }
       ]

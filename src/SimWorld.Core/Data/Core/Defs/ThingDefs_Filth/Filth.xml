@@ -15,6 +15,17 @@
     takes longer to clean, blood goes away on its own and dirt does not, more filth means a dirtier room -
     rather than any literal here (CLAUDE.md).
 
+    Beauty is the route filth takes to mood (system: needs.beauty, which landed after this file). Each pile
+    carries a negative Beauty stat, BeautyUtility averages it over the cells a citizen perceives, and the
+    Beauty ThoughtDef turns that into mood - RimWorld's own route, where every filth def carries a Beauty
+    entry exactly like this. It replaces the FilthyRoom situational thought this module shipped with, which
+    read room cleanliness directly because nothing implemented IEnvironmentSampler at the time and whose own
+    doc said to delete it the day one landed rather than count filth against mood twice.
+
+    The values are SimWorld's own, like the cleanliness ones above, and ordered to agree with them: animal
+    filth is the worst of the three, dirt the mildest. BeautyTests pins that ordering and the band, not these
+    numbers.
+
     useHitPoints is false on all three: filth is not something you can shoot, and leaving hit points on would
     let the repair work giver and the explosion damage sweep both treat it as a Thing with a health bar.
   -->
@@ -32,6 +43,7 @@
     <description>Loose dirt, tracked in on somebody's boots or worked up off a bare floor.</description>
     <statBases>
       <Cleanliness>-2</Cleanliness>
+      <Beauty>-8</Beauty>
     </statBases>
     <filth>
       <maxThickness>3</maxThickness>
@@ -60,6 +72,7 @@
     <description>A splash of blood.</description>
     <statBases>
       <Cleanliness>-3</Cleanliness>
+      <Beauty>-12</Beauty>
     </statBases>
     <filth>
       <maxThickness>3</maxThickness>
@@ -77,6 +90,7 @@
     <description>Droppings left by an animal that got indoors.</description>
     <statBases>
       <Cleanliness>-4</Cleanliness>
+      <Beauty>-16</Beauty>
     </statBases>
     <filth>
       <maxThickness>2</maxThickness>

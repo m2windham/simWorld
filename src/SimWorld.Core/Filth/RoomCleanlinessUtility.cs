@@ -15,10 +15,12 @@ namespace SimWorld.Filth
     /// <b>Computed on demand, not cached on <see cref="Room"/>.</b> RimWorld caches room stats on the Room
     /// itself and invalidates them when the room changes. <see cref="Room"/> here has no stat storage and
     /// adding some means editing <c>Building/Room.cs</c> and <c>Building/RoomTracker.cs</c>, which this lane
-    /// does not own. The two callers — a surgery, and a situational thought recomputed at most every 10 ticks
-    /// — are both rare enough that walking a room's cells at the point of use is cheaper than the cache would
-    /// have been to keep correct. If a third, hot caller appears, the cache is the fix and it belongs on
-    /// <see cref="RoomTracker"/>.
+    /// does not own. Its one remaining caller — a surgery — is rare enough that walking a room's cells at the
+    /// point of use is cheaper than the cache would have been to keep correct. (It had a second: the
+    /// <c>FilthyRoom</c> situational thought, recomputed every 10 ticks per pawn, which the beauty module
+    /// retired — filth now reaches mood through <see cref="Needs.BeautyUtility"/> like everything else, and
+    /// this utility lost its only hot caller in the process.) If a hot caller appears, the cache is the fix
+    /// and it belongs on <see cref="RoomTracker"/>.
     /// <para/>
     /// <b>Trim — terrain contributes nothing.</b> RimWorld sums each cell's terrain cleanliness alongside the
     /// Things in it, which is how a sterile tile makes an operating theatre better than a bare floor. This
