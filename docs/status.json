@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1390,
+  "testsTotal": 1400,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1387,7 +1387,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/God · EdictDef · EdictWorker · EdictWorker_ExemptMinors · ThoughtWorker_UnderEdict · GodManager · GodRollup · GodTuning; src/SimWorld.Core/AI/JobGiver_Edicts.cs · WorkGiverScanUtility.cs (shared with JobGiver_Work)",
       "status": "translated",
-      "tests": 60,
+      "tests": 70,
       "items": [
         {
           "id": "god.edicts",
@@ -1441,8 +1441,8 @@
         },
         {
           "id": "god.fullcap",
-          "label": "Measured: focus bounds Full-tier to one settlement's live roster, which is itself unbounded in time — demography doubles it about every 17 years, crossing the spec's Full ceiling around year 115-125. A per-settlement Full cap needs a significance ordering that does not exist yet; recorded, not invented",
-          "done": false
+          "label": "Full-tier budget with a significance ordering. AttentionBudget seats the TieringTuning.FullTierBudget most significant citizens of the focused settlement at Full and withholds attention from the rest, ordered hasRole > chronicleNamed > relatedToPromoted > attending: the first three are properties of the person and held by few, the fourth is a property of the camera and held by the whole roster, so it yields first. Ties break on thingIDNumber ascending, which is unique, unchanging across a save, and monotone in creation order — so every new citizen sorts below every incumbent and demography can add a thousand people without displacing anyone, which is what makes it thrash-free under growth. A measured century run holds Full flat at the budget from year 80 while the roster passes 1,132",
+          "done": true
         }
       ]
     }
