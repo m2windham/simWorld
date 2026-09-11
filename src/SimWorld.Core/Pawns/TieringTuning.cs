@@ -1,3 +1,5 @@
+using SimWorld.Sim;
+
 namespace SimWorld.Pawns
 {
     /// <summary>
@@ -28,5 +30,30 @@ namespace SimWorld.Pawns
         public const float StatisticalHealthFractionMin = 0.55f;
 
         public const float StatisticalHealthFractionMax = 1f;
+
+        /// <summary>
+        /// How long a citizen must be continuously <see cref="PawnTier.Interval"/> and insignificant before
+        /// the director settles them into the cohort (<see cref="God.AttentionManager"/>, which is the only
+        /// caller; <see cref="Pawn_TierTracker.DemoteToStatistical"/> still refuses to know this number).
+        ///
+        /// <para/><b>SimWorld's own; it could not be sourced from RimWorld</b>, which has no equivalent
+        /// decision to make — a RimWorld pawn becomes a world pawn the instant it leaves the map, with no
+        /// waiting period at all, because there is no middle tier for it to wait in. §11.5 lists <i>when</i>
+        /// to settle as explicitly undecided, so this is a decision taken here rather than a constant copied
+        /// from anywhere.
+        ///
+        /// <para/>One in-game year (<see cref="GenDate.TicksPerYear"/>), deliberately the same span as
+        /// <see cref="DemographyTuning.DemographyIntervalTicks"/>: a citizen who has lived through a whole
+        /// demographic sweep — a year in which they could have married, borne a child or died of age — with
+        /// nobody attending them is deep population by any reading, and the year is the largest natural unit
+        /// this simulation has below a lifetime. The cost of waiting is small and the cost of not waiting is
+        /// not: Interval is already ~175-225x cheaper than Full (§11.3's measured table) so the year buys
+        /// back only the further ~5x to Statistical, while settling too eagerly permanently thins what the
+        /// chronicle can say about a citizen the player merely glanced away from (§11.4 — fidelity is decided
+        /// at write time and never recovered). Pinned as a boundary either side of this constant by
+        /// <c>AttentionTests.A_citizen_settles_to_Statistical_only_once_the_threshold_has_passed</c>, never as
+        /// a literal.
+        /// </summary>
+        public const int IntervalSettleTicks = GenDate.TicksPerYear;
     }
 }

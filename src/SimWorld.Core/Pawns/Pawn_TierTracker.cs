@@ -22,9 +22,22 @@ namespace SimWorld.Pawns
     /// identity: <see cref="PawnTier.Full"/> falls to <see cref="PawnTier.Interval"/> the instant none of the
     /// four hold, but the further fall to <see cref="PawnTier.Statistical"/> is never automatic — see
     /// <see cref="DemoteToStatistical"/>.
+    /// <para/>
+    /// <b>The one thing here that knows about elapsed time is <see cref="InsignificantSinceTick"/>, and it can
+    /// only ever push a citizen down.</b> It records <i>when</i> this citizen last stopped being significant so
+    /// that a director (<see cref="God.AttentionManager"/> is the one that exists) can express "insignificant
+    /// for long enough" without this class inventing how long that is. It is read by
+    /// <see cref="HasBeenInsignificantFor"/> and by nothing else; no promotion path consults it, so the rule
+    /// that promotion is by significance and never by elapsed time is untouched.
     /// </summary>
     public sealed class Pawn_TierTracker : IExposable
     {
+        /// <summary>Sentinel <see cref="InsignificantSinceTick"/>: this citizen's insignificance clock is not
+        /// running — either they are significant right now, or nothing has ever told them they are not (a
+        /// freshly generated citizen starts <see cref="PawnTier.Full"/> with no notification behind it, and a
+        /// director that never looks at them never starts their clock).</summary>
+        public const int NeverInsignificant = -1;
+
         private readonly Pawn pawn;
 
         private PawnTier tier = PawnTier.Full;
@@ -32,6 +45,9 @@ namespace SimWorld.Pawns
         private bool hasRole;
         private bool chronicleNamed;
         private bool relatedToPromoted;
+
+        /// <summary>See <see cref="InsignificantSinceTick"/>.</summary>
+        private int insignificantSinceTick = NeverInsignificant;
 
         /// <summary>The game tick this citizen's non-Full state was last brought current — by a coarse tick
         /// (<see cref="CoarseTick"/>) or a tier change. Meaningless while <see cref="PawnTier.Full"/> (that tier
@@ -54,6 +70,28 @@ namespace SimWorld.Pawns
 
         /// <summary>Any of the four promotion reasons currently holds.</summary>
         public bool Significant => attending || hasRole || chronicleNamed || relatedToPromoted;
+
+        /// <summary>
+        /// The game tick at which this citizen last stopped being <see cref="Significant"/>, or
+        /// <see cref="NeverInsignificant"/> while they are significant or while nothing has ever said
+        /// otherwise. Stamped by <see cref="Recompute"/> on the transition into insignificance and cleared on
+        /// the way back out, so a citizen who is briefly significant again starts the clock over rather than
+        /// accumulating a total — "has been insignificant continuously for N ticks", not "has spent N ticks
+        /// insignificant". Exposed because the <i>policy</i> that reads it lives outside this class on
+        /// purpose (see <see cref="DemoteToStatistical"/>); <see cref="HasBeenInsignificantFor"/> is the
+        /// question a director actually wants to ask.
+        /// </summary>
+        public int InsignificantSinceTick => insignificantSinceTick;
+
+        /// <summary>True when this citizen has been continuously insignificant for at least
+        /// <paramref name="ticks"/>. False whenever the clock is not running at all — a significant citizen,
+        /// or one no director has ever considered.</summary>
+        public bool HasBeenInsignificantFor(int ticks)
+        {
+            if (ticks < 0) throw new ArgumentOutOfRangeException(nameof(ticks));
+            if (Significant || insignificantSinceTick == NeverInsignificant) return false;
+            return Find.TickManager.TicksGame - insignificantSinceTick >= ticks;
+        }
 
         /// <summary>A cohort-sampled "how hale is this citizen" readout for the Statistical tier (refreshed each
         /// <see cref="CoarseTick"/>; see <see cref="TieringTuning"/>). Deliberately not wired into
@@ -111,11 +149,16 @@ namespace SimWorld.Pawns
         {
             if (Significant)
             {
+                insignificantSinceTick = NeverInsignificant;
                 if (tier != PawnTier.Full) PromoteTo(PawnTier.Full);
             }
-            else if (tier == PawnTier.Full)
+            else
             {
-                Demote(PawnTier.Interval);
+                // Start the clock on the transition into insignificance, never restart it while it is already
+                // running: every sweep re-asserts Notify_AttentionChanged(false) on the same unattended
+                // citizens, and a stamp taken on each of those would hold the clock permanently at zero.
+                if (insignificantSinceTick == NeverInsignificant) insignificantSinceTick = Find.TickManager.TicksGame;
+                if (tier == PawnTier.Full) Demote(PawnTier.Interval);
             }
         }
 
@@ -127,7 +170,13 @@ namespace SimWorld.Pawns
         /// would mean inventing that policy, and the brief this module was built from is explicit that demotion
         /// is by significance, never elapsed time. So this is a mechanism, not a policy: it succeeds, silently
         /// no-oping otherwise, only when the citizen is already Interval and currently insignificant, and
-        /// whoever calls it (a future director, or a test proving the mechanism) is the one deciding when.
+        /// whoever calls it is the one deciding when.
+        /// <para/>
+        /// That decision now has an owner: <see cref="God.AttentionManager"/> settles a citizen who has been
+        /// insignificant for <see cref="TieringTuning.IntervalSettleTicks"/>, asking
+        /// <see cref="HasBeenInsignificantFor"/> rather than being handed a rule from in here. The split is
+        /// the point — this class still refuses to know how long "long enough" is, so a different director
+        /// can answer differently without touching the tier machinery.
         /// </summary>
         public void DemoteToStatistical()
         {
@@ -298,6 +347,7 @@ namespace SimWorld.Pawns
             Scribe_Values.Look(ref hasRole, "hasRole");
             Scribe_Values.Look(ref chronicleNamed, "chronicleNamed");
             Scribe_Values.Look(ref relatedToPromoted, "relatedToPromoted");
+            Scribe_Values.Look(ref insignificantSinceTick, "insignificantSinceTick", NeverInsignificant);
             Scribe_Values.Look(ref lastProcessedTick, "lastProcessedTick");
             Scribe_Values.Look(ref lastSampledHealthFraction, "lastSampledHealthFraction", 1f);
         }
