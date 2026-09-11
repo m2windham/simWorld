@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Butchering a corpse at a bench (system: corpses). A new file rather than another element in WorkGivers.xml:
+    four lanes were editing that file concurrently and a new file cannot conflict (CLAUDE.md). Pawn_WorkSettings
+    collects work givers from the whole DefDatabase by workType, so a giver in its own file is wired exactly as
+    if it sat in the shared one.
+
+    Cooking, not Hauling: RimWorld butchers under Cooking (ButcherCorpseFlesh's workSkill), and a butcher table
+    is a Cooking bench in this port's own content (Buildings_Production.xml). Below CookMeals (100): a cook with
+    a meal to make and a carcass waiting makes the meal first, which is also the order that keeps a settlement
+    fed rather than stocked.
+  -->
+
+  <WorkGiverDef>
+    <defName>ButcherCorpses</defName>
+    <label>butcher carcasses</label>
+    <verb>Butcher</verb>
+    <gerund>butchering</gerund>
+    <workType>Cooking</workType>
+    <priorityInType>90</priorityInType>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+    <giverClass>SimWorld.AI.WorkGiver_ButcherCorpse</giverClass>
+  </WorkGiverDef>
+
+</Defs>

@@ -42,17 +42,26 @@ Unclaimed items below are open. Taking one means claiming it first.
 Ordered by what blocks the most. The history below each heading is kept deliberately —
 the original finding is what makes the progress legible.
 
-### 1. Four work types have no worker — down from eighteen
+### 1. Three work types have no worker — down from eighteen
 
-Work givers carrying a real `giverClass` have gone **10 of 28 → 24 of 28** across two
-batches. A settlement can now haul, research at a bench, craft and cook, treat, rescue
-and feed its wounded, hunt, repair what it built and clear plants out of its own way.
+Work givers carrying a real `giverClass` have gone **10 of 28 → 24 of 28 → 26 of 29**
+across three batches. A settlement can now haul, research at a bench, craft and cook,
+treat, rescue and feed its wounded, hunt, repair what it built, clear plants out of its
+own way, carry its dead to storage and butcher a carcass at a bench.
 
-Four remain bare, and three are not work to do. `HaulCorpses`, `CleanFilth` and
-`FightFires` have no `Corpse`, `Filth` or `Fire` class anywhere in this codebase: they
-are blocked on systems that do not exist, and a stub worker would be worse than the
-honest gap. `WardenDeliverFood` is deliberately left — `DoctorFeedHumanlikes` reuses its
-mechanism with a different target filter.
+Three remain bare, and two are not work to do. `CleanFilth` and `FightFires` have no
+`Filth` or `Fire` class anywhere in this codebase: they are blocked on systems that do
+not exist, and a stub worker would be worse than the honest gap. `WardenDeliverFood` is
+deliberately left — `DoctorFeedHumanlikes` reuses its mechanism with a different target
+filter.
+
+**`HaulCorpses` came off that list by building what it was blocked on.** It was the
+oldest entry here — a work giver with nothing it could ever target — and the block was
+real: no `Corpse` class existed anywhere. The corpses module (`Things/Corpse.cs`) added
+one, and the giver needed thirty lines on top of the hauling path that was already
+there. The shape worth keeping: a giver blocked on a missing *system* is not the same
+kind of gap as one blocked on a missing *decision*, and the register did not distinguish
+them.
 
 **Hunting was wired and dormant for one batch.** `WorkGiver_Hunt` requires a ranged
 weapon, `SettlementFounder` generates every citizen as `Tribesperson`, and that kind

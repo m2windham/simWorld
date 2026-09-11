@@ -27,18 +27,25 @@ namespace SimWorld.AI
     /// branch exists because RimWorld's own driver casts through a verb-agnostic path too, and because a
     /// directed order could hand this driver a melee hunter.
     /// <para/>
-    /// <b>Translation — what a kill yields.</b> RimWorld's hunt ends by hauling a <c>Corpse</c> to storage.
-    /// <b>There is no <c>Corpse</c> class anywhere in this codebase</b>: a dead <see cref="Pawn"/> simply
-    /// stays spawned on its map (<c>Recipe_ButcherAnimal</c>'s own doc records this, and
-    /// <c>Settlement.PruneDeadCitizens</c> relies on it). Nor can the existing bill system butcher one — a
-    /// bill's ingredients are <c>ItemStack</c>s found near a bench (<see cref="WorkGiver_DoBill"/>), and a
-    /// carcass is a Pawn, so <c>ButcherAnimal</c> at a <c>TableButcher</c> is unreachable in practice. So the
-    /// hunter butchers at the kill site, through the existing <see cref="ButcherUtility.TryButcher"/> path and
-    /// the shipped <c>ButcherAnimal</c> <see cref="RecipeDef"/> — no second yield formula, no new content.
-    /// Meat and leather land as ordinary item stacks on the kill cell, from where <c>HaulGeneral</c>'s
-    /// <see cref="WorkGiver_Haul"/> carries them to a stockpile: the same end state RimWorld reaches
-    /// (butchered produce in storage), by the only route this port has. Yield is
-    /// <c>Crafting.HusbandryTuning</c>'s body-size scaling, untouched.
+    /// <b>Translation — what a kill yields.</b> RimWorld's hunt ends by hauling a <c>Corpse</c> to storage
+    /// for someone else to butcher at a bench. This port's hunter butchers where the animal fell.
+    /// <para/>
+    /// That began as a workaround for there being no <c>Corpse</c> class at all. There is one now
+    /// (<see cref="Things.Corpse"/>), and the route RimWorld takes exists alongside this one:
+    /// <see cref="WorkGiver_HaulCorpses"/> carries a body to storage and
+    /// <see cref="WorkGiver_ButcherCorpse"/> has a cook fetch it and butcher it at a bench. <b>The kill-site
+    /// toil is kept anyway</b>, deliberately, because it is the only route that closes with nothing else
+    /// built: it needs no butcher bench, no stockpile that accepts corpses, and no second pawn. A settlement
+    /// that has not built a <c>TableButcher</c> would otherwise hunt, kill, and starve beside the body.
+    /// <b>When to retire it:</b> the day a settlement reliably builds and staffs a butcher bench, delete this
+    /// driver's last toil and the hunt simply ends at the kill — the corpse givers already cover the rest,
+    /// and they fetch a body from anywhere reachable rather than needing it staged.
+    /// <para/>
+    /// Both routes run the same butchery: the shipped <c>ButcherAnimal</c> <see cref="RecipeDef"/> through
+    /// <see cref="ButcherUtility.TryButcher"/>, yield scaled by <c>Crafting.HusbandryTuning</c>'s body-size
+    /// constants. There is no second yield formula anywhere. Meat and leather land as ordinary item stacks on
+    /// the kill cell, from where <c>HaulGeneral</c>'s <see cref="WorkGiver_Haul"/> carries them to a
+    /// stockpile.
     /// <para/>
     /// <b>Deliberate gap:</b> RimWorld awards Shooting/Melee XP for hunting and this does not — nothing in
     /// this port's Combat module awards combat XP from a verb cast at all, so doing it here would invent a
@@ -76,13 +83,18 @@ namespace SimWorld.AI
         /// Approach-and-attack, as one <see cref="ToilCompleteMode.Never"/> toil rather than a goto followed
         /// by a cast: prey moves (<see cref="JobGiver_AnimalFlee"/> walks it away from any nearby humanlike),
         /// so "am I in range?" has to be re-asked every tick, and a separate goto toil would have to finish
-        /// before anyone could ask. Advances to the butchery toil the moment the target is dead — including
-        /// immediately, when the giver handed this driver a carcass someone already killed.
+        /// before anyone could ask. Advances to the butchery toil the moment the target is dead.
+        /// <para/>
+        /// <b>No <c>FailOnDespawnedOrNull</c> on the prey.</b> It carried one until corpses existed, when a
+        /// dead animal stayed spawned; now death takes the body off the map and into a
+        /// <see cref="Things.Corpse"/> the same tick, so that condition would fail the job on the winning
+        /// shot and the kill would never be butchered. Death is detected below instead, which is where it
+        /// always was — the guard only ever covered prey vanishing some *other* way, and
+        /// <see cref="HuntTick"/>'s own null/destroyed checks still cover that.
         /// </summary>
         private Toil MakeHuntToil()
         {
             var toil = new Toil { defaultCompleteMode = ToilCompleteMode.Never };
-            toil.FailOnDespawnedOrNull(TargetIndex.A);
             // Deliberately no FailOn(pather.Failed), unlike Toils_Goto.GotoCell. That toil is safe with it
             // because its own initAction calls StartPath (which clears Failed) before any tick evaluates the
             // condition; this one starts paths from its tickAction instead, and Pawn_PathFollower.Failed
@@ -147,12 +159,23 @@ namespace SimWorld.AI
             if (animal.Dead) ReadyForNextToil();
         }
 
-        /// <summary>Butchers the carcass where it lies — see this class's own doc for why here and not at a
-        /// bench. A no-op if something else got to it first.</summary>
+        /// <summary>
+        /// Butchers the carcass where it lies — see this class's own doc for why here as well as at a bench.
+        /// The target is still the animal <see cref="Pawn"/>: it is no longer on the map (its body is inside
+        /// the <see cref="Things.Corpse"/> death left on the kill cell), and
+        /// <see cref="ButcherUtility.TryButcher"/> reaches through to it either way. A no-op if something
+        /// else got to the body first — a hauler carrying it to storage takes it off the map, and a corpse
+        /// already destroyed or already butchered fails the same checks.
+        /// </summary>
         private void Butcher()
         {
             if (!(job.GetTarget(TargetIndex.A).Thing is Pawn animal)) return;
-            if (animal.Destroyed || !animal.Spawned || !animal.Dead) return;
+            if (animal.Destroyed || !animal.Dead) return;
+
+            Things.Corpse? corpse = animal.corpse;
+            bool bodyIsHere = animal.Spawned || (corpse != null && corpse.Spawned && !corpse.Destroyed);
+            if (!bodyIsHere) return;
+
             ButcherUtility.TryButcher(animal, pawn, HuntingDefOf.ButcherAnimal);
         }
     }

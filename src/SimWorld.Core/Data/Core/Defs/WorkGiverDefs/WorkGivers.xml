@@ -363,7 +363,13 @@
     <verb>Haul</verb>
     <gerund>hauling</gerund>
     <workType>Hauling</workType>
-    <priorityInType>90</priorityInType>
+    <!-- Above HaulGeneral (100), not below it as this placeholder sat while it was inert. A corpse is an
+         ordinary haulable Item in this port, so HaulGeneral would find one too; the point of a separate
+         giver — RimWorld ships one for the same reason — is that bodies are cleared before loose clutter.
+         Wired to a real scanner (system: corpses): Things.Corpse exists now, which is the only thing this
+         def was ever waiting for. See WorkGiver_HaulCorpses's own doc. -->
+    <priorityInType>110</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_HaulCorpses</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>

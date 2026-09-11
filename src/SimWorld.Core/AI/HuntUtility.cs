@@ -50,19 +50,24 @@ namespace SimWorld.AI
         public static bool HasHuntingWeapon(Pawn pawn) => RangedVerbPropsFor(pawn) != null;
 
         /// <summary>
-        /// A wild animal, alive or freshly killed, that is a legitimate hunting target. "Wild" is
+        /// A live wild animal that is a lawful hunting target. "Wild" is
         /// <see cref="WorkGiver_TameAnimals"/>'s own test (an <see cref="RaceProperties.Animal"/> with no
         /// <see cref="Pawn.faction"/>) — nobody's livestock, nobody's pet.
         /// <para/>
-        /// A <b>dead</b> wild animal still qualifies: with no <c>Corpse</c> Thing in this codebase a carcass
-        /// simply stays on the map as a dead <see cref="Pawn"/>, and a hunt interrupted between the kill and
-        /// the butchery would otherwise strand it there forever. <see cref="JobDriver_Hunt"/> skips straight
-        /// to butchering when its target is already dead.
+        /// <b>A carcass is no longer hunting work.</b> This used to accept a dead animal too, because with no
+        /// <c>Corpse</c> Thing in the codebase a kill nobody butchered stayed on the map as a dead
+        /// <see cref="Pawn"/> forever and the hunt job was the only thing that could ever clear it. Death now
+        /// leaves a <see cref="Things.Corpse"/> (which is also why a dead animal fails the
+        /// <see cref="Pawn.Spawned"/> test below — its body is off the map and inside one), and a corpse has
+        /// work givers of its own: <see cref="WorkGiver_HaulCorpses"/> takes it to storage and
+        /// <see cref="WorkGiver_ButcherCorpse"/> butchers it at a bench. Nothing is stranded, so hunting is
+        /// back to RimWorld's own rule — you hunt what is alive.
+        /// <see cref="JobDriver_Hunt"/> still handles a target that dies between the offer and the job.
         /// </summary>
         public static bool IsHuntableAnimal(Pawn animal)
         {
             if (animal == null) throw new ArgumentNullException(nameof(animal));
-            return animal.RaceProps.Animal && animal.faction == null && animal.Spawned && !animal.Destroyed;
+            return animal.RaceProps.Animal && animal.faction == null && animal.Spawned && !animal.Destroyed && !animal.Dead;
         }
 
         /// <summary>

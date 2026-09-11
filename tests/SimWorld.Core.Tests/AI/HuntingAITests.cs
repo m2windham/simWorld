@@ -86,6 +86,17 @@ namespace SimWorld.Tests.AI
         private static int MeatOnMap(CoreMap map) =>
             map.listerThings.ThingsOfDef(Def("Meat_Generic")).Sum(t => t.stackCount);
 
+        /// <summary>
+        /// Butchers a carcass the way anything but a hunter does it, for tests that need meat on the ground
+        /// without driving a whole hunt. This is the same <see cref="ButcherUtility.TryButcher"/> call
+        /// <see cref="JobDriver_Hunt"/>'s last toil makes, and it reaches the body through the
+        /// <see cref="Corpse"/> death left behind (see <c>Recipe_ButcherAnimal</c>) — which is also why these
+        /// tests can no longer pre-kill an animal and expect a hunter to come and deal with it: a carcass is
+        /// a corpse now, and corpses are the corpse givers' work, not hunting's.
+        /// </summary>
+        private static void ButcherCarcass(Pawn animal) =>
+            ButcherUtility.TryButcher(animal, null, HuntingDefOf.ButcherAnimal);
+
         // ---- content ----
 
         [Fact]
@@ -409,20 +420,20 @@ namespace SimWorld.Tests.AI
         public void A_bigger_animal_feeds_the_settlement_for_longer()
         {
             // Trend, not a yield literal: HusbandryTuning scales meat by body size, and this pins that the
-            // hunt inherits that scaling rather than inventing a second formula of its own. Both animals are
-            // already dead so the comparison is about the butchery the hunt ends with, not about how many
-            // arrows each takes.
+            // butchery the hunt ends with inherits that scaling rather than inventing a second formula of its
+            // own. Both animals are already dead and butchered through the same ButcherUtility call the
+            // hunt's last toil makes, so the comparison is about the yield, not about how many arrows each
+            // takes. (It stopped being drivable through a live hunter when carcasses became corpses — see
+            // ButcherCarcass above.)
             CoreMap smallMap = NewMap(10, 10);
-            Pawn smallHunter = SpawnHunter(smallMap, new IntVec3(1, 0, 1));
             Pawn chicken = SpawnAnimal(smallMap, Chicken, new IntVec3(5, 0, 5));
             chicken.health.Kill(null, null);
-            RunTicks(3000, smallHunter);
+            ButcherCarcass(chicken);
 
             CoreMap bigMap = NewMap(10, 10);
-            Pawn bigHunter = SpawnHunter(bigMap, new IntVec3(1, 0, 1));
             Pawn muffalo = SpawnAnimal(bigMap, Muffalo, new IntVec3(5, 0, 5));
             muffalo.health.Kill(null, null);
-            RunTicks(3000, bigHunter);
+            ButcherCarcass(muffalo);
 
             Assert.True(chicken.Destroyed && muffalo.Destroyed);
             Assert.True(MeatOnMap(smallMap) > 0);
@@ -430,19 +441,26 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
-        public void A_carcass_nobody_butchered_is_still_valid_work()
+        public void A_carcass_is_a_corpse_and_no_longer_hunting_work()
         {
-            // With no Corpse Thing, an interrupted hunt would otherwise strand a dead animal on the map
-            // forever; the giver accepts one and the driver skips straight to the butchery toil.
+            // This test used to assert the opposite — that the giver accepted an already-dead animal —
+            // because with no Corpse Thing an interrupted hunt stranded a carcass on the map forever and the
+            // hunt job was the only thing that could ever clear it. Death leaves a Corpse now, which has work
+            // givers of its own (WorkGiver_HaulCorpses, WorkGiver_ButcherCorpse — see CorpseTests for those
+            // end to end), so hunting is back to RimWorld's own rule: you hunt what is alive. Nothing is
+            // stranded, which is what this test is really for.
             CoreMap map = NewMap(10, 10);
             Pawn hunter = SpawnHunter(map, new IntVec3(1, 0, 1));
             Pawn chicken = SpawnAnimal(map, Chicken, new IntVec3(5, 0, 5));
             chicken.health.Kill(null, null);
 
-            Assert.True(Giver.HasJobOnThing(hunter, chicken));
+            Assert.False(Giver.HasJobOnThing(hunter, chicken));
+            Assert.False(chicken.Spawned);
 
-            RunTicks(3000, hunter);
+            Thing body = Assert.Single(map.thingGrid.ThingsListAt(new IntVec3(5, 0, 5)), t => t is Corpse);
+            Assert.Same(chicken, ((Corpse)body).InnerPawn);
 
+            ButcherCarcass(chicken);
             Assert.True(chicken.Destroyed);
             Assert.True(MeatOnMap(map) > 0);
         }
@@ -461,7 +479,11 @@ namespace SimWorld.Tests.AI
             for (int i = 0; i < 6; i++)
             {
                 Pawn m = SpawnAnimal(map, Muffalo, new IntVec3(4 + i, 0, 9), "Muffalo" + i);
-                m.health.Kill(null, null); // pre-killed: this test is about the gate closing, not about aim
+                // Pre-killed and pre-butchered: this test is about the gate closing, not about aim, and a
+                // carcass is a corpse now — the hunter would walk past one rather than butcher it (see
+                // A_carcass_is_a_corpse_and_no_longer_hunting_work).
+                m.health.Kill(null, null);
+                ButcherCarcass(m);
                 prey.Add(m);
             }
 

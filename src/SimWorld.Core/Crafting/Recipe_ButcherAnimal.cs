@@ -10,14 +10,19 @@ using SimWorld.Work;
 namespace SimWorld.Crafting
 {
     /// <summary>
-    /// Butchers a dead animal into meat and leather (RimWorld: <c>RimWorld.Recipe_ButcherCorpse</c>, applied
-    /// straight to the dead pawn rather than to a separate Corpse thing — no Corpse type exists in this port
-    /// yet, and a dead <see cref="Pawn"/> already stays spawned on its map exactly as one would). Yield scales
-    /// with <see cref="Pawn.BodySize"/>, not a fixed <see cref="RecipeDef.products"/> list — see
-    /// <see cref="HusbandryTuning"/> for the (unsourced) per-body-size constants. <b>Deviation:</b> no job
-    /// driver walks a butcher to the corpse yet; <see cref="ButcherUtility.TryButcher"/> is the direct,
-    /// no-job-driver call site this recipe is invoked through, the same shape <c>SurgeryUtility.PerformNextSurgery</c>
-    /// already established for a recipe applied to a pawn.
+    /// Butchers a dead animal into meat and leather (RimWorld: <c>RimWorld.Recipe_ButcherCorpse</c>), applied
+    /// to the dead <see cref="Pawn"/> rather than to the <see cref="Corpse"/> holding it. Yield scales with
+    /// <see cref="Pawn.BodySize"/>, not a fixed <see cref="RecipeDef.products"/> list — see
+    /// <see cref="HusbandryTuning"/> for the (unsourced) per-body-size constants.
+    /// <para/>
+    /// <b>Why the pawn and not the corpse is the argument.</b> Corpses now exist
+    /// (<see cref="Things.CorpseMaker"/>), and a butchered body is always inside one — but every number this
+    /// recipe reads (body size, race, meat and leather defs) lives on the pawn, and the two existing callers
+    /// already hold one. So the pawn stays the argument and this method looks *out* to
+    /// <see cref="Pawn.corpse"/> for the two things a despawned pawn no longer has of its own: which map it
+    /// is on, and which cell. That keeps one yield formula for both butchery routes — the hunter's
+    /// field-dressing at the kill site (<c>AI.JobDriver_Hunt</c>) and a butcher's work at a bench
+    /// (<c>AI.JobDriver_ButcherCorpse</c>) — instead of a second one on the corpse side.
     /// </summary>
     public class Recipe_ButcherAnimal : RecipeWorker
     {
@@ -26,8 +31,13 @@ namespace SimWorld.Crafting
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
             if (!pawn.Dead) throw new InvalidOperationException("Recipe_ButcherAnimal applied to a living pawn " + pawn.Label + ".");
 
-            Map.Map? map = pawn.Map;
-            IntVec3 pos = pawn.Position;
+            // A dead pawn is normally not on the map itself: it is held by a Corpse standing on the cell it
+            // died on. Either is accepted, so a caller that somehow has a still-spawned dead pawn (a test
+            // that killed one before corpses existed, a pawn killed with no tick manager running) behaves
+            // exactly as it did before.
+            Corpse? corpse = pawn.corpse;
+            Map.Map? map = pawn.Map ?? (corpse != null && corpse.Spawned ? corpse.Map : null);
+            IntVec3 pos = pawn.Spawned ? pawn.Position : (corpse != null ? corpse.Position : IntVec3.Invalid);
             RaceProperties race = pawn.RaceProps;
             float bodySize = pawn.BodySize;
 
@@ -39,8 +49,10 @@ namespace SimWorld.Crafting
 
             // Butchering removes the carcass outright (RimWorld: the Corpse is destroyed once fully
             // butchered); this port has no partial-butcher-over-multiple-bills step, so it always goes in
-            // one call.
-            pawn.Destroy(DestroyMode.Vanish);
+            // one call. Destroying the corpse destroys the body with it (Corpse.Destroy), so the pawn ends
+            // up Destroyed either way round and no half-consumed body is left behind.
+            if (corpse != null) corpse.Destroy(DestroyMode.Vanish);
+            else pawn.Destroy(DestroyMode.Vanish);
 
             if (map != null)
             {

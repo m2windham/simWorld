@@ -848,11 +848,16 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   else for `StoreUtility`'s job to send it, and this port does not invent a
   dumping ground. Carrying itself is modelled the same abstract way
   `JobDriver_HaulToBuildingSite`/`JobDriver_Warden_Feed` already do it (no
-  carry-tracker exists in this codebase): the source stack's count drops the
-  moment the pawn reaches it, nothing visibly follows the pawn to the
-  stockpile in between. `HaulCorpses`, the other `WorkGiverDef` in the same
-  content file, stays `WorkGiver_Pending`: no `Corpse` class exists anywhere in
-  this codebase, so it cannot be wired honestly.
+  carry-tracker exists in this codebase): the source stack leaves its cell the
+  moment the pawn reaches it, nothing visibly follows the pawn to the stockpile
+  in between. When the carry takes the whole stack the Thing itself travels and
+  is put back down at the destination, so anything carrying per-instance state
+  (quality, hit points, a `Corpse`'s inner pawn) survives the trip; only a
+  partial stack, where one unit really is interchangeable with another, is
+  split off by count. `HaulCorpses`, the other `WorkGiverDef` in the same
+  content file, is `WorkGiver_HaulCorpses`: the same destination search and the
+  same `HaulToCell` job, scanning corpses only, ranked above `HaulGeneral` so
+  bodies are cleared before loose clutter.
 
 ```mermaid
 flowchart TD
@@ -1041,11 +1046,13 @@ flowchart TD
 - Cooking carries a skill-driven food-poisoning chance; eating feeds the
   nutrition need.
 - **Animal husbandry.** Butchering is a `RecipeDef` with `isButchery`,
-  applied straight to a dead animal pawn by a `Recipe_ButcherAnimal` worker
-  the same way `isSurgery` applies a `Recipe_Surgery` to a live one — no
-  separate `Corpse` thing exists yet, so `ButcherUtility.TryButcher` is the
-  same no-job-driver call shape `SurgeryUtility.PerformNextSurgery` already
-  established. Yield (meat from `RaceProperties.meatDef`, leather from
+  applied to the dead animal pawn by a `Recipe_ButcherAnimal` worker the same
+  way `isSurgery` applies a `Recipe_Surgery` to a live one; `ButcherUtility.TryButcher`
+  is the same no-job-driver call shape `SurgeryUtility.PerformNextSurgery`
+  established, and it reaches the body through the `Corpse` holding it. One
+  yield formula serves both routes to it — a hunter field-dressing at the kill
+  site, and `WorkGiver_ButcherCorpse` fetching a carcass to a butcher bench.
+  Yield (meat from `RaceProperties.meatDef`, leather from
   `leatherDef` where the race has one) scales with the animal's body size.
   Produce cycles — milk, wool, eggs — are `CompMilkable`/`CompShearable`/
   `CompEggLayer`, all `CompHasGatherableBodyResource`: fullness rises toward 1
