@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    What the look of a place does to mood (RimWorld: the Beauty ThoughtDef and ThoughtWorker_Beauty). Six
+    stages, one per band of Need_Beauty.CurCategory that is not Neutral - a citizen in an unremarkable room
+    carries no thought at all rather than a zero-offset one.
+
+    This is the single mood consumer of the beauty need, and the route every ugly or beautiful thing takes to
+    mood: filth reaches mood through here, by carrying a negative Beauty stat, the way RimWorld's does. The
+    situational-thought handler finds any ThoughtDef with a worker by scanning, so this needed no edit to any
+    shared file - a new worker class and this new file is the whole wiring (CLAUDE.md).
+
+    It replaces Thoughts_Filth.xml's FilthyRoom thought, which read room cleanliness directly precisely
+    because nothing implemented IEnvironmentSampler at the time, and whose own doc said to delete it the day
+    one landed rather than let filth hurt mood twice. See the beauty module's report.
+
+    The mood offsets are SimWorld's own - RimWorld's were not sourceable here - and BeautyTests pins that a
+    worse environment is never a better mood, not these numbers.
+  -->
+
+  <ThoughtDef>
+    <defName>Beauty</defName>
+    <workerClass>SimWorld.Needs.ThoughtWorker_NeedBeauty</workerClass>
+    <stages>
+      <li>
+        <label>hideous environment</label>
+        <description>Everywhere I look there is squalor.</description>
+        <baseMoodEffect>-8</baseMoodEffect>
+      </li>
+      <li>
+        <label>very ugly environment</label>
+        <description>This place is genuinely unpleasant to be in.</description>
+        <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+      <li>
+        <label>ugly environment</label>
+        <description>This place could do with some care.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+      <li>
+        <label>pretty environment</label>
+        <description>It is pleasant here.</description>
+        <baseMoodEffect>2</baseMoodEffect>
+      </li>
+      <li>
+        <label>very pretty environment</label>
+        <description>Somebody has made this place lovely.</description>
+        <baseMoodEffect>4</baseMoodEffect>
+      </li>
+      <li>
+        <label>beautiful environment</label>
+        <description>I could look at this all day.</description>
+        <baseMoodEffect>6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

@@ -73,10 +73,18 @@
     <showOnNeedList>true</showOnNeedList>
   </NeedDef>
 
+  <!--
+    Beauty is the one environment need with a driver (system: needs.beauty): MapEnvironmentSampler reads the
+    cells around the citizen through BeautyUtility, so it overrides the base's generic Need_Environment with
+    Need_Beauty, which adds the category readout the Beauty ThoughtDef's worker bands mood from. The other
+    three keep Need_Environment and their baseLevel until somebody drives them - see MapEnvironmentSampler
+    for why each is returned null rather than given an invented number.
+  -->
   <NeedDef ParentName="EnvironmentNeedBase">
     <defName>Beauty</defName>
     <label>beauty</label>
     <description>How pleasant the surroundings look.</description>
+    <needClass>SimWorld.Needs.Need_Beauty</needClass>
     <listPriority>80</listPriority>
   </NeedDef>
 

@@ -94,7 +94,6 @@ namespace SimWorld.Needs
     /// <summary>
     /// Beauty, comfort, outdoors, room size (RimWorld: <c>Need_Beauty</c>, <c>Need_Comfort</c>,
     /// <c>Need_Outdoors</c>, <c>Need_RoomSize</c>): seekers whose target is sampled from the surroundings.
-    /// Until the map exists the target is the Def's base level.
     /// </summary>
     public class Need_Environment : Need_Seeker
     {
@@ -102,6 +101,34 @@ namespace SimWorld.Needs
         {
         }
 
-        public override float CurInstantLevel => pawn.environment?.InstantLevelFor(def, pawn) ?? def.baseLevel;
+        /// <summary>
+        /// The level the surroundings ask for, in three steps.
+        /// <list type="number">
+        /// <item><description>A sampler somebody set on this pawn wins outright. That is the seam as it was
+        /// built — a host, a test, or a future system substituting its own reading — and it keeps whatever
+        /// cost policy its owner chose, tier included.</description></item>
+        /// <item><description>Otherwise, below <see cref="PawnTier.Full"/> the target is the level the need is
+        /// already at, so the need holds rather than drifting. <b>This is the one place tiering touches this
+        /// need and it is deliberate:</b> Interval citizens advance their needs in bulk on the Long bucket
+        /// (<see cref="Pawns.Pawn_TierTracker.CoarseTick"/> calling <see cref="Need.NeedIntervalBulk"/>), and
+        /// an environment need advanced there would pay for a full map sample per citizen per coarse tick —
+        /// the one need whose target cannot be extrapolated from its own state. Statistical citizens never ask
+        /// at all (their needs are cohort-sampled outright). Holding costs nothing, says nothing false about
+        /// surroundings nobody is simulating, and resumes the instant the citizen is promoted back to
+        /// Full.</description></item>
+        /// <item><description>Otherwise the map answers, through <see cref="MapEnvironmentSampler"/> — which
+        /// returns null for a citizen who is not spawned and for the three environment needs nothing drives
+        /// yet, leaving those exactly at the Def's base level as before.</description></item>
+        /// </list>
+        /// </summary>
+        public override float CurInstantLevel
+        {
+            get
+            {
+                if (pawn.environment != null) return pawn.environment.InstantLevelFor(def, pawn) ?? def.baseLevel;
+                if (pawn.tier != null && pawn.tier.Tier != PawnTier.Full) return CurLevel;
+                return MapEnvironmentSampler.Instance.InstantLevelFor(def, pawn) ?? def.baseLevel;
+            }
+        }
     }
 }
