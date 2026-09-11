@@ -61,10 +61,31 @@ namespace SimWorld.Pawns
         public PawnKindDef? kindDef;
         public Name? Name;
 
-        /// <summary>The civilization/faction this pawn belongs to, if any (RimWorld: <c>Pawn.Faction</c>). Set
+        private Faction? factionInt;
+
+        /// <summary>
+        /// The civilization/faction this pawn belongs to, if any (RimWorld: <c>Pawn.Faction</c>). Set
         /// by <see cref="Generation.PawnGenerator"/> from <see cref="Generation.PawnGenerationRequest.Faction"/>;
-        /// a pawn built directly (<c>new Pawn(def, name)</c>) has none.</summary>
-        public Faction? faction;
+        /// a pawn built directly (<c>new Pawn(def, name)</c>) has none.
+        /// <para/>
+        /// <b>A property rather than the plain field it was, for one reason:</b> a spawned pawn's faction is
+        /// what files it in <see cref="AI.AttackTargetsCache"/>, and a change made behind that index's back
+        /// would leave it looking for a raider in the wrong bucket. Recruiting a prisoner, releasing one and
+        /// taming an animal all write this while the pawn stands on a map (RimWorld funnels the same three
+        /// through <c>Pawn.SetFaction</c>, which notifies the same cache). Every read and every write is
+        /// unchanged at the call site; only spawned writes now cost a re-file.
+        /// </summary>
+        public Faction? faction
+        {
+            get => factionInt;
+            set
+            {
+                if (ReferenceEquals(factionInt, value)) return;
+                Faction? old = factionInt;
+                factionInt = value;
+                Map?.mapPawns.AttackTargets.Notify_FactionChanged(this, old);
+            }
+        }
 
         /// <summary>Environment sampler for seeker needs (beauty, comfort, outdoors, room); the map supplies it later.</summary>
         public IEnvironmentSampler? environment;

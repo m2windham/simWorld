@@ -302,8 +302,25 @@ namespace SimWorld.MindState
         /// <see cref="angryUntilTick"/>, the animal think tree's <c>ThinkNode_ConditionalAngryAtHandler</c>
         /// tier pre-empts routine behaviour, the same way <c>ThinkNode_ConditionalInMentalState</c> does for
         /// the humanlike tree.
+        /// <para/>
+        /// <b>A property rather than the plain field it was</b> for the same reason
+        /// <see cref="Pawns.Pawn.faction"/> is one: a grudge is symmetric — <c>AttackTargetsUtility.HostileTo</c>
+        /// reads it from both sides — so the pawn holding one has to become visible to its victim, and no
+        /// faction bucket in <c>AI.AttackTargetsCache</c> would ever show a wild animal to the hunter it
+        /// turned on. Writing this while spawned files the holder in that index; writing null takes it out.
         /// </summary>
-        public Pawn? angryAt;
+        public Pawn? angryAt
+        {
+            get => angryAtInt;
+            set
+            {
+                if (ReferenceEquals(angryAtInt, value)) return;
+                angryAtInt = value;
+                pawn.Map?.mapPawns.AttackTargets.Notify_GrudgeChanged(pawn);
+            }
+        }
+
+        private Pawn? angryAtInt;
 
         /// <summary><see cref="Sim.TickManager.TicksGame"/> after which <see cref="angryAt"/> no longer applies.</summary>
         public int angryUntilTick = -1;
