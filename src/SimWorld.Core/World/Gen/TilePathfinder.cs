@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace SimWorld.World.Gen
@@ -37,7 +38,17 @@ namespace SimWorld.World.Gen
         }
 
         /// <summary>Dijkstra over the tile graph; null when no route exists within <paramref name="maxLength"/> hops or every route is blocked by an impassable tile.</summary>
-        public static List<int>? ShortestPath(WorldGrid grid, int from, int to, int maxLength)
+        /// <param name="excluded">
+        /// Optional extra exclusion, applied on top of <see cref="TileCost"/>: a tile it returns true for is
+        /// not part of the graph for this search. It deliberately sits here rather than in
+        /// <see cref="TileCost"/>, because the two callers do not agree about what a tile is for.
+        /// <see cref="WorldGenStep_Roads"/> asks "may a road be built across this?" and excludes a biome with
+        /// <see cref="BiomeDef.allowRoads"/> false; <c>Siting.TradePositionScorer</c> asks "how cheaply can a
+        /// caravan reach that settlement?", and sea ice is crossable at its own movement difficulty whether
+        /// or not anyone has laid a road on it. Folding the road rule into the shared cost function would
+        /// have silently changed every trade-position score too.
+        /// </param>
+        public static List<int>? ShortestPath(WorldGrid grid, int from, int to, int maxLength, Predicate<Tile>? excluded = null)
         {
             int n = grid.TilesCount;
             var cost = new float[n];
@@ -68,6 +79,7 @@ namespace SimWorld.World.Gen
                 foreach (int neighbor in grid.NeighborsOf(current.tile))
                 {
                     if (visited[neighbor]) continue;
+                    if (excluded != null && excluded(grid.Tiles[neighbor])) continue;
                     float edgeCost = TileCost(grid.Tiles[neighbor]);
                     if (float.IsPositiveInfinity(edgeCost)) continue;
                     float candidate = current.cost + edgeCost;

@@ -142,6 +142,12 @@ namespace SimWorld.Map
             weatherManager.WeatherManagerTick();
             powerNetManager.PowerNetManagerTick();
             roomTracker.RoomTrackerTick();
+
+            // Undergrowth grows back toward what this map's biome supports, at the pace that biome sets
+            // (Building.WildPlantSpawner). Stateless and seeded from this map's own id and the tick, so it
+            // needs nothing here to own or save, and draws nothing from the ambient Rand stream. A map with
+            // no world tile — which is most test maps — is left exactly as its owner built it.
+            Building.WildPlantSpawner.WildPlantSpawnerTick(this);
         }
 
         private void InitializeGridsExceptPath(int sizeX, int sizeZ, TerrainDef fill)
