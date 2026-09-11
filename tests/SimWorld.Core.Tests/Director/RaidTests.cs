@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Defs;
@@ -198,10 +199,14 @@ namespace SimWorld.Tests.Director
         // ---- map edge placement, when a map is wired ----
 
         [Fact]
-        public void When_a_map_is_wired_the_squad_spawns_at_a_map_edge()
+        public void When_a_map_is_wired_the_squad_walks_in_from_one_map_edge()
         {
+            // RimWorld's PawnsArrivalModeWorker_EdgeWalkIn: one entry cell for the group, then each pawn is
+            // placed on a walkable cell within CellFinder.RandomClosewalkCellNear's radius of it. The port
+            // used to compute the edge cell once and spawn the whole squad on that single cell — see
+            // UnwatchedRaidTests.Raiders_no_longer_all_spawn_on_one_cell.
             Faction rough = NewFaction(DefDatabase<FactionDef>.GetNamed("RoughOutlanders"), "RoughMap");
-            var map = new global::SimWorld.Map.Map(20, 20, TerrainDefOf.Soil);
+            var map = new global::SimWorld.Map.Map(30, 30, TerrainDefOf.Soil);
             var target = new global::SimWorld.Director.CivilizationTarget { Map = map };
             Rand.Current = new RandomStream(17);
             Pawn.ResetThingIdCounter();
@@ -215,9 +220,11 @@ namespace SimWorld.Tests.Director
             {
                 Assert.True(pawn.Spawned);
                 Assert.Same(map, pawn.Map);
-                bool onEdge = pawn.Position.x == 0 || pawn.Position.x == map.Size.x - 1
-                    || pawn.Position.z == 0 || pawn.Position.z == map.Size.z - 1;
-                Assert.True(onEdge, "expected " + pawn.Position + " to sit on a map edge (size " + map.Size + ")");
+                int toNearestEdge = Math.Min(
+                    Math.Min(pawn.Position.x, pawn.Position.z),
+                    Math.Min(map.Size.x - 1 - pawn.Position.x, map.Size.z - 1 - pawn.Position.z));
+                Assert.True(toNearestEdge <= global::SimWorld.Director.IncidentWorker_RaidEnemy.ClosewalkRadius,
+                    "expected " + pawn.Position + " to be within one group entry of a map edge (size " + map.Size + ")");
             }
         }
 
