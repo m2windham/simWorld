@@ -71,9 +71,9 @@ gate on cleaning would have made every fire of that giver impossible. Both were 
 before shipping rather than after.
 
 Known gaps inside what landed: `DoBillsArt` is wired with no bench; a pawn never tends
-itself, matching RimWorld; **nothing interrupts a job in flight**, so a sleeping pawn under
-fire never wakes; and rain extinguishment is ported and tested with no weather module to
-drive it.
+itself, matching RimWorld; and rain extinguishment is ported and tested with no weather
+module to drive it. ("Nothing interrupts a job in flight" was the fourth; see §1b — it is
+closed.)
 
 ### The original finding, for the record
 
@@ -109,11 +109,26 @@ Still open, and not this repo's to fix alone: `ChooseTargetSettlement` weights a
 a civilization's settlements, so even with one town open a raid often picks an unopened one
 and resolves without a map.
 
-Also open: nothing interrupts a job in flight. The think tree is consulted only when
-`curJob` is null, so a pawn mid-job does not react until that job ends — concretely, a
-sleeping pawn under fire never wakes. RimWorld reaches this with a constant think tree and
-`JobDef.checkOverrideOnDamage`; neither exists here, and both need edits to
-`Pawn_JobTracker` and `Pawn_HealthTracker`.
+**The other thing it left open is now closed too: something can interrupt a job in
+flight.** Both of RimWorld's answers are ported, and kept separate because they are
+different strengths of claim on a pawn's attention. A pawn who *sees* a threat goes through
+the constant think tree (`ThinkTrees_Constant.xml`, evaluated every
+`ConstantThinkTreeTuning.IntervalTicks` whether or not a job is running), gated by
+`ThinkNode_ConditionalCanDoConstantThinkTreeJobNow` so a job marked
+`casualInterruptible="false"` or one the player forced survives it. A pawn who *is hit*
+goes through `JobDef.checkOverrideOnDamage` and `Pawn_JobTracker.Notify_DamageTaken`, which
+wakes them on the tick the hit lands and then re-asks the main tree, throttled so a burst
+does not buy a think-tree pass per bullet. `LayDown` is the case that proves the split:
+asleep is not a state you notice a raider from, but it is very much a state you are woken
+out of.
+
+The cadence was measured rather than guessed — `docs/perf/constant-think-tree.md`, and
+`tools/bench --suite interrupts` reproduces it. At `TieringTuning.FullTierBudget` on a real
+map, evaluating the tree every tick costs +265% of the whole pawn-tick budget; RimWorld's
+own 1-in-30 costs +3.7% once two things the constant tree promoted from cold paths to hot
+ones were fixed (`BestAttackTarget` tested its expensive predicate first; the combat job
+giver built a `Verb` before it had a target). So the 1:1 cadence and the affordable one
+turned out to be the same cadence, and nothing here is a translation.
 
 ### 2. Attention drives the tiering, and the Full tier is now bounded in time as well as space
 
