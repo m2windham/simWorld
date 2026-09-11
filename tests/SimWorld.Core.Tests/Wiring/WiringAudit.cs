@@ -72,6 +72,13 @@ namespace SimWorld.Tests.Wiring
     /// baseline again.</description></item>
     /// </list>
     ///
+    /// <para/><b>One that was measured the same way and kept.</b> <see cref="ContentFieldsNobodyTouches"/>
+    /// covers the quadrant the two field checks leave out — a field neither content nor code touches, which
+    /// is what <c>DifficultyDef.researchSpeedFactor</c> was. It raises 48, every one of which a reader can
+    /// place: roughly half are knobs waiting on a system nobody has built, the rest are RimWorld fields
+    /// ported for parity whose consumer is a view. That is the same order as the checks it sits between, and
+    /// unlike the two above, no two entries share a reason.
+    ///
     /// <para/><b>On noise.</b> A test that fails on every legitimately-unused API gets deleted, and then the
     /// defect class comes back. So each check is written to under-report where it must guess, and what
     /// remains is pinned by a reviewed baseline (<c>dormant-seams.txt</c>) in which every entry carries the
@@ -84,6 +91,7 @@ namespace SimWorld.Tests.Wiring
         public const string CheckWorkerClass = "worker";
         public const string CheckContentSilent = "content-silent";
         public const string CheckCodeDeaf = "code-deaf";
+        public const string CheckUntouched = "untouched";
         public const string CheckUnwritten = "unwritten";
 
         /// <summary>Worker base classes that exist to stand in for a system nobody has built yet.</summary>
@@ -343,6 +351,57 @@ namespace SimWorld.Tests.Wiring
             return seams;
         }
 
+        /// <summary>
+        /// Fields <i>neither</i> side touches: no shipped Def moves the value off the declared default, and
+        /// no line of <c>src/</c> reads it.
+        ///
+        /// <para/><b>The blind spot this closes.</b> The two checks above are a pair, and a pair is not a
+        /// partition. One asks "code reads it — does content set it?"; the other asks "content sets it — does
+        /// code read it?". Each needs one side to speak before it will look at the other, so the quadrant
+        /// where <i>both</i> are silent is reported by neither. <c>DifficultyDef.researchSpeedFactor</c> sat
+        /// in it: no preset set it, no line read it, and it appeared nowhere in a 131-line baseline. It was
+        /// found by a person reading the Def class, which is the search the audit exists to replace.
+        ///
+        /// <para/><b>Why the content test here is <see cref="FieldUsage.SetByContent"/> alone.</b>
+        /// <see cref="ContentFieldsNoDefSets"/> also excuses a field that is <see cref="FieldUsage.EverNonDefault"/>,
+        /// and rightly: its claim is "the branch behind this field can never be taken", which a deliberate
+        /// <c>= 1f</c> falsifies. This check claims something weaker and different — "this field does nothing
+        /// at all" — and an initialiser no one reads does not falsify that. <c>researchSpeedFactor</c> was
+        /// declared <c>= 1f</c>; excusing initialisers here would have missed the one confirmed case.
+        ///
+        /// <para/><b>Both absences raise the seam, so both searches are the generous ones.</b> The read search
+        /// is unscoped, exactly as in <see cref="ContentFieldsNoCodeReads"/> — any read anywhere silences the
+        /// entry. The content search believes the loaded object graph over the XML text, which means a Def
+        /// that spells out the default value (<c>&lt;rotatable&gt;false&lt;/rotatable&gt;</c>) still reads as
+        /// silent; the detail line says what was actually measured rather than claiming the XML never
+        /// mentions the field.
+        ///
+        /// <para/><b>Measured before it shipped</b>, because a check of this shape is only worth its
+        /// false-positive rate. Raw: 48 fields, against 774 surveyed and 100 baselined seams — the same order
+        /// as the checks either side of it (54 code-deaf, 38 content-silent), not the 177 and 106 of the two
+        /// variants that were built and dropped. For 46 of the 48 the field name occurs exactly <i>once</i> in
+        /// all of <c>src/</c>: its own declaration. There is no judgement call about whether a use counts,
+        /// which is what sank the "public method with no caller" check.
+        /// </summary>
+        public static IReadOnlyList<Seam> ContentFieldsNobodyTouches(ContentSurvey content, SourceIndex source)
+        {
+            var seams = new List<Seam>();
+            foreach (FieldUsage usage in Ordered(content.Fields))
+            {
+                // Content speaks: that is ContentFieldsNoCodeReads' question, and reporting it twice would
+                // put one gap on two baseline lines that then have to be deleted together.
+                if (usage.SetByContent) continue;
+
+                string site;
+                if (source.IsRead(usage.Field.Name, out site)) continue;
+
+                seams.Add(new Seam(CheckUntouched, usage.Id,
+                    "no line of src/ reads it and all " + usage.Instances.ToString(CultureInfo.InvariantCulture)
+                    + " loaded object(s) still hold the declared default"));
+            }
+            return seams;
+        }
+
         private static IEnumerable<FieldUsage> Ordered(IEnumerable<FieldUsage> usages) =>
             usages.OrderBy(u => u.Id, StringComparer.Ordinal);
 
@@ -406,6 +465,7 @@ namespace SimWorld.Tests.Wiring
             seams.AddRange(PlaceholderWorkerClasses(defs));
             seams.AddRange(ContentFieldsNoDefSets(content, source, types));
             seams.AddRange(ContentFieldsNoCodeReads(content, source));
+            seams.AddRange(ContentFieldsNobodyTouches(content, source));
             seams.AddRange(StateWithNoWriter(types, source, content));
             return seams.OrderBy(s => s.Key, StringComparer.Ordinal).ToList();
         }
