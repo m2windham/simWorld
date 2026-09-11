@@ -373,6 +373,10 @@
     <gerund>cleaning</gerund>
     <workType>Cleaning</workType>
     <priorityInType>100</priorityInType>
+    <!-- Wired to a real scanner (system: filth). Before this there was no Filth class in the codebase at
+         all, so the whole Cleaning work type had nothing it could ever target. See WorkGiver_CleanFilth
+         for the scan and CleaningBounds for what stops cleaning running forever. -->
+    <giverClass>SimWorld.Filth.WorkGiver_CleanFilth</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>

@@ -141,7 +141,13 @@ namespace SimWorld.Health
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
 
-            if (billDoer != null && !Rand.Chance(SuccessChance(billDoer)))
+            // system: filth — operating in a filthy room goes wrong more often (RimWorld:
+            // Recipe_Surgery.CheckSurgeryFail multiplies the surgeon's chance by the room's
+            // RoomStatDefOf.SurgerySuccessChanceFactor, which is derived from its cleanliness). The whole
+            // curve and the room walk live in the filth module so this stays one factor on one line; a
+            // patient in a clean room, or on no map at all, gets exactly 1 and nothing changes.
+            if (billDoer != null
+                && !Rand.Chance(SuccessChance(billDoer) * SimWorld.Filth.RoomCleanlinessUtility.SurgerySuccessFactorFor(pawn)))
             {
                 OnSurgeryFailed(pawn, part);
                 return;

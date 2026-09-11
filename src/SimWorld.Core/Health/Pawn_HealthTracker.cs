@@ -187,6 +187,10 @@ namespace SimWorld.Health
                     if (bleedRate >= HealthTuning.MinBleedRateToBleed)
                     {
                         HealthUtility.AdjustSeverity(pawn, HediffDefOf.BloodLoss, bleedRate * HealthTuning.BloodLossPerBleedUnitPerInterval);
+                        // system: filth — a bleeding pawn leaves blood where it stands (RimWorld:
+                        // Pawn_HealthTracker.DropBloodFilth, called from this same bleed branch). The whole
+                        // roll lives in the filth module so this stays one line.
+                        SimWorld.Filth.BloodFilthUtility.DropBloodFilth(pawn, bleedRate);
                     }
                 }
             }

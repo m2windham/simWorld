@@ -115,7 +115,12 @@ namespace SimWorld.AI
                 return;
             }
 
+            IntVec3 previous = pawn.Position;
             pawn.Position = next;
+            // system: filth — the only place in this codebase a spawned pawn walks cell to cell, and so
+            // RimWorld's own call site for this (Pawn_PathFollower.TryEnterNextPathCell ->
+            // pawn.filth.Notify_EnteredNewCell). Dirties bare ground underfoot and tracks dirt in off it.
+            SimWorld.Filth.Pawn_FilthTracker.Notify_EnteredNewCell(pawn, previous, next);
             curPath.ConsumeNextNode();
             if (curPath.Finished)
             {
