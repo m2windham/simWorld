@@ -63,7 +63,25 @@ namespace SimWorld.Needs
             thoughts = new ThoughtHandler(pawn);
         }
 
-        public override float CurInstantLevel => GenMath.Clamp01(0.5f + thoughts.TotalMoodOffset() / 100f);
+        /// <summary>
+        /// 50%, plus the summed thought offsets, plus the difficulty's flat
+        /// <see cref="Director.DifficultyDef.colonistMoodOffset"/> — all three in mood points out of 100,
+        /// which is the unit thoughts and that field are both authored in.
+        ///
+        /// <para/><b>Who gets the offset.</b> RimWorld's own restriction is "colonists": the map also holds
+        /// raiders, visitors and prisoners, and the player's difficulty setting has no business cheering up
+        /// the people attacking them. The same line here is
+        /// <see cref="Pawn.faction"/>'s def being the player one, which is how every other system in this port
+        /// asks the question (<c>FactionManager.OfPlayer</c>). A pawn with no faction at all — a bare test
+        /// pose, or a pawn generated before it is placed — gets nothing, so the offset can never quietly move
+        /// a number nobody set a difficulty for.
+        /// </summary>
+        public override float CurInstantLevel =>
+            GenMath.Clamp01(0.5f + (thoughts.TotalMoodOffset() + DifficultyMoodOffsetFor(pawn)) / 100f);
+
+        /// <summary>The difficulty's mood offset if this pawn is one of the civilization's own, else zero.</summary>
+        private static float DifficultyMoodOffsetFor(Pawn pawn) =>
+            pawn.faction != null && pawn.faction.def.isPlayer ? Director.DifficultyUtility.ColonistMoodOffset : 0f;
 
         public override void NeedInterval()
         {

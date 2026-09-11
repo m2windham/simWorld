@@ -16,13 +16,14 @@ namespace SimWorld.Director
         public IncidentDef def = null!;
 
         /// <summary>
-        /// True when this incident is allowed to fire right now: earliest day, population and threat-point
-        /// floors, refire spacing (skipped when <see cref="IncidentParms.forced"/>), then
-        /// <see cref="CanFireNowSub"/>.
+        /// True when this incident is allowed to fire right now: the difficulty's big-threat switch, earliest
+        /// day, population and threat-point floors, refire spacing (skipped when
+        /// <see cref="IncidentParms.forced"/>), then <see cref="CanFireNowSub"/>.
         /// </summary>
         public virtual bool CanFireNow(IncidentParms parms)
         {
             if (parms == null) throw new ArgumentNullException(nameof(parms));
+            if (!BigThreatsAllowed()) return false;
             if (def.earliestDay > 0 && GenDate.DaysPassedAt(Find.TickManager.TicksGame) < def.earliestDay) return false;
             if (def.minPopulation > 0 && parms.target.PlayerPawnsForStoryteller.Count() < def.minPopulation) return false;
             if (def.minThreatPoints > 0f && parms.points < def.minThreatPoints) return false;
@@ -33,6 +34,28 @@ namespace SimWorld.Director
 
         /// <summary>Extra per-incident gating (disease needs a candidate pawn, etc.). Defaults to always allowed.</summary>
         protected virtual bool CanFireNowSub(IncidentParms parms) => true;
+
+        /// <summary>
+        /// <see cref="DifficultyDef.allowBigThreats"/>, asked once for every incident every comp considers —
+        /// this method is the single chokepoint all four storyteller comps pass through, so gating here is
+        /// what makes "Peaceful" mean it.
+        ///
+        /// <para/><b>The reason a switch is needed at all, rather than just a threat scale of zero:</b>
+        /// <see cref="StorytellerUtility.DefaultThreatPointsNow"/> clamps its result to
+        /// <see cref="StorytellerUtility.MinThreatPoints"/>, so Peaceful's <c>threatScale</c> of 0 still hands
+        /// a raid 35 points — above <c>RaidEnemy</c>'s own <c>minThreatPoints</c> floor of 35, which is to say
+        /// the peaceful civilization was still being raided, only with the smallest possible war band. The
+        /// clamp is RimWorld's and stays; this flag is how RimWorld turns the category off, and it was carried
+        /// in content and read by nothing.
+        ///
+        /// <para/><see cref="IncidentParms.forced"/> deliberately does not bypass it, unlike the refire
+        /// spacing below: spacing is the narrator's own bookkeeping and a forced firing may skip it, whereas
+        /// a difficulty is a standing decision about what this game contains.
+        /// </summary>
+        private bool BigThreatsAllowed() =>
+            def.category == null
+            || !ReferenceEquals(def.category, IncidentCategoryDefOf.ThreatBig)
+            || DifficultyUtility.AllowsBigThreats;
 
         /// <summary>
         /// The civilization's era is within this incident's <see cref="IncidentDef.minEra"/>..<see cref="IncidentDef.maxEra"/>

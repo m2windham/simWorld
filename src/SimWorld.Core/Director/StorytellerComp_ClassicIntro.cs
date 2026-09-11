@@ -27,6 +27,12 @@ namespace SimWorld.Director
 
         public override IEnumerable<FiringIncident> MakeIntervalIncidents(IIncidentTarget target)
         {
+            // DifficultyDef.allowIntroThreats. This comp *is* the intro threat — the one scripted cold-open
+            // every storyteller schedules on a fixed day — so it is the only thing in the core the flag can
+            // mean. Separate from allowBigThreats on purpose, and not redundant with it even though the two
+            // shipped difficulties that turn one off turn both off: a difficulty is free to keep raids and
+            // still decline to script the first one, and RimWorld gates the two independently.
+            if (!DifficultyUtility.AllowsIntroThreats) yield break;
             if (target.StoryState.HasFired(Props.incident)) yield break;
             if (GenDate.DaysPassedAt(Find.TickManager.TicksGame) < Props.day) yield break;
 
