@@ -1553,20 +1553,36 @@ the translation and its state per system.
   across a whole population in one call — policy acts on the aggregate, the
   same way `GodManager.Activate` does for an edict.
 - **Endless tech** (`research.endless`, built): the authored tree ends; the game
-  does not. An `EndlessResearchDef` is content naming a tag of the authored tree
-  to continue, title fragments to name refinements with, and a cost that grows,
-  and `EndlessResearch` mints a real `ResearchProjectDef` per track per tier into
-  the global `DefDatabase` — so cost, gating, progress and the letter on
-  completion are handled by exactly the code that handles an authored project,
-  and nothing else has to learn that endless tech exists. It is **derived, not
-  rolled**: `defName`, label, cost and prerequisite are pure functions of track
-  and tier, which is stronger than a seeded stream would be — a save stores one
-  integer, the tier reached, and reloads byte-identical tech rather than a
-  growing list of invented defs. A tier is minted only when nothing in the
-  authored tree can be started, so a civilization that has not finished the tree
-  pays nothing for it. Generated projects carry no era and are invisible to
-  `EraDef.Projects`, so they cannot hold the ladder open: the ladder is a finite
-  authored artefact that ends at Exotic, and this is what comes after it.
+  does not. `EndlessResearch` mints real `ResearchProjectDef`s into the global
+  `DefDatabase`, so cost, gating, progress and the letter on completion are
+  handled by exactly the code that handles an authored project and nothing else
+  has to learn that endless tech exists. What it mints is **composed, not
+  enumerated**: an `EndlessAgeDef` supplies the register word every project
+  opened in one age shares, an `EndlessResearchDef` supplies one track's own
+  nouns and the two form vocabularies that distinguish a foundational result
+  from an applied one, and a label is one of each. Distinct names are a property
+  of that construction rather than of a check over what already exists — the
+  tracks' nouns are disjoint, the two form lists are disjoint, an age's optional
+  projects permute both words, and the age register compounds (`post-resonant`,
+  `meta-post-resonant`) rather than counting, so it does not run out. It is
+  **derived, not rolled**: everything about a generated project is a pure
+  function of (game seed, track, age, slot), nothing reads `Rand.Current`, and a
+  save stores two integers — the seed and the age count — rather than a growing
+  list of invented defs. The seed is what makes two civilizations' tails differ
+  and one seed's agree. An age is opened only when the civilization reaches the
+  frontier — nothing left to start at all, or every foundation of the newest age
+  finished — so a civilization that has not finished the authored tree pays
+  nothing for it, and one that has can press on without first buying every
+  optional project behind it. Cost is polynomial in depth rather than
+  geometric: always rising, so research can always be spent, but with a marginal
+  step that shrinks, so depth stays reachable at any depth instead of walling up
+  around the twentieth project (`docs/research/tech-reachability.md` §12).
+  **Ages are not a ninth era.** Generated projects carry no era, are invisible to
+  `EraDef.Projects`, and never name an authored project as a prerequisite —
+  which would put it into its era's `SpineProjects` and so raise what completing
+  that era requires. The ladder is a finite authored artefact that ends at
+  Exotic; an age is endless research's own grouping, announced to the player the
+  way an era is (`EndlessAgeUtility`, its own `LetterDef`) without being one.
 - **Eras**: an `EraDef` ladder over the research DAG carries a civilization from
   neolithic to archotech; era completion gates content, scales threats, and
   gates which edicts a civilization can issue at all (`EdictDef.requiredEra`,
@@ -2076,7 +2092,13 @@ system as an isolated tested module; the god layer and a playable loop follow.
   bullet, `docs/perf/baseline.md` §9) — path-finding cost for many pawns
   converging on a shared destination is no longer the open half of this
   question, tick-budget per tier still is.
-- Endless tech beyond the authored era ladder: procedural generation shape.
+- Endless tech beyond the authored era ladder: the generation shape is settled
+  (§10, `docs/research/tech-reachability.md` §12). What is still open is what the
+  world does about it — the director's threat scaling stops at Exotic's
+  `EraDef.threatPointsFactor` and knows nothing of an age, and nothing in content
+  can gate on a project that does not exist until it is minted, so a generated
+  project is research a civilization can always spend on but not yet research
+  that unlocks anything.
 - Multiplayer determinism, which would constrain RNG stream design.
 - Director behaviour across an abstracted-time skip (§11.5): a skipped century
   still needs incidents, and they cannot all fire at the seam.

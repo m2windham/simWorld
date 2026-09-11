@@ -30,7 +30,8 @@ namespace SimWorld.Tests.Quests
         public void Letters_and_quests_content_loads_with_expected_counts_and_defOfs()
         {
             Assert.Empty(Content.Result.Errors);
-            Assert.Equal(8, DefDatabase<LetterDef>.DefCount);
+            // 9 since research.endless added EndlessAgeOpened (LetterDefs/Letters_Endless.xml).
+            Assert.Equal(9, DefDatabase<LetterDef>.DefCount);
             Assert.Equal(3, DefDatabase<QuestScriptDef>.DefCount);
 
             Assert.NotNull(LetterDefOf.NeutralEvent);
