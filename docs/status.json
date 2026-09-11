@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1754,
+  "testsTotal": 1775,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -495,7 +495,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
       "status": "ported",
-      "tests": 102,
+      "tests": 112,
       "items": [
         {
           "id": "simcore.tick",
@@ -559,8 +559,8 @@
         },
         {
           "id": "simcore.hashphasing.turret",
-          "label": "CompTurretGun and Fire open-code the same thingIDNumber * 3 and cluster identically. Left for one shared helper rather than three copies; populations there are orders of magnitude smaller",
-          "done": false
+          "label": "CompTurretGun and Fire open-coded the same thingIDNumber * 3 and clustered identically — recorded as a follow-up rather than fixed in place, so the fix would be one shared helper and not a third copy. Sim.HashInterval is that helper, and the clustering was real: turret scans run every 15 ticks so every turret landed on one of 5 reachable phases instead of 15, and fire's complex calcs every 150 so every fire landed on one of 50 instead of 150 — three deep in both cases, and a burning quarter is precisely what that interval exists to spread. Pawn.HashOffsetTicks delegates to the same helper and keeps the bench's legacy-offset hatch. The test states the old behaviour at both intervals, so the coverage assertions are demonstrably sensitive to what they rule out rather than passing vacuously.",
+          "done": true
         }
       ]
     },
@@ -1339,7 +1339,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Quests · Scenario · Letters (quests.moments' curator lives in src/SimWorld.Core/Director — see director.chronicle)",
       "status": "translated",
-      "tests": 35,
+      "tests": 46,
       "items": [
         {
           "id": "quests.scenario",
@@ -1379,6 +1379,11 @@
         {
           "id": "quests.rewardvaluefactor",
           "label": "DifficultyDef.questRewardValueFactor applies once, at generation (QuestNode_GiveReward), not at payout. Two lanes wired it in the same batch — one at each end — and the merge caught it before a 0.8 difficulty could pay 0.64. Generation is RimWorld's end and also the value Quest.RewardsSummary advertises, so what a quest promises and what the treasury receives are the same number; the sink keeps only the floor that stops a positive award rounding to nothing.",
+          "done": true
+        },
+        {
+          "id": "quests.tribute",
+          "label": "A tribute demand that can be answered. Quest_Tribute shipped for four batches as a script that set demandSilver from the threat points, sent a letter, waited out the offer and ended Fail — always, identically, whether the civilization was rich or destitute. Nothing read demandSilver, no coin moved either way, and refusing cost nothing, so 'or threatens reprisal' in its own description had no mechanism behind it: the exact mirror of the reward-sink defect, with value unable to leave the civilization as it had been unable to enter. QuestPart_Tribute answers out of the same seat a reward is paid into (QuestCivilization, extracted from the reward sink so both directions provably touch one ledger), and QuestNode_Tribute branches at runtime, which QuestNode_IsSet/IsTrue cannot — they branch during generation, before the quest has run. All or nothing, since a part-payment would need a fraction-to-goodwill rule nobody could source; paid if affordable, since there is no player-input model at this seam; the reprisal applied by the tribute part rather than through QuestPart_Reward, because that part feeds Quest.RewardsSummary and a reprisal is not a reward; and deliberately not scaled by questRewardValueFactor, which is a factor on reward value, not on a cost.",
           "done": true
         }
       ]
