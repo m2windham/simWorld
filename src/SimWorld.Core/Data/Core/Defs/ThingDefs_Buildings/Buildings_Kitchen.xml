@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The stove's Blueprint/Frame pair (system: the food economy — cooking).
+
+    Its own file rather than an entry in Buildings_BlueprintsAndFrames.xml, per CLAUDE.md: DefLoader reads
+    every XML file under a Def folder, so an additive pair never needs an edit to a shared one — the same
+    reason Buildings_Research.xml and Buildings_Stonework.xml keep their own pairs beside their own benches.
+
+    WHY IT WAS MISSING AND WHAT THAT COST. FueledStove has shipped since the workbenches pass and
+    CookMealSimple/Fine/Lavish/Pemmican have all named it in recipeUsers since the cooking pass, but no
+    Blueprint or Frame for it had ever been authored — GenConstruct.BlueprintDefFor(FueledStove) returned
+    null, so nothing could place one and the only stove that has ever existed in this repository was spawned
+    directly by a test. Cooking was therefore unreachable in play from both ends at once: no bench could be
+    raised, and nothing in src/ created a bill (Crafting.CookingInitiative is the other half). That matters
+    beyond flavour, because cooking is the one step in this port's food chain that makes *more* nutrition
+    than it consumes — CookMealSimple turns 0.5 nutrition of raw food into a 0.9-nutrition meal — so a
+    settlement that cannot cook needs nearly twice the raw supply to feed the same people.
+
+    Like TableStonecutter's pair, the bench carries no costList, so its Frame needs nothing delivered and
+    ConstructFinishFrames can finish it outright.
+  -->
+
+  <ThingDef>
+    <defName>Blueprint_FueledStove</defName>
+    <label>fueled stove (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>FueledStove</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_FueledStove</defName>
+    <label>fueled stove (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>FueledStove</entityToBuild>
+  </ThingDef>
+
+</Defs>

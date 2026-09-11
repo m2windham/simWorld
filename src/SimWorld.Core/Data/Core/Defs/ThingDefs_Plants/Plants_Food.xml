@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The wild food plant (RimWorld: Plant_Berry, the berry bush every temperate map is scattered with).
+
+    Its own file, additively, for the reason CLAUDE.md gives; Plants_Wild.xml and Plants_Crop.xml are both
+    files other work touches.
+
+    WHAT IT IS FOR. WildPlant is scrub: no harvestedThingDef, so Building.Plant.HarvestableNow is false for
+    it forever and WorkGiver_GrowerHarvest — which scans every plant on the map, deliberately, see its own
+    doc — never had a single target outside a sown growing zone. This def is the same kind of thing with food
+    on it, which turns that already-built, already-tested work giver into foraging without a line of new AI
+    code: a citizen walks to a ripe bush, harvests it, and RawBerries land on the ground where WorkGiver_Haul
+    and JobGiver_GetFood both already know what to do with them.
+
+    THE NUMBERS. harvestYield 8 is RimWorld's own for a berry bush. growDays is this port's own and is NOT
+    RimWorld's (not sourceable here): it governs how long a bush that WildPlantSpawner regrew takes to bear
+    again, and it is set shorter than the crops in Plants_Crop.xml because a bush that regrows slower than
+    the biome replaces it would make BiomeDef.wildPlantRegrowDays — the number that is supposed to decide
+    this — mean nothing. What the tests pin is the behaviour (a founded settlement can feed itself off the
+    land while its fields come in, a desert feeds fewer people than a forest), never these literals.
+
+    NOT ingestible itself. RimWorld's berry bush carries an ingestible block too, so an animal can graze it
+    and a starving colonist can eat straight off the bush. That half is deliberately not ported here: this
+    port has no grazing, and JobGiver_GetFood scans ThingRequestGroup.Item, so an edible Plant would be a
+    food source nothing could ever find. Recorded rather than half-built.
+  -->
+
+  <ThingDef>
+    <defName>Plant_Berry</defName>
+    <label>berry bush</label>
+    <description>A low bush that fruits heavily in season. The first food any band living off this land will find.</description>
+    <category>Plant</category>
+    <thingClass>SimWorld.Building.Plant</thingClass>
+    <tickerType>Long</tickerType>
+    <passability>Standable</passability>
+    <useHitPoints>true</useHitPoints>
+    <destroyable>true</destroyable>
+    <selectable>true</selectable>
+    <statBases>
+      <MaxHitPoints>60</MaxHitPoints>
+    </statBases>
+    <plant>
+      <growDays>3</growDays>
+      <harvestedThingDef>RawBerries</harvestedThingDef>
+      <harvestYield>8</harvestYield>
+    </plant>
+  </ThingDef>
+
+</Defs>

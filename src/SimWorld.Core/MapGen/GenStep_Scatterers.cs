@@ -32,6 +32,17 @@ namespace SimWorld.MapGen
             {
                 ScatterThings(ctx, rand, MapGenTuning.PlantCellsPerItem(plantSignal), MapGenThingDefOf.WildPlant, requireFertile: true);
             }
+
+            // The half of the undergrowth that bears food, at the density this tile's own biome promises
+            // (Building.WildFoodTuning reads BiomeDef.forageability, which nothing had ever turned into
+            // food). Scattered here rather than in a GenStep of its own because it is the same act as the
+            // line above — wild vegetation placed on open, fertile ground — and Building.WildPlantSpawner
+            // regrows both from the same two formulas afterwards.
+            float foodCellsPerItem = Building.WildFoodTuning.FoodPlantCellsPerItem(tile);
+            if (foodCellsPerItem > 0f)
+            {
+                ScatterThings(ctx, rand, foodCellsPerItem, Building.WildFoodDefOf.Plant_Berry, requireFertile: true);
+            }
         }
 
         private static ThingDef PickChunkDef(RandomStream rand) =>
