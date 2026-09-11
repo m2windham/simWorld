@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 
+  <!--
+    Every need's rate lives in its needClass, never in this file. NeedDef.fallPerDay exists for parity and is
+    read by nothing in this port (RimWorld gives it to Need_Chemical alone) - setting it here is a load error,
+    on purpose: it used to be the field a need was silently assumed to decay by, and the assumption was wrong
+    for all eight of them. See NeedDef.fallPerDay and Need's own class remarks.
+  -->
+
   <NeedDef>
     <defName>Food</defName>
     <label>food</label>
@@ -76,9 +83,7 @@
   <!--
     Beauty is the one environment need with a driver (system: needs.beauty): MapEnvironmentSampler reads the
     cells around the citizen through BeautyUtility, so it overrides the base's generic Need_Environment with
-    Need_Beauty, which adds the category readout the Beauty ThoughtDef's worker bands mood from. The other
-    three keep Need_Environment and their baseLevel until somebody drives them - see MapEnvironmentSampler
-    for why each is returned null rather than given an invented number.
+    Need_Beauty, which adds the category readout the Beauty ThoughtDef's worker bands mood from.
   -->
   <NeedDef ParentName="EnvironmentNeedBase">
     <defName>Beauty</defName>
@@ -88,28 +93,63 @@
     <listPriority>80</listPriority>
   </NeedDef>
 
+  <!--
+    Comfort and RoomSize are the two needs in this port that genuinely never move, and they say so here
+    rather than leaving a reader to infer it from an unset field. Both are seekers whose target comes from
+    MapEnvironmentSampler; it answers null for both, null means "the Def's baseLevel", and each starts at
+    that same baseLevel - so the target is always exactly where the need already is. The rise/fall rates
+    below are real and would apply the instant a target moved; nothing moves one.
+
+    What each is waiting for, from RimWorld (see Need_Environment.CurInstantLevel for the whole shape):
+      Comfort  - Need_Comfort is not sampled from surroundings at all. Furniture pushes it: sitting on or
+                 lying in a thing calls ComfortUsed(comfort) and the need chases that for 15 ticks before
+                 falling back to 0. It needs a comfort hook in the job system and a Comfort stat on
+                 furniture, not a map reading.
+      RoomSize - Need_RoomSize samples the citizen's room out to a 7.9-cell radius and runs the cell count
+                 through a curve. Rooms exist here (Building.RoomTracker), so this one is a branch in
+                 MapEnvironmentSampler plus the measurement that branch costs - the same radial sample
+                 Beauty already pays 3.5us for outdoors (see that class).
+  -->
   <NeedDef ParentName="EnvironmentNeedBase">
     <defName>Comfort</defName>
     <label>comfort</label>
-    <description>Comfort from furniture used recently.</description>
+    <description>Comfort from furniture used recently. Holds at its starting level until something pushes comfort at it.</description>
     <listPriority>75</listPriority>
     <seekerRisePerHour>0.5</seekerRisePerHour>
     <seekerFallPerHour>0.2</seekerFallPerHour>
   </NeedDef>
 
-  <NeedDef ParentName="EnvironmentNeedBase">
+  <!--
+    Outdoors is not a seeker and has no sampler: RimWorld's Need_Outdoors reads the roof over the citizen's
+    head and the openness of the cell they stand in, and moves itself. It was an EnvironmentNeedBase child
+    here until the needs audit, which is why it sat at 0.5 in every game ever played - the sampler answered
+    null for it, null means "use baseLevel", and a seeker already on its target never moves.
+
+    It sits here, between two needs it has nothing to do with, only to keep the load order of this file
+    unchanged: a NeedDef's index is its position in the loaded database, and the Statistical tier seeds a
+    citizen's cohort sample from it (Pawn_TierTracker.ApplyCohortSample). Moving a def would resample every
+    untracked citizen in every existing save.
+  -->
+  <NeedDef>
     <defName>Outdoors</defName>
     <label>outdoors</label>
-    <description>Time spent under open sky.</description>
+    <description>Time spent under open sky. Refills quickly outdoors and drains under a roof; a citizen kept inside too long gets cabin fever. Starts full (Need_Outdoors.SetInitialLevel), not at baseLevel.</description>
+    <needClass>SimWorld.Needs.Need_Outdoors</needClass>
     <listPriority>70</listPriority>
-    <seekerRisePerHour>0.25</seekerRisePerHour>
-    <seekerFallPerHour>0.08</seekerFallPerHour>
+    <minIntelligence>Humanlike</minIntelligence>
+    <threshPercents>
+      <li>0.8</li>
+      <li>0.6</li>
+      <li>0.4</li>
+      <li>0.2</li>
+      <li>0.05</li>
+    </threshPercents>
   </NeedDef>
 
   <NeedDef ParentName="EnvironmentNeedBase">
     <defName>RoomSize</defName>
     <label>space</label>
-    <description>How spacious the current room feels.</description>
+    <description>How spacious the current room feels. Holds at its starting level until a room sampler answers for it.</description>
     <listPriority>65</listPriority>
   </NeedDef>
 

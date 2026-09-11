@@ -58,9 +58,18 @@ namespace SimWorld.Thoughts
 
         public void MemoryThoughtInterval()
         {
+            MemoryThoughtIntervalBulk(Needs.Need.IntervalTicks);
+        }
+
+        /// <summary>Ages every memory by a whole elapsed span at once — see
+        /// <see cref="Thought_Memory.ThoughtIntervalBulk"/>. O(#memories) either way, so a coarse tick costs
+        /// the same however long the span is.</summary>
+        public void MemoryThoughtIntervalBulk(int elapsedTicks)
+        {
+            if (elapsedTicks <= 0) return;
             for (int i = 0; i < memories.Count; i++)
             {
-                memories[i].ThoughtInterval();
+                memories[i].ThoughtIntervalBulk(elapsedTicks);
             }
             RemoveExpiredMemories();
         }
@@ -275,6 +284,13 @@ namespace SimWorld.Thoughts
         public void ThoughtInterval()
         {
             memories.MemoryThoughtInterval();
+        }
+
+        /// <summary>One interval's worth of ageing for a whole elapsed span, for the Interval tier's bulk
+        /// mood pass (<see cref="Needs.Need_Mood.NeedIntervalBulk"/>).</summary>
+        public void ThoughtIntervalBulk(int elapsedTicks)
+        {
+            memories.MemoryThoughtIntervalBulk(elapsedTicks);
         }
 
         public void GetAllMoodThoughts(List<Thought> outThoughts)
