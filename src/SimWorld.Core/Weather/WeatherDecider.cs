@@ -21,12 +21,13 @@ namespace SimWorld.Weather
     /// — which is what makes a cold map snow and a warm one rain, without either needing to be listed
     /// anywhere.</description></item>
     /// </list>
-    /// <b>Not ported: <c>DisableRainFor</c>.</b> RimWorld's decider can be told to hold the rain off for a
-    /// while (its storyteller uses it so a fire incident is not quenched the moment it lands). Nothing in
-    /// this codebase would ever call it — the incidents that would (<c>HeatWave</c>, <c>ColdSnap</c>,
-    /// <c>Flashstorm</c>) are still <c>IncidentWorker_Placeholder</c> — and an entry point with no caller is
-    /// the dormancy this module was sent to remove, not add. It is a three-line addition the day an incident
-    /// worker needs it.
+    /// <b><c>DisableRainFor</c>, and the day it got a caller.</b> RimWorld's decider can be told to hold the
+    /// rain off for a while, so a fire incident is not quenched the moment it lands. This port left it out on
+    /// the grounds that nothing would ever call it — "the incidents that would (<c>HeatWave</c>,
+    /// <c>ColdSnap</c>, <c>Flashstorm</c>) are still <c>IncidentWorker_Placeholder</c>, and an entry point
+    /// with no caller is the dormancy this module was sent to remove". Those three are real incidents now
+    /// (<c>Conditions.IncidentWorker_MakeGameCondition</c>), and <c>Conditions.GameCondition_Flashstorm</c>
+    /// is that caller, so <see cref="DisableRainFor"/> is here — with a caller, as promised, and not before.
     /// </summary>
     public sealed class WeatherDecider : IExposable
     {
@@ -39,6 +40,9 @@ namespace SimWorld.Weather
 
         private int curWeatherDuration = InitialWeatherDurationTicks;
 
+        /// <summary>Tick rain becomes choosable again; -1 (or any past tick) means it already is.</summary>
+        private int rainAllowedAgainTick = -1;
+
         public WeatherDecider(WeatherManager manager)
         {
             this.manager = manager ?? throw new ArgumentNullException(nameof(manager));
@@ -46,6 +50,22 @@ namespace SimWorld.Weather
 
         /// <summary>Ticks the current weather is due to last.</summary>
         public int CurWeatherDuration => curWeatherDuration;
+
+        /// <summary>Whether rain is currently being held off (RimWorld: the <c>ticksWhenRainAllowedAgain</c>
+        /// check inside <c>CurrentWeatherCommonality</c>).</summary>
+        public bool RainDisabled => Find.TickManager.TicksGame < rainAllowedAgainTick;
+
+        /// <summary>
+        /// Holds the rain off for <paramref name="ticks"/> (RimWorld: <c>WeatherDecider.DisableRainFor</c>),
+        /// and moves the weather on immediately if it is already raining — otherwise a storm that lands in a
+        /// downpour would be quenched before its first strike. Extends an existing hold, never shortens one.
+        /// </summary>
+        public void DisableRainFor(int ticks)
+        {
+            if (ticks <= 0) return;
+            rainAllowedAgainTick = Math.Max(rainAllowedAgainTick, Find.TickManager.TicksGame + ticks);
+            if (manager.CurWeather != null && manager.CurWeather.rainRate > 0f) StartNextWeather();
+        }
 
         public void WeatherDeciderTick()
         {
@@ -88,6 +108,7 @@ namespace SimWorld.Weather
         {
             if (weather == null) throw new ArgumentNullException(nameof(weather));
             if (!weather.repeatable && ReferenceEquals(weather, manager.CurWeather)) return 0f;
+            if (weather.rainRate > 0f && RainDisabled) return 0f;
 
             // The map's own outdoor temperature, exactly as RimWorld gates on map.mapTemperature.OutdoorTemp.
             // On a map with a world tile that number is already the season/hour/weather model's own output
@@ -109,6 +130,7 @@ namespace SimWorld.Weather
         public void ExposeData()
         {
             Scribe_Values.Look(ref curWeatherDuration, "curWeatherDuration", InitialWeatherDurationTicks);
+            Scribe_Values.Look(ref rainAllowedAgainTick, "rainAllowedAgainTick", -1);
         }
     }
 }

@@ -37,6 +37,18 @@ namespace SimWorld.World
         /// </summary>
         public EmergenceManager emergence = null!;
 
+        /// <summary>
+        /// Every condition in force over the whole civilization (system: conditions —
+        /// <see cref="global::SimWorld.Conditions.GameConditionManager"/>): a heat wave, a cold snap, a
+        /// flashstorm. Civilization-scale rather than per-map on purpose — the storyteller's only target is
+        /// the civilization, and most of its settlements have no interior map for a condition to live on; see
+        /// that class's own doc. Every open map reaches these through its own manager's parent link. Ticked
+        /// from <see cref="WorldTick"/>, ahead of every map's tick, and saved with the world because a
+        /// condition outlives whichever settlement happened to be open when it started.
+        /// </summary>
+        public global::SimWorld.Conditions.GameConditionManager gameConditionManager =
+            new global::SimWorld.Conditions.GameConditionManager();
+
         private int nextObjectId = 1;
 
         /// <summary>For Scribe's deep-load construction.</summary>
@@ -59,6 +71,7 @@ namespace SimWorld.World
         /// <summary>Call once per game tick: advances every world object (RimWorld: <c>Verse.WorldObjectsHolder.WorldObjectsHolderTick</c>, folded into <c>World</c> here), then <see cref="EmergenceManager.Tick"/>. Caravans use this to step along their path and consume food.</summary>
         public void WorldTick()
         {
+            gameConditionManager.GameConditionManagerTick();
             for (int i = 0; i < worldObjects.Count; i++)
             {
                 worldObjects[i].Tick(this);
@@ -91,6 +104,8 @@ namespace SimWorld.World
             // carry no emergence state at all — fall back to a fresh manager seeded from info exactly as the
             // (info, grid) constructor would, rather than leaving a null that WorldTick would throw on.
             emergence = e ?? new EmergenceManager(info.seed);
+
+            gameConditionManager.ExposeData();
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {

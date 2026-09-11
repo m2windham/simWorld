@@ -54,11 +54,15 @@ namespace SimWorld.Weather
         /// (<see cref="GenTemperature.OutdoorTemperatureAt"/>).
         /// <para/>
         /// <b>Translation.</b> RimWorld's weather does not move the thermometer at all: its temperature
-        /// swings are <c>GameConditionDef</c>s (heat wave, cold snap), a system this codebase does not have —
-        /// its <c>HeatWave</c>/<c>ColdSnap</c> IncidentDefs are still <c>IncidentWorker_Placeholder</c>. A
-        /// small per-weather offset is carried here instead so "temperature offset" has one home rather than
-        /// none; it is also the seam a real GameCondition system would add to rather than replace. Values are
-        /// this port's own and deliberately small (a few degrees), pinned by direction, not magnitude.
+        /// swings are <c>GameConditionDef</c>s (heat wave, cold snap). When this field was written that
+        /// system did not exist here and the <c>HeatWave</c>/<c>ColdSnap</c> IncidentDefs were still
+        /// <c>IncidentWorker_Placeholder</c>; a small per-weather offset was carried here instead so
+        /// "temperature offset" had one home rather than none, and this was named as the seam a real
+        /// GameCondition system would add to rather than replace. It now is one:
+        /// <c>Conditions.GameConditionManager.AggregateTemperatureOffset</c> is added alongside this value in
+        /// <see cref="WeatherManager"/>, and neither replaced the other. Values here are this port's own and
+        /// deliberately small (a few degrees), pinned by direction, not magnitude — a condition is what
+        /// moves the thermometer far.
         /// </summary>
         public float temperatureOffset;
 

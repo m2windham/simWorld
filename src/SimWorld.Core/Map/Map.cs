@@ -71,6 +71,13 @@ namespace SimWorld.Map
         /// other managers, ticked from <see cref="MapTick"/>, saved by <see cref="ExposeData"/>.</summary>
         public Weather.WeatherManager weatherManager = null!;
 
+        /// <summary>Conditions local to this map, and the way this map reaches the civilization-scale ones
+        /// (system: conditions — <see cref="SimWorld.Conditions.GameConditionManager"/>, whose
+        /// <c>Parent</c> is the world's). Ticked from <see cref="MapTick"/> ahead of
+        /// <see cref="weatherManager"/>, so a condition that ends this tick is already gone before the
+        /// outdoor temperature is recomputed from it.</summary>
+        public Conditions.GameConditionManager gameConditionManager = null!;
+
         /// <summary>Outdoor temperature every unroofed/unenclosed cell tracks directly, and every enclosed
         /// room equalises toward (system 16: Building). Still a plain settable value — but on a map that
         /// knows its world tile, <see cref="weatherManager"/> now sets it every tick from that tile's annual
@@ -124,7 +131,12 @@ namespace SimWorld.Map
         /// </summary>
         public void MapTick()
         {
-            // First, so the rooms equalise toward the outdoor temperature this tick's weather just set
+            // Before the weather, which reads gameConditionManager.AggregateTemperatureOffset() as part of
+            // the offset it hands GenTemperature: a heat wave that ends on this tick must already be gone
+            // when that number is taken, not one tick later.
+            gameConditionManager.GameConditionManagerTick();
+
+            // Then, so the rooms equalise toward the outdoor temperature this tick's weather just set
             // rather than the previous tick's (RimWorld ticks its own weatherManager ahead of the map's
             // temperature work for the same reason).
             weatherManager.WeatherManagerTick();
@@ -158,6 +170,7 @@ namespace SimWorld.Map
             roomTracker = new Building.RoomTracker(this);
             zoneManager = new Building.ZoneManager(this);
             areaManager = new Building.AreaManager(this);
+            gameConditionManager = new Conditions.GameConditionManager(this);
             weatherManager = new Weather.WeatherManager(this);
         }
 
@@ -212,6 +225,7 @@ namespace SimWorld.Map
             roomTracker.ExposeTemperatures();
             zoneManager.ExposeData();
             areaManager.ExposeData();
+            gameConditionManager.ExposeData();
             weatherManager.ExposeData();
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
