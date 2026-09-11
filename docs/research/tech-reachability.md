@@ -779,3 +779,126 @@ which projects are mandatory, not what they cost.
   before this round (§6); re-deriving all of them was out of scope for a
   content-shape change. `eras` and `baseline`, the two the brief asks for, are
   re-run in full above.
+
+## 12. After the last measurement: what the tail is now (`research.endless`)
+
+§4 ends with a sentence this section retires: "Past that the civilization
+researches nothing, forever." That was true of the authored tree and it was
+never true of the game, because endless tech already existed when it was
+written — it was just not worth counting. This round rebuilt it, and nothing in
+`ResearchProjectDefs/`, `EraDefs/` or the harness changed to do it, so every
+number above still measures what it measured.
+
+### 12.1 What the tail was
+
+Three tracks, three authored titles each, then Roman numerals. Two consequences,
+and the second is the one that mattered.
+
+The names ran out after nine. A civilization that reached the end of the
+authored tree got "applied metamaterials", "lattice engineering", "matter
+compilation", and then "applied metamaterials II". That is a counter in a coat.
+
+And the costs ran out before the names did. Each track grew geometrically at
+1.35 per tier from a 6,000-point base, so the twentieth generated project of a
+track cost 1,796,772 points — **three times the entire authored tree** — and the
+thirtieth cost 36 million. The tail was not endless; it was about fifteen
+projects deep, after which the cost curve did the same thing the empty tree used
+to do.
+
+### 12.2 What it is now
+
+A generated project's label is four words drawn from a taxonomy rather than one
+entry taken off a list:
+
+| Slot | Comes from | Example |
+| --- | --- | --- |
+| Age register | the age, shared by every project opened in it | `holographic` |
+| Substrate | the track's own nouns, disjoint between tracks | `attention` |
+| Form | the track's foundation forms, or its applied forms | `first principles` |
+
+So `holographic attention first principles` is the mind track's foundational
+work in the holographic age, and `holographic recursion compression` is applied
+work hanging off it — and the form word alone says which. Six tracks (matter,
+energy, mind, life, order, reach) replace three; an age is four projects per
+track, one foundation and three optional.
+
+Distinct names are a property of the construction, not of a uniqueness check
+over everything already minted. Within one age the tracks' substrate lists are
+disjoint, the foundation and applied form lists are disjoint, and an age's
+leaves permute their substrate and their form independently. Between ages the
+register word differs, because the age index maps injectively onto it: the
+twenty theme words carry the first twenty ages, and past that they compound with
+eight particles — `post-holographic`, then `meta-post-granular` — which is a
+base-8 numeral written in words, and so unbounded. **4,320 distinct projects
+before the register compounds twice at all**, and no ceiling after that.
+
+The whole map is a pure function of (game seed, track, age, slot), so the
+thousandth generated project can be named without minting the first 999, and a
+save stores two integers — the seed and the age count — instead of a list of
+invented Defs.
+
+### 12.3 Cost: polynomial, not geometric
+
+The curve is now `baseCost x depth^exponent`, where depth is the age plus how
+far through the age the slot sits, so it rises across the whole tail and not
+only between ages. Same per-track depth, both curves:
+
+| Per-track depth | Geometric (was) | Polynomial (is) |
+| --- | --- | --- |
+| 1 | 6,000 | 9,000 |
+| 10 | 89,362 | 44,186 |
+| 20 | 1,796,772 | 95,454 |
+| 50 | 1.5 x 10^10 | 294,601 |
+| 100 | 4.8 x 10^16 | 722,423 |
+| 600 | 7.0 x 10^81 | 7,850,366 |
+
+Both always rise, which is what an endless tail is for — research can always be
+spent. The difference is the **marginal** step: 1.35 forever on the old curve,
+against 1.35 at the second project, 1.017 at the twentieth and 1.003 at the
+hundredth on the new one. A curve whose steps shrink is still unbounded; it is
+just walkable at any depth, which the old one was not.
+
+The opening price is pinned to the shipped tree rather than to a literal: a
+track's first generated project costs at least as much as the most expensive
+authored project (9,000) and at most three times it. The tests assert that band,
+the always-rising trend and the always-shrinking step — not the exponent.
+
+### 12.4 Ages are not a ninth era, deliberately
+
+An age is endless research's own grouping: it names, it prices, and it shapes
+the generated DAG. It is never an `EraDef`. Generated projects still carry no
+`era` and — this is new — are now forbidden to name an authored project as a
+prerequisite at all, because doing so would put that project into its era's
+`SpineProjects` and so raise what completing an authored era requires. That is a
+run-time edit to the ladder §7.2 and §10 measured, made by content that did not
+exist when the ladder was authored. A test snapshots every era's project list,
+spine and `IsComplete` before and after opening eight ages and asserts none of
+them moved.
+
+What the player gets instead is the thing an era gave them: a named span their
+civilization lived through, announced in the chronicle and by a letter of its
+own when they open it. Reaching the frontier — finishing every foundation of the
+newest age — opens the next one, so a civilization can press on without first
+buying every optional project behind it. That is §11's divergence argument
+applied to the tail: one project in four is structural, so two civilizations on
+one seed leave an age having done visibly different things in it. Measured in
+`EndlessDepthTests`, a frontier-racer and a completionist spending the same
+budget on the same seed share under 60% of what they finish, and the racer is
+several ages further on.
+
+### 12.5 What this round did not do
+
+- **Did not re-run the panel.** Nothing in `ResearchProjectDefs/` or `EraDefs/`
+  changed, so §2, §3, §10 and §11 all still describe the shipped tree exactly.
+  The harness models no endless tail and was not extended to; what a real
+  civilization does out past day 3,074 needs the research economy §9 says is
+  still modelled rather than measured.
+- **Did not give the tail threat scaling.** `EraDef.threatPointsFactor` stops at
+  Exotic, so the director does not know an age from the era below it. Wiring it
+  means either generating `EraDef`s — rejected above — or a second lever on the
+  director, which belongs to the director.
+- **Did not gate content on generated projects.** No `ThingDef` or `RecipeDef`
+  can name a project that does not exist until it is minted, so §7.1's condition
+  cannot be met out here by the same mechanism. Endless tech is research a
+  civilization can always spend on; it is not yet research that unlocks
+  anything.

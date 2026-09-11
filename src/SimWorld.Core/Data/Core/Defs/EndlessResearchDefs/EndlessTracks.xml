@@ -3,15 +3,33 @@
 
   <!--
     Endless research (system: research, tracker item research.endless). What a civilization that has finished
-    all 232 authored projects keeps its researchers on. Each track continues a tag the authored tree already
-    uses, so the tail grows out of the tree rather than beside it, and each generated project is a pure
-    function of its track and tier — nothing here is rolled, so a save stores one integer rather than a
-    growing list of invented defs (see EndlessResearch's own remarks).
+    all 245 authored projects keeps its researchers on. Each track continues a tag the authored tree already
+    uses, so the tail grows out of the tree rather than beside it.
 
-    Three tracks, not fourteen. The authored tree's fourteen tracks are where the history of ideas is
-    actually told; past its end the distinctions that matter are coarser, and a tail of fourteen parallel
-    lines would be fourteen times the noise for no more meaning. Costs and growth rates are this port's own
-    judgement — RimWorld has no endless tech to source them from — and are pinned by trend tests.
+    A track is a vocabulary, not a list. The first version of this file gave each track three authored titles
+    and let EndlessResearch append Roman numerals once they ran out, which is exactly as endless as counting
+    is. What a track carries now is the three word-lists a generated name is composed from - substrates (what
+    this domain studies), foundationForms (what a foundational result in it is called) and appliedForms (what
+    an applied one is called) - and the fourth word comes from the age (EndlessAgeDefs/EndlessAges.xml). The
+    supply of names is the product of those lists across an unbounded register of ages, not the length of any
+    one of them.
+
+    Two rules the content has to keep, both asserted by the tests rather than by ConfigErrors, because both
+    are properties of the shipped SET rather than of any one Def:
+
+      - substrates are disjoint between tracks. This is what keeps a matter project from borrowing a mind
+        noun, and it is also half the proof that no two generated labels can ever be the same.
+      - foundationForms and appliedForms are disjoint within a track, so a label's last word says whether the
+        project is the spine of its age or optional work hanging off it.
+
+    Six tracks, not fourteen and not three. The authored tree's fourteen tracks are where the history of ideas
+    is actually told; past its end the distinctions that matter are coarser. Six is enough that an age has
+    real breadth to choose within, and few enough that an age is legible as one thing.
+
+    baseCost and costExponent are this port's own judgement - RimWorld has no endless tech to source them
+    from. What pins them is a relationship, not a literal: a generated project starts at or above the most
+    expensive authored project (9000), and the cost curve is polynomial rather than geometric so the tail
+    keeps getting harder without becoming a wall. The tests assert the trend.
   -->
 
   <EndlessResearchDef>
@@ -19,13 +37,38 @@
     <label>matter</label>
     <description>What things are made of, and what else they could be made of instead.</description>
     <trackTag>MaterialsCrafts</trackTag>
-    <titles>
-      <li>applied metamaterials</li>
-      <li>lattice engineering</li>
-      <li>matter compilation</li>
-    </titles>
-    <baseCost>6000</baseCost>
-    <costGrowth>1.35</costGrowth>
+    <substrates>
+      <li>lattice</li>
+      <li>alloy</li>
+      <li>ceramic</li>
+      <li>colloid</li>
+      <li>crystal</li>
+      <li>polymer</li>
+      <li>aerogel</li>
+      <li>filament</li>
+      <li>glass</li>
+      <li>weave</li>
+    </substrates>
+    <foundationForms>
+      <li>theory</li>
+      <li>synthesis</li>
+      <li>first principles</li>
+      <li>formalism</li>
+      <li>unification</li>
+      <li>taxonomy</li>
+    </foundationForms>
+    <appliedForms>
+      <li>metallurgy</li>
+      <li>fabrication</li>
+      <li>tempering</li>
+      <li>casting</li>
+      <li>machining</li>
+      <li>metrology</li>
+      <li>milling</li>
+      <li>finishing</li>
+    </appliedForms>
+    <baseCost>9000</baseCost>
+    <costExponent>1.35</costExponent>
   </EndlessResearchDef>
 
   <EndlessResearchDef>
@@ -33,13 +76,38 @@
     <label>energy</label>
     <description>Getting more work out of the same fuel, and then out of less.</description>
     <trackTag>EnergyIndustry</trackTag>
-    <titles>
-      <li>field harmonics</li>
-      <li>containment theory</li>
-      <li>vacuum yield</li>
-    </titles>
-    <baseCost>7000</baseCost>
-    <costGrowth>1.4</costGrowth>
+    <substrates>
+      <li>plasma</li>
+      <li>flux</li>
+      <li>gradient</li>
+      <li>cascade</li>
+      <li>reservoir</li>
+      <li>arc</li>
+      <li>coolant</li>
+      <li>combustion</li>
+      <li>turbine</li>
+      <li>condenser</li>
+    </substrates>
+    <foundationForms>
+      <li>theory</li>
+      <li>thermodynamics</li>
+      <li>first principles</li>
+      <li>field theory</li>
+      <li>conservation laws</li>
+      <li>formalism</li>
+    </foundationForms>
+    <appliedForms>
+      <li>engineering</li>
+      <li>containment</li>
+      <li>regulation</li>
+      <li>transmission</li>
+      <li>harvesting</li>
+      <li>tuning</li>
+      <li>ducting</li>
+      <li>throttling</li>
+    </appliedForms>
+    <baseCost>9600</baseCost>
+    <costExponent>1.40</costExponent>
   </EndlessResearchDef>
 
   <EndlessResearchDef>
@@ -47,13 +115,155 @@
     <label>mind</label>
     <description>The study of thought by things that think, which never finishes.</description>
     <trackTag>KnowledgeWriting</trackTag>
-    <titles>
-      <li>cognitive scaffolding</li>
-      <li>inference architecture</li>
-      <li>recursive theory</li>
-    </titles>
-    <baseCost>8000</baseCost>
-    <costGrowth>1.45</costGrowth>
+    <substrates>
+      <li>inference</li>
+      <li>cognition</li>
+      <li>memory</li>
+      <li>grammar</li>
+      <li>abstraction</li>
+      <li>notation</li>
+      <li>recursion</li>
+      <li>attention</li>
+      <li>heuristics</li>
+      <li>archive</li>
+    </substrates>
+    <foundationForms>
+      <li>theory</li>
+      <li>first principles</li>
+      <li>formalism</li>
+      <li>axiomatics</li>
+      <li>epistemology</li>
+      <li>unification</li>
+    </foundationForms>
+    <appliedForms>
+      <li>schooling</li>
+      <li>tutoring</li>
+      <li>indexing</li>
+      <li>compression</li>
+      <li>annotation</li>
+      <li>transcription</li>
+      <li>curation</li>
+      <li>drafting</li>
+    </appliedForms>
+    <baseCost>10200</baseCost>
+    <costExponent>1.45</costExponent>
+  </EndlessResearchDef>
+
+  <EndlessResearchDef>
+    <defName>EndlessLife</defName>
+    <label>life</label>
+    <description>Bodies, and what can be understood about keeping them working.</description>
+    <trackTag>MedicineHealth</trackTag>
+    <substrates>
+      <li>tissue</li>
+      <li>enzyme</li>
+      <li>genome</li>
+      <li>symbiote</li>
+      <li>immunity</li>
+      <li>marrow</li>
+      <li>neurochemistry</li>
+      <li>senescence</li>
+      <li>graft</li>
+      <li>microbiome</li>
+    </substrates>
+    <foundationForms>
+      <li>theory</li>
+      <li>first principles</li>
+      <li>physiology</li>
+      <li>morphology</li>
+      <li>epidemiology</li>
+      <li>unification</li>
+    </foundationForms>
+    <appliedForms>
+      <li>surgery</li>
+      <li>prophylaxis</li>
+      <li>therapeutics</li>
+      <li>diagnostics</li>
+      <li>rehabilitation</li>
+      <li>culturing</li>
+      <li>screening</li>
+      <li>dosing</li>
+    </appliedForms>
+    <baseCost>9300</baseCost>
+    <costExponent>1.38</costExponent>
+  </EndlessResearchDef>
+
+  <EndlessResearchDef>
+    <defName>EndlessOrder</defName>
+    <label>order</label>
+    <description>How a civilization that has grown past anyone's experience of one governs itself.</description>
+    <trackTag>SocietyGovernance</trackTag>
+    <substrates>
+      <li>tenure</li>
+      <li>franchise</li>
+      <li>census</li>
+      <li>statute</li>
+      <li>tribunal</li>
+      <li>custom</li>
+      <li>treasury</li>
+      <li>precedent</li>
+      <li>quorum</li>
+      <li>tariff</li>
+    </substrates>
+    <foundationForms>
+      <li>theory</li>
+      <li>first principles</li>
+      <li>doctrine</li>
+      <li>jurisprudence</li>
+      <li>political economy</li>
+      <li>unification</li>
+    </foundationForms>
+    <appliedForms>
+      <li>administration</li>
+      <li>arbitration</li>
+      <li>enforcement</li>
+      <li>accounting</li>
+      <li>registry</li>
+      <li>auditing</li>
+      <li>convening</li>
+      <li>appeal</li>
+    </appliedForms>
+    <baseCost>9000</baseCost>
+    <costExponent>1.32</costExponent>
+  </EndlessResearchDef>
+
+  <EndlessResearchDef>
+    <defName>EndlessReach</defName>
+    <label>reach</label>
+    <description>Going further than last time, and knowing where you have been.</description>
+    <trackTag>TransportExploration</trackTag>
+    <substrates>
+      <li>waypoint</li>
+      <li>corridor</li>
+      <li>horizon</li>
+      <li>transit</li>
+      <li>harbour</li>
+      <li>relay</li>
+      <li>caravan</li>
+      <li>ballast</li>
+      <li>gauge</li>
+      <li>vector</li>
+    </substrates>
+    <foundationForms>
+      <li>theory</li>
+      <li>first principles</li>
+      <li>geodesy</li>
+      <li>navigation theory</li>
+      <li>unification</li>
+      <li>doctrine</li>
+    </foundationForms>
+    <appliedForms>
+      <li>surveying</li>
+      <li>routing</li>
+      <li>charting</li>
+      <li>provisioning</li>
+      <li>signalling</li>
+      <li>ferrying</li>
+      <li>portage</li>
+      <li>docking</li>
+    </appliedForms>
+    <baseCost>9900</baseCost>
+    <costExponent>1.42</costExponent>
   </EndlessResearchDef>
 
 </Defs>

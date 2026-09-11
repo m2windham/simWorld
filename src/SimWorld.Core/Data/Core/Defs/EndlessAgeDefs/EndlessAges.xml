@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The register endless research names its ages in (system: research, tracker item research.endless).
+
+    An age is NOT an era. The EraDef ladder is a finite authored artefact that ends at Exotic, and nothing
+    minted at run time is allowed to change what an authored era's spine is or how much of it a civilization
+    must finish (docs/spec/simworld-spec.md 10). An age is endless research's own grouping: it supplies the
+    one word every project opened in that span shares, it sets how wide a span is, and it is announced to the
+    player the way an era is - so the tail reads as a civilization still having a history, without giving the
+    ladder a ninth rung. See EndlessAgeDef for the argument in full.
+
+    themes and prefixes together are why the tail never repeats a name. The first 20 ages take a theme each,
+    in an order this game's seed permutes; past that they compound - "post-resonant", then "meta-post-resonant"
+    - which is a base-8 numeral written in words. That is unbounded, and unlike a numeral it still reads as a
+    discipline rather than as a counter, which is the whole point of the exercise.
+  -->
+
+  <EndlessAgeDef>
+    <defName>EndlessAges</defName>
+    <label>ages past the ladder</label>
+    <themes>
+      <li>resonant</li>
+      <li>folded</li>
+      <li>coherent</li>
+      <li>acausal</li>
+      <li>recursive</li>
+      <li>quantized</li>
+      <li>emergent</li>
+      <li>distributed</li>
+      <li>adaptive</li>
+      <li>unified</li>
+      <li>entangled</li>
+      <li>holographic</li>
+      <li>reflexive</li>
+      <li>granular</li>
+      <li>ambient</li>
+      <li>symmetric</li>
+      <li>generative</li>
+      <li>latent</li>
+      <li>elastic</li>
+      <li>iterative</li>
+    </themes>
+    <prefixes>
+      <li>post</li>
+      <li>meta</li>
+      <li>trans</li>
+      <li>hyper</li>
+      <li>para</li>
+      <li>proto</li>
+      <li>neo</li>
+      <li>ultra</li>
+    </prefixes>
+    <ageLabelFormat>the {theme} age</ageLabelFormat>
+    <ageDescription>Nobody wrote this age down first. A civilization past the end of its own archives names the span it is living in after the one idea running through everything it is working on: {theme}.</ageDescription>
+    <foundationDescription>The founding result of {age} in {track}: {subject}, derived from nothing but what this civilization already knew.</foundationDescription>
+    <appliedDescription>What {age} makes of {track}: {subject}, worked out by a civilization with no authority left to consult.</appliedDescription>
+    <projectsPerTrack>4</projectsPerTrack>
+  </EndlessAgeDef>
+
+</Defs>
