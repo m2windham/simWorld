@@ -2,8 +2,11 @@
 <Defs>
 
   <!--
-    Stone-cutting (RimWorld: RecipeDefs/Recipes_Production), trimmed to one recipe until quarrying and
-    chunk-yielding mining exist. No workSkill: RimWorld's stonecutting has none either.
+    Stone-cutting (RimWorld: RecipeDefs/Recipes_Production). No workSkill: RimWorld's stonecutting has none
+    either. This was "trimmed to one recipe until quarrying and chunk-yielding mining exist" — that blocker
+    expired when mining started dropping what the rock holds, and the granite and limestone recipes now live
+    in Recipes_Stonecutting.xml (a new file rather than two more elements here; CLAUDE.md). The sandstone one
+    stays where it has always been so nothing that names this file has to move.
   -->
 
   <RecipeDef>

@@ -449,6 +449,10 @@ namespace SimWorld.Sim
             // building.initiative: settlements decide what they lack and queue the blueprints for it. Self
             // gated on the rare tick like the managers above, so a tick it is not due on costs a modulo.
             tm.PostTickers.Add(_ => SimWorld.Building.SettlementConstructionInitiative.Tick());
+            // stonework: settlements raise a stonecutter's table where their mined chunks lie and keep a
+            // standing bill on it, so the cut stone the construction initiative above now spends on walls
+            // actually gets cut. Self-gated on the same rare tick, for the same reason.
+            tm.PostTickers.Add(_ => SimWorld.Crafting.StonecutterInitiative.Tick());
             // offices: every settlement's stewardship and the civilization's eldership stay filled, and a
             // dead holder is succeeded. Self-gated on the long tick like the managers above, and stateless —
             // a seat's holder is the citizen carrying that office's RoleDef, which already saves with them,

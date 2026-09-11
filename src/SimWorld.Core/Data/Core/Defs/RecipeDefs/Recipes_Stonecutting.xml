@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The other two stonecutting recipes (RimWorld: RecipeDefs/Recipes_Production ships one Make_Blocks_* per
+    stone type). Recipes_Production.xml's own comment said its single sandstone recipe was "trimmed to one
+    recipe until quarrying and chunk-yielding mining exist" — mining now yields chunks (Buildings_Natural.xml's
+    mineableThing), so that blocker has expired and one recipe is a hole: ChunkGranite and ChunkLimestone came
+    out of the ground and no recipe anywhere consumed either.
+
+    Their own file rather than two more elements in Recipes_Production.xml, per CLAUDE.md: a new file cannot
+    conflict with a lane editing the shared one, and DefLoader.AddDirectory loads both the same way.
+
+    workAmount 1600 and 1 chunk -> 20 blocks, identical to Make_Blocks_Sandstone and to RimWorld, which prices
+    every stone's cutting the same: the stone that is harder to cut is also the wall that lasts longer, and
+    RimWorld puts the whole difference in the second half. No workSkill, matching RimWorld's stonecutting and
+    the shipped sandstone recipe.
+
+    Masonry, like the sandstone recipe and the bench itself (research.unlocks-content).
+  -->
+
+  <RecipeDef>
+    <defName>Make_Blocks_Granite</defName>
+    <researchPrerequisites>
+      <li>Masonry</li>
+    </researchPrerequisites>
+    <label>cut granite blocks</label>
+    <jobString>Cutting granite blocks.</jobString>
+    <workAmount>1600</workAmount>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>ChunkGranite</li></thingDefs></filter>
+        <count>1</count>
+      </li>
+    </ingredients>
+    <products><BlocksGranite>20</BlocksGranite></products>
+    <recipeUsers><li>TableStonecutter</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Blocks_Limestone</defName>
+    <researchPrerequisites>
+      <li>Masonry</li>
+    </researchPrerequisites>
+    <label>cut limestone blocks</label>
+    <jobString>Cutting limestone blocks.</jobString>
+    <workAmount>1600</workAmount>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>ChunkLimestone</li></thingDefs></filter>
+        <count>1</count>
+      </li>
+    </ingredients>
+    <products><BlocksLimestone>20</BlocksLimestone></products>
+    <recipeUsers><li>TableStonecutter</li></recipeUsers>
+  </RecipeDef>
+
+</Defs>

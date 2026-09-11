@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Stone walls, and the Blueprint/Frame pairs the construction pipeline needs to raise them (system:
+    stonework — rock to usable material). This is the far end of the chain: mining drops a chunk, a mason
+    cuts it into blocks, and the settlement spends the blocks on something. Without this file the blocks
+    came out of the bench and nothing on a map could ever consume one, which is the same hole one step
+    further along.
+
+    Its own file, and it touches none of the existing ones: the wall Defs are new, the Blueprint_/Frame_
+    pairs reference their entityToBuild by bare defName (which resolves after every file has loaded), and
+    Blueprint_TableStonecutter/Frame_TableStonecutter below name the bench in Buildings_Production.xml
+    without that file changing (CLAUDE.md's "add a file rather than edit a shared one").
+
+    ONE def per stone rather than RimWorld's one "made from stuff" Wall: this port's construction pipeline
+    costs a building through ThingDef.costList (Frame.MaterialStillNeeded /
+    WorkGiver_ConstructDeliverResources both read it and nothing else), and a costList entry names one
+    ThingDef. Stuff-chosen construction — Blueprint/Frame carrying a stuff, costStuffCount instead of
+    costList — is the real 1:1 and is a Building-module job touching four shared files; see this lane's
+    report. Def-per-material is the faithful fallback and is what the player sees in RimWorld anyway
+    ("wall (granite)").
+
+    THE NUMBERS. costList 5 blocks is RimWorld's own: its Wall costs costStuffCount 5, and the shipped
+    wooden Wall in Buildings_Structural.xml already costs 5 WoodLog. WorkToBuild is left unset on all three,
+    exactly as the wooden Wall leaves it, so they all take the StatDef default.
+
+    MaxHitPoints is the one place the three stones differ, and the figures are NOT sourced — RimWorld
+    expresses this as a per-stuff MaxHitPoints factor and those factors could not be checked from this
+    sandbox. What is sourced is the ordering: granite is the toughest stone RimWorld ships, sandstone the
+    softest, limestone between, and every stone wall outlasts a wooden one. StonecuttingTests pins that
+    ordering and the wood-versus-stone gap; it does not pin 390/450/540, which are this port's own spacing.
+  -->
+
+  <ThingDef Name="BaseStoneWall" Abstract="True">
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <pathCost>10000</pathCost>
+    <researchPrerequisites>
+      <li>Masonry</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseStoneWall">
+    <defName>WallSandstone</defName>
+    <label>sandstone wall</label>
+    <description>A wall of cut sandstone. Softer than the other stones, and it shows.</description>
+    <statBases>
+      <MaxHitPoints>390</MaxHitPoints>
+      <Insulation>100</Insulation>
+      <Flammability>0</Flammability>
+    </statBases>
+    <costList>
+      <BlocksSandstone>5</BlocksSandstone>
+    </costList>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseStoneWall">
+    <defName>WallLimestone</defName>
+    <label>limestone wall</label>
+    <description>A wall of cut limestone. It takes a siege better than sandstone and dresses more easily than granite.</description>
+    <statBases>
+      <MaxHitPoints>450</MaxHitPoints>
+      <Insulation>100</Insulation>
+      <Flammability>0</Flammability>
+    </statBases>
+    <costList>
+      <BlocksLimestone>5</BlocksLimestone>
+    </costList>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseStoneWall">
+    <defName>WallGranite</defName>
+    <label>granite wall</label>
+    <description>A wall of cut granite. The kind of wall that outlasts the people who raised it.</description>
+    <statBases>
+      <MaxHitPoints>540</MaxHitPoints>
+      <Insulation>100</Insulation>
+      <Flammability>0</Flammability>
+    </statBases>
+    <costList>
+      <BlocksGranite>5</BlocksGranite>
+    </costList>
+  </ThingDef>
+
+  <!--
+    Blueprint/Frame pairs, hand-authored like every other pair in Buildings_BlueprintsAndFrames.xml (see
+    ThingDef.entityToBuild for why these are content rather than generated). A Frame copies its
+    entityToBuild's passability/fillPercent/pathCost so a half-built wall already blocks movement and room
+    flood fill the way the finished wall will.
+  -->
+
+  <ThingDef>
+    <defName>Blueprint_WallSandstone</defName>
+    <label>sandstone wall (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>WallSandstone</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_WallSandstone</defName>
+    <label>sandstone wall (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <pathCost>10000</pathCost>
+    <entityToBuild>WallSandstone</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_WallLimestone</defName>
+    <label>limestone wall (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>WallLimestone</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_WallLimestone</defName>
+    <label>limestone wall (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <pathCost>10000</pathCost>
+    <entityToBuild>WallLimestone</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_WallGranite</defName>
+    <label>granite wall (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>WallGranite</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_WallGranite</defName>
+    <label>granite wall (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <pathCost>10000</pathCost>
+    <entityToBuild>WallGranite</entityToBuild>
+  </ThingDef>
+
+  <!--
+    The bench's own pair. TableStonecutter has shipped since the workbenches pass and no Blueprint/Frame for
+    it ever existed, so nothing on a map could raise one: the bench only ever appeared because a test spawned
+    it directly. StonecutterInitiative places this blueprint. The bench carries no costList, so its Frame
+    needs no materials delivered and ConstructFinishFrames can finish it outright — a stonecutter's table is
+    a bench and a chisel, and charging it in the blocks it exists to produce would be a loop with no entrance.
+  -->
+
+  <ThingDef>
+    <defName>Blueprint_TableStonecutter</defName>
+    <label>stonecutter's table (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>TableStonecutter</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_TableStonecutter</defName>
+    <label>stonecutter's table (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>TableStonecutter</entityToBuild>
+  </ThingDef>
+
+</Defs>
