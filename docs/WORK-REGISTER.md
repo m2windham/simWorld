@@ -96,13 +96,18 @@ Closed. Who fights is SimWorld's own, since there is no draft to port: anyone ar
 a hostile within acquire radius, anyone at all fights back within melee reach, and a new
 `TakeUpArms` edict raises an unarmed citizen to the first rule.
 
-**Two things this left open, both on the host seam.** Raids do reach a map, but only a map
-that exists — and `GodCommands.FocusSettlement` moves attention **without generating the
-interior**, while `Game.EnterSettlement` is host-facing and called by nothing inside the
-core. A host that opens a town through the god view without also entering it has attention,
-no map, and raids that resolve mapless forever. Separately, `ChooseTargetSettlement` weights
-across all of a civilization's settlements, so even with one town open a raid often picks an
-unopened one. **These are the next things to close**, and the first is squarely this repo's.
+**One of the two things this left open is now closed.** Raids reach a map, but only a map
+that exists, and `GodCommands.FocusSettlement` moved attention without generating the
+interior while `Game.EnterSettlement` was host-facing and called by nothing inside the core.
+The real problem was narrower than "two calls are easy to confuse": the host is told to bind
+to `God/View` and never reach into `Game`, and **`God/View` had no way to generate an
+interior at all** — so the separation was not a choice a host could make, it was a wall.
+`GodCommands.OpenSettlement` now does both in the load-bearing order, and
+`GenerateSettlementInterior` is the narrow half for a map nobody is watching.
+
+Still open, and not this repo's to fix alone: `ChooseTargetSettlement` weights across all of
+a civilization's settlements, so even with one town open a raid often picks an unopened one
+and resolves without a map.
 
 Also open: nothing interrupts a job in flight. The think tree is consulted only when
 `curJob` is null, so a pawn mid-job does not react until that job ends — concretely, a
