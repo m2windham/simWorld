@@ -168,12 +168,21 @@ namespace SimWorld.Weather
         /// whatever is overhead. A map with no world tile is left alone entirely: its outdoor temperature is
         /// whatever its owner set, exactly as it was before this module existed, so nothing that was tuned
         /// against a fixed temperature quietly starts drifting.
+        /// <para/>
+        /// <b>The offset is no longer only the weather's.</b> Every active game condition reaching this map
+        /// (<c>Conditions.GameConditionManager.AggregateTemperatureOffset</c>, which walks this map's manager
+        /// and then the world's) is added to it — the seam <see cref="WeatherDef.temperatureOffset"/>'s own
+        /// doc said a real GameCondition system would plug into. Nothing downstream changed: rooms, plant
+        /// growth and corpse rot still read <see cref="Map.Map.outdoorTemperature"/> and now feel a heat wave
+        /// for free. The "no world tile, no drift" promise above covers conditions too, for the same reason —
+        /// a map whose owner sets the temperature by hand keeps owning it.
         /// </summary>
         private void UpdateOutdoorTemperature()
         {
             MapClimate? c = Climate;
             if (c == null) return;
-            map.outdoorTemperature = GenTemperature.OutdoorTemperatureAt(c, Find.TickManager.TicksGame, TemperatureOffset);
+            float offset = TemperatureOffset + map.gameConditionManager.AggregateTemperatureOffset();
+            map.outdoorTemperature = GenTemperature.OutdoorTemperatureAt(c, Find.TickManager.TicksGame, offset);
         }
 
         /// <summary>Rolls every unroofed fire against the rain — the call site

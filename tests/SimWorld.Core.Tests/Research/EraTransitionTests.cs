@@ -235,16 +235,28 @@ namespace SimWorld.Tests.Research
         [Fact]
         public void An_incident_with_no_era_bounds_fires_in_any_era()
         {
+            // The shipped content half: a heat wave belongs to no particular age.
             IncidentDef heatWave = DefDatabase<IncidentDef>.GetNamed("HeatWave");
             Assert.Null(heatWave.minEra);
             Assert.Null(heatWave.maxEra);
 
+            // The gate half is exercised on an incident with nothing else to say, the way
+            // An_incident_a_civilization_outgrows_stops_firing already does. HeatWave used to serve as both
+            // because it was a placeholder that always succeeded; it is a real incident now
+            // (Conditions.IncidentWorker_MakeGameCondition) with gating of its own, and gating stacked on
+            // gating is no longer a clean reading of the era window alone.
+            var unbounded = new IncidentDef
+            {
+                defName = "Test_AnyEra",
+                category = IncidentCategoryDefOf.Misc,
+            };
+
             var parms = new IncidentParms { target = new CivilizationTarget(Find.Storyteller) };
-            Assert.True(heatWave.Worker.CanFireNow(parms));
+            Assert.True(unbounded.Worker.CanFireNow(parms));
 
             CompleteLadderThrough(Era("Industrial"));
 
-            Assert.True(heatWave.Worker.CanFireNow(parms));
+            Assert.True(unbounded.Worker.CanFireNow(parms));
         }
 
         [Fact]
