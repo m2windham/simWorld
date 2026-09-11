@@ -165,8 +165,11 @@ namespace SimWorld.Health
         protected virtual void OnSurgeryFailed(Pawn pawn, BodyPartRecord? part)
         {
             BodyPartRecord? target = part ?? pawn.RaceProps.body?.corePart;
-            var dinfo = new DamageInfo(DamageDefOf.Cut, SurgeryTuning.FailureDamage, hitPart: target);
-            DamageDefOf.Cut.Worker.Apply(dinfo, pawn);
+
+            // SurgicalCut, not Cut: the same wound, classified as what it is. A death here must not read as
+            // a killing — see Damages_Surgery.xml and DamageDef.externalViolence's readers.
+            var dinfo = new DamageInfo(SurgeryDamageDefOf.SurgicalCut, SurgeryTuning.FailureDamage, hitPart: target);
+            SurgeryDamageDefOf.SurgicalCut.Worker.Apply(dinfo, pawn);
 
             if (!pawn.Dead && recipe.deathOnFailedSurgeryChance > 0f && Rand.Chance(recipe.deathOnFailedSurgeryChance))
             {

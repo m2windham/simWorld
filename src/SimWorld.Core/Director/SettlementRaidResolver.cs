@@ -215,7 +215,13 @@ namespace SimWorld.Director
             // next raid smaller after a bad one. Only named citizens count toward it: a cohort head is a
             // citizen, but the penalty is per person, and three hundred anonymous losses would zero the curve
             // in one raid — whereas losing three people you knew is exactly the event the curve is for.
-            // (Nothing else in the core calls this hook yet; a death from age does not reach it.)
+            //
+            // Still charged from here, and still exactly once. StorytellerDeathEvents.Notify_PawnDied now
+            // charges the same hook for a violent death anywhere — but "violent" there means a DamageDef
+            // that declares externalViolence, and this resolver settles its battle arithmetically and kills
+            // through FamilyManager.HandleDeath, which hands Kill no DamageInfo at all. So these deaths read
+            // as non-violent to that hook and are counted here, once, as they always were. A death from age
+            // reaches neither.
             for (int i = 0; i < citizensKilled; i++) Find.Storyteller.adaptation.Notify_ColonistDied();
             int raidersKilled = KillRaiders(livingRaiders, raiderDeaths, rand);
             int looted = repelled ? 0 : Loot(settlement, rand);

@@ -84,6 +84,13 @@ namespace SimWorld.Pawns
                 Faction? old = factionInt;
                 factionInt = value;
                 Map?.mapPawns.AttackTargets.Notify_FactionChanged(this, old);
+
+                // Which needs a pawn has depends on whose side they are on (Pawn_NeedsTracker.ShouldHaveNeed
+                // reads colonistsOnly / colonistAndPrisonersOnly), and a pawn is built before it is
+                // enfactioned — so the answer taken in the constructor is the answer for a factionless pawn,
+                // and would stand forever without this. RimWorld re-runs the same sweep from Pawn.SetFaction.
+                // Null-guarded because a Scribe load writes fields before the trackers exist.
+                needs?.AddOrRemoveNeedsAsAppropriate();
             }
         }
 
