@@ -83,13 +83,8 @@ code-deaf SimWorld.Combat.ProjectileProperties.stoppingPower | Blocked on stagge
 code-deaf SimWorld.Crafting.RecipeDef.jobString | Host-facing text ("doing X") for a UI the core does not have and the snapshot does not surface.
 code-deaf SimWorld.Defs.ThingDef.altitudeLayer | Draw order for a renderer. An engine-free core never draws, and the host draws from its own snapshot.
 code-deaf SimWorld.Defs.ThingDef.selectable | Host-facing: whether a UI may select the thing. The core has no selection model.
-code-deaf SimWorld.Director.IncidentDef.pointsScaleable | Blocked on points-driven severity: IncidentParms.points is carried but no worker scales its effect by it, so the opt-in flag has no reader.
 code-deaf SimWorld.Director.StorytellerDef.persona | Host-facing flavour: the narrator's in-fiction name, for the host to speak. Its own doc records that the naming is still open.
 code-deaf SimWorld.Economy.TraderKindDef.orbital | Blocked on orbital trade, which needs caravans going up rather than traders arriving; the field's own doc calls it a gating flag only.
-code-deaf SimWorld.Factions.FactionDef.autoFlee | Blocked on raid AI, which lands with Combat — the field's own doc says so.
-code-deaf SimWorld.Factions.FactionDef.canMakeRandomly | Blocked on faction generation choosing randomly: FactionGenerator creates the shipped set outright, so nothing filters on the flag.
-code-deaf SimWorld.Factions.FactionDef.earliestRaidDays | Blocked on raids keying off the originating faction, per the field's own doc.
-code-deaf SimWorld.Factions.FactionDef.hostileToFactionlessHumanlikes | Blocked on a factionless-pawn population existing, per the field's own doc.
 code-deaf SimWorld.Factions.FactionDef.leaderTitle | Host-facing flavour text; the snapshot does not carry a leader title for the host to show.
 code-deaf SimWorld.Factions.FactionDef.pawnSingular | Host-facing text ("a tribesperson"); nothing in the core composes a sentence.
 code-deaf SimWorld.Factions.FactionDef.pawnsPlural | As pawnSingular, for the plural form.
@@ -115,7 +110,6 @@ code-deaf SimWorld.Needs.NeedDef.major | Host-facing: whether a UI draws the nee
 code-deaf SimWorld.Needs.NeedDef.threshPercents | Host-facing: threshold markers drawn on a need bar, per the field's own doc.
 code-deaf SimWorld.Pawns.BackstoryDef.baseDesc | Host-facing text: the backstory blurb, for a character tab the core does not render.
 code-deaf SimWorld.Pawns.LifeStageDef.marketValueFactor | Blocked on a pawn having a market value at all, which is upstream of trade reading the life stage: TradeUtility prices a ThingDef rather than a thing, no race ThingDef carries a MarketValue statBase, Tradeable holds a def plus a count with nowhere to put a pawn, and Targets.PlayerWealthForStoryteller excludes people on purpose. A factor has nothing to multiply until pawn pricing exists.
-code-deaf SimWorld.Pawns.PawnKindDef.isFighter | Blocked on raid composition: PawnGroupMakerUtility does not yet separate fighters from non-combatants.
 code-deaf SimWorld.Pawns.TrainableDef.defaultTrainable | Deliberate, and documented on the field: this port has no player-facing "wanted" checkbox, so every learnable def is always pursued.
 code-deaf SimWorld.Research.ResearchProjectDef.discoveredLetterText | Host-facing text for a completion letter; the research manager mints no letter.
 code-deaf SimWorld.Research.ResearchProjectDef.discoveredLetterTitle | The title half of discoveredLetterText, equally unread.

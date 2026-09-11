@@ -20,6 +20,10 @@ namespace SimWorld.Pawns
         public float maxGenerationAge = -1f;
 
         public float combatPower;
+
+        /// <summary>Whether this kind belongs in a war band (RimWorld: <c>PawnKindDef.isFighter</c>). Read by
+        /// <c>Factions.PawnGroupMaker</c>, which filters a Combat group's roster to fighters and reports a
+        /// non-combatant in one as a config error — see that class for the measurement behind it.</summary>
         public bool isFighter;
 
         /// <summary>Traits every pawn of this kind is given outright, before the random roll (RimWorld:

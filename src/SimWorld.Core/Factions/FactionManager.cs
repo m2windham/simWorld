@@ -67,13 +67,20 @@ namespace SimWorld.Factions
         /// twice as common raids about twice as often (RimWorld weights its own raider choice the same way).
         /// The other <c>Random*Faction</c> pickers stay uniform: commonality is about who comes for you, not
         /// about who happens to be allied or neutral.
+        /// <para/>
+        /// <paramref name="validator"/> narrows the candidate set before the weight roll, the same extension
+        /// point RimWorld's own <c>PawnGroupMakerUtility.TryGetRandomFactionForCombatPawnGroup</c> takes —
+        /// which is where it filters on <c>FactionDef.earliestRaidDays</c>. Here that predicate is
+        /// <see cref="FactionRaidRules.CanRaidYet"/>, supplied by the one caller that needs it
+        /// (<c>Director.IncidentWorker_RaidEnemy</c>) rather than hard-coded into every enemy lookup: not
+        /// every question about "who is hostile to us" is a question about who may raid today.
         /// </summary>
-        public Faction? RandomEnemyFaction(bool allowHidden = false, bool allowDefeated = false, bool allowNonHumanlike = true, TechLevel minTechLevel = TechLevel.Undefined)
+        public Faction? RandomEnemyFaction(bool allowHidden = false, bool allowDefeated = false, bool allowNonHumanlike = true, TechLevel minTechLevel = TechLevel.Undefined, Predicate<Faction>? validator = null)
         {
             Faction? player = OfPlayer;
             if (player == null) return null;
             List<Faction> candidates = GetFactions(allowHidden, allowDefeated, allowNonHumanlike, minTechLevel)
-                .Where(f => !ReferenceEquals(f, player) && f.HostileTo(player))
+                .Where(f => !ReferenceEquals(f, player) && f.HostileTo(player) && (validator == null || validator(f)))
                 .ToList();
             if (candidates.Count == 0) return null;
 

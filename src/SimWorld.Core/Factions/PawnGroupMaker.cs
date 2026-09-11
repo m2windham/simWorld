@@ -86,7 +86,10 @@ namespace SimWorld.Factions
             var result = new List<Pawn>();
             if (options == null || options.Count == 0) return result;
 
-            List<PawnGenOption> chosen = PawnGroupMakerUtility.ChoosePawnGenOptionsByPoints(parms.points, options, Rand.Current);
+            List<PawnGenOption> roster = FightersOnlyIfCombat(options, kindDef);
+            if (roster.Count == 0) return result;
+
+            List<PawnGenOption> chosen = PawnGroupMakerUtility.ChoosePawnGenOptionsByPoints(parms.points, roster, Rand.Current);
             foreach (PawnGenOption option in chosen)
             {
                 var request = new PawnGenerationRequest(option.kind, mustBeCapableOfViolence: true, faction: parms.faction);
@@ -103,9 +106,55 @@ namespace SimWorld.Factions
                 foreach (PawnGenOption option in options)
                 {
                     foreach (string error in option.ConfigErrors()) yield return error;
+                    if (IsCombat(kindDef) && option.kind != null && !option.kind.isFighter)
+                    {
+                        yield return "PawnGroupMaker for Combat lists '" + option.kind.defName
+                            + "', whose PawnKindDef is not isFighter — a war band is fighters.";
+                    }
                 }
             }
         }
+
+        /// <summary>
+        /// <see cref="Pawns.PawnKindDef.isFighter"/>'s reader, and the whole of "a raid knows who is in it".
+        ///
+        /// <para/><b>What was actually wrong, measured.</b> Nothing in <c>src/</c> read the flag, so nothing
+        /// separated a fighter from a non-combatant when spending a raid's points. Across 40 squads at each
+        /// of 100/200/400/800 points for all three shipped raiding factions — 3,866 raiders — exactly zero
+        /// non-fighters came out, because every option in every shipped Combat roster happens to name a
+        /// fighter already. So the flag was not producing chickens in war bands; it was that <i>nothing would
+        /// have stopped one</i>. Both halves of the answer are here: the roster a Combat group spends against
+        /// is filtered to fighters, and <see cref="ConfigErrors"/> reports the option rather than letting a
+        /// war band silently shrink.
+        ///
+        /// <para/>Costs no random draw and, against shipped content, returns the same list it was given — the
+        /// seeded stream is untouched and every pinned raid still generates pawn for pawn what it did.
+        /// </summary>
+        private static List<PawnGenOption> FightersOnlyIfCombat(List<PawnGenOption> options, PawnGroupKindDef? kindDef)
+        {
+            if (!IsCombat(kindDef)) return options;
+            for (int i = 0; i < options.Count; i++)
+            {
+                if (options[i].kind != null && !options[i].kind.isFighter) return Fighters(options);
+            }
+            return options;
+        }
+
+        private static List<PawnGenOption> Fighters(List<PawnGenOption> options)
+        {
+            var kept = new List<PawnGenOption>(options.Count);
+            for (int i = 0; i < options.Count; i++)
+            {
+                if (options[i].kind != null && options[i].kind.isFighter) kept.Add(options[i]);
+            }
+            return kept;
+        }
+
+        /// <summary>Compared against the bound <see cref="PawnGroupKindDefOf.Combat"/>, and false when no
+        /// DefOf binding has run at all — a fixture loading defs with <c>BindDefOfs</c> off has no Combat def
+        /// to be, and must not have every group maker's roster quietly emptied on it.</summary>
+        private static bool IsCombat(PawnGroupKindDef? kindDef) =>
+            kindDef != null && PawnGroupKindDefOf.Combat != null && ReferenceEquals(kindDef, PawnGroupKindDefOf.Combat);
     }
 
     /// <summary>

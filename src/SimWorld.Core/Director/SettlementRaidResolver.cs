@@ -134,6 +134,11 @@ namespace SimWorld.Director
         /// bounded by what the *enemy* could inflict rather than by how big you are — which is what stops a
         /// forty-thousand-person city losing forty times as many people to the same war band as a thousand-
         /// person town does. Whoever lost always loses at least one body: a raid is never free to either side.
+        /// The raiders carry one further bound the defenders do not — <see cref="FactionRaidRules.MaxRaidersLost"/>,
+        /// which is <see cref="FactionDef.autoFlee"/>'s reader: a band that breaks off once it has lost enough
+        /// of itself is not there to take the rest of the casualties, while a faction that declares it does
+        /// not flee can be killed to the last raider. A settlement, having nowhere to withdraw to, has no
+        /// counterpart.
         ///
         /// <para/><b>Deaths take two different paths, on purpose.</b> A citizen with a real <c>Pawn</c> dies
         /// through <c>FamilyManager.HandleDeath</c> — the same path a death from age already takes — so the
@@ -186,7 +191,14 @@ namespace SimWorld.Director
             float defencePotential = defenceStrength * RaidResolutionTuning.DeathsPerCombatPower;
 
             int defenderDeaths = Casualties(raidPotential, loser: !repelled, cap: musteredHeads, rand: rand);
-            int raiderDeaths = Casualties(defencePotential, loser: repelled, cap: livingRaiders.Count, rand: rand);
+
+            // FactionDef.autoFlee, which until now no line of src/ read. A war band whose faction breaks off
+            // once it has lost enough of itself cannot lose more than that; one that does not (the shipped
+            // RoughOutlanders, who declare autoFlee false) can be killed to the last raider. The defenders
+            // have no such cap on purpose: a settlement cannot withdraw from itself.
+            int raiderDeaths = Casualties(
+                defencePotential, loser: repelled,
+                cap: FactionRaidRules.MaxRaidersLost(attacker, livingRaiders.Count), rand: rand);
 
             // Defender losses fall on the two population slices in the proportion each of them mustered in —
             // the live roster is not preferentially slaughtered just because it is the slice with names.
@@ -270,7 +282,8 @@ namespace SimWorld.Director
 
         /// <summary>Heads lost by one side: a fraction of what the other side could kill, drawn from the
         /// loser's band or the winner's, floored at one body for the loser so no engagement is ever free, and
-        /// capped at how many that side actually had.</summary>
+        /// capped at how many of that side are there to lose — every head for a settlement, and for a war
+        /// band however many of it will stay (<see cref="FactionRaidRules.MaxRaidersLost"/>).</summary>
         private static int Casualties(float enemyPotential, bool loser, int cap, RandomStream rand)
         {
             if (cap <= 0) return 0;

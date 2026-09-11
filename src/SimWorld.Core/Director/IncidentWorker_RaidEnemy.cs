@@ -128,7 +128,21 @@ namespace SimWorld.Director
             return true;
         }
 
-        private static Faction? ResolveFaction(IncidentParms parms) => parms.faction ?? Find.FactionManager.RandomEnemyFaction();
+        /// <summary>
+        /// Who is raiding. A caller that already named one (a test, a forced incident, a quest) gets exactly
+        /// that faction — RimWorld's <c>TryResolveRaidFaction</c> only picks when <c>parms.faction</c> is
+        /// null, and pinning one is a deliberate override of selection, not a request to re-run it.
+        /// <para/>
+        /// Otherwise the choice is <see cref="FactionManager.RandomEnemyFaction"/>'s, narrowed to factions
+        /// whose own <see cref="FactionDef.earliestRaidDays"/> says they have started raiding
+        /// (<see cref="FactionRaidRules.CanRaidYet"/>). That filter runs <i>before</i> the
+        /// <see cref="FactionDef.raidCommonality"/> weight roll, as RimWorld's does, so a civilization too
+        /// young to be raided by anyone yet has no eligible raider at all and
+        /// <see cref="CanFireNowSub"/> refuses the incident rather than the worker generating a squad with
+        /// nobody behind it.
+        /// </summary>
+        private static Faction? ResolveFaction(IncidentParms parms) =>
+            parms.faction ?? Find.FactionManager.RandomEnemyFaction(validator: FactionRaidRules.CanRaidYet);
 
         /// <summary>Uniformly among the tactics <paramref name="faction"/>'s tech level allows, weighted by <see cref="RaidStrategyDef.selectionWeight"/>; falls back to <see cref="RaidStrategyDefOf.ImmediateAttack"/> if content somehow leaves nothing usable.</summary>
         private static RaidStrategyDef ChooseStrategy(Faction faction)
