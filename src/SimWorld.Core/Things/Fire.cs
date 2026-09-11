@@ -99,7 +99,10 @@ namespace SimWorld.Things
 
             ticksSinceSpawn++;
             ticksSinceSpread++;
-            if (GenMath.PositiveMod(Find.TickManager.TicksGame + thingIDNumber * 3, ComplexCalcsInterval) == 0)
+            // Shared HashInterval, not an open-coded thingIDNumber * 3: ComplexCalcsInterval is 150 and
+            // divisible by 3, so the old offset put every fire on one of fifty reachable phases three deep —
+            // and a burning settlement is exactly the case this interval exists to spread. See the helper.
+            if (HashInterval.IsHashIntervalTick(thingIDNumber, ComplexCalcsInterval))
             {
                 DoComplexCalcs();
             }
