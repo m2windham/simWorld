@@ -487,6 +487,45 @@ no-op, its ledger being its entire stock — which is exactly what `Guild` was w
 5. **`CompTurretGun` with no owner now shoots the town.** Latent (nothing builds a turret),
    but it became wrong the moment civilians got a faction.
 
+### 9. A generated settlement does not survive its first week
+
+Everything above this line is about a system that was disconnected. This one is about
+what happens when they are all connected and the game is simply run.
+
+A lane probed it in passing while checking whether its own work was reachable from a real
+game. The result was alarming enough that I reproduced it independently before writing it
+down. `Game.NewGame(TribalStart, 25 founders)`, six in-game days, nothing called by hand:
+
+| Day | Watched settlement | Unwatched settlement |
+| --- | --- | --- |
+| 0 | 25 alive, food 0.80, mood 0.50 | 25 alive, food 0.80, mood 0.50 |
+| 1 | **20 alive**, food **0.00**, mood 0.13 | 25 alive, food 0.80, mood 0.50 |
+| 3 | 18 alive, food 0.00, mood 0.12 | 25 alive, food 0.80, mood 0.50 |
+| 6 | **16 alive**, food 0.00, mood 0.18 | 25 alive, food 0.80, mood 0.50 |
+
+**Watched, the civilization starves.** Mean food reaches zero inside one day and never
+recovers. Mood collapses with it, and the deaths are not starvation directly — they are
+citizens in extreme mental breaks beating each other to death. Nine of twenty-five in six
+days.
+
+**Unwatched, the civilization is frozen.** Not tiered-down: those 25 citizens are `Full`
+tier and unspawned, and their needs are *identical* on day six and day zero. Nothing ticks
+a Full-tier citizen who is not standing on a map.
+
+So a settlement is either dying or in stasis, and there is no third state. Every module
+involved — needs, food, work givers, the think tree, hauling, cooking — is ported, tested
+and green. This is what they do when a real game runs them.
+
+**This is the first thing to fix, ahead of everything else on this page.** It is also the
+sharpest possible statement of what §5 and §7 have been circling: the suite measures
+modules, and nobody had watched the game.
+
+A note on method, because it is the reusable part. The probe is six lines — new a game,
+tick a day, print mean food and mood and the living count, repeat. It is not a test and
+was deleted after use, because a test that asserts "the settlement survives" would be red
+today and this register does not ship red tests. But the *shape* is what found it, and
+nothing in a 1,964-test suite did.
+
 ## Immediate steps: the host repo — unclaimed, proposed
 
 These are proposed rather than assigned. The host session claims, amends or rejects
