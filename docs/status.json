@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1296,
+  "testsTotal": 1374,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -666,7 +666,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Work · Pawns · Stats",
       "status": "translated",
-      "tests": 37,
+      "tests": 65,
       "items": [
         {
           "id": "work.skills",
@@ -717,6 +717,11 @@
           "id": "work.policy",
           "label": "Translation: policy/role-driven priorities at civ scale — RoleDef.emphasizedWorkTypes; Pawn_WorkSettings.SetRole/ApplyRole write emphasized types to top priority and everything else to default, skipping any work type a caller set directly (manualPriorities) so a role never overwrites a person's own preference and un-assigning one leaves no trace; WorkPolicyUtility.ApplyRoleToPopulation applies a role across a whole population at once. Four roles ship as content (Farmer, Miner, Artisan, Scholar).",
           "done": true
+        },
+        {
+          "id": "work.repairplantscut",
+          "label": "Repair and PlantsCut wired (24 of 28 work givers (Hunt landed alongside) now carry a real giverClass). Both translate away a Designation system this port does not have: Repair scans any damaged artificial building because Thing carries no faction field, PlantsCut derives its targets from growing zones and construction cells",
+          "done": true
         }
       ]
     },
@@ -724,11 +729,11 @@
       "id": "ai",
       "n": 10,
       "rimworld": "AI: Think Tree / Job System",
-      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor.",
+      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor. Hunting carries two civilization-scale translations of its own. There is no Designation system, so AI.HuntingInitiative decides for the settlement: hunt while short of food, stop when not — the shape SettlementConstructionInitiative already set. And there is no Corpse class, so the hunt's last toil butchers at the kill site through the shipped recipe and HaulGeneral carries the meat home, reaching RimWorld's end state by the only route this port has.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 69,
+      "tests": 93,
       "items": [
         {
           "id": "ai.thinktree",
@@ -783,6 +788,16 @@
         {
           "id": "ai.rest",
           "label": "JobGiver_GetRest claims a real bed before falling back to the ground: AI.RestUtility.FindBedFor is a trim of RimWorld's own RestUtility.FindBedFor (nearest reachable, unclaimed Building.ConstructionThingDefOf.Bed — no owned/medical/prisoner bed distinctions exist yet, so every bed is open to anyone), reserved like any other claimed target (Toils_Reserve.Reserve) so two pawns never converge on the same one. JobDriver_LayDown walks to whichever target it got — a bed or the pawn's own position — and sets Need_Rest.lastRestEffectiveness from Need_Rest.BedRestEffectiveness (unsourced constant, chosen only to sit above the ground's own documented 1 and pinned by a test that a bed rests a pawn faster than the ground, never trusted as the literal) once there. No ownership/assignment UI — RimWorld's own CompAssignableToPawn — was built; a bed is first-come, matching what this port's Bed content actually needs.",
+          "done": true
+        },
+        {
+          "id": "ai.hunt",
+          "label": "Hunt wired (WorkGiver_Hunt, JobDriver_Hunt, HuntingInitiative). Combat drives from a toil with no change to the Verb module; prey more than twice the hunter's BodySize is refused; an animal's revenge breaks off the hunt but it cannot fight back — no attack Job or JobGiver exists anywhere in this codebase",
+          "done": true
+        },
+        {
+          "id": "ai.hunt.dormancy",
+          "label": "Shipped content can actually hunt: Tribesperson, the kind SettlementFounder generates every citizen as, carried no weaponTags, so no citizen in any generated game held a weapon and the Hunt giver was wired and permanently dormant. Guarded by a test that arms nobody",
           "done": true
         }
       ]
@@ -1023,7 +1038,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 124,
+      "tests": 132,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1063,6 +1078,11 @@
         {
           "id": "economy.diplomacy",
           "label": "Translation: civilization diplomacy — treaties, wars and trade routes between civilizations",
+          "done": true
+        },
+        {
+          "id": "economy.billreservation",
+          "label": "Bills reserve their chosen ingredient stacks, not just the bench: Job target queues, ReservationManager stack counts and Toils_Reserve.ReserveQueue ported from RimWorld, so two crafters can no longer both spend one pile",
           "done": true
         }
       ]
@@ -1353,11 +1373,11 @@
       "id": "god",
       "n": 22,
       "rimworld": "God Layer & Civilization Translation",
-      "translation": "SimWorld's own — RimWorld has no equivalent to port. The re-focus from §10: the player is not a colony overseer but a god directing one civilization, so the player's own verb changes from drafting individuals to issuing standing civilization-scale edicts and reading aggregate rollups. Kept in RimWorld's own declarative shapes throughout even though the concept is new: Def + Worker + Class= polymorphism for EdictDef/EdictWorker (mirroring WorkGiverDef/WorkGiver and ThoughtDef/ThoughtWorker), IExposable for GodManager, a Find service exactly like Find.Storyteller/Find.ResearchManager, and a think-tree job-giver node for the work push rather than a bespoke priority mechanism. The mood consequence reuses the existing situational-thought pipeline (ThoughtWorker_UnderEdict) instead of inventing a second one, so an edict's cost to public mood appears and disappears with activation on its own, the same way every other situational thought already does.",
+      "translation": "SimWorld's own — RimWorld has no equivalent to port. The re-focus from §10: the player is not a colony overseer but a god directing one civilization, so the player's own verb changes from drafting individuals to issuing standing civilization-scale edicts and reading aggregate rollups. Kept in RimWorld's own declarative shapes throughout even though the concept is new: Def + Worker + Class= polymorphism for EdictDef/EdictWorker (mirroring WorkGiverDef/WorkGiver and ThoughtDef/ThoughtWorker), IExposable for GodManager, a Find service exactly like Find.Storyteller/Find.ResearchManager, and a think-tree job-giver node for the work push rather than a bespoke priority mechanism. The mood consequence reuses the existing situational-thought pipeline (ThoughtWorker_UnderEdict) instead of inventing a second one, so an edict's cost to public mood appears and disappears with activation on its own, the same way every other situational thought already does. Attention, the trigger the citizen tiering was built around, is defined as the god's focus: zero or one settlement the player has open, named across the host seam by its world tile because Settlement.name is not unique. God.AttentionManager applies focus changes immediately and reconciles periodically from GodManager.GodTick, so a settlement founded or a citizen born between focus changes is still placed at the right tier. A second, narrower translation rides with it: the Interval->Statistical settle is by elapsed insignificance (TieringTuning.IntervalSettleTicks, one game year, SimWorld's own — RimWorld has no middle tier to wait in), while promotion stays by significance alone.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/God · EdictDef · EdictWorker · EdictWorker_ExemptMinors · ThoughtWorker_UnderEdict · GodManager · GodRollup · GodTuning; src/SimWorld.Core/AI/JobGiver_Edicts.cs · WorkGiverScanUtility.cs (shared with JobGiver_Work)",
       "status": "translated",
-      "tests": 42,
+      "tests": 60,
       "items": [
         {
           "id": "god.edicts",
@@ -1403,6 +1423,16 @@
           "id": "god.era-transitions",
           "label": "GodManager subscribes to ResearchManager.EraReached (constructor for a fresh civilization, ExposeData's PostLoadInit branch for a loaded one, both through the idempotent EnsureSubscribedToEraTransitions so a loaded save can never end up doubly subscribed — proved by test) and reacts on every crossing: EdictDef gained obsoleteEra, the mirror of requiredEra (same minEra/maxEra symmetry as IncidentDef in Director/IncidentDefs.cs, but >= rather than >, since reaching the named era is itself the retirement moment per the brief) — an active edict past its obsoleteEra auto-deactivates with its own \"Edict outgrown\" Chronicle line. Separately, one \"New edicts available\" Chronicle line names every edict the crossing newly unlocks (never one per edict, never written when nothing unlocked). HuntersMandate ships with obsoleteEra=Agrarian as real content proving the mechanism, not just an ad-hoc test def.",
           "done": true
+        },
+        {
+          "id": "god.attention",
+          "label": "Attention wired: God.AttentionManager drives Pawn_TierTracker.Notify_AttentionChanged from a settlement focus, GodCommands.FocusSettlement/ClearSettlementFocus is the host's write path, GodViewSnapshot.FocusedSettlementTile reads it back, and unattended citizens settle Interval->Statistical after a year of insignificance",
+          "done": true
+        },
+        {
+          "id": "god.fullcap",
+          "label": "Measured: focus bounds Full-tier to one settlement's live roster, which is itself unbounded in time — demography doubles it about every 17 years, crossing the spec's Full ceiling around year 115-125. A per-settlement Full cap needs a significance ordering that does not exist yet; recorded, not invented",
+          "done": false
         }
       ]
     }

@@ -82,6 +82,12 @@ namespace SimWorld.Tests.World
             Assert.All(settlement.Citizens, p => Assert.Equal(PawnTier.Full, p.tier.Tier));
             Assert.Contains<global::SimWorld.World.WorldObject>(settlement, world.worldObjects);
 
+            // Asserted here rather than after the 80-year run below. Storyteller.Chronicle is a rolling
+            // buffer capped at ChronicleCapacity (500) and every birth writes a line, so a founding entry
+            // checked decades later is really a test of how many births fit in the buffer — it scrolls off
+            // once a settlement grows fast enough. Checking it at the moment of founding tests founding.
+            Assert.Contains(Find.Storyteller.Chronicle, e => e.incidentDefName.Contains("Founding") && e.incidentDefName.Contains("Testhome"));
+
             int householdsAfterFounding = Find.FamilyManager.Families.Count;
             Assert.True(householdsAfterFounding - householdsBefore >= 10, "Expected several households from a 24-person band.");
 
@@ -100,8 +106,6 @@ namespace SimWorld.Tests.World
                 $"Expected population growth through demography over 80 years ({populationBefore} -> {settlement.TotalPopulation}).");
             Assert.True(Find.FamilyManager.Families.Count > householdsAfterFounding,
                 "Expected households to multiply through marriages over 80 years.");
-
-            Assert.Contains(Find.Storyteller.Chronicle, e => e.incidentDefName.Contains("Founding") && e.incidentDefName.Contains("Testhome"));
         }
 
         // ----- Founding validation -----

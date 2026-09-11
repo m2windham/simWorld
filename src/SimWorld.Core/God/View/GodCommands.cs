@@ -16,6 +16,13 @@ namespace SimWorld.God.View
         /// except by holding a name across a content change, which is exactly when it wants to be told.</summary>
         UnknownEdict,
 
+        /// <summary>No settlement sits on that world tile. Separate from <see cref="UnknownEdict"/> rather
+        /// than a shared "unknown target" because the two are reached by different commands and a host
+        /// switching on the outcome should not have to know which one it just called; and separate from
+        /// <see cref="Refused"/> because nothing refused anything — the handle is simply stale, which is what
+        /// a settlement destroyed between two snapshots looks like from the host's side.</summary>
+        UnknownSettlement,
+
         /// <summary>The rules refused it. <see cref="GodCommandResult.Reason"/> says which rule.</summary>
         Refused,
 
@@ -45,6 +52,9 @@ namespace SimWorld.God.View
         internal static GodCommandResult Done(string reason) => new GodCommandResult(GodCommandOutcome.Done, reason);
         internal static GodCommandResult Unknown(string defName) =>
             new GodCommandResult(GodCommandOutcome.UnknownEdict, "No edict named '" + defName + "'.");
+        internal static GodCommandResult UnknownSettlement(int tile) =>
+            new GodCommandResult(GodCommandOutcome.UnknownSettlement,
+                "No settlement on tile " + tile.ToString(System.Globalization.CultureInfo.InvariantCulture) + ".");
         internal static GodCommandResult Refused(string reason) => new GodCommandResult(GodCommandOutcome.Refused, reason);
         internal static GodCommandResult NoChange(string reason) => new GodCommandResult(GodCommandOutcome.NoChange, reason);
     }
@@ -107,6 +117,40 @@ namespace SimWorld.God.View
             return Find.God.Deactivate(def)
                 ? GodCommandResult.Done(def.LabelCap + " rescinded.")
                 : GodCommandResult.NoChange(def.LabelCap + " was not in force.");
+        }
+
+        /// <summary>
+        /// Opens the settlement on <paramref name="tile"/> — the god's attention moves there, and with it the
+        /// only thing that holds a citizen at <see cref="Pawns.PawnTier.Full"/> (spec §11.2/§11.3: "dropping
+        /// into ticked time <i>is</i> promoting the attended settlement to Full"). Every citizen of that
+        /// settlement is promoted; every citizen of the settlement that had focus is let go.
+        ///
+        /// <para/><b>A settlement is named by its world tile</b>, the same way an edict is named by its
+        /// defName and for the same reason: a value the host can hold across a reload and a repaint, which
+        /// cannot be used to reach the settlement object itself. <see cref="SettlementSummary.Tile"/> on the
+        /// snapshot is where a host gets one. See <see cref="AttentionManager"/>'s class doc for why the tile
+        /// and not <see cref="World.Settlement.name"/>, which is not unique.
+        /// </summary>
+        public static GodCommandResult FocusSettlement(int tile)
+        {
+            World.Settlement? settlement = AttentionManager.SettlementAt(tile);
+            if (settlement == null) return GodCommandResult.UnknownSettlement(tile);
+
+            AttentionManager attention = Find.God.Attention;
+            return attention.Focus(settlement)
+                ? GodCommandResult.Done("Attention moved to " + settlement.name + ".")
+                : GodCommandResult.NoChange(settlement.name + " already has the god's attention.");
+        }
+
+        /// <summary>Steps back to civilization scope: no settlement is open, so nobody is attended and every
+        /// citizen held at Full by attention alone falls to Interval. Clearing a focus that was never set is a
+        /// no-op, not a failure — the same treatment <see cref="RescindEdict"/> gives an edict nobody
+        /// issued.</summary>
+        public static GodCommandResult ClearSettlementFocus()
+        {
+            return Find.God.Attention.ClearFocus()
+                ? GodCommandResult.Done("Attention withdrawn to the civilization.")
+                : GodCommandResult.NoChange("No settlement had the god's attention.");
         }
 
         private static EdictDef? Resolve(string defName) =>

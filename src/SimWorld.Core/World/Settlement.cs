@@ -96,14 +96,25 @@ namespace SimWorld.World
         public int TotalPopulation => citizens.Count + statisticalPopulation;
 
         /// <summary>
-        /// Population of one tier. Statistical answers directly from <see cref="StatisticalPopulation"/> (no
-        /// enumeration); Full/Interval scan <see cref="Citizens"/>, which by design holds only those two
-        /// tiers and is expected to stay small relative to a large settlement's total (the attended/significant
-        /// slice, per §11.3) — never the whole population, so this scan never costs what counting 40,000
-        /// people would.
+        /// Population of one tier, such that the three tiers always sum to <see cref="TotalPopulation"/>.
+        ///
+        /// <para/>Every tier scans <see cref="Citizens"/>, which by design holds only live <c>Pawn</c> objects
+        /// and stays small relative to a large settlement's total (the attended/significant slice, per §11.3) —
+        /// never the whole population, so this scan never costs what counting 40,000 people would. Statistical
+        /// adds the bare <see cref="StatisticalPopulation"/> cohort on top, and that cohort is still never
+        /// enumerated: it is a count, added as a count.
+        ///
+        /// <para/><b>Statistical has two kinds of member and both must be counted.</b> A citizen can reach
+        /// that tier as a bare cohort seat (<see cref="AddStatisticalPeople"/>) or as a live <c>Pawn</c> whose
+        /// tracker settled there — <see cref="God.AttentionManager"/> does exactly that to every citizen of an
+        /// unattended settlement, so the second kind is the normal end state rather than a curiosity. Answering
+        /// from the bare count alone silently lost them and broke the sum above.
         /// </summary>
-        public int PopulationOf(PawnTier tier) =>
-            tier == PawnTier.Statistical ? statisticalPopulation : citizens.Count(p => p.tier.Tier == tier);
+        public int PopulationOf(PawnTier tier)
+        {
+            int live = citizens.Count(p => p.tier.Tier == tier);
+            return tier == PawnTier.Statistical ? live + statisticalPopulation : live;
+        }
 
         public void AddCitizen(Pawn pawn)
         {

@@ -25,8 +25,20 @@ namespace SimWorld.God
     {
         private List<EdictDef> activeEdicts = new List<EdictDef>();
         private int lastGodTick = int.MinValue;
+        private AttentionManager attention = new AttentionManager();
 
         public IReadOnlyList<EdictDef> ActiveEdicts => activeEdicts;
+
+        /// <summary>
+        /// Which settlement the god is looking at, and the only thing that drives
+        /// <c>Pawns.Pawn_TierTracker.Notify_AttentionChanged</c> (spec §11.2/§11.3). Lives here rather than
+        /// directly on <see cref="Game"/> because attention <i>is</i> the god's — this manager is already the
+        /// god layer's state, is already deep-Scribed by the game, is already ticked by it
+        /// (<see cref="GodTick"/>), and is already what the host's own seam resolves through
+        /// (<see cref="View.GodCommands"/> reads <see cref="Find.God"/>). See
+        /// <see cref="AttentionManager"/>'s own doc for what "attention" was defined to mean and why.
+        /// </summary>
+        public AttentionManager Attention => attention;
 
         /// <summary>The cached civilization-state aggregate the god view reads (§10's "rollup"). Not
         /// round-tripped through <see cref="ExposeData"/>: it is a derived cache recomputable from the living
@@ -156,7 +168,9 @@ namespace SimWorld.God
         /// are: a no-op except once every <see cref="GodTuning.GodTickIntervalTicks"/>, so a caller can wire it
         /// into a per-tick loop without the god layer costing anything most ticks. Runs every active edict's
         /// <see cref="EdictWorker.EdictTick"/> — the base worker has nothing periodic to do, so this is a
-        /// no-op unless an edict overrides it.
+        /// no-op unless an edict overrides it — and then reconciles attention
+        /// (<see cref="AttentionManager.Reconcile"/>), which is what actually holds the Full-tier population
+        /// down to the settlement the god is looking at.
         /// </summary>
         public void GodTick()
         {
@@ -168,6 +182,8 @@ namespace SimWorld.God
             {
                 activeEdicts[i].Worker.EdictTick();
             }
+
+            attention.Reconcile();
         }
 
         /// <summary>
@@ -234,6 +250,14 @@ namespace SimWorld.God
             Scribe_Collections.Look(ref list, "activeEdicts", LookMode.Def);
             activeEdicts = list ?? new List<EdictDef>();
             Scribe_Values.Look(ref lastGodTick, "lastGodTick", int.MinValue);
+
+            // One int (the focused world tile). Nothing here has to be re-applied to citizens after a load:
+            // each citizen's own attention flag and tier round-trip through Pawn_TierTracker.ExposeData, so
+            // the focus and the population it holds at Full come back already agreeing with each other —
+            // which matters, because the world this tile names is deep-loaded after this manager is.
+            AttentionManager? att = attention;
+            Scribe_Deep.Look(ref att, "attention");
+            attention = att ?? new AttentionManager();
 
             // Re-establish the EraReached subscription against whatever ResearchManager is live on this
             // thread once loading has settled — see EnsureSubscribedToEraTransitions's own doc. A loaded

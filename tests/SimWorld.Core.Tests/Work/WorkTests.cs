@@ -424,7 +424,18 @@ namespace SimWorld.Tests.Work
             Assert.All(normal, g => Assert.False(g.emergency));
 
             Assert.True(IndexOf(normal, "DoctorTend") < IndexOf(normal, "CookMeals"));
-            Assert.True(IndexOf(normal, "Repair") < IndexOf(normal, "ConstructFinishFrames"));
+
+            // Repair and the three Construct* givers all share the Construction work type, so priorityInType
+            // alone decides their order. This used to read "Repair before ConstructFinishFrames", from back
+            // when Repair was an unwired placeholder sitting at 100; wiring it moved it below the givers that
+            // actually build something (see its own comment in WorkGivers.xml and RepairAITests' own ordering
+            // test for why that matters). Asserted against the defs rather than hardcoded, so this stays a
+            // test of the ordering rule and not of one content number.
+            WorkGiverDef repair = DefDatabase<WorkGiverDef>.GetNamed("Repair");
+            WorkGiverDef finishFrames = DefDatabase<WorkGiverDef>.GetNamed("ConstructFinishFrames");
+            Assert.Same(repair.workType, finishFrames.workType);
+            Assert.True(repair.priorityInType < finishFrames.priorityInType);
+            Assert.True(IndexOf(normal, "ConstructFinishFrames") < IndexOf(normal, "Repair"));
             Assert.True(IndexOf(normal, "ConstructFinishFrames") < IndexOf(normal, "ConstructDeliverResourcesToFrames"));
 
             Assert.Equal(DefDatabase<WorkGiverDef>.DefCount, emergency.Count + normal.Count);
@@ -433,20 +444,25 @@ namespace SimWorld.Tests.Work
         [Fact]
         public void WorkGiver_worker_is_lazily_created_and_checks_required_capacities()
         {
-            // DoctorTend used to be this test's placeholder-and-requiredCapacities example, back when every
-            // Doctor WorkGiverDef still defaulted to WorkGiver_Pending; the health lane wired it to a real
-            // WorkGiver_Tend scanner (docs/status.json's health.tending item). Hunt still carries the same
-            // requiredCapacities shape (Manipulation) and, unlike DoctorTend, is not claimed by any of this
-            // pass's active lanes (docs/WORK-REGISTER.md), so it stays WorkGiver_Pending for this generic check.
+            // This check has walked down the WorkGiverDefs as each pass wired one: DoctorTend first (health's
+            // WorkGiver_Tend), then Hunt, which the hunting lane has now wired to WorkGiver_Hunt too. What it
+            // is actually about — a Worker built lazily, cached, and back-pointed at its own def, and
+            // requiredCapacities read off that def — never depended on the worker being the empty
+            // WorkGiver_Pending placeholder, so that assertion is retired rather than moved onto yet another
+            // def some other lane is about to wire. Hunt keeps the requiredCapacities shape (Manipulation)
+            // this test needs.
             WorkGiverDef hunt = DefDatabase<WorkGiverDef>.GetNamed("Hunt");
             WorkGiver worker = hunt.Worker;
             Assert.Same(worker, hunt.Worker);
-            Assert.IsType<WorkGiver_Pending>(worker);
             Assert.Same(hunt, worker.def);
 
             Pawn p = NewHuman();
             Assert.False(worker.MissingRequiredCapacity(p));
-            Assert.False(worker.ShouldSkip(p));
+
+            // ShouldSkip is now the wired giver's own business (a hunter needs a map, a ranged weapon and a
+            // settlement short of food) — HuntingAITests owns those; here it is enough that asking is safe
+            // for a pawn with no map at all.
+            Assert.True(worker.ShouldSkip(p));
         }
 
         // ---- scribe round trip ----

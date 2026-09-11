@@ -270,7 +270,7 @@ namespace SimWorld.Sim
 
             SimWorld.Factions.Faction playerFaction = ResolvePlayerFaction(scenario, world);
 
-            int tile = startTile ?? PickStartingTile(world.grid);
+            int tile = startTile ?? PickStartingTile(world);
             int actualBandSize = bandSize ?? Rand.Current.Range(SimWorld.World.SettlementTuning.FoundingBandRange);
             var foundingRand = new RandomStream(SimWorld.World.GenText.StableStringHash(seedString + "|founding"));
 
@@ -296,6 +296,14 @@ namespace SimWorld.Sim
             target.Tile = tile;
             SyncCivilizationTarget(game, target);
 
+            // A new game opens on the settlement it just founded, which is what keeps that founding band at
+            // Full tier: spec §5b.3 says the founders are "Full-tier from the first tick", and §11.3 says the
+            // only thing that holds an ordinary citizen there is attention. Those two are one statement, so
+            // the focus has to be set here — left unset, the first attention sweep (God.GodTick ->
+            // AttentionManager.Reconcile) would correctly conclude nobody is watching and settle the founders
+            // to Interval before the host ever got a frame up.
+            game.God.Attention.Focus(settlement);
+
             game.WireTickHooks();
             return game;
         }
@@ -305,7 +313,15 @@ namespace SimWorld.Sim
         /// switch (world view to settlement view) has one call to make through <see cref="Game"/> rather than
         /// needing <see cref="World"/> handed around separately. The returned map is picked up by
         /// <see cref="Maps"/>/the post-tick map sweep automatically on the very next tick — nothing further
-        /// to register.</summary>
+        /// to register.
+        /// <para/>
+        /// <b>This generates the interior; it does not move the god's attention.</b> The two are deliberately
+        /// separate decisions — a host may want a map built without anyone attending it — but they are easy to
+        /// confuse, and getting it wrong is quiet rather than loud: only a <see cref="PawnTier.Full"/> citizen
+        /// is ever placed on an interior (<see cref="SimWorld.World.Settlement.SyncCitizenSpawns"/>), and only
+        /// attention holds an ordinary citizen at Full, so a settlement opened without being focused draws an
+        /// empty town. A host switching the player's scope calls
+        /// <see cref="God.View.GodCommands.FocusSettlement"/> alongside this.</summary>
         public SimWorld.Map.Map EnterSettlement(SimWorld.World.Settlement settlement)
         {
             if (settlement == null) throw new ArgumentNullException(nameof(settlement));
@@ -339,21 +355,62 @@ namespace SimWorld.Sim
             throw new InvalidOperationException("World generation produced no factions to found a settlement for.");
         }
 
-        /// <summary>Best-scored non-water tile by the earliest loaded <see cref="SimWorld.World.Siting.SiteWeightDef"/>
+        /// <summary>
+        /// Best-scored non-water tile by the earliest loaded <see cref="SimWorld.World.Siting.SiteWeightDef"/>
         /// (the same convention <c>SettlementTests.BestScoredTile</c>/<c>FullStackTests</c> already use for a
-        /// deterministic default founding site).</summary>
-        private static int PickStartingTile(SimWorld.World.WorldGrid grid)
+        /// deterministic default founding site), at least
+        /// <see cref="SimWorld.World.Gen.WorldGenStep_Factions.MinSettlementDistance"/> tiles from every
+        /// settlement the world already placed.
+        ///
+        /// <para/><b>The spacing rule is not decoration.</b> Every other founding path obeys it —
+        /// <see cref="SimWorld.World.Gen.WorldGenStep_Factions"/> at world generation and
+        /// <see cref="SimWorld.World.EmergenceManager"/> for settlements that emerge later — and this one did
+        /// not, so on a non-solo start the player's settlement could be founded on, or beside, a
+        /// world-generated one. Besides being implausible, a shared tile breaks the uniqueness that
+        /// <see cref="God.AttentionManager"/> relies on to name a settlement by its tile: focusing that tile
+        /// would attend both.
+        ///
+        /// <para/>Falls back to the best-scored habitable tile when no candidate clears the spacing — a
+        /// crowded world should still start a game rather than refuse to, and the fallback is the behaviour
+        /// this method had before the rule existed.
+        /// </summary>
+        private static int PickStartingTile(SimWorld.World.World world)
         {
+            SimWorld.World.WorldGrid grid = world.grid;
             SimWorld.World.Siting.SiteWeightDef weights = DefDatabase<SimWorld.World.Siting.SiteWeightDef>.AllDefsListForReading
                 .OrderBy(w => w.era?.order ?? int.MaxValue)
                 .First();
 
+            var taken = new List<int>();
+            foreach (SimWorld.World.WorldObject obj in world.worldObjects)
+            {
+                if (obj is SimWorld.World.Settlement) taken.Add(obj.tile);
+            }
+            int minDistance = SimWorld.World.Gen.WorldGenStep_Factions.MinSettlementDistance(grid.TilesCount);
+
             int best = -1;
             float bestScore = float.NegativeInfinity;
+            int bestIgnoringSpacing = -1;
+            float bestScoreIgnoringSpacing = float.NegativeInfinity;
+
             for (int i = 0; i < grid.TilesCount; i++)
             {
                 if (grid.Tiles[i].WaterCovered) continue;
                 float score = SimWorld.World.Siting.SiteScorer.Score(grid, i, weights);
+
+                if (score > bestScoreIgnoringSpacing)
+                {
+                    bestScoreIgnoringSpacing = score;
+                    bestIgnoringSpacing = i;
+                }
+
+                bool tooClose = false;
+                for (int t = 0; t < taken.Count; t++)
+                {
+                    if (grid.ApproxDistanceInTiles(i, taken[t]) < minDistance) { tooClose = true; break; }
+                }
+                if (tooClose) continue;
+
                 if (score > bestScore)
                 {
                     bestScore = score;
@@ -361,8 +418,9 @@ namespace SimWorld.Sim
                 }
             }
 
-            if (best < 0) throw new InvalidOperationException("World generation produced no habitable tile to found a settlement on.");
-            return best;
+            if (best >= 0) return best;
+            if (bestIgnoringSpacing >= 0) return bestIgnoringSpacing;
+            throw new InvalidOperationException("World generation produced no habitable tile to found a settlement on.");
         }
 
         // ---- tick order (spec §4: pre-tickers -> normal -> rare -> long -> post-tickers) ----
