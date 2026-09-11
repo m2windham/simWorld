@@ -453,6 +453,13 @@ namespace SimWorld.Sim
             // standing bill on it, so the cut stone the construction initiative above now spends on walls
             // actually gets cut. Self-gated on the same rare tick, for the same reason.
             tm.PostTickers.Add(_ => SimWorld.Crafting.StonecutterInitiative.Tick());
+            // research + mining + needs.beauty: the civilization picks what to study next, and its
+            // settlements raise the research bench that WorkGiver_Research refuses to produce a job without,
+            // plus the sculpture that spends the gold and jade they mine. Before this, nothing in src/ ever
+            // placed a research bench or chose a project, so no civilization could research at all unless the
+            // god happened to issue one of the five edicts that name a researchFocus. Self-gated on the same
+            // rare tick as the two initiatives above, for the same reason.
+            tm.PostTickers.Add(_ => SimWorld.Building.SettlementWorksInitiative.Tick());
             // offices: every settlement's stewardship and the civilization's eldership stay filled, and a
             // dead holder is succeeded. Self-gated on the long tick like the managers above, and stateless —
             // a seat's holder is the citizen carrying that office's RoleDef, which already saves with them,

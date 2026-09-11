@@ -63,10 +63,18 @@ namespace SimWorld.Pawns.Generation
                 "Could not generate a violence-capable pawn of kind " + request.KindDef.defName + " after " + MaxGenerationTries + " tries.");
         }
 
-        /// <summary>A freshly-born pawn: age 0, no backstories, no traits, name only, with a "Born" life event.</summary>
-        public static Pawn GenerateNewborn(PawnKindDef kindDef, Gender? gender = null)
+        /// <summary>
+        /// A freshly-born pawn: age 0, no backstories, no traits, name only, with a "Born" life event.
+        /// <para/>
+        /// <paramref name="faction"/> is the civilization the baby is born into — RimWorld passes the mother's
+        /// faction on the same request (<c>Hediff_Pregnant.DoBirthSpawn</c>), and a child born in a settlement
+        /// belongs to that settlement's people from its first tick rather than waiting for a roster sweep to
+        /// notice it. Costs no <see cref="Sim.RandomStream"/> draw either way: a newborn request skips weapon
+        /// and apparel generation entirely, which are the only two steps that read the request's faction.
+        /// </summary>
+        public static Pawn GenerateNewborn(PawnKindDef kindDef, Gender? gender = null, Factions.Faction? faction = null)
         {
-            var request = new PawnGenerationRequest(kindDef, fixedGender: gender, newborn: true);
+            var request = new PawnGenerationRequest(kindDef, fixedGender: gender, newborn: true, faction: faction);
             return GeneratePawn(request);
         }
 

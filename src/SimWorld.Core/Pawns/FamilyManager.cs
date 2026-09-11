@@ -235,7 +235,14 @@ namespace SimWorld.Pawns
         private static Pawn DoBirth(Family family, Pawn parentA, Pawn parentB)
         {
             PawnKindDef kind = parentA.kindDef ?? parentB.kindDef ?? PawnKindDefOf.Colonist;
-            Pawn newborn = PawnGenerator.GenerateNewborn(kind);
+
+            // A child is born into its parents' civilization (RimWorld passes the mother's faction on the
+            // same request). Without this a settlement's own next generation arrived factionless while the
+            // founders around them were not, and hostility — which needs a faction on both sides — would
+            // have quietly gone blind again one generation in. Either parent answers: the pair is a
+            // household, and a household in this port never spans two factions.
+            Factions.Faction? faction = parentA.faction ?? parentB.faction;
+            Pawn newborn = PawnGenerator.GenerateNewborn(kind, faction: faction);
 
             // pawngen.genes: endogenes only, never xenogenes — see GeneInheritanceUtility's own doc for the
             // rule and why it is SimWorld's own rather than a sourced RimWorld one. A no-op (and zero extra

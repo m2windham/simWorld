@@ -53,6 +53,16 @@ A settlement now hauls, researches, crafts, cooks, treats, rescues and feeds its
 hunts, repairs what it built, clears plants out of its own way, carries its dead away,
 butchers a carcass at a bench, puts out fires and cleans up after itself.
 
+> **Correction, written two batches later.** That sentence was true of the tests and false
+> of a game, and it stayed on this page for three batches saying so. `DoctorUtility.IsCaredForBy`
+> opens `if (carer.faction == null) return false`, and `WorkGiver_Tend`, `WorkGiver_RescueDowned`
+> and `WorkGiver_FeedPatient` all route through it — so while citizens carried no faction
+> (§7), **no citizen in any generated game could tend, rescue or feed another.** "Researches"
+> was hollow for a different reason: exactly one line in `src/` ever set a research project.
+> Both are fixed now, and the sentence is finally true. It is left standing, with this note
+> under it, because the failure it records is the one this register keeps having to learn:
+> **counting what is wired is not the same as watching what a game does.**
+
 **The last three came off the list by building what they were blocked on.** `HaulCorpses`,
 `FightFires` and `CleanFilth` had no `Corpse`, `Fire` or `Filth` class anywhere in this
 codebase — the oldest entries here, and the block was real rather than a missing decision.
@@ -268,7 +278,7 @@ have caught it.
 ask "content sets it, does code read it?" and "code reads it, does content set it?". A
 field that **neither** side touches is reported by neither. `researchSpeedFactor` was
 exactly that: no preset set it, no line read it, and it appears nowhere in the baseline. A
-third check is the open follow-up.
+third check is the open follow-up. **Closed in §6.**
 
 ### 5. A module can be wired and still unable to act
 
@@ -305,19 +315,121 @@ The corollary is uncomfortable and worth writing down: a passing suite of 1,855 
 green audit, and 29 of 29 work givers wired were all simultaneously true while no bench had
 work on it and no citizen could see a raider.
 
-### The next item, and it is a World-module job
+### 6. The audit's blind spot is closed, and it cost 48 lines to close
 
-**Give a settlement's citizens their settlement's faction.** The batch-six fix wired
-`FactionDef.hostileToFactionlessHumanlikes`, which is the flag for the factionless pairing
-and was genuinely unread — but Tribal and Outlander content declares it `false`, so those
-raids still find nobody. Turning the flag on for content that did not ask for it would
-paper over the real gap.
+§4's last lesson recorded a follow-up: the two field checks are a pair, and a pair is not a
+partition. Each waits for one side to speak before it looks at the other, so the quadrant
+where **neither** speaks is reported by neither. That is where `researchSpeedFactor` sat.
 
-It is not a one-line change and should not be taken as one. Citizens carrying a faction
-changes hostility resolution, `AttackTargetsCache`'s faction buckets, `MapPawns` filing,
-and anything that reads `Pawn.faction` for a social or trade decision. It wants its own
-lane, its own measurement of a generated settlement before and after, and a check that the
-Statistical and Interval tiers do not pay for it.
+`untouched` is that third check — *no shipped Def moves this field off its declared default,
+and no line of `src/` reads it.* The interesting part was never the code; it was whether the
+answer could be believed.
+
+**The measurement, which is what decided it shipped.** 774 content fields surveyed: 623 set by
+content, 103 unset but read, **48 touched by neither**. That is the same order as the checks
+either side of it (54 `code-deaf`, 38 `content-silent`) and not the 177 and 106 of the two
+variants that were built and dropped for noise. For **46 of the 48** the field name occurs
+exactly *once* in the whole of `src/` — its own declaration — so there is no judgement call
+about whether some sighting counts as a use, which is precisely what sank the "public method
+with no caller" check. Every one of the 48 was read by hand before a baseline line was written
+for it. There were no false reports to argue about, only a spread of real reasons.
+
+One deliberate imprecision, recorded rather than papered over: the survey compares loaded
+objects against a freshly-built one, so a Def that spells out the default value
+(`<rotatable>false</rotatable>`) reads as untouched. Three entries are like that. They are
+invisible to `code-deaf` for exactly the same reason, so the check is not inventing them — it
+is picking up three that the existing pair also drops. The detail line says what was measured
+rather than claiming the XML never names the field.
+
+**Sixteen of the 48 are real gaps**, and they are a better batch-seven list than anything §4
+left. `grep "untouched.*Real gap" tests/SimWorld.Core.Tests/Wiring/dormant-seams.txt` is the
+list; the ones worth naming here:
+
+- **A mental break tells the player nothing.** `Letters/LetterStack` ships and six systems
+  raise letters through it. `MentalState.PostStart` raises none, and `beginLetter`/
+  `beginLetterLabel` have sat there since the module landed.
+- **Every pawn gets every need.** `Pawn_NeedsTracker.ShouldHaveNeed` consults
+  `minIntelligence` and `needsRest` and nothing else, so all four applicability flags on
+  `NeedDef` are ignored — and prisoners exist now for `neverOnPrisoner` to exclude.
+- **A hediff stage cannot cause a mental break or a forgotten memory.** `mentalBreakMtbDays`
+  and `forgetMemoryThoughtMtbDays` are one stage-tick call site short each, on top of systems
+  that already run.
+- **Skill buys no throughput in the guild.** `RecipeDef.workSpeedStat` is unread, so `Guild.cs`
+  charges a flat `workAmount` and a master smith costs exactly what a novice does.
+- **Stuff-built things are free.** `ThingDef.costStuffCount` is unread and `Frame.cs` delivers
+  `costList` only.
+- **No death is violent.** `DamageDef.externalViolence` is what RimWorld branches on for the
+  death thought and the combat log; nothing here separates a murder from a heart attack.
+
+**Four of those reasons only became gaps because an older one expired.** Apparel, temperature,
+prisoners and the letter stack all exist now, and four declarations in `src/` still say in so
+many words that they do not. §4's "a recorded reason is evidence, not a verdict" arrived
+exactly on schedule, in the comments rather than the baseline this time.
+
+**Two entries are deletions, not wirings.** `IncidentCategoryDef.refireDays` has no RimWorld
+counterpart to port — RimWorld's category def carries only defName/label/description, and
+spacing lives on `IncidentDef.minRefireDays`, which is read. And `WorkGiverDef` carries both
+`canBeDoneByNonColonists` and `nonColonistsCanDo`: two fields, one meaning, neither read. A
+later batch should delete rather than wire both.
+
+**What did not get done, on purpose.** None of the sixteen is wired here. The lane was the
+instrument, not the repairs, and three other lanes were live in the same batch.
+
+### 7. Citizens carry a faction, and four more systems turned out to be inert
+
+The item this section used to *propose* is done. A citizen now carries its settlement's
+faction, taken at generation rather than stamped on afterwards — which is load-bearing,
+because the gear generators read `request.Faction` as a tech-level ceiling and enfactioning
+after the fact leaves a neolithic founder holding a revolver. All four doors are covered:
+the founding band, migrants through `AddCitizen`, newborns at the birth site (births never
+pass through `AddCitizen`), and a sweep as backstop. A leaver **keeps** it, deliberately:
+emigrating is not renouncing a civilization, and clearing it would make walking out of town
+turn you into prey for the very flag §5 describes.
+
+Measured on a generated settlement with a real `TribalCivilization` raid, nothing armed or
+enfactioned by hand:
+
+| Measured on a generated settlement | before | after |
+| --- | --- | --- |
+| raiders seeing a citizen as hostile | 0 of 15 | 15 of 15 |
+| citizens seeing a raider as hostile | 0 of 30 | 30 of 30 |
+| raiders taking an attack job | 0 | 15 of 15 |
+| citizens taking an attack job | 0 | 24 of 30 |
+
+The six who do not fight are the pawns whose backstories disable `Violent` work, which is
+RimWorld's own rule; the test asserts "everyone who can, does" rather than a count.
+
+**But the hostility fix was the smaller half.** Four more systems were inert for the same
+reason and nobody had looked:
+
+- **Medicine.** See the correction in §1. Tend, rescue and feed were all dead in play.
+- **Taming.** `animal.faction = tamer.faction` inherited the tamer's null, so a tamed animal
+  stayed wild, stayed huntable, and `CanBeTrained` refused it forever. A settlement could
+  tame the same muffalo every day and never own one.
+- **Wardens.** `WorkGiver_Warden*` opens `if (pawn.faction == null) yield break`. No citizen
+  could ever be a warden.
+- **Capture.** `Pawn_GuestTracker.TryCapture` needs a faction on both sides, so a citizen
+  could neither take a prisoner nor be taken as one.
+
+Every one of those has passing unit tests. Every one of those tests hands its own pawn a
+faction by hand.
+
+### What is next
+
+1. **A watched raid still does nothing on the tick it lands.** Both sides can now see and
+   attack each other, but the squad spawns ~120 cells from the nearest citizen on a 200x200
+   interior, outside `CombatAITuning.TargetAcquireRadius`, and nothing walks it toward the
+   town. `CombatAITests`' raid test passes only because its map is 40x40.
+2. **Nothing ever puts a mined or crafted thing into `Settlement.Stores`.** Confirmed by two
+   lanes independently. The civilization-scale guild path starves by construction —
+   `MasonsGuild` lists `Make_Blocks_Sandstone` and can never obtain a chunk.
+3. **Cooking is the bench that is genuinely ready.** Meals have a real sink; smithing and
+   tailoring do not, because nothing in this port equips a crafted weapon or wears crafted
+   apparel, and a zero-target bill must not be queued.
+4. **The 16 real gaps §6's check found**, of which four are gaps only because a recorded
+   reason expired — in the source comments this time, not the baseline.
+5. **`CompTurretGun` with no owner now shoots the town.** Latent (nothing builds a turret),
+   but it became wrong the moment civilians got a faction.
 
 ## Immediate steps: the host repo — unclaimed, proposed
 

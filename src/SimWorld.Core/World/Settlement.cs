@@ -116,10 +116,58 @@ namespace SimWorld.World
             return tier == PawnTier.Statistical ? live + statisticalPopulation : live;
         }
 
+        /// <summary>
+        /// Puts <paramref name="pawn"/> on the roster and, with it, into this settlement's civilization —
+        /// see <see cref="AdoptCitizen"/> for why joining a town is joining its faction.
+        /// </summary>
         public void AddCitizen(Pawn pawn)
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
             citizens.Add(pawn);
+            AdoptCitizen(pawn);
+        }
+
+        /// <summary>
+        /// Gives <paramref name="pawn"/> this settlement's <see cref="WorldObject.faction"/> when it has none
+        /// of its own. <b>The single defect this closes:</b> hostility rests on both sides carrying a
+        /// <see cref="Pawn.faction"/> (<c>AI.AttackTargetsUtility.HostileTo</c>), and every citizen this port
+        /// generated carried none — a settlement had a faction and not one of its people did, so a raid on a
+        /// watched town was a pantomime. A citizen belongs to the civilization whose settlement it lives in;
+        /// that is what this says. It is reached from <see cref="AddCitizen"/> (the founding band and every
+        /// migrant) and from <see cref="AdoptFactionlessCitizens"/> (everybody else) — see that method for the
+        /// doors <see cref="AddCitizen"/> does not cover.
+        ///
+        /// <para/><b>Only ever fills a null, never overwrites.</b> A citizen whose faction already names
+        /// somebody was put there deliberately — <c>Factions.Pawn_GuestTracker</c> writes the host faction
+        /// onto a recruited prisoner, and a captured citizen stays on this roster while it is held — and a
+        /// sweep that re-stamped the settlement's faction over that would silently undo a recruitment on the
+        /// next tick. Filling a null can only ever add allegiance where there was none.
+        ///
+        /// <para/><b>The Statistical cohort is untouched and unreachable from here</b> (spec §11.3). A
+        /// Statistical citizen is a seat in <see cref="StatisticalPopulation"/>'s count with no <c>Pawn</c>
+        /// object behind it — there is nothing to enfaction, and nothing here enumerates or materialises one.
+        /// This walks <see cref="citizens"/>, which by design holds only the live Full/Interval slice.
+        /// </summary>
+        private void AdoptCitizen(Pawn pawn)
+        {
+            if (faction == null || pawn.faction != null) return;
+            pawn.faction = faction;
+        }
+
+        /// <summary>
+        /// The backstop for the three doors <see cref="AddCitizen"/> is not: a newborn goes straight onto
+        /// <see cref="citizens"/> from <c>Pawns.FamilyManager.DemographyTick</c> without passing through
+        /// <see cref="AddCitizen"/> at all (see <see cref="SyncCitizenSpawns"/>'s own doc), a hand-built test
+        /// pose can seat one the same way, and a save written before citizens carried a faction loads one
+        /// without. Births set the newborn's faction from its parents at the birth site, which is where the
+        /// parents are known and where RimWorld does it too; this sweep is what makes the invariant — every
+        /// citizen of a factioned settlement carries that faction — true rather than merely usually true.
+        /// Costs one walk of the live roster on the same rare cadence the rest of the sync already pays for.
+        /// </summary>
+        private void AdoptFactionlessCitizens()
+        {
+            if (faction == null) return;
+            for (int i = 0; i < citizens.Count; i++) AdoptCitizen(citizens[i]);
         }
 
         /// <summary>
@@ -278,6 +326,9 @@ namespace SimWorld.World
         public void SyncCitizenSpawns()
         {
             PruneDeadCitizens();
+            // Above the interiorMap gate on purpose: a citizen's civilization is not a property of standing on
+            // a generated map, and a settlement nobody has ever opened still has citizens who belong to it.
+            AdoptFactionlessCitizens();
             if (interiorMap == null) return;
             DespawnNonFullCitizens(interiorMap);
             SpawnUnspawnedFullCitizens(interiorMap);

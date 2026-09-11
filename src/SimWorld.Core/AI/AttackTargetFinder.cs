@@ -77,11 +77,11 @@ namespace SimWorld.AI
         /// humanlike belonging to no faction at all.
         ///
         /// <para/><b>Why this was a defect and not a nicety.</b> The audit recorded this flag as blocked on
-        /// "a factionless-pawn population existing". One exists, and it is not a corner case: it is every
-        /// civilian in the game. <c>World.SettlementFounder</c> generates each founding citizen through a
-        /// <c>PawnGenerationRequest</c> that names no faction, and <c>Factions.PawnGroupMaker</c> is the only
-        /// thing in <c>src/</c> that ever passes one — so a settlement has a faction and not one of its
-        /// citizens does. With hostility resting on both sides having a faction, that made a raid on a
+        /// "a factionless-pawn population existing". One existed, and it was not a corner case: it was every
+        /// civilian in the game. <c>World.SettlementFounder</c> generated each founding citizen through a
+        /// <c>PawnGenerationRequest</c> that named no faction, and <c>Factions.PawnGroupMaker</c> was the only
+        /// thing in <c>src/</c> that ever passed one — so a settlement had a faction and not one of its
+        /// citizens did. With hostility resting on both sides having a faction, that made a raid on a
         /// watched settlement a pantomime. Measured on a shipped-content settlement founded the ordinary way
         /// and a real <c>RaidEnemy</c> firing onto its interior: <b>30 citizens, 14 raiders standing on the
         /// same map, 0 of 14 raiders saw a citizen as hostile, 0 of 30 citizens saw a raider as hostile, and
@@ -91,12 +91,20 @@ namespace SimWorld.AI
         ///
         /// <para/>RimWorld puts the same rule in the same place — its <c>GenHostility</c> treats a factionless
         /// humanlike as hostile to any faction whose def sets the flag — though its factionless population is
-        /// wild men and quest pawns rather than everybody. Wiring it fixes the pairing the content actually
+        /// wild men and quest pawns rather than everybody. Wiring it fixed the pairing the content actually
         /// asks for: <c>RoughOutlanders</c>, the one shipped faction that sets the flag, and also the one
-        /// that is <see cref="FactionDef.permanentEnemy"/> and raids most often. It does <i>not</i> fix
+        /// that is <see cref="FactionDef.permanentEnemy"/> and raids most often. It did <i>not</i> fix
         /// <c>TribalCivilization</c> or <c>OutlanderCivilization</c> raids, which set it false and therefore
-        /// still find nobody to fight — that residue is a citizen-faction gap in the World module, recorded
-        /// rather than papered over here by turning the flag on for content that did not ask for it.
+        /// still found nobody to fight — recorded here as a citizen-faction gap in the World module rather
+        /// than papered over by turning the flag on for content that did not ask for it.
+        ///
+        /// <para/><b>That gap is closed, and this rule is narrower for it.</b> A settlement's citizens carry
+        /// their settlement's faction now (<c>World.SettlementFounder</c>, measured in
+        /// <c>Tests.World.CitizenFactionTests</c>: 15 of 15 raiders and 30 of 30 citizens hostile, both sides
+        /// taking attack jobs), so a raid on a town is a fight by faction relation and this clause carries
+        /// none of it. It is still wired and still reachable — the factionless humanlikes left are released
+        /// prisoners (<see cref="Pawn_GuestTracker.Release"/> clears the faction outright) and pawns generated
+        /// outside any settlement, which is roughly the population RimWorld aims it at in the first place.
         /// </summary>
         private static bool HostileToFactionless(Faction? faction, Pawn other) =>
             faction != null

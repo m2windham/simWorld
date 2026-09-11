@@ -97,9 +97,13 @@ namespace SimWorld.AI
         /// (<see cref="Factions.FactionDef.hostileToFactionlessHumanlikes"/>). Without it the index could not
         /// offer that pairing at all: a factionless pawn is in no faction bucket by construction, and a
         /// factionless searcher has no faction whose hostiles it could look up, so the cached scan would have
-        /// silently found nothing where the uncached walk found a fight. This is not a rare list — in this
-        /// port every settlement citizen is factionless (see <c>AttackTargetsUtility.HostileTo</c>'s own
-        /// remarks), so on a settlement interior it is most of the map.
+        /// silently found nothing where the uncached walk found a fight.
+        /// <para/>
+        /// It used to be most of a settlement interior, because every citizen in this port was factionless.
+        /// Citizens carry their settlement's faction now (<c>World.SettlementFounder</c>), so this list is
+        /// back to what its name says: released prisoners
+        /// (<c>Factions.Pawn_GuestTracker.Release</c> clears the faction outright) and pawns generated
+        /// outside any settlement. Small, and still not optional — it is the only place those can be found.
         /// </summary>
         private readonly List<Pawn> factionlessHumanlikes = new List<Pawn>();
 

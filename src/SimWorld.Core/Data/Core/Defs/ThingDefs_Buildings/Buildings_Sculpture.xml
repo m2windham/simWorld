@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Sculpture in gold and in jade (system: mining — a mined mineral that something is finally made out of).
+
+    THE HOLE THIS CLOSES. Buildings_Mineable.xml yields Flint, Salt, Coal, Copper, Tin, Silver, Gold, Jade,
+    Uranium and Plasteel, and before this file not one of those ten was named by a single recipe ingredient
+    or a single costList anywhere in content. A settlement could mine a gold vein out and the gold would lie
+    on the ground until the end of the game. Two of the ten are wired here; the other eight are not, and this
+    lane's report says why rather than pretending otherwise.
+
+    WHY GOLD AND JADE, AND WHY SCULPTURE. Of the ten, these are the two whose own descriptions in
+    Items_Minerals.xml already say what they are for — gold is "useless for a tool and unmatched for saying
+    who you are", jade is "carved into ornaments by peoples who had nothing harder to carve it with" — and
+    they are the two RimWorld itself spends on art rather than on tools (its gold and jade are stuffs, and
+    what its players make out of them is sculpture). They are also the cheapest to wire honestly, because the
+    consumer already exists and is real: Buildings_Art.xml ships a wooden Sculpture with a Beauty statBase,
+    Needs/BeautyUtility sums that stat off the cells a citizen can see, and Need_Beauty turns it into mood.
+    So a gold sculpture is a mined mineral going into something a citizen actually feels, not another product
+    added to a pile nothing consumes — which is the exact defect this lane exists to stop repeating.
+
+    It also closes the second half of a finding the stonecutting lane recorded: Sculpture had a
+    Blueprint/Frame pair and nothing anywhere placed one. Building.SettlementWorksInitiative now does, and
+    Building.SculptureMaterials picks which of the three a settlement raises next — the same shape
+    StoneWallMaterials already uses to pick a wall's stone, and for the same reason (this port costs a
+    building through costList, so one Def per material is the faithful fallback until stuff-chosen
+    construction lands; see that class's own remarks).
+
+    UNGATED BY RESEARCH, like the wooden Sculpture it parallels. Gold and jade are both worked cold, by
+    peoples with no metallurgy at all — that is most of the point of them — so a researchPrerequisite would
+    be this port inventing a gate RimWorld does not have and history does not support.
+
+    THE NUMBERS.
+      costList 25 is NOT a new figure: it is the count the shipped wooden Sculpture already costs, reused
+      unchanged so the material is the only thing that differs between the three. A gold vein yields 20
+      (Buildings_Mineable.xml), so one sculpture is a little over one vein — which is the sort of price a
+      thing like this should have.
+
+      MaxHitPoints stays at the wooden sculpture's 100 for both, deliberately: nothing in this port attacks a
+      sculpture, so a per-material figure would be three numbers invented to be read by nothing.
+
+      Beauty and WorkToBuild ARE this port's own and are NOT sourced — RimWorld expresses both as per-stuff
+      factors on one Sculpture def and those factors were not checkable from this sandbox. What is sourced is
+      the ordering, and it is read off content rather than asserted here: gold and jade both outshine wood,
+      and jade sits above gold because Items_Minerals.xml already prices jade (12) above gold (10) on the one
+      MarketValue chain that file fixes. Jade also costs the most work, which its own description asks for
+      ("blunts the tools that shape it"). SettlementWorksTests pins that ordering and the wood-versus-mineral
+      gap; it does not pin 60/70 or 1200/1400.
+
+    Its own file, and it touches nothing that already exists: the two ThingDefs are new, and their
+    Blueprint_/Frame_ pairs follow Buildings_BlueprintsAndFrames.xml's hand-authored pattern without that file
+    changing (CLAUDE.md's "add a file rather than edit a shared one").
+  -->
+
+  <ThingDef Name="BaseMineralSculpture" Abstract="True">
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0.4</fillPercent>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineralSculpture">
+    <defName>SculptureGold</defName>
+    <label>gold sculpture</label>
+    <description>A figure worked in soft yellow metal. Nothing else a settlement owns says quite so plainly what it has.</description>
+    <statBases>
+      <MaxHitPoints>100</MaxHitPoints>
+      <WorkToBuild>1200</WorkToBuild>
+      <Beauty>60</Beauty>
+      <Flammability>0</Flammability>
+    </statBases>
+    <costList>
+      <Gold>25</Gold>
+    </costList>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineralSculpture">
+    <defName>SculptureJade</defName>
+    <label>jade sculpture</label>
+    <description>Green stone ground down over months into a shape. It blunted every tool that touched it, and that is half of why it is looked at.</description>
+    <statBases>
+      <MaxHitPoints>100</MaxHitPoints>
+      <WorkToBuild>1400</WorkToBuild>
+      <Beauty>70</Beauty>
+      <Flammability>0</Flammability>
+    </statBases>
+    <costList>
+      <Jade>25</Jade>
+    </costList>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_SculptureGold</defName>
+    <label>gold sculpture (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>SculptureGold</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_SculptureGold</defName>
+    <label>gold sculpture (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0.4</fillPercent>
+    <entityToBuild>SculptureGold</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_SculptureJade</defName>
+    <label>jade sculpture (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>SculptureJade</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_SculptureJade</defName>
+    <label>jade sculpture (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0.4</fillPercent>
+    <entityToBuild>SculptureJade</entityToBuild>
+  </ThingDef>
+
+</Defs>

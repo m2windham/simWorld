@@ -39,7 +39,7 @@ namespace SimWorld.World
 
             var settlement = new Settlement(WorldObjectDefOf.Settlement, tile, faction, settlementName, foundingTick);
 
-            List<Pawn> founders = GenerateFoundingBand(bandSize, rand);
+            List<Pawn> founders = GenerateFoundingBand(bandSize, faction, rand);
             PairIntoHouseholds(founders, foundingTick);
             foreach (Pawn pawn in founders) settlement.AddCitizen(pawn);
 
@@ -106,18 +106,33 @@ namespace SimWorld.World
         }
 
         /// <summary>
-        /// Generates <paramref name="bandSize"/> adult founders, alternating gender so consecutive pairs are
-        /// always opposite-gender couples, with ages spread across <see cref="SettlementTuning.FounderAgeRange"/>
-        /// rather than one identical age.
+        /// Generates <paramref name="bandSize"/> adult founders of <paramref name="faction"/>, alternating
+        /// gender so consecutive pairs are always opposite-gender couples, with ages spread across
+        /// <see cref="SettlementTuning.FounderAgeRange"/> rather than one identical age.
+        ///
+        /// <para/><b><paramref name="faction"/> goes into the request, not onto the pawn afterwards.</b> That
+        /// is RimWorld's own shape (<c>PawnGenerationRequest.Faction</c>), and here it is load-bearing rather
+        /// than stylistic: <see cref="PawnWeaponGenerator"/> and <see cref="PawnApparelGenerator"/> both read
+        /// <c>request.Faction</c> to cap candidates at <c>ThingDef.techLevel &lt;= faction.def.techLevel</c>,
+        /// so a founder enfactioned after generation would already be holding gear its civilization cannot
+        /// make. A neolithic people founding a town get bows; an industrial one gets what it can build.
+        ///
+        /// <para/><b>This costs no extra <see cref="RandomStream"/> draws.</b> Both generators draw exactly
+        /// once per candidate pick (<c>GenCollection.TryRandomElementByWeight</c>) whatever the candidate list
+        /// holds, and the tech ceiling only ever shortens that list — it never adds or removes a draw. The
+        /// ceiling can change <i>which</i> item is picked for a civilization below the top rung; it cannot
+        /// move the stream. Pinned by
+        /// <c>Tests.World.CitizenFactionTests.Founding_a_band_costs_the_same_random_draws_with_a_faction_as_without</c>.
         /// </summary>
-        private static List<Pawn> GenerateFoundingBand(int bandSize, RandomStream rand)
+        private static List<Pawn> GenerateFoundingBand(int bandSize, Faction? faction, RandomStream rand)
         {
             var founders = new List<Pawn>(bandSize);
             for (int i = 0; i < bandSize; i++)
             {
                 Gender gender = i % 2 == 0 ? Gender.Male : Gender.Female;
                 float age = rand.Range(SettlementTuning.FounderAgeRange);
-                var request = new PawnGenerationRequest(PawnKindDefOf.Tribesperson, fixedGender: gender, fixedBiologicalAge: age);
+                var request = new PawnGenerationRequest(
+                    PawnKindDefOf.Tribesperson, fixedGender: gender, fixedBiologicalAge: age, faction: faction);
                 founders.Add(PawnGenerator.GeneratePawn(request));
             }
             return founders;
