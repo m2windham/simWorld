@@ -36,8 +36,28 @@ namespace SimWorld.MindState
         public bool blockNormalThoughts;
         public bool prisonersCanDo = true;
         public bool colonistsOnly;
+        /// <summary>Headline of the letter <see cref="beginLetter"/> sends; falls back to the state's own
+        /// label (RimWorld: <c>MentalStateDef.beginLetterLabel</c>).</summary>
         public string? beginLetterLabel;
+
+        /// <summary>
+        /// Body of the letter raised when a pawn enters this state (RimWorld:
+        /// <c>MentalStateDef.beginLetter</c>, consumed by <c>MentalState.PostStart</c> exactly as it is
+        /// here). <c>{0}</c> is the pawn's label, the same convention <c>DamageDef.deathMessage</c> uses.
+        /// Null means "this state is not worth telling the player about" — which is why the letter is not
+        /// composed from the label instead: a social scuffle that resolves itself in twenty seconds should
+        /// raise nothing, and the absence of this field is how a content author says so.
+        /// </summary>
         public string? beginLetter;
+
+        /// <summary>
+        /// Which kind of letter <see cref="beginLetter"/> arrives as (RimWorld:
+        /// <c>MentalStateDef.beginLetterDef</c>). Null falls back to <see cref="Letters.LetterDefOf.NegativeEvent"/>
+        /// at the send site rather than here, because a Def's field initialiser runs before the Def database
+        /// exists.
+        /// </summary>
+        public Letters.LetterDef? beginLetterDef;
+
         public string? baseInspectLine;
 
         /// <summary>Memory gained on recovery from a mood-caused instance (Catharsis in vanilla).</summary>

@@ -45,6 +45,14 @@
     <major>true</major>
     <minIntelligence>Humanlike</minIntelligence>
     <freezeWhileSleeping>true</freezeWhileSleeping>
+    <!--
+      A prisoner has no recreation. Not a mood choice: this port gives a prisoner no way to obtain joy at
+      all - every joy activity is reached through a job, and a prisoner takes none - so the need could only
+      ever fall, and a need that can only fall is a permanent mood penalty wearing a need's clothes. RimWorld
+      ships the same flag on the same need. Pawn_NeedsTracker.ShouldHaveNeed reads it, and capture, recruit
+      and release each re-run that sweep, so the need goes and comes back with the prisoner's status.
+    -->
+    <neverOnPrisoner>true</neverOnPrisoner>
     <threshPercents>
       <li>0.15</li>
       <li>0.3</li>

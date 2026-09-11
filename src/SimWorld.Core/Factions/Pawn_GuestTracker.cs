@@ -131,6 +131,12 @@ namespace SimWorld.Factions
                 will = Rand.Range(DefaultInitialWillRange),
             };
             captor.faction!.prisoners.Add(tracker);
+
+            // Becoming a prisoner changes which needs this pawn should have (NeedDef.neverOnPrisoner —
+            // shipped on recreation, which a prisoner has no way to satisfy), and unlike recruitment and
+            // release this transition does not touch Pawn.faction, whose setter would otherwise have done
+            // this. RimWorld sweeps the same way from Pawn_GuestTracker.SetGuestStatus.
+            victim.needs?.AddOrRemoveNeedsAsAppropriate();
             return tracker;
         }
 

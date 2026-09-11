@@ -397,6 +397,17 @@ namespace SimWorld.Health
             healthState = PawnHealthState.Mobile;
         }
 
+        /// <summary>
+        /// This pawn was killed rather than merely dying (RimWorld: the meaning of
+        /// <see cref="DamageDef.externalViolence"/>). False for a living pawn, for age, starvation and
+        /// disease — which arrive with no damage at all — and for damage that declares itself non-violent,
+        /// which is how a surgery that kills the patient stays a tragedy rather than a murder.
+        ///
+        /// <para/>Answered from <see cref="DeathCauseDamage"/>, which is Scribed, so it survives a save and a
+        /// reload along with the rest of the death record.
+        /// </summary>
+        public bool DiedViolently => Dead && deathCauseDamage != null && deathCauseDamage.externalViolence;
+
         public void Kill(DamageInfo? dinfo, Hediff? exactCulprit)
         {
             if (Dead) return;
@@ -405,6 +416,17 @@ namespace SimWorld.Health
             deathCauseDamage = dinfo?.Def;
             deathCauseHediff = exactCulprit?.def;
             hediffSet.DirtyCache();
+
+            // Everyone who needs to know, before the body is made. Ordered: the people who watched get their
+            // memory while the corpse-maker has not yet taken the pawn off the map (Notify_Died does that,
+            // and an unspawned victim has no witnesses), and the narrator hears about it either way.
+            //
+            // Reached through Director exactly as MakeDowned reaches StorytellerPawnEvents, and for the same
+            // reason: this funnel runs for raiders and animals too, so somebody has to ask "is this one of
+            // ours" and that question belongs on the Director side of the line, not here.
+            SimWorld.Thoughts.PawnDiedThoughtsUtility.Notify_PawnDied(pawn, dinfo);
+            SimWorld.Director.StorytellerDeathEvents.Notify_PawnDied(pawn, dinfo, exactCulprit);
+
             pawn.Notify_Died();
         }
 

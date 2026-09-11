@@ -6,9 +6,13 @@ using SimWorld.Sim;
 namespace SimWorld.Letters
 {
     /// <summary>
-    /// One notification on the <see cref="LetterStack"/> (RimWorld: <c>Verse.Letter</c>). SimWorld has no
-    /// map yet, so <see cref="lookTargets"/> stores plain ids (RimWorld: a jump-to-target <c>GlobalTargetInfo</c>
-    /// list) for whichever future system resolves them, rather than live references.
+    /// One notification on the <see cref="LetterStack"/> (RimWorld: <c>Verse.Letter</c>).
+    /// <see cref="lookTargets"/> stores plain ids (RimWorld: a jump-to-target <c>GlobalTargetInfo</c> list)
+    /// rather than live references. <b>The recorded reason for that — "SimWorld has no map yet" — has
+    /// expired</b>: maps ship, and a letter raised about a pawn now carries that pawn's
+    /// <c>Thing.GetUniqueLoadID</c>. Ids are still the right shape for a different reason: a letter outlives
+    /// what it points at (the pawn it names is usually dead by the time anyone reads it), and the God view is
+    /// values-and-defNames by rule (spec §12a), so a live reference could not cross to the host anyway.
     /// </summary>
     public abstract class Letter : IExposable
     {

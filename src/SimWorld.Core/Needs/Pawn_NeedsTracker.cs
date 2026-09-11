@@ -55,11 +55,44 @@ namespace SimWorld.Needs
             return null;
         }
 
+        /// <summary>
+        /// Whether this pawn is one of the people this need is for (RimWorld:
+        /// <c>Pawn_NeedsTracker.ShouldHaveNeed</c>, whose applicability flags this now consults).
+        ///
+        /// <para/><b>What was wrong.</b> Only <see cref="NeedDef.minIntelligence"/> and
+        /// <c>RaceProps.needsRest</c> were asked, so every other flag a <see cref="NeedDef"/> carries was
+        /// ignored and every pawn was given every need its species could hold — a captured raider kept a
+        /// recreation need nobody would ever let them satisfy, and it decayed to nothing and dragged their
+        /// mood down for as long as they were held.
+        ///
+        /// <para/><b>Order matters and is RimWorld's.</b> The species test comes first (it is the cheapest and
+        /// the most absolute), then the who-owns-them tests. Each of the three flags is asked only when the
+        /// Def actually sets it, which keeps <see cref="Pawns.PawnUtility.IsPrisoner"/>'s scan of the
+        /// factions' prisoner lists off the path of every need of every pawn ever built: exactly one shipped
+        /// need sets a prisoner flag, so exactly one lookup happens per pawn.
+        ///
+        /// <para/><b>This is re-asked, not asked once.</b> A pawn is built before it is given a faction
+        /// (<c>PawnGenerator</c> constructs, then the generator or the founder enfactions), so a colonist
+        /// tested at construction is factionless and would fail every one of these. <c>Pawn.faction</c>'s
+        /// setter re-runs <see cref="AddOrRemoveNeedsAsAppropriate"/> for that reason — RimWorld does the
+        /// same from <c>Pawn.SetFaction</c> — and so does capture and release
+        /// (<c>Factions.CaptureUtility</c>), which is the other way the answers here change during a life.
+        /// </summary>
         public bool ShouldHaveNeed(NeedDef def)
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
             if (pawn.RaceProps.intelligence < def.minIntelligence) return false;
             if (typeof(Need_Rest).IsAssignableFrom(def.needClass) && !pawn.RaceProps.needsRest) return false;
+
+            // RimWorld: "colonist, or a prisoner of the colony" — the people living in the settlement, whether
+            // or not by choice. A pawn passing through with a faction of its own is neither.
+            if (def.colonistAndPrisonersOnly
+                && !PawnUtility.IsColonist(pawn) && !PawnUtility.IsPrisonerOfColony(pawn)) return false;
+
+            if (def.colonistsOnly && !PawnUtility.IsColonist(pawn)) return false;
+
+            if (def.neverOnPrisoner && PawnUtility.IsPrisoner(pawn)) return false;
+
             return true;
         }
 

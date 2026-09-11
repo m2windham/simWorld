@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The knife a surgeon is holding (RimWorld: Damages_Misc's SurgicalCut). Its own file, not an addition to
+    Damages.xml, per CLAUDE.md.
+
+    Why it exists at all: Recipe_Surgery.OnSurgeryFailed used to hurt - and sometimes kill - the patient with
+    plain Cut, the same DamageDef a raider's knife deals. Nothing could tell the two apart, because nothing
+    read externalViolence; now that something does, an operation that goes wrong would have read as a murder
+    committed on the operating table. It would have charged the storyteller's adaptation as a combat
+    casualty, left everyone in the room a witnessed-death memory, and told the player their surgeon's patient
+    "has been cut to death".
+
+    externalViolence=false is the whole point of the def. Everything else is deliberately identical to Cut -
+    same injury hediff, same Sharp armor category - so that the wound a botched operation leaves is exactly
+    the wound it left before and only its classification has changed. (RimWorld gives SurgicalCut its own
+    injury hediff too; this port has no separate surgical-cut injury, and inventing one would change what the
+    wound does rather than what it means.)
+  -->
+
+  <DamageDef>
+    <defName>SurgicalCut</defName>
+    <label>surgical cut</label>
+    <hediff>Cut</hediff>
+    <hediffSolid>Crack</hediffSolid>
+    <armorCategory>Sharp</armorCategory>
+    <externalViolence>false</externalViolence>
+    <deathMessage>{0} has died during surgery.</deathMessage>
+  </DamageDef>
+
+</Defs>
