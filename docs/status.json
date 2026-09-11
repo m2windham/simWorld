@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 1604,
+  "testsTotal": 1678,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -170,7 +170,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Defs · Defs/Patches · Content (ModContentPack, ModLoadOrder)",
       "status": "ported",
-      "tests": 85,
+      "tests": 103,
       "items": [
         {
           "id": "defs.xml",
@@ -246,6 +246,21 @@
           "id": "defs.loadorder",
           "label": "ModContentPack (About/About.xml, Defs/, Patches/) with Core as a pack like any other, and ModLoadOrder: a stable topological sort over modDependencies/loadAfter/loadBefore with declared order as the tie-break, Core always first. A missing dependency and a constraint cycle are reported and survived rather than thrown",
           "done": true
+        },
+        {
+          "id": "defs.wiringaudit",
+          "label": "A wiring audit, because the defect this project keeps finding is a module that is complete, tested and called by nothing — and a suite that tests each module in isolation is structurally blind to it. Six checks over reflection, a token index of src/ and the loaded content graph: an interface with no implementation the game can hold, a Notify_ hook with no call site, a Def field naming a placeholder or abstract worker, a field code reads that no Def sets, a field content sets that no code reads, and state read but never written. Evidence is weighed by which answer raises a seam: strict where a use creates an entry, generous where a use silences one — applying strict scoping to both produced 52 false reports",
+          "done": true
+        },
+        {
+          "id": "defs.wiringaudit.baseline",
+          "label": "Ships with a reviewed baseline of 131 dormant seams, each carrying a hand-written reason, so the audit is green today and loud the moment a new seam goes dark. Stale lines fail too, so the file can only shrink — wiring WardenDeliverFood in the same batch already retired one entry. Proved non-vacuous three ways: every check run against a fixture both dangling and wired, a planted hook on the real tree, and a guard asserting the audit is holding the whole core rather than an empty walk",
+          "done": true
+        },
+        {
+          "id": "defs.wiringaudit.findings",
+          "label": "129 dormant seams found that nobody knew about. The ones that matter: NeedDef.fallPerDay is zero for all eight needs so the generic decay path can never fire; StoryWatcher_Adaptation.Notify_ColonistDowned has no caller — the exact twin of the Notify_ColonistDied bug the audit was written after; IQuestRewardSink has no implementation, so quests compute rewards into nothing; ThingDef.mineableThing and mineableYield are read by nothing while JobDriver_Mine's own doc claims it reads them, so mining destroys rock and drops nothing; trait shaping never happens (forcedTraits, disallowedTraits, requiredWorkTags all unset in content); and difficulty is nearly inert — cropYieldFactor, mineYieldFactor, colonistMoodOffset and questRewardValueFactor are all set in content and read by nothing",
+          "done": false
         }
       ]
     },
@@ -711,7 +726,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Work · Pawns · Stats",
       "status": "translated",
-      "tests": 75,
+      "tests": 86,
       "items": [
         {
           "id": "work.skills",
@@ -772,6 +787,11 @@
           "id": "work.allwired",
           "label": "Every work type in content can produce a job except one. HaulCorpses, FightFires and CleanFilth were blocked on Corpse, Fire and Filth classes that did not exist; all three systems landed together rather than being stubbed. WardenDeliverFood is the single remaining bare giver, left deliberately because DoctorFeedHumanlikes reuses its mechanism with a different target filter",
           "done": true
+        },
+        {
+          "id": "work.allgivers",
+          "label": "Every WorkGiverDef in content now carries a real giverClass — 29 of 29. WardenDeliverFood was the last, and its recorded blocker had expired rather than been wrong: it needed a room concept to ask 'is there food in this prisoner's own room', and RoomTracker landed two batches later",
+          "done": true
         }
       ]
     },
@@ -779,11 +799,11 @@
       "id": "ai",
       "n": 10,
       "rimworld": "AI: Think Tree / Job System",
-      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor. Hunting carries two civilization-scale translations of its own. There is no Designation system, so AI.HuntingInitiative decides for the settlement: hunt while short of food, stop when not — the shape SettlementConstructionInitiative already set. And there is no Corpse class, so the hunt's last toil butchers at the kill site through the shipped recipe and HaulGeneral carries the meat home, reaching RimWorld's end state by the only route this port has. Combat AI, which the port had none of: the whole Combat module was complete, tested and unreachable from play, because no JobGiver or JobDriver anywhere ever attacked and the humanlike think tree had no danger tier at all. Who fights is SimWorld's own, since there is no draft to port: anyone armed engages a hostile within acquire radius, anyone at all fights back within melee reach (RimWorld 1:1), and the new TakeUpArms edict raises an unarmed citizen to the first rule. Violence-disabled refuses regardless. A grudge stays personal rather than RimWorld's hostile-to-everyone manhunter, so a provoked animal charges its hunter and walks past everyone else.",
+      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor. Hunting carries two civilization-scale translations of its own. There is no Designation system, so AI.HuntingInitiative decides for the settlement: hunt while short of food, stop when not — the shape SettlementConstructionInitiative already set. And there was no Corpse class when hunting landed, so the hunt's last toil butchers at the kill site through the shipped recipe and HaulGeneral carries the meat home, reaching RimWorld's end state by the only route this port has. Combat AI, which the port had none of: the whole Combat module was complete, tested and unreachable from play, because no JobGiver or JobDriver anywhere ever attacked and the humanlike think tree had no danger tier at all. Who fights is SimWorld's own, since there is no draft to port: anyone armed engages a hostile within acquire radius, anyone at all fights back within melee reach (RimWorld 1:1), and the new TakeUpArms edict raises an unarmed citizen to the first rule. Violence-disabled refuses regardless. A grudge stays personal rather than RimWorld's hostile-to-everyone manhunter, so a provoked animal charges its hunter and walks past everyone else.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 125,
+      "tests": 136,
       "items": [
         {
           "id": "ai.thinktree",
@@ -869,6 +889,11 @@
           "id": "ai.combat.perf",
           "label": "Two measured wins found while benchmarking the above: AttackTargetFinder tested its expensive faction-hostility predicate before the cheap range check (1.98x per evaluation, and a raid used to make every citizen's evaluation dearer), and JobGiver_AIFightEnemies built a Verb before it had a target, allocating per evaluation to guard an empty set",
           "done": true
+        },
+        {
+          "id": "ai.combat.targets",
+          "label": "AttackTargetsCache: BestAttackTarget no longer walks the population. Spawned pawns are filed by faction on MapPawns plus a grudge list, so a searcher visits only hostile buckets — none in peacetime, and zero edits to Map.cs. The index is a superset and never an answer: every predicate still runs on every candidate, so only an omission could change behaviour, and the test asserts the cached scan against a whole-map scan over 40 random map states. Measured: the call stops reading population at all — about 10ns peacetime and 72ns under raid at any N, against 3ns x N before",
+          "done": true
         }
       ]
     },
@@ -880,7 +905,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 72,
+      "tests": 106,
       "items": [
         {
           "id": "director.personality",
@@ -925,6 +950,16 @@
         {
           "id": "director.raids.unwatched",
           "label": "Measured before it was fixed: a raid on an unwatched settlement generated twelve raiders, spawned none, changed no population and no stores, and still wrote 'RaidEnemy fired' to the chronicle. Target selection is deliberately left alone — biasing raids toward the watched settlement would make the bug rarer rather than gone, and the tiering exists so unwatched settlements stay real",
+          "done": true
+        },
+        {
+          "id": "director.chroniclefame",
+          "label": "Notify_ChronicleNamed has a policy at last: a living citizen is named when they outlive every life the civilization has ever known. It is a ratchet, so it fires less often the longer a game runs; it cannot be earned by arriving, working or being looked at; and at most one living citizen holds it at a time. Measured over a century of real demography: three to four citizens ever named, peak one alive",
+          "done": true
+        },
+        {
+          "id": "director.romancemoments",
+          "label": "Romance was eating the landmark list: it wrote free-form lines with no category prefix, so every romance and divorce read as a first of its kind and was appended forever to MomentCurator.Moments, which is never trimmed, at a rate that grows with population",
           "done": true
         }
       ]
@@ -1572,7 +1607,7 @@
       "id": "weather",
       "n": 24,
       "rimworld": "Verse.WeatherDef, WeatherManager, WeatherDecider, GenTemperature",
-      "translation": "Commonalities live on WeatherDef rather than BiomeDef.weatherCommonalities — the relationship is inverted so a biome added later needs no edit to any weather, and no biome file had to be touched. WeatherDef.temperatureOffset is SimWorld's own: RimWorld's swings are GameConditionDefs, a system this port lacks, and this is the seam one would plug into. Rain rolls against fire map-wide on Fire.ComplexCalcsInterval rather than inside each fire's own pass, same rate per fire without editing Fire.cs. Weather exists only where a Map exists — the settlement the player opened — because everything weather moves (a fire, a room, a plant, a mood) only exists on a generated map, so the god layer is deliberately not widened to carry it.",
+      "translation": "Commonalities live on WeatherDef rather than BiomeDef.weatherCommonalities — the relationship is inverted so a biome added later needs no edit to any weather, and no biome file had to be touched. WeatherDef.temperatureOffset is SimWorld's own: RimWorld's swings are GameConditionDefs; that system landed a batch later and plugs into exactly this seam. Rain rolls against fire map-wide on Fire.ComplexCalcsInterval rather than inside each fire's own pass, same rate per fire without editing Fire.cs. Weather exists only where a Map exists — the settlement the player opened — because everything weather moves (a fire, a room, a plant, a mood) only exists on a generated map, so the god layer is deliberately not widened to carry it.",
       "translationState": "recorded",
       "module": "src/SimWorld.Core/Weather",
       "status": "translated",
@@ -1596,6 +1631,38 @@
         {
           "id": "weather.snow",
           "label": "Snow accumulation, lightning and weather events are left out: there is no snow grid and no weather-event system, and a thunderstorm that is only windy rain would be a name pretending to be a mechanic",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "conditions",
+      "n": 25,
+      "rimworld": "Verse.GameCondition, GameConditionManager, GameConditionDef",
+      "translation": "Registration is civilization-scale by default, which is a translation rather than a port: the only IIncidentTarget here is one CivilizationTarget for the whole civilization, and the settlement an incident picks usually has no interior map, so a condition registered per-map would exist only while somebody was watching — fire, find no map, change nothing. The per-map manager is ported and real and parented to the world's, and is where a future settlement-local condition belongs. The condition names its incident rather than the incident naming the condition, inverting RimWorld's relationship so the Director's most shared file needs no new fields. No storm centre, and an unwatched flashstorm burns nothing: the raid lane could resolve abstractly because both sides were priced in combatPower, and there is no comparable currency for how much of a settlement a lightning fire takes.",
+      "translationState": "recorded",
+      "module": "src/SimWorld.Core/Conditions",
+      "status": "translated",
+      "tests": 23,
+      "items": [
+        {
+          "id": "conditions.core",
+          "label": "GameCondition, GameConditionManager and GameConditionDef, with a manager on the world and one per map whose parent is the world's",
+          "done": true
+        },
+        {
+          "id": "conditions.placeholders",
+          "label": "HeatWave, ColdSnap and Flashstorm stop being IncidentWorker_Placeholder. They shipped in content, appeared in the storyteller's repertoire, could be selected, fired, and changed nothing",
+          "done": true
+        },
+        {
+          "id": "conditions.reuse",
+          "label": "Built on what existed rather than beside it: temperature offsets ride the seam WeatherDef.temperatureOffset's own doc predicted, so rooms, plant growth and corpse rot feel a heat wave with no change; flashstorm strikes go through FireUtility so its fires grow, spread, are beaten out and are rained out like any other",
+          "done": true
+        },
+        {
+          "id": "conditions.maplocal",
+          "label": "Map-scoped registration is a real seam that shipped content does not yet use",
           "done": false
         }
       ]

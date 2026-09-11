@@ -32,7 +32,6 @@ notify SimWorld.Scenario.ScenPart.Notify_PawnGenerated | Blocked on pawn generat
 # ---- worker: a Def pointing at a worker that does nothing ----
 
 worker SimWorld.Director.IncidentDef.workerClass = SimWorld.Director.IncidentWorker_Placeholder | Blocked on weather and visitor systems: VisitorGroup, Eclipse, ToxicFallout, HeatWave, ColdSnap and Flashstorm fire, record the firing, and change nothing. Declared as such in Incidents_Misc.xml.
-worker SimWorld.Work.WorkGiverDef.giverClass = SimWorld.Work.WorkGiver_Pending | Deliberate, and documented in WorkGivers.xml: WardenDeliverFood has no driver yet, so JobGiver_Work finds no job from it and moves on rather than issuing one nothing can run.
 
 
 # ---- content-silent: code reads it, no shipped Def sets it ----
