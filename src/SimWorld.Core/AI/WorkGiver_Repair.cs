@@ -34,8 +34,9 @@ namespace SimWorld.AI
     /// everything under a roof that just fell in; and <c>MapGen.GenStep_Ruins</c>, which spawns every ruin
     /// wall already weathered to a fraction of its max. Ranged and melee combat do <b>not</b>: this port's
     /// <see cref="Combat.Verb.TryStartCastOn"/> takes a <see cref="Pawn"/> target and nothing else, so a
-    /// raider cannot shoot a wall. There is no fire in this codebase at all, which is why RimWorld's own
-    /// <c>t.IsBurning()</c> guard has no counterpart below.
+    /// raider cannot shoot a wall. <b>And now fire</b> (system: fire — <see cref="Things.Fire"/>), which is
+    /// also why RimWorld's <c>t.IsBurning()</c> guard finally has a counterpart below: when this was written
+    /// there was no <c>Fire</c> class in the codebase at all and nothing could burn.
     /// </summary>
     public sealed class WorkGiver_Repair : WorkGiver_Scanner
     {
@@ -67,6 +68,10 @@ namespace SimWorld.AI
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
             if (!IsRepairable(thing)) return false;
+            // RimWorld: WorkGiver_Repair's own t.IsBurning() guard. Patching up a building that is still on
+            // fire is work thrown away — put the fire out first, which is emergency work and will already be
+            // this pawn's next job anyway (WorkGiver_FightFires).
+            if (thing.IsBurning()) return false;
             if (!Reachability.CanReach(pawn, thing, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, thing);
         }

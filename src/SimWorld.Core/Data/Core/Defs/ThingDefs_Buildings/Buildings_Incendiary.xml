@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The incendiary IED (RimWorld: TrapIED_Incendiary), in its own file rather than appended to
+    Buildings_Security.xml beside its high-explosive sibling — a new file cannot collide with another lane
+    mid-edit on that shared one (CLAUDE.md).
+
+    This exists because a fire system nothing can ignite is a dormant feature. It is the one thing in this
+    codebase that reaches a live map and throws Flame damage: CompTrap springs it, CompExplosive detonates it
+    through GenExplosion, and every pawn caught in the blast goes through DamageWorker_Flame and starts
+    burning — which carries fire into whatever wooden building they are standing in. No new comp was needed;
+    it is the two comps TrapIED already uses with Flame in place of Blunt.
+
+    damageAmountBase is deliberately lower than TrapIED's 40: an incendiary charge sets things alight rather
+    than blowing them apart. The number is this port's own (RimWorld's per-Def IED figures were not
+    sourceable here) and nothing asserts it — the tests assert that the blast leaves pawns on fire.
+  -->
+
+  <ThingDef>
+    <defName>TrapIEDIncendiary</defName>
+    <label>incendiary IED trap</label>
+    <description>A hidden incendiary charge. Springs once, setting whoever triggers it — and whatever they are standing in — alight.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <tickerType>Normal</tickerType>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <pathCost>0</pathCost>
+    <researchPrerequisites>
+      <li>Gunpowder</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>40</MaxHitPoints>
+    </statBases>
+    <costList>
+      <Steel>10</Steel>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Building.CompProperties_Trap">
+        <!-- Unused while a sibling CompProperties_Explosive is present (CompTrap detonates that instead of
+             dealing its own hit), but required content — the same inert fallback TrapIED carries. -->
+        <damageDef>Flame</damageDef>
+      </li>
+      <li Class="SimWorld.Building.CompProperties_Explosive">
+        <explosiveDamageType>Flame</explosiveDamageType>
+        <explosiveRadius>2.9</explosiveRadius>
+        <damageAmountBase>10</damageAmountBase>
+        <damageFalloff>true</damageFalloff>
+      </li>
+    </comps>
+  </ThingDef>
+
+</Defs>

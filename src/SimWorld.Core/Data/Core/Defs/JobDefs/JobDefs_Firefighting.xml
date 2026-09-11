@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Firefighting (the Firefighter work type's only giver). Its own file rather than an addition to
+       JobDefs_Core.xml, as JobDefs_Repair.xml already is (CLAUDE.md). Bound by SimWorld.AI.FireJobDefOf. -->
+
+  <JobDef>
+    <defName>BeatFire</defName>
+    <driverClass>SimWorld.AI.JobDriver_BeatFire</driverClass>
+    <reportString>beating out a fire.</reportString>
+  </JobDef>
+
+</Defs>

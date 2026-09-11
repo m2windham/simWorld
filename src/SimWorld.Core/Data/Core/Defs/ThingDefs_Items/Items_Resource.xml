@@ -33,10 +33,24 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
     <stackLimit>75</stackLimit>
-    <statBases><MarketValue>1.9</MarketValue></statBases>
+    <!--
+      Flammability (system: fire) follows RimWorld's own data for the stuff defs: the stat defaults to 1, so
+      wood and cloth need no entry at all, and the materials that do not burn say so twice — once as their
+      own statBase (a steel stack lying on the ground does not catch) and once as a stuffProps statFactor
+      (anything built out of steel does not catch either, which is what makes a stone or steel wall survive
+      a fire a wooden one does not). Natural rock and fire itself are handled categorically by
+      SimWorld.Stats.StatPart_Flammability rather than per Def; see that class.
+    -->
+    <statBases>
+      <MarketValue>1.9</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
     <stuffProps>
       <categories><li>Metallic</li></categories>
       <commonality>1</commonality>
+      <statFactors>
+        <Flammability>0</Flammability>
+      </statFactors>
     </stuffProps>
   </ThingDef>
 
@@ -80,10 +94,16 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>StoneBlocks</li></thingCategories>
     <stackLimit>75</stackLimit>
-    <statBases><MarketValue>0.9</MarketValue></statBases>
+    <statBases>
+      <MarketValue>0.9</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
     <stuffProps>
       <categories><li>Stony</li></categories>
       <commonality>1</commonality>
+      <statFactors>
+        <Flammability>0</Flammability>
+      </statFactors>
     </stuffProps>
   </ThingDef>
 
@@ -102,7 +122,10 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>
     <stackLimit>25</stackLimit>
-    <statBases><MarketValue>0</MarketValue></statBases>
+    <statBases>
+      <MarketValue>0</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
   </ThingDef>
 
   <ThingDef>
@@ -113,7 +136,10 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>
     <stackLimit>25</stackLimit>
-    <statBases><MarketValue>0</MarketValue></statBases>
+    <statBases>
+      <MarketValue>0</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
   </ThingDef>
 
   <ThingDef>
@@ -124,7 +150,10 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>
     <stackLimit>25</stackLimit>
-    <statBases><MarketValue>0</MarketValue></statBases>
+    <statBases>
+      <MarketValue>0</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
   </ThingDef>
 
 </Defs>

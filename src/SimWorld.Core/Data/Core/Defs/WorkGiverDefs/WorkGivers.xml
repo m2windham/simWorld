@@ -12,6 +12,9 @@
     <workType>Firefighter</workType>
     <priorityInType>100</priorityInType>
     <emergency>true</emergency>
+    <!-- Wired to a real scanner (system: fire). Until this pass there was no Fire class in the codebase at
+         all, so this def had no worker and nothing it could ever have targeted. -->
+    <giverClass>SimWorld.AI.WorkGiver_FightFires</giverClass>
   </WorkGiverDef>
 
   <WorkGiverDef>
