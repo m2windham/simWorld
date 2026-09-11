@@ -24,6 +24,20 @@
       <li>Civil</li>
     </backstoryCategories>
     <combatPower>40</combatPower>
+    <!--
+      Who a kind is, said in traits (SimWorld's own; RimWorld constrains its own kinds this way but these
+      particular choices are not ported from any vanilla PawnKindDef).
+
+      Villagers are the settled civilians a world generates by the hundred and nobody chose: the two traits
+      that make a person a standing danger to the settlement around them are not rolled for that population.
+      Colonist, deliberately, carries no such list — the player's founding colonists draw from the whole pool,
+      psychopaths included, and that contrast is the point. A kind with no forcedTraits/disallowedTraits is
+      saying something, not forgetting something.
+    -->
+    <disallowedTraits>
+      <li>Psychopath</li>
+      <li>Pyromaniac</li>
+    </disallowedTraits>
     <apparelTags>
       <li>Civil</li>
     </apparelTags>
@@ -94,6 +108,22 @@
     </backstoryCategories>
     <combatPower>35</combatPower>
     <isFighter>true</isFighter>
+    <!--
+      A raider who closes to blade range is a brawler; that is the whole of this kind's role. Forced traits
+      are granted before the random roll and count against the pawn's two-or-three trait budget, so this kind
+      rolls one fewer trait than an unconstrained one — intended, and the mechanism RimWorld uses too.
+
+      The grant is not unconditional: PawnGenerator refuses a forced trait the pawn cannot meet the
+      requiredWorkTags of, and Brawler requires Violent. A raider whose Tribal adulthood came up "tribal
+      elder" (workDisables Violent) therefore gets no Brawler — and PawnGroupMaker, which is the only thing
+      that makes raiders for real, asks for mustBeCapableOfViolence and discards that pawn anyway.
+    -->
+    <forcedTraits>
+      <li>
+        <def>Brawler</def>
+        <degree>0</degree>
+      </li>
+    </forcedTraits>
     <weaponTags>
       <li>NeolithicMeleeWeapon</li>
     </weaponTags>
@@ -113,6 +143,13 @@
     </backstoryCategories>
     <combatPower>45</combatPower>
     <isFighter>true</isFighter>
+    <!-- The mirror of Raider_Melee: a brawler wants nothing to do with a bow. RimWorld enforces the same
+         pairing from the weapon side (its PawnWeaponGenerator will not hand a Brawler a ranged weapon, a rule
+         this port has not yet ported); saying it here keeps the ranged raider kinds coherent whichever side
+         lands first, and a raider archer is never generated wishing it were somewhere else. -->
+    <disallowedTraits>
+      <li>Brawler</li>
+    </disallowedTraits>
     <weaponTags>
       <li>NeolithicRangedWeapon</li>
     </weaponTags>
@@ -132,6 +169,10 @@
     </backstoryCategories>
     <combatPower>70</combatPower>
     <isFighter>true</isFighter>
+    <!-- As Raider_Bow. -->
+    <disallowedTraits>
+      <li>Brawler</li>
+    </disallowedTraits>
     <weaponTags>
       <li>IndustrialRangedWeapon</li>
     </weaponTags>

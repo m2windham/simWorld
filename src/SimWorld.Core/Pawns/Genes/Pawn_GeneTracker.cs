@@ -162,13 +162,18 @@ namespace SimWorld.Pawns.Genes
             var gene = new Gene(def, xenogene);
             genes.Add(gene);
             pawn.health?.capacities?.Notify_CapacityLevelsDirty();
+            pawn.Notify_DisabledWorkTagsChanged();
             return gene;
         }
 
         public bool RemoveGene(Gene gene)
         {
             bool removed = genes.Remove(gene);
-            if (removed) pawn.health?.capacities?.Notify_CapacityLevelsDirty();
+            if (removed)
+            {
+                pawn.health?.capacities?.Notify_CapacityLevelsDirty();
+                pawn.Notify_DisabledWorkTagsChanged();
+            }
             return removed;
         }
 
@@ -186,6 +191,7 @@ namespace SimWorld.Pawns.Genes
             if (xenotype == null) throw new ArgumentNullException(nameof(xenotype));
             genes.RemoveAll(g => !g.xenogene);
             xenotypeDef = xenotype;
+            pawn.Notify_DisabledWorkTagsChanged();
             if (xenotype.genes == null) return;
             foreach (GeneDef gene in xenotype.genes)
             {

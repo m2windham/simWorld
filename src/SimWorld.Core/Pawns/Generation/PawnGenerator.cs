@@ -83,6 +83,20 @@ namespace SimWorld.Pawns.Generation
             GenerateGender(pawn, request);
             GenerateAge(pawn, request, race, kind);
 
+            // Genes before backstories and traits, as RimWorld orders it: a gene that bars work
+            // (GeneDef.disabledWorkTags) has to be on the pawn before anything asks what work it can still do,
+            // or the backstory filter (BackstoryDef.requiredWorkTags) and the trait filter
+            // (TraitDef.requiredWorkTags) both read a pawn whose germline has not arrived yet and hand a
+            // pacifist a bloodlust trait. Assigning a named xenotype is a deterministic lookup costing zero
+            // Rand calls (see PawnGenerationRequest.Xenotype), so moving it earlier shifts no stream — for a
+            // request that names no xenotype, the overwhelming common case, it still touches nothing at all.
+            // The one gene effect that cannot move with it is the lifespan bonus, which needs the budget
+            // RollLifespanBudget has not created yet; that stays below, where it was.
+            if (request.Xenotype != null)
+            {
+                pawn.genes.SetXenotype(request.Xenotype);
+            }
+
             bool humanlike = race.Humanlike;
             if (humanlike && !request.Newborn)
             {
@@ -126,18 +140,14 @@ namespace SimWorld.Pawns.Generation
                 PawnApparelGenerator.TryGenerateApparelFor(pawn, request);
             }
 
-            // Genes last of all — after even the lifespan roll above, which a gene's own lifespanBonusYears
-            // needs to already have happened (AdjustLifespan is a no-op before a budget exists to adjust).
-            // Assigning a named xenotype's germline is a deterministic lookup, not a random pick, so it costs
-            // zero Rand calls and its placement here cannot shift the stream any earlier step already depends
-            // on — but a request that asks for none (the overwhelming common case today, since no content
-            // assigns one yet) must still touch nothing at all, or every existing fixed-seed test that
-            // generates a pawn would need re-pinning the moment this module landed. That has already happened
-            // once in this repo with a module inserted mid-pipeline; genes go last specifically to avoid
-            // repeating it. See PawnGenerationRequest.Xenotype's own doc.
+            // The lifespan half of the gene step. It stays here, after the lifespan roll above, because a
+            // gene's own lifespanBonusYears needs a budget to already exist (AdjustLifespan is a no-op
+            // otherwise); the germline itself is assigned much earlier, before backstories and traits — see
+            // there for why, and see PawnGenerationRequest.Xenotype's own doc. Neither half costs a Rand call,
+            // and a request that names no xenotype (the common case) still touches nothing at all, so no
+            // existing fixed-seed test needs re-pinning on account of where this sits.
             if (request.Xenotype != null)
             {
-                pawn.genes.SetXenotype(request.Xenotype);
                 foreach (Gene gene in pawn.genes.Endogenes)
                 {
                     if (gene.def.lifespanBonusYears != 0f)
@@ -189,20 +199,28 @@ namespace SimWorld.Pawns.Generation
         {
             List<string> categories = kind.backstoryCategories ?? new List<string>();
 
-            BackstoryDef? childhood = PickBackstory(BackstorySlot.Childhood, categories, null);
+            BackstoryDef? childhood = PickBackstory(pawn, BackstorySlot.Childhood, categories, null);
             if (childhood != null) pawn.story.childhood = childhood;
 
             if (pawn.ageTracker.AgeChronologicalYears >= MinAdulthoodChronologicalAge)
             {
-                BackstoryDef? adulthood = PickBackstory(BackstorySlot.Adulthood, categories, childhood);
+                BackstoryDef? adulthood = PickBackstory(pawn, BackstorySlot.Adulthood, categories, childhood);
                 if (adulthood != null) pawn.story.adulthood = adulthood;
             }
         }
 
-        private static BackstoryDef? PickBackstory(BackstorySlot slot, List<string> categories, BackstoryDef? exclude)
+        private static BackstoryDef? PickBackstory(Pawn pawn, BackstorySlot slot, List<string> categories, BackstoryDef? exclude)
         {
+            // requiredWorkTags is checked against what the pawn can still do at this moment, which is why the
+            // order of the two slots matters: a childhood that bars Violent rules out the hunter and warrior
+            // adulthoods picked after it, and a germline that bars it (GeneDef.disabledWorkTags, applied before
+            // this runs) rules them out for both slots. RimWorld filters backstories the same way; this port
+            // shipped the field on two tribal adulthoods and then read it nowhere, so a pacifist could be a
+            // tribal hunter and nothing anywhere noticed.
+            WorkTags disabled = pawn.CombinedDisabledWorkTags;
             List<BackstoryDef> candidates = DefDatabase<BackstoryDef>.AllDefsListForReading
                 .Where(b => b.slot == slot && b.shuffleable && !ReferenceEquals(b, exclude) &&
+                            (b.requiredWorkTags == WorkTags.None || (disabled & b.requiredWorkTags) == WorkTags.None) &&
                             (b.spawnCategories == null || b.spawnCategories.Count == 0 || b.spawnCategories.Any(categories.Contains)))
                 .ToList();
             return candidates.Count == 0 ? null : Rand.Element((IReadOnlyList<BackstoryDef>)candidates);
@@ -248,10 +266,23 @@ namespace SimWorld.Pawns.Generation
             }
         }
 
+        /// <summary>
+        /// Grants a trait a <see cref="PawnKindDef"/> or a <see cref="BackstoryDef"/> asks for, unless the pawn
+        /// is already carrying it, it is disallowed, it conflicts with something already rolled, or the pawn
+        /// cannot meet its <see cref="TraitDef.requiredWorkTags"/>.
+        ///
+        /// <para/>That last gate is this port's own, and deliberate: the random path has always refused to give
+        /// a pawn a trait whose work it cannot do, and a forced trait that ignores the same rule produces the
+        /// exact nonsense the rule exists to prevent — a colonist barred from violence by a backstory or a gene,
+        /// carrying bloodlust. "Never given to a pawn who cannot do that work" is worth more as an invariant
+        /// than as a rule with one exception, and content that wants the trait regardless can say so by not
+        /// declaring requiredWorkTags on it.
+        /// </summary>
         private static void TryForceTrait(Pawn pawn, TraitDef? def, int degree, HashSet<TraitDef> disallowed)
         {
             if (def == null || disallowed.Contains(def)) return;
             if (pawn.story.traits.HasTrait(def) || ConflictsWithExisting(pawn, def)) return;
+            if (RequiredTagsBlocked(pawn, def)) return;
             int useDegree = def.HasDegree(degree) ? degree : def.degreeDatas[0].degree;
             pawn.story.traits.GainTrait(new Trait(def, useDegree, forced: true));
         }

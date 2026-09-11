@@ -91,11 +91,17 @@ namespace SimWorld.Tests.Pawns
         [Fact]
         public void Generation_with_a_Xenotype_does_not_change_the_RNG_stream_a_plain_request_already_relies_on()
         {
-            // Pins the RNG-safety rule PawnGenerator.GenerateInternal documents: gene application sits
-            // downstream of every roll that predates this module, so a request that asks for a Xenotype must
-            // still roll byte-for-byte the same age/backstories/traits/skills/name/weapon as one that does not.
-            // A fixed-seed test elsewhere in this repo broke once when an earlier module was inserted
-            // mid-pipeline instead of at the end; this is the regression guard for genes not repeating that.
+            // Pins the RNG-safety rule PawnGenerator.GenerateInternal documents: applying a named xenotype
+            // costs no Rand call, so a request that asks for one must still roll byte-for-byte the same
+            // age/backstories/traits/skills/name/weapon as one that does not. A fixed-seed test elsewhere in
+            // this repo broke once when an earlier module was inserted mid-pipeline; this is the regression
+            // guard for genes not repeating that.
+            //
+            // Swiftbred, deliberately: its genes bar no work. The germline is now applied before backstories
+            // and traits (a gene that disables work has to be on the pawn before anything asks what work it
+            // can do), so a xenotype that DOES bar work legitimately changes which backstories and traits are
+            // eligible and how many skills the roll draws for. What stays invariant is the stronger and more
+            // useful thing: carrying genes costs no draws of its own.
             Rand.Current = new RandomStream(9001);
             Pawn.ResetThingIdCounter();
             NameUseChecker.Clear();
@@ -115,19 +121,41 @@ namespace SimWorld.Tests.Pawns
         [Fact]
         public void Longevity_gene_extends_the_hidden_lifespan_budget_by_its_exact_bonus()
         {
-            Rand.Current = new RandomStream(4242);
-            Pawn.ResetThingIdCounter();
-            NameUseChecker.Clear();
-            Pawn baseline = PawnGenerator.GeneratePawn(new PawnGenerationRequest(PawnKindDefOf.Colonist, fixedBiologicalAge: 30f));
+            // Both pawns are Stillfolk, generated from the same seed; the only difference between the two runs
+            // is the bonus on the gene itself, which costs no Rand call either way. That is what makes the
+            // comparison exact.
+            //
+            // It used to compare a Stillfolk against a plain Colonist on one seed, which worked only while a
+            // xenotype could not change anything before the lifespan roll. It can now: the germline is applied
+            // before backstories and traits (so a gene that bars work can shape them, which is the whole point
+            // of GeneDef.disabledWorkTags), and Stillfolk's pacifism disables Shooting and Melee, which the
+            // skill roll then skips — different draws, different roll, and a comparison that was measuring the
+            // stream rather than the gene.
+            GeneDef longevity = GeneNamed("Gene_Longevity");
+            float bonus = longevity.lifespanBonusYears;
+            Assert.True(bonus > 0f, "Gene_Longevity is meant to lengthen a life");
 
             Rand.Current = new RandomStream(4242);
             Pawn.ResetThingIdCounter();
             NameUseChecker.Clear();
             Pawn longLived = PawnGenerator.GeneratePawn(new PawnGenerationRequest(PawnKindDefOf.Colonist, fixedBiologicalAge: 30f, xenotype: Xenotype("Stillfolk")));
 
-            // Same seed rolls the same raw lifespan budget for both (genes are applied after the roll, per the
-            // RNG-safety test above); Stillfolk's Gene_Longevity then adds exactly its own +10 years on top.
-            Assert.Equal(baseline.ageTracker.DebugDeathAgeYears + 10f, longLived.ageTracker.DebugDeathAgeYears, 2);
+            float withoutBonus;
+            try
+            {
+                longevity.lifespanBonusYears = 0f;
+                Rand.Current = new RandomStream(4242);
+                Pawn.ResetThingIdCounter();
+                NameUseChecker.Clear();
+                Pawn baseline = PawnGenerator.GeneratePawn(new PawnGenerationRequest(PawnKindDefOf.Colonist, fixedBiologicalAge: 30f, xenotype: Xenotype("Stillfolk")));
+                withoutBonus = baseline.ageTracker.DebugDeathAgeYears;
+            }
+            finally
+            {
+                longevity.lifespanBonusYears = bonus;
+            }
+
+            Assert.Equal(withoutBonus + bonus, longLived.ageTracker.DebugDeathAgeYears, 2);
         }
 
         // ---- stat / capacity / work-tag seams ----
