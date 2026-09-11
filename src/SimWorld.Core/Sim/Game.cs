@@ -449,6 +449,11 @@ namespace SimWorld.Sim
             // building.initiative: settlements decide what they lack and queue the blueprints for it. Self
             // gated on the rare tick like the managers above, so a tick it is not due on costs a modulo.
             tm.PostTickers.Add(_ => SimWorld.Building.SettlementConstructionInitiative.Tick());
+            // offices: every settlement's stewardship and the civilization's eldership stay filled, and a
+            // dead holder is succeeded. Self-gated on the long tick like the managers above, and stateless —
+            // a seat's holder is the citizen carrying that office's RoleDef, which already saves with them,
+            // so there is nothing here for Game to own or Scribe.
+            tm.PostTickers.Add(_ => SimWorld.Offices.OfficeManager.Tick());
             tm.PostTickers.Add(_ => FactionManager.FactionManagerTick());
             tm.PostTickers.Add(_ => LetterStack.LetterStackTick());
             tm.PostTickers.Add(_ => QuestManager.QuestManagerTick());
