@@ -10,12 +10,13 @@ namespace SimWorld.AI
     /// population (RimWorld: <c>Verse.AI.AttackTargetsCache</c>).
     ///
     /// <para/><b>The problem it solves.</b> A scan asks "who on this map is hostile to me?". Hostility comes
-    /// from two places and only two (<see cref="AttackTargetsUtility.HostileTo"/>): a faction relation, and a
-    /// personal grudge. Walking every pawn to find out costs O(population) per call, and the constant think
+    /// from three places and only three (<see cref="AttackTargetsUtility.HostileTo"/>): a faction relation, a
+    /// faction that attacks factionless humanlikes, and a personal grudge. Walking every pawn to find out costs O(population) per call, and the constant think
     /// tree calls it once per Full-tier pawn per <see cref="ConstantThinkTreeTuning.IntervalTicks"/> — so
     /// O(population squared) per interval across a settlement. This keeps the answer as an index instead:
-    /// spawned pawns filed by faction, plus the (usually empty) list of pawns holding a grudge. A searcher
-    /// then visits only the buckets whose faction is hostile to it, which in peacetime is none at all.
+    /// spawned pawns filed by faction, the (usually empty) list of pawns holding a grudge, and the humanlikes
+    /// belonging to no faction at all. A searcher then visits only the buckets whose faction is hostile to it,
+    /// which in peacetime is none at all.
     ///
     /// <para/><b>The invariant, and why it is the weak one on purpose.</b> This index is a <i>superset</i> of
     /// the true candidate set, never an answer in itself: <see cref="AttackTargetFinder"/> still applies every
@@ -41,7 +42,8 @@ namespace SimWorld.AI
     /// out of <c>PawnTier.Full</c>; same despawn path.</item>
     /// <item><b>Faction change</b> — <see cref="Notify_FactionChanged"/>, from <see cref="Pawn.faction"/>'s
     /// setter (which is why that is a property and not the plain field it used to be). Recruiting a prisoner,
-    /// releasing one and taming an animal all re-file through it.</item>
+    /// releasing one and taming an animal all re-file through it — including out of, or into,
+    /// <see cref="FactionlessHumanlikes"/>, since losing a faction is a re-file and not a removal.</item>
     /// <item><b>A grudge</b> — <see cref="Notify_GrudgeChanged"/>, from
     /// <c>Pawn_MindState.angryAt</c>'s setter. A grudge is symmetric
     /// (<see cref="AttackTargetsUtility.HostileTo"/> reads it from both sides), so the pawn holding one has
@@ -89,8 +91,23 @@ namespace SimWorld.AI
         /// </summary>
         private readonly List<Pawn> grudgeHolders = new List<Pawn>();
 
+        /// <summary>
+        /// Humanlike pawns spawned here that belong to no faction — the third candidate source, added when
+        /// <see cref="AttackTargetsUtility.HostileTo"/> gained its third rule
+        /// (<see cref="Factions.FactionDef.hostileToFactionlessHumanlikes"/>). Without it the index could not
+        /// offer that pairing at all: a factionless pawn is in no faction bucket by construction, and a
+        /// factionless searcher has no faction whose hostiles it could look up, so the cached scan would have
+        /// silently found nothing where the uncached walk found a fight. This is not a rare list — in this
+        /// port every settlement citizen is factionless (see <c>AttackTargetsUtility.HostileTo</c>'s own
+        /// remarks), so on a settlement interior it is most of the map.
+        /// </summary>
+        private readonly List<Pawn> factionlessHumanlikes = new List<Pawn>();
+
         /// <summary>Factions with a pawn spawned here (see <see cref="factionsPresent"/>).</summary>
         public IReadOnlyList<Faction> FactionsPresent => factionsPresent;
+
+        /// <summary>Spawned humanlikes here with no faction of their own (see <see cref="factionlessHumanlikes"/>).</summary>
+        public IReadOnlyList<Pawn> FactionlessHumanlikes => factionlessHumanlikes;
 
         /// <summary>Pawns spawned here that hold a grudge against somebody (see <see cref="grudgeHolders"/>).</summary>
         public IReadOnlyList<Pawn> GrudgeHolders => grudgeHolders;
@@ -115,14 +132,16 @@ namespace SimWorld.AI
             }
         }
 
-        /// <summary>A pawn has arrived on this map. Files it under its faction (a pawn with no faction is
-        /// nobody's enemy by relation and is deliberately not filed at all — it can only ever be reached
-        /// through <see cref="grudgeHolders"/>).</summary>
+        /// <summary>A pawn has arrived on this map. Files it under its faction, or — a factionless humanlike —
+        /// under <see cref="factionlessHumanlikes"/>. A factionless <i>animal</i> is still filed nowhere: it is
+        /// nobody's enemy by relation and no faction flag reaches it, so it can only ever be found through
+        /// <see cref="grudgeHolders"/>.</summary>
         public void RegisterTarget(Pawn pawn)
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
             Faction? faction = pawn.faction;
             if (faction != null) BucketFor(faction).Add(pawn);
+            else if (IsFactionlessHumanlike(pawn) && !factionlessHumanlikes.Contains(pawn)) factionlessHumanlikes.Add(pawn);
             if (pawn.mindState?.angryAt != null && !grudgeHolders.Contains(pawn)) grudgeHolders.Add(pawn);
         }
 
@@ -132,6 +151,7 @@ namespace SimWorld.AI
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
             grudgeHolders.Remove(pawn);
+            factionlessHumanlikes.Remove(pawn);
 
             Faction? faction = pawn.faction;
             if (faction != null && byFaction.TryGetValue(faction, out List<Pawn>? list) && list.Remove(pawn))
@@ -162,10 +182,19 @@ namespace SimWorld.AI
                 if (old.Count == 0) DropBucket(oldFaction);
             }
             Faction? now = pawn.faction;
-            if (now == null) return;
+            if (now == null)
+            {
+                // Losing a faction is as much a re-file as gaining one: a released prisoner is a factionless
+                // humanlike, and a faction that attacks those has to be able to find them.
+                if (IsFactionlessHumanlike(pawn) && !factionlessHumanlikes.Contains(pawn)) factionlessHumanlikes.Add(pawn);
+                return;
+            }
+            factionlessHumanlikes.Remove(pawn);
             List<Pawn> bucket = BucketFor(now);
             if (!bucket.Contains(pawn)) bucket.Add(pawn);
         }
+
+        private static bool IsFactionlessHumanlike(Pawn pawn) => pawn.faction == null && pawn.RaceProps.Humanlike;
 
         /// <summary><paramref name="pawn"/> has just started or dropped a grudge while spawned here. Nothing
         /// reads <c>angryUntilTick</c>: see <see cref="grudgeHolders"/> for why lapsing is not an event.</summary>
