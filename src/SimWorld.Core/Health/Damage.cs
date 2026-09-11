@@ -118,6 +118,10 @@ namespace SimWorld.Health
             var result = new DamageResult();
             if (!def.harmsHealth || dinfo.Amount <= 0f || victim.Dead) return result;
             ApplyToPawn(dinfo, victim, result);
+            // Damage to a pawn has exactly one funnel in this port — there is no Pawn override of
+            // Thing.TakeDamage — so this is where RimWorld's Thing.TakeDamage would call PostApplyDamage,
+            // and the only place a "something just hurt me" notification can be raised once per hit.
+            victim.health.PostApplyDamage(dinfo, result.totalDamageDealt);
             return result;
         }
 

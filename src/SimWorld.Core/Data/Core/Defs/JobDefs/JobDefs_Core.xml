@@ -9,10 +9,20 @@
     <reportString>eating.</reportString>
   </JobDef>
 
+  <!--
+    The one shipped job that refuses a casual interrupt (system 9: AI — interrupts). Asleep is not a state
+    from which a pawn notices a raider crossing the room: RimWorld colonists sleep through a raid until
+    something hits them, and the constant think tree would otherwise have an armed citizen out of bed for any
+    hostile within CombatAITuning.TargetAcquireRadius. Being *shot* is a different matter and goes through
+    Pawn_JobTracker.Notify_DamageTaken, which does not read this flag — so a sleeping pawn under fire still
+    wakes on the first hit. RimWorld's own value for this field could not be sourced from here; the flag is
+    pinned by JobInterruptTests (asleep through a sighting, awake on the first wound), never by its literal.
+  -->
   <JobDef>
     <defName>LayDown</defName>
     <driverClass>SimWorld.AI.JobDriver_LayDown</driverClass>
     <reportString>lying down.</reportString>
+    <casualInterruptible>false</casualInterruptible>
   </JobDef>
 
   <JobDef>

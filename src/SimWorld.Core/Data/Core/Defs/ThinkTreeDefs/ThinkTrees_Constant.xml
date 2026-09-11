@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The constant think trees (system 9: AI — interrupts). RimWorld: RaceProperties.thinkTreeConstant, the
+    second tree every pawn carries alongside its main one.
+
+    The difference between this file and ThinkTrees_Humanlike.xml / ThinkTrees_Animal.xml is *when* it is
+    consulted, not what it can say. A main tree is only ever asked when a pawn has nothing to do, so until
+    this file existed the entire AI layer was unreachable for a pawn already doing something: a citizen
+    hauling a rock kept hauling while a raider shot at them, and a sleeping one slept through it. This tree
+    runs every ConstantThinkTreeTuning.IntervalTicks ticks whether or not a job is running, and its answer
+    ends the job that is.
+
+    Its own file, not a third ThinkTreeDef appended to either existing one: DefLoader.AddDirectory reads
+    every XML file under a Def folder, so an additive Def never needs an edit to a shared file (CLAUDE.md) —
+    and both existing tree files are ones other lanes are actively adding tiers to.
+
+    WHAT IS IN HERE, AND WHAT DELIBERATELY IS NOT. Only the combat tier. That is not a stub: it is the answer
+    to "a pawn should not abandon surgery because someone walked past". A tier that contributes no job
+    interrupts nothing, so every non-threat is handled by simply not being in this tree — no priority
+    numbers, no per-job exception lists. RimWorld's own humanlike constant tree also carries a self-
+    extinguish tier for a burning pawn; this port has fire (Things/Fire.cs) but no pawn-attached fire hediff
+    for one to extinguish, so there is nothing here to route to and it is recorded as absent rather than
+    invented.
+  -->
+
+  <ThinkTreeDef>
+    <defName>HumanlikeConstant</defName>
+    <thinkRoot Class="SimWorld.AI.ThinkNode_Priority">
+      <subNodes>
+
+        <!--
+          The gate: may what this pawn is doing right now be thrown away? Everything that can interrupt sits
+          under it, so the answer is asked once rather than per tier. See the node's own doc for the three
+          rules it encodes — the short version is that a job marked casualInterruptible="false" and a job the
+          player forced both survive this tree, and both can still be ended by the damage path
+          (Pawn_JobTracker.Notify_DamageTaken), which does not consult this gate at all. That split is the
+          whole design: seeing a threat is a weaker claim on a pawn's attention than being hit by one.
+        -->
+        <li Class="SimWorld.AI.ThinkNode_ConditionalCanDoConstantThinkTreeJobNow">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_AIFightEnemies" />
+          </subNodes>
+        </li>
+
+      </subNodes>
+    </thinkRoot>
+  </ThinkTreeDef>
+
+  <ThinkTreeDef>
+    <defName>AnimalConstant</defName>
+    <thinkRoot Class="SimWorld.AI.ThinkNode_Priority">
+      <subNodes>
+
+        <li Class="SimWorld.AI.ThinkNode_ConditionalCanDoConstantThinkTreeJobNow">
+          <subNodes>
+
+            <!--
+              A grudge outranks a faction quarrel here exactly as it does in the animal main tree: an animal
+              that has been speared mid-wander should break off and come for the hunter, and JobGiver_Manhunter
+              already knows which pawn that is. Falls through when the grudge has expired or its target is
+              gone, so a tamed animal still defends its faction on the tier below.
+            -->
+            <li Class="SimWorld.AI.ThinkNode_ConditionalAngryAtHandler">
+              <subNodes>
+                <li Class="SimWorld.AI.JobGiver_Manhunter" />
+              </subNodes>
+            </li>
+
+            <li Class="SimWorld.AI.JobGiver_AIFightEnemies" />
+
+          </subNodes>
+        </li>
+
+      </subNodes>
+    </thinkRoot>
+  </ThinkTreeDef>
+
+</Defs>
