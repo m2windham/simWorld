@@ -149,6 +149,14 @@ namespace SimWorld.Map
             // no world tile — which is most test maps — is left exactly as its owner built it.
             Building.WildPlantSpawner.WildPlantSpawnerTick(this);
 
+            // And the wildlife comes back the same way the undergrowth does, toward what this map's biome
+            // supports (Pawns.WildAnimalSpawner) — without which a map's animals are a one-off scatter that
+            // hunters clear in a week and hunting is dormant again for ever. Stateless and seeded from this
+            // map's own id and the tick, so it needs nothing here to own or save and draws nothing from the
+            // ambient Rand stream; self-gated on the rare bucket, so the population walk it makes is paid
+            // once every 250 ticks rather than every one. A map with no world tile is left alone.
+            Pawns.WildAnimalSpawner.WildAnimalSpawnerTick(this);
+
             // The settlement's own food economy, both halves self-gated on the rare bucket exactly like the
             // initiatives Sim.Game.WireTickHooks drives: the field it clears and sows (Building.FarmingInitiative,
             // which is what finally gives WorkGiver_GrowerSow a Zone_Growing to find) and the kitchen it raises
