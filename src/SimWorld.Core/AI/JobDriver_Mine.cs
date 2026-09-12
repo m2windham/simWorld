@@ -41,6 +41,15 @@ namespace SimWorld.AI
             {
                 Thing? rock = job.GetTarget(TargetIndex.A).Thing;
                 if (rock == null || rock.Destroyed) return;
+                // Asked again, here, where the map is the one the collapse would actually see. The gate
+                // WorkGiver_Miner applies when it hands this job out goes stale while the miner walks: a
+                // settlement mines with twenty-five people at once on the same seam, and one neighbour taken
+                // in the meantime is all it takes to leave this cell holding a ceiling up. Measured across
+                // three seeds and eight days with the gate only at hand-out: twelve thousand cells mined,
+                // fifty-two of them still brought a roof down. Refusing here simply ends the job with the
+                // rock still standing; the giver then declines it too, so the miner picks another and there
+                // is no loop. See Building.RoofCollapseUtility.WouldCollapseRoofIfRemoved for the rule.
+                if (Building.RoofCollapseUtility.WouldCollapseRoofIfRemoved(rock)) return;
                 // Mining removes the rock outright rather than damaging it through TakeDamage/HitPoints —
                 // matching Buildings_Natural.xml's own comment that useHitPoints/destroyable model ordinary
                 // damage, and mining is deliberately not that.

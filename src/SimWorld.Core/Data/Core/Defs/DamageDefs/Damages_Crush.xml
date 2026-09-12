@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Crushing force with nobody behind it: a ceiling coming down (RimWorld: Damages_MeleeWeapon.xml's Crush,
+    dealt by Verse.RoofCollapserImmediate with DamageInfo.SourceCategory.Collapse and a null instigator).
+
+    Its own file rather than an addition to Damages.xml, per CLAUDE.md's "add a file rather than edit a shared
+    one" — DefLoader.AddDirectory loads every XML under DamageDefs recursively, so this needs no shared edit.
+
+    Why this Def had to exist before anything else in this module could be believed: Building's roof collapse
+    dealt Blunt, and Blunt's deathMessage is "{0} has been beaten to death." Every citizen crushed under a
+    roof therefore reported as a citizen beaten to death by another citizen, which is how docs/WORK-REGISTER.md
+    §9a came to record an entire settlement's first week as murder (§10 corrected the reading but not the Def).
+    Fields are RimWorld's own, minus the ones this port has no reader for: workerClass defaults to
+    DamageWorker_AddInjury exactly as there, impactSoundType and overkillPctToDestroyPart do not exist here,
+    and harmAllLayersUntilOutside is deliberately left off. RimWorld's Crush sets it, but this port's own
+    Blunt — which sets it in RimWorld too — already omits it, because no line of src/ reads the flag
+    (tests/Wiring/dormant-seams.txt records that gap and why). Authoring it here would only put a value in
+    content that nothing can honour, and would move a seam the audit has already reviewed into a worse
+    category. It comes back with the apparel-layer damage path, alongside isExplosive.
+  -->
+
+  <DamageDef>
+    <defName>Crush</defName>
+    <label>crush</label>
+    <hediff>Crush</hediff>
+    <hediffSkin>Cut</hediffSkin>
+    <hediffSolid>Crack</hediffSolid>
+    <armorCategory>Blunt</armorCategory>
+    <deathMessage>{0} has been crushed to death.</deathMessage>
+  </DamageDef>
+
+</Defs>

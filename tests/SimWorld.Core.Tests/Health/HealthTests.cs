@@ -60,9 +60,11 @@ namespace SimWorld.Tests.Health
             Assert.Equal(2, DefDatabase<BodyDef>.DefCount);
             Assert.Equal(11, DefDatabase<PawnCapacityDef>.DefCount);
             Assert.Equal(23, DefDatabase<BodyPartTagDef>.DefCount);
-            // Cut/Stab/Blunt/Bullet/Bite/Burn, plus Flame (system: fire — Damages_Fire.xml) and SurgicalCut
-            // (Damages_Surgery.xml — the one shipped damage that is not violence).
-            Assert.Equal(8, DefDatabase<DamageDef>.DefCount);
+            // Cut/Stab/Blunt/Bullet/Bite/Burn, plus Flame (system: fire — Damages_Fire.xml), SurgicalCut
+            // (Damages_Surgery.xml — the one shipped damage that is not violence) and Crush
+            // (Damages_Crush.xml — what a ceiling does, and the reason a roof collapse no longer reports
+            // itself as a beating; see Building.RoofCollapserImmediate).
+            Assert.Equal(9, DefDatabase<DamageDef>.DefCount);
             Assert.True(DefDatabase<HediffDef>.DefCount >= 16);
             Assert.NotNull(HediffDefOf.MissingBodyPart);
             Assert.NotNull(PawnCapacityDefOf.Moving);
