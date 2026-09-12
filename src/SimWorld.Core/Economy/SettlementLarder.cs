@@ -49,7 +49,9 @@ namespace SimWorld.Economy
     /// that was already in the ledger, and it is spent at that def's own <c>ingestible.nutrition</c>, in the
     /// sitting size <c>Crafting.FoodUtility.WillIngestStackCountOf</c> gives the map path. <b>A settlement
     /// whose ledger is empty starves, and that is the correct outcome</b> — it means that settlement's
-    /// production is broken, which is a different problem from this one. See "what this does not close".
+    /// production is broken, which is a different problem from this one. That problem is now
+    /// <see cref="SettlementSubsistence"/>'s, and it is the other side of this exact book: the set of
+    /// citizens that eats here is the set that produces there. See "what this does not close".
     ///
     /// <para/><b>Cost, and the Statistical cohort.</b> One walk of the settlement's <i>live roster</i> every
     /// <see cref="SettlementLarderTuning.IntervalTicks"/> ticks — 30 walks per settlement per in-game day,
@@ -81,24 +83,26 @@ namespace SimWorld.Economy
     /// gated pass, so there is nothing here to Scribe; the ledger persists because
     /// <see cref="Settlement.ExposeData"/> already writes it.
     ///
-    /// <para/><b>What this does not close, precisely.</b> Two things, both named so neither is mistaken for
-    /// working:
+    /// <para/><b>What this did not close, and what closed it.</b> Two things, both named here when this class
+    /// landed so neither would be mistaken for working, and both since closed by
+    /// <see cref="SettlementSubsistence"/> — the production half of the same ledger:
     /// <list type="number">
-    /// <item><b>Nothing produces food at civilization scale.</b> An unwatched settlement has no map, and
-    /// foraging, farming, cooking and hunting are all map-side; the one abstract producer this port has
-    /// (<c>Crafting.Guild</c>) ships a single recipe and it cuts stone. So a settlement nobody opens now eats
-    /// its founding rations down and then starves, instead of starving on day one. <b>This closes
-    /// consumption; production at civilization scale is the next lane</b>, and until it exists the ledger a
-    /// settlement is founded with is the whole of what it will ever eat.</item>
-    /// <item><b>Only the player's founding band is provisioned.</b>
-    /// <see cref="ProvisionFoundingBand"/> is called from <c>Sim.Game.NewGame</c>, the orchestrator that
-    /// founds the settlement a game starts on. A band founded during play by
-    /// <c>World.EmergenceManager</c> — every rival civilization in a solo start (spec §5b.4) — walks in with
-    /// an empty ledger and starves as before. The call belongs beside the other one, in
-    /// <c>World.SettlementFounder.Found</c>, which is the single door both paths use; it is not there because
-    /// that would make <c>World/</c> reference this layer (spec §2: "a module never references a layer above
-    /// it"), and the fix is an owner for emergence at this layer rather than a reference the wrong way
-    /// down.</item>
+    /// <item><b>Nothing produced food at civilization scale.</b> An unwatched settlement has no map, and
+    /// foraging, farming, cooking and hunting are all map-side; the one abstract producer this port had
+    /// (<c>Crafting.Guild</c>) ships a single recipe and it cuts stone. So a settlement nobody opened ate its
+    /// founding rations down over eleven in-game days and then starved to lethal <c>Malnutrition</c> by day
+    /// twenty. <see cref="SettlementSubsistence"/> now grows food into the ledger for the citizens who have
+    /// no map to grow it on — the same citizens this class feeds — at a rate their land sets, capped at the
+    /// larder <c>AI.HuntingTuning.DaysOfFoodWanted</c> already names.</item>
+    /// <item><b>Only the player's founding band was provisioned.</b>
+    /// <see cref="ProvisionFoundingBand"/> was called from <c>Sim.Game.NewGame</c>, the orchestrator that
+    /// founds the settlement a game starts on, so a band founded during play by
+    /// <c>World.EmergenceManager</c> — every rival civilization in a solo start (spec §5b.4) — walked in with
+    /// an empty ledger. The call could not go beside the founding in <c>World.SettlementFounder.Found</c>
+    /// because that would make <c>World/</c> reference this layer (spec §2: "a module never references a
+    /// layer above it"); the owner is at this layer instead, in
+    /// <see cref="SettlementSubsistence.ProvisionIfNewlyFounded"/>, which reaches every settlement however it
+    /// was founded and pays each exactly once.</item>
     /// </list>
     /// </summary>
     public static class SettlementLarder
@@ -269,10 +273,12 @@ namespace SimWorld.Economy
         /// <see cref="SettlementLarderTuning.ProvisionNutritionPerMouth"/> per living citizen — a derivation
         /// off the shipped crops' own growDays and the food economy's own per-eater demand, never a literal.
         ///
-        /// <para/><b>Idempotent by construction? No — and deliberately so.</b> This is a founding act, called
-        /// once, by the orchestrator that founds a settlement (<c>Sim.Game.NewGame</c>). Nothing gated or
-        /// periodic may call it: food appearing in a ledger on a cadence would be exactly the "conjure
-        /// nutrition from nothing" this module exists to avoid.
+        /// <para/><b>Idempotent by construction? No — and deliberately so.</b> This is a founding act and is
+        /// called exactly once per settlement, by <see cref="SettlementSubsistence.ProvisionIfNewlyFounded"/>
+        /// on the one gated pass that falls inside a settlement's founding window (it used to be called by
+        /// <c>Sim.Game.NewGame</c>, which reached only the player's band — see this class's own "what this did
+        /// not close"). Nothing else may call it on a cadence: food appearing in a ledger every interval would
+        /// be exactly the "conjure nutrition from nothing" this module exists to avoid.
         /// </summary>
         public static int ProvisionFoundingBand(Settlement settlement)
         {
