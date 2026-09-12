@@ -219,6 +219,13 @@ namespace SimWorld.Pawns
         /// Starvation builds malnutrition each food interval; eating again lets it fade at the same pace.
         /// Hunger also spends the pawn's hidden lifespan budget: malnutrition is survivable and still costs
         /// years, so a civilization that starves its people repeatedly buries them younger.
+        /// <para/>
+        /// <b>It takes no count of slices, and twice now it nearly did.</b>
+        /// <c>Needs.Need_Food.NeedIntervalBulk</c> calls this once for a whole elapsed span where the
+        /// per-interval path calls it every 150 ticks, so malnutrition accrues about 13× slow for a citizen
+        /// nobody is watching. The correction — a <c>float intervals</c> argument, scaled by
+        /// <c>elapsedTicks / IntervalTicks</c> — has been written and measured twice and reverted twice. See
+        /// that method's own doc for both measurements and for what is actually still in the way.
         /// </summary>
         public virtual void Notify_StarvationInterval(bool starving)
         {
