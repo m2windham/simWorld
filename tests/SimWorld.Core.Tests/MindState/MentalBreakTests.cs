@@ -136,13 +136,28 @@ namespace SimWorld.Tests.MindState
             Pawn p = NewHuman();
             // Starving, exhausted, recreation-starved and depressive: the mood target is 0.
             p.story.traits.GainTrait(new Trait(Trait("NaturalMood"), -2));
-            p.needs.food!.CurLevel = 0f;
-            p.needs.rest!.CurLevel = 0f;
-            p.needs.joy!.CurLevel = 0f;
+
+            // "Kept in despair", and it has to be kept rather than set once. A citizen with no map now takes
+            // a break of its own (Needs.AbstractRecreation) and sleeps a night of its own
+            // (Needs.AbstractRest), so zeroing the needs on tick one no longer holds them at zero — two of
+            // the four terms in this mood target would lift themselves within a day. Re-pinning each slice
+            // is what the test's own name has always claimed it did.
+            void KeepInDespair()
+            {
+                p.needs.food!.CurLevel = 0f;
+                p.needs.rest!.CurLevel = 0f;
+                p.needs.joy!.CurLevel = 0f;
+            }
+
+            KeepInDespair();
             p.needs.mood!.CurLevel = 0f;
             Assert.Equal(0f, p.needs.mood.CurInstantLevel);
 
-            RunTicks(MentalBreaker.MinTicksBelowToBreak, p);
+            for (int t = 0; t < MentalBreaker.MinTicksBelowToBreak; t += 150)
+            {
+                RunTicks(System.Math.Min(150, MentalBreaker.MinTicksBelowToBreak - t), p);
+                KeepInDespair();
+            }
             Assert.False(p.InMentalState);
             Assert.True(p.mindState.mentalBreaker.TicksBelowExtreme > 0);
 
@@ -150,6 +165,7 @@ namespace SimWorld.Tests.MindState
             for (int t = 0; t < 10 * GenDate.TicksPerDay && brokeAt < 0; t += 150)
             {
                 RunTicks(150, p);
+                KeepInDespair();
                 if (p.InMentalState) brokeAt = Find.TickManager.TicksGame;
             }
             Assert.True(brokeAt > MentalBreaker.MinTicksBelowToBreak, "no break within ten days");
