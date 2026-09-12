@@ -19,9 +19,21 @@ namespace SimWorld.AI
     /// not. See that class for the whole argument, including why copying <see cref="WorkGiver_Miner"/>'s
     /// "just do all of it" translation would have been wrong here.
     /// <para/>
-    /// <b>Ordering against taming.</b> <c>Handling</c> (naturalPriority 950) outranks <c>Hunting</c> (850) in
-    /// content, so a pawn who could either tame or hunt the same animal tames it — which is the right way
-    /// round and needed no special-casing here.
+    /// <b>Ordering against taming — this doc was wrong, and the measurement is what corrected it.</b> It used
+    /// to read: "<c>Handling</c> (naturalPriority 950) outranks <c>Hunting</c> (850) in content, so a pawn who
+    /// could either tame or hunt the same animal tames it — which is the right way round and needed no
+    /// special-casing here." The ordering claim is true and the conclusion was not. With
+    /// <see cref="WorkGiver_TameAnimals"/> gated on nothing at all, <i>every</i> wild animal was
+    /// higher-priority work unconditionally, so this giver was never reached: twelve in-game days on a
+    /// founded settlement produced sixty-six tamings and zero hunts, and the animal population was not hunted
+    /// flat, it was tamed flat. What "the right way round" needs is that the two verbs are never both on at
+    /// once, and nothing said so.
+    /// <para/>
+    /// <see cref="TamingInitiative"/> says it now, on the taming side and in terms of the same food figure
+    /// this giver reads: <b>while the settlement is short of food, an animal on its land is meat rather than
+    /// livestock</b>, so the Handling giver skips and this one runs. Note what did <i>not</i> change —
+    /// no <c>naturalPriority</c> anywhere. Handling still outranks Hunting exactly as RimWorld's content
+    /// says, which is why this is a missing predicate rather than a priority tweak.
     /// </summary>
     public sealed class WorkGiver_Hunt : WorkGiver_Scanner
     {
