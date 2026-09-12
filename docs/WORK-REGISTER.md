@@ -650,6 +650,17 @@ both runs, is `"X has been beaten to death"`.
 
 #### What is actually killing them
 
+> **Corrected by §10.** The sentence below this block — *"every death is a citizen beaten
+> to death by another citizen"* — is **wrong**, and it was wrong in the way that matters most:
+> it named a culprit. `"{0} has been beaten to death."` is the `deathMessage` on the **`Blunt`
+> `DamageDef`** in `Damages.xml`. It prints for anything that deals blunt damage, and
+> `Building.RoofCollapseUtility` deals `new DamageInfo(DamageDefOf.Blunt, amount)` with **no
+> instigator at all**. The string said murder; the killer was a rock ceiling coming down on the
+> miner who mined out its support. Of 34 deaths measured across three watched settlements in
+> §10, **zero were killed by another pawn**. The joy finding below is real and its fix is real —
+> it is why an *unwatched* settlement now loses nobody — but it was never what the watched death
+> toll was made of. See §10.
+
 **Nothing in this codebase can raise `Need_Joy`.** `GainJoy` has exactly one caller in all of
 `src/` and it is `CompDrug`. The only recreation available to a citizen is narcotics. So joy
 sits at its worst stage — −20 mood points — on every citizen from day two, and the humanlike
@@ -714,6 +725,189 @@ correcting the food kills the world: at the honest rate a citizen with nothing t
 8.9 days, and **nothing at civilization scale produces food into any ledger.** The diagnosis
 and its precondition sit at the defect site. That is the shape of a good "no": built, proven,
 measured against the world, and left out with the reason written down.
+
+### 10. Nobody was ever murdered, and a town nobody watches now feeds itself
+
+Three lanes on §9a's open chain. Two of them closed what they were sent for. The third
+closed what it was sent for **and found that the premise of §9a was wrong**, which is the
+part of this batch worth reading.
+
+#### The deaths were never killings
+
+§9a said, twice, that every death in a generated settlement was a citizen *beaten to death
+by another citizen*. It said so on the strength of the death letters, which read exactly
+that. The letters are telling the truth about the damage and nothing at all about the
+killer:
+
+- `"{0} has been beaten to death."` is the `deathMessage` field on the **`Blunt`
+  `DamageDef`** (`Data/Core/Defs/DamageDefs/Damages.xml`). It prints for anything that
+  deals blunt damage, from a fist to a falling mountain.
+- `Building.RoofCollapseUtility` deals `new DamageInfo(DamageDefOf.Blunt, amount)` — **no
+  instigator field set at all** — to every Thing under a collapsing roof cell.
+
+So the killer in every one of those letters was a rock ceiling coming down on the miner who
+had just mined out its support. Measured independently by the orchestrator after the merge — three seeds, eight in-game days,
+watched, counting corpses on the map because `Settlement.PruneDeadCitizens` removes the dead
+from the roster: **35 corpses, 32 of them with no instigator at all and 3 dealt by a pawn —
+exactly one per seed.** The signature of the 32 is unmistakable once looked for: a single
+100-severity injury, or a destroyed heart, brain or liver on a corpse whose total injury
+severity is near zero.
+
+The lane that found this reported 34 deaths and *zero* by a pawn; the orchestrator's own run
+says one per seed, and that number is almost certainly not citizens. The wild-animal lane
+measured exactly one attributable death per run from a **tame-provoked manhunter**, and an
+animal is a `Pawn`, so it trips the same flag. Either way the proportion is the finding:
+**91% of deaths have no instigator.** Roof collapses dominate; murder does not happen.
+
+And a social fight provably **cannot** kill: 129 consecutive fights between the same two
+pawns with no healing in between produced **zero deaths**, every one ending in a downing at
+pain shock (0.8 pain, ≈64 severity, against a lethal 150). That is RimWorld's behaviour
+exactly, and it is now what this port does too.
+
+**Roof collapses kill nine to fourteen of twenty-five founders a week.** That is the largest
+single killer in this game and nothing in this batch touched it. It is the next thing.
+
+#### Three porting defects in the social fight, and one of them was structural
+
+1. **The mental state threw the punches itself.** `MentalState_SocialFighting.MentalStateTick`
+   built a `Verb_MeleeAttack` and cast it at the other pawn **at distance zero — no map, no
+   position, no reach check**. RimWorld's mental state throws nothing: it is lifecycle only,
+   and the blows come from a job (`JobGiver_SocialFighting` → `JobDefOf.SocialFight`) that
+   returns null unless both pawns are spawned on the same map, and then has to walk across it
+   and stand next to the other pawn before a fist can land. This is why citizens of a
+   settlement **nobody had ever opened — a settlement with no map in existence** — were
+   injuring each other out of nowhere. The swinging moved to a real job going through the same
+   `Toils_Combat.AttackTarget` loop a raider's melee uses.
+2. **The fists were built in code at twice the speed of a weapon.** The hand-built `Tool` used
+   a 1-second cooldown against `Tool`'s own 2-second default — the same punch at two speeds.
+   Fists now come from `AttackVerbUtility.NaturalWeaponFor`, which is also RimWorld's answer to
+   why a colonist with a knife on their belt still brawls bare-handed: the fight verb is drawn
+   from `verbTracker.AllVerbs`, which holds natural tools and never the equipped weapon.
+3. **The escalation roll was not RimWorld's, and its own doc claimed it was.** A flat 15%
+   behind two gates RimWorld does not have (`opinion < −20` **and** `mood < 0.4`). RimWorld's
+   `Pawn_InteractionsTracker.SocialFightChance` is a 4% base scaled by continuous factors —
+   manipulation and moving capacity, opinion, traits, age gap. Ported. The 4% comes from the
+   wiki rather than the def and is flagged as a secondary source at the site.
+
+`HadCatharticFight` and `HadAngeringFight` were also missing outright; RimWorld hands both
+parties one at 50/50 in `PostEnd`. Without them a fight could only ever cost mood, which is
+half of why §9a saw brawling feed itself.
+
+#### Nothing could raise Need_Joy, and a hidden constant would have defeated any fix
+
+`GainJoy` had exactly one caller in all of `src/` and it was `CompDrug`. The recreation supply
+chain is now ported — `JoyGiverDef`, `JoyUtility`, `JobGiver_GetJoy`, the drivers, and a
+recreation tier in the humanlike think tree — with three givers that need **nothing built**,
+which is the point: a founding band owns a knife and a sack of rations.
+
+Underneath it sat a defect that would have silently swallowed any joy source of any size.
+`JoyToleranceSet.ToleranceDecayPerInterval` was 0.12/day against the 0.39/day of tolerance a
+citizen builds merely replacing what the need loses. **Below break-even, tolerance ratchets
+upward for ever and every recreation kind eventually goes permanently boring.** It is now
+derived from the two constants that set the break-even, and pinned by a fortnight-long test.
+
+And recreation reaches citizens with no map, via `Needs/AbstractRecreation.cs` — the mirror of
+`Economy/SettlementLarder.cs`, same `!Spawned` predicate, same no-roll rule, no state. Without
+it this would have rebuilt §9a's own regression one need over.
+
+#### A town nobody is watching now feeds itself
+
+`Economy/SettlementSubsistence.cs` closes the half of the ledger `SettlementLarder` named and
+left: consumption existed, production did not, so an unwatched settlement ate its founding
+rations down and then starved — slowly instead of quickly. A settlement with no map now grows
+into its own `Settlement.Stores` on the long tick, at a rate its land sets
+(`BiomeDef.forageability`, normalised against the best in content), stopping at the larder the
+food economy already says a settlement wants.
+
+The founding rations moved with it. `Sim.Game.NewGame` founds exactly one settlement — the
+player's — so provisioning there fed the player's band and nobody else's, and every rival
+civilization raised during play walked in with an empty ledger. It could not sit beside the
+founding in `World/SettlementFounder`, because `World/` referencing `Economy/` inverts the
+spec's layering; the owner now sits at the ledger's own layer and pays every settlement,
+however founded, exactly once.
+
+Measured over twenty in-game days, one seed, nothing called by hand:
+
+| Day | Unwatched before — alive / food / ledger / malnutrition | Unwatched after |
+| --- | --- | --- |
+| 10 | 22 / 0.52 / 31.2 / 0.00 | 22 / 0.52 / 153.6 / 0.00 |
+| 15 | 22 / 0.00 / 0.0 / 0.43 | 22 / 0.73 / 140.8 / 0.00 |
+| 20 | 18 / 0.00 / 0.0 / **1.00 (lethal)** | 19 / 0.95 / 110.5 / **0.00** |
+
+The watched column is unchanged on every reading but day zero's ledger, which is the evidence
+that the abstract producer never pays a settlement whose citizens are standing on a map.
+
+#### And an unwatched settlement stopped dying
+
+With the phantom brawling gone and recreation reaching off-map citizens, across three seeds,
+eight in-game days, nothing called by hand:
+
+| seed | alive day 8, before → after | mean joy day 8 | deaths |
+| --- | --- | --- | --- |
+| a | 21/25 → **25/25** | 0.00 → 0.33 | 4 → **0** |
+| b | 22/25 → **25/25** | 0.00 → 0.33 | 3 → **0** |
+| c | 20/25 → **25/25** | 0.00 → 0.33 | 5 → **0** |
+
+No injuries and no `Pain` anywhere in the after column. `NeedJoy` went from −20 mood points a
+head to absent entirely, which is RimWorld's shape — the Satisfied band produces no thought.
+
+#### Hunting still does not close, and the reason is a missing layer
+
+Wild animals now exist on interior maps (`MapGen/GenStep_Animals.cs` at generation,
+`Pawns/WildAnimalSpawner.cs` maintaining the population against the biome's own
+`animalDensity`, which until now was authored content read by exactly one line that used it to
+decide where to paint sand). That defect is fixed. **Hunting still never happens**: twelve days,
+**zero hunts and sixty-six tamings**. The population is not hunted flat, it is *tamed* flat.
+
+Two links past that lane's scope hold it shut, both measured:
+
+1. `HuntingInitiative.WantsMeat` was false on **12,000 of 12,000 samples**. A founded band's
+   rations (440 nutrition) exceed the gate's own want (160), and nothing draws that ledger down
+   while the settlement has a map, because `SettlementLarder` feeds only citizens *without* one.
+2. **This port has no designation system at all** — no `DesignationManager`, no `DesignationDef`,
+   no `DesignationDefs` content. In RimWorld both taming and hunting gate on a player
+   designation. Here hunting got a civilization-scale substitute for the absent player
+   (`WantsMeat`) and taming got nothing, so every wild animal is unconditional taming work at
+   `Handling` (natural priority 950) against `Hunting` (850), and the hunt giver is never
+   consulted. `WorkGiver_Hunt`'s own doc says that ordering "needed no special-casing here";
+   the measurement contradicts it. **This is a missing layer, not a priority tweak.**
+
+#### Open, named, and not fixed
+
+- **Roof collapses**, above. The largest killer in the game.
+- **Off-map citizens never sleep.** Mean rest falls 0.95 → 0.00 by day two and stays there;
+  `Tired` at −20 a head is now the largest remaining term in an unwatched settlement's mood
+  ledger. Same map-only shape food and recreation both had.
+- **`Need_Food.NeedIntervalBulk` credits starvation once per bulk call, not once per slice**
+  (~13× slow at Interval). The correction was written, tested and deliberately reverted last
+  batch because *"correcting the clock without correcting the food kills the world"*, naming
+  abstract production as its precondition. **That precondition is now met.** Re-attempt and
+  re-measure.
+- **Nothing produces non-food goods abstractly**, so `Crafting.Guild` still starves in an
+  unwatched settlement — the shipped `MasonsGuild` needs `ChunkSandstone` in the ledger and
+  only a live map can put it there. `Tile.deposits` is the content waiting for an abstract
+  mining pass, exactly as `forageability` was waiting for subsistence.
+- **Settlements founded through `SettlementFounder.FoundColony`** — which is how
+  `WorldGenStep_Factions` and `EmergenceManager.Expand` make most of them — are pure
+  `StatisticalPopulation` with no `Pawn` behind anyone, so they neither eat, produce, nor are
+  provisioned, and keep empty ledgers for ever. Trade partners with nothing to trade.
+- **Wild animals starve.** `JobGiver_GetFood` finds only items; there is no grazing in this
+  codebase at all.
+- **Unwatched settlements can no longer brawl**, since a social fight now requires both parties
+  spawned on one map. A real watched/unwatched behavioural difference, stated at the site.
+- **Thin land under-produces with no compensation** — extreme desert yields 0.04 of intent, ice
+  sheet 0 — because the caravan and inter-settlement trade that would answer it exist as
+  mechanism with no civilization-scale driver.
+
+#### Numbers that could not be sourced
+
+Flagged in code and pinned by behaviour rather than by literal, per `CLAUDE.md`: the insult's
+`socialFightBaseChance` (4%, from the wiki rather than a def); `ExpectationDef.joyToleranceDropPerDay`
+(derived instead from constants already in `Need_Joy`); and the wild-animal spawner's
+`CellsPerAnimalWeightAtDensityOne` and `RepopulateDays`, with body size standing in for
+RimWorld's `ecoSystemWeight`. `BiomeDef` also carries no `wildAnimals` table and only three
+animal `PawnKindDef`s ship, so every land biome draws the same three kinds and differs only in
+how many — recorded as a content gap rather than papered over with an invented menagerie.
 
 ## Immediate steps: the host repo — unclaimed, proposed
 
@@ -826,3 +1020,16 @@ content that would exercise it sets nothing, or the one caller that would reach 
 never written. Sixteen of those came off the list in one batch. A hundred and fifteen
 reviewed seams remain, most of them honestly blocked — but the batch before proved that
 "blocked" is a claim with a shelf life.
+
+And §10 added a third failure mode to that list, worse than either because it wastes
+whole batches: **a measurement can be right and its reading wrong.** §9a correctly
+observed that every death letter said "beaten to death", correctly concluded nobody was
+starving, and then named a culprit the evidence never identified — because that sentence
+is a `DamageDef`'s own `deathMessage` and the actual killer, a collapsing roof, sets no
+instigator at all. Two lanes were commissioned against that reading. The work they did was
+real and the settlements are better for it, but the thing killing nine to fourteen of
+twenty-five founders a week was never touched, because nobody asked the corpse what hit
+it. Four systems' worth of effort turned on one unexamined string.
+
+The rule that follows is cheap: when a measurement names a cause, find the line of code
+that produces the name. `RoofCollapseUtility` was four greps away the whole time.

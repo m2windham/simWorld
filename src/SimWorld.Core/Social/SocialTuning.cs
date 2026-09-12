@@ -64,37 +64,44 @@ namespace SimWorld.Social
         public const float SlightLowOpinionWeightFactor = 2.5f;
 
         /// <summary>
-        /// A social fight needs both a bad opinion of the other party and a bad mood — RimWorld's own
-        /// combination for <c>InteractionWorker_Insult</c>'s fight roll (opinion very low *and* mood already
-        /// poor), reusing <see cref="MindState.MentalStateDef"/> machinery rather than a parallel system.
+        /// Chance an insult escalates into a mutual <c>SocialFighting</c> mental state <i>before</i>
+        /// <see cref="SocialFightUtility.SocialFightChance"/>'s chain of factors — capacity, opinion, traits,
+        /// age gap — multiplies it (RimWorld: <c>InteractionDef.socialFightBaseChance</c>, a per-interaction
+        /// content field read by <c>Pawn_InteractionsTracker.SocialFightChance</c>).
+        ///
+        /// <para/><b>4%, and what that replaced.</b> This was 0.15 behind two hard gates that RimWorld does
+        /// not have (see <see cref="SocialFightUtility"/>). The RimWorld value for the Insult interaction
+        /// could not be read out of its content from this environment; 0.04 is the figure the RimWorld wiki's
+        /// own Social page states for an insult ("Every insult has a 4% chance of starting a social fight,
+        /// while slights have a 0.5% chance"), which is a secondary source rather than the def, so per
+        /// CLAUDE.md the resulting <i>behaviour</i> is what the tests pin — a settlement that is otherwise
+        /// healthy does not lose a third of its people to its own citizens in a week — and not this literal.
+        ///
+        /// <para/><b>Where it will eventually live.</b> On <see cref="InteractionDef"/>, as RimWorld has it,
+        /// so that Slight can carry its own 0.5% and content can add a fight-capable interaction without
+        /// touching code. It is here for now because moving it means editing
+        /// <c>Data/Core/Defs/InteractionDefs/Interactions.xml</c>, a shared content file, and this lane has
+        /// no need of a second escalating interaction — insult is still the only one that rolls.
         /// </summary>
-        public const float SocialFightOpinionThreshold = -20f;
-
-        public const float SocialFightMoodThreshold = 0.4f;
+        public const float InsultSocialFightBaseChance = 0.04f;
 
         /// <summary>
-        /// Base chance a qualifying insult escalates into a mutual <c>SocialFighting</c> mental state, before
-        /// each participant's <see cref="Pawns.TraitDegreeData.socialFightChanceFactor"/> multiplies it. Not
-        /// sourced from RimWorld's real constant; tuned so it is rare turn-to-turn but not negligible over a
-        /// long-running population — pinned by a band/frequency test, not the literal value.
-        /// </summary>
-        public const float BaseSocialFightChance = 0.15f;
-
-        /// <summary>
-        /// Power of the bare-knuckled <see cref="Combat.Tool"/> <see cref="MindState.MentalState_SocialFighting"/>
-        /// builds for its swings — RimWorld's own natural "fists" tool exists on the Human race ThingDef, not
-        /// coded in; this port has no natural-weapons content yet (Combat module scope), so the fight builds
-        /// one directly instead. Not sourced from RimWorld's real fists power; picked below the weakest content
-        /// weapon (<c>MeleeWeapon_Club</c>'s head, power 12) so a social fight reads as a scuffle rather than a
+        /// Power of a bare fist — RimWorld's own natural "fists" tool exists on the Human race ThingDef, not
+        /// coded in; this port has no natural-weapons content yet (Combat module scope), so
+        /// <see cref="AI.AttackVerbUtility.NaturalWeaponFor"/> builds one directly instead and reads this.
+        /// Not sourced from RimWorld's real fists power; picked below the weakest content weapon
+        /// (<c>MeleeWeapon_Club</c>'s head, power 12) so a social fight reads as a scuffle rather than a
         /// weapon fight — pinned by a test on relative wound severity, not the literal number.
+        ///
+        /// <para/><b>There used to be a second, faster fist.</b>
+        /// <see cref="MindState.MentalState_SocialFighting"/> built its own <see cref="Combat.Tool"/> with a
+        /// one-second cooldown, half of <see cref="Combat.Tool"/>'s own two-second default and so half of the
+        /// cooldown every other unarmed pawn in the game swung at — the same punch at two different speeds
+        /// depending on who threw it. The fight now goes through
+        /// <see cref="AI.AttackVerbUtility.NaturalWeaponFor"/> like everything else, so there is one fist and
+        /// the second constant is gone.
         /// </summary>
         public const float SocialFightFistPower = 6f;
-
-        /// <summary>Seconds between swings once a social fight's fists verb is warmed up (melee's own
-        /// zero-warmup default — see <see cref="Combat.Verb_MeleeAttack"/>). Not sourced; picked so a handful
-        /// of exchanges land within the mental state's own 100-1200 tick duration without being so frequent
-        /// the fight resolves in a single blow.</summary>
-        public const float SocialFightSwingCooldownSeconds = 1f;
 
         // ---- Romance (social.romance) ----
         // None of these are RimWorld's: RimWorld's romance model reads an orientation and a cheating risk

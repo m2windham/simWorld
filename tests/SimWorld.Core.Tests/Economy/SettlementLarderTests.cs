@@ -405,6 +405,13 @@ namespace SimWorld.Tests.Economy
             // citizens are about to live on.
             Assert.Null(settlement.InteriorMap);
             Assert.All(band, p => Assert.False(p.Spawned));
+
+            // The rations land on the settlement's first gated pass rather than before its first tick: they
+            // are owned by Economy.SettlementSubsistence.ProvisionIfNewlyFounded now, so that every settlement
+            // gets them and not only the one Game.NewGame founds (a rival raised by World.EmergenceManager
+            // used to walk in with an empty ledger). One long tick is a thirtieth of a day against a founding
+            // provision measured in days of food.
+            for (int i = 0; i < GenTicks.TickLongInterval; i++) game.TickManager.DoSingleTick();
             float ledgerAtFounding = SettlementLarder.StoredNutrition(settlement);
             Assert.True(ledgerAtFounding > 0f, "a founded settlement holds nothing edible");
 
@@ -429,7 +436,10 @@ namespace SimWorld.Tests.Economy
                 + meanFood.Max().ToString("F2") + ")");
 
             // They ate from the ledger, and there is nowhere else it could have gone: no map exists, so no
-            // Thing was ever spawned, banked, traded or raided.
+            // Thing was ever spawned, banked, traded or raided. The figure is net of what
+            // Economy.SettlementSubsistence grew back into the ledger over the same week, which is why the
+            // assertion is a direction rather than an amount — the founding crate is several times the larder
+            // a settlement settles at, so a week of eating still shows through the refilling.
             float spent = ledgerAtFounding - SettlementLarder.StoredNutrition(settlement);
             Assert.True(spent > 0f, "a week passed and the civilization's food was untouched");
 

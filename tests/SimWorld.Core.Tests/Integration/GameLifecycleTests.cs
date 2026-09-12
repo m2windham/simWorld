@@ -129,13 +129,15 @@ namespace SimWorld.Tests.Integration
             // The tick order must have been rebuilt (PreTickers/PostTickers can't themselves be Scribed), not
             // merely the data underneath it.
             Assert.Single(loaded.TickManager.PreTickers);
-            // 18 since the ledger-to-citizen seam joined them (SimWorld.Economy.SettlementLarder.Tick, which
-            // feeds a citizen with no map to eat on out of Settlement.Stores), after the off-map citizen
+            // 19 since the production half of the same ledger joined them
+            // (SimWorld.Economy.SettlementSubsistence.Tick, which grows food into a settlement nobody is
+            // watching); the ledger-to-citizen seam (SimWorld.Economy.SettlementLarder.Tick, which feeds a
+            // citizen with no map to eat on out of Settlement.Stores) made it 18, after the off-map citizen
             // registry (SimWorld.Sim.CitizenTickRegistry.Tick, which is also what re-registers this very
             // loaded game's off-map citizens — the tick lists are rebuilt from the maps alone, so nobody
             // standing on none of them comes back on one) made it 17, the map-to-ledger seam and the industry
             // it feeds made it 16, the works initiative made it 14 and the stonework initiative made it 13.
-            Assert.Equal(18, loaded.TickManager.PostTickers.Count);
+            Assert.Equal(19, loaded.TickManager.PostTickers.Count);
 
             // And the loaded game must actually keep running: tick it as far past the load as it ran before
             // the save, and confirm nothing throws and time keeps moving forward.
@@ -171,8 +173,12 @@ namespace SimWorld.Tests.Integration
             // .SyncCitizenSpawns), so "extra" is no longer the only pawn here — it is the one manually spawned
             // above and deliberately kept off the settlement's own roster, to prove *that* pawn (not a
             // citizen) still round-trips as the map's own Thing, distinct from Citizens' Scribe path.
-            Assert.Equal(loadedSettlement.Citizens.Count + 1, loadedMap.mapPawns.AllPawns.Count);
-            Pawn loadedPawn = Assert.Single(loadedMap.mapPawns.AllPawns, p => !loadedSettlement.Citizens.Contains(p));
+            // Counted over the people rather than over every pawn: a generated interior also carries the
+            // wildlife its biome supports (SimWorld.MapGen.GenStep_Animals), and this assertion is about
+            // which *person* on the map is not on the roster.
+            List<Pawn> loadedPeople = loadedMap.mapPawns.AllPawns.Where(p => p.RaceProps.Humanlike).ToList();
+            Assert.Equal(loadedSettlement.Citizens.Count + 1, loadedPeople.Count);
+            Pawn loadedPawn = Assert.Single(loadedPeople, p => !loadedSettlement.Citizens.Contains(p));
             Assert.Equal(foodBeforeSave, loadedPawn.needs.food!.CurLevel, 4);
 
             // The strong claim: the loaded pawn is really back in TickManager's normal tick list, not merely

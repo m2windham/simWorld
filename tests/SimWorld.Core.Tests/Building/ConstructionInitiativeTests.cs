@@ -387,7 +387,10 @@ namespace SimWorld.Tests.Building
             // Entering is the whole of it: the settlement's own founders are already standing on this map —
             // nothing here calls GenSpawn.Spawn on a pawn.
             CoreMap map = settlement.EnterMap(world);
-            Assert.Equal(settlement.Citizens.Count, map.mapPawns.AllPawns.Count);
+            // Counted over the people: a generated interior also carries the wildlife its biome supports
+            // (SimWorld.MapGen.GenStep_Animals), and the claim here is that no *pawn of ours* was placed by
+            // hand — the founders are simply already standing on their own map.
+            Assert.Equal(settlement.Citizens.Count, map.mapPawns.AllPawns.Count(p => p.RaceProps.Humanlike));
 
             // Deterministic construction success, matching this file's own idiom above
             // (A_settlement_that_needs_a_bed_ends_up_with_one_built_by_a_citizen) — which citizen actually

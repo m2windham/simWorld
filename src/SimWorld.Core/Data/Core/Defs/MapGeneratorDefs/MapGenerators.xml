@@ -14,6 +14,9 @@
       <li>Scatterers</li>
       <li>Ruins</li>
       <li>Roads</li>
+      <!-- Last: the map has stopped changing shape, so nothing clears the ground under a living animal.
+           Declared in its own GenSteps_Animals.xml; see SimWorld.MapGen.GenStep_Animals. -->
+      <li>Animals</li>
     </genSteps>
   </MapGeneratorDef>
 

@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-09-11",
-  "testsTotal": 2019,
+  "updated": "2026-09-12",
+  "testsTotal": 2082,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -339,7 +339,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/MapGen",
       "status": "ported",
-      "tests": 27,
+      "tests": 28,
       "items": [
         {
           "id": "mapgen.terrain",
@@ -448,7 +448,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Pawns · Pawns/Generation · Pawns/Genes",
       "status": "ported",
-      "tests": 78,
+      "tests": 91,
       "items": [
         {
           "id": "pawngen.backstory",
@@ -508,6 +508,11 @@
         {
           "id": "pawngen.lifestage",
           "label": "A life stage shaped nothing about the pawn living it. LifeStageDef carries seven scaling fields; four were set by every shipped stage and read by no line of src/. foodMaxFactor is wired into Need_Food.MaxLevel (it was BodySize flat, so only body size separated an infant's stomach from an adult's); alwaysDowned sits beside forceDowned in Pawn_HealthTracker rather than zeroing the Moving capacity, because a capacity worker computes from the HediffSet and zeroing Moving would encode 'too young to walk' as 'the legs do not work' — one content edit from killing every newborn through ShouldBeDeadFromRequiredCapacity; and reproductive gates both FamilyManager.EligibleForBirth and CompHasGatherableBodyResource, which knew only fullness and gender, so a chicken laid its first egg on hatch day and a newborn muffalo gave milk. Two of the audit's recorded blockers were corrected rather than repeated: foodMaxFactor's had expired, and reproductive's named the wrong module. Pawn.Notify_LifeStageStarted is raised at the crossing so the latched state (downed) follows the stage rather than persisting; MakeDowned is re-entrancy guarded because reading a life stage can recompute it, and the storyteller's adaptation hook is skipped while the stage is what holds the pawn down — wiring it unguarded would have charged the 'a colonist went down' curve for every child born.",
+          "done": true
+        },
+        {
+          "id": "pawngen.wildanimals",
+          "label": "Nothing anywhere spawned a wild animal on an interior map, so WorkGiver_Hunt.PotentialWorkThingsGlobal yielded nothing for ever and WorkGiver_TameAnimals was dead too - the same defect shape as the wild food plants, one system over. BiomeDef.animalDensity is authored for all 14 shipped biomes and was read by exactly ONE line of core, which used it as a deposit-placement proxy. MapGen/GenStep_Animals scatters at generation and Pawns/WildAnimalSpawner maintains the population against the biome's own density, matching WildFoodPlants/WildPlantSpawner; RepopulateDays was retuned against a measurement after the first calibration let the map empty in 6 days and refill in 15. Content gap recorded rather than papered over: BiomeDef carries no wildAnimals table and only three animal PawnKindDefs ship, so every land biome draws the same three kinds and differs only in how many. HUNTING STILL DOES NOT CLOSE, and the reason is a missing layer: 12 days produced ZERO hunts and 66 tamings - the population is not hunted flat, it is tamed flat. Two links past this module hold it shut. HuntingInitiative.WantsMeat was false on 12,000 of 12,000 samples, because a founded band's rations (440 nutrition) exceed the gate's want (160) and nothing draws that ledger down while the settlement has a map. And THIS PORT HAS NO DESIGNATION SYSTEM AT ALL - no DesignationManager, no DesignationDef, no DesignationDefs content. In RimWorld both taming and hunting gate on a player designation; here hunting got a civilization-scale substitute for the absent player and taming got nothing, so every wild animal is unconditional taming work at Handling (950) against Hunting (850). Also open: wild animals starve - JobGiver_GetFood finds only items and there is no grazing in this codebase.",
           "done": true
         }
       ]
@@ -602,7 +607,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
       "status": "ported",
-      "tests": 95,
+      "tests": 101,
       "items": [
         {
           "id": "needs.pawn",
@@ -703,6 +708,11 @@
           "id": "needs.food.slicebug",
           "label": "OPEN, with the fix written, measured and deliberately REVERTED. Need_Food.NeedIntervalBulk calls Notify_StarvationInterval once per bulk call rather than once per 150-tick slice, so malnutrition accrues about 13x slower at Interval than at Full — the same shape as the memory-ageing bug fixed in batch six. The lane wrote the correction with three tests that fail on the old behaviour, then reverted it: correcting the clock without correcting the food kills the world, because at the honest rate a citizen with nothing to eat dies in 8.9 days and NOTHING AT CIVILIZATION SCALE PRODUCES FOOD INTO ANY LEDGER. Measured consequence: AttentionBudgetTests' century of demography falls from about 1,500 citizens to about 880 and its premise stops holding. The precondition is abstract production; the diagnosis is written at the defect site.",
           "done": false
+        },
+        {
+          "id": "needs.joy",
+          "label": "Nothing in src/ could raise Need_Joy: GainJoy had exactly one caller and it was CompDrug, so the only recreation available to a citizen of this civilization was narcotics, and NeedJoy sat at its worst stage (-20 mood points) on every citizen from day two. The tolerance model, the JoyKindDef content and the thought were all already built - it is section 5's 'wired and still unable to act' shape, one need over. Underneath it sat a defect that would have swallowed any fix of any size: JoyToleranceSet.ToleranceDecayPerInterval was 0.12/day against the 0.39/day a citizen builds merely replacing what the need loses, so BELOW BREAK-EVEN tolerance ratchets upward for ever and every kind eventually goes permanently boring. Now derived from the two constants that set the break-even and pinned by a fortnight-long test; RimWorld reads ExpectationDef.joyToleranceDropPerDay, which could not be sourced here and the comment says so. Needs/AbstractRecreation.cs is the mirror of Economy/SettlementLarder - same !Spawned predicate, same no-roll rule, no state - so a citizen with no map gets recreation too, without which this would have rebuilt the batch-nine regression one need over. Open and named: off-map citizens never sleep. Mean rest falls 0.95 to 0.00 by day two and stays there, and Tired at -20 a head is now the largest remaining term in an unwatched settlement's mood ledger - the same map-only shape food and recreation both had.",
+          "done": true
         }
       ]
     },
@@ -714,7 +724,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 148,
+      "tests": 153,
       "items": [
         {
           "id": "health.body",
@@ -794,6 +804,11 @@
         {
           "id": "health.violentdeath",
           "label": "Nothing anywhere separated a murder from a heart attack. DamageDef.externalViolence is read by three consumers now: Pawn_HealthTracker.DiedViolently, StorytellerDeathEvents (which charges adaptation for a violent death and composes the death letter, consuming DamageDef.deathMessage and binding the shipped-but-unbound Death LetterDef), and PawnDiedThoughtsUtility, which gives witnesses the shipped WitnessedDeathAlly memory that had no giver. Content had no non-violent damage at all, so Recipe_Surgery killed failed patients with plain Cut and a botched operation read as a murder; SurgicalCut is the same wound with externalViolence false. Deliberately NOT wired into the chronicle: RecordDeath already separates Death:Age from Death:Injury. What the chronicle actually lacks is any path from a map death to FamilyManager at all — a citizen beaten to death on an open map never shrinks a family, never bereaves anyone and never reaches the chronicle. That is a missing wire, not a missing field.",
+          "done": true
+        },
+        {
+          "id": "health.deathattribution",
+          "label": "The work register said for two batches that every death in a generated settlement was a citizen beaten to death by another citizen. It was reading the death letters, and the letters say nothing about the killer: '{0} has been beaten to death.' is the deathMessage field on the Blunt DamageDef and prints for anything dealing blunt damage, while Building.RoofCollapseUtility deals new DamageInfo(DamageDefOf.Blunt, amount) with NO INSTIGATOR SET AT ALL. Measured independently by the orchestrator after the merge, three seeds, eight days, counting corpses on the map because Settlement.PruneDeadCitizens removes the dead from the roster: 35 corpses, 32 with NO INSTIGATOR AT ALL and 3 dealt by a pawn, exactly one per seed. The lane reported 34 and zero; one per seed is almost certainly not citizens, since the wild-animal lane measured exactly one tame-provoked manhunter death per run and an animal is a Pawn. The proportion is the finding: 91% of deaths have no instigator - a rock ceiling coming down on the miner who mined out its support, signature being one 100-severity injury or a destroyed heart/brain/liver on a corpse whose total severity is near zero. A social fight provably cannot kill: 129 consecutive fights between the same two pawns with no healing between produced zero deaths, every one ending in a downing at pain shock (0.8 pain, about 64 severity, lethal 150), which is RimWorld's behaviour exactly. Pawn_HealthTracker.KilledByAnotherPawn now lets a test tell the two apart, and the path that hid it is fixed at the root: Hediff_MissingPart.PostAdd called RestorePart without RimWorld's checkStateChange: false, so a pawn killed by having an organ destroyed died with DeathCauseDamage null and DiedViolently read false for a murder. OPEN AND UNTOUCHED: roof collapses kill nine to fourteen of twenty-five founders a week and are the largest single killer in this game.",
           "done": true
         }
       ]
@@ -883,7 +898,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 153,
+      "tests": 167,
       "items": [
         {
           "id": "ai.thinktree",
@@ -989,6 +1004,11 @@
           "id": "ai.pathingshape",
           "label": "Measured and recorded rather than assumed: RegionPathCorridorCache is about 30 percent SLOWER on a settlement interior (16.06 ms against 12.15 ms for 15 paths to one destination), because the interior is 5 regions over 40,000 cells with one holding 34,285 — a corridor cannot narrow a search when there is one region to name. Nothing was changed on the strength of it (the corridor path already falls back safely and the whole-tick A/B was within noise), but docs/perf/baseline.md section 9's 9.7x speedup is map-shape dependent and the settlement interior is the shape where it does not apply. A raid costs about 0.01 ms per raider per tick; docs/perf/raid-approach.md has the numbers, labelled as Debug/test-harness rather than Release.",
           "done": false
+        },
+        {
+          "id": "ai.joygivers",
+          "label": "RimWorld's recreation supply chain ported: JoyGiverDef and the JoyGiver worker base, JoyUtility.JoyTickCheckEnd at RimWorld's own joyGainRate * 0.36f / 2500f * delta, JobGiver_GetJoy plus JobGiver_IdleJoy (RimWorld's 60,000-tick grace), ThinkNode_ConditionalLowJoy, the drivers, and a recreation tier in the humanlike think tree below rest and above orders. The three shipped givers - SocialRelax, GoForWalk, Skygaze - deliberately need NOTHING BUILT, because a founding band owns a knife and a sack of rations, and a recreation system only rich settlements can reach would leave the day-two collapse exactly where it was. Deviations, each documented at the class: joyKind/joyGainRate/joyDuration live on JoyGiverDef rather than JobDef, to avoid editing a shared file; JoyGiver_SocialRelax gathers around PEOPLE rather than a CompGatherSpot, because this port ships no campfire, table or chair; the tier gates on the need rather than a timetable, there being no timetable module; thingDefs and pctPawnsEverDo are not declared at all rather than declared and unread.",
+          "done": true
         }
       ]
     },
@@ -1318,7 +1338,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 182,
+      "tests": 202,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1378,6 +1398,11 @@
         {
           "id": "economy.larder",
           "label": "A citizen with no map can eat. Joining the tick path to the food economy left a regression measured rather than shipped: an unwatched settlement starved where it used to be frozen, because Game.NewGame focuses the settlement it founds so its citizens tick at Full, but nothing opened the interior — and every part of the food economy is map-based. SettlementLarder closes it from Settlement.Stores, the ledger batch eight built and nothing drew from. Predicate is !Spawned (plus alive, unsuspended, and hungry by the same CurCategory test ThinkNode_ConditionalHungry gates the map path on) rather than anything about tier: JobGiver_GetFood returns null the instant pawn.Map is null, so an unspawned citizen cannot reach food by any map route AT ANY TIER. A citizen standing on a map is never fed from the ledger, so the stock invariant holds — nutrition leaves the ledger in the same step it enters a stomach and no Thing is ever created. A founding settlement was found to hold MeleeWeapon_Knife x2 and nothing edible, so a band now walks in with rations sized per mouth to reach the first harvest its own field could give it, derived from the shipped crops' growDays rather than invented. No roll at all: food choice is a total order and the amount is arithmetic, pinned on Rand.Current.Iterations. StatisticalPopulation is never iterated, so ten thousand abstract citizens cost what ten do. Measured over eight days: unwatched food went from 0.00 from day one to never below 0.31, malnutrition from 0.80 to 0.00, and no corpse carries Malnutrition at all.",
+          "done": true
+        },
+        {
+          "id": "economy.subsistence",
+          "label": "The ledger-to-citizen half was closed last batch and named what it left open in its own doc: nothing at civilization scale PRODUCED into Settlement.Stores. SettlementStockInitiative only banks from a live map, so it fires for the one settlement somebody has opened, and the founding rations are a crate, not an economy - so an unwatched settlement ate its way to an empty ledger and then to lethal Malnutrition (measured: day 20, mean food 0.00, worst Malnutrition 1.00, 18 of 25 alive). SettlementSubsistence grows food into the ledger on the long tick for the citizens who are NOT Spawned - exactly the set SettlementLarder feeds, so both sides of the book model the same mouths and a watched settlement is never paid twice - at their own HungerRate x FarmingTuning.FieldSizeMargin x a land factor off BiomeDef.forageability, stopping at HuntingTuning.DaysOfFoodWanted. The Statistical cohort is on neither side: it does not eat, so it does not produce, which keeps the pass O(citizens above Statistical). No draw anywhere, pinned on Rand.Current.Iterations; no state, nothing to Scribe. Founding provision moved here too: it was called from Game.NewGame, which founds exactly ONE settlement - the player's - so every rival civilization EmergenceManager raised walked in with an empty ledger. It cannot be called from World.SettlementFounder without World/ referencing Economy/, so the owner sits at the ledger's own layer and pays each settlement exactly once on the one gated pass inside its founding window. Measured day 20 after: food 0.95, ledger 110.5, Malnutrition 0.00. Open and named: nothing produces non-food goods abstractly, so the shipped MasonsGuild still starves unwatched (Tile.deposits is the content waiting); settlements founded through SettlementFounder.FoundColony (WorldGenStep_Factions, EmergenceManager.Expand) are pure Statistical cohort and neither eat, produce, nor are provisioned; thin land under-produces with no caravan driver to answer it.",
           "done": true
         }
       ]
@@ -1447,7 +1472,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Social · Social/Ideology",
       "status": "ported",
-      "tests": 62,
+      "tests": 66,
       "items": [
         {
           "id": "social.opinion",
@@ -1473,6 +1498,11 @@
           "id": "social.dlc",
           "label": "Genes, mechanitor bandwidth, psycasts, containment — evaluated per era",
           "done": false
+        },
+        {
+          "id": "social.socialfight",
+          "label": "Three porting defects, and the first is structural. (1) MentalState_SocialFighting.MentalStateTick built a Verb_MeleeAttack and cast it at the other pawn AT DISTANCE ZERO - no map, no position, no reach check. RimWorld's mental state throws nothing: it is lifecycle only, and the blows come from a job (JobGiver_SocialFighting -> JobDefOf.SocialFight) that returns null unless both pawns are spawned on the same map and then has to walk across it. That is why citizens of a settlement NOBODY HAD EVER OPENED - with no map in existence - were injuring each other from nowhere, and why three to five of twenty-five founders were gone by day eight in a world none of it could have happened in. (2) The hand-built fists Tool used a 1-second cooldown against Tool's own 2-second default: the same punch at two speeds. Fists now come from AttackVerbUtility.NaturalWeaponFor, which is also RimWorld's reason a colonist with a knife on their belt still brawls bare-handed - the fight verb is drawn from verbTracker.AllVerbs, which holds natural tools and never the equipped weapon. (3) The escalation roll was a flat 15% behind two gates RimWorld does not have (opinion < -20 AND mood < 0.4), and its own doc claimed it was RimWorld's. Pawn_InteractionsTracker.SocialFightChance is 4% base scaled by continuous factors - manipulation and moving capacity, opinion, traits, age gap - now ported; the 4% comes from the wiki rather than a def and is flagged as a secondary source. HadCatharticFight and HadAngeringFight were missing outright, so a fight could only ever cost mood; RimWorld hands both parties one at 50/50 in PostEnd. Consequence, three seeds, eight days: an unwatched settlement went from losing 3-5 of 25 to losing NOBODY, with no injuries and no Pain anywhere. Stated at the site: an unwatched settlement can no longer brawl at all, since a fight now requires both parties spawned on one map.",
+          "done": true
         }
       ]
     },

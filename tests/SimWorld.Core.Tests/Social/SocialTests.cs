@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Defs;
+using SimWorld.Map;
 using SimWorld.MindState;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 using SimWorld.Social;
 using SimWorld.Tests.Content;
+using SimWorld.Things;
 using SimWorld.Thoughts;
 using Xunit;
 
@@ -327,8 +329,21 @@ namespace SimWorld.Tests.Social
 
         // ---- social fights (reusing MentalStateDef machinery) ----
 
+        /// <summary>A small map plus two pawns standing on it. A social fight is a physical act between two
+        /// people on the same map (<see cref="SocialFightUtility.SocialFightPossible"/>), so every test of
+        /// one that expects it to happen has to put them somewhere.</summary>
+        private static (SimWorld.Map.Map map, Pawn a, Pawn b) SpawnPair(int gap = 1)
+        {
+            var map = new SimWorld.Map.Map(12, 12, SimWorld.Map.TerrainDefOf.Soil);
+            Pawn a = NewHuman("A");
+            Pawn b = NewHuman("B");
+            GenSpawn.Spawn(a, new IntVec3(3, 0, 3), map);
+            GenSpawn.Spawn(b, new IntVec3(3 + gap, 0, 3), map);
+            return (map, a, b);
+        }
+
         [Fact]
-        public void A_sufficiently_bad_opinion_and_mood_can_escalate_into_a_social_fight()
+        public void A_bad_opinion_can_escalate_an_insult_into_a_social_fight()
         {
             bool everStarted = false;
             for (int seed = 0; seed < 300 && !everStarted; seed++)
@@ -337,18 +352,17 @@ namespace SimWorld.Tests.Social
                 Rand.Current = new RandomStream(seed);
                 Pawn.ResetThingIdCounter();
 
-                Pawn a = NewHuman("A");
-                Pawn b = NewHuman("B");
+                (_, Pawn a, Pawn b) = SpawnPair();
                 // Overdetermined on purpose: Rival + ExSpouse (-26) plus three stacked Insulted memories
-                // (~-18.5 after geometric stacking) puts the base opinion at about -44.5, comfortably past the
-                // -20 threshold even against the worst-case +/-15 compatibility swing for this specific pawn
-                // pair — the point of this test is the fight roll, not fishing for a favourable pair of ids.
+                // (~-18.5 after geometric stacking) puts the base opinion at about -44.5 even against the
+                // worst-case +/-15 compatibility swing for this specific pawn pair — the point of this test
+                // is the fight roll, not fishing for a favourable pair of ids.
                 SocialUtility.AddMutualRelation(a, b, PawnRelationDefOf.Rival);
                 SocialUtility.AddMutualRelation(a, b, PawnRelationDefOf.ExSpouse);
                 for (int i = 0; i < 3; i++) b.needs.mood!.thoughts.memories.TryGainMemory(SocialThoughtDefOf.Insulted, a);
                 b.needs.mood!.CurLevel = 0f;
 
-                Assert.True(b.relations.OpinionOf(a) <= SocialTuning.SocialFightOpinionThreshold);
+                Assert.True(b.relations.OpinionOf(a) < 0);
 
                 if (SocialFightUtility.TryStartSocialFight(a, b))
                 {
@@ -369,13 +383,48 @@ namespace SimWorld.Tests.Social
             Assert.True(everStarted, "expected the social fight roll to succeed at least once across 300 seeds");
         }
 
+        /// <summary>
+        /// RimWorld's fight chance has no opinion <i>threshold</i> — <c>SocialFightChance</c> scales a base
+        /// chance continuously, 4× at opinion -100 down to 0.6× at +100 — so two friends can in principle
+        /// come to blows and simply almost never do. The old version of this test asserted "never", which
+        /// was this port's own hard gate rather than RimWorld's behaviour. What is actually true, and what is
+        /// asserted here, is the ordering: the worse the opinion the likelier the fight, by a wide margin.
+        /// </summary>
         [Fact]
-        public void A_good_relationship_never_starts_a_social_fight()
+        public void A_good_relationship_is_far_less_likely_to_start_a_social_fight_than_a_bad_one()
+        {
+            (_, Pawn friendA, Pawn friendB) = SpawnPair();
+            SocialUtility.AddMutualRelation(friendA, friendB, PawnRelationDefOf.Friend);
+            for (int i = 0; i < 3; i++) friendB.needs.mood!.thoughts.memories.TryGainMemory(SocialThoughtDefOf.HadDeepTalk, friendA);
+            float friendly = SocialFightUtility.SocialFightChance(friendA, friendB);
+
+            Pawn.ResetThingIdCounter();
+            (_, Pawn rivalA, Pawn rivalB) = SpawnPair();
+            SocialUtility.AddMutualRelation(rivalA, rivalB, PawnRelationDefOf.Rival);
+            SocialUtility.AddMutualRelation(rivalA, rivalB, PawnRelationDefOf.ExSpouse);
+            for (int i = 0; i < 3; i++) rivalB.needs.mood!.thoughts.memories.TryGainMemory(SocialThoughtDefOf.Insulted, rivalA);
+            float hostile = SocialFightUtility.SocialFightChance(rivalA, rivalB);
+
+            Assert.True(friendly > 0f, "RimWorld's chance is continuous, never zero for a pawn who could fight");
+            Assert.True(hostile > friendly * 1.5f,
+                $"a rival should be markedly likelier to swing than a friend: {hostile:F4} vs {friendly:F4}");
+        }
+
+        /// <summary>
+        /// The gate the old code did not have and the reason an unwatched settlement's citizens used to beat
+        /// each other in a world that did not exist: a fight is two people on the same map.
+        /// </summary>
+        [Fact]
+        public void Two_citizens_who_are_not_on_a_map_cannot_start_a_social_fight()
         {
             Pawn a = NewHuman("A");
             Pawn b = NewHuman("B");
-            SocialUtility.AddMutualRelation(a, b, PawnRelationDefOf.Friend);
+            SocialUtility.AddMutualRelation(a, b, PawnRelationDefOf.Rival);
+            SocialUtility.AddMutualRelation(a, b, PawnRelationDefOf.ExSpouse);
+            b.needs.mood!.CurLevel = 0f;
 
+            Assert.False(SocialFightUtility.SocialFightPossible(b, a));
+            Assert.Equal(0f, SocialFightUtility.SocialFightChance(a, b));
             for (int seed = 0; seed < 50; seed++)
             {
                 Rand.Current = new RandomStream(seed);
@@ -410,8 +459,13 @@ namespace SimWorld.Tests.Social
             Assert.False(b.InMentalState);
         }
 
+        /// <summary>
+        /// The blows now come from a job (<c>JobGiver_SocialFighting</c> → <c>JobDriver_SocialFight</c>),
+        /// driven by the think tree's mental-state tier, not from the mental state's own tick — so this test
+        /// puts both pawns on a map next to each other and lets the ordinary job machinery run.
+        /// </summary>
         [Fact]
-        public void Social_fight_actually_trades_blows_through_the_existing_melee_verb()
+        public void Social_fight_actually_trades_blows_through_the_job_system()
         {
             bool sawDamage = false;
             for (int seed = 0; seed < 20 && !sawDamage; seed++)
@@ -420,8 +474,7 @@ namespace SimWorld.Tests.Social
                 Rand.Current = new RandomStream(seed);
                 Pawn.ResetThingIdCounter();
 
-                Pawn a = NewHuman("A");
-                Pawn b = NewHuman("B");
+                (_, Pawn a, Pawn b) = SpawnPair();
                 StartFightDirect(a, b);
 
                 RunTicks(SocialMentalStateDefOf.SocialFighting.maxTicksBeforeRecovery + 100, a, b);
@@ -429,6 +482,80 @@ namespace SimWorld.Tests.Social
                 if (a.health.hediffSet.hediffs.Count > 0 || b.health.hediffSet.hediffs.Count > 0) sawDamage = true;
             }
             Assert.True(sawDamage, "expected at least one landed blow across 20 seeds of a full-duration fight");
+        }
+
+        /// <summary>
+        /// The other half of the same defect: a fight that cannot reach its opponent lands nothing at all.
+        /// The old mental state cast its verb at range zero from its own tick, so two pawns on opposite sides
+        /// of a map — or, worse, on no map — hurt each other anyway.
+        /// </summary>
+        [Fact]
+        public void A_social_fight_across_an_unreachable_gap_lands_no_blows()
+        {
+            var map = new SimWorld.Map.Map(12, 12, SimWorld.Map.TerrainDefOf.Soil);
+            Pawn a = NewHuman("A");
+            Pawn b = NewHuman("B");
+            GenSpawn.Spawn(a, new IntVec3(1, 0, 1), map);
+            // Unspawned: there is nobody there to hit, which is exactly the unwatched-settlement case.
+            StartFightDirect(a, b);
+
+            RunTicks(SocialMentalStateDefOf.SocialFighting.maxTicksBeforeRecovery + 100, a, b);
+
+            Assert.Empty(a.health.hediffSet.hediffs);
+            Assert.Empty(b.health.hediffSet.hediffs);
+        }
+
+        /// <summary>
+        /// RimWorld hands both parties a <c>HadCatharticFight</c> or <c>HadAngeringFight</c> memory when the
+        /// state ends, half the time each. This port had neither, so a scuffle could only ever cost mood and
+        /// never clear the air. Asserted as "one of the two, every time" rather than as a 50/50 frequency.
+        /// </summary>
+        [Fact]
+        public void A_finished_social_fight_leaves_both_parties_a_memory_of_it()
+        {
+            (_, Pawn a, Pawn b) = SpawnPair();
+            StartFightDirect(a, b);
+            RunTicks(SocialMentalStateDefOf.SocialFighting.maxTicksBeforeRecovery + 100, a, b);
+
+            Assert.False(a.InMentalState);
+            foreach (Pawn p in new[] { a, b })
+            {
+                if (p.Dead) continue;
+                bool hasMemory = p.needs.mood!.thoughts.memories.Memories.Any(m =>
+                    m.def == SocialFightThoughtDefOf.HadCatharticFight || m.def == SocialFightThoughtDefOf.HadAngeringFight);
+                Assert.True(hasMemory, p.Label + " came out of a social fight with no memory of having had one");
+            }
+        }
+
+        /// <summary>
+        /// Half of what made brawling feed itself: the fight had to be able to end well sometimes. Over many
+        /// seeds both outcomes have to show up, and the good one has to actually be good for mood.
+        /// </summary>
+        [Fact]
+        public void A_social_fight_ends_cathartically_about_as_often_as_it_ends_badly()
+        {
+            int cathartic = 0, angering = 0;
+            for (int seed = 0; seed < 60; seed++)
+            {
+                Find.TickManager = new TickManager();
+                Rand.Current = new RandomStream(seed);
+                Pawn.ResetThingIdCounter();
+
+                (_, Pawn a, Pawn b) = SpawnPair();
+                StartFightDirect(a, b);
+                RunTicks(SocialMentalStateDefOf.SocialFighting.maxTicksBeforeRecovery + 100, a, b);
+                if (a.Dead) continue;
+
+                foreach (Thought_Memory m in a.needs.mood!.thoughts.memories.Memories)
+                {
+                    if (m.def == SocialFightThoughtDefOf.HadCatharticFight) cathartic++;
+                    else if (m.def == SocialFightThoughtDefOf.HadAngeringFight) angering++;
+                }
+            }
+            Assert.True(cathartic > 0 && angering > 0,
+                $"both fight outcomes should occur over 60 seeds (cathartic {cathartic}, angering {angering})");
+            Assert.True(SocialFightThoughtDefOf.HadCatharticFight.stages[0].baseMoodEffect > 0f);
+            Assert.True(SocialFightThoughtDefOf.HadAngeringFight.stages[0].baseMoodEffect < 0f);
         }
 
         [Fact]

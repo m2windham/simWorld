@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The job a social fight is actually fought with (RimWorld: JobDefOf.SocialFight). Its own file, per
+    CLAUDE.md. Before it existed, MentalState_SocialFighting swung a verb straight out of its own tick with
+    no map, no position and no reach - see that class's doc for what that cost.
+
+    Every flag left at its default deliberately. casualInterruptible was briefly set false here on the
+    reasoning that a pawn mid-brawl should not drift off; RimWorld's own value for this JobDef could not be
+    read from this environment, and the flag changes nothing that matters either way - a fight interrupted
+    by the constant tree is handed straight back by the mental-state tier on the next evaluation, because
+    the mental state, not the job, is what decides the fight is still on. Sleep stays the only job in this
+    port's content that refuses a casual interrupt, which is a claim one of its tests makes.
+  -->
+
+  <JobDef>
+    <defName>SocialFight</defName>
+    <driverClass>SimWorld.AI.JobDriver_SocialFight</driverClass>
+    <reportString>fighting.</reportString>
+  </JobDef>
+
+</Defs>

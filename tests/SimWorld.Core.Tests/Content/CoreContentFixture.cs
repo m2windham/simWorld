@@ -48,6 +48,13 @@ namespace SimWorld.Tests.Content
             Find.TickManager = new TickManager();
             Rand.Current = new RandomStream(seed);
             Pawn.ResetThingIdCounter();
+
+            // And map ids, for exactly the reason thing ids are reset: SimWorld.Map.Map.ResetMapIdCounter's
+            // own doc spells it out. Building.WildPlantSpawner seeds its rolls from the map's id, so without
+            // this a map-using test's outcome depended on how many maps every earlier test in the run built,
+            // and one of them passed alone and failed in the suite the moment another class started making
+            // maps.
+            SimWorld.Map.Map.ResetMapIdCounter();
         }
 
         protected static ThingDef Human => DefDatabase<ThingDef>.GetNamed("Human");

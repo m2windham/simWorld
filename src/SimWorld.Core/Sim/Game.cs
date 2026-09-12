@@ -293,14 +293,16 @@ namespace SimWorld.Sim
                 settlement.AddStore(record.thingDef, record.count);
             }
 
-            // economy.larder: and the band's provisions, which no scenario ships. Measured on shipped
-            // content, a settlement founded here held MeleeWeapon_Knife x2 and nothing edible at all, so a
-            // citizen with no map to forage on — every citizen, until somebody opens the interior — had an
-            // empty ledger to eat from and starved through the first week with nothing wrong anywhere. A band
-            // that has walked for days arrives carrying food; see SettlementLarder.ProvisionFoundingBand for
-            // what and how much (derived from the shipped crops' growDays and the food economy's own
-            // per-eater demand, never a literal). It is a founding act and is called exactly once, here.
-            SimWorld.Economy.SettlementLarder.ProvisionFoundingBand(settlement);
+            // economy.subsistence: the band's provisions, which no scenario ships, are NOT credited here any
+            // more and that is the fix rather than an omission. This method founds exactly one settlement —
+            // the player's — so a call here provisioned the player's band and nobody else's, and every rival
+            // civilization World.EmergenceManager raises during play walked in with an empty ledger and
+            // starved. The rations now belong to Economy.SettlementSubsistence.ProvisionIfNewlyFounded, which
+            // reaches every settlement however it was founded and pays each exactly once, on its first gated
+            // pass; see that method for why the owner has to sit at that layer rather than beside the founding
+            // in World/**. The only observable difference for this settlement is that its crate lands on the
+            // first long tick instead of before the first tick at all — a thirtieth of a day, against a
+            // founding provision measured in days of food.
 
             target.Tile = tile;
             SyncCivilizationTarget(game, target);
@@ -471,6 +473,15 @@ namespace SimWorld.Sim
             // ever credit. Ordered ahead of the guild tick below so the goods a settlement banked this pass are
             // the goods its industry spends this pass, rather than a guild-interval behind.
             tm.PostTickers.Add(_ => SimWorld.Economy.SettlementStockInitiative.Tick());
+            // economy.subsistence: the production half of the same ledger. Nothing at civilization scale ever
+            // wrote food into Settlement.Stores — the banking pass above only ever fires for a settlement
+            // somebody has opened, and the founding rations are a crate, not an economy — so an unwatched
+            // settlement ate its way to an empty ledger and then to lethal Malnutrition, measured over twenty
+            // in-game days. A settlement with no map now grows into its own ledger at a rate its land sets,
+            // and stops at the larder the food economy already says a settlement wants. Ordered ahead of the
+            // larder below so what a settlement grew this pass is on the table this pass, and it also owns the
+            // founding rations now (for every settlement, not just the one Game.NewGame founds).
+            tm.PostTickers.Add(_ => SimWorld.Economy.SettlementSubsistence.Tick());
             // economy.larder: the same seam in the other direction — a citizen with no map to act in eats
             // from Settlement.Stores. The whole food economy is map-based (berries lie on a map, a field is
             // painted on one, a kitchen is built on one), so once CitizenTickRegistry started ticking off-map

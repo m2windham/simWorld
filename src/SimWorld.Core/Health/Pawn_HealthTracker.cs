@@ -39,6 +39,7 @@ namespace SimWorld.Health
         private int deathTick = -1;
         private HediffDef? deathCauseHediff;
         private DamageDef? deathCauseDamage;
+        private bool killedByPawn;
         private readonly List<Hediff_Injury> tmpInjuries = new List<Hediff_Injury>();
 
         public Pawn_HealthTracker(Pawn pawn)
@@ -62,6 +63,24 @@ namespace SimWorld.Health
         public HediffDef? DeathCauseHediff => deathCauseHediff;
 
         public DamageDef? DeathCauseDamage => deathCauseDamage;
+
+        /// <summary>
+        /// Somebody killed this pawn, as opposed to something (RimWorld records who in its <c>BattleLog</c>
+        /// and <c>TaleRecorder</c>, neither of which this port has built; this is the one bit of that answer
+        /// anything here currently needs). False for a living pawn, for age, hunger and disease, and for
+        /// damage with no instigator.
+        ///
+        /// <para/><b>Why it exists.</b> <see cref="DeathCauseDamage"/> alone cannot tell a citizen beaten to
+        /// death by another citizen from one crushed under a roof they mined out from under themselves:
+        /// both are <c>Blunt</c>, and <c>Blunt</c>'s own <c>deathMessage</c> is "{0} has been beaten to
+        /// death". That ambiguity is not hypothetical — it is how <c>docs/WORK-REGISTER.md</c> §9a came to
+        /// record <i>every</i> death in a founded settlement's first week as a citizen murdered by another
+        /// citizen, and the integration test that checks the settlement is not killing itself needs to be
+        /// able to tell the two apart or it measures the wrong system.
+        ///
+        /// <para/>Scribed with the rest of the death record, so it survives a save.
+        /// </summary>
+        public bool KilledByAnotherPawn => Dead && killedByPawn;
 
         /// <summary>Downs the pawn regardless of its body (RimWorld's <c>forceIncap</c>); cleared by the caller.</summary>
         public bool ForceDowned
@@ -132,8 +151,19 @@ namespace SimWorld.Health
         /// <summary>
         /// Clears every hediff on the part and its children, making the part whole again
         /// (RimWorld: <c>Pawn_HealthTracker.RestorePart</c>); used before installing a replacement.
+        ///
+        /// <para/><b><paramref name="checkStateChange"/> is RimWorld's own parameter, and it was missing.</b>
+        /// One caller passes false there and it matters: <see cref="Hediff_MissingPart.PostAdd"/> calls this
+        /// to strip a part that a blow has just destroyed, and it is <i>inside</i> the
+        /// <see cref="AddHediff(Hediff, BodyPartRecord?, DamageInfo?)"/> that is carrying the
+        /// <see cref="DamageInfo"/> for that blow. Running the state change from here, where there is no
+        /// dinfo to pass, meant a pawn killed by having a vital organ destroyed died with
+        /// <see cref="DeathCauseDamage"/> null — the death record simply did not know what had killed them,
+        /// so <see cref="DiedViolently"/> read false for a pawn beaten or shot to death and
+        /// <see cref="KilledByAnotherPawn"/> could not name their killer. Deferring to the caller, as
+        /// RimWorld does, lets the blow that landed be the blow that is recorded.
         /// </summary>
-        public void RestorePart(BodyPartRecord part, Hediff? diffException = null)
+        public void RestorePart(BodyPartRecord part, Hediff? diffException = null, bool checkStateChange = true)
         {
             if (part == null) throw new ArgumentNullException(nameof(part));
             for (int i = hediffSet.hediffs.Count - 1; i >= 0; i--)
@@ -147,7 +177,7 @@ namespace SimWorld.Health
                 }
             }
             hediffSet.DirtyCache();
-            CheckForStateChange(null, null);
+            if (checkStateChange) CheckForStateChange(null, null);
         }
 
         // ---- notifications ----
@@ -415,6 +445,7 @@ namespace SimWorld.Health
             deathTick = Find.TickManager?.TicksGame ?? -1;
             deathCauseDamage = dinfo?.Def;
             deathCauseHediff = exactCulprit?.def;
+            killedByPawn = dinfo?.Instigator is Pawn killer && !ReferenceEquals(killer, pawn);
             hediffSet.DirtyCache();
 
             // Everyone who needs to know, before the body is made. Ordered: the people who watched get their
@@ -439,6 +470,7 @@ namespace SimWorld.Health
             Scribe_Values.Look(ref deathTick, "deathTick", -1);
             Scribe_Defs.Look(ref deathCauseHediff, "deathCauseHediff");
             Scribe_Defs.Look(ref deathCauseDamage, "deathCauseDamage");
+            Scribe_Values.Look(ref killedByPawn, "killedByPawn");
             HediffSet? set = hediffSet;
             Scribe_Deep.Look(ref set, "hediffSet", pawn);
             hediffSet = set ?? new HediffSet(pawn);

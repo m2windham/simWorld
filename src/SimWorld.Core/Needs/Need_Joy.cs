@@ -25,12 +25,52 @@ namespace SimWorld.Needs
 
     /// <summary>
     /// Per-kind tolerance that dampens repeated recreation (RimWorld: <c>RimWorld.JoyToleranceSet</c>).
-    /// Each unit of joy gained adds 0.65 tolerance; tolerance decays 0.0003 per interval (~0.12/day).
+    /// Each unit of joy gained adds <see cref="ToleranceGainPerJoy"/> tolerance; tolerance decays by
+    /// <see cref="ToleranceDecayPerInterval"/> every interval.
     /// </summary>
     public class JoyToleranceSet : IExposable
     {
+        /// <summary>Tolerance added per unit of joy gained — RimWorld's own literal 0.65 in
+        /// <c>JoyToleranceSet.Notify_JoyGained</c>.</summary>
         public const float ToleranceGainPerJoy = 0.65f;
-        public const float ToleranceDecayPerInterval = 0.0003f;
+
+        /// <summary>
+        /// How much faster tolerance sheds than a citizen taking recreation at the need's own fall rate can
+        /// build it. See <see cref="ToleranceDecayPerInterval"/> for why this exists and why it must be
+        /// greater than 1.
+        /// </summary>
+        public const float ToleranceDecayHeadroom = 1.5f;
+
+        /// <summary>
+        /// Tolerance shed per interval.
+        ///
+        /// <para/><b>This used to be a flat 0.0003 (0.12/day) and the recreation system could not work with
+        /// it.</b> The arithmetic is short and it is worth writing out, because it does not depend on any
+        /// number this port could not source. A citizen loses <see cref="Need_Joy.BaseFallPerInterval"/> of
+        /// recreation per interval, so to hold the need level it must <i>gain</i> the same amount, and every
+        /// unit gained adds <see cref="ToleranceGainPerJoy"/> of tolerance to the kind it came from. Tolerance
+        /// income for a citizen merely keeping its head above water is therefore
+        /// <c>ToleranceGainPerJoy × BaseFallPerInterval</c> per interval — 0.000975, better than three times
+        /// the old decay. Below that break-even point tolerance ratchets upward for ever regardless of how
+        /// much recreation exists or how many kinds of it there are, every kind eventually crosses
+        /// <see cref="BoredOf"/>'s threshold, and the need collapses anyway. <b>No joy source could have
+        /// fixed the settlement while this constant sat under its own break-even point</b>, which is why it
+        /// is part of this change and not left alone.
+        ///
+        /// <para/><b>What RimWorld does, and what could not be sourced.</b> RimWorld does not use a constant
+        /// here at all: <c>JoyToleranceSet.NeedInterval</c> reads
+        /// <c>ExpectationsUtility.CurrentExpectationFor(pawn).joyToleranceDropPerDay * 150f / 60000f</c> — a
+        /// per-expectation content value, largest for the poorest colonies, so a tribal band sheds tolerance
+        /// fastest and a rich one needs more variety. This port has no Expectations module and the
+        /// <c>ExpectationDef</c> values could not be read from this environment. So the constant is derived
+        /// from the two numbers above rather than invented independently, with
+        /// <see cref="ToleranceDecayHeadroom"/> putting it clear of break-even, and per CLAUDE.md the
+        /// <i>behaviour</i> is what the tests pin — a citizen with recreation available to it does not end a
+        /// fortnight bored of everything — rather than the literal. The value it lands on, 0.585/day, is
+        /// also within a rounding error of what RimWorld's formula gives at a <c>joyToleranceDropPerDay</c>
+        /// of 0.6, which is the magnitude its lowest expectation tier is believed to carry.
+        /// </summary>
+        public const float ToleranceDecayPerInterval = ToleranceGainPerJoy * Need_Joy.BaseFallPerInterval * ToleranceDecayHeadroom;
 
         private Dictionary<JoyKindDef, float> tolerances = new Dictionary<JoyKindDef, float>();
 
@@ -148,6 +188,11 @@ namespace SimWorld.Needs
                 CurLevel -= FallPerInterval;
             }
             tolerances.NeedInterval();
+
+            // A citizen with no map cannot reach any of this port's recreation, all of which is a Job. See
+            // AbstractRecreation for what that cost and why the call sits here rather than on a ticker of its
+            // own: this is already the one place per pawn per interval that recreation is thought about.
+            AbstractRecreation.JoyInterval(pawn, this);
         }
 
         /// <summary>O(1) bulk equivalent (see the base class doc): <see cref="FallPerInterval"/> is already
@@ -170,6 +215,7 @@ namespace SimWorld.Needs
                 CurLevel -= FallPerInterval * intervals;
             }
             tolerances.NeedIntervalBulk(intervals);
+            AbstractRecreation.JoyInterval(pawn, this);
         }
 
         public override void ExposeData()

@@ -140,14 +140,17 @@ namespace SimWorld.Tests.Sim
             Game game = NewSoloGame();
 
             Assert.Single(game.TickManager.PreTickers);
-            // 18 since the ledger-to-citizen seam joined them (SimWorld.Economy.SettlementLarder.Tick, which
-            // is what feeds a citizen who has no map to eat on), after the off-map citizen registry
-            // (SimWorld.Sim.CitizenTickRegistry.Tick, which is what keeps a settlement nobody has opened
-            // ticking at all) made it 17, the map-to-ledger seam and the industry it feeds made it 16
+            // 19 since the production half of the same ledger joined them
+            // (SimWorld.Economy.SettlementSubsistence.Tick, which is what grows food into a settlement nobody
+            // is watching and what now hands every founding band its rations); the ledger-to-citizen seam
+            // (SimWorld.Economy.SettlementLarder.Tick, which is what feeds a citizen who has no map to eat
+            // on) made it 18, after the off-map citizen registry (SimWorld.Sim.CitizenTickRegistry.Tick,
+            // which is what keeps a settlement nobody has opened ticking at all) made it 17, the
+            // map-to-ledger seam and the industry it feeds made it 16
             // (SimWorld.Economy.SettlementStockInitiative.Tick and SimWorld.Crafting.GuildInitiative.Tick),
             // the works initiative (SimWorld.Building.SettlementWorksInitiative.Tick) made it 14 and the
             // stonework initiative (SimWorld.Crafting.StonecutterInitiative.Tick) made it 13.
-            Assert.Equal(18, game.TickManager.PostTickers.Count);
+            Assert.Equal(19, game.TickManager.PostTickers.Count);
         }
 
         [Fact]

@@ -51,6 +51,12 @@ namespace SimWorld.Tests.World
         /// AgeTickMothballed shortcut <c>DemographyTests.AdvanceYear</c> uses — literally single-stepping a
         /// multi-decade run would make this far too slow, and the module's own <c>Pawn_TierTracker</c> already
         /// relies on this exact path to keep an off-tick-list pawn's age exact.</summary>
+        /// <summary>The people on a settlement's map. A generated interior also carries the wildlife its
+        /// biome supports (SimWorld.MapGen.GenStep_Animals), so "how many pawns are on the map" and "how
+        /// many citizens are on the map" stopped being the same question; these tests ask the second.</summary>
+        private static List<Pawn> CitizensOn(global::SimWorld.Map.Map map) =>
+            map.mapPawns.AllPawns.Where(p => p.RaceProps.Humanlike).ToList();
+
         private static void AdvanceYear(Settlement settlement, int ticks)
         {
             foreach (Pawn p in settlement.Citizens.ToList())
@@ -451,10 +457,10 @@ namespace SimWorld.Tests.World
 
             global::SimWorld.Map.Map map = settlement.EnterMap(world);
 
-            Assert.Equal(20, map.mapPawns.AllPawns.Count);
+            Assert.Equal(20, CitizensOn(map).Count);
             Assert.Equal(20, settlement.PopulationOf(PawnTier.Full));
-            Assert.All(map.mapPawns.AllPawns, p => Assert.Equal(PawnTier.Full, p.tier.Tier));
-            Assert.All(map.mapPawns.AllPawns, p => Assert.True(p.Spawned && ReferenceEquals(p.Map, map)));
+            Assert.All(CitizensOn(map), p => Assert.Equal(PawnTier.Full, p.tier.Tier));
+            Assert.All(CitizensOn(map), p => Assert.True(p.Spawned && ReferenceEquals(p.Map, map)));
             // The 50,000-strong Statistical slice is real population (TotalPopulation says so) but never
             // became a map presence — exactly the query-without-instantiation guarantee §11.3 exists for.
             Assert.Equal(50020, settlement.TotalPopulation);
@@ -468,7 +474,7 @@ namespace SimWorld.Tests.World
             int tile = BestScoredTile(world.grid, out _);
             Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(62));
             global::SimWorld.Map.Map map = settlement.EnterMap(world);
-            Assert.Equal(20, map.mapPawns.AllPawns.Count);
+            Assert.Equal(20, CitizensOn(map).Count);
 
             Pawn demoted = settlement.Citizens[0];
             Assert.True(demoted.Spawned);
@@ -482,7 +488,7 @@ namespace SimWorld.Tests.World
             settlement.SyncCitizenSpawns();
 
             Assert.False(demoted.Spawned, "An Interval-tier citizen should never remain standing on the interior map.");
-            Assert.Equal(19, map.mapPawns.AllPawns.Count);
+            Assert.Equal(19, CitizensOn(map).Count);
 
             // The mirror: promoting back to Full puts them back on the map, the same map, without anyone
             // spawning them by hand.
@@ -491,7 +497,7 @@ namespace SimWorld.Tests.World
             settlement.SyncCitizenSpawns();
 
             Assert.True(demoted.Spawned && ReferenceEquals(demoted.Map, map));
-            Assert.Equal(20, map.mapPawns.AllPawns.Count);
+            Assert.Equal(20, CitizensOn(map).Count);
         }
 
         [Fact]
@@ -515,7 +521,7 @@ namespace SimWorld.Tests.World
             Assert.DoesNotContain(victim, settlement.Citizens);
             Assert.False(victim.Spawned, "A dead citizen should not linger on the interior map.");
             Assert.Equal(populationBefore - 1, settlement.TotalPopulation);
-            Assert.Equal(19, map.mapPawns.AllPawns.Count);
+            Assert.Equal(19, CitizensOn(map).Count);
         }
 
         [Fact]
@@ -526,7 +532,7 @@ namespace SimWorld.Tests.World
             int tile = BestScoredTile(world.grid, out _);
             Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(64), "SpawnedHome");
             global::SimWorld.Map.Map map = settlement.EnterMap(world);
-            Assert.Equal(20, map.mapPawns.AllPawns.Count);
+            Assert.Equal(20, CitizensOn(map).Count);
 
             string xml = Scribe.SaveToString(world, "world");
             global::SimWorld.World.World loaded = Scribe.Load<global::SimWorld.World.World>(xml, "world", out IReadOnlyList<string> errors, Content.Database);
@@ -537,7 +543,7 @@ namespace SimWorld.Tests.World
 
             // Not duplicated: exactly the 20 founders, on the roster and on the map, each id appearing once.
             Assert.Equal(20, loadedSettlement.Citizens.Count);
-            Assert.Equal(20, loadedMap.mapPawns.AllPawns.Count);
+            Assert.Equal(20, CitizensOn(loadedMap).Count);
             Assert.Equal(20, loadedSettlement.Citizens.Select(p => p.thingIDNumber).Distinct().Count());
 
             // Not lost, and not two independently reconstructed copies: every citizen is spawned, on this

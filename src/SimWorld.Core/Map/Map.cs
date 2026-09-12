@@ -104,6 +104,22 @@ namespace SimWorld.Map
 
         public static int AllocateMapId() => nextMapId++;
 
+        /// <summary>
+        /// Restarts map ids from zero, the way <see cref="Pawns.Pawn.ResetThingIdCounter"/> restarts thing
+        /// ids. A new game or a load hands over to a fresh world and must not inherit a counter from the one
+        /// before it; a test must not inherit one from the test before it either.
+        ///
+        /// <para/><b>This is not cosmetic.</b> <c>Building.WildPlantSpawner</c> seeds every roll it makes
+        /// from <see cref="uniqueID"/> — deliberately, so regrowth draws nothing from the ambient stream —
+        /// which means the id a map is handed <i>is</i> its weather of random outcomes. With the counter
+        /// running for the life of the process, a map's id depended on how many maps every earlier test in
+        /// the run happened to build, so <c>WildPlantRegrowthTests.A_cleared_map_grows_its_undergrowth_back</c>
+        /// passed alone and failed in the suite the moment another test class started making maps — which is
+        /// exactly what happened when the recreation tests landed. Determinism is a feature (CLAUDE.md), and
+        /// a process-global counter that no reset ever touches is the opposite of one.
+        /// </summary>
+        public static void ResetMapIdCounter() => nextMapId = 0;
+
         public int Area => Size.x * Size.z;
 
         public IEnumerable<IntVec3> AllCells
@@ -148,6 +164,14 @@ namespace SimWorld.Map
             // needs nothing here to own or save, and draws nothing from the ambient Rand stream. A map with
             // no world tile — which is most test maps — is left exactly as its owner built it.
             Building.WildPlantSpawner.WildPlantSpawnerTick(this);
+
+            // And the wildlife comes back the same way the undergrowth does, toward what this map's biome
+            // supports (Pawns.WildAnimalSpawner) — without which a map's animals are a one-off scatter that
+            // hunters clear in a week and hunting is dormant again for ever. Stateless and seeded from this
+            // map's own id and the tick, so it needs nothing here to own or save and draws nothing from the
+            // ambient Rand stream; self-gated on the rare bucket, so the population walk it makes is paid
+            // once every 250 ticks rather than every one. A map with no world tile is left alone.
+            Pawns.WildAnimalSpawner.WildAnimalSpawnerTick(this);
 
             // The settlement's own food economy, both halves self-gated on the rare bucket exactly like the
             // initiatives Sim.Game.WireTickHooks drives: the field it clears and sows (Building.FarmingInitiative,
