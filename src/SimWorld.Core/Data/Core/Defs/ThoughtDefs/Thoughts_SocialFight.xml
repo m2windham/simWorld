@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    What a scuffle leaves behind (RimWorld: ThoughtDefOf.HadCatharticFight / HadAngeringFight, handed out
+    50/50 by MentalState_SocialFighting.PostEnd). Their own file rather than an addition to
+    Thoughts_Memories.xml, per CLAUDE.md.
+
+    These were missing, and their absence is half of why brawling fed itself in this port: a social fight
+    could only ever cost mood - Insulted on the way in, pain and witnessed injuries on the way out - and
+    never clear the air. In RimWorld half of all fights end with both parties feeling BETTER than before.
+
+    The mood magnitudes could not be sourced against RimWorld's own Thoughts_Memory_Social.xml from this
+    environment. They are stated here as a pair whose SHAPE is what matters and is pinned by test
+    (SocialTests): cathartic is positive, angering is negative, they are the same size, and both are smaller
+    than the Insulted memory that started the fight - a fight is a smaller event than the grudge behind it.
+    The opinion offsets follow the same shape: a fight you got something out of thaws a relationship
+    slightly, one that only made you angrier chills it.
+  -->
+
+  <ThoughtDef>
+    <defName>HadCatharticFight</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.5</stackedEffectMultiplier>
+    <stackLimitForSameOtherPawn>2</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>cathartic fight</label>
+        <description>We had it out. I feel better for it.</description>
+        <baseMoodEffect>4</baseMoodEffect>
+        <baseOpinionOffset>5</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>HadAngeringFight</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.5</stackedEffectMultiplier>
+    <stackLimitForSameOtherPawn>2</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>angering fight</label>
+        <description>We came to blows and it settled nothing.</description>
+        <baseMoodEffect>-4</baseMoodEffect>
+        <baseOpinionOffset>-5</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

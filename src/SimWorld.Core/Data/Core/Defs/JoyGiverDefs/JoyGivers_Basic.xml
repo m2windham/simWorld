@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Ways a citizen can take a break (RimWorld: JoyGivers_*.xml). Before these existed, Need_Joy.GainJoy had
+    one caller in the whole of src/ - CompDrug - so the only recreation in this civilization was narcotics and
+    every citizen sat at the recreation need's worst stage (-20 mood) from day two onward for ever. See
+    docs/WORK-REGISTER.md 9a.
+
+    THREE GIVERS, AND ALL THREE NEED NOTHING BUILT. That is the point of this set rather than an oversight:
+    a band that has just founded a settlement owns a knife and some rations, and a recreation system whose
+    entries all require furniture would leave day two exactly as it was. RimWorld's own givers that need no
+    building are Skygaze and GoForWalk; SocialRelax needs a gather spot in RimWorld and is translated here
+    (see JoyGiver_SocialRelax's class doc for the translation and why it is the one taken). Building-based
+    recreation - chess, horseshoes, art - is what a later pass adds on top; the field a building giver reads
+    (thingDefs) already exists on JoyGiverDef.
+
+    NUMBERS. baseChance and joyDuration could not be sourced against RimWorld's own JoyGiver content from
+    this environment, so per CLAUDE.md they are stated here as what they are and the resulting BEHAVIOUR is
+    pinned by test (tests/SimWorld.Core.Tests/AI/JoyTests.cs and
+    tests/SimWorld.Core.Tests/Integration/SettlementMoraleTests.cs) rather than the literals:
+      - joyGainRate 1 is RimWorld's own default and the unit JoyUtility.JoyGainPerTickAtRate1 is expressed in.
+      - joyDuration 4000 ticks is one session; at rate 1 that is 0.576 of the bar before tolerance damping,
+        so a citizen goes from "needs a break" to "had one" in a single session and not before.
+      - baseChance orders the three: sitting with somebody is the common one, walking next, skygazing the
+        rarest, and the social one is weighted highest because it is the only Social-kind giver in the set and
+        a population that only ever took Meditative recreation would go bored of it (JoyToleranceSet).
+  -->
+
+  <JoyGiverDef>
+    <defName>SocialRelax</defName>
+    <label>relax socially</label>
+    <giverClass>SimWorld.AI.JoyGiver_SocialRelax</giverClass>
+    <jobDef>SocialRelax</jobDef>
+    <joyKind>Social</joyKind>
+    <baseChance>6</baseChance>
+    <joyGainRate>1</joyGainRate>
+    <joyDuration>4000</joyDuration>
+    <canDoWithoutMap>true</canDoWithoutMap>
+    <requiredCapacities>
+      <li>Talking</li>
+    </requiredCapacities>
+  </JoyGiverDef>
+
+  <JoyGiverDef>
+    <defName>GoForWalk</defName>
+    <label>go for a walk</label>
+    <giverClass>SimWorld.AI.JoyGiver_GoForWalk</giverClass>
+    <jobDef>GoForWalk</jobDef>
+    <joyKind>Meditative</joyKind>
+    <baseChance>3</baseChance>
+    <joyGainRate>1</joyGainRate>
+    <joyDuration>4000</joyDuration>
+    <canDoWithoutMap>true</canDoWithoutMap>
+    <requiredCapacities>
+      <li>Moving</li>
+    </requiredCapacities>
+  </JoyGiverDef>
+
+  <JoyGiverDef>
+    <defName>Skygaze</defName>
+    <label>skygaze</label>
+    <giverClass>SimWorld.AI.JoyGiver_Skygaze</giverClass>
+    <jobDef>Skygaze</jobDef>
+    <joyKind>Meditative</joyKind>
+    <baseChance>1</baseChance>
+    <joyGainRate>1</joyGainRate>
+    <joyDuration>4000</joyDuration>
+    <unroofedOnly>true</unroofedOnly>
+    <canDoWithoutMap>true</canDoWithoutMap>
+    <requiredCapacities>
+      <li>Sight</li>
+    </requiredCapacities>
+  </JoyGiverDef>
+
+</Defs>

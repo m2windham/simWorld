@@ -132,8 +132,17 @@ namespace SimWorld.Tests.Needs
             Need_Joy joy = p.needs.joy!;
             Assert.Equal(0.5f, joy.CurLevel);
             Assert.Equal(JoyCategory.Satisfied, joy.CurCategory);
-            RunTicks(GenDate.TicksPerDay, p);
-            Assert.True(joy.CurLevel < 0.15f);
+
+            // Measured over a span the need stays inside one band for, and stops short of
+            // Need_Joy.ThreshLow: below that line an off-map citizen now takes a break of its own
+            // (Needs.AbstractRecreation, tested in AI/JoyTests.cs) and the level stops being a pure decay
+            // curve. This test is about the decay, so it keeps out of that. The old form ran a whole day and
+            // asserted the level ended under 0.15, which was only ever true because nothing in this codebase
+            // could raise recreation at all.
+            const int Intervals = 100;
+            RunTicks(Need.IntervalTicks * Intervals, p);
+            Assert.Equal(0.5f - Need_Joy.BaseFallPerInterval * Intervals, joy.CurLevel, 4);
+            Assert.True(joy.CurLevel > Need_Joy.ThreshLow);
 
             p.Asleep = true;
             float frozen = joy.CurLevel;

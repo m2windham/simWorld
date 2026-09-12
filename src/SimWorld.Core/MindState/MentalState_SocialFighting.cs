@@ -1,6 +1,4 @@
-using System;
-using System.Collections.Generic;
-using SimWorld.Combat;
+using SimWorld.AI;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 using SimWorld.Social;
@@ -8,25 +6,35 @@ using SimWorld.Social;
 namespace SimWorld.MindState
 {
     /// <summary>
-    /// A brief mutual scuffle (RimWorld: <c>RimWorld.MentalState_SocialFighting</c>). <see
+    /// A brief mutual scuffle (RimWorld: <c>Verse.AI.MentalState_SocialFighting</c>). <see
     /// cref="SocialFightUtility.TryStartSocialFight"/> starts one instance per participant — each pawn's own
     /// <see cref="MentalStateHandler"/> owns its own state, exactly like any other mental state — then links
     /// the two together via <see cref="otherPawn"/> right after both exist (neither side knows the other at
     /// construction time: <see cref="MentalStateHandler.TryStartMentalState"/> only ever passes the one pawn
     /// it belongs to).
-    /// <para/>
-    /// Trades blows through the exact path any weapon uses — <see cref="MeleeVerbUtility.MakeVerb"/> building
-    /// a <see cref="Verb_MeleeAttack"/> — rather than a second combat system: a bare-knuckled <see cref="Tool"/>
-    /// with the <see cref="ToolCapacityDefOf.Blunt"/> capacity, resolved through the same "Smash" <see
-    /// cref="ManeuverDef"/> a club would use (see <c>Data/Core/Defs/ManeuverDefs/Maneuvers.xml</c>). No Human
-    /// ThingDef in this port defines natural "fists"/"teeth" tools yet (RimWorld's own <c>tools</c> on its
-    /// Human race) — that's Combat module scope, not this one — so the fists <see cref="Tool"/> below is built
-    /// in code instead of read from content; <see cref="SocialTuning.SocialFightFistPower"/> documents that
-    /// choice.
-    /// <para/>
-    /// Ends at the Def's own duration/MTB recovery — inherited unchanged from <see cref="MentalState"/>, the
-    /// same lifecycle every other mental state uses — or the moment either side goes down, dies, or is no
-    /// longer in this same fight (its own instance recovered first), whichever happens first.
+    ///
+    /// <para/><b>This class used to throw the punches itself, and that was the defect.</b> Its
+    /// <see cref="MentalStateTick"/> built a <c>Verb_MeleeAttack</c> and cast it at <see cref="otherPawn"/>
+    /// <i>at distance zero, every swing, with no map, no position and no reach</i>. RimWorld's mental state
+    /// does nothing of the kind: it is lifecycle only, and the blows come from a job
+    /// (<c>RimWorld.JobGiver_SocialFighting</c> → <c>JobDefOf.SocialFight</c>), which returns null unless
+    /// <c>otherPawn.Spawned &amp;&amp; otherPawn.Map == pawn.Map</c> and then has to <i>walk across the map</i>
+    /// and stand next to the other pawn before a fist can land. Measured on this port over eight in-game
+    /// days, the consequence was exact and large: the citizens of a settlement <b>nobody had ever opened</b>
+    /// — a settlement with no map in existence at all — beat each other from nowhere, picked up pain and
+    /// injuries, and three to five of twenty-five founders were gone by day eight with no world for any of
+    /// it to have happened in. See <c>docs/WORK-REGISTER.md</c> §9a.
+    ///
+    /// <para/>So the swinging moved to <see cref="JobGiver_SocialFighting"/> and
+    /// <see cref="JobDriver_SocialFight"/>, which go through the same <c>Toils_Combat.AttackTarget</c> loop a
+    /// raider's melee uses — approach, reach, swing on the verb's own cooldown — with the bare fists
+    /// <see cref="AttackVerbUtility.NaturalWeaponFor"/> already builds for an unarmed pawn. That last point
+    /// is RimWorld's too and matters: RimWorld picks the fight's verb out of <c>pawn.verbTracker.AllVerbs</c>,
+    /// which holds a pawn's <i>natural</i> tools and never its equipped weapon, which is why a colonist with
+    /// a knife on their belt still brawls with their fists.
+    ///
+    /// <para/>What is left here is what RimWorld's own class does: hold the link, stop when the fight can no
+    /// longer be had, and leave both parties a memory of it on the way out.
     /// </summary>
     public class MentalState_SocialFighting : MentalState
     {
@@ -40,11 +48,6 @@ namespace SimWorld.MindState
         /// </summary>
         public Pawn? otherPawn;
 
-        /// <summary>Lazily built, never Scribe'd — <see cref="Verb"/> itself carries no <c>ExposeData</c>
-        /// anywhere in this codebase; its mid-swing warmup/cooldown state is cheap to rebuild and does not
-        /// need to survive a save.</summary>
-        private Verb_MeleeAttack? verb;
-
         public MentalState_SocialFighting()
         {
         }
@@ -53,51 +56,63 @@ namespace SimWorld.MindState
         {
         }
 
-        private Verb_MeleeAttack EnsureVerb()
+        /// <summary>
+        /// The fight cannot go on (RimWorld: <c>MentalState_SocialFighting.ShouldStop</c>, which asks exactly
+        /// this — the other party is gone, down or dead, or is no longer in this same fight).
+        /// </summary>
+        public bool ShouldStop
         {
-            if (verb == null)
+            get
             {
-                var fists = new Tool
-                {
-                    label = "fists",
-                    capacities = new List<ToolCapacityDef> { ToolCapacityDefOf.Blunt },
-                    power = SocialTuning.SocialFightFistPower,
-                    cooldownTime = SocialTuning.SocialFightSwingCooldownSeconds,
-                    armorPenetration = 0f,
-                };
-                verb = MeleeVerbUtility.MakeVerb(pawn, fists)
-                    ?? throw new InvalidOperationException(
-                        "Blunt has no ManeuverDef in content; MentalState_SocialFighting has nothing to swing with.");
+                if (otherPawn == null) return true;
+                if (otherPawn.Dead || otherPawn.Downed) return true;
+                return !IsOtherPawnSocialFightingWithMe;
             }
-            return verb;
         }
+
+        private bool IsOtherPawnSocialFightingWithMe =>
+            otherPawn != null
+            && otherPawn.mindState.mentalStateHandler.CurState is MentalState_SocialFighting otherFight
+            && ReferenceEquals(otherFight.otherPawn, pawn);
 
         public override void MentalStateTick()
         {
-            base.MentalStateTick();
-            // base.MentalStateTick() may itself have just recovered this instance (duration elapsed, or the
-            // MTB roll hit) — nothing left to do this tick if so.
-            if (!ReferenceEquals(pawn.mindState.mentalStateHandler.CurState, this)) return;
-
-            // A downed pawn cannot swing; MentalStateHandler.MentalStateHandlerTick recovers it (def sets
-            // recoverFromDowned) right after this call returns, so there is nothing further to do here.
-            if (pawn.Downed) return;
-
-            if (otherPawn == null || otherPawn.Dead || otherPawn.Downed || otherPawn.MentalStateDef != def)
+            if (ShouldStop)
             {
                 RecoverFromState();
                 return;
             }
-
-            Verb_MeleeAttack v = EnsureVerb();
-            if (v.Available()) v.TryStartCastOn(otherPawn, 0f);
-            v.VerbTick();
+            base.MentalStateTick();
         }
 
+        /// <summary>
+        /// Ending (RimWorld: <c>MentalState_SocialFighting.PostEnd</c>, three things, all of them ported).
+        /// The running fight job is dropped — a pawn who has stopped fighting must not keep swinging;
+        /// the other side is stood down with this one rather than each noticing independently a tick later;
+        /// and <b>both parties come away with a memory of the fight, half the time a good one</b>. That last
+        /// part was missing entirely, and its absence is one of the reasons brawling fed itself here: a
+        /// scuffle could only ever cost mood (<c>Insulted</c> on the way in, injuries and witnesses on the
+        /// way out) and never clear the air, which is exactly what RimWorld's 50/50
+        /// <c>HadCatharticFight</c>/<c>HadAngeringFight</c> pair is for.
+        /// </summary>
         public override void PostEnd()
         {
             base.PostEnd();
-            verb = null;
+
+            pawn.jobs.EndCurrentJob(JobCondition.InterruptForced, startNewJob: false);
+
+            if (IsOtherPawnSocialFightingWithMe)
+            {
+                otherPawn!.mindState.mentalStateHandler.CurState!.RecoverFromState();
+            }
+
+            if (!pawn.Dead && otherPawn != null && !otherPawn.Dead && pawn.needs.mood != null)
+            {
+                Thoughts.ThoughtDef memory = Rand.Value < 0.5f
+                    ? SocialFightThoughtDefOf.HadCatharticFight
+                    : SocialFightThoughtDefOf.HadAngeringFight;
+                pawn.needs.mood.thoughts.memories.TryGainMemory(memory, otherPawn);
+            }
         }
 
         public override void ExposeData()

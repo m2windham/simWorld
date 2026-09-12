@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Recreation jobs (RimWorld: the joy JobDefs in Jobs_Joy.xml). Their own file rather than an addition to
+    JobDefs_Core.xml, per CLAUDE.md - DefLoader.AddDirectory loads every XML under this folder recursively, so
+    a new file works exactly as well and cannot collide with another lane.
+
+    The joy numbers (kind, gain rate, session length) live on the matching JoyGiverDef rather than here; see
+    AI/JoyGiverDef.cs for why. Every def below is named by exactly one JoyGiverDef in
+    Data/Core/Defs/JoyGiverDefs/.
+  -->
+
+  <JobDef>
+    <defName>Skygaze</defName>
+    <driverClass>SimWorld.AI.JobDriver_Skygaze</driverClass>
+    <reportString>skygazing.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>GoForWalk</defName>
+    <driverClass>SimWorld.AI.JobDriver_GoForWalk</driverClass>
+    <reportString>going for a walk.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>SocialRelax</defName>
+    <driverClass>SimWorld.AI.JobDriver_SocialRelax</driverClass>
+    <reportString>relaxing.</reportString>
+  </JobDef>
+
+</Defs>
