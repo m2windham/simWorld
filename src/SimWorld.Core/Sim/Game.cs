@@ -293,6 +293,15 @@ namespace SimWorld.Sim
                 settlement.AddStore(record.thingDef, record.count);
             }
 
+            // economy.larder: and the band's provisions, which no scenario ships. Measured on shipped
+            // content, a settlement founded here held MeleeWeapon_Knife x2 and nothing edible at all, so a
+            // citizen with no map to forage on — every citizen, until somebody opens the interior — had an
+            // empty ledger to eat from and starved through the first week with nothing wrong anywhere. A band
+            // that has walked for days arrives carrying food; see SettlementLarder.ProvisionFoundingBand for
+            // what and how much (derived from the shipped crops' growDays and the food economy's own
+            // per-eater demand, never a literal). It is a founding act and is called exactly once, here.
+            SimWorld.Economy.SettlementLarder.ProvisionFoundingBand(settlement);
+
             target.Tile = tile;
             SyncCivilizationTarget(game, target);
 
@@ -445,12 +454,31 @@ namespace SimWorld.Sim
             tm.PostTickers.Add(_ => Storyteller.StorytellerTick());
             tm.PostTickers.Add(_ => SocialTick());
             tm.PostTickers.Add(_ => God.GodTick());
+            // demography.lod: a citizen who is not standing on a generated interior map was on no tick list at
+            // all, at any tier — tick-list membership was granted only by Thing.SpawnSetup — so a settlement
+            // the player had never opened was frozen in time, its citizens' needs and ages byte-identical
+            // after six in-game days. This puts every citizen on the list their tier names whether or not they
+            // have a map, which is what spec §11.3 means by Interval and Statistical "sitting on the Long
+            // bucket". Position in this list barely matters and deliberately so: it is a safety net behind the
+            // incremental paths (Thing.SpawnSetup, and Pawn_TierTracker's own re-registration on a tier
+            // change), both tick guards already refuse to do a tier's work on the wrong list, and the two
+            // sweeps run on the same cadence a tick apart anyway — so the worst a stale read costs is one
+            // coarse interval served on the old list.
+            tm.PostTickers.Add(_ => CitizenTickRegistry.Tick());
             // economy.stock: the seam between the two halves of the game. What a watched settlement mines,
             // grows and crafts and then hauls into its own granary stops being a Thing on a map and becomes a
             // count in Settlement.Stores — the civilization's ledger, which until now nothing on any map could
             // ever credit. Ordered ahead of the guild tick below so the goods a settlement banked this pass are
             // the goods its industry spends this pass, rather than a guild-interval behind.
             tm.PostTickers.Add(_ => SimWorld.Economy.SettlementStockInitiative.Tick());
+            // economy.larder: the same seam in the other direction — a citizen with no map to act in eats
+            // from Settlement.Stores. The whole food economy is map-based (berries lie on a map, a field is
+            // painted on one, a kitchen is built on one), so once CitizenTickRegistry started ticking off-map
+            // citizens, a settlement nobody had opened starved where it used to merely be frozen. Ordered
+            // immediately after the banking pass above so the surplus a watched settlement banked this pass
+            // is available to its off-map citizens on the same pass rather than an interval behind; for an
+            // unwatched settlement (no map, nothing to bank) the order is immaterial.
+            tm.PostTickers.Add(_ => SimWorld.Economy.SettlementLarder.Tick());
             // crafting.guilds: settlements establish, staff and bill the industries their civilization knows
             // the trades for. GuildManager.Establish had no caller in src/ at all, so the tick below ran over
             // an empty list for the life of every game. Ordered immediately before it for the same reason.

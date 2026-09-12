@@ -543,9 +543,22 @@ namespace SimWorld.Tests.AI
 
             // The loaded job resumes through a freshly rebuilt driver (the Verb is deliberately not saved —
             // the hunter simply re-aims) rather than sitting inert.
-            RunTicks(20000, loadedHunter, loadedPrey);
+            //
+            // Meat is sampled across the run rather than only at the end, because a third of a day is long
+            // enough for the hunter to get hungry and eat what it killed — which it now does properly, a
+            // whole sitting at a time (FoodUtility.WillIngestStackCountOf), where it used to take a single
+            // 0.05-nutrition bite per job and leave the rest lying there. What this test is about is that a
+            // loaded hunt finishes and butchers, not that the kill goes uneaten.
+            int peakMeat = 0;
+            for (int i = 0; i < 20000; i++)
+            {
+                RunTicks(1, loadedHunter, loadedPrey);
+                int meat = MeatOnMap(loaded);
+                if (meat > peakMeat) peakMeat = meat;
+            }
+
             Assert.True(loadedPrey.Destroyed);
-            Assert.True(MeatOnMap(loaded) > 0);
+            Assert.True(peakMeat > 0, "the loaded hunt killed its prey and butchered nothing");
         }
     }
 }

@@ -148,6 +148,15 @@ namespace SimWorld.Map
             // needs nothing here to own or save, and draws nothing from the ambient Rand stream. A map with
             // no world tile — which is most test maps — is left exactly as its owner built it.
             Building.WildPlantSpawner.WildPlantSpawnerTick(this);
+
+            // The settlement's own food economy, both halves self-gated on the rare bucket exactly like the
+            // initiatives Sim.Game.WireTickHooks drives: the field it clears and sows (Building.FarmingInitiative,
+            // which is what finally gives WorkGiver_GrowerSow a Zone_Growing to find) and the kitchen it raises
+            // over its larder (Crafting.CookingInitiative, the bill nobody was queueing). Driven from here
+            // rather than from that list because both act on a map and nothing else: they need no Game, they
+            // are a no-op on a map no settlement owns, and this is the tick every map already gets.
+            Building.FarmingInitiative.TickMap(this);
+            Crafting.CookingInitiative.TickMap(this);
         }
 
         private void InitializeGridsExceptPath(int sizeX, int sizeZ, TerrainDef fill)

@@ -22,6 +22,35 @@ namespace SimWorld.Crafting
 
         public static float FoodPoisonChanceFromCook(int cookSkillLevel) => FoodPoisonChanceFromCookCurve.Evaluate(cookSkillLevel);
 
+        /// <summary>
+        /// How many units of <paramref name="foodDef"/> <paramref name="pawn"/> will take in one sitting
+        /// (RimWorld: <c>FoodUtility.WillIngestStackCountOf</c> — <c>min(maxNumToIngestAtOnce,
+        /// ceil(nutritionWanted / nutritionPerUnit))</c>, ported as-is). Never less than one, so a pawn that
+        /// only wants a crumb still finishes the unit it picked up, exactly as RimWorld's own does.
+        ///
+        /// <para/><b>The defect this closes, and why it is a starvation bug rather than a nicety.</b>
+        /// <see cref="AI.JobDriver_Ingest"/> ate exactly one unit per job. One unit of every raw foodstuff
+        /// this port ships is 0.05 nutrition, and a human stomach is 1.0 — so a citizen standing on a pile of
+        /// food recovered 0.05 per reserve-walk-chew cycle while <see cref="Needs.Need_Food"/> took 1.6 a day
+        /// off them. Even a settlement with a full larder starved: the food was there, the mouths were there,
+        /// and the bite was two per cent of a meal. Meals (0.9) hid it completely, which is why every unit
+        /// test of the eating path passed.
+        /// </summary>
+        public static int WillIngestStackCountOf(Pawn pawn, Defs.ThingDef foodDef)
+        {
+            if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+            if (foodDef == null) throw new ArgumentNullException(nameof(foodDef));
+
+            IngestibleProperties? props = foodDef.ingestible;
+            float perUnit = props?.nutrition ?? 0f;
+            if (props == null || perUnit <= 0f) return 1;
+
+            float wanted = pawn.needs?.food?.NutritionWanted ?? 0f;
+            int needed = (int)Math.Ceiling(wanted / perUnit);
+            int capped = Math.Min(props.maxNumToIngestAtOnce, needed);
+            return capped < 1 ? 1 : capped;
+        }
+
         public static float NutritionForItem(ItemStack food)
         {
             if (food == null) throw new ArgumentNullException(nameof(food));

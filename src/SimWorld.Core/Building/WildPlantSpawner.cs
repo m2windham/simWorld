@@ -62,7 +62,23 @@ namespace SimWorld.Building
         /// <c>MapGen.GenStep_Scatterers</c> already makes when it scatters.</summary>
         public const int MaxCellTriesPerSpawn = 5;
 
-        /// <summary>Called once per map per tick from <see cref="Map.Map.MapTick"/>.</summary>
+        /// <summary>
+        /// Purpose offsets handed to <see cref="SeedFor"/> for the food-bearing plant's own rolls. Above
+        /// everything the scrub pass uses (0 for its chance, then 2..2×<see cref="MaxCellTriesPerSpawn"/>+1
+        /// for its cell tries) so that adding a second plant to this tick moved no roll the first one was
+        /// already making: a save generated before food plants existed regrows its scrub in exactly the same
+        /// cells on exactly the same ticks as it did then. Determinism is a feature, and "I added a system"
+        /// is not a licence to reshuffle another one's stream.
+        /// </summary>
+        private const int FoodPlantChancePurpose = 100;
+
+        private const int FoodPlantCellPurposeBase = 200;
+
+        /// <summary>Called once per map per tick from <see cref="Map.Map.MapTick"/>. Two kinds of wild plant
+        /// come back here, each toward its own density and both at the biome's one regrow pace: ordinary
+        /// scrub (<see cref="WildPlantDefOf.WildPlant"/>) and the plant that bears food
+        /// (<see cref="WildFoodDefOf.Plant_Berry"/> — see <see cref="WildFoodTuning"/> for why the second one
+        /// is load-bearing rather than decoration).</summary>
         public static void WildPlantSpawnerTick(Map.Map map)
         {
             if (map == null) return;
@@ -73,15 +89,27 @@ namespace SimWorld.Building
             BiomeDef? biome = tile.biome;
             if (biome == null || biome.wildPlantRegrowDays <= 0f) return;
 
-            int desired = DesiredWildPlantCount(map, tile);
-            if (desired <= 0) return;
-            if (map.listerThings.ThingsOfDef(WildPlantDefOf.WildPlant).Count >= desired) return;
-
             int tick = Find.TickManager.TicksGame;
-            float chance = SpawnChancePerTick(desired, biome.wildPlantRegrowDays);
-            if (!RandomStream.ChanceSeeded(chance, SeedFor(map, tick, 0))) return;
 
-            TrySpawnOne(map, tick);
+            RegrowToward(map, tile, biome, tick, WildPlantDefOf.WildPlant, DesiredWildPlantCount(map, tile),
+                chancePurpose: 0, cellPurposeBase: 0);
+            RegrowToward(map, tile, biome, tick, WildFoodDefOf.Plant_Berry, DesiredWildFoodPlantCount(map, tile),
+                chancePurpose: FoodPlantChancePurpose, cellPurposeBase: FoodPlantCellPurposeBase);
+        }
+
+        /// <summary>One plant kind's regrowth: the same "a whole map's worth over the biome's regrow days,
+        /// rolled once per tick while below target" model for both, differing only in what is being counted
+        /// and which seeded stream the rolls come off.</summary>
+        private static void RegrowToward(
+            Map.Map map, Tile tile, BiomeDef biome, int tick, ThingDef def, int desired, int chancePurpose, int cellPurposeBase)
+        {
+            if (desired <= 0) return;
+            if (map.listerThings.ThingsOfDef(def).Count >= desired) return;
+
+            float chance = SpawnChancePerTick(desired, biome.wildPlantRegrowDays);
+            if (!RandomStream.ChanceSeeded(chance, SeedFor(map, tick, chancePurpose))) return;
+
+            TrySpawnOne(map, tick, def, cellPurposeBase);
         }
 
         /// <summary>
@@ -98,6 +126,15 @@ namespace SimWorld.Building
         }
 
         /// <summary>
+        /// How many food-bearing wild plants this map's tile supports, from the same formula
+        /// <c>MapGen.GenStep_Scatterers</c> placed them with (<see cref="WildFoodTuning"/>) — the second
+        /// instance of this class's "one formula, two readers" rule, and the reason a map's larder does not
+        /// drift away from its own biome over a game's length.
+        /// </summary>
+        public static int DesiredWildFoodPlantCount(Map.Map map, Tile tile) =>
+            map == null ? 0 : WildFoodTuning.DesiredFoodPlantCount(map.cellIndices.NumGridCells, tile);
+
+        /// <summary>
         /// Chance of one plant returning this tick: the whole map's worth spread evenly over
         /// <paramref name="regrowDays"/> days, capped at 1 (a cap the shipped biomes never come near — the
         /// densest biome on a default-sized map sits near 0.004).
@@ -109,16 +146,16 @@ namespace SimWorld.Building
             return perTick > 1f ? 1f : perTick;
         }
 
-        private static void TrySpawnOne(Map.Map map, int tick)
+        private static void TrySpawnOne(Map.Map map, int tick, ThingDef def, int cellPurposeBase)
         {
             for (int attempt = 1; attempt <= MaxCellTriesPerSpawn; attempt++)
             {
-                int x = RandomStream.RangeSeeded(0, map.Size.x, SeedFor(map, tick, attempt * 2));
-                int z = RandomStream.RangeSeeded(0, map.Size.z, SeedFor(map, tick, attempt * 2 + 1));
+                int x = RandomStream.RangeSeeded(0, map.Size.x, SeedFor(map, tick, cellPurposeBase + attempt * 2));
+                int z = RandomStream.RangeSeeded(0, map.Size.z, SeedFor(map, tick, cellPurposeBase + attempt * 2 + 1));
                 var cell = new IntVec3(x, 0, z);
                 if (!CanRegrowAt(map, cell)) continue;
 
-                Thing plant = ThingMaker.MakeThing(WildPlantDefOf.WildPlant);
+                Thing plant = ThingMaker.MakeThing(def);
                 if (plant is Plant seedling) seedling.Growth = Plant.SeedlingGrowth;
                 GenSpawn.Spawn(plant, cell, map);
                 return;

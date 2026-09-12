@@ -103,7 +103,32 @@ namespace SimWorld.Needs
         /// <summary>O(1) bulk equivalent of <see cref="NeedInterval"/> (see the base class doc): holds the
         /// *current* category's fall rate constant across <paramref name="elapsedTicks"/> rather than
         /// replaying category transitions tick by tick — an approximation only across a span long enough to
-        /// cross a hunger-category threshold mid-span.</summary>
+        /// cross a hunger-category threshold mid-span.
+        ///
+        /// <para/><b>Known defect, measured and deliberately left standing: starvation is reported once per
+        /// bulk call rather than once per <see cref="IntervalTicks"/> slice.</b> The per-tick path above calls
+        /// <see cref="Pawn.Notify_StarvationInterval"/> every 150 ticks; this calls it once for a whole
+        /// elapsed span, which at Interval tier's Long-tick cadence (2,000 ticks = 13.33 slices) makes
+        /// <c>Malnutrition</c> accrue — and heal — about 13× slower than for the same citizen at Full. That
+        /// breaks this method's own contract ("over a span its rate is constant across, it must land where the
+        /// per-interval path would have") and spec §11.1's rule for the abstract clock with it.
+        ///
+        /// <para/><b>Why it is still here.</b> The fix is two lines — scale by <c>elapsedTicks /
+        /// (float)IntervalTicks</c> in one pass, the shape <see cref="JoyToleranceSet.NeedIntervalBulk"/>
+        /// already uses — and it was written, tested both ways, and reverted, because <b>correcting the clock
+        /// without correcting the food kills the world</b>. At the honest rate a citizen with nothing to eat
+        /// dies of hunger in 8.9 days (<c>HealthTuning.MalnutritionSeverityPerInterval</c>, 0.113/day, lethal
+        /// at 1), and off a map the only food there is is <c>Settlement.Stores</c>
+        /// (<c>Economy.SettlementLarder</c>) — which nothing at civilization scale ever produces into: every
+        /// producer in this port (foraging, farming, cooking, hunting) is map-side, and the one abstract
+        /// producer, <c>Crafting.Guild</c>, ships a recipe that cuts stone. So every settlement nobody has
+        /// opened would empty its founding rations and then die within a fortnight. Measured:
+        /// <c>God.AttentionBudgetTests</c>' century of demography falls from ~1,500 citizens to ~880, and its
+        /// premise — that a century outgrows the Full-tier budget — stops holding, because the citizens the
+        /// budget demotes then starve to death during their catch-up.
+        ///
+        /// <para/><b>The precondition, so this is not lost:</b> take this fix together with abstract
+        /// production — a settlement with no map feeding its own ledger — and not before.</summary>
         public override void NeedIntervalBulk(int elapsedTicks)
         {
             if (elapsedTicks <= 0) return;

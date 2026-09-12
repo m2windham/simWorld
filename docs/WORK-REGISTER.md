@@ -520,11 +520,200 @@ and green. This is what they do when a real game runs them.
 sharpest possible statement of what §5 and §7 have been circling: the suite measures
 modules, and nobody had watched the game.
 
+> **Half of this is done, and the half that is done was not the half that was killing
+> people — see §9a.** The food economy really was broken in four places and is now closed;
+> every death in the week, before and after, is a citizen beaten to death by another
+> citizen. The unwatched-settlement stasis in the right-hand column above is untouched and
+> still open.
+
 A note on method, because it is the reusable part. The probe is six lines — new a game,
 tick a day, print mean food and mood and the living count, repeat. It is not a test and
 was deleted after use, because a test that asserts "the settlement survives" would be red
 today and this register does not ship red tests. But the *shape* is what found it, and
 nothing in a 1,964-test suite did.
+
+### 9a. The food half is closed, and the deaths were never hunger
+
+The probe above was rebuilt, followed link by link, and the result splits cleanly in two:
+**the food economy genuinely was broken and now is not, and the deaths it was blamed for
+have a different cause entirely.** Both halves are measured, `Game.NewGame(TribalStart, 25
+founders)` opened through `GodCommands.OpenSettlement`, seven days, nothing called by hand:
+
+| Day | Before: alive / food / mood / nutrition on map | After: alive / food / mood / nutrition on map |
+| --- | --- | --- |
+| 0 | 25 / 0.80 / 0.50 / **0.0** | 25 / 0.80 / 0.50 / 0.0 as items, 248 on the bush |
+| 1 | 24 / **0.00** / 0.18 / **0.0** | 25 / 0.27 / 0.27 / **210.4** |
+| 3 | 18 / 0.00 / 0.12 / 0.0 | 19 / 0.35 / 0.25 / 148.7 |
+| 6 | 15 / 0.00 / 0.06 / 0.0 | 15 / 0.35 / 0.25 / 179.6 |
+| 7 | — | 15 / 0.31 / 0.23 / **200.5** |
+
+Read that table twice. Nutrition went from *nothing at all, for ever* to a larder that is
+still growing after a week of twenty-five people eating out of it, and mood roughly doubled
+— **and the death toll did not move.** Fifteen alive on day six either way. That is the
+finding, not a disappointment: the food economy was genuinely broken and is genuinely
+fixed, and it was never what was killing anybody.
+
+Mean nutrition no longer collapses, the larder on the map is *fuller* on day seven than on
+day one, `HuntingInitiative.WantsMeat` has closed, and the starvation signal the simulation
+itself uses — the `Malnutrition` hediff, lethal at severity 1 — reads zero for the whole
+town for six of the seven days and one citizen at a trace on the seventh.
+
+**Four links, and three of them were broken.**
+
+1. **Nothing edible existed on a generated map.** Not "not much" — nothing. Generation
+   scattered `WildPlant`, which carries no `harvestedThingDef` and no `ingestible`, so
+   `Plant.HarvestableNow` was false for every plant on every map; the scenarios ship no
+   food; and `BiomeDef.forageability` — "how much food a forager can find here", authored
+   for all eleven land biomes — was read by one line of the core, which uses it to decide
+   where to paint sand. Closed: a wild food plant (`Plant_Berry` → `RawBerries`) scattered
+   at the density that field promises and regrown by `WildPlantSpawner` at the biome's own
+   pace. It needed no new AI: `WorkGiver_GrowerHarvest` already scans *every* plant on the
+   map (its own documented deviation), so food-bearing wild growth *is* foraging.
+2. **Nothing produced food.** Farming: `Zone_Growing`, both grower givers, both drivers and
+   two crops were built, tested and green, and **nothing in `src/` had ever created a
+   growing zone** — no citizen in any game has ever sown a seed. Closed by
+   `Building.FarmingInitiative`, which sizes a field from the mouths and the crop's own
+   yield. Cooking: nothing in `src/` queued a cooking bill *and* `FueledStove` had no
+   Blueprint/Frame pair at all, so no stove could be raised by anything. Closed by
+   `Crafting.CookingInitiative` plus the missing content — which matters because
+   `CookMealSimple` turns 0.5 nutrition of raw food into a 0.9-nutrition meal, the only step
+   in the chain that returns more than it takes. Hunting: **still dormant, and not for the
+   reason §1 recorded.** The `weaponTags` fix took — 25 of 25 founders carry a bow, the food
+   gate is open — but **nothing anywhere spawns a wild animal on an interior map**, so
+   `WorkGiver_Hunt.PotentialWorkThingsGlobal` yields nothing, for ever. `BiomeDef.animalDensity`
+   is content waiting for exactly that, the way `forageability` was.
+3. **A citizen who found food could not fill up.** `JobDriver_Ingest` ate *one unit* per
+   job. Every raw foodstuff this port ships is 0.05 nutrition against a 1.0 stomach and a
+   1.6-a-day fall, so a citizen standing in a full larder lost ground to its own hunger.
+   RimWorld eats a sitting, not a mouthful (`FoodUtility.WillIngestStackCountOf`,
+   `maxNumToIngestAtOnce`); ported. Meals (0.9, one unit) hid this completely, which is why
+   every test of the eating path was green.
+4. **The fall rate is fine.** 1.6/day at hunger rate 1 is RimWorld's own, and 0.8 → 0 in
+   0.875 days is what that arithmetic says. Left alone.
+
+**And the deaths.** Every one of them, in both configurations, is a citizen *beaten to
+death by another citizen*. No hostile pawn ever reaches the map in the first week; nobody
+dies of starvation or of age. The mood that starts the fights is dominated by one thing:
+
+| mean mood points per citizen, day 7 | |
+| --- | --- |
+| `NeedJoy` | **-20.0** |
+| `Tired` | -8.8 |
+| `Insulted` | -8.4 |
+| `Divorced` | -5.3 |
+| `Hungry` | -3.2 |
+
+`NeedJoy` sits at its worst stage on every citizen from day two onward because **nothing in
+this codebase can raise `Need_Joy`.** The only `GainJoy` caller in `src/` is `CompDrug`; the
+humanlike think tree has no recreation tier at all; `JoyKindDef` content, the tolerance
+model and the thought are all built. It is §5's shape again, one need over.
+
+It is not the whole story either. Held full by hand, joy lifts mood to a healthy 0.49–0.58
+and the same settlement **still loses 8 of 25 in a week** — `Insulted` (-8.8) and `Divorced`
+(-5.3) are the social fallout of the fights themselves, so once brawling starts it feeds
+itself. So the next two items, in order, are **a source for `Need_Joy`** and **whether
+`MentalState_SocialFighting` should be able to kill at all** (RimWorld's rarely does; this
+one killed ten of twenty-five in seven days with a full larder). Neither is a food problem
+and neither was touched by this lane.
+
+The shipped test is `tests/SimWorld.Core.Tests/Integration/SettlementFoodTests.cs`: it
+founds a settlement the ordinary way, ticks a week, and asserts the food economy closes —
+food on the ground at tick 0, nutrition recovering above hungry, nobody carrying
+malnutrition, and a larder bigger than a day's burn at the end. It deliberately does **not**
+assert that the population is untouched, because that would be asserting four other systems
+are healthy and would go red for reasons a food test cannot explain. On the pre-fix core its
+very first assertion fails.
+
+### 9a. What §9 got wrong, and what is actually killing them
+
+Two lanes took §9 apart. The food half of it was real and is fixed. **The framing was wrong,
+and it was wrong in the direction that matters: food was never what killed anyone.**
+
+**There was no food on the map. Zero.** Not "not much" — a `TribalStart` interior at tick 0
+held 12,991 granite, 822 wild plants and **0.0 nutrition**. `WildPlant` carries no
+`harvestedThingDef` and no `ingestible`, so `Plant.HarvestableNow` was false for every plant
+on every map ever generated. `BiomeDef.forageability` — authored for all eleven land biomes,
+its own doc reading "how much food a forager can find here" — was read by exactly one line of
+the core, as a dryness proxy for where to paint sand.
+
+Three more links behind it: **nothing in `src/` had ever created a `Zone_Growing`** (zones,
+both grower givers, both drivers and two crops, all built and tested and unreachable);
+`FueledStove` had no Blueprint/Frame pair so no kitchen could be raised by anything; and
+`JobDriver_Ingest` ate **one unit** per job — 0.05 nutrition against a 1.0 stomach and a
+1.6/day fall, so a citizen standing in a full larder lost ground to its own hunger.
+
+All four are closed. Foraging, farming, cooking and eating-your-fill now work, and the larder
+is fuller on day seven than day one.
+
+**And the death toll did not move.** Fifteen alive on day six, before and after. Every death,
+both runs, is `"X has been beaten to death"`.
+
+#### What is actually killing them
+
+**Nothing in this codebase can raise `Need_Joy`.** `GainJoy` has exactly one caller in all of
+`src/` and it is `CompDrug`. The only recreation available to a citizen is narcotics. So joy
+sits at its worst stage — −20 mood points — on every citizen from day two, and the humanlike
+think tree has no recreation tier to fix it.
+
+That is not the whole story either. With joy pinned full by hand the same settlement **still
+loses 8 of 25**, because `Insulted` (−8.8) and `Divorced` (−5.3) are the social *fallout of
+the fights themselves*. `MentalState_SocialFighting` killed ten of twenty-five in a week with
+a full larder. Brawling feeds itself.
+
+#### A regression this batch introduced, measured and named
+
+Fixing the tick path (§9's right-hand column) had a consequence the lane that did it predicted
+in as many words. Measured after both lanes merged, eight in-game days:
+
+| Day | Unwatched: alive / food | Watched: alive / food |
+| --- | --- | --- |
+| 0 | 25 / 0.80 | 25 / 0.80 |
+| 1 | 25 / **0.00** | 25 / 0.23 |
+| 4 | 21 / 0.00 | 18 / 0.43 |
+| 8 | **18** / 0.00 | 13 / 0.40 |
+
+**An unwatched settlement now starves where it used to be frozen.** The cause is exact:
+`Game.NewGame` focuses the settlement it founds, so its citizens tick at **Full** — but nothing
+has opened the interior, so there is no map, and **the entire food economy above is
+map-based**. Berries lie on a map. A growing zone is painted on a map. A kitchen is built on a
+map. A Full-tier citizen with no map has needs that decay at full speed and no world in which
+to satisfy them.
+
+The fix is the one the tick lane named before the problem existed: **an abstract consumption
+path from `Settlement.Stores`**, the ledger batch eight built and nothing yet draws from. The
+two halves were built in the right order and have simply not been joined.
+
+**Closed.** `Economy/SettlementLarder.cs` joins them, and the gate measurement after it landed —
+my own probe, eight in-game days, nothing called by hand:
+
+| Day | Unwatched: alive / food | Watched: alive / food |
+| --- | --- | --- |
+| 0 | 25 / 0.80 | 25 / 0.80 |
+| 1 | 25 / 0.73 | 25 / 0.00 |
+| 4 | 23 / 0.41 | 25 / 0.59 |
+| 8 | **23** / 0.72 | **25** / 0.55 |
+
+The unwatched column never reaches 0.00 and no corpse in either run carries `Malnutrition`.
+The watched column — which that lane was not aiming at — went from 25 → 13 to 25 → 25, because
+the founding rations carry a band through the two days before its own food economy comes
+online, so mood bottoms at 0.17 instead of 0.02 and the break cascade never ignites.
+
+**One seed, though.** The lane's own run on a different seed showed 25 → 15. Any behavioural
+change reshuffles that rollout, so "zero deaths" is this seed rather than proof the social
+spiral is fixed. That chain is still open and is the next batch.
+
+**What the founding band actually had:** `MeleeWeapon_Knife x2` and nothing edible. All three
+shipped scenarios supply a weapon and no food. So closing consumption alone would have starved
+day-one settlements *correctly*, and the honest fix included the rations.
+
+**And the slice bug was written, measured, and reverted on purpose.**
+`Need_Food.NeedIntervalBulk` credits starvation once per bulk call rather than once per slice,
+so malnutrition accrues ~13× slow at Interval. The lane wrote the correction with three tests
+that fail on the old behaviour — then backed it out, because correcting the clock without
+correcting the food kills the world: at the honest rate a citizen with nothing to eat dies in
+8.9 days, and **nothing at civilization scale produces food into any ledger.** The diagnosis
+and its precondition sit at the defect site. That is the shape of a good "no": built, proven,
+measured against the world, and left out with the reason written down.
 
 ## Immediate steps: the host repo — unclaimed, proposed
 
