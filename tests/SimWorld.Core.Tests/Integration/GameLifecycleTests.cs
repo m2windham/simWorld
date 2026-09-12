@@ -173,8 +173,12 @@ namespace SimWorld.Tests.Integration
             // .SyncCitizenSpawns), so "extra" is no longer the only pawn here — it is the one manually spawned
             // above and deliberately kept off the settlement's own roster, to prove *that* pawn (not a
             // citizen) still round-trips as the map's own Thing, distinct from Citizens' Scribe path.
-            Assert.Equal(loadedSettlement.Citizens.Count + 1, loadedMap.mapPawns.AllPawns.Count);
-            Pawn loadedPawn = Assert.Single(loadedMap.mapPawns.AllPawns, p => !loadedSettlement.Citizens.Contains(p));
+            // Counted over the people rather than over every pawn: a generated interior also carries the
+            // wildlife its biome supports (SimWorld.MapGen.GenStep_Animals), and this assertion is about
+            // which *person* on the map is not on the roster.
+            List<Pawn> loadedPeople = loadedMap.mapPawns.AllPawns.Where(p => p.RaceProps.Humanlike).ToList();
+            Assert.Equal(loadedSettlement.Citizens.Count + 1, loadedPeople.Count);
+            Pawn loadedPawn = Assert.Single(loadedPeople, p => !loadedSettlement.Citizens.Contains(p));
             Assert.Equal(foodBeforeSave, loadedPawn.needs.food!.CurLevel, 4);
 
             // The strong claim: the loaded pawn is really back in TickManager's normal tick list, not merely

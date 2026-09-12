@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The wildlife a new map is born with (RimWorld: GenStep_Animals). In its own file rather than appended to
+    GenSteps.xml per CLAUDE.md: DefLoader.AddDirectory loads every XML file under a Def folder recursively,
+    so a step declared here is wired exactly as if it sat in the shared one and cannot conflict with a lane
+    editing that file.
+
+    Order 800 puts it last in the pipeline, after Ruins (650) and Roads (700). Both of those clear whatever
+    an earlier step left standing on ground they need, and neither should ever have to decide what to do
+    about a living animal in the way — so the animals arrive once the map has stopped changing shape. See
+    SimWorld.MapGen.GenStep_Animals for the rest of the reasoning, and SimWorld.Pawns.WildAnimalTuning for
+    how many animals BiomeDef.animalDensity actually asks for.
+  -->
+
+  <GenStepDef>
+    <defName>Animals</defName>
+    <order>800</order>
+    <workerClass>SimWorld.MapGen.GenStep_Animals</workerClass>
+  </GenStepDef>
+
+</Defs>
