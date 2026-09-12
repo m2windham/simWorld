@@ -746,10 +746,18 @@ killer:
   instigator field set at all** — to every Thing under a collapsing roof cell.
 
 So the killer in every one of those letters was a rock ceiling coming down on the miner who
-had just mined out its support. Measured after the change, across three watched settlements:
-**34 deaths, zero of them dealt by another pawn.** The signature is unmistakable once looked
-for — a single 100-severity injury, or a destroyed heart, brain or liver on a corpse whose
-total injury severity is near zero.
+had just mined out its support. Measured independently by the orchestrator after the merge — three seeds, eight in-game days,
+watched, counting corpses on the map because `Settlement.PruneDeadCitizens` removes the dead
+from the roster: **35 corpses, 32 of them with no instigator at all and 3 dealt by a pawn —
+exactly one per seed.** The signature of the 32 is unmistakable once looked for: a single
+100-severity injury, or a destroyed heart, brain or liver on a corpse whose total injury
+severity is near zero.
+
+The lane that found this reported 34 deaths and *zero* by a pawn; the orchestrator's own run
+says one per seed, and that number is almost certainly not citizens. The wild-animal lane
+measured exactly one attributable death per run from a **tame-provoked manhunter**, and an
+animal is a `Pawn`, so it trips the same flag. Either way the proportion is the finding:
+**91% of deaths have no instigator.** Roof collapses dominate; murder does not happen.
 
 And a social fight provably **cannot** kill: 129 consecutive fights between the same two
 pawns with no healing in between produced **zero deaths**, every one ending in a downing at
