@@ -159,10 +159,22 @@ namespace SimWorld.Tests.Needs
             Assert.InRange(start - now, expectedFall - tolerance, expectedFall + tolerance);
         }
 
-        /// <summary>The end state each need is supposed to produce, for a citizen nobody looks after. This is
-        /// the test that would have failed loudest had the generic path ever been the thing moving them.</summary>
+        /// <summary>
+        /// The end state each need is supposed to produce, for a citizen nobody looks after. This is the test
+        /// that would have failed loudest had the generic path ever been the thing moving them.
+        ///
+        /// <para/><b>Recreation used to be on this list and no longer is.</b> It read
+        /// <c>Assert.Equal(JoyCategory.Empty, …)</c>, and that was true for the worst of reasons: nothing in
+        /// the whole of <c>src/</c> could raise <c>Need_Joy</c> except <c>CompDrug</c>, so a citizen with no
+        /// map ran out of recreation and stayed there for ever at −20 mood points. A citizen off a map now
+        /// takes a break of its own (<c>Needs.AbstractRecreation</c>, the mirror of
+        /// <c>Economy.SettlementLarder</c>), so recreation is the one need on this list that <i>recovers</i>
+        /// without anybody looking after you — and the two that do not are the two whose off-map paths are
+        /// still open (nothing feeds a citizen with no settlement ledger, and nothing anywhere lets an
+        /// off-map citizen sleep).
+        /// </summary>
         [Fact]
-        public void A_citizen_left_alone_long_enough_starves_collapses_and_runs_out_of_recreation()
+        public void A_citizen_left_alone_long_enough_starves_and_collapses_but_keeps_itself_entertained()
         {
             Pawn p = NewHuman();
             RunTicks(GenDate.TicksPerDay * 3, p);
@@ -171,7 +183,8 @@ namespace SimWorld.Tests.Needs
             Assert.True(p.needs.food.TicksStarving > 0);
             Assert.Equal(RestCategory.Exhausted, p.needs.rest!.CurCategory);
             Assert.True(p.needs.rest.TicksAtZero > 0);
-            Assert.Equal(JoyCategory.Empty, p.needs.joy!.CurCategory);
+            Assert.True(p.needs.joy!.CurCategory > JoyCategory.VeryLow,
+                "recreation ended three days at " + p.needs.joy.CurCategory + " — the off-map path is not reaching it");
         }
 
         // -----------------------------------------------------------------------------------------------

@@ -636,7 +636,12 @@ namespace SimWorld.Health
         {
             base.PostAdd(dinfo);
             if (Part == null) return;
-            pawn.health.RestorePart(Part, this);
+
+            // checkStateChange: false is RimWorld's own argument here, and leaving it out cost the death
+            // record its cause. This runs inside the AddHediff that is carrying the DamageInfo for the blow
+            // that destroyed the part, so letting RestorePart run the state change from in here killed the
+            // pawn with no dinfo at all — see Pawn_HealthTracker.RestorePart's own remarks.
+            pawn.health.RestorePart(Part, this, checkStateChange: false);
             for (int i = 0; i < Part.parts.Count; i++)
             {
                 var missing = (Hediff_MissingPart)HediffMaker.MakeHediff(HediffDefOf.MissingBodyPart, pawn, Part.parts[i]);

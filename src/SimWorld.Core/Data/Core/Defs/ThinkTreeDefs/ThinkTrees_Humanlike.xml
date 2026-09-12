@@ -19,12 +19,20 @@
         <!--
           A mental state pre-empts everything below it entirely, rather than contributing (or not) a job of
           its own and letting the tree fall through — see ThinkNode_ConditionalInMentalState's own comment.
-          Its one subnode (wandering) stands in for real per-mental-state behaviour, which this pass does
-          not build; combat AI beyond fleeing is explicitly out of scope, and none of the eleven existing
-          MentalStateDefs get a bespoke JobGiver here.
+          Wandering still stands in for most per-mental-state behaviour: combat AI beyond fleeing is out of
+          scope and ten of the eleven MentalStateDefs get no bespoke JobGiver here.
+
+          The exception is the social fight, and it is the exception because it was not behaviour that was
+          missing there but behaviour in the wrong place: MentalState_SocialFighting used to swing a melee
+          verb straight out of its own tick, at range zero, with no map, no position and no reach, so the
+          citizens of a settlement nobody had ever opened beat each other to death in a world that did not
+          exist. RimWorld gives the fight a JobGiver in exactly this slot (JobGiver_SocialFighting ->
+          JobDefOf.SocialFight) and the mental state itself throws no punches at all. Above the wander for
+          the obvious reason; falls through to it when the other party is out of reach.
         -->
         <li Class="SimWorld.AI.ThinkNode_ConditionalInMentalState">
           <subNodes>
+            <li Class="SimWorld.AI.JobGiver_SocialFighting" />
             <li Class="SimWorld.AI.JobGiver_WanderAnywhere" />
           </subNodes>
         </li>
@@ -68,11 +76,43 @@
           </subNodes>
         </li>
 
+        <!--
+          Recreation, and the tier this tree simply did not have. Need_Joy, its per-kind tolerance model and
+          its mood thought were all built and tested; GainJoy had exactly one caller in the whole of src/ and
+          it was CompDrug, so the only recreation available to a citizen of this civilization was narcotics
+          and every citizen sat at the need's worst stage - minus twenty mood points, the single largest term
+          in the whole settlement's ledger - from day two onward for ever. See docs/WORK-REGISTER.md 9a and
+          AI/JoyUtility.cs.
+
+          WHERE IT SITS, AND WHY. Third of the three need tiers, below food and rest: a starving or exhausted
+          citizen has more pressing business than a break, and RimWorld orders them the same way. Above the
+          directed-order and edict tiers for the reason this file's own header gives for the other two -
+          "needs override directed orders" - so recreation is treated as the need it is rather than as a
+          leisure activity the god layer can starve out.
+
+          WHAT GATES IT. RimWorld gates its recreation tier on the pawn's timetable, not on the need;
+          this port has no timetable module, so ThinkNode_ConditionalLowJoy gates on the need's own Low band
+          exactly as the two tiers above gate on theirs. That class's doc states the translation.
+        -->
+        <li Class="SimWorld.AI.ThinkNode_ConditionalLowJoy">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_GetJoy" />
+          </subNodes>
+        </li>
+
         <li Class="SimWorld.AI.JobGiver_DirectedOrder" />
 
         <li Class="SimWorld.AI.JobGiver_Edicts" />
 
         <li Class="SimWorld.AI.JobGiver_Work" />
+
+        <!--
+          Idle recreation (RimWorld: JobGiver_IdleJoy, in this same slot - below work, above the wander).
+          A citizen with nothing left to do takes a break rather than pacing, which matters more in this port
+          than in RimWorld because work here runs out far sooner. Refuses for the first in-game day, which is
+          RimWorld's own rule and its own constant.
+        -->
+        <li Class="SimWorld.AI.JobGiver_IdleJoy" />
 
         <li Class="SimWorld.AI.JobGiver_WanderAnywhere" />
 
