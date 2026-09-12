@@ -661,7 +661,6 @@ both runs, is `"X has been beaten to death"`.
 > it is why an *unwatched* settlement now loses nobody — but it was never what the watched death
 > toll was made of. See §10.
 
-
 **Nothing in this codebase can raise `Need_Joy`.** `GainJoy` has exactly one caller in all of
 `src/` and it is `CompDrug`. The only recreation available to a citizen is narcotics. So joy
 sits at its worst stage — −20 mood points — on every citizen from day two, and the humanlike
