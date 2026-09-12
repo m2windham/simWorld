@@ -683,7 +683,37 @@ The fix is the one the tick lane named before the problem existed: **an abstract
 path from `Settlement.Stores`**, the ledger batch eight built and nothing yet draws from. The
 two halves were built in the right order and have simply not been joined.
 
-Until they are, this branch is not "the settlement fixed" and must not be described as such.
+**Closed.** `Economy/SettlementLarder.cs` joins them, and the gate measurement after it landed —
+my own probe, eight in-game days, nothing called by hand:
+
+| Day | Unwatched: alive / food | Watched: alive / food |
+| --- | --- | --- |
+| 0 | 25 / 0.80 | 25 / 0.80 |
+| 1 | 25 / 0.73 | 25 / 0.00 |
+| 4 | 23 / 0.41 | 25 / 0.59 |
+| 8 | **23** / 0.72 | **25** / 0.55 |
+
+The unwatched column never reaches 0.00 and no corpse in either run carries `Malnutrition`.
+The watched column — which that lane was not aiming at — went from 25 → 13 to 25 → 25, because
+the founding rations carry a band through the two days before its own food economy comes
+online, so mood bottoms at 0.17 instead of 0.02 and the break cascade never ignites.
+
+**One seed, though.** The lane's own run on a different seed showed 25 → 15. Any behavioural
+change reshuffles that rollout, so "zero deaths" is this seed rather than proof the social
+spiral is fixed. That chain is still open and is the next batch.
+
+**What the founding band actually had:** `MeleeWeapon_Knife x2` and nothing edible. All three
+shipped scenarios supply a weapon and no food. So closing consumption alone would have starved
+day-one settlements *correctly*, and the honest fix included the rations.
+
+**And the slice bug was written, measured, and reverted on purpose.**
+`Need_Food.NeedIntervalBulk` credits starvation once per bulk call rather than once per slice,
+so malnutrition accrues ~13× slow at Interval. The lane wrote the correction with three tests
+that fail on the old behaviour — then backed it out, because correcting the clock without
+correcting the food kills the world: at the honest rate a citizen with nothing to eat dies in
+8.9 days, and **nothing at civilization scale produces food into any ledger.** The diagnosis
+and its precondition sit at the defect site. That is the shape of a good "no": built, proven,
+measured against the world, and left out with the reason written down.
 
 ## Immediate steps: the host repo — unclaimed, proposed
 

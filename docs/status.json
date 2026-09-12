@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-11",
-  "testsTotal": 2006,
+  "testsTotal": 2019,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -698,6 +698,11 @@
           "id": "needs.joy.unreachable",
           "label": "OPEN, and the actual cause of death. Nothing in this codebase can raise Need_Joy: GainJoy has exactly one caller in all of src/ and it is CompDrug, so the only recreation available to a citizen is narcotics, and the humanlike think tree has no recreation tier. Joy therefore sits at its worst stage (-20 mood) on every citizen from day two. Fixing the food economy did not move the death toll at all — fifteen alive on day six either way, and every death in both runs is 'beaten to death'. With joy pinned full by hand the same settlement still loses 8 of 25, because Insulted (-8.8) and Divorced (-5.3) are the social fallout of the fights themselves: MentalState_SocialFighting killed ten of twenty-five in a week with a full larder. Two chains, both open.",
           "done": false
+        },
+        {
+          "id": "needs.food.slicebug",
+          "label": "OPEN, with the fix written, measured and deliberately REVERTED. Need_Food.NeedIntervalBulk calls Notify_StarvationInterval once per bulk call rather than once per 150-tick slice, so malnutrition accrues about 13x slower at Interval than at Full — the same shape as the memory-ageing bug fixed in batch six. The lane wrote the correction with three tests that fail on the old behaviour, then reverted it: correcting the clock without correcting the food kills the world, because at the honest rate a citizen with nothing to eat dies in 8.9 days and NOTHING AT CIVILIZATION SCALE PRODUCES FOOD INTO ANY LEDGER. Measured consequence: AttentionBudgetTests' century of demography falls from about 1,500 citizens to about 880 and its premise stops holding. The precondition is abstract production; the diagnosis is written at the defect site.",
+          "done": false
         }
       ]
     },
@@ -1313,7 +1318,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 169,
+      "tests": 182,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1368,6 +1373,11 @@
         {
           "id": "economy.stock",
           "label": "The map-to-ledger seam (spec 11.2). Nothing a settlement mined, grew or crafted ever reached Settlement.Stores — its only writers were trade, tribute, quest rewards, raid resolution and scenario setup, so a watched settlement's work meant nothing at civilization scale. SettlementStockInitiative MOVES goods resting in a stockpile into the ledger rather than surveying them: the invariant is that a unit is a Thing on a map or a count in Stores, never both, and banking destroys as it credits, which is what keeps the existing readers that sum both halves correct. Two more defects surfaced while tracing it — nothing in src/ had EVER created a Zone_Stockpile, so WorkGiver_Haul (built, tested, listed in content, counted in the work register's 29 of 29) could never produce a job in any game; and GuildManager.Establish had no caller, so every Guild in the repo was made by a test. The settlement paints its own granary, sized by its backlog rather than by an invented capacity. A second invariant covers labour: a citizen either works jobs on a map or works in a guild, never both, or a settlement gets its stonecutting twice out of the same people.",
+          "done": true
+        },
+        {
+          "id": "economy.larder",
+          "label": "A citizen with no map can eat. Joining the tick path to the food economy left a regression measured rather than shipped: an unwatched settlement starved where it used to be frozen, because Game.NewGame focuses the settlement it founds so its citizens tick at Full, but nothing opened the interior — and every part of the food economy is map-based. SettlementLarder closes it from Settlement.Stores, the ledger batch eight built and nothing drew from. Predicate is !Spawned (plus alive, unsuspended, and hungry by the same CurCategory test ThinkNode_ConditionalHungry gates the map path on) rather than anything about tier: JobGiver_GetFood returns null the instant pawn.Map is null, so an unspawned citizen cannot reach food by any map route AT ANY TIER. A citizen standing on a map is never fed from the ledger, so the stock invariant holds — nutrition leaves the ledger in the same step it enters a stomach and no Thing is ever created. A founding settlement was found to hold MeleeWeapon_Knife x2 and nothing edible, so a band now walks in with rations sized per mouth to reach the first harvest its own field could give it, derived from the shipped crops' growDays rather than invented. No roll at all: food choice is a total order and the amount is arithmetic, pinned on Rand.Current.Iterations. StatisticalPopulation is never iterated, so ten thousand abstract citizens cost what ten do. Measured over eight days: unwatched food went from 0.00 from day one to never below 0.31, malnutrition from 0.80 to 0.00, and no corpse carries Malnutrition at all.",
           "done": true
         }
       ]
@@ -1653,6 +1663,11 @@
         {
           "id": "settlements.abstractconsumption",
           "label": "OPEN, and a regression this batch introduced rather than found. Now that off-map citizens tick, a settlement that is FOCUSED but never entered starves: Game.NewGame focuses the settlement it founds, so its citizens run at Full tier, but nothing has opened the interior, so there is no map — and the entire food economy is map-based (berries lie on a map, a growing zone is painted on one, a kitchen is built on one). Measured over eight in-game days: unwatched goes 25 alive to 18 with food 0.00 from day one, against watched holding food near 0.4. A Full-tier citizen with no map has needs that decay at full speed and no world in which to satisfy them. The fix is the one the tick lane named before the problem existed: an abstract consumption path from Settlement.Stores, the ledger batch eight built and nothing yet draws from. The two halves were built in the right order and have not been joined.",
+          "done": false
+        },
+        {
+          "id": "settlements.abstractproduction",
+          "label": "OPEN, and now the top item. Nothing produces food abstractly, so an unwatched settlement eats its founding rations down and then starves — the consumption half of the seam is built and the production half is not. Related and named in the code: only the player's founding band is provisioned, because the call sits in Game.NewGame; emergent rival bands (World.EmergenceManager) still found with an empty ledger. The call belongs in SettlementFounder.Found, which both paths use, but that would make World/ reference Economy and spec section 2 forbids referencing upward — the fix is an owner for emergence at Layer 4, not a reference the wrong way down.",
           "done": false
         }
       ]
