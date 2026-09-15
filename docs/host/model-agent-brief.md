@@ -70,8 +70,16 @@ project**; a settlement is carved out of this material and it is most of what is
 
 `Wall` · `Door` · `Bed` · `StorageHut` · `FueledStove`
 
-Note: `Bed` is 1×2 in RimWorld. The core does not yet carry footprints — that gap is being closed
-now — so **hold `Bed` until the footprint lands** rather than authoring it 1×1 and rebuilding it.
+**Note on `Bed`, updated.** It is 1×2 in RimWorld. `ThingDef.size` now parses correctly — until
+recently no `IntVec2` parser was registered, so a declared `<size>(1,2)</size>` silently became
+**(0,0)**, a footprint of no cells with no error anywhere. That is fixed, and the occupancy code
+that reads it was already correct.
+
+It still cannot be *used*: `GenConstruct.CanPlaceBlueprintAt` validates a single cell, and the
+hand-authored `Blueprint_*`/`Frame_*` defs carry no size of their own, so a 1×2 bed would be
+built from a 1×1 frame. **So `Bed` stays 1×1 for now — author it that way, and expect one
+revision when those two gaps close.** Everything else in this brief is genuinely 1×1 and will
+not change.
 
 ## Batch 4 — growth
 
