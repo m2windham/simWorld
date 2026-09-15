@@ -189,8 +189,10 @@ Landed:
    their own. RimWorld generates those and their footprint follows the building's
    automatically; here they are content, so a sized building would have a
    1×1 frame turn into a 2-cell building on completion.
-3. `Building.SettlementConstructionInitiative` picks a single free cell to place
-   into and has no notion of a rect to clear.
+3. `Building.SettlementConstructionInitiative.TryFindPlacementCell` scans single
+   cells. That one is the cheapest of the three, because it already delegates to
+   `CanPlaceBlueprintAt` — fix (1) and this follows, which is worth knowing
+   before anyone plans the work as three jobs.
 
 Those three have to agree before a buildable def states a footprint, and all
 three are in `Building/`, which other lanes were mid-recovery in when this

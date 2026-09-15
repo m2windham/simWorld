@@ -29,7 +29,8 @@ namespace SimWorld.Tests.Map
     /// <para/><b>What still assumes 1x1</b>, and is deliberately not changed here — see the report in
     /// <c>docs/perf/map-view.md</c>: <c>Building.GenConstruct.CanPlaceBlueprintAt</c> validates one cell, the
     /// hand-authored <c>Blueprint_X</c>/<c>Frame_X</c> defs carry no size of their own, and the settlement
-    /// construction initiative places into a single free cell. Setting a footprint on a buildable def before
+    /// construction initiative scans single cells (that last one follows from the first, since
+    /// <c>TryFindPlacementCell</c> already delegates to it). Setting a footprint on a buildable def before
     /// those three agree would be a field some systems honour and others ignore, which is worse than one
     /// nothing honours yet. So shipped content sets no size, and
     /// <see cref="Shipped_content_sets_no_footprint_yet"/> below is the tripwire for the day it does.
