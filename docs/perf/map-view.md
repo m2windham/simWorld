@@ -18,9 +18,14 @@ dotnet run -c Release --project tools/bench/SimWorld.Bench -- \
 Same box and the same discipline as `baseline.md`: 4 vCPU Intel Xeon @ 2.10GHz
 (KVM guest, virtualized — not a benchmarking lab), 16 GiB RAM, Ubuntu 24.04,
 .NET SDK 8.0.424 / runtime 8.0.30, Release build, fixed seed 12345, 2 warmup
-trials discarded + 5 measured, median reported. Treat single-digit-percent
-differences as noise; the *relative* comparison between the rows is the
-load-bearing part.
+trials discarded + 5–7 measured, median reported.
+
+The suite was run three times over, and the table below gives each row's median
+and the range across those runs, because on a shared KVM guest a single median
+reads as more precise than it is — one of the three runs overlapped another
+agent's test process and every row moved. **The relative comparison between the
+rows is the load-bearing part**, and it does not move at all: the incremental
+read is two orders of magnitude cheaper than the full one in every run.
 
 ## The scenario, which is a real one
 
@@ -43,13 +48,13 @@ seed you take.
 
 ## Results
 
-| call | median | allocated |
-| --- | --- | --- |
-| full `Capture()` | **3.57 ms** | 2,048 KiB |
-| `CaptureChanges()`, nothing changed | **0.02 ms** | 6 KiB |
-| `CaptureChanges()`, one chunk dirty | 0.13 ms | 86 KiB |
-| `CaptureChanges()`, terrain dirty | 0.70 ms | 243 KiB |
-| `CaptureChanges()`, once per tick (mean over 600 ticks) | **0.024 ms** | 7.4 KiB |
+| call | median | range over 3 runs | allocated |
+| --- | --- | --- | --- |
+| full `Capture()` | **3.57 ms** | 3.36 – 4.05 | 2,048 KiB |
+| `CaptureChanges()`, nothing changed | **0.02 ms** | 0.02 – 0.02 | 6 KiB |
+| `CaptureChanges()`, one chunk dirty | 0.13 ms | 0.13 – 0.16 | 86 KiB |
+| `CaptureChanges()`, terrain dirty | 0.73 ms | 0.70 – 1.09 | 243 KiB |
+| `CaptureChanges()`, once per tick (mean over 600 ticks) | **0.023 ms** | 0.019 – 0.025 | 7.4 KiB |
 
 Over that 600-tick run the seam sent back **0.02 chunks per tick** out of 49.
 Read as one delta instead, 500 ticks of a live settlement moved 12 of those 49
@@ -57,10 +62,11 @@ chunks — which is the same fact from the other end: change is real but it is
 slow, and asking every frame is how you turn it into nothing.
 
 The per-tick row is the one that matters, because it is the only one a host
-actually runs in a loop. **0.024 ms is 0.14% of a 60 Hz frame.** A full
-`Capture()` every frame would be 3.57 ms — a fifth of the frame budget spent
+actually runs in a loop. **0.023 ms is 0.14% of a 60 Hz frame.** A full
+`Capture()` every frame would be 3.6 ms — a fifth of the frame budget spent
 re-reading a map that did not change — and that is the shape this seam exists
-to avoid.
+to avoid. That ratio, roughly **150×**, is the measurement; the absolute
+milliseconds are this box's.
 
 The tick itself is outside both meters in that row: what is measured is the
 seam's cost, not the simulation's.
@@ -72,7 +78,7 @@ is taking that seriously:
 
 - **Terrain and roofs** barely change. One version number each; when it moves,
   the host re-pulls all 40,000 cells as a palette plus one `int` per cell. That
-  costs 0.70 ms and happens when somebody lays a floor or a roof falls in, not
+  costs ~0.7 ms and happens when somebody lays a floor or a roof falls in, not
   every frame. A per-cell diff would cost more to maintain than this costs to
   take. The roof palette carries `IsNatural` and `IsThickRoof` beside the
   defName, so a host finds the overhead mountain without hardcoding the string
@@ -81,7 +87,7 @@ is taking that seriously:
 - **Things** change rarely and locally. The map is cut into 32-cell-square
   chunks, each with its own version, bumped when a Thing is registered in,
   deregistered from, or moved within it. One wall built re-sends one chunk:
-  0.13 ms, not 3.57.
+  0.13 ms, not 3.6.
 - **Pawns** move constantly and are few — 29 here. They are never chunked and
   never versioned; every read re-captures all of them. That is the 6 KiB and
   ~0.02 ms floor in the steady-state row, and it is the price of never having to
