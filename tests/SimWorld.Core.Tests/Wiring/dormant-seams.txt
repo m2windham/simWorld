@@ -84,7 +84,6 @@ content-silent SimWorld.Work.SkillDef.neverDisabledBasedOnWorkTypes | No shipped
 code-deaf SimWorld.AI.JobDef.reportString | Host-facing text with no reader: the field's own doc says it is for an inspect pane once one exists, and God/View does not carry job text.
 code-deaf SimWorld.Combat.ProjectileProperties.stoppingPower | Blocked on stagger, which this port does not model; a hit resolves instantly, so nothing consumes the stagger input.
 code-deaf SimWorld.Crafting.RecipeDef.jobString | Host-facing text ("doing X") for a UI the core does not have and the snapshot does not surface.
-code-deaf SimWorld.Defs.ThingDef.altitudeLayer | Draw order for a renderer. An engine-free core never draws, and the host draws from its own snapshot.
 code-deaf SimWorld.Defs.ThingDef.selectable | Host-facing: whether a UI may select the thing. The core has no selection model.
 code-deaf SimWorld.Director.StorytellerDef.persona | Host-facing flavour: the narrator's in-fiction name, for the host to speak. Its own doc records that the naming is still open.
 code-deaf SimWorld.Economy.TraderKindDef.orbital | Blocked on orbital trade, which needs caravans going up rather than traders arriving; the field's own doc calls it a gating flag only.

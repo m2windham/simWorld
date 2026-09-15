@@ -13,13 +13,13 @@ namespace SimWorld.Map.View
     /// then:
     /// <code>
     /// // once
-    /// MapViewSnapshot snapshot = MapViewSnapshot.Capture(tile);
+    /// MapViewSnapshot snapshot = MapViewSnapshot.Capture();   // the settlement the god has open
     /// if (!snapshot.HasMap) { ShowMessage(snapshot.AbsenceReason); return; }
     /// BuildScene(snapshot);
     /// MapViewVersions held = snapshot.Versions;
     ///
     /// // every frame
-    /// MapViewDelta delta = MapViewSnapshot.CaptureChanges(tile, held);
+    /// MapViewDelta delta = MapViewSnapshot.CaptureChanges(held);
     /// if (!delta.HasMap) { DropScene(); return; }
     /// if (delta.FullResync) DropScene();
     /// if (delta.Terrain != null) RebuildTerrain(delta.Terrain);

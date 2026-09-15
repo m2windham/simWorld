@@ -161,6 +161,53 @@ namespace SimWorld.Map.View
         // ---- capture ----
 
         /// <summary>
+        /// The interior of whichever settlement the god currently has open, whole.
+        ///
+        /// <para/><b>Prefer this to <see cref="Capture(int)"/>.</b> The host is told never to carry its own
+        /// idea of which settlement is selected — <c>GodCommands.FocusSettlement</c> writes it and
+        /// <c>GodViewSnapshot.FocusedSettlementTile</c> reads it back, and two disagreeing notions of what the
+        /// player is looking at is a bug that takes a week to find. A host that passes a tile it remembered is
+        /// keeping a second notion; this overload asks the simulation instead, so the map drawn is the map
+        /// attended, always. It also handles the case that makes the remembered tile wrong in the first place:
+        /// the focused settlement being destroyed, after which attention falls back to civilization scope on
+        /// its own (<c>AttentionManager.Reconcile</c>) and this reports that rather than a stale town.
+        /// </summary>
+        public static MapViewSnapshot Capture()
+        {
+            int? tile = FocusedTile(out string? reason);
+            if (tile == null) return Absent(-1, null, reason!);
+            return Capture(tile.Value);
+        }
+
+        /// <summary>Changes to the interior of whichever settlement the god has open — the per-frame call, on
+        /// the focus rather than on a tile the host remembered. See <see cref="Capture()"/>.</summary>
+        public static MapViewDelta CaptureChanges(MapViewVersions? held)
+        {
+            int? tile = FocusedTile(out string? reason);
+            if (tile == null) return MapViewDelta.Absent(reason!);
+            return CaptureChanges(tile.Value, held);
+        }
+
+        private static int? FocusedTile(out string? reason)
+        {
+            if (Find.CurrentGame == null)
+            {
+                reason = "No game is running, so no settlement is open.";
+                return null;
+            }
+
+            World.Settlement? focused = Find.God.Attention.FocusedSettlement;
+            if (focused == null)
+            {
+                reason = "No settlement is open — the god is at civilization scope.";
+                return null;
+            }
+
+            reason = null;
+            return focused.tile;
+        }
+
+        /// <summary>
         /// The whole interior of the settlement on <paramref name="tile"/>, from scratch.
         ///
         /// <para/><b>A settlement is named by its world tile</b> — the same handle <c>GodCommands</c> takes,

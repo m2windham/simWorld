@@ -143,6 +143,43 @@ namespace SimWorld.Tests.Map
         }
 
         /// <summary>
+        /// The parameterless overloads read the focus rather than a tile the host remembered, which is the
+        /// whole point of them: <c>docs/host/rendering-method.md</c> tells the host never to carry its own
+        /// idea of which settlement is selected, because two disagreeing notions of what the player is
+        /// looking at is a bug that takes a week to find. Asking the simulation cannot disagree with it.
+        /// </summary>
+        [Fact]
+        public void The_focused_overloads_draw_whatever_the_god_actually_has_open()
+        {
+            Game game = NewSoloGame("map-view-focused");
+            Settlement settlement = PlayerSettlement(game);
+
+            // Nothing open: an answer, not an exception, and not the last settlement it happened to see.
+            GodCommands.ClearSettlementFocus();
+            MapViewSnapshot unfocused = MapViewSnapshot.Capture();
+            Assert.False(unfocused.HasMap);
+            Assert.False(string.IsNullOrWhiteSpace(unfocused.AbsenceReason));
+            Assert.False(MapViewSnapshot.CaptureChanges(null).HasMap);
+
+            GodCommands.OpenSettlement(settlement.tile);
+
+            MapViewSnapshot focused = MapViewSnapshot.Capture();
+            Assert.True(focused.HasMap);
+            Assert.Equal(settlement.tile, focused.Tile);
+            Assert.Equal(GodViewSnapshot.Capture().FocusedSettlementTile, focused.Tile);
+
+            // And the same map either way — the two entry points are one query with two handles, not two
+            // answers that could drift.
+            MapViewSnapshot byTile = MapViewSnapshot.Capture(settlement.tile);
+            Assert.Equal(byTile.SessionId, focused.SessionId);
+            Assert.Equal(byTile.SizeX, focused.SizeX);
+
+            MapViewDelta delta = MapViewSnapshot.CaptureChanges(focused.Versions);
+            Assert.True(delta.HasMap);
+            Assert.False(delta.FullResync);
+        }
+
+        /// <summary>
         /// The seam is reachable from nothing but a world tile — the same handle <c>GodCommands</c> takes —
         /// and it explains itself when there is nothing there. A host that has to distinguish "not generated
         /// yet" from "generated and empty" has <c>SettlementSummary.HasInteriorMap</c> for the first and this
