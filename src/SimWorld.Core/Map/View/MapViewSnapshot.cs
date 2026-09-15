@@ -350,7 +350,7 @@ namespace SimWorld.Map.View
         {
             int n = map.cellIndices.NumGridCells;
             var cells = new int[n];
-            var palette = new List<string>();
+            var palette = new List<RoofView>();
             var index = new Dictionary<RoofDef, int>();
 
             for (int i = 0; i < n; i++)
@@ -364,7 +364,7 @@ namespace SimWorld.Map.View
                 if (!index.TryGetValue(def, out int slot))
                 {
                     slot = palette.Count;
-                    palette.Add(def.defName);
+                    palette.Add(new RoofView(def.defName, def.isNatural, def.isThickRoof));
                     index[def] = slot;
                 }
                 cells[i] = slot;
@@ -515,6 +515,7 @@ namespace SimWorld.Map.View
         {
             var noCells = Array.Empty<int>();
             var noPalette = Array.Empty<string>();
+            var noRoofs = Array.Empty<RoofView>();
             return new MapViewSnapshot(
                 DefDatabase.Global.DefCount > 0,
                 hasMap: false,
@@ -529,7 +530,7 @@ namespace SimWorld.Map.View
                 chunksX: 0,
                 chunksZ: 0,
                 new TerrainLayer(0, 0, 0, noPalette, noCells),
-                new RoofLayer(0, 0, 0, noPalette, noCells),
+                new RoofLayer(0, 0, 0, noRoofs, noCells),
                 Array.Empty<MapViewChunk>(),
                 Array.Empty<PawnView>(),
                 new MapViewVersions(0L, 0, 0, noCells));

@@ -233,6 +233,33 @@ namespace SimWorld.Tests.Map
             Assert.False(roofs.IsRoofed(0, 0));
         }
 
+        /// <summary>
+        /// Overhead mountain is the roof fact a host most needs and the one it is likeliest to get wrong. The
+        /// distinction is the core's — <c>RoofDef.isThickRoof</c> — so it crosses the seam as a flag rather
+        /// than leaving every host to recognise the string "RoofRockThick" and draw a mountain as open sky
+        /// when it does not.
+        /// </summary>
+        [Fact]
+        public void Overhead_mountain_is_distinguishable_without_knowing_a_defName()
+        {
+            CoreMap map = NewMap();
+            RoofDef thick = RoofDefOf.RoofRockThick;
+            map.roofGrid.SetRoof(new IntVec3(2, 0, 2), thick);
+            map.roofGrid.SetRoof(new IntVec3(3, 0, 3), RoofDefOf.RoofConstructed);
+
+            RoofLayer roofs = MapViewSnapshot.Capture(map).Roofs;
+
+            Assert.True(roofs.IsThickRoofed(2, 2));
+            Assert.True(roofs.IsRoofed(3, 3));
+            Assert.False(roofs.IsThickRoofed(3, 3));
+            Assert.False(roofs.IsThickRoofed(0, 0));
+
+            // The flags come from the def, not from a name the view pattern-matched.
+            RoofView view = Assert.Single(roofs.Palette, r => r.DefName == thick.defName);
+            Assert.Equal(thick.isThickRoof, view.IsThickRoof);
+            Assert.Equal(thick.isNatural, view.IsNatural);
+        }
+
         // ---- the incremental read, which is the whole reason this is not one Capture() ----
 
         [Fact]

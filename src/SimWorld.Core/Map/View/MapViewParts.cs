@@ -50,6 +50,34 @@ namespace SimWorld.Map.View
     }
 
     /// <summary>
+    /// One kind of roof in a <see cref="RoofLayer"/>'s palette: its name, and the two facts about it a host
+    /// needs in order to draw it differently.
+    ///
+    /// <para/><b>The flags are carried rather than left to the registry</b> because otherwise every host
+    /// hardcodes the string <c>"RoofRockThick"</c> to find the overhead mountain, and a host that gets that
+    /// wrong draws a solid mountain as open sky. The distinction is the core's — <c>RoofDef.isNatural</c> and
+    /// <c>RoofDef.isThickRoof</c> — so it crosses the seam as the core states it.
+    /// </summary>
+    public readonly struct RoofView
+    {
+        internal RoofView(string defName, bool isNatural, bool isThickRoof)
+        {
+            DefName = defName;
+            IsNatural = isNatural;
+            IsThickRoof = isThickRoof;
+        }
+
+        public string DefName { get; }
+
+        /// <summary>Rock the map was generated with, rather than something built.</summary>
+        public bool IsNatural { get; }
+
+        /// <summary>Overhead mountain: deep rock that cannot be removed by ordinary means and that the player
+        /// most needs to see before building under it.</summary>
+        public bool IsThickRoof { get; }
+    }
+
+    /// <summary>
     /// Overhead roof per cell, in the same palette-plus-index shape as <see cref="TerrainLayer"/> and for the
     /// same reason.
     ///
@@ -64,7 +92,7 @@ namespace SimWorld.Map.View
         /// a null a host would have to test for on every lookup.</summary>
         public const int Unroofed = -1;
 
-        internal RoofLayer(int version, int sizeX, int sizeZ, IReadOnlyList<string> palette, IReadOnlyList<int> cells)
+        internal RoofLayer(int version, int sizeX, int sizeZ, IReadOnlyList<RoofView> palette, IReadOnlyList<int> cells)
         {
             Version = version;
             SizeX = sizeX;
@@ -80,8 +108,8 @@ namespace SimWorld.Map.View
 
         public int SizeZ { get; }
 
-        /// <summary>Distinct roof defNames. Empty on a map with no roof anywhere, which is most open ground.</summary>
-        public IReadOnlyList<string> Palette { get; }
+        /// <summary>Distinct roofs. Empty on a map with no roof anywhere, which is most open ground.</summary>
+        public IReadOnlyList<RoofView> Palette { get; }
 
         /// <summary>One <see cref="Palette"/> index per cell, row-major, or <see cref="Unroofed"/>.</summary>
         public IReadOnlyList<int> Cells { get; }
@@ -92,7 +120,16 @@ namespace SimWorld.Map.View
         public string? RoofAt(int x, int z)
         {
             int i = Cells[z * SizeX + x];
-            return i == Unroofed ? null : Palette[i];
+            return i == Unroofed ? null : Palette[i].DefName;
+        }
+
+        /// <summary>Whether the cell is under overhead mountain — the one roof fact a settlement dug into a
+        /// hillside is drawn wrong without, and the reason <see cref="RoofView"/> carries flags rather than
+        /// leaving a host to recognise a defName.</summary>
+        public bool IsThickRoofed(int x, int z)
+        {
+            int i = Cells[z * SizeX + x];
+            return i != Unroofed && Palette[i].IsThickRoof;
         }
     }
 

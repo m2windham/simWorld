@@ -74,7 +74,10 @@ is taking that seriously:
   the host re-pulls all 40,000 cells as a palette plus one `int` per cell. That
   costs 0.70 ms and happens when somebody lays a floor or a roof falls in, not
   every frame. A per-cell diff would cost more to maintain than this costs to
-  take.
+  take. The roof palette carries `IsNatural` and `IsThickRoof` beside the
+  defName, so a host finds the overhead mountain without hardcoding the string
+  `"RoofRockThick"` — get that wrong and a solid mountain draws as open sky,
+  which is the roof mistake worth designing against.
 - **Things** change rarely and locally. The map is cut into 32-cell-square
   chunks, each with its own version, bumped when a Thing is registered in,
   deregistered from, or moved within it. One wall built re-sends one chunk:
