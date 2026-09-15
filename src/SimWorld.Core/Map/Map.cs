@@ -34,6 +34,11 @@ namespace SimWorld.Map
         public ListerThings listerThings = null!;
         public MapPawns mapPawns = null!;
 
+        /// <summary>What has changed on this map since a host last drew it (<c>Map/View</c>, spec §12a's
+        /// missing half — see <see cref="View.MapViewTracker"/>). Transient by design: never saved, rebuilt
+        /// with the grids, and a fresh one after a load is what tells a host to re-pull everything.</summary>
+        [Unsaved] public View.MapViewTracker mapView = null!;
+
         /// <summary>Who has claimed what, so two pawns never act on the same target (system 9 / AI).</summary>
         public ReservationManager reservationManager = null!;
 
@@ -187,6 +192,12 @@ namespace SimWorld.Map
         {
             Size = new IntVec3(sizeX, 1, sizeZ);
             cellIndices = new CellIndices(sizeX, sizeZ);
+
+            // Before every grid that reports into it: TerrainGrid's fill and, on a load, SetTerrainDirect
+            // both notify, and a null tracker there would be a NullReferenceException on the first line of
+            // map construction rather than anywhere useful.
+            mapView = new View.MapViewTracker(sizeX, sizeZ);
+
             terrainGrid = new TerrainGrid(this, fill);
             roofGrid = new RoofGrid(this);
             thingGrid = new ThingGrid(this);
