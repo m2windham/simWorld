@@ -32,6 +32,7 @@ namespace SimWorld.Map
             {
                 if (!GenGrid.InBounds(c, map)) continue;
                 grid[map.cellIndices.CellToIndex(c)].Add(thing);
+                map.mapView.Notify_ThingChangedAt(thing, c);
             }
         }
 
@@ -42,6 +43,7 @@ namespace SimWorld.Map
             {
                 if (!GenGrid.InBounds(c, map)) continue;
                 grid[map.cellIndices.CellToIndex(c)].Remove(thing);
+                map.mapView.Notify_ThingChangedAt(thing, c);
             }
         }
 
@@ -58,6 +60,12 @@ namespace SimWorld.Map
             if (thing == null) throw new ArgumentNullException(nameof(thing));
             if (GenGrid.InBounds(oldCell, map)) grid[map.cellIndices.CellToIndex(oldCell)].Remove(thing);
             if (GenGrid.InBounds(newCell, map)) grid[map.cellIndices.CellToIndex(newCell)].Add(thing);
+
+            // Both ends, since the Thing left one chunk's picture and joined another's. A pawn's own step is
+            // by far the commonest caller here and costs nothing: Notify_ThingChangedAt drops pawns outright,
+            // because they are re-read whole on every capture rather than chunked (View.MapViewTracker).
+            map.mapView.Notify_ThingChangedAt(thing, oldCell);
+            map.mapView.Notify_ThingChangedAt(thing, newCell);
         }
 
         public IReadOnlyList<Thing> ThingsListAt(IntVec3 c) => grid[map.cellIndices.CellToIndex(c)];

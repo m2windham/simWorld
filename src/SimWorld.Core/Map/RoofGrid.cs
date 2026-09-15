@@ -18,6 +18,13 @@ namespace SimWorld.Map
 
         public RoofDef? RoofAt(IntVec3 c) => grid[map.cellIndices.CellToIndex(c)];
 
-        public void SetRoof(IntVec3 c, RoofDef? roof) => grid[map.cellIndices.CellToIndex(c)] = roof;
+        public void SetRoof(IntVec3 c, RoofDef? roof)
+        {
+            grid[map.cellIndices.CellToIndex(c)] = roof;
+
+            // A roof falling in is the one map change a player most needs to see drawn, and a host cannot
+            // infer it from terrain or from what is standing on the cell (Map/View — View.MapViewTracker).
+            map.mapView.Notify_RoofChanged();
+        }
     }
 }
