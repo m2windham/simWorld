@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    What a thick rock roof leaves behind when it comes down (RimWorld: CollapsedRocks in
+    Core/Defs/ThingDefs_Buildings/Buildings_Natural.xml, named by RoofRockThick's own
+    collapseLeavingThingDef). RimWorld's description says what it is for: "Collapsed rocks, packed tightly
+    enough to hold up a roof."
+
+    That last clause is the mechanism, not flavour. An overhead-mountain collapse in RimWorld refills the cell
+    with impassable rock, and RoofDef.VanishOnCollapse is false for a thick roof, so the roof stays and the new
+    rock holds it — and its neighbours' — up again. The collapse is self-limiting: it cannot walk outward
+    across a mountain, because every cell it drops becomes a support for the cells around it. This port
+    removed the thick roof and spawned nothing, so every collapse permanently widened the unsupported area.
+
+    Parents onto BaseNaturalRock, which already carries passability Impassable, fillPercent 1, category
+    Building, destroyable=false and mineable=true — exactly what RimWorld's own RockBase gives it, and all
+    that "holds a roof up, and can be dug out again by someone who decides to" needs. It stays mineable
+    rather than being flagged off: mineable is also this codebase's line between natural rock and something
+    somebody built (Map/ListerThings' BuildingArtificial group, and with it Settlement's own idea of where
+    its centre is and WorkGiver_Repair's idea of what can be patched up), and collapsed rock is not a
+    building.
+
+    Like RimWorld's it names no mineableThing, so digging it back out costs work and pays nothing — the one
+    Def in content for which that is the intent rather than an oversight, and Things/MiningTests names it as
+    the exception for exactly that reason.
+  -->
+
+  <ThingDef ParentName="BaseNaturalRock">
+    <defName>CollapsedRocks</defName>
+    <label>collapsed rocks</label>
+    <description>Collapsed rocks, packed tightly enough to hold up a roof.</description>
+    <statBases>
+      <MaxHitPoints>500</MaxHitPoints>
+    </statBases>
+  </ThingDef>
+
+</Defs>
