@@ -909,6 +909,188 @@ RimWorld's `ecoSystemWeight`. `BiomeDef` also carries no `wildAnimals` table and
 animal `PawnKindDef`s ship, so every land biome draws the same three kinds and differs only in
 how many — recorded as a content gap rather than papered over with an invented menagerie.
 
+### 11. The misreading had a root cause, and it was one `DamageDef`
+
+§9a said every death was a citizen beaten to death by another citizen. §10 corrected the
+*reading* — the string is the `Blunt` `DamageDef`'s own `deathMessage` and `RoofCollapseUtility`
+sets no instigator — but left open why a roof was printing it. This batch found the answer, and
+it is the cleanest possible one:
+
+**RimWorld's roof collapse deals `Crush`, whose `deathMessage` is "{0} has been crushed to
+death." This port dealt `Blunt`, whose message is "{0} has been beaten to death."** Two batches
+of misdiagnosis were produced by one wrong `DamageDef`, printed faithfully by content that was
+doing exactly what it was told.
+
+#### The collapse was not RimWorld's, in five ways
+
+Each checked against RimWorld's own source (`Verse.RoofCollapserImmediate`,
+`RoofCollapseUtility`, `RoofCollapseCellsFinder`, `RoofDef`, and Core's `Roofs.xml`):
+
+1. **`Blunt` instead of `Crush`** — the misreading, above.
+2. **No body region was set**, so `DamageWorker_AddInjury` drew a part by coverage over the whole
+   body, *inside parts included*, and one 50-point hit on a heart is a dead colonist. That is
+   §10's unexplained signature exactly. RimWorld aims an ordinary roof at
+   `BodyPartHeight.Top` / `BodyPartDepth.Outside`, which **cannot reach an organ at all**.
+3. **Ordinary-roof damage was a flat 50**; RimWorld's `ThinRoofCrushDamageRange` is 15–30, rolled
+   per thing.
+4. **Overhead mountain was 100 Blunt and survivable.** RimWorld's is 99999 `Crush` at 999 armour
+   penetration aimed at the brain, applied twice, then `Kill`.
+5. **A collapsed thick roof was deleted and left nothing.** RimWorld's does not vanish
+   (`RoofDef.VanishOnCollapse` is `!isThickRoof`) and refills the cell with `CollapsedRocks` —
+   which then holds that roof and its neighbours' up again. **That is what makes a collapse
+   self-limiting instead of self-feeding.**
+
+The support query was wrong in both directions too: a straight radius of 5, recorded at the site
+as unsourced, against RimWorld's `RoofMaxSupportDistance` of 6.9 reached by a **flood fill through
+roofed cells**. A radius lets support leak across open sky; the flood fill is what makes "in
+range" mean "along the ceiling". And nothing answered the flying-roof question at all — a ceiling
+severed from every holder simply stayed up.
+
+#### But faithfulness is not what saved the settlement, and the lane said so
+
+This is the part worth keeping. **A faithful overhead-mountain collapse is *more* lethal than what
+this port had, not less.** The staged measurement — faithful collapse, mining gate at hand-out
+only — put one seed at 11 dead against a baseline of 14. The collapse being faithful is worth
+having on its own terms, because the letters now say what happened and a constructed roof falling
+on a healthy colonist is survivable as it is in RimWorld. It is not why the deaths stopped.
+
+**The mining was reckless, and that is what produced the result.** Nothing designates mining in
+this port, so `WorkGiver_Miner` mined every reachable mineable edifice. On day one a settlement
+mines nothing, because every other work type outranks it. From day two, twenty-five citizens
+mined 2,286 rock cells in a day and **brought 724 roof cells down on themselves**. RimWorld's
+player is looking at the overhead-mountain overlay while they choose where to dig; that judgement
+went missing along with the player. Recorded as a translation at
+`RoofCollapseUtility.WouldCollapseRoofIfRemoved`.
+
+The gate had to sit at **two** points — the work-giver *and* the job driver at the moment the rock
+is actually taken — because with twenty-five people on one seam the answer given at hand-out goes
+stale. With the gate only at hand-out, twelve thousand mined cells still produced fifty-two
+collapses and nine crushed founders.
+
+| seed | alive day 8, before → after | crushed | roof cells lost | rock mined |
+| --- | --- | --- | --- | --- |
+| a | 11/25 → **22/25** | 0 | 0 of 14,590 | 12,728 |
+| b | 11/25 → **23/25** | 0 | 0 of 14,584 | 12,734 |
+| c | 17/25 → **23/25** | 0 | 0 of 14,501 | 12,728 |
+
+Not one roof cell came down in twenty-four in-game days, and not one citizen was crushed, **while
+the settlements mined out 98% of their mountains** — the rule is about *which* cells, not about
+mining less. The seven remaining deaths across all three seeds are five wound infections and two
+animal bites.
+
+### 11a. A town nobody watches now sleeps
+
+Third instance of one shape, and the pattern is now unmistakable. The food economy was map-based,
+so an unwatched settlement starved (`Economy/SettlementLarder`). Recreation was map-based, so joy
+sat at its worst stage for ever (`Needs/AbstractRecreation`). **Sleep is reached only through
+`AI.JobGiver_GetRest`, whose first line refuses a pawn with no map**, so `Need_Rest` could only
+fall: 0.95 → 0.00 by day two, `Tired` at −20 a head, the largest remaining term in an unwatched
+settlement's mood ledger.
+
+`Needs/AbstractRest.cs` closes it in the established shape rather than a third one — same
+`!Spawned` predicate, no draw from the ambient `Rand` stream, no state. Recovery goes through
+`Need_Rest.RestGainPerTick`, so bed effectiveness and the fall rate stay the ported model's.
+Two recorded translations: an abstract night is a fixed span rather than a refill to full, and it
+is slept on bare ground, so a bed left behind on an interior does not follow a citizen off it.
+
+Measured, three seeds, eight days: **25/25 alive on every seed**, rest oscillating 0.38–0.82, and
+`Tired` gone from the mood ledger entirely.
+
+### 11b. The starvation clock: reverted twice, and now diagnosed correctly
+
+`Need_Food.NeedIntervalBulk` credits starvation once per bulk call rather than once per slice.
+The correction was written and reverted in batch nine blaming **food**, and abstract production
+was named as its precondition. That precondition landed in batch ten. The correction was
+re-applied here, re-measured against the test the first revert cited — `AttentionBudgetTests`'
+century of demography came out 884 / 771 / 759 / 796 / 732 across its five seeds against the
+~1,500 its premise needs — and **reverted a second time.**
+
+The value of the second attempt is that the blocker is finally named correctly, at the defect
+site: **it was never food, it is the span.** `Pawn_TierTracker.ApplyElapsed` calls the bulk method
+once with the whole time since a citizen was last brought current, and **nothing can eat inside a
+bulk call** — `SettlementLarder` feeds on its own gated pass. In a running game that span is one
+Long tick and the correction is harmless. In `AttentionBudgetTests` it is a *year*, because that
+test advances the clock with `DebugSetTicksGame` and ages citizens with `AgeTickMothballed`
+without ticking anybody, so one call charges 24,000 slices at once — severity 6.8 against a lethal
+1.
+
+What has to land first is written down there: **bound the catch-up span at the Pawns/Economy
+seam, or have that century advance through the tick loop.** A cap inside `Need_Food` would make
+the test pass by inventing tiering policy in a need class, so it is named and not taken.
+
+### 11c. Hunting closes: taming was gated on nothing
+
+Twelve days produced zero hunts and sixty-six tamings. Both links are closed.
+
+**The food gate was shut from tick zero, permanently.** `HuntingInitiative.WantsMeat` counted
+`Settlement.Stores` — the abstract ledger a founding band is credited hundreds of nutrition into,
+and which nothing draws down while the settlement has a map, because `SettlementLarder` feeds only
+citizens who are **not** spawned. *The hunters were reading a granary their own people cannot eat
+out of and concluding they were rich.* It now reads `NutritionReachable` — food a pawn standing on
+the map could walk to — which is the same figure `SettlementStockInitiative` measures its banking
+reserve against, so one number has two signs instead of two numbers disagreeing.
+
+**Taming had no gate at all.** In RimWorld both verbs draw from
+`designationManager.SpawnedDesignationsOfDef`. This port has no `Designation` system; hunting's
+copy of that predicate was translated into `HuntingInitiative` and **taming's was translated into
+nothing**, so every wild animal was unconditional `Handling` work at priority 950 against
+`Hunting`'s 850. `AI/TamingInitiative.cs` is the missing half: a settlement keeps as much
+livestock as its surplus feeds, and while it is short of food the animals on its land are meat
+rather than livestock. No `naturalPriority` was changed.
+
+The lane chose the initiative over porting a `Designation` layer and recorded why: with no player,
+a designation store is empty and changes nothing until something issues designations, and that
+something can only be a civilization-scale reader of settlement state — so the real choice is
+`initiative → designation → giver` versus `initiative → giver`, and five givers here have already
+translated the same predicate away. What a designation layer would still buy is written at the
+same place.
+
+### 11d. The host can render a settlement
+
+Spec §12a's read model deliberately omitted map data, so the host could render a civilization and
+**not a single cell of a settlement**. `Map/View` closes that — `God/View`'s discipline one scale
+down: values not references, every handle a `defName`, and a reflection test over the whole
+namespace that fails if any public property of any public type hands out a `Def`, a live object,
+an array or a mutable collection.
+
+**Three change rates get three treatments**, and that is the whole design: terrain and roofs
+versioned whole, things chunked 32×32 and versioned, pawns never chunked and always complete.
+A pawn walking 38 cells across two chunk boundaries dirties **no** chunk.
+
+| call | median | allocated |
+| --- | --- | --- |
+| full `Capture()` — 200×200, 7,570 things, 29 pawns | 3.57 ms | 2,048 KiB |
+| `CaptureChanges()`, per tick over 600 ticks | **0.023 ms** | 7.4 KiB |
+
+0.14% of a 60 Hz frame against a full capture's fifth of it. Over 600 ticks the seam sent 0.02
+chunks per tick out of 49.
+
+**And `ThingDef.size` could never have worked.** The field existed, and so did every grid that
+reads it — what was missing was the *parse*. No `IntVec2` parser was registered, so
+`<size>(1,2)</size>` did not fail; it fell through `XmlObjectMapper`'s build-an-object path, found
+no child elements, and silently yielded **(0,0)** — a footprint of no cells, no error anywhere.
+Registered now, with `GenSpawn` bounds-checking the whole footprint. No content sets a size yet,
+because `GenConstruct.CanPlaceBlueprintAt` validates one cell and the `Blueprint_`/`Frame_` defs
+carry no size of their own; `ThingSizeTests.Shipped_content_sets_no_footprint_yet` is the tripwire.
+
+The host briefs are in `docs/host/`: `rendering-method.md`, `renderer-brief.md`, and
+`model-agent-brief.md`.
+
+### Open after batch eleven
+
+- **The catch-up span**, §11b — the named precondition for the starvation clock.
+- **A designation layer**, still unported and now a recorded decision rather than an oversight.
+- **Footprints cannot be used** until `CanPlaceBlueprintAt` validates a rect and the
+  `Blueprint_`/`Frame_` defs carry a size.
+- **In-place `Thing` mutation does not dirty a chunk** — stack count, hit points and plant growth
+  are field writes with no grid call to hook. A host drawing stack numbers must re-pull on its own
+  schedule. `Notify_ChunkChangedAt` is the escape hatch.
+- **Wild animals still starve** — `JobGiver_GetFood` finds only items; there is no grazing.
+- **No abstract non-food production**, so `Crafting.Guild` still starves in an unwatched
+  settlement.
+- **`FoundColony` settlements** are pure Statistical cohort and keep empty ledgers for ever.
+- **The seam is proven by tests only.** No lane here has a Unity host, so nothing has been drawn.
+
 ## Immediate steps: the host repo — unclaimed, proposed
 
 These are proposed rather than assigned. The host session claims, amends or rejects
@@ -1033,3 +1215,17 @@ it. Four systems' worth of effort turned on one unexamined string.
 
 The rule that follows is cheap: when a measurement names a cause, find the line of code
 that produces the name. `RoofCollapseUtility` was four greps away the whole time.
+
+Batch eleven closed that loop rather than merely repeating the lesson. The misreading had a
+**root cause, and it was itself a porting defect**: RimWorld's roof collapse deals `Crush`, whose
+`deathMessage` is "crushed to death", and this port dealt `Blunt`, whose message is "beaten to
+death". The content was printing exactly what it was told. So the rule §10 drew — when a
+measurement names a cause, find the line of code that produces the name — turned out to have a
+second half: **that line is often itself the bug.** Four systems' worth of effort went into
+chasing a murder epidemic that one wrong `DamageDef` had invented.
+
+And the batch declined to take credit where it had not earned it. Making the collapse faithful did
+not save the settlement and *could not have* — a faithful overhead-mountain collapse is more
+lethal than what this port had, and the staged measurement says so. The deaths stopped because
+mining stopped digging out its own ceiling. A lane that had reported "ported it 1:1, deaths went
+away" would have been believed, and would have left the real mechanism undiscovered.
