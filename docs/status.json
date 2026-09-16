@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-09-12",
-  "testsTotal": 2082,
+  "updated": "2026-09-16",
+  "testsTotal": 2147,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -394,9 +394,9 @@
       "rimworld": "Map Core & Thing Runtime",
       "translation": "Unchanged. The Thing/Comp runtime and map grids every later system stands on; settlement maps are generated onto it.",
       "translationState": "decided",
-      "module": "src/SimWorld.Core/Map · Things",
+      "module": "src/SimWorld.Core/Map · Things · src/SimWorld.Core/Map/View",
       "status": "ported",
-      "tests": 56,
+      "tests": 89,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -436,6 +436,16 @@
         {
           "id": "mapcore.mining",
           "label": "Mining yields what the rock holds — ThingDef.mineableThing/mineableYield were set by content and read by nothing: JobDriver_Mine destroyed the edifice and spawned air. Mineable/MineableUtility now drop the chunk or ore, GenStep_RocksAndMountains places more than one rock type, and DifficultyDef.mineYieldFactor finally has a yield to scale.",
+          "done": true
+        },
+        {
+          "id": "mapcore.readmodel",
+          "label": "Map/View: the engine-free contract a host binds to for a settlement interior - God/View's discipline one scale down (spec 12a). Before it, the snapshot deliberately omitted map data and a settlement reported only whether its interior existed, so the host could render a civilization and not one cell of a town. MapViewSnapshot.Capture() takes one tick's values (terrain and roofs as palette-plus-index over every cell, non-pawn things chunked with defName/stuff/cell/rotation/footprint/stack/category/altitude/health/growth, every spawned pawn with pose and apparel) and CaptureChanges(held) returns only what moved. Everything crosses as strings and values - no Def, no Thing, no Map, no engine type - asserted structurally by reflection over every public property of every public type in the namespace, so a type added later is covered without anyone remembering. THREE CHANGE RATES GET THREE TREATMENTS and that is the whole design: terrain and roofs versioned whole, things chunked 32x32 and versioned, pawns never chunked and always complete. A pawn walking 38 cells across two chunk boundaries dirties no chunk. Measured on a real 200x200 interior with 7,570 things and 29 pawns: a full capture is 3.57 ms and a per-tick incremental read is 0.023 ms, 0.14% of a 60 Hz frame (docs/perf/map-view.md). Holds no state and saves none; a loaded map gets a fresh session id and the host re-pulls. Known and documented: in-place Thing mutation (stack count, hit points, plant growth) does not dirty a chunk, because those are field writes with no grid call to hook.",
+          "done": true
+        },
+        {
+          "id": "mapcore.footprint",
+          "label": "ThingDef.size can finally be stated. The field and every grid that reads it - GenAdj.OccupiedRect, ThingGrid, EdificeGrid, the multi-cell Position path, RoofCollapseUtility - were already correct. What was missing was the PARSE: no IntVec2 parser was registered, so <size>(1,2)</size> did not fail, it fell through XmlObjectMapper's build-an-object path, found no child elements and silently yielded (0,0) - a footprint of no cells, no error anywhere, worse than the field being absent. IntVec2/IntVec3.FromString registered in ParseHelper as RimWorld does, and GenSpawn now bounds-checks the whole footprint rather than the centre cell. No content sets a size yet, because GenConstruct.CanPlaceBlueprintAt validates one cell and the hand-authored Blueprint_/Frame_ defs carry no size of their own, so a 1x2 bed would be built from a 1x1 frame; ThingSizeTests.Shipped_content_sets_no_footprint_yet is the tripwire that names both.",
           "done": true
         }
       ]
@@ -607,7 +617,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
       "status": "ported",
-      "tests": 101,
+      "tests": 113,
       "items": [
         {
           "id": "needs.pawn",
@@ -712,6 +722,16 @@
         {
           "id": "needs.joy",
           "label": "Nothing in src/ could raise Need_Joy: GainJoy had exactly one caller and it was CompDrug, so the only recreation available to a citizen of this civilization was narcotics, and NeedJoy sat at its worst stage (-20 mood points) on every citizen from day two. The tolerance model, the JoyKindDef content and the thought were all already built - it is section 5's 'wired and still unable to act' shape, one need over. Underneath it sat a defect that would have swallowed any fix of any size: JoyToleranceSet.ToleranceDecayPerInterval was 0.12/day against the 0.39/day a citizen builds merely replacing what the need loses, so BELOW BREAK-EVEN tolerance ratchets upward for ever and every kind eventually goes permanently boring. Now derived from the two constants that set the break-even and pinned by a fortnight-long test; RimWorld reads ExpectationDef.joyToleranceDropPerDay, which could not be sourced here and the comment says so. Needs/AbstractRecreation.cs is the mirror of Economy/SettlementLarder - same !Spawned predicate, same no-roll rule, no state - so a citizen with no map gets recreation too, without which this would have rebuilt the batch-nine regression one need over. Open and named: off-map citizens never sleep. Mean rest falls 0.95 to 0.00 by day two and stays there, and Tired at -20 a head is now the largest remaining term in an unwatched settlement's mood ledger - the same map-only shape food and recreation both had.",
+          "done": true
+        },
+        {
+          "id": "needs.abstractrest",
+          "label": "Off-map citizens never slept - the third instance of one shape, after food (Economy.SettlementLarder) and recreation (Needs.AbstractRecreation). Sleep is reached only through AI.JobGiver_GetRest, whose first line refuses a pawn with no map, so a citizen of a settlement nobody had opened had nowhere to lie down and Need_Rest could only fall: measured across three seeds, mean rest 0.95 to 0.00 by day two, with Tired at -20 a head the largest single term left in an unwatched settlement's mood ledger. Needs/AbstractRest.cs closes it in the established shape rather than a third one - same !Spawned predicate and the same argument for it, no draw from the ambient Rand stream (pinned on Rand.Current.Iterations), no state, called from Need_Rest.NeedInterval the way AbstractRecreation is called from Need_Joy's. Recovery goes through Need_Rest.RestGainPerTick so bed effectiveness and the fall rate stay the ported model's. Two recorded translations: an abstract night is a fixed span derived from ThreshTired and BaseRestGainPerTick rather than a refill to full, and it is slept on bare ground, so a bed left behind on an interior does not follow a citizen off it. After: 25/25 alive on every seed, rest oscillating 0.38-0.82, Tired gone from the ledger entirely.",
+          "done": true
+        },
+        {
+          "id": "needs.slicespan",
+          "label": "Need_Food.NeedIntervalBulk credits starvation once per bulk call rather than once per 150-tick slice (~13x slow at Interval). Reverted in batch nine blaming FOOD, with abstract production named as the precondition; that precondition landed in batch ten, so the correction was re-applied here and re-measured against the test the first revert cited - AttentionBudgetTests' century of demography came out 884/771/759/796/732 across its five seeds against the ~1,500 its premise needs. Same failure, one batch later, with the stated blocker removed. REVERTED A SECOND TIME, and the value of the attempt is that the blocker is now named correctly at the defect site: IT WAS NEVER FOOD, IT IS THE SPAN. Pawn_TierTracker.ApplyElapsed calls the bulk method once with the whole time since a citizen was last brought current, and nothing can eat inside a bulk call because SettlementLarder feeds on its own gated pass - so a span longer than that pass is hunger with no opportunity to answer it however full the ledger is. In a running game that span is one Long tick and the correction is harmless; in that test it is a year advanced by DebugSetTicksGame, so one call charges 24,000 slices at once for severity 6.8 against a lethal 1. What must land first: bound the catch-up span at the Pawns/Economy seam, or advance that century through the tick loop. A cap inside Need_Food would make the test pass by inventing tiering policy in a need class, so it is named and not taken.",
           "done": true
         }
       ]
@@ -898,7 +918,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 167,
+      "tests": 178,
       "items": [
         {
           "id": "ai.thinktree",
@@ -1008,6 +1028,11 @@
         {
           "id": "ai.joygivers",
           "label": "RimWorld's recreation supply chain ported: JoyGiverDef and the JoyGiver worker base, JoyUtility.JoyTickCheckEnd at RimWorld's own joyGainRate * 0.36f / 2500f * delta, JobGiver_GetJoy plus JobGiver_IdleJoy (RimWorld's 60,000-tick grace), ThinkNode_ConditionalLowJoy, the drivers, and a recreation tier in the humanlike think tree below rest and above orders. The three shipped givers - SocialRelax, GoForWalk, Skygaze - deliberately need NOTHING BUILT, because a founding band owns a knife and a sack of rations, and a recreation system only rich settlements can reach would leave the day-two collapse exactly where it was. Deviations, each documented at the class: joyKind/joyGainRate/joyDuration live on JoyGiverDef rather than JobDef, to avoid editing a shared file; JoyGiver_SocialRelax gathers around PEOPLE rather than a CompGatherSpot, because this port ships no campfire, table or chair; the tier gates on the need rather than a timetable, there being no timetable module; thingDefs and pctPawnsEverDo are not declared at all rather than declared and unread.",
+          "done": true
+        },
+        {
+          "id": "ai.taminggate",
+          "label": "Hunting never happened: twelve in-game days produced zero hunts and sixty-six tamings - the animal population was not hunted flat, it was tamed flat. Two links, both closed. (1) HuntingInitiative.WantsMeat counted Settlement.Stores, the abstract ledger a founding band is credited hundreds of nutrition into and that nothing draws down while the settlement has a map, because SettlementLarder feeds only citizens who are NOT spawned - the hunters were reading a granary their own people cannot eat out of and concluding they were rich. It now reads NutritionReachable, food a pawn standing on the map could walk to, which is the same figure SettlementStockInitiative measures its banking reserve against, so one number has two signs instead of two numbers disagreeing. (2) Taming had no gate at all. In RimWorld both verbs draw from designationManager.SpawnedDesignationsOfDef; this port has no Designation system, hunting's copy of that predicate was translated into HuntingInitiative and TAMING'S WAS TRANSLATED INTO NOTHING, so every wild animal was unconditional Handling work at naturalPriority 950 against Hunting's 850 and the hunt giver was never consulted. AI/TamingInitiative.cs is the missing half: a settlement keeps as much livestock as its surplus feeds, and while it is short of food the animals on its land are meat rather than livestock. No naturalPriority changed. The initiative was chosen over porting a Designation layer, recorded at the class: with no player a designation store is empty until something issues designations, and that something can only be a civilization-scale reader of settlement state, so the real choice is initiative-designation-giver versus initiative-giver, and five givers here have already translated the same predicate away.",
           "done": true
         }
       ]
@@ -1415,7 +1440,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
       "status": "translated",
-      "tests": 90,
+      "tests": 99,
       "items": [
         {
           "id": "building.zones",
@@ -1460,6 +1485,11 @@
         {
           "id": "building.stonewalls",
           "label": "Translation recorded: RimWorld has one stuff-chosen Wall, and stuff-based construction is unported here — Blueprint/Frame/WorkGiver_ConstructDeliverResources cost a building through costList only, and a costList entry names one ThingDef. So this ships def-per-material (WallSandstone/WallLimestone/WallGranite), which is what a player sees in RimWorld anyway. The three differ on exactly one axis, MaxHitPoints, because RimWorld prices every Make_Blocks_* identically and puts the difference in the structure; those three numbers are the only invented values in the lane and the tests pin their ordering (granite > limestone > sandstone > wood), never the literals. SettlementConstructionInitiative's wall count and the GreatWorksMandate edict bias both had to widen: the edict names Wall by defName, so it would have silently stopped prioritising walls the moment they became stone.",
+          "done": true
+        },
+        {
+          "id": "building.roofcollapse",
+          "label": "Roof collapse was the largest killer in this game and the source of two batches of misdiagnosis. THE ROOT CAUSE OF THE MISREADING WAS ITSELF A PORTING DEFECT: RimWorld's collapse deals Crush, whose deathMessage is '{0} has been crushed to death', and this port dealt Blunt, whose message is '{0} has been beaten to death' - which is the whole of section 9a's 'every death is a citizen beaten to death by another citizen', printed faithfully by content doing what it was told. Four more, each checked against RimWorld's source: no body region was set, so DamageWorker_AddInjury drew a part by coverage over the whole body with inside parts included and one 50-point hit on a heart is a dead colonist (section 10's unexplained signature exactly - RimWorld aims an ordinary roof at Top/Outside, which cannot reach an organ); ordinary-roof damage was a flat 50 against RimWorld's rolled 15-30; overhead mountain was 100 Blunt and survivable where RimWorld's is 99999 Crush at 999 armour penetration aimed at the brain, applied twice, then Kill; and a collapsed thick roof was deleted and left nothing, where RimWorld's does not vanish and refills the cell with CollapsedRocks, WHICH IS WHAT MAKES A COLLAPSE SELF-LIMITING INSTEAD OF SELF-FEEDING. The support query was wrong in both directions too - a straight radius of 5, recorded as unsourced, against RimWorld's RoofMaxSupportDistance of 6.9 reached by a flood fill THROUGH ROOFED CELLS, which is what makes 'in range' mean 'along the ceiling'. BUT FAITHFULNESS IS NOT WHAT SAVED THE SETTLEMENT and could not have been: a faithful overhead-mountain collapse is MORE lethal, and the staged measurement says so. The deaths stopped because the mining was reckless - nothing designates mining, so WorkGiver_Miner mined every reachable mineable edifice and twenty-five citizens brought 724 roof cells down on themselves in one day. That gate is a recorded translation at WouldCollapseRoofIfRemoved, and it sits at BOTH the giver and the job driver, because with twenty-five people on one seam the answer given at hand-out goes stale - gate at hand-out alone still produced fifty-two collapses and nine crushed founders. Measured after, three seeds, eight days: 22/25, 23/25 and 23/25 alive against 11, 11 and 17 before, zero crushed, zero roof cells lost in twenty-four in-game days, while the settlements mined out 98% of their mountains. The rule is about which cells, not about mining less.",
           "done": true
         }
       ]
