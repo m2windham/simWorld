@@ -50,14 +50,14 @@ should differ in silhouette, not just rotation — rotation is free at runtime.
 
 Write to the model repo's own staging directory, one folder per batch:
 
-```
+```text
 A:\dev\simWorld.Model\out\01-rock\Granite_a.glb
 A:\dev\simWorld.Model\out\02-people\Human.glb
 ```
 
 These are then imported into the Unity host, which owns all engine assets:
 
-```
+```text
 A:\dev\simWorld.Host\Assets\Models\<defName>.glb
 ```
 
