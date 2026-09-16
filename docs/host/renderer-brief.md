@@ -79,8 +79,16 @@ This is the design, and getting it wrong throws the performance away:
 2. **Things as coloured boxes**, GPU-instanced per `defName`, one draw call per def per chunk.
    Proves the chunking.
 3. **Pawns as capsules**, interpolated between ticks using the stable `ThingId`.
-4. **The `defName → prefab` registry**, with the primitive as fallback. Nothing before this point
-   needs a single asset.
+4. **The `defName → prefab` registry** — **this now exists**: `Assets/Scripts/VisualRegistry.cs`
+   in the host repo, with EditMode tests. `Resolve(defName, thingId)` returns a prefab or null;
+   null means draw `VisualRegistry.FallbackMesh`. Nothing before this point needs a single asset.
+
+   Two decisions baked into it. **FBX, not glTF** — the model pipeline emits both, Unity imports
+   FBX natively and needs a package for `.glb`. And **variants are chosen by `ThingId`, never by a
+   roll**: rock ships as `Granite_a`…`Granite_d` because one mesh at ~13,000 instances reads as a
+   repeating grid, and a pure function of the id keeps a given rock stable across frames, across a
+   save and load, and across machines — the same no-draw-in-a-tick-path discipline the core holds
+   itself to.
 5. **Models replace primitives**, one `defName` at a time, each independently verifiable.
 
 Steps 1–3 should be built and profiled **before any art exists**. That is the whole point of the
