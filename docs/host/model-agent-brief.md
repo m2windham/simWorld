@@ -46,6 +46,44 @@ Rock needs **3–4 silhouette variants per type**, named `Granite_a.glb`, `Grani
 on. At thirteen thousand instances a single mesh reads as an obvious repeating grid. Variants
 should differ in silhouette, not just rotation — rotation is free at runtime.
 
+## Where output goes
+
+Write to the model repo's own staging directory, one folder per batch:
+
+```
+A:\dev\simWorld.Model\out\01-rock\Granite_a.glb
+A:\dev\simWorld.Model\out\02-people\Human.glb
+```
+
+These are then imported into the Unity host, which owns all engine assets:
+
+```
+A:\dev\simWorld.Host\Assets\Models\<defName>.glb
+```
+
+Assets do **not** go in the `simWorld` core repo. That repo is engine-free by rule and the two
+must never share a file path — it is why the host is a separate repository at all.
+
+### Write a manifest alongside each batch
+
+In every batch folder, write `manifest.json`:
+
+```json
+{
+  "batch": "01-rock",
+  "generated": "2026-09-16",
+  "assets": [
+    { "defName": "Granite_a", "file": "Granite_a.glb", "tris": 184,
+      "boundsX": 1.0, "boundsY": 1.0, "boundsZ": 1.0, "materials": 1, "bytes": 14208 }
+  ]
+}
+```
+
+This is how the work gets checked without anyone opening a mesh: the manifest can be read against
+the asset list and the polygon budgets in this brief, so a `Granite` variant at 4,000 tris or a
+model whose bounds are not 1×1×1 is caught immediately rather than at import. Paste or commit the
+manifest; the binaries do not need to travel.
+
 ## Batch 1 — the rock (do this first)
 
 Fourteen types. These are mineable stone and ore walls: solid, cell-filling, chunky. Ore types
