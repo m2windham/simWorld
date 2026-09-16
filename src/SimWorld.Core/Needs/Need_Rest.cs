@@ -14,6 +14,12 @@ namespace SimWorld.Needs
     /// <summary>
     /// Sleep (RimWorld: <c>RimWorld.Need_Rest</c>). Falls while awake at a rate that eases as the pawn tires,
     /// rises while asleep by bed effectiveness. Time spent at zero drives exhaustion collapse.
+    /// <para/>
+    /// <see cref="Resting"/> reads <c>Pawn.Asleep</c>, which only the map path ever sets
+    /// (<c>AI.JobGiver_GetRest</c> refuses a pawn with no map), so for the whole of this port's history a
+    /// citizen off a map could only ever fall. <see cref="AbstractRest"/> is the other half — the mirror of
+    /// <c>Needs.AbstractRecreation</c> and <c>Economy.SettlementLarder</c> — and both interval methods below
+    /// end by calling it.
     /// </summary>
     public class Need_Rest : Need
     {
@@ -102,6 +108,12 @@ namespace SimWorld.Needs
             {
                 ticksAtZero = 0;
             }
+
+            // A citizen with no map has nowhere to lie down: every route to sleep in this port runs through
+            // AI.JobGiver_GetRest, which returns null without one. See AbstractRest for what that cost and
+            // why the call sits here rather than on a ticker of its own — this is already the one place per
+            // pawn per interval that rest is thought about.
+            AbstractRest.RestInterval(pawn, this);
         }
 
         /// <summary>O(1) bulk equivalent of <see cref="NeedInterval"/> (see the base class doc): holds the
@@ -116,6 +128,7 @@ namespace SimWorld.Needs
             }
             if (CurLevel < 0.0001f) ticksAtZero += elapsedTicks;
             else ticksAtZero = 0;
+            AbstractRest.RestInterval(pawn, this);
         }
 
         public override void ExposeData()

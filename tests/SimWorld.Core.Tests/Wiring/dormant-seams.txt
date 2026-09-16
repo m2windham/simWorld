@@ -84,7 +84,6 @@ content-silent SimWorld.Work.SkillDef.neverDisabledBasedOnWorkTypes | No shipped
 code-deaf SimWorld.AI.JobDef.reportString | Host-facing text with no reader: the field's own doc says it is for an inspect pane once one exists, and God/View does not carry job text.
 code-deaf SimWorld.Combat.ProjectileProperties.stoppingPower | Blocked on stagger, which this port does not model; a hit resolves instantly, so nothing consumes the stagger input.
 code-deaf SimWorld.Crafting.RecipeDef.jobString | Host-facing text ("doing X") for a UI the core does not have and the snapshot does not surface.
-code-deaf SimWorld.Defs.ThingDef.altitudeLayer | Draw order for a renderer. An engine-free core never draws, and the host draws from its own snapshot.
 code-deaf SimWorld.Defs.ThingDef.selectable | Host-facing: whether a UI may select the thing. The core has no selection model.
 code-deaf SimWorld.Director.StorytellerDef.persona | Host-facing flavour: the narrator's in-fiction name, for the host to speak. Its own doc records that the naming is still open.
 code-deaf SimWorld.Economy.TraderKindDef.orbital | Blocked on orbital trade, which needs caravans going up rather than traders arriving; the field's own doc calls it a gating flag only.
@@ -104,7 +103,6 @@ code-deaf SimWorld.Health.HediffDef.everCurableByItem | Blocked on curative item
 code-deaf SimWorld.Health.HediffDef.isBad | Blocked on anything sorting hediffs into good and bad — the health tab and the "is this pawn ill" summary both live host-side.
 code-deaf SimWorld.Health.InjuryProps.destroyedLabel | Host-facing text for a destroyed part, for a health tab the core does not render.
 code-deaf SimWorld.Health.PawnCapacityDef.showOnAnimals | Host-facing: which capacities a UI lists for an animal.
-code-deaf SimWorld.Map.RoofDef.isNatural | Blocked on mountain/overhead-rock generation: no map generator distinguishes a natural roof from a built one yet.
 code-deaf SimWorld.Map.TerrainDef.takeFootprints | Blocked on terrain-aware filth: FilthMaker places filth without asking whether the terrain accepts marks.
 code-deaf SimWorld.MindState.MentalStateDef.blockNormalThoughts | Blocked on mental states suppressing thoughts; the thought handler does not consult the pawn's mental state.
 code-deaf SimWorld.Needs.NeedDef.listPriority | Host-facing: the order needs appear in a UI list.

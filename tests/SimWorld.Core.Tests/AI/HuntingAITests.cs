@@ -54,12 +54,14 @@ namespace SimWorld.Tests.AI
         /// A hunter carrying <paramref name="weaponDefName"/>, or empty-handed when null, with
         /// <c>Handling</c> switched off in its work grid.
         /// <para/>
-        /// That last part is not a fudge, it is the only way a hunt ever happens to a <i>live</i> animal:
-        /// <c>TameAnimals</c> and <c>Hunt</c> accept exactly the same targets (a reachable, reservable, wild
-        /// animal), and <c>Handling</c> outranks <c>Hunting</c> by naturalPriority, so a pawn allowed to do
-        /// both always tames. See <see cref="Taming_outranks_hunting_for_a_pawn_allowed_to_do_both"/>, which
-        /// pins that ordering deliberately; every other live-prey test here is about the hunt, so it assigns
-        /// a pawn who is a hunter and not a handler — an ordinary work-priority setting.
+        /// That last part used to be load-bearing and no longer is. <c>TameAnimals</c> and <c>Hunt</c> accept
+        /// exactly the same targets (a reachable, reservable, wild animal) and <c>Handling</c> outranks
+        /// <c>Hunting</c> by naturalPriority, so while the taming giver was gated on nothing a pawn allowed to
+        /// do both always tamed — which is why every live-prey test here switched Handling off. It is kept
+        /// because these tests are about the hunt and not about the interaction, but
+        /// <see cref="TamingInitiative"/> now means a hungry settlement's generalist hunts anyway:
+        /// <see cref="A_pawn_allowed_to_do_both_hunts_a_hungry_settlements_prey_rather_than_taming_it"/> is
+        /// the same pawn with the work grid left alone.
         /// </summary>
         private static Pawn SpawnHunter(CoreMap map, IntVec3 cell, string? weaponDefName = "Bow_Short", string name = "Hunter")
         {
@@ -177,12 +179,41 @@ namespace SimWorld.Tests.AI
 
             Assert.True(HuntingInitiative.WantsMeat(settlement, map), "An empty larder wants meat.");
 
-            // Stock the abstract ledger well past what one citizen wants, and the gate closes.
+            // Stock what the hunters' own people can actually walk to, and the gate closes.
             float wanted = HuntingInitiative.NutritionWanted(settlement, map);
             int meals = (int)(wanted / Def("MealSimple").ingestible!.nutrition) + 5;
-            settlement.SetStoreCount(Def("MealSimple"), meals);
+            SpawnItem(map, new IntVec3(2, 0, 2), "MealSimple", meals);
 
             Assert.False(HuntingInitiative.WantsMeat(settlement, map));
+        }
+
+        [Fact]
+        public void A_full_abstract_ledger_does_not_close_the_gate_and_that_is_the_correction()
+        {
+            // This test used to assert the opposite, and asserting the opposite is what kept hunting from
+            // ever happening in a real game. Settlement.Stores is the ledger Economy.SettlementLarder feeds
+            // citizens out of — and it feeds only citizens who are NOT spawned. A founding band is credited
+            // hundreds of nutrition there against a want of a hundred and sixty, and nothing ever draws it
+            // down while somebody is watching the settlement, so a gate that counted it was shut from tick
+            // zero for ever: measured false on 12,000 of 12,000 samples across twelve in-game days.
+            //
+            // A hunt is map work. It is done by people standing on a map, it feeds people standing on a map,
+            // and the meat lands on that map, so the food that answers it is the food on that map. See
+            // HuntingInitiative.WantsMeat for the whole argument and for the one change — an unbanking pass,
+            // which nothing in this codebase has — that would make counting the ledger correct again.
+            CoreMap map = NewMap(8, 8);
+            Settlement settlement = PlainSettlement();
+            settlement.AddCitizen(NewHuman("Eater"));
+
+            float wanted = HuntingInitiative.NutritionWanted(settlement, map);
+            int meals = (int)(wanted / Def("MealSimple").ingestible!.nutrition) + 50;
+            settlement.SetStoreCount(Def("MealSimple"), meals);
+
+            Assert.True(HuntingInitiative.NutritionAvailable(settlement, map) > wanted,
+                "the civilization-scale total does count the ledger — that figure is unchanged");
+            Assert.True(HuntingInitiative.WantsMeat(settlement, map),
+                "a granary its own people cannot eat out of must not persuade a settlement it is fed");
+            Assert.Equal(0f, HuntingInitiative.NutritionReachable(map), 3);
         }
 
         [Fact]
@@ -310,12 +341,17 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
-        public void Taming_outranks_hunting_for_a_pawn_allowed_to_do_both()
+        public void A_pawn_allowed_to_do_both_hunts_a_hungry_settlements_prey_rather_than_taming_it()
         {
-            // TameAnimals and Hunt accept the same targets, and content orders Handling (naturalPriority 950)
-            // above Hunting (850) — so a settlement short of food still tries to tame a wild animal before it
-            // shoots one, and only a pawn who is not a handler hunts it. That ordering needed no special case
-            // in WorkGiver_Hunt; it falls straight out of JobGiver_Work walking the priority list.
+            // This test used to assert the opposite and was named for it — "taming outranks hunting" — on the
+            // grounds that Handling (naturalPriority 950) outranks Hunting (850) in content and that the
+            // ordering therefore "needed no special case". The ordering claim is still true and nothing here
+            // changes a priority. What was missing is that WorkGiver_TameAnimals was gated on nothing at all,
+            // so every wild animal was unconditional higher-priority work and this giver was never reached:
+            // twelve in-game days on a founded settlement, sixty-six tamings and zero hunts. TamingInitiative
+            // supplies the missing predicate — while a settlement is short of food, an animal on its land is
+            // meat rather than livestock — and the ordering becomes harmless because the two verbs are never
+            // both on at once. See TamingInitiativeTests for the other side of this same pawn.
             CoreMap map = NewMap(10, 10);
             Pawn generalist = NewHuman("Generalist");
             generalist.equipment.AddEquipment((ThingWithComps)ThingMaker.MakeThing(Def("Bow_Short")));
@@ -325,7 +361,7 @@ namespace SimWorld.Tests.AI
             Assert.True(Giver.HasJobOnThing(generalist, chicken), "Hunting is on the table...");
 
             generalist.jobs.TryFindAndStartJob();
-            Assert.Equal(JobDefOf.Tame, generalist.jobs.curJob?.def); // ... but taming is tried first.
+            Assert.Equal(HuntingDefOf.Hunt, generalist.jobs.curJob?.def); // ... and nothing outranks it now.
         }
 
         // ---- revenge (RimWorld's manhunter-on-damage response) ----

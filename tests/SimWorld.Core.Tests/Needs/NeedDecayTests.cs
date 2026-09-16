@@ -163,26 +163,28 @@ namespace SimWorld.Tests.Needs
         /// The end state each need is supposed to produce, for a citizen nobody looks after. This is the test
         /// that would have failed loudest had the generic path ever been the thing moving them.
         ///
-        /// <para/><b>Recreation used to be on this list and no longer is.</b> It read
-        /// <c>Assert.Equal(JoyCategory.Empty, …)</c>, and that was true for the worst of reasons: nothing in
-        /// the whole of <c>src/</c> could raise <c>Need_Joy</c> except <c>CompDrug</c>, so a citizen with no
-        /// map ran out of recreation and stayed there for ever at −20 mood points. A citizen off a map now
-        /// takes a break of its own (<c>Needs.AbstractRecreation</c>, the mirror of
-        /// <c>Economy.SettlementLarder</c>), so recreation is the one need on this list that <i>recovers</i>
-        /// without anybody looking after you — and the two that do not are the two whose off-map paths are
-        /// still open (nothing feeds a citizen with no settlement ledger, and nothing anywhere lets an
-        /// off-map citizen sleep).
+        /// <para/><b>Two needs have come off this list, one lane apart, and both for the same reason.</b>
+        /// Recreation read <c>Assert.Equal(JoyCategory.Empty, …)</c> and rest read
+        /// <c>Assert.Equal(RestCategory.Exhausted, …)</c>, and both were true for the worst of reasons:
+        /// nothing in the whole of <c>src/</c> could raise <c>Need_Joy</c> except <c>CompDrug</c>, and nothing
+        /// anywhere could let a citizen with no map lie down (<c>AI.JobGiver_GetRest</c> refuses a pawn with
+        /// no map, and so does every joy giver), so both needs ran out and stayed out for ever at −20 mood
+        /// points each. A citizen off a map now takes a break of its own (<c>Needs.AbstractRecreation</c>) and
+        /// sleeps a night of its own (<c>Needs.AbstractRest</c>), both mirrors of
+        /// <c>Economy.SettlementLarder</c>. What is left on the list is food, which does <i>not</i> recover on
+        /// its own and should not: a citizen with no settlement behind them has no ledger to eat from, and the
+        /// one that does is fed by <c>Economy.SettlementLarder</c> rather than by anything in here.
         /// </summary>
         [Fact]
-        public void A_citizen_left_alone_long_enough_starves_and_collapses_but_keeps_itself_entertained()
+        public void A_citizen_left_alone_long_enough_starves_but_keeps_itself_entertained_and_rested()
         {
             Pawn p = NewHuman();
             RunTicks(GenDate.TicksPerDay * 3, p);
 
             Assert.Equal(HungerCategory.Starving, p.needs.food!.CurCategory);
             Assert.True(p.needs.food.TicksStarving > 0);
-            Assert.Equal(RestCategory.Exhausted, p.needs.rest!.CurCategory);
-            Assert.True(p.needs.rest.TicksAtZero > 0);
+            Assert.NotEqual(RestCategory.Exhausted, p.needs.rest!.CurCategory);
+            Assert.Equal(0, p.needs.rest.TicksAtZero);
             Assert.True(p.needs.joy!.CurCategory > JoyCategory.VeryLow,
                 "recreation ended three days at " + p.needs.joy.CurCategory + " — the off-map path is not reaching it");
         }

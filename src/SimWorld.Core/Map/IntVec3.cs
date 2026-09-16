@@ -29,6 +29,26 @@ namespace SimWorld.Map
         /// <summary>Sentinel for "no cell" (RimWorld uses this exact value).</summary>
         public static readonly IntVec3 Invalid = new IntVec3(-1000, -1000, -1000);
 
+        /// <summary>Parses content's <c>"(x, y, z)"</c> — parentheses optional — the way RimWorld's own
+        /// <c>Verse.IntVec3.FromString</c> does. Registered alongside <see cref="IntVec2.FromString"/>; no def
+        /// field needs it today, but a text form that parses to the wrong thing silently is the failure being
+        /// fixed here, and leaving its three-axis sibling to that fate would be half a fix.</summary>
+        public static IntVec3 FromString(string s)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+
+            string body = s.Trim().TrimStart('(').TrimEnd(')');
+            string[] parts = body.Split(',');
+            if (parts.Length != 3)
+            {
+                throw new FormatException("Expected an IntVec3 as '(x, y, z)' but got '" + s + "'.");
+            }
+            return new IntVec3(
+                int.Parse(parts[0].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture),
+                int.Parse(parts[1].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture),
+                int.Parse(parts[2].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture));
+        }
+
         public static readonly IntVec3 Zero = new IntVec3(0, 0, 0);
 
         public bool IsValid => this != Invalid;
@@ -100,6 +120,29 @@ namespace SimWorld.Map
 
         public static readonly IntVec2 Zero = new IntVec2(0, 0);
         public static readonly IntVec2 One = new IntVec2(1, 1);
+
+        /// <summary>
+        /// Parses content's <c>"(x, z)"</c> — or a bare <c>"x, z"</c> — the way RimWorld's own
+        /// <c>Verse.IntVec2.FromString</c> does, parentheses optional and whitespace ignored. This is what
+        /// makes <c>&lt;size&gt;(1,2)&lt;/size&gt;</c> on a ThingDef mean anything: registered in
+        /// <c>ParseHelper</c>, and without it <c>XmlObjectMapper</c> falls through to its build-an-object
+        /// path, finds no child elements, and silently yields (0, 0) — a footprint of no cells, with no error
+        /// anywhere.
+        /// </summary>
+        public static IntVec2 FromString(string s)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+
+            string body = s.Trim().TrimStart('(').TrimEnd(')');
+            string[] parts = body.Split(',');
+            if (parts.Length != 2)
+            {
+                throw new FormatException("Expected an IntVec2 as '(x, z)' but got '" + s + "'.");
+            }
+            return new IntVec2(
+                int.Parse(parts[0].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture),
+                int.Parse(parts[1].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture));
+        }
 
         public int Area => x * z;
 

@@ -33,6 +33,12 @@ namespace SimWorld.Defs
             RegisterParser(IntRange.FromString);
             RegisterParser(FloatRange.FromString);
             RegisterParser(CurvePoint.FromString);
+
+            // Footprints and cell offsets, as RimWorld's own ParseHelper registers them. Without these,
+            // <size>(1,2)</size> on a ThingDef does not fail — it falls through XmlObjectMapper's
+            // build-an-object path and silently yields (0, 0). See Map.IntVec2.FromString.
+            RegisterParser(Map.IntVec2.FromString);
+            RegisterParser(Map.IntVec3.FromString);
         }
 
         public static void RegisterParser<T>(Func<string, T> parser)

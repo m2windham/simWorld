@@ -78,6 +78,9 @@ namespace SimWorld.Bench
                 case "targets":
                     AttackTargetScanSuite.Run(opt);
                     break;
+                case "mapview":
+                    MapViewSuite.Run(opt);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -236,8 +239,7 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | all
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | targets | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
   --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc.
   --seed <N>              RandomStream seed (default 12345).
@@ -272,6 +274,9 @@ SUITES
                 the 600-tick cycle, for the old id * 3 offset against the hashed one.
   targets       Measurement 12: what finding an attack target costs as population moves — the scan alone,
                 one constant-tree evaluation, and the tick loop A/B, swept across --target-ns.
+  mapview       What the Map/View settlement-interior read model costs on a generated TribalStart interior:
+                a full Capture() against the incremental CaptureChanges() a host runs every frame
+                (docs/perf/map-view.md).
   all           Runs every suite in sequence (scaling first; attribution's N is derived from its result).
 
 EXAMPLES

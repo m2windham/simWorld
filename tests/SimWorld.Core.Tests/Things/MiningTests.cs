@@ -325,6 +325,12 @@ namespace SimWorld.Tests.Things
             foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading)
             {
                 if (!def.mineable) continue;
+                // The one exception in content, and RimWorld's own def is the same: CollapsedRocks is not a
+                // vein anybody placed, it is what a mountain leaves in the cell it fell into
+                // (Building.RoofCollapserImmediate). Digging it back out is meant to cost work and return
+                // nothing. Named here rather than loosening the rule, so the next genuinely silent vein
+                // still trips it.
+                if (def == SimWorld.Building.RoofCollapseDefOf.CollapsedRocks) continue;
                 if (def.mineableThing == null || def.mineableYield <= 0) silent.Add(def.defName);
             }
 

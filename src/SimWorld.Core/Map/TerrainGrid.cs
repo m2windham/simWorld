@@ -41,6 +41,7 @@ namespace SimWorld.Map
             }
             topGrid[i] = newTerrain;
             map.pathGrid.RecalculatePerceivedPathCostAt(c);
+            map.mapView.Notify_TerrainChanged();
         }
 
         /// <summary>Removes the top layer, revealing the under layer (or leaving the same terrain when there is none).</summary>
@@ -52,9 +53,16 @@ namespace SimWorld.Map
             topGrid[i] = under;
             underGrid[i] = null;
             map.pathGrid.RecalculatePerceivedPathCostAt(c);
+            map.mapView.Notify_TerrainChanged();
         }
 
-        /// <summary>Sets the top layer with none of <see cref="SetTerrain"/>'s side effects; Map uses this while rebuilding a loaded grid.</summary>
-        internal void SetTerrainDirect(IntVec3 c, TerrainDef def) => topGrid[map.cellIndices.CellToIndex(c)] = def;
+        /// <summary>Sets the top layer with none of <see cref="SetTerrain"/>'s side effects; Map uses this while rebuilding a loaded grid.
+        /// It still reports to <c>Map/View</c> — the grid a host would draw did change, and a load rewrites
+        /// every cell of it.</summary>
+        internal void SetTerrainDirect(IntVec3 c, TerrainDef def)
+        {
+            topGrid[map.cellIndices.CellToIndex(c)] = def;
+            map.mapView.Notify_TerrainChanged();
+        }
     }
 }

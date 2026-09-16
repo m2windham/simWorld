@@ -196,12 +196,26 @@ namespace SimWorld.Tests.MindState
             // consequence. This is the same despair recipe MentalBreakTests uses for the break itself.
             Pawn p = Citizen("Despairing");
             p.story.traits.GainTrait(new Trait(Trait("NaturalMood"), -2));
-            p.needs.food!.CurLevel = 0f;
-            p.needs.rest!.CurLevel = 0f;
-            p.needs.joy!.CurLevel = 0f;
             p.needs.mood!.CurLevel = 0f;
 
-            for (int t = 0; t < 10 * GenDate.TicksPerDay && !p.InMentalState; t += 150) RunTicks(150, p);
+            // "Kept in despair", and it has to be kept rather than set once. A citizen with no map now takes
+            // a break of its own (Needs.AbstractRecreation) and sleeps a night of its own
+            // (Needs.AbstractRest), so zeroing the needs on tick one no longer holds them at zero — the
+            // deprivation this test is about would lift itself within a day. Re-pinning each slice is what
+            // the test's own name has always claimed it did.
+            void KeepInDespair()
+            {
+                p.needs.food!.CurLevel = 0f;
+                p.needs.rest!.CurLevel = 0f;
+                p.needs.joy!.CurLevel = 0f;
+            }
+
+            KeepInDespair();
+            for (int t = 0; t < 10 * GenDate.TicksPerDay && !p.InMentalState; t += 150)
+            {
+                RunTicks(150, p);
+                KeepInDespair();
+            }
 
             Assert.True(p.InMentalState, "no break within ten days of despair");
             Letter let = Assert.Single(Letters);

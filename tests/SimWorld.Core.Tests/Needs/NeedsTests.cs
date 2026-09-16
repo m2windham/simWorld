@@ -1,10 +1,14 @@
 using System.Collections.Generic;
 using SimWorld.Defs;
+using SimWorld.Map;
 using SimWorld.Needs;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 using SimWorld.Tests.Content;
+using SimWorld.Things;
 using Xunit;
+
+using CoreMap = SimWorld.Map.Map;
 
 namespace SimWorld.Tests.Needs
 {
@@ -90,19 +94,27 @@ namespace SimWorld.Tests.Needs
             Assert.InRange(rest.CurLevel, 0.9f, 1f);
             Assert.Equal(RestCategory.Rested, rest.CurCategory);
 
+            // Measured over a span that stays inside the Rested band: below Need_Rest.ThreshTired an off-map
+            // citizen now sleeps a night of its own (Needs.AbstractRest, tested in
+            // Needs/AbstractRestTests.cs) and the level stops being a pure decay curve. This test is about
+            // the fall, so it keeps out of that — the old form decayed all the way down into VeryTired, which
+            // was only ever reachable because nothing in this codebase could let an off-map citizen lie down.
             float start = rest.CurLevel;
             RunTicks(GenDate.TicksPerDay / 2, p);
             Assert.InRange(rest.CurLevel, start - 0.49f, start - 0.46f);
+            Assert.Equal(RestCategory.Rested, rest.CurCategory);
 
-            // Rested → Tired around 0.7 day; tired pawns lose rest at 0.7× so a full day ends very tired.
-            RunTicks(GenDate.TicksPerDay * 3 / 10, p);
+            // The per-band fall factors, set rather than decayed into for the same reason.
+            rest.CurLevel = Need_Rest.ThreshTired - 0.01f;
             Assert.Equal(RestCategory.Tired, rest.CurCategory);
             Assert.Equal(0.7f, rest.RestFallFactor);
-            RunTicks(GenDate.TicksPerDay / 5, p);
+            rest.CurLevel = Need_Rest.ThreshVeryTired - 0.01f;
             Assert.Equal(RestCategory.VeryTired, rest.CurCategory);
             Assert.Equal(0.3f, rest.RestFallFactor);
 
-            // Asleep: +2.28/day at bed effectiveness 1, so half a day refills from anywhere.
+            // Asleep: +2.28/day at bed effectiveness 1, so half a day refills from anywhere. A pawn who is
+            // already resting is one AbstractRest steps over (it must not pay a sleeper twice), so this is
+            // the same measurement it always was.
             p.Asleep = true;
             RunTicks(GenDate.TicksPerDay / 6, p);
             Assert.InRange(rest.CurLevel, 0.45f, 0.55f);
@@ -111,6 +123,15 @@ namespace SimWorld.Tests.Needs
             Assert.Equal(RestCategory.Rested, rest.CurCategory);
         }
 
+        /// <summary>
+        /// The exhaustion clock, measured on a citizen the map path owns. An off-map citizen who runs down
+        /// below the rest tier's threshold now sleeps a night of its own (<c>Needs.AbstractRest</c>, asserted
+        /// directly in <c>Needs/AbstractRestTests.cs</c>), so "sitting at zero rest while nothing happens" is
+        /// no longer a state waiting produces <i>off</i> a map — which is the whole point of that class. On a
+        /// map it still is, for a pawn who cannot reach a bed or is kept from one, and that is whose clock
+        /// this is. Driven a slice at a time rather than through the tick loop so the think tree does not put
+        /// the pawn to bed halfway through the measurement.
+        /// </summary>
         [Fact]
         public void Time_at_zero_rest_accumulates()
         {
@@ -118,10 +139,15 @@ namespace SimWorld.Tests.Needs
             Need_Rest rest = p.needs.rest!;
             rest.CurLevel = 0f;
             Assert.Equal(RestCategory.Exhausted, rest.CurCategory);
-            RunTicks(1500, p);
+
+            var map = new CoreMap(16, 16, TerrainDefOf.Soil);
+            GenSpawn.Spawn(p, new IntVec3(8, 0, 8), map);
+
+            for (int i = 0; i < 10; i++) rest.NeedInterval();
             Assert.Equal(1500, rest.TicksAtZero);
+
             p.Asleep = true;
-            RunTicks(150, p);
+            rest.NeedInterval();
             Assert.Equal(0, rest.TicksAtZero);
         }
 

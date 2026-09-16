@@ -37,30 +37,26 @@ namespace SimWorld.Tests.Integration
     /// and that the wilderness is renewable rather than a one-shot scatter, so a hunted-out map is not bare
     /// for the rest of the game.
     ///
-    /// <para/><b>What it deliberately does not assert, and this is the finding.</b> It does not assert that
-    /// a hunt is ever <i>taken</i>, because on a settlement founded the ordinary way it is not — measured
-    /// over twelve in-game days, zero hunt jobs, while twenty-eight taming jobs were started on the same
-    /// animals. Two links past this lane's hold it shut, both measured and neither touched here:
+    /// <para/><b>It used to stop there, and that was the finding.</b> This class's doc used to say in as many
+    /// words that it deliberately did not assert a hunt was ever <i>taken</i>, because on a settlement founded
+    /// the ordinary way it was not: twelve in-game days, zero hunt jobs, sixty-six taming jobs on the same
+    /// animals. Two links past that lane's scope held it shut and both are closed now — see
+    /// <see cref="A_settlement_that_needs_meat_hunts_and_the_meat_reaches_it"/>, which is the assertion that
+    /// used to be impossible:
     /// <list type="number">
-    /// <item><b>The food gate never opens.</b> <see cref="WorkGiver_Hunt.ShouldSkip"/> defers to
-    /// <see cref="HuntingInitiative.WantsMeat"/> — hunt only while short of food — and a founded band walks
-    /// in with <c>Economy.SettlementLarderTuning.ProvisionNutritionPerMouth</c> of rations, which is
-    /// <c>(DaysToFirstHarvest + DaysOfFoodWanted)</c> days' worth against a gate set at
-    /// <see cref="HuntingTuning.DaysOfFoodWanted"/>: 440 nutrition against a want of 160, by construction.
-    /// Worse, that ledger is never drawn down while the settlement has a map — <c>Economy.SettlementLarder</c>
-    /// feeds only citizens with no map to eat on — so the rations sit in
-    /// <see cref="HuntingInitiative.NutritionAvailable"/> for ever and the gate is shut from tick 0 onward.
-    /// Measured: <c>WantsMeat</c> false on 12,000 of 12,000 samples across twelve days.</item>
-    /// <item><b>Taming takes every animal first.</b> <c>Handling</c> is naturalPriority 950 against
-    /// <c>Hunting</c>'s 850, and <see cref="WorkGiver_TameAnimals"/> is gated on nothing at all — every wild
-    /// animal is taming work, always — so the hunt giver is never even consulted. Measured with the food
-    /// gate forced open by hand: still zero hunts in ten days.
-    /// <see cref="WorkGiver_Hunt"/>'s own doc says this ordering "needed no special-casing here"; that is
-    /// what this measurement contradicts.</item>
+    /// <item><b>The food gate never opened.</b> <see cref="HuntingInitiative.WantsMeat"/> counted the
+    /// abstract <c>Settlement.Stores</c> ledger, which a founding band is credited hundreds of nutrition
+    /// into and which <b>nothing draws down while the settlement has a map</b> —
+    /// <c>Economy.SettlementLarder</c> feeds only citizens who are not spawned. Measured false on 12,000 of
+    /// 12,000 samples. The gate reads <see cref="HuntingInitiative.NutritionReachable"/> now — food a pawn
+    /// standing on the map could walk to — and that method's own doc carries the argument and names the
+    /// unbanking gap that would let it count both again.</item>
+    /// <item><b>Taming took every animal first.</b> <c>Handling</c> is naturalPriority 950 against
+    /// <c>Hunting</c>'s 850, and <see cref="WorkGiver_TameAnimals"/> was gated on nothing at all, so every
+    /// wild animal was unconditional higher-priority work and the hunt giver was never consulted.
+    /// <see cref="TamingInitiative"/> is the missing predicate — while a settlement is short of food the
+    /// animals on its land are meat rather than livestock — and no priority anywhere was touched.</item>
     /// </list>
-    /// Asserting a hunt here would be asserting those two are healthy and would go red for reasons a
-    /// wildlife test cannot explain — the same line <c>SettlementFoodTests</c> draws about the population.
-    /// See this lane's report and <c>docs/WORK-REGISTER.md</c> §9a.
     /// </summary>
     public class SettlementHuntingTests : ContentTestBase
     {
@@ -137,6 +133,111 @@ namespace SimWorld.Tests.Integration
             Assert.True(WildAnimalsOn(map).Count > 0,
                 "a map hunted out of game did not restock within its own repopulate window, so hunting is a "
                 + "windfall rather than a renewable source");
+        }
+
+        /// <summary>
+        /// <b>The assertion this file could not make before.</b> A settlement founded the ordinary way, ticked
+        /// a week with nothing called by hand, has to actually hunt: a hunt job taken by a real citizen, and
+        /// meat on the ground where there was none.
+        ///
+        /// <para/><b>The condition is genuine, not arranged.</b> A freshly generated interior carries no
+        /// ingestible <c>Thing</c> at all — the wild food on it is standing <c>Plant_Berry</c>, which is a
+        /// Plant and not an Item — so a founded band really is short of food on day one, and the test asserts
+        /// that before it ticks anything. Nothing here forces a gate, spawns a weapon, or places prey.
+        ///
+        /// <para/><b>What each failure would mean</b>, so this goes red for a reason a hunting test can
+        /// explain: no prey means <c>MapGen.GenStep_Animals</c>/<c>WildAnimalSpawner</c>; no armed citizen
+        /// means <c>PawnKindDef.weaponTags</c> or <c>PawnWeaponGenerator</c>; no hunt taken with both present
+        /// means the gate (<see cref="HuntingInitiative.WantsMeat"/>) or the ordering against Handling
+        /// (<see cref="TamingInitiative"/>); a hunt taken and no meat means
+        /// <see cref="JobDriver_Hunt"/>'s kill or its butchery toil.
+        ///
+        /// <para/><b>Bands and orderings, never counts.</b> How many hunts a week produces depends on the
+        /// biome's animal density, how many tribespeople the weapon generator armed and what else they had to
+        /// do, so the assertions are "at least one", "more than none" and "never while", which is what the
+        /// behaviour actually claims.
+        /// </summary>
+        [Fact]
+        public void A_settlement_that_needs_meat_hunts_and_the_meat_reaches_it()
+        {
+            Game game = Game.NewGame(ScenarioDefOf.TribalStart.scenario, "settlement-hunt-closes",
+                subdivisionOverride: 3, soloStart: true, bandSize: 25);
+            Settlement settlement = game.World!.worldObjects.OfType<Settlement>().First();
+            GodCommands.OpenSettlement(settlement.tile);
+            SimWorld.Map.Map map = settlement.InteriorMap!;
+
+            // The two preconditions a hunt needs, asserted separately so a failure names which one is gone.
+            Assert.True(WildAnimalsOn(map).Count > 0, "no prey on a freshly generated interior");
+            Assert.True(settlement.Citizens.Any(c => !c.Dead && HuntUtility.HasHuntingWeapon(c)
+                    && !c.WorkTagIsDisabled(WorkTags.Violent)),
+                "no citizen of a founded band can hunt: nobody is carrying a ranged weapon");
+
+            // And the condition the whole thing is for: this settlement genuinely needs meat, before a tick.
+            Assert.True(HuntingInitiative.WantsMeat(settlement, map),
+                "a founded band standing on an interior with nothing edible on it must read as short of food");
+
+            var lastJob = new Dictionary<Pawn, Job?>();
+            int huntsTaken = 0;
+            int tamesTaken = 0;
+            int tamesTakenWhileShortOfFood = 0;
+            int peakMeat = 0;
+
+            for (int tick = 0; tick < Days * GenDate.TicksPerDay; tick++)
+            {
+                game.TickManager.DoSingleTick();
+
+                IReadOnlyList<Pawn> onMap = map.mapPawns.AllPawnsSpawned;
+                for (int i = 0; i < onMap.Count; i++)
+                {
+                    Pawn pawn = onMap[i];
+                    if (!pawn.RaceProps.Humanlike) continue;
+                    Job? cur = pawn.jobs?.curJob;
+                    lastJob.TryGetValue(pawn, out Job? previous);
+                    if (ReferenceEquals(cur, previous)) continue;
+                    lastJob[pawn] = cur;
+                    if (cur == null) continue;
+                    if (cur.def == HuntingDefOf.Hunt)
+                    {
+                        huntsTaken++;
+                    }
+                    else if (cur.def == JobDefOf.Tame)
+                    {
+                        tamesTaken++;
+                        if (HuntingInitiative.WantsMeat(settlement, map)) tamesTakenWhileShortOfFood++;
+                    }
+                }
+
+                // Sampled across the run rather than read at the end: meat is food, and a town that needed it
+                // enough to go hunting eats it, hauls it and cooks it. What is being asserted is that it
+                // existed, not that it was left lying there.
+                int meat = MeatOn(map);
+                if (meat > peakMeat) peakMeat = meat;
+            }
+
+            Assert.True(huntsTaken > 0,
+                "a settlement with prey on its land, an armed citizen and an empty larder took no hunting job "
+                + "in a whole week — the chain is open at the work giver, not at the wildlife ("
+                + tamesTaken + " taming jobs were taken over the same week)");
+
+            Assert.True(peakMeat > 0,
+                huntsTaken + " hunting jobs were taken and no meat ever reached the map: the kill or the "
+                + "butchery toil is what is broken, not the decision to hunt");
+
+            // The ordering, stated exactly: a settlement short of food does not spend its handlers on
+            // livestock. This is the assertion that replaces the naturalPriority argument, and it is measured
+            // at the moment each taming job started rather than averaged over the week.
+            Assert.Equal(0, tamesTakenWhileShortOfFood);
+        }
+
+        private static int MeatOn(SimWorld.Map.Map map)
+        {
+            int units = 0;
+            IReadOnlyList<Thing> items = map.listerThings.ThingsInGroup(SimWorld.Map.ThingRequestGroup.Item);
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].def.IsMeat) units += items[i].stackCount;
+            }
+            return units;
         }
 
         private static List<Pawn> AnimalsOn(SimWorld.Map.Map map) =>
