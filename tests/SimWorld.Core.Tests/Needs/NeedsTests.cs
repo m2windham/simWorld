@@ -16,11 +16,30 @@ namespace SimWorld.Tests.Needs
     {
         public readonly List<bool> Intervals = new List<bool>();
 
+        /// <summary>How many IntervalTicks slices each call stood for, in order.</summary>
+        public readonly List<float> Slices = new List<float>();
+
+        /// <summary>Slices counted as starving minus slices counted as fed — the signed quantity that
+        /// actually drives Malnutrition, which a bare count of calls does not.</summary>
+        public float NetStarvingSlices
+        {
+            get
+            {
+                float net = 0f;
+                for (int i = 0; i < Intervals.Count; i++) net += Intervals[i] ? Slices[i] : -Slices[i];
+                return net;
+            }
+        }
+
         public StarvationRecorder(ThingDef def) : base(def, "Recorder")
         {
         }
 
-        public override void Notify_StarvationInterval(bool starving) => Intervals.Add(starving);
+        public override void Notify_StarvationInterval(bool starving, float slices = 1f)
+        {
+            Intervals.Add(starving);
+            Slices.Add(slices);
+        }
     }
 
     public class NeedsTests : ContentTestBase

@@ -227,14 +227,27 @@ namespace SimWorld.Pawns
         /// <c>elapsedTicks / IntervalTicks</c> — has been written and measured twice and reverted twice. See
         /// that method's own doc for both measurements and for what is actually still in the way.
         /// </summary>
-        public virtual void Notify_StarvationInterval(bool starving)
+        /// <summary>
+        /// One interval of starving, or of not starving, applied to <c>Malnutrition</c>.
+        ///
+        /// <para/><paramref name="slices"/> is how many <see cref="Needs.Need.IntervalTicks"/> slices this
+        /// one call stands for, and it exists so the bulk path can land where the per-interval path would
+        /// have. The per-tick path calls this every 150 ticks and passes 1; a coarse-tier citizen is brought
+        /// current in one bulk call covering many slices, and before this parameter existed that call still
+        /// counted as one — so the same citizen accrued, and healed, malnutrition about thirteen times slower
+        /// at Interval than at Full, for no reason anybody chose.
+        ///
+        /// <para/>It is a float rather than an int because a span is not generally a whole number of slices
+        /// and rounding it down loses real time on every single call.
+        /// </summary>
+        public virtual void Notify_StarvationInterval(bool starving, float slices = 1f)
         {
-            if (Dead || HediffDefOf.Malnutrition == null) return;
-            float delta = starving ? HealthTuning.MalnutritionSeverityPerInterval : -HealthTuning.MalnutritionSeverityPerInterval;
-            HealthUtility.AdjustSeverity(this, HediffDefOf.Malnutrition, delta);
+            if (Dead || HediffDefOf.Malnutrition == null || slices <= 0f) return;
+            float magnitude = HealthTuning.MalnutritionSeverityPerInterval * slices;
+            HealthUtility.AdjustSeverity(this, HediffDefOf.Malnutrition, starving ? magnitude : -magnitude);
             if (starving)
             {
-                ageTracker?.AdjustLifespan(-DemographyTuning.StarvationLifespanPenaltyDays, "hunger");
+                ageTracker?.AdjustLifespan(-DemographyTuning.StarvationLifespanPenaltyDays * slices, "hunger");
             }
         }
 

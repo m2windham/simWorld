@@ -105,55 +105,39 @@ namespace SimWorld.Needs
         /// replaying category transitions tick by tick — an approximation only across a span long enough to
         /// cross a hunger-category threshold mid-span.
         ///
-        /// <para/><b>Known defect, measured twice and deliberately left standing twice: starvation is reported
-        /// once per bulk call rather than once per <see cref="IntervalTicks"/> slice.</b> The per-tick path
-        /// above calls <see cref="Pawn.Notify_StarvationInterval"/> every 150 ticks; this calls it once for a
-        /// whole elapsed span, which at Interval tier's Long-tick cadence (2,000 ticks = 13⅓ slices) makes
-        /// <c>Malnutrition</c> accrue — and heal — about 13× slower than for the same citizen at Full. That
-        /// breaks this method's own contract ("over a span its rate is constant across, it must land where the
-        /// per-interval path would have") and spec §11.1's rule for the abstract clock with it. The fix is two
-        /// lines: scale by <c>elapsedTicks / (float)IntervalTicks</c> in one pass, the shape
-        /// <see cref="JoyToleranceSet.NeedIntervalBulk"/> already uses.
+        /// <para/><b>The starvation clock is honest now, at the third attempt, and the two that were reverted
+        /// are worth keeping on the record because each one found the next constraint.</b> The defect was
+        /// that starvation was reported once per bulk call rather than once per <see cref="IntervalTicks"/>
+        /// slice, so a citizen at Interval accrued — and healed — <c>Malnutrition</c> about 13x slower than
+        /// the same citizen at Full, breaking this method's own contract and spec §11.1's rule for the
+        /// abstract clock with it.
         ///
-        /// <para/><b>Attempt 1 (reverted): "correcting the clock without correcting the food kills the
-        /// world."</b> At the honest rate a citizen with nothing to eat dies of hunger in 8.9 days
-        /// (<c>HealthTuning.MalnutritionSeverityPerInterval</c>, 0.113/day, lethal at 1), and off a map the
-        /// only food there is is <c>Settlement.Stores</c> (<c>Economy.SettlementLarder</c>) — which at the
-        /// time <b>nothing at civilization scale produced into</b>: every producer in this port (foraging,
-        /// farming, cooking, hunting) is map-side, and the one abstract producer, <c>Crafting.Guild</c>, ships
-        /// a recipe that cuts stone. Every settlement nobody had opened would have emptied its founding
-        /// rations and died within a fortnight. That attempt named its own precondition — abstract production
-        /// — and recorded the consequence it measured: <c>God.AttentionBudgetTests</c>' century of demography
-        /// falling from ~1,500 citizens to ~880.
+        /// <para/><b>Attempt 1 named a precondition: there was nothing to eat.</b> Correcting the clock while
+        /// no abstract producer existed emptied every unopened settlement's founding rations inside a
+        /// fortnight, because every producer in this port — foraging, farming, cooking, hunting — is map-side.
+        /// <c>God.AttentionBudgetTests</c>' century fell from ~1,500 citizens to ~880.
         ///
-        /// <para/><b>Attempt 2 (reverted): the precondition it named is now met, and the century still
-        /// falls.</b> <c>Economy.SettlementSubsistence</c> landed — a settlement with no map grows food into
-        /// its own ledger on the long tick, and an unwatched settlement now carries days of food and zero
-        /// <c>Malnutrition</c> over a run. Re-applied and re-measured against that same test, the century's
-        /// five seeds came out <b>884 / 771 / 759 / 796 / 732</b>, against the ~1,500 its premise needs and
-        /// against the five it passes with (the premise is "some century outgrows the Full-tier budget several
-        /// times over"). Same failure, one batch later, with the stated blocker removed.
+        /// <para/><b>Attempt 2 met that precondition and still failed, which is what made it useful.</b>
+        /// <c>Economy.SettlementSubsistence</c> landed and an unwatched settlement now carries days of food
+        /// and zero <c>Malnutrition</c> over a run — yet the century's five seeds came out
+        /// <b>884 / 771 / 759 / 796 / 732</b>. Same failure, one batch later, with the stated blocker gone.
+        /// So the blocker was never food. <b>It was the span.</b>
+        /// <c>Pawns.Pawn_TierTracker</c>'s catch-up called this once with the whole time since a citizen was
+        /// last brought current, and <b>nothing can eat inside a bulk call</b> — <c>Economy.SettlementLarder</c>
+        /// feeds on its own gated pass, so a span longer than that pass is hunger with no opportunity to
+        /// answer it, however full the ledger is. In <c>AttentionBudgetTests</c> that span is a <i>year</i>,
+        /// and one call charged 24,000 slices at once: severity <b>6.8</b> against a lethal 1.
         ///
-        /// <para/><b>So the blocker was never food, and naming it correctly is the whole value of this second
-        /// attempt.</b> It is the <i>span</i>: <c>Pawns.Pawn_TierTracker.ApplyElapsed</c> calls this once with
-        /// the whole time since a citizen was last brought current, and <b>nothing can eat inside a bulk
-        /// call</b> — <c>Economy.SettlementLarder</c> feeds on its own gated pass, so a span longer than that
-        /// pass is hunger with no opportunity to answer it, however full the ledger is. In a running game the
-        /// span is one Long tick (2,000 ticks), because a coarse-tier citizen sits on the Long tick list and
-        /// the larder runs on that same cadence, and the correction would be harmless there. In
-        /// <c>AttentionBudgetTests</c> the span is a <b>year</b> — that test advances the clock a year at a
-        /// time with <c>DebugSetTicksGame</c> and ages citizens with <c>AgeTickMothballed</c> without ticking
-        /// anybody, so the economy never runs — and one call then charges 24,000 slices at once: severity
-        /// <b>6.8</b> against a lethal 1. Every citizen the budget demotes and later re-promotes dies of a
-        /// hunger the simulation never gave them a chance to answer.
+        /// <para/><b>Attempt 3 bounded the span where the span is decided</b>, which is
+        /// <see cref="Pawns.TieringTuning.MaxNeedCatchUpTicks"/> — one long tick, the cadence the abstract
+        /// economy actually runs at. A clamp *here* would have made the same measurement come out right while
+        /// inventing tiering policy in a need class, which is why attempts 1 and 2 both refused to take it,
+        /// and why it is still the wrong place. With the span bounded, the scaling below is safe and the
+        /// century comes back: <b>1523 / 868 / 1154 / 1155 / 1010</b>, every seed grown, the Full tier pinned
+        /// flat at its budget.
         ///
-        /// <para/><b>What has to land first, stated so the third attempt does not have to rediscover it.</b>
-        /// Either (a) the catch-up span is bounded — <c>ApplyElapsed</c> either walks a long gap in
-        /// larder-sized steps or declines to charge starvation for time in which the citizen was not being
-        /// simulated at all, which is a change at the <c>Pawns</c>/<c>Economy</c> seam; or (b)
-        /// <c>AttentionBudgetTests</c>' century advances through the tick loop rather than around it, which is
-        /// a change to that test. A cap inside this method would make the test pass and would be inventing
-        /// tiering policy in a need class, so it is named here and not taken.</summary>
+        /// <para/>Note what is <i>not</i> bounded, because the asymmetry is the whole idea: age takes the full
+        /// span. Nobody owed a citizen an opportunity to grow older. They were owed one to eat.</summary>
         public override void NeedIntervalBulk(int elapsedTicks)
         {
             if (elapsedTicks <= 0) return;
@@ -167,7 +151,10 @@ namespace SimWorld.Needs
             }
             if (!IsFrozen)
             {
-                pawn.Notify_StarvationInterval(Starving);
+                // Scaled, so a span lands where the per-interval path would have. Safe now only because
+                // Pawns.TieringTuning.MaxNeedCatchUpTicks bounds what a catch-up may hand us: unbounded, this
+                // same line charged 24,000 slices in one call and killed a century of citizens outright.
+                pawn.Notify_StarvationInterval(Starving, elapsedTicks / (float)IntervalTicks);
             }
         }
 

@@ -57,6 +57,35 @@ namespace SimWorld.Pawns
         public const int IntervalSettleTicks = GenDate.TicksPerYear;
 
         /// <summary>
+        /// The largest span of needs decay a single catch-up may charge, however long the citizen has
+        /// actually gone unprocessed (<see cref="Pawn_TierTracker"/>'s catch-up path). Age is not bounded by
+        /// this and must not be: growing older is not something the simulation owed anybody an opportunity
+        /// for, while getting hungry is.
+        ///
+        /// <para/><b>This is the precondition the starvation clock was reverted against twice</b>, named in
+        /// <c>Needs.Need_Food.NeedIntervalBulk</c> and finally answered here. Nothing can eat inside a bulk
+        /// call: <c>Economy.SettlementLarder</c> feeds off-map citizens on its own gated pass, so a span
+        /// longer than that pass is hunger the citizen was given no chance to answer, however full their
+        /// settlement's ledger is. Charging it anyway is charging for a counterfactual.
+        ///
+        /// <para/>One long tick, because that is the cadence the abstract economy actually runs at —
+        /// <c>Economy.SettlementLarderTuning.IntervalTicks</c> is this same <see cref="GenTicks.TickLongInterval"/>,
+        /// and both name the long tick rather than each other so that <c>Pawns</c> keeps no dependency on
+        /// <c>Economy</c>. In a running game that makes this bound a no-op: a coarse-tier citizen sits on the
+        /// Long tick list and is brought current every 2,000 ticks anyway, so <c>elapsed</c> already equals
+        /// this. It bites only where the clock moved without the tick loop running — a promotion after a
+        /// <c>DebugSetTicksGame</c> jump, a demographic sweep advanced a year at a time — which is exactly
+        /// the case where no economy ran either, and so exactly the case where the hunger did not happen.
+        ///
+        /// <para/><b>Why the cap lives here and not in the need.</b> A clamp inside <c>Need_Food</c> would
+        /// make the same measurement come out right while inventing tiering policy in a need class, which is
+        /// the one fix that method's own doc rules out by name. This is the <c>Pawns</c> side of the
+        /// <c>Pawns</c>/<c>Economy</c> seam, where deciding what an unsimulated span means is the local
+        /// question.
+        /// </summary>
+        public const int MaxNeedCatchUpTicks = GenTicks.TickLongInterval;
+
+        /// <summary>
         /// How many citizens of the focused settlement may sit at <see cref="PawnTier.Full"/> at once —
         /// the Full-tier budget <see cref="God.AttentionBudget"/> fills, most significant first.
         ///

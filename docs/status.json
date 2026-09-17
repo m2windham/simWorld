@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-16",
-  "testsTotal": 2147,
+  "testsTotal": 2150,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -716,8 +716,8 @@
         },
         {
           "id": "needs.food.slicebug",
-          "label": "OPEN, with the fix written, measured and deliberately REVERTED. Need_Food.NeedIntervalBulk calls Notify_StarvationInterval once per bulk call rather than once per 150-tick slice, so malnutrition accrues about 13x slower at Interval than at Full — the same shape as the memory-ageing bug fixed in batch six. The lane wrote the correction with three tests that fail on the old behaviour, then reverted it: correcting the clock without correcting the food kills the world, because at the honest rate a citizen with nothing to eat dies in 8.9 days and NOTHING AT CIVILIZATION SCALE PRODUCES FOOD INTO ANY LEDGER. Measured consequence: AttentionBudgetTests' century of demography falls from about 1,500 citizens to about 880 and its premise stops holding. The precondition is abstract production; the diagnosis is written at the defect site.",
-          "done": false
+          "label": "CLOSED - superseded by needs.slicespan, which records the full three-attempt history and the fix that landed. Kept as the first sighting: this is where the ~13x discrepancy between Interval and Full was first written down and measured.",
+          "done": true
         },
         {
           "id": "needs.joy",
@@ -731,7 +731,7 @@
         },
         {
           "id": "needs.slicespan",
-          "label": "Need_Food.NeedIntervalBulk credits starvation once per bulk call rather than once per 150-tick slice (~13x slow at Interval). Reverted in batch nine blaming FOOD, with abstract production named as the precondition; that precondition landed in batch ten, so the correction was re-applied here and re-measured against the test the first revert cited - AttentionBudgetTests' century of demography came out 884/771/759/796/732 across its five seeds against the ~1,500 its premise needs. Same failure, one batch later, with the stated blocker removed. REVERTED A SECOND TIME, and the value of the attempt is that the blocker is now named correctly at the defect site: IT WAS NEVER FOOD, IT IS THE SPAN. Pawn_TierTracker.ApplyElapsed calls the bulk method once with the whole time since a citizen was last brought current, and nothing can eat inside a bulk call because SettlementLarder feeds on its own gated pass - so a span longer than that pass is hunger with no opportunity to answer it however full the ledger is. In a running game that span is one Long tick and the correction is harmless; in that test it is a year advanced by DebugSetTicksGame, so one call charges 24,000 slices at once for severity 6.8 against a lethal 1. What must land first: bound the catch-up span at the Pawns/Economy seam, or advance that century through the tick loop. A cap inside Need_Food would make the test pass by inventing tiering policy in a need class, so it is named and not taken.",
+          "label": "CLOSED at the third attempt, and the two reverts were each right to happen. The defect: Need_Food.NeedIntervalBulk credited starvation once per bulk call rather than once per 150-tick slice, so a citizen at Interval accrued and healed Malnutrition ~13x slower than the same citizen at Full. Revert one blamed FOOD and named abstract production as the precondition; that landed in batch ten. Revert two re-applied the fix against it and the century STILL fell - 884/771/759/796/732 across five seeds against the ~1,500 its premise needs - which is what proved food was never the blocker. It was the SPAN: Pawn_TierTracker's catch-up passed the whole time since a citizen was last brought current, and nothing can eat inside a bulk call, so in AttentionBudgetTests' year-long steps one call charged 24,000 slices and reached severity 6.8 against a lethal 1. Fixed by bounding the needs span at the tiering seam (TieringTuning.MaxNeedCatchUpTicks, one long tick - the cadence SettlementLarder actually feeds at) while leaving AGE unbounded, because nobody was owed an opportunity to grow older. A clamp inside Need_Food would have made the same measurement come out right while inventing tiering policy in a need class, which is why both earlier attempts refused it and why it is still the wrong place. Re-measured: the century comes back at 1523/868/1154/1155/1010, every seed grown, Full pinned flat at its 500 budget.",
           "done": true
         }
       ]
