@@ -38,6 +38,11 @@ TestResults/
 /unity/**/*.csproj
 /unity/**/*.sln
 
+# simWorld.Host (a separate repo under A:\dev\) references src/SimWorld.Core as a Unity
+# local package, which makes its Editor write a .meta sidecar next to every file it
+# imports from there. This repo has no legitimate use for .meta files itself.
+*.meta
+
 # Build output
 /build/
 /dist/
