@@ -358,16 +358,29 @@ namespace SimWorld.Pawns
                 return;
             }
 
+            // Age takes the WHOLE span. Nobody owed this citizen an opportunity to grow older, so every
+            // tick of it happened whether or not anything was simulating them.
             pawn.ageTracker.AgeTickMothballed(elapsed);
 
             if (tier == PawnTier.Interval)
             {
+                // Needs take a BOUNDED span, and this asymmetry is the whole of the fix that
+                // Needs.Need_Food.NeedIntervalBulk was reverted against twice. Nothing can eat inside a bulk
+                // call -- Economy.SettlementLarder feeds off-map citizens on its own gated pass -- so a span
+                // longer than that pass is hunger the citizen was never given a chance to answer. In a
+                // running game this clamp never fires, because a coarse-tier citizen is brought current on
+                // the Long tick and elapsed already equals the bound. It fires where the clock moved without
+                // the tick loop running, which is precisely where no economy ran either.
+                int needSpan = elapsed < TieringTuning.MaxNeedCatchUpTicks
+                    ? elapsed
+                    : TieringTuning.MaxNeedCatchUpTicks;
+
                 var needsList = pawn.needs?.AllNeeds;
                 if (needsList != null)
                 {
                     for (int i = 0; i < needsList.Count; i++)
                     {
-                        needsList[i].NeedIntervalBulk(elapsed);
+                        needsList[i].NeedIntervalBulk(needSpan);
                     }
                 }
                 // Health: no bulk hediff physics (bleeding/healing/immunity) at this tier — hediffs already
