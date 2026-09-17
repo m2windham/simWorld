@@ -1351,8 +1351,11 @@ else's.
    The GitHub App genuinely cannot create repositories (403, `Resource not accessible by
    integration`), and `gh` genuinely is not logged in on that machine despite a stale
    `gh:github.com:m2windham` entry in the credential store. Creation went through the stored PAT
-   against `POST /user/repos`. Private was chosen as the reversible default; the core is public, so
-   flipping it is a settings toggle if that is wanted.
+   against `POST /user/repos`. Created private as the reversible default, then made **public** at the
+   user's request once the tree had been scanned for anything that should not be — 80 tracked files,
+   all Unity project content, no token-shaped strings, no private keys, no credential-named files.
+   Both repos now match on visibility, and an unauthenticated read confirms it rather than the
+   write call's own response.
 
 2. **`claim/simworld-host-status` is now merged here**, both commits accounted for: the `*.meta`
    rule landed in #65 and the register rewrite is above, kept verbatim rather than summarised.
