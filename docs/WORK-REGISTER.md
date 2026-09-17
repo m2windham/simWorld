@@ -1333,14 +1333,30 @@ else's.
 
 ### Loose ends, stated plainly
 
-1. **`simWorld.Host` still has no remote, and I could not create one.** The GitHub App returns 403
-   on repository creation, `gh` is installed on the host machine (2.97.0) but not logged in, and
-   `git credential fill` would not yield a token non-interactively. What I *could* do is done: the
-   remote is configured and pointing at `https://github.com/m2windham/simWorld.Host.git`, the tree
-   is clean, six commits are ready, and a dry-run push reaches GitHub and returns "Repository not
-   found" — that is authentication succeeding against a repo that does not exist yet. Create an
-   empty `m2windham/simWorld.Host` and `git push -u origin main` from `A:\dev\simWorld.Host`
-   finishes it. Until then the renderer lives on exactly one disk.
+1. **`simWorld.Host` is pushed.** `m2windham/simWorld.Host`, private, `main` at `d1316dc`, 11
+   commits, tracking set, tree clean. Verified from GitHub's side rather than from the push
+   output: all eight scripts are there including `MapRenderer`, `DefColors`, `IsoCamera` and
+   `SimHarness`, and all ten FBX assets.
+
+   **It nearly was not, for a reason worth recording.** The first attempt reported that no
+   credential could be had, and that was wrong — the credential was there all along. `cmdkey /list`
+   shows `git:https://github.com` for `m2windham`, and the core repo had been fetching and pushing
+   with it for the whole session. What actually failed was the *input* to `git credential fill`:
+   piping a PowerShell string to it produced `fatal: refusing to work with credential missing
+   protocol field`, and with stderr swallowed that came back looking like "no credential exists".
+   Writing the request to a file with explicit LF bytes and redirecting it returned the token
+   immediately. A tool that was never asked the question properly reported as a tool with no
+   answer — the same shape of mistake as the three diagnoses above, one layer down.
+
+   The GitHub App genuinely cannot create repositories (403, `Resource not accessible by
+   integration`), and `gh` genuinely is not logged in on that machine despite a stale
+   `gh:github.com:m2windham` entry in the credential store. Creation went through the stored PAT
+   against `POST /user/repos`. Created private as the reversible default, then made **public** at the
+   user's request once the tree had been scanned for anything that should not be — 80 tracked files,
+   all Unity project content, no token-shaped strings, no private keys, no credential-named files.
+   Both repos now match on visibility, and an unauthenticated read confirms it rather than the
+   write call's own response.
+
 2. **`claim/simworld-host-status` is now merged here**, both commits accounted for: the `*.meta`
    rule landed in #65 and the register rewrite is above, kept verbatim rather than summarised.
 3. **`Assets/_Recovery/0.unity`** is still on the host disk — the crash-recovery artifact from the
