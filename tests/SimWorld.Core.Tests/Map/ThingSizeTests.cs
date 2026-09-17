@@ -26,14 +26,15 @@ namespace SimWorld.Tests.Map
     /// footprint of (0, 0) cells. A def could not set a footprint at all, which is why nothing in content
     /// does.
     ///
-    /// <para/><b>What still assumes 1x1</b>, and is deliberately not changed here — see the report in
-    /// <c>docs/perf/map-view.md</c>: <c>Building.GenConstruct.CanPlaceBlueprintAt</c> validates one cell, the
-    /// hand-authored <c>Blueprint_X</c>/<c>Frame_X</c> defs carry no size of their own, and the settlement
-    /// construction initiative scans single cells (that last one follows from the first, since
-    /// <c>TryFindPlacementCell</c> already delegates to it). Setting a footprint on a buildable def before
-    /// those three agree would be a field some systems honour and others ignore, which is worse than one
-    /// nothing honours yet. So shipped content sets no size, and
-    /// <see cref="Shipped_content_sets_no_footprint_yet"/> below is the tripwire for the day it does.
+    /// <para/><b>The three things that still assumed 1x1 now agree</b>, so the tripwire this class used to
+    /// carry is gone rather than weakened, exactly as its own remark asked. <c>Thing.Size</c> is the single
+    /// source a footprint is read from and is virtual; <c>Building.Blueprint</c> and <c>Building.Frame</c>
+    /// override it to report what they are building, so the hand-authored <c>Blueprint_X</c>/<c>Frame_X</c>
+    /// defs still declare no size and still cannot drift from their parent; and
+    /// <c>GenConstruct.CanPlaceBlueprintAt</c> validates the whole rect, which the settlement construction
+    /// initiative inherits for free because <c>TryFindPlacementCell</c> delegates to it.
+    /// <c>Building.FootprintPlacementTests</c> holds that story. Shipped content still sets no size — that is
+    /// now a content decision per building, not a mechanism that would fail to honour it.
     /// </summary>
     [Collection("GlobalDefs")]
     public class ThingSizeTests : ContentTestBase
@@ -222,28 +223,5 @@ namespace SimWorld.Tests.Map
             Assert.True(rock.Spawned);
         }
 
-        // ---- the tripwire ----
-
-        /// <summary>
-        /// Every shipped ThingDef is 1x1 today, and this records that rather than celebrating it.
-        ///
-        /// <para/>Whoever first sets a real footprint in content will land here, and that is the intent: this
-        /// test is the note telling them what to check before they do. A buildable def with a footprint also
-        /// needs its <c>Blueprint_X</c> and <c>Frame_X</c> to carry the same size, and
-        /// <c>GenConstruct.CanPlaceBlueprintAt</c> to validate the whole rect rather than one cell — none of
-        /// which is done. Deleting this test is the right move once those agree; weakening it quietly is not.
-        /// </summary>
-        [Fact]
-        public void Shipped_content_sets_no_footprint_yet()
-        {
-            var sized = DefDatabase<ThingDef>.AllDefsListForReading
-                .Where(d => d.size != IntVec2.One)
-                .Select(d => d.defName + " " + d.size)
-                .ToList();
-
-            Assert.True(sized.Count == 0,
-                "content now sets a footprint (" + string.Join(", ", sized) + ") — GenConstruct.CanPlaceBlueprintAt, "
-                + "the Blueprint_/Frame_ defs and the construction initiative still assume 1x1; see ThingSizeTests' own remarks");
-        }
     }
 }

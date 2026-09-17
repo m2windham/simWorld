@@ -27,7 +27,7 @@ namespace SimWorld.Things
                 throw new ArgumentOutOfRangeException(nameof(loc), loc + " is outside map bounds " + map.Size + ".");
             }
 
-            CellRect footprint = GenAdj.OccupiedRect(loc, rot, thing.def.size);
+            CellRect footprint = GenAdj.OccupiedRect(loc, rot, thing.Size);
             if (footprint.width > 1 || footprint.height > 1)
             {
                 foreach (IntVec3 c in footprint.Cells)

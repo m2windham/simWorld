@@ -69,7 +69,8 @@ namespace SimWorld.Things
                 // Fast path: every pawn and every item is a single cell, and a pawn walking is the only
                 // thing that calls this setter on an already-spawned Thing anywhere near every tick — see
                 // ThingGrid.MoveSingleCell's own comment for why that rules out CellRect.Cells' iterator here.
-                if (def.size.x == 1 && def.size.z == 1)
+                IntVec2 footprint = Size;
+                if (footprint.x == 1 && footprint.z == 1)
                 {
                     IntVec3 oldCell = position;
                     m.thingGrid.MoveSingleCell(this, oldCell, value);
@@ -129,8 +130,22 @@ namespace SimWorld.Things
         /// this Thing's own <c>def.MadeFromStuff</c> actually allows; nothing here re-validates that.</summary>
         public void SetStuffDirect(ThingDef? stuff) => stuffInt = stuff;
 
+        /// <summary>
+        /// The footprint this Thing actually occupies, which is <see cref="ThingDef.size"/> for almost
+        /// everything and deliberately virtual for the ones where it is not.
+        ///
+        /// <para/><b>A Blueprint and a Frame stand in for something else, and must occupy what that thing
+        /// will.</b> Their own defs are hand-authored with no size (see
+        /// <c>Data/Core/Defs/.../Buildings_BlueprintsAndFrames.xml</c>), so reading <c>def.size</c> for them
+        /// would reserve one cell for a building that is about to need four — and the second blueprint laid
+        /// across the same footprint would be accepted. Deriving it from what they build is also what keeps
+        /// the two from drifting: RimWorld generates those defs from the parent and so cannot disagree with
+        /// it; this port authors them by hand and could.
+        /// </summary>
+        public virtual IntVec2 Size => def.size;
+
         /// <summary>Cells this Thing's footprint covers at its current position and rotation.</summary>
-        public CellRect OccupiedRect() => GenAdj.OccupiedRect(position, rotation, def.size);
+        public CellRect OccupiedRect() => GenAdj.OccupiedRect(position, rotation, Size);
 
         public virtual int MaxHitPoints => def.BaseMaxHitPoints;
 

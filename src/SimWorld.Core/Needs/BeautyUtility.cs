@@ -77,7 +77,7 @@ namespace SimWorld.Needs
                 // one comparison and no allocation. A multi-cell Thing therefore counts once, at its own
                 // Position — and is missed entirely when only its other cells are in the sample, the one way
                 // this differs from RimWorld's list.
-                IntVec2 size = thing.def.size;
+                IntVec2 size = thing.Size;
                 if ((size.x != 1 || size.z != 1) && thing.Position != cell) continue;
 
                 total += thing.GetStatValue(BeautyStatDefOf.Beauty);

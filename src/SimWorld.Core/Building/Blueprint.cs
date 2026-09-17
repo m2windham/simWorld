@@ -18,6 +18,13 @@ namespace SimWorld.Building
         public ThingDef EntityToBuild => def.entityToBuild!;
 
         /// <summary>
+        /// A Blueprint occupies what it stands in for, not what its own def says. The hand-authored
+        /// <c>Blueprint_X</c> defs carry no size at all, so without this a Blueprint for a 2x2 building would
+        /// reserve one cell and a second one could be laid across the other three.
+        /// </summary>
+        public override Map.IntVec2 Size => EntityToBuild.size;
+
+        /// <summary>
         /// Spawns this Blueprint's matching <see cref="Frame"/> at the same position/rotation and destroys
         /// the Blueprint (RimWorld: <c>Blueprint_Build.TryReplaceWithSolidThing</c>, trimmed — no resources
         /// carry over since a Blueprint never holds any).
