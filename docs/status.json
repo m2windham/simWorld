@@ -259,8 +259,8 @@
         },
         {
           "id": "defs.wiringaudit.findings",
-          "label": "129 dormant seams found that nobody knew about. The ones that matter: NeedDef.fallPerDay is zero for all eight needs so the generic decay path can never fire; StoryWatcher_Adaptation.Notify_ColonistDowned has no caller — the exact twin of the Notify_ColonistDied bug the audit was written after; IQuestRewardSink has no implementation, so quests compute rewards into nothing; ThingDef.mineableThing and mineableYield are read by nothing while JobDriver_Mine's own doc claims it reads them, so mining destroys rock and drops nothing; trait shaping never happens (forcedTraits, disallowedTraits, requiredWorkTags all unset in content); and difficulty is nearly inert — cropYieldFactor, mineYieldFactor, colonistMoodOffset and questRewardValueFactor are all set in content and read by nothing",
-          "done": false
+          "label": "CLOSED. All six of the findings the label calls 'the ones that matter' are wired: NeedDef.fallPerDay (Needs/NeedDef.cs:45, generic decay path deleted and ConfigErrors now rejects setting it), Notify_PawnDowned (Health/Pawn_HealthTracker.cs:421 into Director/StoryWatcher_Adaptation.cs:50), IQuestRewardSink (Quests/QuestRewardSink.cs:113, wired at QuestManager.cs:31), mineableThing/mineableYield (Things/MineableUtility.cs:49), forcedTraits/disallowedTraits/requiredWorkTags (Pawns/Generation/PawnGenerator.cs:240), and the difficulty factors (Director/DifficultyUtility.cs:37).",
+          "done": true
         },
         {
           "id": "defs.wiringaudit.untouched",
@@ -269,7 +269,7 @@
         },
         {
           "id": "defs.wiringaudit.untouched.gaps",
-          "label": "The 16 real gaps the third check found, for a later batch. The ones worth naming: a mental break tells the player nothing (LetterStack ships and six systems raise letters through it; MentalState.PostStart raises none); every pawn gets every need (ShouldHaveNeed consults intelligence and rest and nothing else, so every applicability flag on NeedDef is ignored — including neverOnPrisoner, now that prisoners exist); a HediffStage cannot cause a mental break or a forgotten memory; skill buys no throughput (RecipeDef.workSpeedStat unread, so a master smith costs what a novice does); stuff-built things are free (costStuffCount unread); and no death is violent (DamageDef.externalViolence unread, so nothing separates a murder from a heart attack). Four of the sixteen are gaps only because a recorded reason expired — apparel, temperature, prisoners and the letter stack all exist now and four declarations in src/ still say they do not. Two further blind spots are recorded rather than papered over: SourceIndex is keyed by bare identifier, so NeedDef.colonistsOnly is silenced by MentalStateDef.colonistsOnly being read; and ContentSurvey compares to a freshly-built object, so XML spelling out a default reads as untouched (three of the 48, and invisible to code-deaf for the same reason).",
+          "label": "CORRECTED. Three of the named gaps are closed: a mental break now sends a letter (MindState/MentalState.cs:54 into LetterStack.ReceiveLetter, with MentalBreakLetterTests); ShouldHaveNeed now consults colonistsOnly/colonistAndPrisonersOnly/neverOnPrisoner (Needs/Pawn_NeedsTracker.cs:81) rather than only intelligence and rest; and DamageDef.externalViolence is read (Health/Pawn_HealthTracker.cs:439, Director/StorytellerDeathEvents.cs:53). Still genuinely unread: HediffStage.mentalBreakMtbDays, HediffStage.forgetMemoryThoughtMtbDays, RecipeDef.workSpeedStat (Crafting/RecipeDef.cs:72) and ThingDef.costStuffCount. Also stale INSIDE the fixture: tests/Wiring/dormant-seams.txt:155 says 'Sixteen are marked Real gap' and the file today contains thirteen. The drift is not confined to this tracker.",
           "done": false
         }
       ]
@@ -711,8 +711,8 @@
         },
         {
           "id": "needs.joy.unreachable",
-          "label": "OPEN, and the actual cause of death. Nothing in this codebase can raise Need_Joy: GainJoy has exactly one caller in all of src/ and it is CompDrug, so the only recreation available to a citizen is narcotics, and the humanlike think tree has no recreation tier. Joy therefore sits at its worst stage (-20 mood) on every citizen from day two. Fixing the food economy did not move the death toll at all — fifteen alive on day six either way, and every death in both runs is 'beaten to death'. With joy pinned full by hand the same settlement still loses 8 of 25, because Insulted (-8.8) and Divorced (-5.3) are the social fallout of the fights themselves: MentalState_SocialFighting killed ten of twenty-five in a week with a full larder. Two chains, both open.",
-          "done": false
+          "label": "CLOSED, and it had been closed for two batches before anyone noticed. The label read 'OPEN, and the actual cause of death. Nothing in this codebase can raise Need_Joy: GainJoy has exactly one caller' - false today. GainJoy has three callers: AI/JoyUtility.cs:76 on the map via JobGiver_GetJoy (wired into ThinkTrees_Humanlike.xml under ThinkNode_ConditionalLowJoy), Needs/AbstractRecreation.cs:84 off the map from Need_Joy's own interval, and Things/CompDrug.cs:76. Batch ten's abstract-recreation work fixed it; this label simply never caught up, and it was still being cited as a top blocker a batch later.",
+          "done": true
         },
         {
           "id": "needs.food.slicebug",
@@ -1022,7 +1022,7 @@
         },
         {
           "id": "ai.pathingshape",
-          "label": "Measured and recorded rather than assumed: RegionPathCorridorCache is about 30 percent SLOWER on a settlement interior (16.06 ms against 12.15 ms for 15 paths to one destination), because the interior is 5 regions over 40,000 cells with one holding 34,285 — a corridor cannot narrow a search when there is one region to name. Nothing was changed on the strength of it (the corridor path already falls back safely and the whole-tick A/B was within noise), but docs/perf/baseline.md section 9's 9.7x speedup is map-shape dependent and the settlement interior is the shape where it does not apply. A raid costs about 0.01 ms per raider per tick; docs/perf/raid-approach.md has the numbers, labelled as Debug/test-harness rather than Release.",
+          "label": "STILL OPEN, re-verified. AI/RegionPathCorridorCache.cs narrows a pawn's A* to the regions on one BFS tree over the region graph, and does nothing to subdivide an oversized region; no region-size cap or splitting exists anywhere in Map/ (RegionMaker, RegionGrid). The root cause the label names - one region holding tens of thousands of cells defeats the narrowing - is architecturally present in current code, and the safe fallback at RegionPathCorridorCache.cs:89 still behaves as described.",
           "done": false
         },
         {
@@ -1114,8 +1114,8 @@
         },
         {
           "id": "director.difficulty.auditgap",
-          "label": "The wiring audit has a blind spot this lane fell into: its field checks ask 'content sets it, does code read it' and 'code reads it, does content set it', so a field neither side touches is reported by neither. researchSpeedFactor was exactly that and appears nowhere in the baseline",
-          "done": false
+          "label": "CLOSED. The wiring audit's third check, ContentFieldsNobodyTouches, is wired into WiringAudit.Run at tests/Wiring/WiringAudit.cs:468 alongside the two the label names. The specific field that exposed the blind spot, DifficultyDef.researchSpeedFactor, is now live both ways: content sets it in Difficulties.xml and Research/ResearchManager.cs:97 reads it, with a regression test at DifficultyWiringTests.cs:227 whose own comment reads 'Both halves exist now.'",
+          "done": true
         },
         {
           "id": "director.downedadaptation",
@@ -1238,7 +1238,7 @@
         },
         {
           "id": "crafting.stonework.gaps",
-          "label": "Recorded from the same trace, not chased: the ore ladder has the identical hole one level up — Buildings_Mineable yields Flint, Salt, Coal, Copper, Tin, Silver, Gold, Jade, Uranium and Plasteel, and not one is named by any recipe ingredient or costList in content. Four benches (FueledStove, Smithy, TableTailor, TableButcher) have no Blueprint/Frame pair so nothing can raise them; ResearchBench and Sculpture have pairs but nothing places them, and WorkGiver_Research requires a bench the settlement cannot build. Every other bench's recipes remain where stonecutting was: real recipes, a real giver, no bill. And the civilization-scale path stays dead for a second reason — nothing ever puts a mined chunk into Settlement.Stores, so a guild queue would starve even if GuildManager.Establish were ever called.",
+          "label": "CORRECTED AND NARROWED. Three of the label's claims are no longer true: ResearchBench and Sculpture ARE placed now (Building/SettlementWorksInitiative.cs:153), the ore ladder IS named by content (Buildings_Sculpture.xml gives SculptureGold/SculptureJade costLists naming Gold and Jade), and mined chunks DO reach Settlement.Stores (Economy/SettlementStockInitiative.cs:185, BankStoredGoods). What remains true is narrower and is the real gap: Smithy, TableTailor and TableButcher have no Blueprint_/Frame_ pair anywhere in content - of the seventeen pairs that exist, none is for those three - so those benches can never be raised. That, not any missing recipe or initiative, is why nothing in this port produces Steel or Cloth: the complete set of things any recipe can make is three stone blocks, three meals, pemmican, one shirt and one knife.",
           "done": false
         },
         {
@@ -1248,7 +1248,7 @@
         },
         {
           "id": "crafting.billcreators",
-          "label": "Still open after stonecutting and the works initiative: cooking, smithing and tailoring have real recipes, a real giver and no bill-creator. The bench-PLACING half now generalises (CountBuiltOrPlanned / TryPlaceBlueprint); the bill half does not, and forcing it would be wrong. What makes StonecutterInitiative work is not its placement but a demand figure derived from a want the settlement already had, and every bench asks a different question there. For smithing and tailoring the honest answer is still zero, because nothing in this port equips a crafted weapon or wears crafted apparel, and a zero-target bill must not be queued. Cooking is the one that is genuinely ready — meals have a real sink.",
+          "label": "CORRECTED. 'Cooking, smithing and tailoring have real recipes, a real giver and no bill-creator' is now false as to cooking: Crafting/CookingInitiative.cs:300 queues a real non-zero-target bill (BillStack.AddBill at :319) and places FueledStove's blueprint, whose pair was added in Buildings_Kitchen.xml. Smithing and tailoring remain exactly as described, and they are blocked one level further down than this label suggests - see crafting.stonework.gaps: their benches have no blueprint pair, so a bill-creator alone would not help them.",
           "done": false
         },
         {
@@ -1345,7 +1345,7 @@
         },
         {
           "id": "research.endless.indexceiling",
-          "label": "Literal bound on 'endless', recorded not fixed: DefDatabase.Add narrows Def.index with checked((ushort)(count-1)), so a process minting more than 65,535 ResearchProjectDefs throws. About 2,700 ages in, each project around 4e8 points — unreachable in play, but it is a ceiling and it is not in the design",
+          "label": "STILL OPEN, re-verified. Defs/DefDatabase.cs:178 still narrows Def.index with checked((ushort)...) and no guard, and Research/EndlessResearch.cs:189 still mints projects into the database with no upper bound as ages progress. A repo-wide grep for 65535, ushort.MaxValue or a mitigating cap finds nothing outside DefDatabase itself.",
           "done": false
         },
         {
@@ -1526,7 +1526,7 @@
         },
         {
           "id": "social.dlc",
-          "label": "Genes, mechanitor bandwidth, psycasts, containment — evaluated per era",
+          "label": "DELIBERATE EXCLUSION, re-verified and accurate as written. Genes ship in trimmed form (archite genes not ported, biostatCpx recorded but not enforced as a cap, Pawns/Genes/GeneDef.cs:9). Mechanitor bandwidth, psycasts and containment have zero matches anywhere in src/. A forward-looking scope note for DLC-tier systems, not an open task.",
           "done": false
         },
         {
@@ -1717,18 +1717,18 @@
         },
         {
           "id": "settlements.starvation",
-          "label": "MEASURED AND OPEN, the largest thing this project knows about itself. A generated settlement does not survive its first week, and an unwatched one does not live at all. Probed independently at Game.NewGame(TribalStart, 25 founders), ticked six in-game days with nothing called by hand. Watched (entered through GodCommands.OpenSettlement): mean food falls to 0.00 inside ONE day and never recovers, mood sits near 0.12, and the population goes 25 -> 20 -> 19 -> 18 -> 16 — nine dead in six days, the deaths being citizens in extreme mental breaks beating each other to death. Unwatched: the same 25 citizens are Full tier and unspawned, and their needs do not move AT ALL over six days — food and mood are identical on day 6 and day 0. So a civilization is either frozen or dying, and neither is the intended behaviour. Every module involved is ported, tested and green; this is what they do when a real game runs them.",
-          "done": false
+          "label": "CLOSED BY RE-MEASUREMENT, not by argument. The label recorded a probe: watched settlements at mean food 0.00 inside one day with 25 -> 16 population and nine dead 'beating each other to death', unwatched needs not moving AT ALL over six days. The same probe re-run today (Game.NewGame TribalStart, 25 founders, six in-game days, nothing called by hand) reproduces NEITHER half. Watched: food 0.80/0.27/0.33/0.44/0.12/0.31/0.41 across days 0-6, mood 0.43-0.53, ZERO deaths. Unwatched: food moves every day, 0.80 down to 0.31 then back to 0.95, one death and it was Plague, not hunger. The 'beating each other to death' reading was separately proven a misdiagnosis in batch eleven - roof collapses dealing Blunt, whose deathMessage is 'beaten to death', where RimWorld deals Crush. Deaths were counted off a citizen list snapshotted before the first tick and cross-checked against Corpse things, because Settlement.PruneDeadCitizens removes the dead from the roster and a naive count reports zero however many die.",
+          "done": true
         },
         {
           "id": "settlements.abstractconsumption",
-          "label": "OPEN, and a regression this batch introduced rather than found. Now that off-map citizens tick, a settlement that is FOCUSED but never entered starves: Game.NewGame focuses the settlement it founds, so its citizens run at Full tier, but nothing has opened the interior, so there is no map — and the entire food economy is map-based (berries lie on a map, a growing zone is painted on one, a kitchen is built on one). Measured over eight in-game days: unwatched goes 25 alive to 18 with food 0.00 from day one, against watched holding food near 0.4. A Full-tier citizen with no map has needs that decay at full speed and no world in which to satisfy them. The fix is the one the tick lane named before the problem existed: an abstract consumption path from Settlement.Stores, the ledger batch eight built and nothing yet draws from. The two halves were built in the right order and have not been joined.",
-          "done": false
+          "label": "CLOSED. The label's core claim, that nothing draws from Settlement.Stores and a focused-but-unopened settlement sits at food 0.00, is false. Economy/SettlementLarder.cs:139 feeds every off-map (!Spawned) hungry citizen from the ledger, ticked from Game.cs:485 beside SettlementSubsistence at :484. Confirmed by the re-measured probe under settlements.starvation: unwatched food moves every day rather than sitting frozen. NOTE for whoever works this area next: the probe also shows unwatched citizens better fed than watched ones (day 1: 0.73 against 0.27), because the abstract larder feeds from a ledger while a spawned citizen must walk, cook and eat. A citizen being better off when nobody is watching is an asymmetry the tiering design should not want, and it is recorded here rather than left to be rediscovered.",
+          "done": true
         },
         {
           "id": "settlements.abstractproduction",
-          "label": "OPEN, and now the top item. Nothing produces food abstractly, so an unwatched settlement eats its founding rations down and then starves — the consumption half of the seam is built and the production half is not. Related and named in the code: only the player's founding band is provisioned, because the call sits in Game.NewGame; emergent rival bands (World.EmergenceManager) still found with an empty ledger. The call belongs in SettlementFounder.Found, which both paths use, but that would make World/ reference Economy and spec section 2 forbids referencing upward — the fix is an owner for emergence at Layer 4, not a reference the wrong way down.",
-          "done": false
+          "label": "CLOSED. Both halves of the label are false now. 'Nothing produces food abstractly' - Economy/SettlementSubsistence.cs:151 grows food into Settlement.Stores every interval for every settlement in the world, gated by biome forageability and capped by a larder ceiling. 'Only the player's founding band is provisioned, because the call sits in Game.NewGame' - ProvisionIfNewlyFounded moved to SettlementSubsistence.cs:405 and fires for every settlement on its first gated pass; Sim/Game.cs:296 documents the removal explicitly.",
+          "done": true
         }
       ]
     },
@@ -1816,7 +1816,7 @@
         },
         {
           "id": "god.view",
-          "label": "The god view itself — a presentation surface reading the read model below and offering edicts. Needs the Unity host: a headless container has no display, so nothing visual can be built or verified here. The contract it binds to is done (god.read-model); what is left is the surface.",
+          "label": "DELIBERATE EXCLUSION, and the item is really about the other repo. This repo ships the read model only - God/View/GodViewSnapshot and Map/View/MapViewSnapshot are engine-free value snapshots with no rendering data, by rule. The presentation surface now exists and is not here: github.com/m2windham/simWorld.Host renders both the civilization view and a settlement interior against these seams. Nothing in this repository is outstanding for this item.",
           "done": false
         },
         {
@@ -1873,7 +1873,7 @@
         },
         {
           "id": "offices.edicts",
-          "label": "Gating edicts on a seated leader is the strongest remaining consequence and needs GodManager.CanActivate",
+          "label": "STILL OPEN, re-verified. God/GodManager.cs:102 gates edict activation on IsActive, the MaxActiveEdicts slot and requiredEra/obsoleteEra, and nothing else. There are ZERO references to Offices anywhere under src/SimWorld.Core/God. Offices/OfficeManager.cs implements the full seat and leader logic; no edict consults it.",
           "done": false
         }
       ]
@@ -1905,7 +1905,7 @@
         },
         {
           "id": "weather.snow",
-          "label": "Snow accumulation, lightning and weather events are left out: there is no snow grid and no weather-event system, and a thunderstorm that is only windy rain would be a name pretending to be a mechanic",
+          "label": "CORRECTED AND NARROWED. Snow is still genuinely absent - there is no snow grid and no depth, and Weather/WeatherManager.cs:103 says so outright. But 'lightning ... and weather events are left out ... there is no weather-event system' is false: Conditions/GameCondition_Flashstorm.cs implements real lightning that ignites fires, wired through IncidentWorker_MakeGameCondition in Incidents_Misc.xml, with HeatWave and ColdSnap on the same path and test coverage in GameConditionTests. Thunderstorm-as-WeatherDef stays deliberately unshipped, which the WeatherDefs XML already states.",
           "done": false
         }
       ]
@@ -1937,7 +1937,7 @@
         },
         {
           "id": "conditions.maplocal",
-          "label": "Map-scoped registration is a real seam that shipped content does not yet use",
+          "label": "DELIBERATE EXCLUSION, re-verified and accurate as written. The per-map GameConditionManager and its scope machinery exist and work (Conditions/GameConditionManager.cs:25); every shipped incident - HeatWave, ColdSnap, Flashstorm - registers at world scope only. No content path reaches map-scope registration. A real seam that shipped content does not yet use, not a defect.",
           "done": false
         }
       ]
