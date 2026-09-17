@@ -70,6 +70,10 @@ namespace SimWorld.Director
         /// <c>quests.moments</c>) — see <see cref="MomentCurator"/>'s own doc.</summary>
         public MomentCurator moments = new MomentCurator();
 
+        /// <summary>Every death of one of this civilization's people, counted by cause, uncapped — the
+        /// measurement the capped <see cref="Chronicle"/> cannot be. See <see cref="DeathLedger"/>.</summary>
+        public DeathLedger deaths = new DeathLedger();
+
         /// <summary>Raised after every attempted firing, successful or not.</summary>
         public event Action<FiringIncident>? IncidentFired;
 
@@ -243,6 +247,10 @@ namespace SimWorld.Director
             MomentCurator? m = moments;
             Scribe_Deep.Look(ref m, "moments");
             moments = m ?? new MomentCurator();
+
+            DeathLedger? dl = deaths;
+            Scribe_Deep.Look(ref dl, "deaths");
+            deaths = dl ?? new DeathLedger();
 
             List<ChronicleEntry>? chronicleList = new List<ChronicleEntry>(chronicle);
             Scribe_Collections.Look(ref chronicleList, "chronicle", LookMode.Deep);

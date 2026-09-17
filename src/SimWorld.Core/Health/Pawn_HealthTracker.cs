@@ -40,6 +40,7 @@ namespace SimWorld.Health
         private HediffDef? deathCauseHediff;
         private DamageDef? deathCauseDamage;
         private bool killedByPawn;
+        private DeathCause deathCause = DeathCause.Unknown;
         private readonly List<Hediff_Injury> tmpInjuries = new List<Hediff_Injury>();
 
         public Pawn_HealthTracker(Pawn pawn)
@@ -81,6 +82,13 @@ namespace SimWorld.Health
         /// <para/>Scribed with the rest of the death record, so it survives a save.
         /// </summary>
         public bool KilledByAnotherPawn => Dead && killedByPawn;
+
+        /// <summary>Why this pawn died, classified at the moment of death by
+        /// <see cref="DeathCauseClassifier"/> from whatever evidence was to hand — the cause the killing site
+        /// declared where it had one, and the damage or the hediff otherwise. Meaningless on a living pawn,
+        /// where it reads <see cref="Pawns.DeathCause.Unknown"/>. Scribed, so it survives a save exactly as
+        /// <see cref="DeathCauseDamage"/> and <see cref="DeathCauseHediff"/> do.</summary>
+        public DeathCause CauseOfDeath => deathCause;
 
         /// <summary>Downs the pawn regardless of its body (RimWorld's <c>forceIncap</c>); cleared by the caller.</summary>
         public bool ForceDowned
@@ -438,7 +446,14 @@ namespace SimWorld.Health
         /// </summary>
         public bool DiedViolently => Dead && deathCauseDamage != null && deathCauseDamage.externalViolence;
 
-        public void Kill(DamageInfo? dinfo, Hediff? exactCulprit)
+        /// <summary>
+        /// <paramref name="declaredCause"/> is for a site that kills somebody for a reason it already knows —
+        /// age, an abstractly-resolved raid — and is used verbatim when supplied. Every other death is
+        /// classified from <paramref name="dinfo"/> and <paramref name="exactCulprit"/>. Optional because
+        /// most callers genuinely do not know, and because adding it had to not disturb the call sites that
+        /// were already right.
+        /// </summary>
+        public void Kill(DamageInfo? dinfo, Hediff? exactCulprit, DeathCause? declaredCause = null)
         {
             if (Dead) return;
             healthState = PawnHealthState.Dead;
@@ -446,6 +461,7 @@ namespace SimWorld.Health
             deathCauseDamage = dinfo?.Def;
             deathCauseHediff = exactCulprit?.def;
             killedByPawn = dinfo?.Instigator is Pawn killer && !ReferenceEquals(killer, pawn);
+            deathCause = DeathCauseClassifier.Classify(declaredCause, dinfo, exactCulprit);
             hediffSet.DirtyCache();
 
             // Everyone who needs to know, before the body is made. Ordered: the people who watched get their
@@ -471,6 +487,7 @@ namespace SimWorld.Health
             Scribe_Defs.Look(ref deathCauseHediff, "deathCauseHediff");
             Scribe_Defs.Look(ref deathCauseDamage, "deathCauseDamage");
             Scribe_Values.Look(ref killedByPawn, "killedByPawn");
+            Scribe_Values.Look(ref deathCause, "deathCause", DeathCause.Unknown);
             HediffSet? set = hediffSet;
             Scribe_Deep.Look(ref set, "hediffSet", pawn);
             hediffSet = set ?? new HediffSet(pawn);
