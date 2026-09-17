@@ -14,7 +14,31 @@ namespace SimWorld.Building
         /// the terrain offers the affordance it needs, and no Blueprint/Frame/impassable edifice already
         /// occupies the cell. <paramref name="failReason"/> names the first check that failed.
         /// </summary>
-        public static bool CanPlaceBlueprintAt(ThingDef entityToBuild, IntVec3 cell, Map.Map map, out string? failReason)
+        /// <summary>
+        /// Whether <paramref name="entityToBuild"/> could be planned at <paramref name="cell"/> facing
+        /// <paramref name="rot"/>, checking <b>every cell of its footprint</b> rather than only the one it is
+        /// centred on.
+        ///
+        /// <para/><paramref name="rot"/> defaults to North so the eight existing callers are unchanged; every
+        /// one of them places an unrotated building, and a caller that starts rotating has to say so.
+        ///
+        /// <para/>Until this validated the whole rect, a footprint was a field some systems honoured and
+        /// others ignored — <c>ThingGrid</c> and <c>EdificeGrid</c> registered all of it while this accepted a
+        /// placement based on one cell — which is why shipped content set no size at all and
+        /// <c>Map.ThingSizeTests</c> carried a tripwire saying so.
+        /// </summary>
+        public static bool CanPlaceBlueprintAt(ThingDef entityToBuild, IntVec3 cell, Map.Map map, out string? failReason, Rot4 rot = default)
+        {
+            foreach (IntVec3 c in GenAdj.OccupiedRect(cell, rot, entityToBuild.size).Cells)
+            {
+                if (!CanPlaceOneCell(entityToBuild, c, map, out failReason)) return false;
+            }
+
+            failReason = null;
+            return true;
+        }
+
+        private static bool CanPlaceOneCell(ThingDef entityToBuild, IntVec3 cell, Map.Map map, out string? failReason)
         {
             if (!GenGrid.InBounds(cell, map))
             {

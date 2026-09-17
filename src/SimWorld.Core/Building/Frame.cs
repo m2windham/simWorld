@@ -30,6 +30,13 @@ namespace SimWorld.Building
 
         public ThingDef EntityToBuild => def.entityToBuild!;
 
+        /// <summary>
+        /// A Frame occupies what it is building, not what its own def says. The hand-authored
+        /// <c>Frame_X</c> defs carry no size at all, so without this a Frame for a 2x2 building would
+        /// reserve one cell and a second one could be laid across the other three.
+        /// </summary>
+        public override Map.IntVec2 Size => EntityToBuild.size;
+
         public float workDone;
 
         private readonly Dictionary<ThingDef, int> resourceContainer = new Dictionary<ThingDef, int>();
