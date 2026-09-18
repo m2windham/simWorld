@@ -136,7 +136,132 @@ namespace SimWorld.Economy
             if (map == null) throw new ArgumentNullException(nameof(map));
 
             EnsureGranary(settlement, map);
-            return BankStoredGoods(settlement, map);
+            int banked = BankStoredGoods(settlement, map);
+
+            // Banking keeps NutritionWanted on the map and takes the surplus; issuing puts back the shortfall
+            // against the same threshold. Run in this order the two compose into one statement — the map ends
+            // a pass holding what the settlement wants in hand, and neither can undo the other, because
+            // banking only ever takes what is above the line and issuing only ever adds up to it.
+            IssueFromStores(settlement, map);
+
+            return banked;
+        }
+
+        /// <summary>
+        /// The crossing this class was missing: <b>ledger to map</b>. Moves stored food out of
+        /// <paramref name="settlement"/>'s ledger and onto <paramref name="map"/> until the map holds what
+        /// <c>AI.HuntingInitiative.NutritionWanted</c> says the settlement wants in hand. Returns the units
+        /// issued.
+        ///
+        /// <para/><b>Why it has to exist.</b> This class's own invariant is that a unit is either a
+        /// <c>Thing</c> on a map or a count in <see cref="Settlement.Stores"/>, never both, and
+        /// <see cref="BankStoredGoods"/> was the only thing that moved one across — in one direction. The
+        /// class doc said as much: "all that was missing was the rule for crossing". Half of it was written.
+        ///
+        /// <para/><b>What the missing half cost.</b> <c>SettlementLarder.WouldEatFromStores</c> refuses any
+        /// <c>Spawned</c> citizen, on the correct principle that a citizen standing on a map eats things on
+        /// that map. But <c>SettlementLarder.ProvisionFoundingBand</c> sizes a new settlement's rations by
+        /// counting every non-dead citizen, spawned ones included, and puts all of it in the ledger — and no
+        /// map-generation step places any food at all. So a watched settlement's people were locked out of
+        /// rations stocked on their behalf, and fell back to harvesting wild berries through a work job that
+        /// sits below the need tiers in the think tree. Measured by <c>tools/bench --suite probe</c> on day
+        /// one of a 25-strong TribalStart: watched citizens at 0.20 food against unwatched at 0.73, with the
+        /// watched settlement's ledger <i>fuller</i> by exactly the 40 nutrition the unwatched ones had eaten.
+        /// A settlement accumulating food its citizens cannot reach, and the gap widening daily.
+        ///
+        /// <para/><b>Why not simply let a spawned citizen eat from the ledger.</b> That was the one-line fix
+        /// and it is the wrong one: it teleports food into a stomach, skips the walking, the hauling and the
+        /// cooking, and makes Full tier a more expensive way to get the same answer as the abstraction. The
+        /// point of attending a settlement is that its economy becomes real. So the rations become real too,
+        /// and somebody still has to go and eat them.
+        ///
+        /// <para/><b>Bounded by the deficit, not by the ledger.</b> Opening a settlement a century in finds a
+        /// ledger holding thousands of units; this issues against the shortfall, which is a few days of food
+        /// for the mouths present, so a large ledger cannot dump itself onto the map. What it cannot place —
+        /// a map with nowhere standable left — it leaves in the ledger rather than destroying.
+        ///
+        /// <para/><b>Deterministic.</b> <c>SettlementLarder.BestStoredFood</c> is a total order with no draw
+        /// in it, and cells are walked in <c>GenRadial</c>'s fixed pattern, so nothing here touches the shared
+        /// <see cref="Rand"/> stream and two identically-seeded runs issue identically. The probe depends on
+        /// that.
+        /// </summary>
+        public static int IssueFromStores(Settlement settlement, Map.Map map)
+        {
+            if (settlement == null) throw new ArgumentNullException(nameof(settlement));
+            if (map == null) throw new ArgumentNullException(nameof(map));
+
+            float deficit = HuntingInitiative.NutritionWanted(settlement, map)
+                - HuntingInitiative.NutritionAvailable(null, map);
+            if (deficit <= 0f) return 0;
+
+            int issued = 0;
+            while (deficit > 0f)
+            {
+                ThingDef? def = SettlementLarder.BestStoredFood(settlement);
+                if (def == null) break;
+
+                float per = def.ingestible?.nutrition ?? 0f;
+                if (per <= 0f) break;
+
+                int have = settlement.StoreCountOf(def);
+                if (have <= 0) break;
+
+                int take = Math.Min((int)Math.Ceiling(deficit / per), have);
+                if (take <= 0) break;
+
+                int placed = PlaceIssued(def, take, map);
+                if (placed <= 0) break;
+
+                // Debit in the same step that spawns, exactly as banking credits in the same step that
+                // destroys. That is what makes the invariant true rather than merely intended.
+                settlement.AddStore(def, -placed);
+                deficit -= placed * per;
+                issued += placed;
+
+                // Short of what was asked for means the map ran out of room, not that another def would fare
+                // better; trying the next one would spin.
+                if (placed < take) break;
+            }
+
+            return issued;
+        }
+
+        /// <summary>Spawns up to <paramref name="count"/> units of <paramref name="def"/> around the granary
+        /// (or the map's middle when there is not one yet), one stack per cell and never above the def's own
+        /// stack limit. Returns how many units actually landed.</summary>
+        private static int PlaceIssued(ThingDef def, int count, Map.Map map)
+        {
+            IntVec3 anchor = IssueAnchor(map);
+            IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
+
+            int remaining = count;
+            int placed = 0;
+            for (int i = 0; i < pattern.Count && remaining > 0; i++)
+            {
+                IntVec3 cell = anchor + pattern[i];
+                if (!GenGrid.InBounds(cell, map) || !GenGrid.Standable(cell, map)) continue;
+
+                int stack = Math.Min(remaining, Math.Max(1, def.stackLimit));
+                Thing thing = ThingMaker.MakeThing(def);
+                thing.stackCount = stack;
+                GenSpawn.Spawn(thing, cell, map);
+
+                remaining -= stack;
+                placed += stack;
+            }
+
+            return placed;
+        }
+
+        /// <summary>Where issued food lands: the granary if the settlement has painted one, otherwise the
+        /// middle of the map. Left loose rather than zoned — <see cref="EnsureGranary"/> is what decides where
+        /// a settlement's storage goes, and a hungry citizen reaches a loose stack exactly as well
+        /// (<c>AI.JobGiver_GetFood</c> scans items, not stockpiles).</summary>
+        private static IntVec3 IssueAnchor(Map.Map map)
+        {
+            Zone_Stockpile? granary = GranaryOf(map);
+            if (granary != null && granary.CellCount > 0) return granary.Cells[0];
+            return new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
         }
 
         // -----------------------------------------------------------------------------------------------
