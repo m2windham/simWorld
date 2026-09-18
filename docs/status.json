@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-18",
-  "testsTotal": 2171,
+  "testsTotal": 2173,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -170,7 +170,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Defs · Defs/Patches · Content (ModContentPack, ModLoadOrder)",
       "status": "ported",
-      "tests": 107,
+      "tests": 109,
       "items": [
         {
           "id": "defs.xml",
@@ -271,6 +271,11 @@
           "id": "defs.wiringaudit.untouched.gaps",
           "label": "CORRECTED. Three of the named gaps are closed: a mental break now sends a letter (MindState/MentalState.cs:54 into LetterStack.ReceiveLetter, with MentalBreakLetterTests); ShouldHaveNeed now consults colonistsOnly/colonistAndPrisonersOnly/neverOnPrisoner (Needs/Pawn_NeedsTracker.cs:81) rather than only intelligence and rest; and DamageDef.externalViolence is read (Health/Pawn_HealthTracker.cs:439, Director/StorytellerDeathEvents.cs:53). Still genuinely unread: HediffStage.mentalBreakMtbDays, HediffStage.forgetMemoryThoughtMtbDays, RecipeDef.workSpeedStat (Crafting/RecipeDef.cs:72) and ThingDef.costStuffCount. Also stale INSIDE the fixture: tests/Wiring/dormant-seams.txt:155 says 'Sixteen are marked Real gap' and the file today contains thirteen. The drift is not confined to this tracker.",
           "done": false
+        },
+        {
+          "id": "defs.packidentifierrace",
+          "label": "PatchOperationFindMod.LoadedPackIdentifiers is thread-static. It was a plain static that DefLoader assigns at the start of a load and resets to empty in a finally, so two loads on different threads shared one slot: one loader's cleanup landing mid-patch left the pack list empty and a FindMod that should have matched silently took its nomatch branch. Content patching itself the wrong way reports nothing, which is why it surfaced only once, as FindMod_branches_on_which_packs_are_loaded reading “missing” for “present”.",
+          "done": true
         }
       ]
     },

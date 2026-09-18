@@ -197,13 +197,34 @@ namespace SimWorld.Defs
         public PatchOperation? match;
         public PatchOperation? nomatch;
 
+        [ThreadStatic]
+        private static IReadOnlyCollection<string>? loadedPackIdentifiers;
+
         /// <summary>
         /// The packs a patch can see. Set by <see cref="DefLoader"/> for the duration of a load, because a
         /// patch operation is built from XML by the object mapper and has no other way to be told what else
-        /// is loaded. Static for the same reason RimWorld's <c>ModsConfig</c> is: there is exactly one load
-        /// in flight, and threading it through every operation's constructor would buy nothing.
+        /// is loaded. Static for the same reason RimWorld's <c>ModsConfig</c> is: threading it through every
+        /// operation's constructor would buy nothing.
+        ///
+        /// <para/><b>Thread-static, because "exactly one load in flight" is true of a game and false of a test
+        /// run.</b> This was a plain static, and <see cref="DefLoader"/> both assigns it at the start of a
+        /// load and resets it to empty in a <c>finally</c>. Two loads on different threads therefore share one
+        /// slot: one loader's cleanup lands in the middle of another's patching, the surviving pack list is
+        /// empty, and a <c>PatchOperationFindMod</c> that should have matched silently takes its
+        /// <c>nomatch</c> branch instead. That is a wrong answer rather than a crash, which is why it went
+        /// unnoticed until it turned up once in a full suite run as
+        /// <c>FindMod_branches_on_which_packs_are_loaded</c> expecting "present" and reading "missing".
+        ///
+        /// <para/>Per-thread costs nothing in production, where a load happens on one thread and this reads
+        /// exactly as it did before. <c>Rand.Current</c> is thread-static for the same reason and uses the
+        /// same null-coalescing accessor, since a <c>[ThreadStatic]</c> field's initializer would only ever
+        /// run for the first thread to touch it.
         /// </summary>
-        public static IReadOnlyCollection<string> LoadedPackIdentifiers { get; internal set; } = Array.Empty<string>();
+        public static IReadOnlyCollection<string> LoadedPackIdentifiers
+        {
+            get => loadedPackIdentifiers ?? Array.Empty<string>();
+            internal set => loadedPackIdentifiers = value;
+        }
 
         protected override bool ApplyWorker(XDocument document)
         {
