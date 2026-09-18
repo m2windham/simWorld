@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-18",
-  "testsTotal": 2169,
+  "testsTotal": 2187,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -170,7 +170,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Defs · Defs/Patches · Content (ModContentPack, ModLoadOrder)",
       "status": "ported",
-      "tests": 107,
+      "tests": 109,
       "items": [
         {
           "id": "defs.xml",
@@ -271,6 +271,11 @@
           "id": "defs.wiringaudit.untouched.gaps",
           "label": "CORRECTED. Three of the named gaps are closed: a mental break now sends a letter (MindState/MentalState.cs:54 into LetterStack.ReceiveLetter, with MentalBreakLetterTests); ShouldHaveNeed now consults colonistsOnly/colonistAndPrisonersOnly/neverOnPrisoner (Needs/Pawn_NeedsTracker.cs:81) rather than only intelligence and rest; and DamageDef.externalViolence is read (Health/Pawn_HealthTracker.cs:439, Director/StorytellerDeathEvents.cs:53). Still genuinely unread: HediffStage.mentalBreakMtbDays, HediffStage.forgetMemoryThoughtMtbDays, RecipeDef.workSpeedStat (Crafting/RecipeDef.cs:72) and ThingDef.costStuffCount. Also stale INSIDE the fixture: tests/Wiring/dormant-seams.txt:155 says 'Sixteen are marked Real gap' and the file today contains thirteen. The drift is not confined to this tracker.",
           "done": false
+        },
+        {
+          "id": "defs.packidentifierrace",
+          "label": "PatchOperationFindMod.LoadedPackIdentifiers is thread-static. It was a plain static that DefLoader assigns at the start of a load and resets to empty in a finally, so two loads on different threads shared one slot: one loader's cleanup landing mid-patch left the pack list empty and a FindMod that should have matched silently took its nomatch branch. Content patching itself the wrong way reports nothing, which is why it surfaced only once, as FindMod_branches_on_which_packs_are_loaded reading “missing” for “present”.",
+          "done": true
         }
       ]
     },
@@ -535,7 +540,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
       "status": "ported",
-      "tests": 123,
+      "tests": 131,
       "items": [
         {
           "id": "simcore.tick",
@@ -605,6 +610,16 @@
         {
           "id": "simcore.offmaptick",
           "label": "A settlement nobody had opened was frozen in time — its citizens' needs were IDENTICAL on day six and day zero. Root cause: tick-list membership was granted in exactly one place (Thing.SpawnSetup) and revoked in one (Thing.DeSpawn). Correct for a Thing, which is on a map or nowhere; wrong for a Pawn, whose tiers are designed to exist off every map. A settlement with no interior has nobody spawned, so nobody on any tick list at any tier — Pawn.Tick, Pawn.TickLong, Pawn_TierTracker.CoarseTick, Need.NeedIntervalBulk and AgeTickMothballed were all unreachable. The tiering module built the dispatch and the work and never built the membership. Proven twice over: clearing focus correctly demoted 23 of 25 to Interval and they still never ticked, because the demotion moved them off a list they had never been on. CitizenTickRegistry reads Pawn.TickerType and obeys it, touching no tier, so the focused settlement pays Full (bounded by FullTierBudget) and every other rests at Interval — spec 11.1's 'abstracted by default'. The alternative (demoting Full-with-no-map in TickerType) was tried first and backed out: an unspawned Full pawn is a deliberate state here and it broke 32 tests. Measured at 220-420 microseconds per off-map citizen per in-game day.",
+          "done": true
+        },
+        {
+          "id": "simcore.determinism",
+          "label": "Two identically-seeded games in one process arrive at the same place, pinned by a test that ticks a real Game rather than a bare pawn list. It did not hold: NameUseChecker is a process-wide static that Find.Reset did not clear, so a re-run drew the same first name, found it taken, retried, and those extra draws desynced the shared Rand stream for every founder after it — identical population and age-driven needs, divergent traits, backstories and skills. Twenty-six test files cleared it by hand; the two places with no convention to inherit did not. Find.Reset clears it now.",
+          "done": true
+        },
+        {
+          "id": "simcore.namedrand",
+          "label": "NamedRand: a private seeded stream per system, so an ablation measures the thing it switched on. A defect rolling against the ambient Rand.Current shifts every later draw in the game, and the measured delta is mostly that reshuffle. Draw whether or not you act, or the enabled and disabled runs diverge on the stream itself. Canonicalises an idiom already spelled three ways (“_” before a defName, “_Emergence”, “|founding”) and separates seed from name so Fire+Storm cannot collide with FireStorm.",
           "done": true
         }
       ]
@@ -1368,7 +1383,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 202,
+      "tests": 210,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1433,6 +1448,11 @@
         {
           "id": "economy.subsistence",
           "label": "The ledger-to-citizen half was closed last batch and named what it left open in its own doc: nothing at civilization scale PRODUCED into Settlement.Stores. SettlementStockInitiative only banks from a live map, so it fires for the one settlement somebody has opened, and the founding rations are a crate, not an economy - so an unwatched settlement ate its way to an empty ledger and then to lethal Malnutrition (measured: day 20, mean food 0.00, worst Malnutrition 1.00, 18 of 25 alive). SettlementSubsistence grows food into the ledger on the long tick for the citizens who are NOT Spawned - exactly the set SettlementLarder feeds, so both sides of the book model the same mouths and a watched settlement is never paid twice - at their own HungerRate x FarmingTuning.FieldSizeMargin x a land factor off BiomeDef.forageability, stopping at HuntingTuning.DaysOfFoodWanted. The Statistical cohort is on neither side: it does not eat, so it does not produce, which keeps the pass O(citizens above Statistical). No draw anywhere, pinned on Rand.Current.Iterations; no state, nothing to Scribe. Founding provision moved here too: it was called from Game.NewGame, which founds exactly ONE settlement - the player's - so every rival civilization EmergenceManager raised walked in with an empty ledger. It cannot be called from World.SettlementFounder without World/ referencing Economy/, so the owner sits at the ledger's own layer and pays each settlement exactly once on the one gated pass inside its founding window. Measured day 20 after: food 0.95, ledger 110.5, Malnutrition 0.00. Open and named: nothing produces non-food goods abstractly, so the shipped MasonsGuild still starves unwatched (Tile.deposits is the content waiting); settlements founded through SettlementFounder.FoundColony (WorldGenStep_Factions, EmergenceManager.Expand) are pure Statistical cohort and neither eat, produce, nor are provisioned; thin land under-produces with no caravan driver to answer it.",
+          "done": true
+        },
+        {
+          "id": "economy.ledgertomap",
+          "label": "SettlementStockInitiative.IssueFromStores — the crossing that was missing. The class states that a unit is either a Thing on a map or a count in Stores and never both, and its own doc said “all that was missing was the rule for crossing”; only map-to-ledger had been written. So WouldEatFromStores correctly refused a Spawned citizen while ProvisionFoundingBand sized rations counting them, and no map-gen step places food: watching a settlement locked its people out of rations stocked for them. Issuing tops the map up to the same NutritionWanted line banking keeps, bounded by the shortfall rather than the ledger, debiting as it spawns. Probe, 25-strong TribalStart: watched-minus-unwatched food went -0.44/-0.24/-0.12 to +0.10/+0.30, watched sustaining itself while unwatched declines between abstract refills.",
           "done": true
         }
       ]

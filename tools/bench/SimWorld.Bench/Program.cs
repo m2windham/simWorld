@@ -81,6 +81,9 @@ namespace SimWorld.Bench
                 case "mapview":
                     MapViewSuite.Run(opt);
                     break;
+                case "probe":
+                    ProbeSuite.Run(opt);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -239,9 +242,9 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
-  --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc.
+  --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc, probe.
   --seed <N>              RandomStream seed (default 12345).
   --warmup <N>            warmup trials discarded before measuring (default 1).
   --runs <N>              measured trials; the median is reported (default 3).
@@ -277,11 +280,18 @@ SUITES
   mapview       What the Map/View settlement-interior read model costs on a generated TribalStart interior:
                 a full Capture() against the incremental CaptureChanges() a host runs every frame
                 (docs/perf/map-view.md).
+  probe         OUTCOMES, not time: runs the same seeded world twice, watched and unwatched, and reports a
+                fixed metric vector per in-game day (population and tier split, mood, health, food, larder
+                nutrition, deaths by cause, research, era) plus the watched-minus-unwatched difference. The
+                baseline a deliberately injected defect is measured against. Also reports its own throughput,
+                because what an in-game year costs in wall clock decides the affordable window and is a fact
+                about the machine rather than an assumption. Not in `all` — it is slow and run on purpose.
   all           Runs every suite in sequence (scaling first; attribution's N is derived from its result).
 
 EXAMPLES
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- --pawns 1000 --days 1
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- --suite all
+  dotnet run -c Release --project tools/bench/SimWorld.Bench -- --suite probe --days 6 --seed 12345
 ");
         }
     }
