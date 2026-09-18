@@ -35,6 +35,10 @@ namespace SimWorld.Bench
         /// milliseconds.</summary>
         public int[] TargetTickNs { get; set; } = { 250, 500, 1000 };
 
+        /// <summary>Names to switch off for --suite probe's ablated arm (see <c>SimWorld.Sim.Ablation</c>).
+        /// Empty means the probe reports a single baseline instead of a subtraction.</summary>
+        public string[] Without { get; set; } = System.Array.Empty<string>();
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }

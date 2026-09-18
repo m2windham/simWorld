@@ -240,6 +240,76 @@ namespace SimWorld.Tests.Director
             Assert.Equal(a, b);
         }
 
+        // ---- ablation ----
+
+        /// <summary>
+        /// Switched off, the incident still fires and still does nothing — which is the whole design of
+        /// <see cref="Ablation"/>. An ablated incident that declined to fire would change what the
+        /// storyteller's weighted roll lands on, shifting every later draw, and the measured difference would
+        /// be that reshuffle rather than the thing under test.
+        ///
+        /// <para/>Note what the disabled arm reproduces exactly: the placeholder this worker replaced. That
+        /// is not a coincidence worth smiling at and moving past — an accidental permanent ablation looks
+        /// identical to a working feature unless somebody measures.
+        /// </summary>
+        [Fact]
+        public void Ablated_it_still_fires_and_still_does_nothing()
+        {
+            CoreMap map = NewMap();
+            Settlement settlement = PeopledSettlement(map);
+            Find.God.Attention.Focus(settlement);
+
+            Ablation.Disable("ManhunterPack");
+            try
+            {
+                bool fired = Manhunter.Worker.TryExecute(OntoMap(map));
+
+                Assert.True(fired, "an ablated incident must still report success, or selection itself changes");
+                Assert.Equal(0, AnimalsOn(map));
+            }
+            finally
+            {
+                Ablation.Clear();
+            }
+        }
+
+        [Fact]
+        public void Ablated_it_leaves_the_ambient_stream_exactly_where_the_live_one_does()
+        {
+            CoreMap map = NewMap();
+            Settlement settlement = PeopledSettlement(map);
+            Find.God.Attention.Focus(settlement);
+
+            Ablation.Disable("ManhunterPack");
+            try
+            {
+                uint before = Rand.Current.Iterations;
+                Manhunter.Worker.TryExecute(OntoMap(map));
+                Assert.Equal(before, Rand.Current.Iterations);
+            }
+            finally
+            {
+                Ablation.Clear();
+            }
+        }
+
+        [Fact]
+        public void Switching_it_back_on_restores_the_threat()
+        {
+            CoreMap map = NewMap();
+            Settlement settlement = PeopledSettlement(map);
+            Find.God.Attention.Focus(settlement);
+
+            Ablation.Disable("ManhunterPack");
+            Ablation.Clear();
+
+            Manhunter.Worker.TryExecute(OntoMap(map));
+
+            // The harness leaving an ablation set would quietly report a disabled world as the baseline,
+            // which is the one failure that makes every number downstream wrong and none of them look it.
+            Assert.True(AnimalsOn(map) > 0);
+        }
+
         [Fact]
         public void A_bigger_threat_budget_buys_a_bigger_pack()
         {

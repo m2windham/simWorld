@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-18",
-  "testsTotal": 2196,
+  "testsTotal": 2199,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -540,7 +540,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
       "status": "ported",
-      "tests": 131,
+      "tests": 134,
       "items": [
         {
           "id": "simcore.tick",
@@ -620,6 +620,11 @@
         {
           "id": "simcore.namedrand",
           "label": "NamedRand: a private seeded stream per system, so an ablation measures the thing it switched on. A defect rolling against the ambient Rand.Current shifts every later draw in the game, and the measured delta is mostly that reshuffle. Draw whether or not you act, or the enabled and disabled runs diverge on the stream itself. Canonicalises an idiom already spelled three ways (“_” before a defName, “_Emergence”, “|founding”) and separates seed from name so Fire+Storm cannot collide with FireStorm.",
+          "done": true
+        },
+        {
+          "id": "simcore.ablation",
+          "label": "Sim.Ablation: switch a named part of the simulation off so a run can be subtracted against one with it on. Ablates the EFFECT, never the selection — dropping an incident from the storyteller's candidate list would change which index its weighted roll lands on and shift every later draw, producing a large reproducible number about nothing. So an ablated incident is still selected, still fires, still spends its refire timer and still advances its own stream. `tools/bench --suite probe --without <names>` runs both arms twice and reports the difference in deaths, moments and mood swing.",
           "done": true
         }
       ]

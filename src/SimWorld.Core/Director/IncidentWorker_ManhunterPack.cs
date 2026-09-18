@@ -95,6 +95,16 @@ namespace SimWorld.Director
             if (civ == null) return false;
             SimWorld.World.Settlement? settlement = civ.ChooseTargetSettlement(rand);
 
+            // Ablated: everything above has happened — the storyteller picked this incident, the refire
+            // timer is spent, the pack was sized — and nothing below will. The one draw Generate would have
+            // taken is taken anyway so the stream lands where it would have, because a defect that advances
+            // its own stream differently when off is a defect that cannot be measured. See Ablation.
+            if (Ablation.IsDisabled(def?.defName))
+            {
+                _ = rand.Int;
+                return true;
+            }
+
             List<Pawn> pack = Generate(kind, count, rand);
             if (pack.Count == 0) return false;
             LastPack = pack;

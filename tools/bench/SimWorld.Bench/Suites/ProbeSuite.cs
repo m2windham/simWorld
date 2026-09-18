@@ -55,21 +55,39 @@ namespace SimWorld.Bench.Suites
                 + "generated, so its citizens run at Full tier; `unwatched` clears focus and lets the abstract "
                 + "economy carry them. Same seed, same world, same band.");
 
-            ArmResult watched = RunArm(opt, attended: true);
-            ArmResult unwatched = RunArm(opt, attended: false);
+            ArmResult watched = RunArm(opt, attended: true, ablate: null);
+            ArmResult unwatched = RunArm(opt, attended: false, ablate: null);
 
             Emit("watched", watched);
             Emit("unwatched", unwatched);
             Compare(watched, unwatched);
             WasItInteresting(watched, unwatched);
+
+            if (opt.Without.Length > 0)
+            {
+                ArmResult watchedOff = RunArm(opt, attended: true, ablate: opt.Without);
+                ArmResult unwatchedOff = RunArm(opt, attended: false, ablate: opt.Without);
+                Ablated(opt, watched, unwatched, watchedOff, unwatchedOff);
+                Throughput(opt, watched, unwatched);
+                return;
+            }
+
             Throughput(opt, watched, unwatched);
         }
 
         // ---- one arm ----
 
-        private static ArmResult RunArm(BenchOptions opt, bool attended)
+        private static ArmResult RunArm(BenchOptions opt, bool attended, string[]? ablate)
         {
             Bootstrap.ResetSim(opt.Seed);
+
+            // Switched off for this arm only, and cleared by the next ResetSim — a run that leaves an
+            // ablation set would silently report the disabled world as the baseline.
+            Ablation.Clear();
+            if (ablate != null)
+            {
+                for (int i = 0; i < ablate.Length; i++) Ablation.Disable(ablate[i]);
+            }
 
             var sw = Stopwatch.StartNew();
 
@@ -338,6 +356,55 @@ namespace SimWorld.Bench.Suites
                 if (v > hi) hi = v;
             }
             return hi - lo;
+        }
+
+        /// <summary>
+        /// <b>The subtraction this whole harness exists for.</b> The same seed, run with the named things
+        /// switched off and on, so the difference belongs to them.
+        ///
+        /// <para/>It is a subtraction rather than a comparison of two worlds because everything else is held
+        /// identical by construction: an ablated incident is still selected, still fires, still spends its
+        /// refire timer and still advances its own stream (see <c>SimWorld.Sim.Ablation</c>), so the
+        /// storyteller's rolls and every other system's draws land exactly where they would have.
+        ///
+        /// <para/>Read the moments and swing rows, not only the deaths. A defect that costs lives and makes
+        /// the run duller is a bad defect; one that costs lives and makes it more eventful may be the point.
+        /// </summary>
+        private static void Ablated(
+            BenchOptions opt, ArmResult watchedOn, ArmResult unwatchedOn, ArmResult watchedOff, ArmResult unwatchedOff)
+        {
+            Report.SubHeading("with minus without: " + string.Join(", ", opt.Without));
+
+            Report.Table(
+                new[] { "arm", "deaths on", "deaths off", "d deaths", "moments on", "moments off", "d moments", "d mood swing" },
+                new List<string[]>
+                {
+                    AblationRow("watched", watchedOn, watchedOff),
+                    AblationRow("unwatched", unwatchedOn, unwatchedOff),
+                });
+
+            Report.Note(
+                "A zero row means the thing under test did nothing over this window — which is a real result, "
+                + "and exactly what the shipped placeholder would have reported for its whole life. Widen "
+                + "`--days` before concluding it is harmless; a threat gated behind a storyteller's "
+                + "minDaysPassed cannot show up in a run shorter than the gate.");
+        }
+
+        private static string[] AblationRow(string name, ArmResult on, ArmResult off)
+        {
+            ProbeSample a = on.Samples[on.Samples.Count - 1];
+            ProbeSample b = off.Samples[off.Samples.Count - 1];
+            return new[]
+            {
+                name,
+                Report.Int(a.Deaths),
+                Report.Int(b.Deaths),
+                Delta(a.Deaths - b.Deaths),
+                Report.Int(a.Moments),
+                Report.Int(b.Moments),
+                Delta(a.Moments - b.Moments),
+                Signed(Swing(on.Samples, x => x.Mood) - Swing(off.Samples, x => x.Mood)),
+            };
         }
 
         private static double YearMinutes(double ticksPerSecond) =>

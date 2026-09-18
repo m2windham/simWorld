@@ -167,6 +167,13 @@ namespace SimWorld.Bench
                     case "--ns":
                         opt.ScalingNs = ParseIntList(Next(args, ref i), "--ns");
                         break;
+                    case "--without":
+                        opt.Without = Next(args, ref i)
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => x.Trim())
+                            .Where(x => x.Length > 0)
+                            .ToArray();
+                        break;
                     case "--subdivisions":
                         opt.Subdivisions = ParseIntList(Next(args, ref i), "--subdivisions");
                         break;
@@ -257,6 +264,8 @@ OPTIONS
   --constant-tree-ticks <N>  ticks per trial for --suite interrupts and --suite targets (default 6000).
   --target-ns <csv>       N sweep for --suite targets' scan measurements (default 100,250,500,1000,2000).
   --target-tick-ns <csv>  N sweep for --suite targets' tick-loop A/B (default 250,500,1000).
+  --without <csv>         names to ablate for --suite probe's second arm, e.g. ManhunterPack. The probe
+                          then runs each arm twice, with and without, and reports the difference.
   --help, -h              show this text.
 
 SUITES
