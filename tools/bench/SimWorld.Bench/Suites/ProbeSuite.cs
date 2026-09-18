@@ -1,0 +1,428 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+
+using SimWorld.Defs;
+using SimWorld.Director;
+using SimWorld.God;
+using SimWorld.God.View;
+using SimWorld.Pawns;
+using SimWorld.Research;
+using SimWorld.Scenario;
+using SimWorld.Sim;
+using SimWorld.Things;
+
+namespace SimWorld.Bench.Suites
+{
+    /// <summary>
+    /// <b>This suite measures outcomes, not time.</b> Every other suite in this bench answers "how long did
+    /// that take"; this one answers "what happened to these people". It lives here anyway, and deliberately:
+    /// the test suite takes the better part of an hour to run and cannot absorb a simulation measured in
+    /// in-game years, while this harness already has content bootstrap, a seeded reset, a CLI and a markdown
+    /// reporter, and is invoked on purpose rather than on every push.
+    ///
+    /// <para/><b>What it is for.</b> A defect is only measurable against a baseline that is trustworthy and
+    /// repeatable. The intended use is a subtraction: run the probe, change one thing, run it again with the
+    /// same seed, and attribute the difference. That is worthless if the two runs would have differed anyway,
+    /// so determinism is the property this exists to provide and <c>ProbeDeterminismTests</c> is what
+    /// defends it.
+    ///
+    /// <para/><b>Two arms, one seed.</b> The same world is run watched and unwatched. Citizens on an attended
+    /// settlement are simulated at Full tier — they walk, work and eat — while unattended ones are carried by
+    /// the abstract economy. The two should agree about how a century goes; where they disagree, one of them
+    /// is wrong, and which one is a question you can only ask if you measured both from the same seed.
+    ///
+    /// <para/><b>It reports its own throughput</b> because the affordable window is a measurement, not an
+    /// assumption. <c>GenDate.TicksPerYear</c> is 3,600,000 and there is no bulk-simulate path — the only way
+    /// to advance the world is one <c>DoSingleTick</c> at a time — so what a decade costs in wall clock is a
+    /// fact about this machine that the run itself is best placed to establish.
+    /// </summary>
+    internal static class ProbeSuite
+    {
+        /// <summary>Founding band size for both arms. Fixed rather than taken from <c>--pawns</c> (which means
+        /// something else everywhere else in this bench) so the two arms are never accidentally unequal.</summary>
+        private const int DefaultBandSize = 25;
+
+        public static void Run(BenchOptions opt)
+        {
+            if (opt == null) throw new ArgumentNullException(nameof(opt));
+
+            Report.Heading("Simulation probe — outcomes over " + opt.Days.ToString(CultureInfo.InvariantCulture) + " in-game days");
+            Report.Note(
+                "Two arms from one seed. `watched` keeps the founding settlement attended and its interior "
+                + "generated, so its citizens run at Full tier; `unwatched` clears focus and lets the abstract "
+                + "economy carry them. Same seed, same world, same band.");
+
+            ArmResult watched = RunArm(opt, attended: true);
+            ArmResult unwatched = RunArm(opt, attended: false);
+
+            Emit("watched", watched);
+            Emit("unwatched", unwatched);
+            Compare(watched, unwatched);
+            Throughput(opt, watched, unwatched);
+        }
+
+        // ---- one arm ----
+
+        private static ArmResult RunArm(BenchOptions opt, bool attended)
+        {
+            Bootstrap.ResetSim(opt.Seed);
+
+            var sw = Stopwatch.StartNew();
+
+            Game game = Game.NewGame(
+                ScenarioDefOf.TribalStart.scenario,
+                opt.Seed.ToString(CultureInfo.InvariantCulture),
+                subdivisionOverride: 3,
+                soloStart: true,
+                bandSize: DefaultBandSize);
+
+            World.Settlement? home = FirstSettlement(game);
+            if (home == null) throw new InvalidOperationException("probe: the new game founded no settlement");
+
+            // NewGame already focuses the founding settlement, so `watched` only has to add the interior map
+            // and `unwatched` is the arm that has to undo something.
+            if (attended) GodCommands.OpenSettlement(home.tile);
+            else game.God.Attention.ClearFocus();
+
+            var rollup = new GodRollup();
+            var samples = new List<ProbeSample> { Sample(0, home, rollup) };
+
+            long ticks = 0;
+            for (int day = 1; day <= opt.Days; day++)
+            {
+                for (int i = 0; i < GenDate.TicksPerDay; i++)
+                {
+                    game.TickManager.DoSingleTick();
+                    ticks++;
+                }
+
+                // Re-resolve: the roster changes under us and a settlement can in principle be lost.
+                World.Settlement? current = FirstSettlement(game) ?? home;
+                samples.Add(Sample(day, current, rollup));
+            }
+
+            sw.Stop();
+            return new ArmResult(samples, ticks, sw.Elapsed.TotalSeconds);
+        }
+
+        private static World.Settlement? FirstSettlement(Game game)
+        {
+            if (game.World == null) return null;
+            foreach (World.Settlement s in game.World.Settlements) return s;
+            return null;
+        }
+
+        // ---- the metric vector ----
+
+        private static ProbeSample Sample(int day, World.Settlement home, GodRollup rollup)
+        {
+            rollup.Recompute(home);
+            DeathLedger deaths = Find.Storyteller.deaths;
+
+            return new ProbeSample(
+                day: day,
+                population: rollup.TotalPopulation,
+                full: rollup.FullCount,
+                interval: rollup.IntervalCount,
+                statistical: rollup.StatisticalCount,
+                mood: rollup.MeanMood,
+                health: rollup.MeanHealth,
+                foodNeed: rollup.MeanFoodNeed,
+                industry: rollup.MeanIndustrySkill,
+                age: deaths[DeathCause.Age],
+                starvation: deaths[DeathCause.Starvation],
+                disease: deaths[DeathCause.Disease],
+                injury: deaths[DeathCause.Injury],
+                unknown: deaths[DeathCause.Unknown],
+                larderNutrition: LarderNutrition(home),
+                researchDone: FinishedProjects(),
+                era: rollup.CurrentEra?.defName ?? "-");
+        }
+
+        /// <summary>Total edible nutrition sitting in the settlement's ledger. Summed here rather than on
+        /// <c>Settlement</c> because the ledger is a count of things and only the probe cares what those
+        /// things are worth as food.</summary>
+        private static float LarderNutrition(World.Settlement home)
+        {
+            float total = 0f;
+            foreach (KeyValuePair<ThingDef, int> kv in home.Stores)
+            {
+                float per = kv.Key.ingestible?.nutrition ?? 0f;
+                if (per > 0f) total += per * kv.Value;
+            }
+            return total;
+        }
+
+        private static int FinishedProjects()
+        {
+            ResearchManager? research = Find.ResearchManager;
+            if (research == null) return 0;
+
+            int done = 0;
+            foreach (ResearchProjectDef def in DefDatabase<ResearchProjectDef>.AllDefsListForReading)
+            {
+                if (research.IsFinished(def)) done++;
+            }
+            return done;
+        }
+
+        // ---- output ----
+
+        private static void Emit(string name, ArmResult arm)
+        {
+            Report.SubHeading(name);
+
+            var rows = new List<string[]>();
+            foreach (ProbeSample s in arm.Samples)
+            {
+                rows.Add(new[]
+                {
+                    Report.Int(s.Day),
+                    Report.Int(s.Population),
+                    s.Full + "/" + s.Interval + "/" + s.Statistical,
+                    Report.Num(s.Mood),
+                    Report.Num(s.Health),
+                    Report.Num(s.FoodNeed),
+                    Report.Num(s.LarderNutrition, 1),
+                    Report.Int(s.Deaths),
+                    s.DeathBreakdown,
+                    Report.Int(s.ResearchDone),
+                    s.Era,
+                });
+            }
+
+            Report.Table(
+                new[] { "day", "pop", "F/I/S", "mood", "health", "food", "larder", "dead", "of what", "research", "era" },
+                rows);
+            Console.WriteLine();
+            Console.WriteLine("digest: " + arm.Digest);
+        }
+
+        /// <summary>
+        /// The comparison the whole suite exists for: the same world, watched and not. A citizen should not be
+        /// better off for being unobserved, and the size of any gap here is the size of the problem.
+        /// </summary>
+        private static void Compare(ArmResult watched, ArmResult unwatched)
+        {
+            Report.SubHeading("watched minus unwatched");
+
+            var rows = new List<string[]>();
+            int n = Math.Min(watched.Samples.Count, unwatched.Samples.Count);
+            for (int i = 0; i < n; i++)
+            {
+                ProbeSample w = watched.Samples[i];
+                ProbeSample u = unwatched.Samples[i];
+                rows.Add(new[]
+                {
+                    Report.Int(w.Day),
+                    Delta(w.Population - u.Population),
+                    Signed(w.Mood - u.Mood),
+                    Signed(w.FoodNeed - u.FoodNeed),
+                    Signed(w.LarderNutrition - u.LarderNutrition, 1),
+                    Delta(w.Deaths - u.Deaths),
+                });
+            }
+
+            Report.Table(new[] { "day", "d pop", "d mood", "d food", "d larder", "d dead" }, rows);
+            Report.Note(
+                "A negative `d food` means the watched citizens are hungrier than the unwatched ones — the "
+                + "gaze making a place worse off, which the tiering design should not want.");
+        }
+
+        private static void Throughput(BenchOptions opt, ArmResult watched, ArmResult unwatched)
+        {
+            Report.SubHeading("throughput");
+
+            long ticks = watched.Ticks + unwatched.Ticks;
+            double seconds = watched.Seconds + unwatched.Seconds;
+            double perSecond = seconds > 0 ? ticks / seconds : 0;
+
+            Report.Table(
+                new[] { "arm", "ticks", "seconds", "ticks/s" },
+                new List<string[]>
+                {
+                    new[] { "watched", Report.Int(watched.Ticks), Report.Num(watched.Seconds, 1), Report.Num(watched.TicksPerSecond, 0) },
+                    new[] { "unwatched", Report.Int(unwatched.Ticks), Report.Num(unwatched.Seconds, 1), Report.Num(unwatched.TicksPerSecond, 0) },
+                });
+
+            if (perSecond > 0)
+            {
+                // Projected per arm, never from the combined rate: an attended arm carries a map and an
+                // unattended one does not, so the two differ by more than an order of magnitude and their
+                // average describes neither.
+                Report.Note(
+                    "A single in-game year is " + Report.Int(GenDate.TicksPerYear) + " ticks: about " +
+                    Report.Num(YearMinutes(watched.TicksPerSecond), 1) + " minutes watched and " +
+                    Report.Num(YearMinutes(unwatched.TicksPerSecond), 1) + " unwatched. That is what decides "
+                    + "the affordable window — measured rather than assumed, and it moves with population, "
+                    + "so re-read it as the band grows. `--days " +
+                    opt.Days.ToString(CultureInfo.InvariantCulture) + "` produced the runs above.");
+            }
+        }
+
+        private static double YearMinutes(double ticksPerSecond) =>
+            ticksPerSecond > 0 ? GenDate.TicksPerYear / ticksPerSecond / 60.0 : 0;
+
+        private static string Delta(int d) => d > 0 ? "+" + d.ToString(CultureInfo.InvariantCulture) : d.ToString(CultureInfo.InvariantCulture);
+
+        private static string Signed(float d, int decimals = 2)
+        {
+            string s = Report.Num(d, decimals);
+            return d > 0 ? "+" + s : s;
+        }
+
+        // ---- types ----
+
+        private sealed class ArmResult
+        {
+            public ArmResult(List<ProbeSample> samples, long ticks, double seconds)
+            {
+                Samples = samples;
+                Ticks = ticks;
+                Seconds = seconds;
+            }
+
+            public List<ProbeSample> Samples { get; }
+
+            public long Ticks { get; }
+
+            public double Seconds { get; }
+
+            public double TicksPerSecond => Seconds > 0 ? Ticks / Seconds : 0;
+
+            /// <summary>Every sample folded to one line, so two runs are compared by eye in a second and by a
+            /// test in one assertion. This is the value a determinism check pins.</summary>
+            public string Digest => ProbeSample.DigestOf(Samples);
+        }
+    }
+
+    /// <summary>One day's reading of the fixed metric vector. Immutable, and formatted by
+    /// <see cref="Line"/> so the digest and the table can never drift apart.</summary>
+    internal readonly struct ProbeSample
+    {
+        public ProbeSample(
+            int day, int population, int full, int interval, int statistical,
+            float mood, float health, float foodNeed, float industry,
+            int age, int starvation, int disease, int injury, int unknown,
+            float larderNutrition, int researchDone, string era)
+        {
+            Day = day;
+            Population = population;
+            Full = full;
+            Interval = interval;
+            Statistical = statistical;
+            Mood = mood;
+            Health = health;
+            FoodNeed = foodNeed;
+            Industry = industry;
+            Age = age;
+            Starvation = starvation;
+            Disease = disease;
+            Injury = injury;
+            Unknown = unknown;
+            LarderNutrition = larderNutrition;
+            ResearchDone = researchDone;
+            Era = era;
+        }
+
+        public int Day { get; }
+
+        public int Population { get; }
+
+        public int Full { get; }
+
+        public int Interval { get; }
+
+        public int Statistical { get; }
+
+        public float Mood { get; }
+
+        public float Health { get; }
+
+        public float FoodNeed { get; }
+
+        public float Industry { get; }
+
+        public int Age { get; }
+
+        public int Starvation { get; }
+
+        public int Disease { get; }
+
+        public int Injury { get; }
+
+        public int Unknown { get; }
+
+        public float LarderNutrition { get; }
+
+        public int ResearchDone { get; }
+
+        public string Era { get; }
+
+        public int Deaths => Age + Starvation + Disease + Injury + Unknown;
+
+        /// <summary>The causes that actually happened, named. Empty rather than five zeroes, because a table
+        /// of zeroes is harder to read than a blank.</summary>
+        public string DeathBreakdown
+        {
+            get
+            {
+                var sb = new StringBuilder();
+                Append(sb, "age", Age);
+                Append(sb, "starv", Starvation);
+                Append(sb, "dis", Disease);
+                Append(sb, "inj", Injury);
+                Append(sb, "unk", Unknown);
+                return sb.Length == 0 ? "-" : sb.ToString();
+            }
+        }
+
+        private static void Append(StringBuilder sb, string label, int n)
+        {
+            if (n == 0) return;
+            if (sb.Length > 0) sb.Append(' ');
+            sb.Append(label).Append(' ').Append(n.ToString(CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// Formatted to a fixed number of decimals on purpose. Two runs of the same seed produce bit-identical
+        /// floats, so rounding loses nothing real; what it buys is a digest that stays readable and that a
+        /// future change to float formatting cannot silently perturb.
+        /// </summary>
+        public string Line() => string.Join("|", new[]
+        {
+            Day.ToString(CultureInfo.InvariantCulture),
+            Population.ToString(CultureInfo.InvariantCulture),
+            Full.ToString(CultureInfo.InvariantCulture),
+            Interval.ToString(CultureInfo.InvariantCulture),
+            Statistical.ToString(CultureInfo.InvariantCulture),
+            Mood.ToString("F4", CultureInfo.InvariantCulture),
+            Health.ToString("F4", CultureInfo.InvariantCulture),
+            FoodNeed.ToString("F4", CultureInfo.InvariantCulture),
+            Industry.ToString("F4", CultureInfo.InvariantCulture),
+            Age.ToString(CultureInfo.InvariantCulture),
+            Starvation.ToString(CultureInfo.InvariantCulture),
+            Disease.ToString(CultureInfo.InvariantCulture),
+            Injury.ToString(CultureInfo.InvariantCulture),
+            Unknown.ToString(CultureInfo.InvariantCulture),
+            LarderNutrition.ToString("F3", CultureInfo.InvariantCulture),
+            ResearchDone.ToString(CultureInfo.InvariantCulture),
+            Era,
+        });
+
+        /// <summary>Every sample in one string. Equality of two digests is the determinism claim.</summary>
+        public static string DigestOf(IReadOnlyList<ProbeSample> samples)
+        {
+            var sb = new StringBuilder();
+            for (int i = 0; i < samples.Count; i++)
+            {
+                if (i > 0) sb.Append("//");
+                sb.Append(samples[i].Line());
+            }
+            return sb.ToString();
+        }
+    }
+}

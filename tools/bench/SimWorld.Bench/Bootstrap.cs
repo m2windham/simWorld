@@ -32,12 +32,30 @@ namespace SimWorld.Bench
             contentLoaded = true;
         }
 
-        /// <summary>Resets the per-run simulation state: a fresh clock, a fresh seeded RNG, ids from zero.</summary>
+        /// <summary>
+        /// Resets the per-run simulation state: every thread-static service dropped, a fresh clock, a fresh
+        /// seeded RNG, thing ids and map ids from zero.
+        ///
+        /// <para/><b>The first two of those were missing and the doc above claimed otherwise.</b> This method
+        /// said it gave "the same global state <c>ContentTestBase</c> gives every test" while omitting
+        /// <see cref="Find.Reset"/> and <c>Map.ResetMapIdCounter</c>, so a second run in the same process
+        /// inherited the first one's world, storyteller, factions and finished research. The probe suite found
+        /// it: two arms seeded identically produced different founding bands, visibly, before a single tick had
+        /// been run. <c>ContentTestBase</c>'s own comment names both traps — leaked research made a test pass
+        /// alone and fail in a subset, and <c>Building.WildPlantSpawner</c> seeds its rolls from the map's id,
+        /// so a map-using run's outcome depended on how many maps earlier runs had built.
+        ///
+        /// <para/>Every suite that runs more than one trial per process was exposed to this, not just the
+        /// probe. A perf number is less obviously wrong than a divergent population, which is precisely why it
+        /// went unnoticed.
+        /// </summary>
         public static void ResetSim(int seed)
         {
+            Find.Reset();
             Find.TickManager = new TickManager();
             Rand.Current = new RandomStream(seed);
             Pawn.ResetThingIdCounter();
+            SimWorld.Map.Map.ResetMapIdCounter();
         }
     }
 }

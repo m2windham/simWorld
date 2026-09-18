@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-18",
-  "testsTotal": 2169,
+  "testsTotal": 2171,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -535,7 +535,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
       "status": "ported",
-      "tests": 123,
+      "tests": 125,
       "items": [
         {
           "id": "simcore.tick",
@@ -605,6 +605,11 @@
         {
           "id": "simcore.offmaptick",
           "label": "A settlement nobody had opened was frozen in time — its citizens' needs were IDENTICAL on day six and day zero. Root cause: tick-list membership was granted in exactly one place (Thing.SpawnSetup) and revoked in one (Thing.DeSpawn). Correct for a Thing, which is on a map or nowhere; wrong for a Pawn, whose tiers are designed to exist off every map. A settlement with no interior has nobody spawned, so nobody on any tick list at any tier — Pawn.Tick, Pawn.TickLong, Pawn_TierTracker.CoarseTick, Need.NeedIntervalBulk and AgeTickMothballed were all unreachable. The tiering module built the dispatch and the work and never built the membership. Proven twice over: clearing focus correctly demoted 23 of 25 to Interval and they still never ticked, because the demotion moved them off a list they had never been on. CitizenTickRegistry reads Pawn.TickerType and obeys it, touching no tier, so the focused settlement pays Full (bounded by FullTierBudget) and every other rests at Interval — spec 11.1's 'abstracted by default'. The alternative (demoting Full-with-no-map in TickerType) was tried first and backed out: an unspawned Full pawn is a deliberate state here and it broke 32 tests. Measured at 220-420 microseconds per off-map citizen per in-game day.",
+          "done": true
+        },
+        {
+          "id": "simcore.determinism",
+          "label": "Two identically-seeded games in one process arrive at the same place, pinned by a test that ticks a real Game rather than a bare pawn list. It did not hold: NameUseChecker is a process-wide static that Find.Reset did not clear, so a re-run drew the same first name, found it taken, retried, and those extra draws desynced the shared Rand stream for every founder after it — identical population and age-driven needs, divergent traits, backstories and skills. Twenty-six test files cleared it by hand; the two places with no convention to inherit did not. Find.Reset clears it now.",
           "done": true
         }
       ]

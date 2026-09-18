@@ -209,6 +209,21 @@ namespace SimWorld.Sim
             godManager = null;
             ideo = null;
             world = null;
+
+            // NameUseChecker is process-wide rather than thread-static, so it is not a service to null — but
+            // it is state one game leaves behind for the next, and leaving it behind silently breaks
+            // determinism. A re-run with the same seed draws the same first name, finds it already taken,
+            // and retries; those extra draws shift the shared Rand stream for every pawn generated
+            // afterwards. Two identically-seeded games in one process then produce founding bands with
+            // different traits, backstories and skills, while population and the age-driven needs stay
+            // identical — which is what makes it look like anything but an RNG desync.
+            //
+            // Twenty-six test files already call NameUseChecker.Clear() by hand. That is convention, and
+            // convention is what ContentTestBase's own comment warns about: Find.Reset() exists precisely so
+            // a new piece of global state "can never be forgotten here the way ResearchManager was". It was
+            // forgotten in the two places that had no convention to inherit — the bench harness and a new
+            // determinism test — so it is enforced here instead of documented again.
+            SimWorld.Pawns.NameUseChecker.Clear();
         }
     }
 }
