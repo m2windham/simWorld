@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!--
+    Learning that one of your own has died, as distinct from watching it happen (WitnessedDeathAlly, in
+    Thoughts_Memories.xml). RimWorld keeps the two apart for the same reason this port must: a settlement
+    grieves people it did not see die, and most deaths are not seen by most of the settlement.
+
+    Weaker and longer than witnessing. Being told is not being there, but a person is missing for a good
+    while afterwards.
+  -->
+  <ThoughtDef>
+    <defName>KnowColonistDied</defName>
+    <durationDays>6</durationDays>
+    <stackLimit>8</stackLimit>
+    <stackedEffectMultiplier>0.6</stackedEffectMultiplier>
+    <nullifyingTraits>
+      <li>Psychopath</li>
+    </nullifyingTraits>
+    <stages>
+      <li>
+        <label>one of us died</label>
+        <description>Someone I lived alongside is dead.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

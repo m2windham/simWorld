@@ -62,6 +62,12 @@ namespace SimWorld.Director
             // Pawn_HealthTracker.Kill returns early for a pawn already dead.
             if (ours) Find.Storyteller.deaths.Record(pawn.health.CauseOfDeath);
 
+            // And the settlement mourns them. Here rather than in PawnDiedThoughtsUtility because that one
+            // answers "who saw this", which an abstractly-resolved death has no answer to — no DamageInfo,
+            // no map, no spawned witnesses. Being told is not being there, and a settlement that loses
+            // people while nobody is watching has to be able to feel it. See Thoughts.BereavementUtility.
+            if (ours) SimWorld.Thoughts.BereavementUtility.Notify_CitizenDied(pawn);
+
             if (!violent) return false;
             if (!ours) return false;
 

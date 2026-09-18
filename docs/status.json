@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-18",
-  "testsTotal": 2199,
+  "testsTotal": 2206,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -637,7 +637,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
       "status": "ported",
-      "tests": 113,
+      "tests": 120,
       "items": [
         {
           "id": "needs.pawn",
@@ -752,6 +752,11 @@
         {
           "id": "needs.slicespan",
           "label": "CLOSED at the third attempt, and the two reverts were each right to happen. The defect: Need_Food.NeedIntervalBulk credited starvation once per bulk call rather than once per 150-tick slice, so a citizen at Interval accrued and healed Malnutrition ~13x slower than the same citizen at Full. Revert one blamed FOOD and named abstract production as the precondition; that landed in batch ten. Revert two re-applied the fix against it and the century STILL fell - 884/771/759/796/732 across five seeds against the ~1,500 its premise needs - which is what proved food was never the blocker. It was the SPAN: Pawn_TierTracker's catch-up passed the whole time since a citizen was last brought current, and nothing can eat inside a bulk call, so in AttentionBudgetTests' year-long steps one call charged 24,000 slices and reached severity 6.8 against a lethal 1. Fixed by bounding the needs span at the tiering seam (TieringTuning.MaxNeedCatchUpTicks, one long tick - the cadence SettlementLarder actually feeds at) while leaving AGE unbounded, because nobody was owed an opportunity to grow older. A clamp inside Need_Food would have made the same measurement come out right while inventing tiering policy in a need class, which is why both earlier attempts refused it and why it is still the wrong place. Re-measured: the century comes back at 1523/868/1154/1155/1010, every seed grown, Full pinned flat at its 500 budget.",
+          "done": true
+        },
+        {
+          "id": "needs.bereavement",
+          "label": "A settlement mourns its dead, including the ones nobody saw die. Only WitnessedDeathAlly had been ported, and an abstractly-resolved death fails three of its gates at once: no DamageInfo (so it reads non-violent), no map on an unspawned victim, no spawned witnesses. An unwatched settlement could lose people to violence indefinitely and no survivor would mourn — found by the probe, which showed mood swing 0.08 against a watched 0.21 after an ablation put a death squarely on the manhunter pack. KnowColonistDied is RimWorld's own second memory and is not gated on violence, which is what distinguishes bereavement from trauma. The witness gate is correct and untouched.",
           "done": true
         }
       ]
