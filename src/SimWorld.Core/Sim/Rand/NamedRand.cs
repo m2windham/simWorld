@@ -23,6 +23,15 @@ namespace SimWorld.Sim
     /// what to do with the answer. The stream being private is what makes that affordable: nobody else is
     /// queued behind you, so a wasted draw costs nothing.
     ///
+    /// <para/><b>A private stream is not enough on its own.</b> Plenty of this codebase draws from
+    /// <see cref="Rand.Current"/> without being asked to — <c>PawnGenerator</c> most of all. A caller that
+    /// holds a named stream and then invokes one of those has still moved the shared stream, and the leak is
+    /// invisible: the caller's own rolls all look disciplined. Scope such a call with
+    /// <see cref="Rand.PushState(int)"/> and <see cref="Rand.PopState"/>, which restores the ambient position
+    /// exactly, and seed the push from the named stream so the callee stays deterministic too.
+    /// <c>Director.IncidentWorker_ManhunterPack</c> does this, and learned to the hard way: generating its
+    /// pack spent 33 ambient draws before a test caught it.
+    ///
     /// <para/><b>The convention already existed; it was just unwritten.</b> <c>MapGen.GenStep</c>,
     /// <c>World.Gen.WorldGenStep</c>, <c>World.EmergenceManager</c> and <c>Sim.Game</c>'s founding roll all
     /// derive a stream this way, with three different separators between them ("_" before a defName,

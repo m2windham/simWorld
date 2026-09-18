@@ -65,6 +65,12 @@ namespace SimWorld.AI
 
             if (IsAngryAt(a, b) || IsAngryAt(b, a)) return true;
 
+            // A manhunting animal is hostile to humanlikes generally, which is what makes a pack a pack
+            // rather than a handful of separate grudges. Symmetric, like the grudge above: the settlement has
+            // to be able to find the animal as readily as the animal finds the settlement.
+            if (IsManhunting(a) && b.RaceProps.Humanlike) return true;
+            if (IsManhunting(b) && a.RaceProps.Humanlike) return true;
+
             Faction? fa = a.faction;
             Faction? fb = b.faction;
             if (fa != null && fb != null) return fa.HostileTo(fb);
@@ -127,6 +133,18 @@ namespace SimWorld.AI
         /// <summary>Currently holding an unexpired grudge against this specific pawn.</summary>
         public static bool IsAngryAt(Pawn pawn, Pawn other) =>
             pawn.mindState != null && ReferenceEquals(pawn.mindState.angryAt, other) && HuntUtility.IsAngry(pawn);
+
+        /// <summary>
+        /// Whether <paramref name="pawn"/> is currently manhunting — hostile to humanlikes at large rather
+        /// than to one named victim. Expiry is read here rather than cleared on a tick for the same reason
+        /// <see cref="HuntUtility.IsAngry"/> reads it: a lapsed entry in the scan index costs one rejected
+        /// candidate, and a pawn cleared out of the index too eagerly loses a fight.
+        /// </summary>
+        public static bool IsManhunting(Pawn pawn) =>
+            pawn?.mindState != null
+            && pawn.mindState.manhunterUntilTick > 0
+            && Sim.Find.TickManager != null
+            && Sim.Find.TickManager.TicksGame < pawn.mindState.manhunterUntilTick;
 
         /// <summary>
         /// No longer worth attacking (RimWorld: <c>IAttackTarget.ThreatDisabled</c> / <c>Pawn.ThreatDisabled</c>).
