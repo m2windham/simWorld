@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-09-16",
-  "testsTotal": 2156,
+  "updated": "2026-09-18",
+  "testsTotal": 2169,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1045,7 +1045,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 135,
+      "tests": 148,
       "items": [
         {
           "id": "director.personality",
@@ -1130,6 +1130,11 @@
         {
           "id": "director.pointsscaleable",
           "label": "IncidentDef.pointsScaleable was a dropped if: StorytellerComp_RandomMain jittered whatever it picked, scaleable or not. Numerically inert against shipped content — only threat categories carry points and both point-carrying incidents declare the flag — but it spent a draw on incidents with nothing to scale, and of the two flagged incidents only RaidEnemy has severity to scale at all.",
+          "done": true
+        },
+        {
+          "id": "director.deathledger",
+          "label": "Every death of ours counted by cause and never evicted: DeathCauseClassifier reads the cause off the body (immunizability is what separates a disease from an injury's sequel), DeathLedger tallies at the one funnel Pawn_HealthTracker.Kill already passes through. Closes the hole DeathCause's own doc recorded — Starvation and Disease deaths happened but reached no sink at all, so the two causes a pressure actually kills with were the two nothing could measure.",
           "done": true
         }
       ]

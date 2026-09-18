@@ -51,11 +51,19 @@ namespace SimWorld.Director
             if (pawn == null) return false;
 
             bool violent = dinfo != null && dinfo.Def.externalViolence;
+            bool ours = StorytellerPawnEvents.IsCivilizationMember(pawn, allowDead: true);
 
             SendDeathLetter(pawn, dinfo, culprit);
 
+            // The ledger takes every death of ours, whatever killed them, and takes it here because this is
+            // the only place every death in the port passes through. It sits above the violence gate on
+            // purpose: starvation and disease are not violent and are exactly the two causes that had no
+            // sink at all before (see DeathLedger and DeathCauseClassifier). Counted once per body, because
+            // Pawn_HealthTracker.Kill returns early for a pawn already dead.
+            if (ours) Find.Storyteller.deaths.Record(pawn.health.CauseOfDeath);
+
             if (!violent) return false;
-            if (!StorytellerPawnEvents.IsCivilizationMember(pawn, allowDead: true)) return false;
+            if (!ours) return false;
 
             Find.Storyteller.adaptation.Notify_ColonistDied();
             return true;

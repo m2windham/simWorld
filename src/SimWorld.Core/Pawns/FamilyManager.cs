@@ -291,7 +291,7 @@ namespace SimWorld.Pawns
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
             if (population == null) throw new ArgumentNullException(nameof(population));
 
-            pawn.health.Kill(null, null);
+            pawn.health.Kill(null, null, cause);
 
             Family? family = GetFamily(pawn.relations.familyId);
             if (family != null) family.livingCount = Math.Max(0, family.livingCount - 1);
