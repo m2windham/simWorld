@@ -55,20 +55,39 @@ namespace SimWorld.Bench.Suites
                 + "generated, so its citizens run at Full tier; `unwatched` clears focus and lets the abstract "
                 + "economy carry them. Same seed, same world, same band.");
 
-            ArmResult watched = RunArm(opt, attended: true);
-            ArmResult unwatched = RunArm(opt, attended: false);
+            ArmResult watched = RunArm(opt, attended: true, ablate: null);
+            ArmResult unwatched = RunArm(opt, attended: false, ablate: null);
 
             Emit("watched", watched);
             Emit("unwatched", unwatched);
             Compare(watched, unwatched);
+            WasItInteresting(watched, unwatched);
+
+            if (opt.Without.Length > 0)
+            {
+                ArmResult watchedOff = RunArm(opt, attended: true, ablate: opt.Without);
+                ArmResult unwatchedOff = RunArm(opt, attended: false, ablate: opt.Without);
+                Ablated(opt, watched, unwatched, watchedOff, unwatchedOff);
+                Throughput(opt, watched, unwatched);
+                return;
+            }
+
             Throughput(opt, watched, unwatched);
         }
 
         // ---- one arm ----
 
-        private static ArmResult RunArm(BenchOptions opt, bool attended)
+        private static ArmResult RunArm(BenchOptions opt, bool attended, string[]? ablate)
         {
             Bootstrap.ResetSim(opt.Seed);
+
+            // Switched off for this arm only, and cleared by the next ResetSim — a run that leaves an
+            // ablation set would silently report the disabled world as the baseline.
+            Ablation.Clear();
+            if (ablate != null)
+            {
+                for (int i = 0; i < ablate.Length; i++) Ablation.Disable(ablate[i]);
+            }
 
             var sw = Stopwatch.StartNew();
 
@@ -139,6 +158,7 @@ namespace SimWorld.Bench.Suites
                 unknown: deaths[DeathCause.Unknown],
                 larderNutrition: LarderNutrition(home),
                 researchDone: FinishedProjects(),
+                moments: Find.Storyteller?.Moments.Count ?? 0,
                 era: rollup.CurrentEra?.defName ?? "-");
         }
 
@@ -190,12 +210,13 @@ namespace SimWorld.Bench.Suites
                     Report.Int(s.Deaths),
                     s.DeathBreakdown,
                     Report.Int(s.ResearchDone),
+                    Report.Int(s.Moments),
                     s.Era,
                 });
             }
 
             Report.Table(
-                new[] { "day", "pop", "F/I/S", "mood", "health", "food", "larder", "dead", "of what", "research", "era" },
+                new[] { "day", "pop", "F/I/S", "mood", "health", "food", "larder", "dead", "of what", "research", "moments", "era" },
                 rows);
             Console.WriteLine();
             Console.WriteLine("digest: " + arm.Digest);
@@ -263,6 +284,129 @@ namespace SimWorld.Bench.Suites
             }
         }
 
+        /// <summary>
+        /// <b>The reading this suite is most likely to get wrong by succeeding at everything else.</b>
+        ///
+        /// <para/>Every other number here measures survival: how many lived, how well they ate, how few died.
+        /// Tuned against those alone, the optimum is a settlement that never starves, never loses anybody and
+        /// never has a bad day — which is a spreadsheet, not a game. An instrument exists so a designer does
+        /// not fool themselves about mechanics; the moment it becomes the target it starts doing the opposite.
+        ///
+        /// <para/>So this reports what the run was <i>like</i>. <b>Moments</b> are the chronicle curator's own
+        /// judgement of what was worth remembering — first deaths, longevity records, the things that stood
+        /// out — and a run that produced none was a run nobody would tell anybody about. <b>Swing</b> is
+        /// peak-to-trough on the numbers a player actually feels; a flat line is the failure mode, not the
+        /// goal, because near-misses and recoveries are what make a settlement's history worth having.
+        ///
+        /// <para/>Neither is a score to maximise. They are here so that "nothing went wrong" stops reading as
+        /// success.
+        /// </summary>
+        private static void WasItInteresting(ArmResult watched, ArmResult unwatched)
+        {
+            Report.SubHeading("was it interesting");
+
+            Report.Table(
+                new[] { "arm", "moments", "eventful days", "food swing", "mood swing", "pop swing", "deaths" },
+                new List<string[]>
+                {
+                    Row("watched", watched),
+                    Row("unwatched", unwatched),
+                });
+
+            Report.Note(
+                "Flat is the failure mode. A run with no moments and little swing is one nobody would tell a "
+                + "story about, however many of its people survived — and survival is the only thing the "
+                + "tables above can see.");
+
+            static string[] Row(string name, ArmResult arm)
+            {
+                List<ProbeSample> ss = arm.Samples;
+                ProbeSample last = ss[ss.Count - 1];
+
+                int eventful = 0;
+                for (int i = 1; i < ss.Count; i++)
+                {
+                    if (ss[i].Moments > ss[i - 1].Moments || ss[i].Deaths > ss[i - 1].Deaths) eventful++;
+                }
+
+                return new[]
+                {
+                    name,
+                    Report.Int(last.Moments),
+                    eventful.ToString(CultureInfo.InvariantCulture) + "/" + (ss.Count - 1).ToString(CultureInfo.InvariantCulture),
+                    Report.Num(Swing(ss, x => x.FoodNeed)),
+                    Report.Num(Swing(ss, x => x.Mood)),
+                    Report.Int((long)Swing(ss, x => x.Population)),
+                    Report.Int(last.Deaths),
+                };
+            }
+        }
+
+        /// <summary>Peak minus trough across the run — how much the number actually moved, rather than where
+        /// it ended up.</summary>
+        private static float Swing(IReadOnlyList<ProbeSample> samples, Func<ProbeSample, float> read)
+        {
+            if (samples.Count == 0) return 0f;
+            float lo = read(samples[0]);
+            float hi = lo;
+            for (int i = 1; i < samples.Count; i++)
+            {
+                float v = read(samples[i]);
+                if (v < lo) lo = v;
+                if (v > hi) hi = v;
+            }
+            return hi - lo;
+        }
+
+        /// <summary>
+        /// <b>The subtraction this whole harness exists for.</b> The same seed, run with the named things
+        /// switched off and on, so the difference belongs to them.
+        ///
+        /// <para/>It is a subtraction rather than a comparison of two worlds because everything else is held
+        /// identical by construction: an ablated incident is still selected, still fires, still spends its
+        /// refire timer and still advances its own stream (see <c>SimWorld.Sim.Ablation</c>), so the
+        /// storyteller's rolls and every other system's draws land exactly where they would have.
+        ///
+        /// <para/>Read the moments and swing rows, not only the deaths. A defect that costs lives and makes
+        /// the run duller is a bad defect; one that costs lives and makes it more eventful may be the point.
+        /// </summary>
+        private static void Ablated(
+            BenchOptions opt, ArmResult watchedOn, ArmResult unwatchedOn, ArmResult watchedOff, ArmResult unwatchedOff)
+        {
+            Report.SubHeading("with minus without: " + string.Join(", ", opt.Without));
+
+            Report.Table(
+                new[] { "arm", "deaths on", "deaths off", "d deaths", "moments on", "moments off", "d moments", "d mood swing" },
+                new List<string[]>
+                {
+                    AblationRow("watched", watchedOn, watchedOff),
+                    AblationRow("unwatched", unwatchedOn, unwatchedOff),
+                });
+
+            Report.Note(
+                "A zero row means the thing under test did nothing over this window — which is a real result, "
+                + "and exactly what the shipped placeholder would have reported for its whole life. Widen "
+                + "`--days` before concluding it is harmless; a threat gated behind a storyteller's "
+                + "minDaysPassed cannot show up in a run shorter than the gate.");
+        }
+
+        private static string[] AblationRow(string name, ArmResult on, ArmResult off)
+        {
+            ProbeSample a = on.Samples[on.Samples.Count - 1];
+            ProbeSample b = off.Samples[off.Samples.Count - 1];
+            return new[]
+            {
+                name,
+                Report.Int(a.Deaths),
+                Report.Int(b.Deaths),
+                Delta(a.Deaths - b.Deaths),
+                Report.Int(a.Moments),
+                Report.Int(b.Moments),
+                Delta(a.Moments - b.Moments),
+                Signed(Swing(on.Samples, x => x.Mood) - Swing(off.Samples, x => x.Mood)),
+            };
+        }
+
         private static double YearMinutes(double ticksPerSecond) =>
             ticksPerSecond > 0 ? GenDate.TicksPerYear / ticksPerSecond / 60.0 : 0;
 
@@ -307,7 +451,7 @@ namespace SimWorld.Bench.Suites
             int day, int population, int full, int interval, int statistical,
             float mood, float health, float foodNeed, float industry,
             int age, int starvation, int disease, int injury, int unknown,
-            float larderNutrition, int researchDone, string era)
+            float larderNutrition, int researchDone, int moments, string era)
         {
             Day = day;
             Population = population;
@@ -325,6 +469,7 @@ namespace SimWorld.Bench.Suites
             Unknown = unknown;
             LarderNutrition = larderNutrition;
             ResearchDone = researchDone;
+            Moments = moments;
             Era = era;
         }
 
@@ -359,6 +504,11 @@ namespace SimWorld.Bench.Suites
         public float LarderNutrition { get; }
 
         public int ResearchDone { get; }
+
+        /// <summary>How many entries the chronicle's own curator has judged worth remembering. The closest
+        /// thing this probe has to a reading of whether the run was <i>interesting</i> — see the class doc on
+        /// why that matters more than any of the survival numbers beside it.</summary>
+        public int Moments { get; }
 
         public string Era { get; }
 
@@ -410,6 +560,7 @@ namespace SimWorld.Bench.Suites
             Unknown.ToString(CultureInfo.InvariantCulture),
             LarderNutrition.ToString("F3", CultureInfo.InvariantCulture),
             ResearchDone.ToString(CultureInfo.InvariantCulture),
+            Moments.ToString(CultureInfo.InvariantCulture),
             Era,
         });
 

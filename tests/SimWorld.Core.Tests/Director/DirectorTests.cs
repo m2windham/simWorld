@@ -256,7 +256,7 @@ namespace SimWorld.Tests.Director
         [Fact]
         public void CanFireNow_gates_on_minThreatPoints()
         {
-            IncidentDef def = MakeTestIncidentDef(IncidentCategoryDefOf.ThreatBig, typeof(IncidentWorker_ThreatEvent), minThreatPoints: 100f);
+            IncidentDef def = MakeTestIncidentDef(IncidentCategoryDefOf.ThreatBig, typeof(IncidentWorker_TestThreat), minThreatPoints: 100f);
             var parms = new IncidentParms { target = new CivilizationTarget(), points = 50f };
 
             Assert.False(def.Worker.CanFireNow(parms));
@@ -372,7 +372,7 @@ namespace SimWorld.Tests.Director
         public void ClassicIntro_fires_first_threat_at_its_day()
         {
             global::SimWorld.Director.Storyteller storyteller = NewStoryteller();
-            IncidentDef testIncident = MakeTestIncidentDef(IncidentCategoryDefOf.ThreatBig, typeof(IncidentWorker_ThreatEvent));
+            IncidentDef testIncident = MakeTestIncidentDef(IncidentCategoryDefOf.ThreatBig, typeof(IncidentWorker_TestThreat));
             var props = new StorytellerCompProperties_ClassicIntro { incident = testIncident, day = 4 };
             var comp = new StorytellerComp_ClassicIntro { props = props };
             CivilizationTarget target = NewTarget(storyteller, pawnCount: 3);

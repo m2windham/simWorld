@@ -81,11 +81,11 @@ namespace SimWorld.Tests.Director
                 || ReferenceEquals(d.category, IncidentCategoryDefOf.ThreatSmall),
                 d.defName + " declares pointsScaleable but its category is never given points"));
 
-            // Of the two, only RaidEnemy has severity to scale today: it spends the points through
-            // PawnGroupMakerUtility. ManhunterPack's worker validates them and does nothing with them, so its
-            // flag is content waiting on a worker rather than a second live reader.
+            // Both of them spend the points now. RaidEnemy buys a squad through PawnGroupMakerUtility;
+            // ManhunterPack buys a pack size against the animal's combatPower. The flag used to be honest
+            // content waiting on a worker — this assertion is what stops it quietly becoming that again.
             Assert.Contains(scaleable, d => d.workerClass == typeof(IncidentWorker_RaidEnemy));
-            Assert.Equal(typeof(IncidentWorker_ThreatEvent), Incident("ManhunterPack").workerClass);
+            Assert.Equal(typeof(IncidentWorker_ManhunterPack), Incident("ManhunterPack").workerClass);
         }
 
         // ---- the gate ----

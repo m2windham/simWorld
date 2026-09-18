@@ -362,6 +362,39 @@ namespace SimWorld.MindState
         /// <summary><see cref="Sim.TickManager.TicksGame"/> after which <see cref="angryAt"/> no longer applies.</summary>
         public int angryUntilTick = -1;
 
+        /// <summary>
+        /// <see cref="Sim.TickManager.TicksGame"/> after which this pawn stops manhunting, or -1 for a pawn
+        /// that is not. A manhunting animal is hostile to humanlikes <b>generally</b> — RimWorld's
+        /// <c>MentalStateDefOf.Manhunter</c>, expressed here as a deadline rather than a mental state because
+        /// this port's <c>MentalStateDef</c> machinery is built for humanlike mood breaks
+        /// (<c>colonistsOnly</c>, <c>MentalBreakDef</c>) and an animal turning on a settlement is neither a
+        /// mood nor a break.
+        ///
+        /// <para/><b>Why not reuse <see cref="angryAt"/>.</b> That names one specific person, which is right
+        /// for what sets it — a failed taming, a hunter's wounding shot. A <i>pack</i> built out of it would
+        /// be six animals each chasing a different citizen across the map: minimal code, and the wrong thing
+        /// entirely. A siege is not a collection of grudges.
+        ///
+        /// <para/><b>A property for the same reason <see cref="angryAt"/> is one.</b> Hostility outside the
+        /// faction system is invisible to <c>AI.AttackTargetsCache</c>'s faction buckets, and that cache's own
+        /// doc already names this exact case: "a factionless <i>animal</i> is still filed nowhere … it can
+        /// only ever be found through grudgeHolders". Writing this while spawned files the animal in that
+        /// index; letting it lapse is harmless, because the index tolerates a stale entry (one rejected
+        /// candidate) where it cannot tolerate a missing one (a lost fight).
+        /// </summary>
+        public int manhunterUntilTick
+        {
+            get => manhunterUntilTickInt;
+            set
+            {
+                if (manhunterUntilTickInt == value) return;
+                manhunterUntilTickInt = value;
+                pawn.Map?.mapPawns.AttackTargets.Notify_GrudgeChanged(pawn);
+            }
+        }
+
+        private int manhunterUntilTickInt = -1;
+
         // ---- AI module (system 9: AI — duties) ----
 
         /// <summary>
@@ -404,6 +437,7 @@ namespace SimWorld.MindState
             Scribe_References.Look(ref aa, "angryAt");
             angryAt = aa;
             Scribe_Values.Look(ref angryUntilTick, "angryUntilTick", -1);
+            Scribe_Values.Look(ref manhunterUntilTickInt, "manhunterUntilTick", -1);
 
             // A raid saved mid-approach has to still be a raid when it loads, or reloading would disarm every
             // squad on the map — the duty is the only thing that makes them march.

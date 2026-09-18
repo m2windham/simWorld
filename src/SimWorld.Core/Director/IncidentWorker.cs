@@ -133,11 +133,6 @@ namespace SimWorld.Director
     /// <see cref="IncidentParms.points"/> and tech level land with the Factions/Combat systems; until then this
     /// only validates that there are points to spend so the chronicle can note a threat was due.
     /// </summary>
-    public sealed class IncidentWorker_ThreatEvent : IncidentWorker
-    {
-        protected override bool TryExecuteWorker(IncidentParms parms) => parms.points > 0f;
-    }
-
     /// <summary>Placeholder until pawn generation exists: records that a wanderer would have joined the civilization.</summary>
     public sealed class IncidentWorker_WandererJoin : IncidentWorker
     {

@@ -146,7 +146,7 @@ namespace SimWorld.AI
             Faction? faction = pawn.faction;
             if (faction != null) BucketFor(faction).Add(pawn);
             else if (IsFactionlessHumanlike(pawn) && !factionlessHumanlikes.Contains(pawn)) factionlessHumanlikes.Add(pawn);
-            if (pawn.mindState?.angryAt != null && !grudgeHolders.Contains(pawn)) grudgeHolders.Add(pawn);
+            if (HostileOutsideFactions(pawn) && !grudgeHolders.Contains(pawn)) grudgeHolders.Add(pawn);
         }
 
         /// <summary>A pawn has left this map — died, was demoted out of Full tier, walked off, or was
@@ -205,7 +205,7 @@ namespace SimWorld.AI
         public void Notify_GrudgeChanged(Pawn pawn)
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
-            bool holds = pawn.mindState?.angryAt != null;
+            bool holds = HostileOutsideFactions(pawn);
             if (holds)
             {
                 if (!grudgeHolders.Contains(pawn)) grudgeHolders.Add(pawn);
@@ -215,6 +215,16 @@ namespace SimWorld.AI
                 grudgeHolders.Remove(pawn);
             }
         }
+
+        /// <summary>
+        /// Whether <paramref name="pawn"/> is hostile to somebody for a reason no faction bucket can express —
+        /// a grudge against one person, or manhunting humanlikes at large. Both belong in the same list
+        /// because both have the same problem: a factionless animal is in no faction bucket by construction,
+        /// so this is the only way a searcher can ever be offered it.
+        /// </summary>
+        private static bool HostileOutsideFactions(Pawn pawn) =>
+            pawn.mindState != null
+            && (pawn.mindState.angryAt != null || pawn.mindState.manhunterUntilTick > 0);
 
         private List<Pawn> BucketFor(Faction faction)
         {

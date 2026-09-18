@@ -82,10 +82,9 @@ namespace SimWorld.Director
             // a weather incident that had nothing to scale, moving every roll after it. Restoring the gate
             // moves those rolls back, which is a deliberate re-pinning and not a free change.
             //
-            // Of the two flagged incidents only RaidEnemy has severity to scale today (it spends the points
-            // through PawnGroupMakerUtility); ManhunterPack's worker is IncidentWorker_ThreatEvent, which
-            // validates the points and does nothing with them, so the flag is honest content waiting on a
-            // worker rather than a second live reader.
+            // Both flagged incidents spend the points now: RaidEnemy through PawnGroupMakerUtility, and
+            // ManhunterPack against the animal's combatPower to size the pack. ManhunterPack used to point at
+            // a worker that validated the points and did nothing with them.
             if (picked.pointsScaleable) parms.points *= Rand.Range(Props.randomPointsFactorRange);
             yield return new FiringIncident(picked, this, parms);
         }

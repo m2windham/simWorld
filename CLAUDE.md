@@ -25,6 +25,16 @@ Build output goes to `artifacts/`, not `bin/` and `obj/`.
   system goes in that system's `translation` field in `docs/status.json`.
 - **Determinism is a feature.** All randomness goes through a seeded
   `RandomStream`. Never `System.Random`, never `DateTime.Now`.
+- **The player is the point, and the instruments are not.** `tools/bench --suite
+  probe` measures population, food, mood and deaths. None of those is fun. Tuned
+  against them alone the optimum is a settlement that never starves, never loses
+  anybody and never has a bad day — a spreadsheet. The probe exists so we do not
+  fool ourselves about mechanics; the moment it becomes the target it starts doing
+  the opposite. Flat is the failure mode: near-misses and recoveries are what make
+  a run worth telling somebody about, and `MomentCurator` — which already decides
+  what was worth remembering — is a better reading of a run than any survival
+  number beside it. Balance is not the goal either. A cost the player can shrug off
+  is not a decision.
 
 ## Adding a module
 
