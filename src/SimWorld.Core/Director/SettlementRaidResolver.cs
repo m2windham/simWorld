@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
+using SimWorld.Building;
 using SimWorld.Defs;
 using SimWorld.Factions;
 using SimWorld.Pawns;
@@ -112,6 +113,11 @@ namespace SimWorld.Director
         /// that tier's design — musters <see cref="RaidResolutionTuning.StatisticalMusterFraction"/> of itself
         /// at a flat <see cref="RaidResolutionTuning.StatisticalDefenderCombatPower"/> each. It is never
         /// enumerated: the militia is arithmetic on a count, not forty thousand objects.</item>
+        /// <item>Every completed wall the settlement has — <see cref="Settlement.StructureCount"/> read
+        /// through its own single source of truth (the map while one exists, the <c>Structures</c> ledger
+        /// otherwise, never both) — adds <see cref="RaidResolutionTuning.DefenceStrengthPerWall"/> flat. This
+        /// is the term that makes fortification matter: before it, a settlement walled in granite defended
+        /// exactly as well as one standing in the open, because nothing anywhere read what it had built.</item>
         /// </list>
         /// </summary>
         public static float DefenceStrengthOf(Settlement settlement) => Muster(settlement).Strength;
@@ -255,7 +261,29 @@ namespace SimWorld.Director
             int cohortHeads = (int)(settlement.StatisticalPopulation * RaidResolutionTuning.StatisticalMusterFraction);
             strength += cohortHeads * RaidResolutionTuning.StatisticalDefenderCombatPower;
 
+            // Fortification: walls do not muster a head, so they add to strength alone and never to Heads —
+            // the pool casualties are drawn from is still exactly the people who showed up.
+            strength += FortificationStrengthOf(settlement);
+
             return (strength, liveHeads + cohortHeads, liveHeads, cohortHeads);
+        }
+
+        /// <summary>
+        /// Defence contributed by completed walls, whatever they are cut from — every Def
+        /// <see cref="Building.StoneWallMaterials.AllWallDefs"/> names fills the same need
+        /// (<see cref="Building.StoneWallMaterials.EquivalentsOf"/>'s own reasoning: a settlement walled in
+        /// granite is not less defended than one walled in wood), each read through
+        /// <see cref="Settlement.StructureCount"/> so this can never disagree with what
+        /// <see cref="Building.SettlementConstructionInitiative"/> or <see cref="Building.AbstractSettlementConstruction"/>
+        /// actually built. Summing a handful of Defs rather than a single one: nothing here decides which
+        /// material a settlement should have — that choice already happened wherever the wall was raised.
+        /// </summary>
+        private static float FortificationStrengthOf(Settlement settlement)
+        {
+            IReadOnlyList<ThingDef> walls = StoneWallMaterials.AllWallDefs;
+            int count = 0;
+            for (int i = 0; i < walls.Count; i++) count += settlement.StructureCount(walls[i]);
+            return count * RaidResolutionTuning.DefenceStrengthPerWall;
         }
 
         private static float CombatPowerOf(Pawn pawn)

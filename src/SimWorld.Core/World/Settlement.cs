@@ -69,6 +69,13 @@ namespace SimWorld.World
         /// stacking — that gap is separate and out of this module's scope.</summary>
         private readonly Dictionary<ThingDef, int> stores = new Dictionary<ThingDef, int>();
 
+        /// <summary>Completed buildings this settlement has finished, keyed by <c>ThingDef</c> — mirrors
+        /// <see cref="stores"/> exactly, on purpose: a wall and a bed do different jobs (one for defence, one
+        /// for shelter), so one opaque "structural stock" number could not answer either question on its own.
+        /// Never read directly outside Scribe and <see cref="SyncStructureLedger"/> — every consumer goes
+        /// through <see cref="StructureCount"/>; see that method's own doc for why.</summary>
+        private readonly Dictionary<ThingDef, int> structures = new Dictionary<ThingDef, int>();
+
         /// <summary>For Scribe's deep-load construction.</summary>
         public Settlement()
         {
@@ -217,13 +224,122 @@ namespace SimWorld.World
 
         public void AddStore(ThingDef def, int delta) => SetStoreCount(def, StoreCountOf(def) + delta);
 
+        // ---- structures ----
+
+        /// <summary>The raw ledger — Scribe's own view, and <see cref="SyncStructureLedger"/>'s. Every other
+        /// caller, including every test, reads <see cref="StructureCount"/> instead: this alone does not say
+        /// whether it is current, because it is never written while <see cref="InteriorMap"/> exists to ask
+        /// in its place.</summary>
+        public IReadOnlyDictionary<ThingDef, int> Structures => structures;
+
+        private int StructureLedgerCount(ThingDef def) => def != null && structures.TryGetValue(def, out int c) ? c : 0;
+
+        /// <summary>Sets the ledger's own count for <paramref name="def"/>, independent of whatever
+        /// <see cref="InteriorMap"/> currently says — a non-positive count clears the entry, exactly as
+        /// <see cref="SetStoreCount"/> does for <see cref="stores"/>. Written by <see cref="SyncStructureLedger"/>
+        /// to keep the ledger current while a map exists, and by <c>Building.AbstractSettlementConstruction</c>
+        /// to credit a settlement that has none.</summary>
+        public void SetStructureCount(ThingDef def, int count)
+        {
+            if (def == null) throw new ArgumentNullException(nameof(def));
+            if (count <= 0) structures.Remove(def);
+            else structures[def] = count;
+        }
+
+        public void AddStructure(ThingDef def, int delta) => SetStructureCount(def, StructureLedgerCount(def) + delta);
+
+        /// <summary>
+        /// How many completed <paramref name="def"/> buildings this settlement has. <b>The single accessor
+        /// every consumer must call</b> — <see cref="Director.SettlementRaidResolver"/>'s fortification term,
+        /// every test, and anything landing later — never <see cref="Structures"/> directly and never a
+        /// hand-rolled count off <see cref="InteriorMap"/>.
+        ///
+        /// <para/><b>ONE SOURCE OF TRUTH AT A TIME — this is the invariant that keeps the whole system
+        /// honest.</b> A completed building is either standing on <see cref="InteriorMap"/> or counted in
+        /// <see cref="structures"/>; it is never read from both at once, because which one gets read is
+        /// decided by one test, every time: a map means the map is asked (<see cref="CountOnMap"/>) and the
+        /// ledger is not consulted at all; no map means the ledger is the only record left, so that is what
+        /// answers. The two numbers can never disagree with each other because they are never compared against
+        /// each other — only one of them is ever the live answer for a given call. This is deliberately *not*
+        /// two numbers kept in step by writing both on every change, which is exactly the double-writer shape
+        /// <see cref="Economy.SettlementStockInitiative"/>'s own doc warns against ("a unit of goods is either
+        /// a Thing on a map or a count in <see cref="Stores"/>, never both") — keeping two numbers merely close
+        /// is how a save eventually ships one that disagrees with the other. <see cref="SyncStructureLedger"/>
+        /// is the one place the ledger is still written from the map, and it is safe precisely because nothing
+        /// downstream ever reads the ledger while there is a map to read instead — the write can lag by a
+        /// whole sync interval and nobody would notice, because nobody is asking it.
+        /// <para/>
+        /// Counts completed buildings only, never a blueprint or a frame: those live under their own distinct
+        /// Defs (<c>Blueprint_*</c>/<c>Frame_*</c>), so they were never in <see cref="CountOnMap"/>'s count to
+        /// begin with — the same "built, not merely planned" line
+        /// <see cref="Building.SettlementConstructionInitiative"/> already draws for its own bookkeeping.
+        /// </summary>
+        public int StructureCount(ThingDef def)
+        {
+            if (def == null) throw new ArgumentNullException(nameof(def));
+            return interiorMap != null ? CountOnMap(interiorMap, def) : StructureLedgerCount(def);
+        }
+
+        /// <summary>Completed <paramref name="def"/> buildings actually standing on <paramref name="map"/> —
+        /// every spawned Thing of that def. A Blueprint or a Frame for the same entity carries its own,
+        /// different Def, so this never counts one: nothing here has to filter them out because they were
+        /// never filed under <paramref name="def"/> to begin with.</summary>
+        private static int CountOnMap(Map.Map map, ThingDef def) => map.listerThings.ThingsOfDef(def).Count;
+
+        /// <summary>
+        /// Writes what <see cref="InteriorMap"/> currently holds — every completed, artificial building,
+        /// tallied by def — back into <see cref="structures"/>, so a save taken while a map exists carries a
+        /// ledger close to the truth rather than whatever it happened to hold from before the map existed, and
+        /// so the number stays right if a map is ever released (nothing does that today —
+        /// <see cref="EnterMap"/>'s own doc: a generated map is cached forever — but this keeps the ledger
+        /// honest against that day rather than letting it go stale silently).
+        /// <para/>
+        /// <b>Never read by <see cref="StructureCount"/> while a map exists</b> — see that method's own doc.
+        /// This write can therefore lag by up to <see cref="SettlementTuning.CitizenMapSyncIntervalTicks"/>
+        /// ticks (the cadence <see cref="Tick"/> calls it on) with nothing downstream noticing, because nothing
+        /// downstream is reading it during that window.
+        /// <para/>
+        /// Uses <see cref="ThingRequestGroup.BuildingArtificial"/> — the same group
+        /// <see cref="SettlementAnchor"/> already reads to mean "what this settlement has built" — rather than
+        /// naming individual Defs, which this layer cannot do anyway: <c>World</c> sits below
+        /// <c>Building</c> in the layer order (spec §2) and may not reference <c>Building.ConstructionThingDefOf</c>
+        /// or <c>Building.StoneWallMaterials</c> to know which Defs are "walls" or "beds". Reading the group
+        /// instead needs no such list: every def actually built is picked up, whatever it is called.
+        /// </summary>
+        private void SyncStructureLedger()
+        {
+            if (interiorMap == null) return;
+
+            var counts = new Dictionary<ThingDef, int>();
+            IReadOnlyList<Thing> built = interiorMap.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial);
+            for (int i = 0; i < built.Count; i++)
+            {
+                ThingDef def = built[i].def;
+                counts.TryGetValue(def, out int have);
+                counts[def] = have + 1;
+            }
+
+            // Every def the ledger still names that the map no longer holds any of (demolished, or simply
+            // never built) drops to zero first — SetStructureCount's own clamp removes the key rather than
+            // leaving a stale entry around for something no longer standing.
+            foreach (ThingDef def in new List<ThingDef>(structures.Keys))
+            {
+                if (!counts.ContainsKey(def)) SetStructureCount(def, 0);
+            }
+            foreach (KeyValuePair<ThingDef, int> kv in counts) SetStructureCount(kv.Key, kv.Value);
+        }
+
         // ---- growth ----
 
         public override void Tick(World world)
         {
             base.Tick(world);
             GrowthTick();
-            if (Find.TickManager.TicksGame % SettlementTuning.CitizenMapSyncIntervalTicks == 0) SyncCitizenSpawns();
+            if (Find.TickManager.TicksGame % SettlementTuning.CitizenMapSyncIntervalTicks == 0)
+            {
+                SyncCitizenSpawns();
+                SyncStructureLedger();
+            }
         }
 
         /// <summary>
@@ -486,6 +602,15 @@ namespace SimWorld.World
             if (storeDict != null)
             {
                 foreach (KeyValuePair<ThingDef, int> kv in storeDict) stores[kv.Key] = kv.Value;
+            }
+
+            // Same shape as stores, one line above: a bare def→count ledger, LookMode.Def/LookMode.Value.
+            Dictionary<ThingDef, int>? structureDict = new Dictionary<ThingDef, int>(structures);
+            Scribe_Collections.Look(ref structureDict, "structures", LookMode.Def, LookMode.Value);
+            structures.Clear();
+            if (structureDict != null)
+            {
+                foreach (KeyValuePair<ThingDef, int> kv in structureDict) structures[kv.Key] = kv.Value;
             }
 
             // Null when this settlement has never been entered (EnterMap's own doc) — Scribe_Deep.Look

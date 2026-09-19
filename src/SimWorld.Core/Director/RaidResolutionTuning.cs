@@ -83,5 +83,22 @@ namespace SimWorld.Director
         /// range rather than a constant so two identical raids on two identical towns do not produce the
         /// identical ledger.</summary>
         public static readonly FloatRange LootFraction = new FloatRange(0.10f, 0.35f);
+
+        /// <summary>
+        /// Combat power a settlement's defence gains per completed wall
+        /// (<see cref="Building.StoneWallMaterials.AllWallDefs"/> — any material a wall can be cut from counts
+        /// equally, the same "one need, whichever material fills it" line
+        /// <see cref="Building.StoneWallMaterials.EquivalentsOf"/> already draws for placing them). Unsourced,
+        /// like everything else in this file: RimWorld's own walls carry no <c>combatPower</c> to read (they
+        /// block movement and sightlines rather than fighting back), so there is nothing to port and this is
+        /// SimWorld's own figure for the case RimWorld never had to price. Set on the same order as
+        /// <see cref="StatisticalDefenderCombatPower"/> — a single wall is worth roughly one militia head,
+        /// so a settlement fully walled at <c>Building.ConstructionInitiativeTuning.MaxWallShelterCount</c>
+        /// gains a defence swing large enough to matter, and a settlement with none gains nothing, which is
+        /// the whole point: infrastructure has to be able to change the outcome, not merely flavour it.
+        /// <c>UnwatchedRaidTests</c>/<c>RaidTests</c> pin this as a direction — a walled settlement musters
+        /// more and survives more of the same raids — never as the literal.
+        /// </summary>
+        public const float DefenceStrengthPerWall = 6f;
     }
 }
