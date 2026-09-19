@@ -11,12 +11,12 @@
     "ci": "GitHub Actions: dotnet build+test, blueprint build, markdown lint, link check, mermaid validation"
   },
   "phase": {
-    "id": 1,
-    "name": "Systems as isolated modules",
-    "summary": "Port each RimWorld system as a separately tested module. No game loop, no renderer, no god layer yet.",
+    "id": 2,
+    "name": "Pressure, and measuring it",
+    "summary": "Phase 1 ported every system as a separately tested module and is complete: the game loop, the god layer, settlements, eras and save/load all exist. Phase 2 adds things that go wrong and, the harder half, makes their cost measurable. A defect only counts if it still costs the player something while they are not watching. See docs/design/phase-2-pressure.md.",
     "launch": {
       "available": false,
-      "reason": "Nothing to launch yet — phase 1 ships modules and tests only. A launch link appears here once a playable loop exists."
+      "reason": "This repository is the engine and has no renderer by rule — the core is engine-free and the Unity host lives in simWorld.Host. The simulation runs headless and is driven by tools/bench; there is nothing to look at from here."
     }
   },
   "statusLegend": {
