@@ -60,7 +60,16 @@ namespace SimWorld.Director
             // purpose: starvation and disease are not violent and are exactly the two causes that had no
             // sink at all before (see DeathLedger and DeathCauseClassifier). Counted once per body, because
             // Pawn_HealthTracker.Kill returns early for a pawn already dead.
-            if (ours) Find.Storyteller.deaths.Record(pawn.health.CauseOfDeath);
+            if (ours)
+            {
+                Find.Storyteller.deaths.Record(pawn.health.CauseOfDeath);
+
+                // Second axis: not what they died of, but what killed them. Only the on-map case is answered
+                // here, because only an on-map kill carries a DamageInfo naming its instigator. A death
+                // resolved abstractly has no instigator to read, so the worker that resolved it attributes
+                // its own toll from the outcome it already computes — see IncidentWorker_ManhunterPack.
+                Find.Storyteller.deaths.RecordAttributed(SourceOf(dinfo));
+            }
 
             // And the settlement mourns them. Here rather than in PawnDiedThoughtsUtility because that one
             // answers "who saw this", which an abstractly-resolved death has no answer to — no DamageInfo,
@@ -83,6 +92,19 @@ namespace SimWorld.Director
         /// <see cref="DamageDef.deathMessage"/> first, then the hediff that finished them, then a bare
         /// statement of the fact.
         /// </summary>
+        /// <summary>
+        /// What killed them, as opposed to what they died of: the <c>defName</c> of the incident that put the
+        /// killer in the world, or null when nobody is to blame in that sense — a death by age, hunger or
+        /// illness, or a killer who was always here.
+        ///
+        /// <para/>Attribution is by <i>instigator provenance</i> rather than by timing. An ambient "what was
+        /// happening at the time" window would have been cheaper and would have been wrong: a citizen who
+        /// starves while a threat is on the map did not die of the threat. Asking the corpse's killer where
+        /// it came from cannot make that mistake.
+        /// </summary>
+        internal static string? SourceOf(DamageInfo? dinfo) =>
+            dinfo?.Instigator is Pawn killer ? killer.spawnedByIncident : null;
+
         private static void SendDeathLetter(Pawn pawn, DamageInfo? dinfo, Hediff? culprit)
         {
             if (!PawnUtility.ShouldSendNotificationAbout(pawn)) return;

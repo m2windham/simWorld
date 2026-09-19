@@ -35,6 +35,11 @@ namespace SimWorld.Director
 
         private readonly int[] counts = new int[CauseCount];
 
+        /// <summary>Deaths keyed by what killed them, as distinct from what they died of. Sparse on purpose:
+        /// a source only appears once it has actually killed somebody, so the common case costs nothing and
+        /// the readout never lists a threat the run never saw.</summary>
+        private readonly Dictionary<string, int> bySource = new Dictionary<string, int>(StringComparer.Ordinal);
+
         /// <summary>How many have died of <paramref name="cause"/>.</summary>
         public int this[DeathCause cause] => counts[(int)cause];
 
@@ -54,6 +59,40 @@ namespace SimWorld.Director
         /// no record of who it has already counted.</summary>
         public void Record(DeathCause cause) => counts[(int)cause]++;
 
+        /// <summary>
+        /// Notes that <paramref name="count"/> of the deaths already counted by <see cref="Record"/> are
+        /// <paramref name="source"/>'s doing. A second axis over the same deaths, never an extra death: the
+        /// two totals are answers to different questions ("what did they die of" and "what killed them") and
+        /// <see cref="Total"/> deliberately stays the sum of causes alone.
+        /// </summary>
+        public void RecordAttributed(string? source, int count = 1)
+        {
+            if (string.IsNullOrEmpty(source) || count <= 0) return;
+            bySource.TryGetValue(source!, out int existing);
+            bySource[source!] = existing + count;
+        }
+
+        /// <summary>How many deaths are laid at <paramref name="source"/>'s door. Zero for a source that has
+        /// never killed, which is the answer an ablated defect should give.</summary>
+        public int AttributedTo(string? source) =>
+            !string.IsNullOrEmpty(source) && bySource.TryGetValue(source!, out int n) ? n : 0;
+
+        /// <summary>Every source that has killed at least once, with its toll.</summary>
+        public IReadOnlyDictionary<string, int> BySource => bySource;
+
+        /// <summary>Deaths this ledger can name a killer for. Never more than <see cref="Total"/>; the
+        /// remainder are the deaths nothing claimed — age, illness, hunger, and any defect not yet wired to
+        /// attribute itself.</summary>
+        public int TotalAttributed
+        {
+            get
+            {
+                int sum = 0;
+                foreach (int n in bySource.Values) sum += n;
+                return sum;
+            }
+        }
+
         /// <summary>The whole vector, for a caller comparing two runs. Ordered by the enum, so index
         /// <c>i</c> is <c>(DeathCause)i</c> in every snapshot.</summary>
         public IReadOnlyList<int> Snapshot() => (int[])counts.Clone();
@@ -71,7 +110,20 @@ namespace SimWorld.Director
                 first = false;
             }
             if (first) sb.Append("none");
-            return sb.Append(')').ToString();
+            sb.Append(')');
+            if (bySource.Count > 0)
+            {
+                sb.Append(" [");
+                bool firstSource = true;
+                foreach (KeyValuePair<string, int> pair in bySource)
+                {
+                    if (!firstSource) sb.Append(", ");
+                    sb.Append(pair.Key).Append(' ').Append(pair.Value);
+                    firstSource = false;
+                }
+                sb.Append(']');
+            }
+            return sb.ToString();
         }
 
         /// <summary>
@@ -88,6 +140,20 @@ namespace SimWorld.Director
                 Array.Clear(counts, 0, counts.Length);
                 int n = Math.Min(list.Count, counts.Length);
                 for (int i = 0; i < n; i++) counts[i] = list[i];
+            }
+
+            // Keyed rather than positional, unlike the causes above: a source is a defName, so there is no
+            // stable order to save it in and an unknown key on load is simply a defect this build no longer
+            // has. Saves written before attribution existed load with an empty map and a correct Total.
+            Dictionary<string, int>? sourceMap = new Dictionary<string, int>(bySource, StringComparer.Ordinal);
+            Scribe_Collections.Look(ref sourceMap, "deathsBySource", LookMode.Value, LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                bySource.Clear();
+                if (sourceMap != null)
+                {
+                    foreach (KeyValuePair<string, int> pair in sourceMap) bySource[pair.Key] = pair.Value;
+                }
             }
         }
     }

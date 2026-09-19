@@ -109,6 +109,10 @@ namespace SimWorld.Director
             if (pack.Count == 0) return false;
             LastPack = pack;
 
+            // Every animal in this pack remembers that this incident put it here, so a citizen it kills on a
+            // watched map is attributed to the pack rather than merely to "Injury". See Pawn.spawnedByIncident.
+            for (int i = 0; i < pack.Count; i++) pack[i].spawnedByIncident = def?.defName;
+
             Map.Map? map = ArrivalMapFor(civ, settlement);
             if (map != null)
             {
@@ -121,7 +125,13 @@ namespace SimWorld.Director
             {
                 // Nobody is looking. The pack is settled the way an unattended raid is — this port's one
                 // answer to "what happens on a map that does not exist".
+                // Attribution needs nothing here: every animal in the pack carries spawnedByIncident, and the
+                // resolver credits each citizen it kills to the provenance of whoever killed them. Crediting
+                // from the outcome's CitizensKilled instead was the first attempt and was wrong — it counted
+                // deaths the ledger itself had declined to count, and reported four kills against a total of
+                // zero. The resolver reads its own ledger delta, so the two axes cannot drift apart.
                 SettlementRaidResolver.Resolve(settlement, pack, null, rand);
+
                 SendLetter(settlement, kind, pack.Count, watched: false);
                 return true;
             }
