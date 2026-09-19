@@ -121,7 +121,7 @@ namespace SimWorld.Tests.Pawns
             Assert.InRange(la.needs.joy!.tolerances[DefDatabase<JoyKindDef>.GetNamed("Social")], 0.19f, 0.2f);
             Assert.Equal(1, la.story.traits.DegreeOfTrait(Trait("NaturalMood")));
             Assert.Equal(2, la.needs.mood!.thoughts.memories.Memories.Count);
-            Thoughts.Thought_Memory memory = la.needs.mood.thoughts.memories.Memories[0];
+            global::SimWorld.Thoughts.Thought_Memory memory = la.needs.mood.thoughts.memories.Memories[0];
             Assert.Same(insulted, memory.def);
             Assert.Same(lb, memory.otherPawn);
             Assert.Same(la, memory.pawn);
