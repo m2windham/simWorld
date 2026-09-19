@@ -163,6 +163,39 @@ namespace SimWorld.Tests.Thoughts
             Assert.Equal(1, MemoryCount(witness, Known));
         }
 
+        /// <summary>
+        /// The claim the probe could not see, tested where it can be: an <b>unspawned</b> citizen's actual
+        /// mood level falls after the settlement loses somebody. Granting a memory is not the same as the
+        /// settlement feeling it — <c>Need_Seeker.CurInstantLevel</c> is derived from
+        /// <c>thoughts.TotalMoodOffset()</c>, and a coarse-tier citizen only folds its memories in on
+        /// <c>NeedIntervalBulk</c>, so this walks the whole path from death to a number a rollup would read.
+        ///
+        /// <para/>A probe run over fourteen days showed no change from this fix, which was a limitation of
+        /// the readout rather than of the mechanism: one KnowColonistDied is -3 mood, i.e. -0.03 on the 0..1
+        /// scale the probe reports, and that dip lands inside an existing peak-to-trough range of 0.08
+        /// without widening it. Peak-to-trough is the wrong statistic for a single death. This is the right
+        /// one.
+        /// </summary>
+        [Fact]
+        public void An_unspawned_citizen_mood_actually_falls_when_the_settlement_loses_somebody()
+        {
+            Pawn survivor = NewHuman("Survivor");
+            Pawn lost = NewHuman("Lost");
+            CivilizationOf(survivor, lost);
+
+            Assert.False(survivor.Spawned, "the whole point is a citizen nobody is watching");
+
+            survivor.needs.mood!.NeedIntervalBulk(GenTicks.TickLongInterval);
+            float before = survivor.needs.mood.CurLevelPercentage;
+
+            lost.health.Kill(null, null, DeathCause.Injury);
+            survivor.needs.mood.NeedIntervalBulk(GenTicks.TickLongInterval);
+
+            Assert.True(
+                survivor.needs.mood.CurLevelPercentage < before,
+                $"mood was {before:F4} before the death and {survivor.needs.mood.CurLevelPercentage:F4} after");
+        }
+
         [Fact]
         public void Losing_several_people_weighs_more_than_losing_one()
         {
