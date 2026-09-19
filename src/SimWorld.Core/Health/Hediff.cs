@@ -17,6 +17,19 @@ namespace SimWorld.Health
         public int ageTicks;
         public List<HediffComp>? comps;
 
+        /// <summary>
+        /// What put this hediff on the pawn — the <c>defName</c> of the <see cref="Director.IncidentDef"/> that
+        /// caused it, or null when nothing did (an injury from combat, a starvation hediff, anything else that
+        /// reaches <see cref="Pawn_HealthTracker.AddHediff(Hediff, BodyPartRecord?, DamageInfo?)"/> without one).
+        /// Mirrors <see cref="Pawns.Pawn.spawnedByIncident"/> one level down: that field answers "who spawned
+        /// this pawn", and a death by violence already reads its answer off <c>DamageInfo.Instigator</c> — but a
+        /// disease death has no instigator at all, so the hediff that killed the pawn has to carry its own
+        /// provenance for <see cref="Director.StorytellerDeathEvents.SourceOf"/> to credit. Set by whichever
+        /// worker adds the hediff (see <see cref="Director.IncidentWorker_Disease"/>); read nowhere else, so an
+        /// ordinary hediff with no incident behind it costs one null reference and nothing more.
+        /// </summary>
+        public string? sourceIncident;
+
         protected float severityInt;
         private BodyPartRecord? part;
         private int partIndex = -1;
@@ -245,6 +258,7 @@ namespace SimWorld.Health
             Scribe_Values.Look(ref severityInt, "severity");
             Scribe_Values.Look(ref ageTicks, "ageTicks");
             Scribe_Values.Look(ref partIndex, "partIndex", -1);
+            Scribe_Values.Look(ref sourceIncident, "sourceIncident");
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
                 InitializeComps();
