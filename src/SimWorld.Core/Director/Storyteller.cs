@@ -74,6 +74,10 @@ namespace SimWorld.Director
         /// measurement the capped <see cref="Chronicle"/> cannot be. See <see cref="DeathLedger"/>.</summary>
         public DeathLedger deaths = new DeathLedger();
 
+        /// <summary>Nutrition denied to production by a standing condition (today: a drought), keyed by what
+        /// caused it — the resource-side twin of <see cref="deaths"/>. See <see cref="ResourceImpactLedger"/>.</summary>
+        public ResourceImpactLedger resourceImpact = new ResourceImpactLedger();
+
         /// <summary>Raised after every attempted firing, successful or not.</summary>
         public event Action<FiringIncident>? IncidentFired;
 
@@ -251,6 +255,10 @@ namespace SimWorld.Director
             DeathLedger? dl = deaths;
             Scribe_Deep.Look(ref dl, "deaths");
             deaths = dl ?? new DeathLedger();
+
+            ResourceImpactLedger? ril = resourceImpact;
+            Scribe_Deep.Look(ref ril, "resourceImpact");
+            resourceImpact = ril ?? new ResourceImpactLedger();
 
             List<ChronicleEntry>? chronicleList = new List<ChronicleEntry>(chronicle);
             Scribe_Collections.Look(ref chronicleList, "chronicle", LookMode.Deep);

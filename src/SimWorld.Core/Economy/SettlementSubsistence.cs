@@ -209,14 +209,53 @@ namespace SimWorld.Economy
             IngestibleProperties? ingestible = crop?.ingestible;
             if (crop == null || ingestible == null || ingestible.nutrition <= 0f) return 0;
 
-            int units = UnitsThisPass(burnPerDay, landFactor, ingestible.nutrition);
-            if (units <= 0) return 0;
+            // Standing conditions (a drought, today the only one) scale this settlement's land on top of its
+            // own biome figure — see GameConditionManager.AggregateGrowthFactor. Read at world scope: an
+            // unwatched settlement has no map manager of its own to ask, and a condition registers at
+            // civilization scale precisely so it still reaches a settlement like this one. 1 with nothing
+            // active.
+            float conditionFactor = Find.World?.gameConditionManager.AggregateGrowthFactor() ?? 1f;
 
             int unitsThatFitTheGap = (int)Math.Ceiling(gap / ingestible.nutrition);
+
+            int units = UnitsThisPass(burnPerDay, landFactor * conditionFactor, ingestible.nutrition);
+            if (conditionFactor < 1f)
+            {
+                RecordUnitsDenied(
+                    UnitsThisPass(burnPerDay, landFactor, ingestible.nutrition),
+                    units,
+                    unitsThatFitTheGap,
+                    ingestible.nutrition);
+            }
+
+            if (units <= 0) return 0;
             if (units > unitsThatFitTheGap) units = unitsThatFitTheGap;
 
             settlement.AddStore(crop, units);
             return units;
+        }
+
+        /// <summary>
+        /// The nutrition-denied instrument's write side (<see cref="Director.ResourceImpactLedger"/>) —
+        /// measured where production is computed, never by a second simulated pass.
+        /// <paramref name="withoutCondition"/> and <paramref name="withCondition"/> are both
+        /// <see cref="UnitsThisPass"/>, called twice at the same pass index with only the land factor
+        /// differing: a pure function with no draw of its own (see <see cref="UnitsThisPass"/>'s own doc), so
+        /// calling it a second time costs nothing and disturbs no stream. Both are capped by the same
+        /// <paramref name="ceiling"/> the real pass is, so a settlement whose larder was already going to be
+        /// full this pass is charged nothing — the drought did not cost it a unit it was never going to bank
+        /// anyway.
+        /// </summary>
+        private static void RecordUnitsDenied(int withoutCondition, int withCondition, int ceiling, float unitNutrition)
+        {
+            int denied = Math.Min(withoutCondition, ceiling) - Math.Min(withCondition, ceiling);
+            if (denied <= 0) return;
+
+            SimWorld.World.World? world = Find.World;
+            if (world == null) return;
+
+            world.gameConditionManager.AttributeGrowthShortfall(
+                Find.Storyteller?.resourceImpact, denied * unitNutrition);
         }
 
         // -----------------------------------------------------------------------------------------------
