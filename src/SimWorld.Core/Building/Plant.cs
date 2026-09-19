@@ -63,12 +63,50 @@ namespace SimWorld.Building
             float fertility = map.terrainGrid.TerrainAt(Position).fertility;
             float light = PlantUtility.GrowthRateFactor_Light(Find.TickManager.TicksAbs);
             float temperature = PlantUtility.GrowthRateFactor_Temperature(map.outdoorTemperature);
-            float rateFactor = fertility * light * temperature;
-            if (rateFactor <= 0f) return;
+            float baseRateFactor = fertility * light * temperature;
+            if (baseRateFactor <= 0f) return;
+
+            // Standing conditions (a drought, today the only one) scale on top of RimWorld's own three
+            // factors above — see GameConditionManager.AggregateGrowthFactor. 1 with nothing active, so an
+            // unaffected map pays for one cheap walk of an empty list and nothing else.
+            float conditionFactor = map.gameConditionManager.AggregateGrowthFactor();
+            float rateFactor = baseRateFactor * conditionFactor;
 
             float growDays = props.growDays > 0f ? props.growDays : 0.01f;
             float ticksToFullyGrow = GenDate.TicksPerDay * growDays;
-            Growth += rateFactor * (GenTicks.TickLongInterval / ticksToFullyGrow);
+            float intervalFraction = GenTicks.TickLongInterval / ticksToFullyGrow;
+
+            if (conditionFactor < 1f) RecordGrowthDenied(map, props, baseRateFactor * intervalFraction, conditionFactor);
+
+            Growth += rateFactor * intervalFraction;
+        }
+
+        /// <summary>
+        /// Credits <see cref="Director.ResourceImpactLedger"/> with the nutrition this tick's growth fell
+        /// short of, in nutrition, because a standing condition scaled it down.
+        ///
+        /// <para/><b>Exact, and from this one call — never a second simulated tick.</b>
+        /// <paramref name="growthWithoutCondition"/> is the growth this same tick would have earned at the
+        /// condition's identity factor of 1 (RimWorld's own fertility × light × temperature product, with
+        /// nothing else touching it); the gap between that and what was actually applied is
+        /// <c>growthWithoutCondition × (1 − conditionFactor)</c>, algebra rather than a control run. Converted
+        /// to nutrition by the same two figures <see cref="Harvest"/> converts a harvest to nutrition with —
+        /// <see cref="PlantProperties.harvestYield"/> and the harvested def's own
+        /// <see cref="Crafting.IngestibleProperties.nutrition"/> — at growth 1, i.e. what one full growth-point of this
+        /// plant is worth, ignoring the difficulty's crop-yield factor and the random rounding
+        /// <see cref="Harvest"/> applies at collection time: this instrument reads the rate the condition
+        /// touched, not the dice a later harvest will separately roll.
+        /// </summary>
+        private static void RecordGrowthDenied(
+            Map.Map map, PlantProperties props, float growthWithoutCondition, float conditionFactor)
+        {
+            float nutritionPerFullGrowth = props.harvestYield * (props.harvestedThingDef?.ingestible?.nutrition ?? 0f);
+            if (nutritionPerFullGrowth <= 0f) return;
+
+            float nutritionDenied = growthWithoutCondition * (1f - conditionFactor) * nutritionPerFullGrowth;
+            if (nutritionDenied <= 0f) return;
+
+            map.gameConditionManager.AttributeGrowthShortfall(Find.Storyteller?.resourceImpact, nutritionDenied);
         }
 
         /// <summary>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Drought: this port's own defect, not a RimWorld port - see GameCondition_Drought and
+    IncidentWorker_Drought. Its own file, per CLAUDE.md's "add a file rather than edit a shared one" -
+    Incidents_Misc.xml already carries HeatWave/ColdSnap/Flashstorm and did not need to change for this one
+    to exist - and its own worker rather than IncidentWorker_MakeGameCondition, because this incident is
+    ablatable and measured (Director.ResourceImpactLedger) and the generic worker rolls its duration off the
+    ambient stream with no Ablation check at all.
+  -->
+
+  <IncidentDef>
+    <defName>Drought</defName>
+    <label>drought</label>
+    <description>A drought settles over the civilization, cutting crop growth on every watched map and every unwatched settlement's own harvest alike.</description>
+    <category>Misc</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Conditions.IncidentWorker_Drought</workerClass>
+    <baseChance>0.4</baseChance>
+    <minRefireDays>20</minRefireDays>
+  </IncidentDef>
+
+</Defs>

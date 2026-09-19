@@ -114,6 +114,102 @@ namespace SimWorld.Conditions
         }
 
         /// <summary>
+        /// The multiplier every growth-rate and off-map production figure reaching this scope is scaled by —
+        /// this manager's own conditions and its ancestors', multiplied together rather than summed, because 1
+        /// rather than 0 is <see cref="GameCondition.GrowthFactor"/>'s identity (RimWorld has no equivalent to
+        /// port; the shape mirrors <see cref="AggregateTemperatureOffset"/>). 1 when nothing is active. Read by
+        /// <see cref="Building.Plant.TickLong"/> for a watched map and by
+        /// <see cref="Economy.SettlementSubsistence"/>'s production pass for an unwatched settlement — the two
+        /// places CLAUDE.md's DROUGHT defect scouted, so one number reaches both without either one knowing
+        /// what put it there.
+        /// </summary>
+        public float AggregateGrowthFactor()
+        {
+            float factor = 1f;
+            for (GameConditionManager? m = this; m != null; m = m.Parent)
+            {
+                List<GameCondition> here = m.activeConditions;
+                for (int i = 0; i < here.Count; i++) factor *= here[i].GrowthFactor();
+            }
+            return factor;
+        }
+
+        /// <summary>
+        /// The defNames of conditions, at this scope or above, currently pulling
+        /// <see cref="AggregateGrowthFactor"/> below its identity of 1 — what a caller crediting denied
+        /// production (<see cref="Director.ResourceImpactLedger"/>) attributes it to. Read off the condition
+        /// itself rather than kept as a literal a caller would have to keep in step with content by hand.
+        /// Empty when nothing is suppressing growth, which is the common case and costs one empty walk.
+        /// </summary>
+        public IEnumerable<string> GrowthFactorSources()
+        {
+            for (GameConditionManager? m = this; m != null; m = m.Parent)
+            {
+                List<GameCondition> here = m.activeConditions;
+                for (int i = 0; i < here.Count; i++)
+                {
+                    if (here[i].GrowthFactor() < 1f) yield return here[i].def.defName;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Splits a growth shortfall between the conditions that caused it and credits
+        /// <paramref name="ledger"/> — so that what is attributed sums to what was actually lost, never more.
+        ///
+        /// <para/><b>Why this is not a loop over the sources crediting each the full amount.</b> That was the
+        /// first version and it double-counts the moment two conditions suppress growth at once: the ledger
+        /// then reports more nutrition denied than the settlement ever failed to grow. It is the same defect
+        /// the death ledger hit one area earlier — a total computed correctly, then handed out without
+        /// checking that the parts sum to the whole — and the invariant is the same one: an instrument may
+        /// under-claim, never over-claim.
+        ///
+        /// <para/><b>Why log-share rather than an equal split.</b> Growth factors <i>multiply</i>
+        /// (<see cref="AggregateGrowthFactor"/>), so the reduction they jointly cause does not divide evenly:
+        /// logarithms turn the product into a sum, which is the one decomposition whose parts add to the whole
+        /// by construction. Each condition takes <c>ln(fi) / sum ln(fj)</c> of the shortfall. With factors 0.9
+        /// and 0.1 that is roughly 4% and 96%, where an equal split would claim 50/50 and describe neither.
+        /// A single source — all today's content can produce — takes all of it, which is exactly why the bug
+        /// above is invisible until somebody adds a second growth-suppressing condition.
+        /// </summary>
+        public void AttributeGrowthShortfall(Director.ResourceImpactLedger? ledger, float nutritionDenied)
+        {
+            if (ledger == null || nutritionDenied <= 0f) return;
+
+            var suppressors = new List<(string Source, double Factor)>();
+            for (GameConditionManager? m = this; m != null; m = m.Parent)
+            {
+                List<GameCondition> here = m.activeConditions;
+                for (int i = 0; i < here.Count; i++)
+                {
+                    float factor = here[i].GrowthFactor();
+                    if (factor >= 1f) continue;
+
+                    // A factor of zero has no logarithm; clamped it still dominates every other share, which
+                    // is the right answer for a condition that stopped growth outright.
+                    suppressors.Add((here[i].def.defName, Math.Max(factor, 1e-6f)));
+                }
+            }
+
+            if (suppressors.Count == 0) return;
+            if (suppressors.Count == 1)
+            {
+                ledger.RecordNutritionDenied(suppressors[0].Source, nutritionDenied);
+                return;
+            }
+
+            double totalLog = 0d;
+            for (int i = 0; i < suppressors.Count; i++) totalLog += Math.Log(suppressors[i].Factor);
+            if (totalLog >= 0d) return;   // unreachable while every factor is below 1; better nothing than a wrong split
+
+            for (int i = 0; i < suppressors.Count; i++)
+            {
+                double share = Math.Log(suppressors[i].Factor) / totalLog;
+                ledger.RecordNutritionDenied(suppressors[i].Source, (float)(nutritionDenied * share));
+            }
+        }
+
+        /// <summary>
         /// One tick of this scope (RimWorld: <c>GameConditionManager.GameConditionManagerTick</c>): every
         /// condition held here ticks and expires, and then — on a map — every condition reaching this map,
         /// inherited ones included, gets its per-map pass. See <see cref="GameCondition"/> for why the
