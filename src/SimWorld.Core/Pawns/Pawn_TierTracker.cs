@@ -1,5 +1,6 @@
 using System;
 using SimWorld.AI;
+using SimWorld.Health;
 using SimWorld.Needs;
 using SimWorld.Sim;
 
@@ -383,12 +384,20 @@ namespace SimWorld.Pawns
                         needsList[i].NeedIntervalBulk(needSpan);
                     }
                 }
-                // Health: no bulk hediff physics (bleeding/healing/immunity) at this tier — hediffs already
-                // present stay exactly as they were, which is the module's one honest limitation for Interval
-                // (see the module's report). Still worth a cheap, safety-net state re-check: a life-stage
-                // crossing during AgeTickMothballed above can change core-part efficiency with no hediff
-                // changing at all (docs/perf/baseline.md §8), so re-evaluate downed/dead rather than assume
-                // nothing could have changed.
+                // Health: bleeding and natural wound-healing still do not run in bulk at this tier — an
+                // injury a citizen was carrying when they dropped to Interval stays exactly as severe as it
+                // was, which remains this module's one honest limitation for Interval (see the module's
+                // report). Disease is no longer part of that limitation: AbstractDiseaseResolver races every
+                // immunizable hediff's severity against the pawn's own immunity across the whole elapsed
+                // span, coarsely — a closed-form outcome rather than a tick loop, see its own doc — so a
+                // citizen nobody is watching can still recover or die of what they caught instead of being
+                // frozen mid-illness forever. It can kill the pawn outright (through the same
+                // Hediff.Severity -> CheckForStateChange -> Kill path a real tick would have used), so the
+                // safety-net re-check below still runs afterwards rather than being replaced by it: a
+                // life-stage crossing during AgeTickMothballed above can change core-part efficiency with no
+                // hediff changing at all (docs/perf/baseline.md §8), which is a different reason to
+                // re-evaluate downed/dead than anything disease resolution already checked.
+                AbstractDiseaseResolver.ResolveElapsed(pawn, elapsed);
                 pawn.health?.CheckForStateChange(null, null);
             }
             else // Statistical

@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using SimWorld.Health;
-using SimWorld.Pawns;
 using SimWorld.Sim;
 
 namespace SimWorld.Director
@@ -103,29 +100,6 @@ namespace SimWorld.Director
     public class IncidentWorker_Placeholder : IncidentWorker
     {
         protected override bool TryExecuteWorker(IncidentParms parms) => true;
-    }
-
-    /// <summary>Gives a random candidate pawn (alive, not already sick with it) <see cref="IncidentDef.diseaseIncident"/>.</summary>
-    public sealed class IncidentWorker_Disease : IncidentWorker
-    {
-        protected override bool CanFireNowSub(IncidentParms parms) => CandidatePawns(parms).Any();
-
-        protected override bool TryExecuteWorker(IncidentParms parms)
-        {
-            if (def.diseaseIncident == null) return false;
-            List<Pawn> candidates = CandidatePawns(parms).ToList();
-            if (candidates.Count == 0) return false;
-            Pawn pawn = candidates[Rand.Range(0, candidates.Count)];
-            pawn.health.AddHediff(def.diseaseIncident);
-            return true;
-        }
-
-        private IEnumerable<Pawn> CandidatePawns(IncidentParms parms)
-        {
-            HediffDef? disease = def.diseaseIncident;
-            if (disease == null) return Enumerable.Empty<Pawn>();
-            return parms.target.PlayerPawnsForStoryteller.Where(p => !p.Dead && !p.HasHediff(disease));
-        }
     }
 
     /// <summary>

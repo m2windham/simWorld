@@ -76,6 +76,22 @@ namespace SimWorld.Health
             return null;
         }
 
+        /// <summary>
+        /// <see cref="GetImmunityRecord"/>, but creates a fresh zero-immunity record rather than returning
+        /// null. <see cref="ImmunityHandlerTick"/> is the only other place a record gets created, and it never
+        /// runs for a pawn at <see cref="PawnTier.Interval"/> — so <see cref="AbstractDiseaseResolver"/>, which
+        /// does have to track immunity for a hediff caught at that tier, needs somewhere to keep the progress
+        /// it computes. Idempotent: a second call for the same def returns the same record the first call made.
+        /// </summary>
+        public ImmunityRecord EnsureRecord(HediffDef def)
+        {
+            ImmunityRecord? existing = GetImmunityRecord(def);
+            if (existing != null) return existing;
+            var created = new ImmunityRecord(def);
+            immunityList.Add(created);
+            return created;
+        }
+
         public void ImmunityHandlerTick()
         {
             List<Hediff> hediffs = pawn.health.hediffSet.hediffs;
