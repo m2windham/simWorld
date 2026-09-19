@@ -159,7 +159,8 @@ namespace SimWorld.Bench.Suites
                 larderNutrition: LarderNutrition(home),
                 researchDone: FinishedProjects(),
                 moments: Find.Storyteller?.Moments.Count ?? 0,
-                era: rollup.CurrentEra?.defName ?? "-");
+                era: rollup.CurrentEra?.defName ?? "-",
+                attributed: new Dictionary<string, int>(deaths.BySource));
         }
 
         /// <summary>Total edible nutrition sitting in the settlement's ledger. Summed here rather than on
@@ -318,6 +319,8 @@ namespace SimWorld.Bench.Suites
                 + "story about, however many of its people survived — and survival is the only thing the "
                 + "tables above can see.");
 
+            WhoKilledThem(watched, unwatched);
+
             static string[] Row(string name, ArmResult arm)
             {
                 List<ProbeSample> ss = arm.Samples;
@@ -369,34 +372,56 @@ namespace SimWorld.Bench.Suites
         ///
         /// <para/>Read the moments and swing rows, not only the deaths. A defect that costs lives and makes
         /// the run duller is a bad defect; one that costs lives and makes it more eventful may be the point.
+        ///
+        /// <para/><b>Read the `killed` column before the `d deaths` column, and believe it instead.</b> The
+        /// subtraction above holds every <i>draw</i> identical but it cannot hold the <i>world</i> identical:
+        /// from the tick a threat spawns, the two arms diverge — different jobs taken, different meals eaten,
+        /// different people hurt — and by the end of a fortnight the difference in total deaths is mostly
+        /// that divergence rather than the threat. Measured over three seeds, `d deaths` came back 0, +1, -2,
+        /// 0, 0, +1: it changes sign, and a -2 would mean a manhunter pack saved two lives, which no causal
+        /// story supports. The noise is larger than the effect, so the column cannot resolve what it looks
+        /// like it is resolving. `killed` is read straight off the on-arm with no subtraction at all — each
+        /// dead citizen credited to the incident that put their killer in the world — so it is exact in a
+        /// single run and needs no control. The off-arm's `killed` is there only as a self-check: it must be
+        /// zero, because an ablated threat kills nobody.
         /// </summary>
         private static void Ablated(
             BenchOptions opt, ArmResult watchedOn, ArmResult unwatchedOn, ArmResult watchedOff, ArmResult unwatchedOff)
         {
             Report.SubHeading("with minus without: " + string.Join(", ", opt.Without));
 
+            string subject = opt.Without.Length > 0 ? opt.Without[0] : string.Empty;
+
             Report.Table(
-                new[] { "arm", "deaths on", "deaths off", "d deaths", "moments on", "moments off", "d moments", "d mood swing" },
+                new[]
+                {
+                    "arm", "killed", "off-arm killed", "deaths on", "deaths off", "d deaths",
+                    "moments on", "moments off", "d moments", "d mood swing",
+                },
                 new List<string[]>
                 {
-                    AblationRow("watched", watchedOn, watchedOff),
-                    AblationRow("unwatched", unwatchedOn, unwatchedOff),
+                    AblationRow("watched", watchedOn, watchedOff, subject),
+                    AblationRow("unwatched", unwatchedOn, unwatchedOff, subject),
                 });
 
             Report.Note(
-                "A zero row means the thing under test did nothing over this window — which is a real result, "
-                + "and exactly what the shipped placeholder would have reported for its whole life. Widen "
+                "`killed` is the answer; `d deaths` is the question it replaced. A zero in `killed` means the "
+                + "thing under test genuinely killed nobody over this window — which is a real result, and "
+                + "exactly what the shipped placeholder would have reported for its whole life. Widen "
                 + "`--days` before concluding it is harmless; a threat gated behind a storyteller's "
-                + "minDaysPassed cannot show up in a run shorter than the gate.");
+                + "minDaysPassed cannot show up in a run shorter than the gate. A non-zero `off-arm killed` "
+                + "is a bug in the ablation, not a finding: an ablated threat must kill nobody.");
         }
 
-        private static string[] AblationRow(string name, ArmResult on, ArmResult off)
+        private static string[] AblationRow(string name, ArmResult on, ArmResult off, string subject)
         {
             ProbeSample a = on.Samples[on.Samples.Count - 1];
             ProbeSample b = off.Samples[off.Samples.Count - 1];
             return new[]
             {
                 name,
+                Report.Int(a.AttributedTo(subject)),
+                Report.Int(b.AttributedTo(subject)),
                 Report.Int(a.Deaths),
                 Report.Int(b.Deaths),
                 Delta(a.Deaths - b.Deaths),
@@ -405,6 +430,54 @@ namespace SimWorld.Bench.Suites
                 Delta(a.Moments - b.Moments),
                 Signed(Swing(on.Samples, x => x.Mood) - Swing(off.Samples, x => x.Mood)),
             };
+        }
+
+        /// <summary>
+        /// Which threats actually killed somebody, and how many each took — read off one run, with no second
+        /// arm to compare against.
+        ///
+        /// <para/>This is the readout the ablation table's `d deaths` column was standing in for, badly. A
+        /// difference between two runs answers "did these two worlds end up different", which for anything
+        /// that spawns onto a live map is mostly a question about divergence. Attribution answers "who killed
+        /// this person", which is the question that was being asked all along, and a single run settles it.
+        ///
+        /// <para/><b>The unattributed remainder is not a gap.</b> Most deaths have no killer: age, hunger and
+        /// illness are the settlement failing rather than something doing it. A row is only ever added by a
+        /// threat that claims its dead, so an empty table means a fortnight in which nothing killed anybody —
+        /// which for a civilization-scale game is an ordinary and usually good outcome, and a suspicious one
+        /// only if a threat is known to have fired.
+        /// </summary>
+        private static void WhoKilledThem(ArmResult watched, ArmResult unwatched)
+        {
+            var rows = new List<string[]>();
+            AddRows("watched", watched);
+            AddRows("unwatched", unwatched);
+
+            if (rows.Count == 0) return;
+
+            Report.SubHeading("who killed them");
+            Report.Table(new[] { "arm", "source", "killed", "of total deaths" }, rows);
+            Report.Note(
+                "Exact in one run: each death is credited to the incident that put its killer in the world, "
+                + "at the moment it happens. Deaths with no row are the ones nothing claimed — age, hunger, "
+                + "illness — which is most of them in a settlement that is merely struggling rather than "
+                + "under attack.");
+
+            void AddRows(string name, ArmResult arm)
+            {
+                ProbeSample last = arm.Samples[arm.Samples.Count - 1];
+                foreach (KeyValuePair<string, int> pair in last.Attributed)
+                {
+                    if (pair.Value <= 0) continue;
+                    rows.Add(new[]
+                    {
+                        name,
+                        pair.Key,
+                        Report.Int(pair.Value),
+                        Report.Int(last.Deaths),
+                    });
+                }
+            }
         }
 
         private static double YearMinutes(double ticksPerSecond) =>
@@ -451,7 +524,8 @@ namespace SimWorld.Bench.Suites
             int day, int population, int full, int interval, int statistical,
             float mood, float health, float foodNeed, float industry,
             int age, int starvation, int disease, int injury, int unknown,
-            float larderNutrition, int researchDone, int moments, string era)
+            float larderNutrition, int researchDone, int moments, string era,
+            IReadOnlyDictionary<string, int>? attributed = null)
         {
             Day = day;
             Population = population;
@@ -471,7 +545,11 @@ namespace SimWorld.Bench.Suites
             ResearchDone = researchDone;
             Moments = moments;
             Era = era;
+            Attributed = attributed ?? EmptyAttribution;
         }
+
+        private static readonly IReadOnlyDictionary<string, int> EmptyAttribution =
+            new Dictionary<string, int>();
 
         public int Day { get; }
 
@@ -511,6 +589,15 @@ namespace SimWorld.Bench.Suites
         public int Moments { get; }
 
         public string Era { get; }
+
+        /// <summary>Deaths this run can name a killer for, keyed by the <c>defName</c> of the incident that
+        /// put the killer in the world. The axis that makes a single run able to answer "what did this threat
+        /// cost" — see the ablation table's doc for why differencing two runs could not.</summary>
+        public IReadOnlyDictionary<string, int> Attributed { get; }
+
+        /// <summary>What <paramref name="source"/> killed, or zero if it never killed anybody.</summary>
+        public int AttributedTo(string? source) =>
+            !string.IsNullOrEmpty(source) && Attributed.TryGetValue(source!, out int n) ? n : 0;
 
         public int Deaths => Age + Starvation + Disease + Injury + Unknown;
 

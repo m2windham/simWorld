@@ -23,6 +23,24 @@ namespace SimWorld.Pawns
     {
         public string? name;
 
+        /// <summary>
+        /// The <c>defName</c> of the incident that put this pawn in the world, or null for anyone who was
+        /// simply born, generated at founding, or spawned by something that does not claim its dead.
+        ///
+        /// <para/><b>Why a pawn carries this at all.</b> It is how a death gets attributed to a threat in a
+        /// <i>single</i> run. The alternative — running the same seed twice, once with a defect ablated, and
+        /// differencing the death totals — was measured across three seeds and does not work for anything
+        /// that spawns onto a live map: from the spawn tick the two arms are different worlds, and by day
+        /// fourteen the difference in total deaths is dominated by that divergence rather than by the defect.
+        /// It produced a -2 (a threat apparently saving two lives), which no causal story explains. An
+        /// instigator that remembers where it came from turns the question from "how did two worlds differ"
+        /// into "who killed this person", which one run answers exactly.
+        ///
+        /// <para/>Set by the incident worker that spawns the pawn; read at the death funnel in
+        /// <c>Director.StorytellerDeathEvents</c>, which credits the kill to the killer's origin.
+        /// </summary>
+        public string? spawnedByIncident;
+
         public Pawn_HealthTracker health = null!;
         public Pawn_NeedsTracker needs = null!;
         public Pawn_StoryTracker story = null!;
@@ -414,6 +432,7 @@ namespace SimWorld.Pawns
         {
             base.ExposeData();
             Scribe_Values.Look(ref name, "name");
+            Scribe_Values.Look(ref spawnedByIncident, "spawnedByIncident");
             bool asleep = Asleep, suspended = Suspended;
             Scribe_Values.Look(ref asleep, "asleep");
             Scribe_Values.Look(ref suspended, "suspended");

@@ -208,7 +208,7 @@ namespace SimWorld.Director
             citizensToKill = Math.Min(citizensToKill, liveMuster);
             int cohortToLose = Math.Min(defenderDeaths - citizensToKill, cohortMuster);
 
-            int citizensKilled = KillCitizens(settlement, citizensToKill, rand);
+            int citizensKilled = KillCitizens(settlement, citizensToKill, rand, ProvenanceOf(raiders));
             int cohortLost = cohortToLose > 0 ? settlement.RemoveStatisticalPeople(cohortToLose) : 0;
 
             // RimWorld's adaptation drops when the player loses people to a threat, which is what makes the
@@ -300,11 +300,27 @@ namespace SimWorld.Director
         }
 
         /// <summary>
+        /// What put this attacking force in the world — the <c>defName</c> of the incident that spawned it,
+        /// read off the attackers themselves rather than passed down as another parameter. Null for an
+        /// attacker nobody spawned (a standing faction's own raid), which simply means these deaths go
+        /// uncredited to any one incident.
+        /// </summary>
+        private static string? ProvenanceOf(IReadOnlyList<Pawn> raiders)
+        {
+            for (int i = 0; i < raiders.Count; i++)
+            {
+                string? source = raiders[i]?.spawnedByIncident;
+                if (!string.IsNullOrEmpty(source)) return source;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Kills <paramref name="count"/> randomly-chosen living citizens through the real death path, then
         /// reconciles the settlement so its population stops counting them immediately rather than at the next
         /// rare sync. Returns how many actually died.
         /// </summary>
-        private static int KillCitizens(Settlement settlement, int count, RandomStream rand)
+        private static int KillCitizens(Settlement settlement, int count, RandomStream rand, string? source)
         {
             if (count <= 0) return 0;
 
@@ -332,8 +348,23 @@ namespace SimWorld.Director
                 Pawn victim = candidates[index];
                 candidates.RemoveAt(index);
                 if (victim.Dead) continue;
+
+                // Attribution for the unattended path. These deaths carry no DamageInfo, so the funnel in
+                // StorytellerDeathEvents has no instigator to ask and the attackers would go uncredited for
+                // exactly the kills they are most likely to make.
+                //
+                // Credited from the ledger's own delta rather than from this loop's count, so attribution can
+                // never exceed the deaths actually counted. The funnel records ours only — a settlement that
+                // belongs to no registered civilization reaches HandleDeath and is deliberately not counted —
+                // and reading the difference keeps the two axes in step without this method duplicating (and
+                // later disagreeing with) that membership test.
+                DeathLedger? ledger = Find.Storyteller?.deaths;
+                int countedBefore = ledger?.Total ?? 0;
+
                 Find.FamilyManager.HandleDeath(victim, DeathCause.Injury, byId);
                 killed++;
+
+                if (ledger != null && ledger.Total > countedBefore) ledger.RecordAttributed(source);
             }
 
             if (killed > 0) settlement.SyncCitizenSpawns();
