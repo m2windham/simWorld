@@ -90,6 +90,15 @@ namespace SimWorld.Conditions
         /// existing arithmetic — see <c>Weather.WeatherManager</c>.</summary>
         public virtual float TemperatureOffset() => 0f;
 
+        /// <summary>Multiplier this condition applies to plant growth and off-map settlement production
+        /// reaching every map/settlement it scopes over (RimWorld has no condition like this to port —
+        /// <see cref="GameCondition_Drought"/> is the first and, so far, only override). 1 — the
+        /// multiplicative identity, as 0 is <see cref="TemperatureOffset"/>'s additive one — so a condition
+        /// with nothing to say about growth costs a caller nothing. Multiplied together by
+        /// <see cref="GameConditionManager.AggregateGrowthFactor"/>, the same way <see cref="TemperatureOffset"/>
+        /// is summed by <see cref="GameConditionManager.AggregateTemperatureOffset"/>.</summary>
+        public virtual float GrowthFactor() => 1f;
+
         /// <summary>What a letter or the god view calls this condition.</summary>
         public virtual string Label => def?.LabelCap ?? GetType().Name;
 

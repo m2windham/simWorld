@@ -1984,6 +1984,11 @@
           "id": "conditions.maplocal",
           "label": "DELIBERATE EXCLUSION, re-verified and accurate as written. The per-map GameConditionManager and its scope machinery exist and work (Conditions/GameConditionManager.cs:25); every shipped incident - HeatWave, ColdSnap, Flashstorm - registers at world scope only. No content path reaches map-scope registration. A real seam that shipped content does not yet use, not a defect.",
           "done": false
+        },
+        {
+          "id": "conditions.drought",
+          "label": "Drought: a civilization-scale GameCondition_Drought (multiplicative growth factor, in (0,1), rolled per firing) aggregated by GameConditionManager.AggregateGrowthFactor and read at both scouted seams — Plant.TickLong for a watched map and SettlementSubsistence's production pass for an unwatched settlement — so the same defect reaches whichever half of the book the player is looking at. Its own IncidentWorker_Drought follows the NamedRand + Ablation discipline IncidentWorker_ManhunterPack established (composed before the ablation check, same draws either way), unlike the three conditions routed through the shared IncidentWorker_MakeGameCondition. Measured exactly, from a single run with no control arm, by a new Director.ResourceImpactLedger (nutrition denied, keyed by source defName, Scribed, outlives the condition that caused it, reads zero when ablated) hung off Storyteller beside the existing DeathLedger.",
+          "done": true
         }
       ]
     }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    A drought (RimWorld: no equivalent GameCondition to port - see GameCondition_Drought and
+    IncidentWorker_Drought's own docs for why this is a translation rather than a port, and for the
+    discipline its worker follows that HeatWave/ColdSnap/Flashstorm's shared IncidentWorker_MakeGameCondition
+    does not: every draw through NamedRand, composed before the Ablation check, so it can be measured
+    (Director.ResourceImpactLedger) rather than only narrated.
+
+    Longer than the two temperature conditions (2~8 days each): a drought is a bad season, not a cold snap.
+    Unsourced, like every other number this module recalls rather than decompiles - the tests pin what it
+    does (a watched map's plants grow slower, an unwatched settlement's larder fills slower), never this
+    literal.
+  -->
+
+  <GameConditionDef>
+    <defName>Drought</defName>
+    <label>drought</label>
+    <description>A drought lies over the whole civilization. Crops struggle wherever they are grown, watched or not.</description>
+    <conditionClass>SimWorld.Conditions.GameCondition_Drought</conditionClass>
+    <durationDays>6~16</durationDays>
+    <letterDef>NegativeEvent</letterDef>
+    <endMessage>The drought has broken.</endMessage>
+  </GameConditionDef>
+
+</Defs>
