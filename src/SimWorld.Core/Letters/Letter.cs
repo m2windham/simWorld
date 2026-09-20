@@ -24,6 +24,15 @@ namespace SimWorld.Letters
 
         public int arrivalTick;
 
+        /// <summary>
+        /// Stable handle for this one letter, assigned once by <see cref="LetterStack.ReceiveLetter(Letter)"/>
+        /// and never reassigned or reused — see that method's own doc for why a monotonic counter persisted on
+        /// the stack, rather than an index, a tick, or object identity, is what crosses the God/View seam.
+        /// Empty only before a letter has ever been received (a bare <c>new ChoiceLetter()</c> in a test,
+        /// mainly); every letter that ever sat on a real stack carries one.
+        /// </summary>
+        public string letterID = "";
+
         /// <summary>Ids (RimWorld: jump targets) this letter points at; resolved by a future Things/Map system.</summary>
         public List<string>? lookTargets;
 
@@ -48,6 +57,7 @@ namespace SimWorld.Letters
             Scribe_Values.Look(ref label, "label", "");
             Scribe_Values.Look(ref text, "text", "");
             Scribe_Values.Look(ref arrivalTick, "arrivalTick");
+            Scribe_Values.Look(ref letterID, "letterID", "");
             List<string>? targets = lookTargets;
             Scribe_Collections.Look(ref targets, "lookTargets", LookMode.Value);
             lookTargets = targets;
@@ -112,6 +122,23 @@ namespace SimWorld.Letters
             Scribe_References.Look(ref q, "quest");
             quest = q;
             Scribe_Values.Look(ref timeoutTicksAbs, "timeoutTicksAbs", -1);
+
+            // Labels only, never the actions — action is a live delegate and, per this type's own doc above,
+            // is never saved. Before this, ExposeData never touched choices at all, so a save/load round trip
+            // silently emptied it: a pending decision came back from a load with nothing to choose from, which
+            // is a quieter way of failing the exact defect this lane exists to fix than an outright crash.
+            // LookMode.Value on a List<string> is enough — LetterChoice itself is not IExposable and does not
+            // need to be; there is nothing else on it worth carrying across a load.
+            List<string>? labels = choices.ConvertAll(c => c.label);
+            Scribe_Collections.Look(ref labels, "choiceLabels", LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                choices.Clear();
+                if (labels != null)
+                {
+                    foreach (string label in labels) choices.Add(new LetterChoice(label));
+                }
+            }
         }
     }
 }
