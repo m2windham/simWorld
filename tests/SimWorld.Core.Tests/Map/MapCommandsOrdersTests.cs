@@ -290,7 +290,7 @@ namespace SimWorld.Tests.Map
         /// porting from RimWorld will arrive with.
         /// </summary>
         [Fact]
-        public void A_second_order_waits_its_turn_rather_than_throwing_away_the_first()
+        public void A_second_order_pre_empts_the_first_rather_than_waiting_its_turn()
         {
             Settlement settlement = OpenedSettlement("player-orders-twice");
             CoreMap map = settlement.InteriorMap!;
@@ -307,14 +307,46 @@ namespace SimWorld.Tests.Map
 
             Assert.Equal(MapCommandOutcome.Done, MapCommands.OrderJob(walker.thingIDNumber, "Goto", second).Outcome);
 
-            // A hundred ticks into a walk that takes many hundreds: still on the first errand, untouched.
-            RunTicks(100, everyone);
-            Assert.Equal(first, walker.jobs.curJob?.targetA.Cell);
+            // THE ORDER TAKES EFFECT NOW, not when the errand in hand happens to finish. This test pinned the
+            // opposite behaviour when it was written, and was right to: player-first.md §5 then read "in-flight
+            // work is never pre-empted" without qualification. That rule came from research into standing
+            // rules, where it holds, and had been over-generalised to cover explicit acts it was never evidence
+            // about. RimWorld's prioritise pre-empts and so do Dwarf Fortress's active squad orders; §5 now
+            // says so, and this asserts it at the tick the command returns rather than several hundred later.
+            Assert.Equal(second, walker.jobs.curJob!.targetA.Cell);
 
-            Assert.True(RunUntil(8000, () => AtOrBeside(walker.Position, first), everyone),
-                "the citizen never finished the first errand");
             Assert.True(RunUntil(8000, () => AtOrBeside(walker.Position, second), everyone),
                 "the citizen never got to the second errand");
+        }
+
+        /// <summary>
+        /// The other half of §5, unchanged and still true: pre-emption is what an explicit <i>order</i> does,
+        /// not what the citizen's own standing rules do. Once the ordered job ends, nothing about the citizen
+        /// is left marked — <see cref="Job.playerForced"/> lives on the job, not the pawn — so they fall back
+        /// to their own priorities without being told to.
+        /// </summary>
+        [Fact]
+        public void A_pre_empting_order_still_reverts_and_leaves_the_standing_rules_untouched()
+        {
+            Settlement settlement = OpenedSettlement("player-order-reverts");
+            CoreMap map = settlement.InteriorMap!;
+            Pawn[] everyone = AllCitizensOn(settlement, map).ToArray();
+            SilenceEveryonesStandingWork(settlement, map);
+
+            Pawn walker = AnyCitizenOn(settlement, map);
+            IntVec3 somewhere = FarReachableCellFrom(map, walker);
+
+            Assert.Equal(MapCommandOutcome.Done, MapCommands.OrderJob(walker.thingIDNumber, "Goto", somewhere).Outcome);
+            RunTicks(2, everyone);
+            Assert.True(walker.jobs.curJob!.playerForced, "the order should be marked as the player's");
+
+            Assert.True(RunUntil(8000, () => AtOrBeside(walker.Position, somewhere), everyone),
+                "the citizen never reached the ordered cell");
+
+            // A few ticks past arrival: whatever they are doing now, it is not still the player's order.
+            RunTicks(20, everyone);
+            Assert.False(walker.jobs.curJob?.playerForced == true,
+                "the citizen is still carrying the player's order after it completed");
         }
 
         // ===========================================================================================

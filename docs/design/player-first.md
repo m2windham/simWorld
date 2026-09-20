@@ -119,10 +119,26 @@ Fortress calls the split *active* versus *passive* orders, Oxygen Not
 Included's sub-priority breaks ties inside a tier. The standing rule resumes
 on its own when the act completes. Build it that way.
 
-**In-flight work is never pre-empted.** A person finishes the job they are on
-before reconsidering, even if something more urgent appears. Two unrelated
-studios both chose this deliberately: atomicity of the current act beats
-freshness of the rule.
+**A standing rule never pre-empts in-flight work. An explicit order does.** A
+person finishes the job they are on before a *rule* reconsiders them, even when
+something more urgent appears — two unrelated studios chose that deliberately,
+because a priority table that yanked people off half-finished work every time it
+was re-evaluated would thrash. But an explicit one-time order takes effect now:
+RimWorld's right-click prioritise pre-empts, and so do Dwarf Fortress's active
+squad orders.
+
+> **This rule was wrong in its first form**, and it is worth leaving the scar
+> visible. It read "in-flight work is never pre-empted", full stop — the standing
+> rule finding, over-generalised to cover explicit acts it was never evidence
+> about. A lane implemented the order surface exactly as written, queueing rather
+> than interrupting, and flagged the divergence instead of quietly departing from
+> the doc. That was the right call on both counts.
+>
+> The player-facing consequence is what settles it: someone who orders a citizen
+> to go and fight a fire and then watches them finish hauling a rock has been
+> ignored, and a lever whose effect arrives at an unpredictable later moment is
+> not one they can plan with. Atomicity protects against thrashing from rules,
+> not against the player.
 
 **A standing rule that has silently stopped enforcing itself must say so.**
 Dwarf Fortress's perpetual work orders validate their conditions once, at

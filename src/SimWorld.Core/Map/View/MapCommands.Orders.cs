@@ -273,12 +273,33 @@ namespace SimWorld.Map.View
 
         /// <summary>
         /// The one write this whole file performs: build the <see cref="Job"/> the think tree has been waiting
-        /// for since <c>JobGiver_DirectedOrder</c> was written, mark it as the player's, and queue it.
+        /// for since <c>JobGiver_DirectedOrder</c> was written, mark it as the player's, and start it.
+        ///
+        /// <para/><b>An explicit order pre-empts the job in hand. A standing rule does not.</b> This started
+        /// out queueing, on the strength of <c>docs/design/player-first.md</c> §5's "in-flight work is never
+        /// pre-empted" — and that rule was over-generalised when it was written. It comes from research into
+        /// how <i>standing rules</i> behave, where the finding is real and worth keeping: a priority table that
+        /// yanked people off half-finished work every time it was re-evaluated would thrash. It says nothing
+        /// about a one-time act. RimWorld's right-click prioritise pre-empts, and so do Dwarf Fortress's active
+        /// squad orders; the doc now draws the line where those two do, and this call matches it.
+        ///
+        /// <para/>The player-facing reason is the one that settles it. Someone who orders a citizen to go and
+        /// fight a fire, and then watches them finish hauling a rock first, has been ignored — and a lever
+        /// whose effect arrives at an unpredictable later moment is not a lever they can plan with. §5's own
+        /// atomicity argument protects against thrashing from rules, not against the player.
+        ///
+        /// <para/>What this does <i>not</i> change: the order still reverts. <see cref="Job.playerForced"/>
+        /// stays a flag on one job rather than state on the citizen, so when it ends the think tree runs again
+        /// and they return to their own priorities. And needs still reassert themselves the moment the ordered
+        /// job finishes, because the need tiers sit above <c>JobGiver_DirectedOrder</c> — a citizen can be
+        /// ordered away from a meal, and will go back to it after. That is a bad decision the player is allowed
+        /// to make.
         /// </summary>
         private static MapCommandResult QueueOrder(
             Pawn citizen, JobDef jobDef, LocalTargetInfo target, string targetLabel)
         {
-            citizen.jobs.QueueJob(new Job(jobDef, target) { playerForced = true });
+            citizen.jobs.StartJob(
+                new Job(jobDef, target) { playerForced = true }, JobCondition.InterruptForced);
             return MapCommandResult.Done(citizen.Label + " is ordered to " + jobDef.defName + ": " + targetLabel + ".");
         }
 
