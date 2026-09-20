@@ -34,7 +34,14 @@ namespace SimWorld.Factions
 
         public Faction? FirstFactionOfDef(FactionDef def) => allFactions.FirstOrDefault(f => f.def == def);
 
-        /// <summary>Call once per game tick; ticks every registered faction's goodwill drift.</summary>
+        /// <summary>
+        /// Call once per game tick; ticks every registered faction's goodwill drift, then
+        /// <see cref="DiplomacyAI.Tick"/> — the world's own half of diplomacy (a civilization declaring war or
+        /// suing for peace unprompted), self-gated on its own coarser interval the same way the goodwill drift
+        /// above is, so this costs one modulo on every other tick. Ordered after the drift pass so a check that
+        /// falls on the exact same tick as this interval judges goodwill that has already moved this tick,
+        /// never one that is one tick stale.
+        /// </summary>
         public void FactionManagerTick()
         {
             // Snapshot: a tick could in principle mutate the list (a faction defeated mid-tick); never
@@ -44,6 +51,8 @@ namespace SimWorld.Factions
             {
                 snapshot[i].FactionTick();
             }
+
+            DiplomacyAI.Tick(this);
         }
 
         /// <summary>
