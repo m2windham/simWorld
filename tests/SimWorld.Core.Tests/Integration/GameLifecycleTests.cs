@@ -129,7 +129,11 @@ namespace SimWorld.Tests.Integration
             // The tick order must have been rebuilt (PreTickers/PostTickers can't themselves be Scribed), not
             // merely the data underneath it.
             Assert.Single(loaded.TickManager.PreTickers);
-            // 19 since the production half of the same ledger joined them
+            // 20 since abstract construction joined them
+            // (SimWorld.Building.AbstractSettlementConstruction.Tick, which raises a bed or a wall for a
+            // settlement nobody has opened, and which a loaded game needs as much as a new one — a
+            // settlement restored from a save has no interior map either). It was 19 since the production
+            // half of the same ledger joined them
             // (SimWorld.Economy.SettlementSubsistence.Tick, which grows food into a settlement nobody is
             // watching); the ledger-to-citizen seam (SimWorld.Economy.SettlementLarder.Tick, which feeds a
             // citizen with no map to eat on out of Settlement.Stores) made it 18, after the off-map citizen
@@ -137,7 +141,7 @@ namespace SimWorld.Tests.Integration
             // loaded game's off-map citizens — the tick lists are rebuilt from the maps alone, so nobody
             // standing on none of them comes back on one) made it 17, the map-to-ledger seam and the industry
             // it feeds made it 16, the works initiative made it 14 and the stonework initiative made it 13.
-            Assert.Equal(19, loaded.TickManager.PostTickers.Count);
+            Assert.Equal(20, loaded.TickManager.PostTickers.Count);
 
             // And the loaded game must actually keep running: tick it as far past the load as it ran before
             // the save, and confirm nothing throws and time keeps moving forward.

@@ -140,7 +140,12 @@ namespace SimWorld.Tests.Sim
             Game game = NewSoloGame();
 
             Assert.Single(game.TickManager.PreTickers);
-            // 19 since the production half of the same ledger joined them
+            // 20 since abstract construction joined them
+            // (SimWorld.Building.AbstractSettlementConstruction.Tick, which is what raises a bed or a wall
+            // for a settlement nobody has opened — its map-path sibling returns at `if (map == null)`, so
+            // without this line construction was the one capability of the three that demanded the player
+            // show up while food and medicine both worked off-map). It was 19 since the production half of
+            // the same ledger joined them
             // (SimWorld.Economy.SettlementSubsistence.Tick, which is what grows food into a settlement nobody
             // is watching and what now hands every founding band its rations); the ledger-to-citizen seam
             // (SimWorld.Economy.SettlementLarder.Tick, which is what feeds a citizen who has no map to eat
@@ -150,7 +155,7 @@ namespace SimWorld.Tests.Sim
             // (SimWorld.Economy.SettlementStockInitiative.Tick and SimWorld.Crafting.GuildInitiative.Tick),
             // the works initiative (SimWorld.Building.SettlementWorksInitiative.Tick) made it 14 and the
             // stonework initiative (SimWorld.Crafting.StonecutterInitiative.Tick) made it 13.
-            Assert.Equal(19, game.TickManager.PostTickers.Count);
+            Assert.Equal(20, game.TickManager.PostTickers.Count);
         }
 
         [Fact]
