@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Earthquake: this port's own defect, not a RimWorld port - see IncidentWorker_Earthquake. One of the three
+    defects docs/design/phase-2-pressure.md names as blocked on a settlement having anything to damage;
+    World.Settlement.Structures unblocks it. Its own file per CLAUDE.md's "add a file rather than edit a
+    shared one" - Incidents_Drought.xml and Incidents_Threats.xml did not need to change for this one to
+    exist - and its own worker for the same reason Drought has its own: this incident is ablatable and
+    measured (Director.ResourceImpactLedger), and needs its target and severity composed before the Ablation
+    check rather than rolled generically.
+  -->
+
+  <IncidentDef>
+    <defName>Earthquake</defName>
+    <label>earthquake</label>
+    <description>The ground shakes under a settlement, bringing down some of what it has built.</description>
+    <category>Misc</category>
+    <targetTags><li>Map_PlayerHome</li></targetTags>
+    <workerClass>SimWorld.Director.IncidentWorker_Earthquake</workerClass>
+    <baseChance>0.4</baseChance>
+    <minRefireDays>20</minRefireDays>
+  </IncidentDef>
+
+</Defs>

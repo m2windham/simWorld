@@ -38,6 +38,18 @@ namespace SimWorld.Director
         private readonly Dictionary<string, float> nutritionDeniedBySource =
             new Dictionary<string, float>(StringComparer.Ordinal);
 
+        /// <summary>
+        /// Completed structures lost to a defect, keyed by what destroyed them — the second quantity this
+        /// ledger holds rather than a sibling class, per <c>Director.IncidentWorker_Earthquake</c>'s own
+        /// brief: a second number that could disagree with the first is worse than one class answering two
+        /// questions. Same shape as <see cref="nutritionDeniedBySource"/> throughout (sparse, credited at the
+        /// point a defect actually destroys something, zero for an ablated firing because nothing downstream
+        /// of the ablation check ever calls <see cref="RecordStructuresDestroyed"/> at all) — an integer count
+        /// rather than a float, because a structure is either standing or it is not.
+        /// </summary>
+        private readonly Dictionary<string, int> structuresDestroyedBySource =
+            new Dictionary<string, int>(StringComparer.Ordinal);
+
         /// <summary>Adds <paramref name="amount"/> of denied nutrition to <paramref name="source"/>'s running
         /// total. A no-op for a non-positive amount or an unnamed source, so a caller that computed nothing
         /// this pass need not guard the call itself — exactly <see cref="DeathLedger.RecordAttributed"/>'s own
@@ -57,6 +69,36 @@ namespace SimWorld.Director
 
         /// <summary>Every source that has denied nutrition at least once, with its running total.</summary>
         public IReadOnlyDictionary<string, float> NutritionDeniedBySource => nutritionDeniedBySource;
+
+        /// <summary>Adds <paramref name="count"/> destroyed structures to <paramref name="source"/>'s running
+        /// total. A no-op for a non-positive count or an unnamed source — exactly
+        /// <see cref="RecordNutritionDenied"/>'s own shape, so a caller that destroyed nothing this pass need
+        /// not guard the call itself.</summary>
+        public void RecordStructuresDestroyed(string? source, int count)
+        {
+            if (string.IsNullOrEmpty(source) || count <= 0) return;
+            structuresDestroyedBySource.TryGetValue(source!, out int existing);
+            structuresDestroyedBySource[source!] = existing + count;
+        }
+
+        /// <summary>Structures destroyed and laid at <paramref name="source"/>'s door. Zero for a source that
+        /// has never destroyed one — the answer an ablated defect gives.</summary>
+        public int StructuresDestroyedBy(string? source) =>
+            !string.IsNullOrEmpty(source) && structuresDestroyedBySource.TryGetValue(source!, out int n) ? n : 0;
+
+        /// <summary>Every source that has destroyed a structure at least once, with its running total.</summary>
+        public IReadOnlyDictionary<string, int> StructuresDestroyedBySource => structuresDestroyedBySource;
+
+        /// <summary>Every source's destruction, summed.</summary>
+        public int TotalStructuresDestroyed
+        {
+            get
+            {
+                int sum = 0;
+                foreach (int n in structuresDestroyedBySource.Values) sum += n;
+                return sum;
+            }
+        }
 
         /// <summary>Every source's denial, summed.</summary>
         public float TotalNutritionDenied
@@ -99,6 +141,17 @@ namespace SimWorld.Director
                 if (map != null)
                 {
                     foreach (KeyValuePair<string, float> pair in map) nutritionDeniedBySource[pair.Key] = pair.Value;
+                }
+            }
+
+            Dictionary<string, int>? structMap = new Dictionary<string, int>(structuresDestroyedBySource, StringComparer.Ordinal);
+            Scribe_Collections.Look(ref structMap, "structuresDestroyedBySource", LookMode.Value, LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                structuresDestroyedBySource.Clear();
+                if (structMap != null)
+                {
+                    foreach (KeyValuePair<string, int> pair in structMap) structuresDestroyedBySource[pair.Key] = pair.Value;
                 }
             }
         }
