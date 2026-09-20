@@ -30,6 +30,20 @@ namespace SimWorld.Factions
         /// <summary>SimWorld's own explicit war/peace state for this relation — see <see cref="WarState"/>'s own doc for why it is kept separate from <see cref="kind"/>.</summary>
         public WarState warState = WarState.Peace;
 
+        /// <summary>
+        /// <see cref="Sim.TickManager.TicksGame"/> the current war began, or null while at peace (or before any
+        /// war has ever been declared on this relation). Not touched by <see cref="Faction.DeclareWar"/>/
+        /// <see cref="Faction.MakePeace"/> themselves — SimWorld's core diplomacy machinery has no notion of
+        /// "how long" a war has run, see those methods' own docs — every real caller in this codebase goes
+        /// through <see cref="DiplomacyActions"/> instead, which is what actually stamps and clears this field.
+        /// A relation forced straight to <see cref="WarState.War"/> outside that path (a permanent-enemy pair
+        /// at world generation, <see cref="Faction.TryMakeInitialRelationsWith"/>) simply never gets one, which
+        /// is why <see cref="DiplomacyAI"/> treats a null here as "never assess this war for exhaustion" rather
+        /// than "just started" — that pair can never make peace anyway (<see cref="Faction.MakePeace"/> refuses
+        /// a permanent enemy outright), so there is nothing to assess.
+        /// </summary>
+        public int? warStartTick;
+
         /// <summary>Every treaty ever signed between these two factions, expired ones included (see <see cref="Treaty.IsActive"/> — this list is never pruned, so it also doubles as this relation's own treaty history).</summary>
         public List<Treaty> treaties = new List<Treaty>();
 
@@ -53,6 +67,7 @@ namespace SimWorld.Factions
             Scribe_Values.Look(ref baseGoodwill, "baseGoodwill");
             Scribe_Values.Look(ref kind, "kind", FactionRelationKind.Neutral);
             Scribe_Values.Look(ref warState, "warState", WarState.Peace);
+            Scribe_Values.Look(ref warStartTick, "warStartTick");
 
             List<Treaty>? t = new List<Treaty>(treaties);
             Scribe_Collections.Look(ref t, "treaties", LookMode.Deep);
