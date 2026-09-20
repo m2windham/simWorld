@@ -58,7 +58,8 @@ namespace SimWorld.God.View
             IReadOnlyList<EdictOption> edicts,
             IReadOnlyList<ConditionLine> conditions,
             IReadOnlyList<ChronicleLine> recentHistory,
-            IReadOnlyList<ChronicleLine> moments)
+            IReadOnlyList<ChronicleLine> moments,
+            LossSummary losses)
         {
             ContentLoaded = contentLoaded;
             TicksGame = ticksGame;
@@ -70,6 +71,7 @@ namespace SimWorld.God.View
             Conditions = conditions;
             RecentHistory = recentHistory;
             Moments = moments;
+            Losses = losses;
         }
 
         /// <summary>
@@ -132,6 +134,12 @@ namespace SimWorld.God.View
         /// keeps separately from the running chronicle because they are the civilization's landmarks rather
         /// than its news.</summary>
         public IReadOnlyList<ChronicleLine> Moments { get; }
+
+        /// <summary>What this civilization has lost, and to what — <see cref="Director.DeathLedger"/> and
+        /// <see cref="Director.ResourceImpactLedger"/> read straight through onto the seam. Unlike
+        /// <see cref="RecentHistory"/> and <see cref="Moments"/> these are uncapped running totals, so a
+        /// player can still see the true cost of a threat the chronicle has long since forgotten.</summary>
+        public LossSummary Losses { get; }
 
         /// <summary>Takes a snapshot of the current game with <see cref="DefaultRecentHistoryCount"/> lines of
         /// history.</summary>
@@ -209,7 +217,8 @@ namespace SimWorld.God.View
                 BuildEdictOptions(god),
                 ConditionLine.ActiveOn(world?.gameConditionManager),
                 ChronicleLine.TailOf(Find.Storyteller.Chronicle, recentHistoryCount),
-                ChronicleLine.TailOf(Find.Storyteller.Moments, recentHistoryCount));
+                ChronicleLine.TailOf(Find.Storyteller.Moments, recentHistoryCount),
+                LossSummary.From(Find.Storyteller.deaths, Find.Storyteller.resourceImpact));
         }
 
         private static List<EdictOption> BuildEdictOptions(GodManager god)
