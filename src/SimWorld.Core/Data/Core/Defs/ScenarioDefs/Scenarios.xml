@@ -30,6 +30,13 @@
           <def>StartingEra</def>
           <era>Industrial</era>
         </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingIdeo">
+          <def>StartingIdeo</def>
+          <options>
+            <li>TheHearthway</li>
+            <li>TheForgeCovenant</li>
+          </options>
+        </li>
         <li Class="SimWorld.Scenario.ScenPart_StartingThing_Defined">
           <def>StartingThing_Defined</def>
           <thingDef>Gun_Revolver</thingDef>
@@ -72,6 +79,13 @@
         <li Class="SimWorld.Scenario.ScenPart_StartingEra">
           <def>StartingEra</def>
           <era>SticksAndStones</era>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingIdeo">
+          <def>StartingIdeo</def>
+          <options>
+            <li>TheHearthway</li>
+            <li>TheForgeCovenant</li>
+          </options>
         </li>
         <li Class="SimWorld.Scenario.ScenPart_StartingThing_Defined">
           <def>StartingThing_Defined</def>
@@ -117,6 +131,13 @@
         <li Class="SimWorld.Scenario.ScenPart_StartingEra">
           <def>StartingEra</def>
           <era>Agrarian</era>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingIdeo">
+          <def>StartingIdeo</def>
+          <options>
+            <li>TheHearthway</li>
+            <li>TheForgeCovenant</li>
+          </options>
         </li>
         <li Class="SimWorld.Scenario.ScenPart_StartingResearch">
           <def>StartingResearch</def>
