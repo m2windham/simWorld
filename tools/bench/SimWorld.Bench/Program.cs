@@ -84,6 +84,9 @@ namespace SimWorld.Bench
                 case "probe":
                     ProbeSuite.Run(opt);
                     break;
+                case "tension":
+                    TensionSuite.Run(opt);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -174,6 +177,12 @@ namespace SimWorld.Bench
                             .Where(x => x.Length > 0)
                             .ToArray();
                         break;
+                    case "--solo":
+                        opt.Solo = ParseBool(Next(args, ref i), "--solo");
+                        break;
+                    case "--band":
+                        opt.Band = ParseInt(Next(args, ref i), "--band");
+                        break;
                     case "--subdivisions":
                         opt.Subdivisions = ParseIntList(Next(args, ref i), "--subdivisions");
                         break;
@@ -197,6 +206,7 @@ namespace SimWorld.Bench
                 }
             }
             if (opt.Pawns <= 0) throw new ArgumentException("--pawns must be positive.");
+            if (opt.Band <= 0) throw new ArgumentException("--band must be positive.");
             if (opt.Days <= 0) throw new ArgumentException("--days must be positive.");
             if (opt.Runs <= 0) throw new ArgumentException("--runs must be positive.");
             if (opt.Warmup < 0) throw new ArgumentException("--warmup cannot be negative.");
@@ -217,6 +227,15 @@ namespace SimWorld.Bench
             if (!int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out int v))
             {
                 throw new ArgumentException("'" + flag + "' expects an integer, got '" + s + "'.");
+            }
+            return v;
+        }
+
+        private static bool ParseBool(string s, string flag)
+        {
+            if (!bool.TryParse(s, out bool v))
+            {
+                throw new ArgumentException("'" + flag + "' expects true or false, got '" + s + "'.");
             }
             return v;
         }
@@ -249,9 +268,11 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
-  --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc, probe.
+  --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc, probe, tension.
+                          For --suite tension the span is read in years: 60 days to the year, which is also
+                          its sample interval, so --days 12000 is a 200-year run.
   --seed <N>              RandomStream seed (default 12345).
   --warmup <N>            warmup trials discarded before measuring (default 1).
   --runs <N>              measured trials; the median is reported (default 3).
@@ -266,6 +287,13 @@ OPTIONS
   --target-tick-ns <csv>  N sweep for --suite targets' tick-loop A/B (default 250,500,1000).
   --without <csv>         names to ablate for --suite probe's second arm, e.g. ManhunterPack. The probe
                           then runs each arm twice, with and without, and reports the difference.
+  --solo <true|false>     for --suite tension: start the player alone and let rivals emerge (default true,
+                          the same world shape --suite probe uses), or generate a world already full of
+                          rival civilizations (false).
+  --band <N>              for --suite tension: founding band size (default 25, the same band --suite probe
+                          founds with). A knob rather than a constant because that band does not survive a
+                          long unwatched run — see that suite's own doc. Spec §5b.3 fixes the legal range at
+                          20-40; outside it the founder throws.
   --help, -h              show this text.
 
 SUITES
@@ -295,12 +323,19 @@ SUITES
                 baseline a deliberately injected defect is measured against. Also reports its own throughput,
                 because what an in-game year costs in wall clock decides the affordable window and is a fact
                 about the machine rather than an assumption. Not in `all` — it is slow and run on purpose.
+  tension       OUTCOMES, not time: ticks one real seeded game for --days in-game days, unwatched, and samples
+                Director.StandingReader (relative standing against rival civilizations) once per in-game year.
+                Reports the series and the four questions docs/design/goal-renewal.md §8 step 1 asks of a
+                tension before anything is built on it: does it move, does its rate of change decay across the
+                run's thirds, does it survive the world settling, is it deterministic. An instrument only —
+                nothing in the simulation acts on the reading. Not in `all`: slow, and run on purpose.
   all           Runs every suite in sequence (scaling first; attribution's N is derived from its result).
 
 EXAMPLES
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- --pawns 1000 --days 1
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- --suite all
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- --suite probe --days 6 --seed 12345
+  dotnet run -c Release --project tools/bench/SimWorld.Bench -- --suite tension --days 12000 --seed 12345
 ");
         }
     }

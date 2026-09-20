@@ -39,6 +39,19 @@ namespace SimWorld.Bench
         /// Empty means the probe reports a single baseline instead of a subtraction.</summary>
         public string[] Without { get; set; } = System.Array.Empty<string>();
 
+        /// <summary>Whether --suite tension starts the player alone and lets rivals emerge (the default, and
+        /// the same world shape --suite probe uses), or generates a world already full of rival civilizations.
+        /// It is a switch rather than a fixed choice because the two answer different halves of the same
+        /// question and the crowded one has a measured, reproducible outcome worth keeping reachable — see
+        /// that suite's own doc.</summary>
+        public bool Solo { get; set; } = true;
+
+        /// <summary>Founding band size for --suite tension. Separate from <see cref="Pawns"/>, which means
+        /// something else in every other suite and defaults to a value no founding band should have. The
+        /// default is the 25 --suite probe also founds with; that band does not survive a long unwatched run,
+        /// which is itself one of that suite's findings, so the size is a knob rather than a constant.</summary>
+        public int Band { get; set; } = 25;
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }
