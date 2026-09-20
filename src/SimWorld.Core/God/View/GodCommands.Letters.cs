@@ -70,6 +70,38 @@ namespace SimWorld.God.View
             }
 
             LetterChoice picked = found.choices[choiceIndex];
+
+            // NEVER REPORT DONE FOR A CONSEQUENCE THAT DID NOT HAPPEN. This first invoked whatever action was
+            // there and returned Done regardless, which across a save is the over-claim rule's most expensive
+            // form yet: a delegate cannot be written to a save file, so a loaded choice had a label and nothing
+            // behind it, and the player would be told their quest was accepted while nothing ran. The previous
+            // four instances of that rule handed out a wrong number; this one handed out a wrong belief.
+            //
+            // Each kind's own precondition is checked, not merely whether the delegate exists — and that
+            // distinction is the whole guard. A rebuilt AcceptQuest action is never null: it is a live delegate
+            // that reads `quest` when invoked (see ChoiceLetter.ActionFor). With the quest gone it would pass
+            // an action-null check, invoke harmlessly, and report success — the same defect wearing a different
+            // hat. Proved by disabling this switch arm: the restore tests' refusal case fails, and passes again
+            // with it back.
+            //
+            // Dismiss is exempt on purpose. A null action there is not a failure to restore one, because the
+            // letter leaving the stack is the entire effect; refusing it would make every saved letter
+            // unanswerable, which is worse than the defect.
+            string? missing = picked.kind switch
+            {
+                LetterChoiceKind.AcceptQuest when found.quest == null => "the quest it would accept is gone",
+                LetterChoiceKind.Dismiss => null,
+                _ when picked.action == null => "its consequence did not survive a save and load",
+                _ => null,
+            };
+
+            if (missing != null)
+            {
+                return GodCommandResult.Refused(
+                    "'" + picked.label + "' cannot be carried out for '" + found.label + "' — " + missing +
+                    ". The letter is left on the stack rather than reported as answered.");
+            }
+
             string letterLabel = found.label;
             stack.RemoveLetter(found);
             picked.action?.Invoke();

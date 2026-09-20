@@ -72,15 +72,45 @@ namespace SimWorld.Letters
     /// <summary>One option on a <see cref="ChoiceLetter"/> (RimWorld: <c>RimWorld.DiaOption</c>, trimmed to what a
     /// letter needs). <see cref="action"/> is a live delegate and, like RimWorld's own dialog options, is never
     /// saved — a loaded <see cref="ChoiceLetter"/> keeps its text but not the ability to act on old choices.</summary>
+    /// <summary>
+    /// What a <see cref="LetterChoice"/> does, in a form that survives a save.
+    ///
+    /// <para/><b>Why this exists at all.</b> A choice's consequence is an <see cref="Action"/>, and a delegate
+    /// cannot be written to a save file. Before this, a load produced choices with a label and a null action:
+    /// the letter was still answerable and answering it did nothing, while the command reported success. That
+    /// is the over-claim this codebase has now hit in four systems — a total or an outcome handed out without
+    /// checking what actually happened — and it is worse here than the usual, because the player believes the
+    /// quest they just accepted is running.
+    ///
+    /// <para/>So the <i>kind</i> of consequence is saved, and the action is rebuilt from it on load. Adding a
+    /// case means adding a member here and a line in <see cref="ChoiceLetter.ExposeData"/>; the compiler will
+    /// not remind you, so the enum is deliberately tiny and stays that way.
+    /// </summary>
+    public enum LetterChoiceKind
+    {
+        /// <summary>No consequence beyond the letter leaving the stack. Dismissal <i>is</i> the whole effect,
+        /// so a null action here is correct rather than a failure to restore one.</summary>
+        Dismiss = 0,
+
+        /// <summary>Accepts the letter's own <see cref="ChoiceLetter.quest"/>.</summary>
+        AcceptQuest = 1,
+    }
+
     public sealed class LetterChoice
     {
         public string label;
         public Action? action;
 
-        public LetterChoice(string label, Action? action = null)
+        /// <summary>What this choice does, in the form that survives a save — see <see cref="LetterChoiceKind"/>.
+        /// Defaults to <see cref="LetterChoiceKind.Dismiss"/>, so a choice constructed without one is a choice
+        /// that claims no consequence, which is the safe direction to be wrong in.</summary>
+        public LetterChoiceKind kind;
+
+        public LetterChoice(string label, Action? action = null, LetterChoiceKind kind = LetterChoiceKind.Dismiss)
         {
             this.label = label ?? throw new ArgumentNullException(nameof(label));
             this.action = action;
+            this.kind = kind;
         }
     }
 
@@ -131,13 +161,48 @@ namespace SimWorld.Letters
             // need to be; there is nothing else on it worth carrying across a load.
             List<string>? labels = choices.ConvertAll(c => c.label);
             Scribe_Collections.Look(ref labels, "choiceLabels", LookMode.Value);
+            List<string>? kinds = choices.ConvertAll(c => c.kind.ToString());
+            Scribe_Collections.Look(ref kinds, "choiceKinds", LookMode.Value);
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
                 choices.Clear();
                 if (labels != null)
                 {
-                    foreach (string label in labels) choices.Add(new LetterChoice(label));
+                    for (int i = 0; i < labels.Count; i++)
+                    {
+                        LetterChoiceKind kind = LetterChoiceKind.Dismiss;
+                        if (kinds != null && i < kinds.Count)
+                        {
+                            Enum.TryParse(kinds[i], out kind);
+                        }
+
+                        choices.Add(new LetterChoice(labels[i], ActionFor(kind), kind));
+                    }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Rebuilds a choice's consequence from the kind that survived the save.
+        ///
+        /// <para/>The delegate reads <see cref="quest"/> when it is <i>invoked</i>, not when it is built, which
+        /// matters: <see cref="Scribe_References"/> may not have resolved the quest yet at
+        /// <see cref="LoadSaveMode.LoadingVars"/> time, and capturing the field's value there would bind a null
+        /// for good. Capturing <c>this</c> and reading the field later is correct whenever the reference
+        /// resolves.
+        ///
+        /// <para/>A null <see cref="quest"/> at invoke time is not papered over here — see
+        /// <c>GodCommands.ResolveLetterChoice</c>, which refuses rather than reporting a consequence it cannot
+        /// deliver.
+        /// </summary>
+        private Action? ActionFor(LetterChoiceKind kind)
+        {
+            switch (kind)
+            {
+                case LetterChoiceKind.AcceptQuest:
+                    return () => quest?.Accept();
+                default:
+                    return null;
             }
         }
     }
