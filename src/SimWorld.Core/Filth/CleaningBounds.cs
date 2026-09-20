@@ -13,20 +13,25 @@ namespace SimWorld.Filth
     /// end to a map's worth of soil, and the job would never finish. RimWorld's answer is the home area: a
     /// player-painted region that cleaning (and firefighting, and hauling-by-default) is confined to.
     /// <para/>
-    /// <b>What this port actually has.</b> <see cref="Area"/>/<see cref="AreaManager.Home"/> exist — the
-    /// Building module shipped them — but nothing populates the home area and nothing ever read it, and there
-    /// is no player UI in an engine-free core to paint one. Bounding on the home area alone would therefore
-    /// have meant an empty home area, no cleanable filth ever, and a work giver that looks wired but can
-    /// never fire: the dormancy trap this module was explicitly told to avoid. RimWorld does not hit it
-    /// because its home area auto-expands over rooms as you build them; this port has no such hook, and
-    /// adding one means editing <c>Building/RoomTracker.cs</c>, which this lane does not own.
+    /// <b>What this port actually had, at the time this class was written.</b> <see cref="Area"/>/
+    /// <see cref="AreaManager.Home"/> existed — the Building module shipped them, and this class itself always
+    /// read <see cref="AreaManager.Home"/> below — but nothing populated the home area, and there was no
+    /// player UI in an engine-free core to paint one. Bounding on the home area alone would therefore have
+    /// meant an empty home area, no cleanable filth ever, and a work giver that looks wired but can never
+    /// fire: the dormancy trap this module was explicitly told to avoid. RimWorld does not hit it because its
+    /// home area auto-expands over rooms as you build them; this port had no such hook, and adding one meant
+    /// editing <c>Building/RoomTracker.cs</c>, which this lane did not own.
     /// <para/>
     /// <b>The translation, then:</b> the home area is the authority <i>when something has set one</i>, and
     /// "any enclosed, roofed room" is the fallback when nothing has. Both halves say the same thing about the
     /// outdoors, which is the property that matters — the open map is never cleaning work — and the fallback
     /// is what RimWorld's own auto-expansion would have produced for a colony that has built rooms and
-    /// painted nothing. The moment a host or a later lane starts filling
-    /// <see cref="AreaManager.Home"/>, that takes over with no change here.
+    /// painted nothing.
+    /// <para/>
+    /// <b>Updated:</b> <see cref="Map.View.MapCommands.SetHomeArea"/> is now the first caller anywhere in
+    /// <c>src/</c> that writes to <see cref="AreaManager.Home"/>, so the "when something has set one" half
+    /// above is no longer hypothetical — a player who paints a home area gets exactly the behaviour this
+    /// class's doc always described for it, with no change needed here.
     /// <para/>
     /// <b>Rooms are lazy.</b> <see cref="RoomTracker.RoomAt"/> answers null for every cell until
     /// <see cref="RoomTracker.RoomTrackerTick"/> has flooded the map once, which <c>Map.MapTick</c> does (and
