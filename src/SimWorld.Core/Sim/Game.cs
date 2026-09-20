@@ -498,6 +498,12 @@ namespace SimWorld.Sim
             // building.initiative: settlements decide what they lack and queue the blueprints for it. Self
             // gated on the rare tick like the managers above, so a tick it is not due on costs a modulo.
             tm.PostTickers.Add(_ => SimWorld.Building.SettlementConstructionInitiative.Tick());
+            // building.abstractconstruction: the same decision for a settlement that has no map to queue a
+            // blueprint on. Without this line the abstract producer exists, is unit-tested, and never runs in
+            // a real game — a settlement nobody has opened would build nothing for the whole run while its
+            // food and its medicine both carried on working. It is registered beside its map-path sibling
+            // rather than anywhere else precisely so the two are read as one decision.
+            tm.PostTickers.Add(_ => SimWorld.Building.AbstractSettlementConstruction.Tick());
             // stonework: settlements raise a stonecutter's table where their mined chunks lie and keep a
             // standing bill on it, so the cut stone the construction initiative above now spends on walls
             // actually gets cut. Self-gated on the same rare tick, for the same reason.

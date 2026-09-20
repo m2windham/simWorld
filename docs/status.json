@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-18",
-  "testsTotal": 2263,
+  "testsTotal": 2279,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1181,6 +1181,11 @@
           "id": "director.disease-unwatched",
           "label": "IncidentWorker_Disease told the player nothing and a disease death went uncredited to it: dinfo is always null for a disease kill (nothing struck the pawn), so StorytellerDeathEvents.SourceOf had no instigator to ask and the second attribution axis simply had no answer for the two causes (Flu, Plague, WoundInfection) most likely to actually kill an unwatched citizen now that AbstractDiseaseResolver lets them. Split out of IncidentWorker.cs into its own file, matching every other real incident worker; it now stamps Hediff.sourceIncident on the hediff it adds, SourceOf falls back to the culprit hediff's own provenance whenever there is no instigator to read, and a letter goes out either way, worded from the struck citizen's own tier — PawnTier.Full already means 'the player is watching', so 'watched' needed no second lookup of which settlement is open. Tests: tests/SimWorld.Core.Tests/Director/DiseaseIncidentTests.cs.",
           "done": true
+        },
+        {
+          "id": "director.fortification",
+          "label": "Walls used to defend nothing: SettlementRaidResolver.Muster priced defence from living citizens and the Statistical cohort only, so a settlement walled in granite fought exactly as well as one standing in the open. Muster now adds a flat RaidResolutionTuning.DefenceStrengthPerWall per completed wall, read through Settlement.StructureCount (every material StoneWallMaterials.AllWallDefs names counts, the same 'one need, whichever material fills it' rule construction already draws) — fortification adds strength without mustering a head, so casualties are still drawn from the same living roster either way. Unsourced (RimWorld's own walls carry no combatPower to read), pinned as a direction — a walled settlement musters more and repels/survives more of the same raids than an identical unwalled one — never as the literal. Tests: tests/SimWorld.Core.Tests/Director/SettlementFortificationTests.cs.",
+          "done": true
         }
       ]
     },
@@ -1546,6 +1551,11 @@
           "id": "building.roofcollapse",
           "label": "Roof collapse was the largest killer in this game and the source of two batches of misdiagnosis. THE ROOT CAUSE OF THE MISREADING WAS ITSELF A PORTING DEFECT: RimWorld's collapse deals Crush, whose deathMessage is '{0} has been crushed to death', and this port dealt Blunt, whose message is '{0} has been beaten to death' - which is the whole of section 9a's 'every death is a citizen beaten to death by another citizen', printed faithfully by content doing what it was told. Four more, each checked against RimWorld's source: no body region was set, so DamageWorker_AddInjury drew a part by coverage over the whole body with inside parts included and one 50-point hit on a heart is a dead colonist (section 10's unexplained signature exactly - RimWorld aims an ordinary roof at Top/Outside, which cannot reach an organ); ordinary-roof damage was a flat 50 against RimWorld's rolled 15-30; overhead mountain was 100 Blunt and survivable where RimWorld's is 99999 Crush at 999 armour penetration aimed at the brain, applied twice, then Kill; and a collapsed thick roof was deleted and left nothing, where RimWorld's does not vanish and refills the cell with CollapsedRocks, WHICH IS WHAT MAKES A COLLAPSE SELF-LIMITING INSTEAD OF SELF-FEEDING. The support query was wrong in both directions too - a straight radius of 5, recorded as unsourced, against RimWorld's RoofMaxSupportDistance of 6.9 reached by a flood fill THROUGH ROOFED CELLS, which is what makes 'in range' mean 'along the ceiling'. BUT FAITHFULNESS IS NOT WHAT SAVED THE SETTLEMENT and could not have been: a faithful overhead-mountain collapse is MORE lethal, and the staged measurement says so. The deaths stopped because the mining was reckless - nothing designates mining, so WorkGiver_Miner mined every reachable mineable edifice and twenty-five citizens brought 724 roof cells down on themselves in one day. That gate is a recorded translation at WouldCollapseRoofIfRemoved, and it sits at BOTH the giver and the job driver, because with twenty-five people on one seam the answer given at hand-out goes stale - gate at hand-out alone still produced fifty-two collapses and nine crushed founders. Measured after, three seeds, eight days: 22/25, 23/25 and 23/25 alive against 11, 11 and 17 before, zero crushed, zero roof cells lost in twenty-four in-game days, while the settlements mined out 98% of their mountains. The rule is about which cells, not about mining less.",
           "done": true
+        },
+        {
+          "id": "building.abstractconstruction",
+          "label": "SettlementConstructionInitiative returned at 'if (map == null) return;', so a settlement nobody had ever opened built nothing, ever — the one need among food, medicine and shelter with no off-map answer at all (SettlementSubsistence and AbstractDiseaseResolver both already worked with no map). New file Building/AbstractSettlementConstruction.cs is the abstract twin: for a settlement with no InteriorMap it credits Settlement.Structures toward the same bed/wall/storage targets SettlementConstructionInitiative already computes (restated against the same ConstructionInitiativeTuning constants, since that class's own target arithmetic needs a Map.Map for wall-material choice and cannot be called without one), at a rate derived from citizen headcount and capped by the same MaxBlueprintsPerTick the map path already throttles itself to. Deliberately follows the existing convention of counting only Settlement.Citizens, never StatisticalPopulation, for the same reason the real class does — a Statistical citizen has no individual Pawn to swing a hammer. A no-op the instant a map exists, verified directly: nothing is read from or written to Structures for a settlement SettlementConstructionInitiative already owns. Tests: tests/SimWorld.Core.Tests/Building/AbstractSettlementConstructionTests.cs. Wired into Sim/Game.cs's WireTickHooks beside its map-path sibling: it arrived complete, unit-tested and unreachable — nothing in src/ called Tick(), so a settlement nobody had opened would still have built nothing for a whole run while its food and its medicine carried on working. Every test of it drove the class directly, so every test passed, and the repository's own wiring audit passed too. AbstractConstructionIsWiredTests runs the real loop and asserts the outcome instead; delete the wiring line and it is the only test in the suite that fails.",
+          "done": true
         }
       ]
     },
@@ -1783,6 +1793,11 @@
         {
           "id": "settlements.abstractproduction",
           "label": "CLOSED. Both halves of the label are false now. 'Nothing produces food abstractly' - Economy/SettlementSubsistence.cs:151 grows food into Settlement.Stores every interval for every settlement in the world, gated by biome forageability and capped by a larder ceiling. 'Only the player's founding band is provisioned, because the call sits in Game.NewGame' - ProvisionIfNewlyFounded moved to SettlementSubsistence.cs:405 and fires for every settlement on its first gated pass; Sim/Game.cs:296 documents the removal explicitly.",
+          "done": true
+        },
+        {
+          "id": "settlements.structures",
+          "label": "Settlement gains Structures, a Dictionary<ThingDef,int> ledger of completed buildings mirroring Stores exactly (SetStructureCount/AddStructure, same clamp-to-removed-key shape, same Scribe shape — LookMode.Def, LookMode.Value). The single accessor StructureCount(def) is the one source of truth: it reads a live InteriorMap directly when one exists and the ledger only when it does not, so the two numbers are never compared against each other and can never disagree — the ledger is never read while a map exists, only written to it (SyncStructureLedger, on the settlement's own SettlementTuning.CitizenMapSyncIntervalTicks cadence, tallying ThingRequestGroup.BuildingArtificial rather than naming individual Defs, since World may not reference Building's ConstructionThingDefOf/StoneWallMaterials to know which ones are walls or beds). SettlementRaidResolver.Muster is the first real consumer (see director.fortification). Tests: tests/SimWorld.Core.Tests/World/SettlementStructuresTests.cs.",
           "done": true
         }
       ]
