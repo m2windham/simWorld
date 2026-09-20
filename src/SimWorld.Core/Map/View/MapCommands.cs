@@ -158,7 +158,7 @@ namespace SimWorld.Map.View
     /// version of this question: a command applies immediately, on the caller's thread, as if the simulation
     /// had done it. See that class's doc for what would have to change first.
     /// </summary>
-    public static class MapCommands
+    public static partial class MapCommands
     {
         /// <summary>
         /// Places a Blueprint for <paramref name="defName"/> at <paramref name="cell"/> on the open
