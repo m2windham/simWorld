@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The world object a trade caravan arrives as (Economy.TraderCaravan). Its own file rather than an entry
+    appended to WorldObjects.xml: DefLoader.AddDirectory loads every XML file under a Def folder
+    recursively, so additive content never needs a shared file to be edited (CLAUDE.md).
+
+    Distinct from the Caravan def beside it, which is Caravans.Caravan — a band of pawns walking a path and
+    eating. A visiting trader is stock and a deadline; see TraderCaravan's own class doc.
+  -->
+
+  <WorldObjectDef>
+    <defName>TradeCaravan</defName>
+    <label>trade caravan</label>
+    <worldObjectClass>SimWorld.Economy.TraderCaravan</worldObjectClass>
+  </WorldObjectDef>
+
+</Defs>

@@ -78,7 +78,7 @@ namespace SimWorld.God.View
     /// the queue goes, with no host change beyond the wait. It does not have it yet, and a queue that only ever
     /// drains immediately would be a fiction that made the seam look safer than it is.
     /// </summary>
-    public static class GodCommands
+    public static partial class GodCommands
     {
         /// <summary>Issues the named edict. Refuses for exactly the reasons
         /// <see cref="EdictOption.Availability"/> reports, in the same words.</summary>

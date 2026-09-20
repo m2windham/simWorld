@@ -348,16 +348,41 @@ namespace SimWorld.Tests.AI
             // real regression in the measurement below.
             for (int i = 0; i < 2000; i++) pawn.pather.PatherTick();
 
-            long before = System.GC.GetAllocatedBytesForCurrentThread();
-            const int measuredTicks = 500;
-            for (int i = 0; i < measuredTicks; i++) pawn.pather.PatherTick();
-            long after = System.GC.GetAllocatedBytesForCurrentThread();
+            // MEASURED AS THE BEST OF SEVERAL WINDOWS, NOT ONE. A fixed warm-up count cannot guarantee tiered
+            // JIT has finished promoting: it guarantees a number of iterations, not a settled state. Under the
+            // full suite, where xUnit runs collections in parallel and the machine is loaded, a tier-1 rejit
+            // can land inside the measurement window and charge its allocations to this thread. That is
+            // exactly how this test failed in CI on a commit whose entire diff was one markdown file, while
+            // passing five for five locally in isolation.
+            //
+            // Taking the minimum is strictly stronger than widening the tolerance, which was the tempting fix
+            // and the wrong one -- the noise seen (8120 bytes) is most of the way to the ~24 bytes/tick this
+            // test exists to catch, so a tolerance loose enough to absorb it would no longer catch the
+            // regression. JIT noise only ever adds, and it does not recur in every window; a real per-tick
+            // allocation is in all of them. So the smallest window is the honest reading, and the per-window
+            // budget stays as tight as the original per-tick one.
+            const int windows = 5;
+            const int ticksPerWindow = 100;
+            long leastAllocated = long.MaxValue;
+            for (int w = 0; w < windows; w++)
+            {
+                long before = System.GC.GetAllocatedBytesForCurrentThread();
+                for (int i = 0; i < ticksPerWindow; i++) pawn.pather.PatherTick();
+                long after = System.GC.GetAllocatedBytesForCurrentThread();
+                leastAllocated = System.Math.Min(leastAllocated, after - before);
+            }
 
+            // Unchanged from the single-window version: the same 500 ticks are spent in total, so the claim
+            // that the path is still in progress this far in on a 300x300 map is the same claim as before.
             Assert.True(pawn.pather.Moving, "The path should still be in progress this far in on a 300x300 map.");
-            // A standalone (non-test-host) run of this exact scenario measures exactly 0 bytes; a generous
-            // tolerance here absorbs test-host JIT/GC noise without masking the ~24 bytes/tick this caught
-            // before ThingGrid.MoveSingleCell existed (a CellRect.Cells iterator allocation on every move).
-            Assert.True(after - before < measuredTicks * 4, $"Expected near-zero allocation, got {after - before} bytes over {measuredTicks} ticks.");
+            // A standalone (non-test-host) run of this exact scenario measures exactly 0 bytes. The ~24
+            // bytes/tick this caught before ThingGrid.MoveSingleCell existed (a CellRect.Cells iterator
+            // allocation on every move) would be 2400 bytes in every window, against a budget of 400.
+            Assert.True(
+                leastAllocated < ticksPerWindow * 4,
+                $"Expected near-zero allocation, got {leastAllocated} bytes in the quietest of {windows} "
+                + $"windows of {ticksPerWindow} ticks. A per-tick allocation shows up in every window; "
+                + "JIT noise does not.");
         }
 
         // ---- Toils / JobDriver state machine ----

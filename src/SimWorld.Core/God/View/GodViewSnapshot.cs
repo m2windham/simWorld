@@ -40,7 +40,7 @@ namespace SimWorld.God.View
     /// one — a detail query, not a civilization view. No map or rendering data either: what a settlement's
     /// interior looks like belongs to the map layer, and this snapshot only reports whether one exists yet.
     /// </summary>
-    public sealed class GodViewSnapshot
+    public sealed partial class GodViewSnapshot
     {
         /// <summary>How many chronicle lines <see cref="Capture()"/> carries when the caller does not say.
         /// Enough to read as a recent history, few enough that a snapshot stays cheap to take every time the

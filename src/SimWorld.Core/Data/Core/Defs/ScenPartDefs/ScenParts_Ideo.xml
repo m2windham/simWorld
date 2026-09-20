@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    ScenPart_StartingIdeo's own ScenPartDef, in its own file rather than appended to ScenParts.xml
+    (CLAUDE.md: "a new file cannot conflict"). Assigns the civilization's starting belief system — see
+    Scenario/ScenPart_StartingIdeo.cs for why this is the first thing in src/ that ever writes `new Ideo(`.
+  -->
+
+  <ScenPartDef>
+    <defName>StartingIdeo</defName>
+    <label>starting ideoligion</label>
+    <category>StartingImportant</category>
+    <scenPartClass>SimWorld.Scenario.ScenPart_StartingIdeo</scenPartClass>
+    <summaryPriority>85</summaryPriority>
+  </ScenPartDef>
+
+</Defs>

@@ -28,7 +28,10 @@ namespace SimWorld.Tests.Scenario
         public void Scenario_content_loads_with_expected_counts_and_defOfs()
         {
             Assert.Empty(Content.Result.Errors);
-            Assert.Equal(9, DefDatabase<ScenPartDef>.DefCount);
+            // 10 since ScenPart_StartingIdeo joined them (Social/Ideology's own ScenPart, wiring Game.Ideo
+            // into every shipped scenario — see ScenPart_StartingIdeo's own doc for why nothing until it ever
+            // called `new Ideo(`).
+            Assert.Equal(10, DefDatabase<ScenPartDef>.DefCount);
             Assert.Equal(3, DefDatabase<global::SimWorld.Scenario.ScenarioDef>.DefCount);
 
             Assert.NotNull(ScenarioDefOf.TribalStart);
