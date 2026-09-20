@@ -1913,6 +1913,11 @@
           "id": "god.opensettlement",
           "label": "GodCommands.OpenSettlement/GenerateSettlementInterior close the seam: the host is told to bind to God/View and never reach into Game, and God/View had no way to generate an interior map at all — so a host could focus a town, hold attention with no map, and have raids resolve mapless forever, with nothing in the seam to do about it. Open focuses then enters, in that order: only a Full-tier citizen is ever placed on an interior and only attention holds an ordinary citizen at Full, so entering first draws an empty town that self-corrects on the next sync sweep — a failure that reads as a rendering glitch. A test proves the order matters by reversing it",
           "done": true
+        },
+        {
+          "id": "god.read-model-losses",
+          "label": "GodViewSnapshot.Losses (LossSummary): phase 2's measurement ledgers — Storyteller.deaths (DeathLedger) and Storyteller.resourceImpact (ResourceImpactLedger) — surfaced onto the read model rather than left invisible behind Find.Storyteller. DeathsByCause (DeathCause enum + count) and DeathsBySource/NutritionDeniedBySource/StructuresDestroyedBySource (source defName + count, e.g. \"ManhunterPack\", \"Drought\", \"Earthquake\", \"Disease_Plague\") plus each ledger's own running total (TotalDeaths, TotalNutritionDenied, TotalStructuresDestroyed), read straight off the ledgers with nothing recomputed. Sparse throughout, matching both ledgers: a cause or source that has never acted is absent, never a zero row. DeathCause is passed as the enum itself, not a string — it is a bare value type with no worker to reach, so the defName/never-a-Def handle rule this seam exists for has nothing to say about it. A dedicated structural test (GodViewLossTests, since the read model's own The_command_surface_is_the_only_way_in checks only EdictOption and GodViewSnapshot's immediate properties, not a nested type) walks LossSummary and its line types for a Def, a live Pawn or a live Settlement.",
+          "done": true
         }
       ]
     },
