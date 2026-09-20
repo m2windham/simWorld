@@ -4,7 +4,15 @@ The single most consistent finding from researching this genre, and the design
 that follows from it. This is a decision record, not a plan — the mechanism it
 describes is not built yet, and the reasoning matters more than the shape.
 
-> ## ⚠ Status: §8 step 1 ran, and it falsified the first tension
+> ## ⚠ Status: superseded by [`the-loop.md`](the-loop.md), after §8 step 1 falsified it
+>
+> **Do not build from this document.** The renewal mechanism is the storyteller, scaled to
+> your own growth — RimWorld's model, already ported as
+> `StorytellerUtility.DefaultThreatPointsNow`. Tensions and prospects are retired.
+> `the-loop.md` is the current decision record.
+>
+> The measurement that led there is below and is still worth reading, because it is the
+> reason the design changed rather than an opinion about it.
 >
 > Relative standing — the candidate this document proposed building on — is
 > **mathematically constant** after a run's opening years. Measured over 240
@@ -286,3 +294,11 @@ abstract threat resolver. **This is more urgent than goal renewal**, because a
 renewal layer offering occasions to a civilization that cannot survive its own
 first decade is furniture. It was found only because measuring one thing honestly
 required a subject that lasts, and there wasn't one.
+
+> **Closed as not-a-bug by [`the-loop.md`](the-loop.md).** The sentence it contradicts is
+> retired along with the rest of that framing: with one settlement there is nothing you own
+> that runs unwatched, and in RimWorld — the one benchmark game with more than one colony —
+> an unvisited colony genuinely can be lost. The numbers above are still a true reading of
+> `SettlementRaidResolver` against an unattended settlement; they are simply no longer
+> measuring a requirement. What *is* now worth measuring is the same settlement **watched
+> and played**, which is item 1 of `the-loop.md` §5.

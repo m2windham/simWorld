@@ -6,7 +6,23 @@ things that go wrong, and — the harder half — makes their cost measurable.
 This document records decisions that were previously only in commit messages and pull
 request descriptions. It is a record of what was decided and why, not a plan.
 
+> ## ⚠ Status: the framing in "The idea the game rests on" is retired
+>
+> SimWorld is **one settlement**, decided in [`the-loop.md`](the-loop.md) after
+> benchmarking Cities: Skylines, Dwarf Fortress and Nova Roma — all three of which are
+> single-settlement. There are no unwatched settlements you own, so "looking is the scarce
+> resource" and "a settlement that is well built must be genuinely fine unwatched" no
+> longer describe the game. `the-loop.md` supersedes this section where they disagree.
+>
+> **Everything below that section survives intact**, and is more useful than it was: the
+> incident effects, the ablation rule, the attribution ledger and the measurement
+> discipline are how pressure gets applied and counted at *any* scale. Only the
+> justification changed, not the machinery.
+
 ## The idea the game rests on
+
+> **Retired — see the status block above.** Left as written because the ablation rule and
+> the attribution discipline in the rest of this document were derived here.
 
 A god can look at one place at a time. Looking is the scarce resource.
 
