@@ -137,6 +137,33 @@ If the team decides against URP, that is a legitimate call — write down why, i
 the repository, before proceeding. This project's rule is that decisions are
 recorded, not improvised.
 
+### Lane zero owns `MapRenderer.cs`, and here is the exact reason
+
+This was missed when the lane was first scoped, and it would have cost a cycle.
+`MapRenderer.cs` does not use materials from the project — it builds them in
+code, from three Built-in pipeline shaders:
+
+| Line | Call | What it draws |
+| --- | --- | --- |
+| 214 | `Shader.Find("Unlit/Texture")` | Terrain |
+| 248 | `Shader.Find("Unlit/Transparent")` | Roofs |
+| 563 | `Shader.Find("Standard")`, `enableInstancing = true` | Every instanced thing — the ~13,000 |
+
+**`"Standard"` does not exist in URP.** `Shader.Find` returns null, `new
+Material(null)` yields the error material, and every instanced object on the map
+renders magenta. That is not a subtle degradation, and nothing catches it except
+looking at the screen — which is the other half of why §7 makes a screenshot the
+deliverable.
+
+So the migration is not confined to `ProjectSettings/` and the pipeline asset.
+Lane zero must also hold `MapRenderer.cs` for its duration, which makes it the
+one writer for the file §6 already names as the most contested in the
+repository. No other lane may touch it until lane zero merges.
+
+The replacement at line 563 has to keep instancing: URP's own Lit shader
+supports GPU instancing, and a Shader Graph replacement must have it enabled
+explicitly. That is invariant 1 restated at the exact line where it bites.
+
 ---
 
 ## 5. `VisualRegistry` is your gift; do not squander it
