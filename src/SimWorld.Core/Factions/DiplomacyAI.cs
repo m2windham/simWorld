@@ -177,8 +177,13 @@ namespace SimWorld.Factions
         // ---- shared: strength reading and the deterministic roll ----
 
         /// <summary>Total population across every settlement <paramref name="faction"/> holds — see the class
-        /// doc's note on why population stands in for military strength here.</summary>
-        private static int StrengthOf(Faction faction, CoreWorld world)
+        /// doc's note on why population stands in for military strength here.
+        /// <para/>
+        /// Public because <see cref="Director.StandingReader"/> reads the same civilization-scale strength for
+        /// its own (decision-free) purposes, and a second reading of "how strong is this civilization" would
+        /// mean the world acted on one number and reported another. The class doc's limitation travels with
+        /// it: every caller inherits "strength is population" and the one place to fix that is here.</summary>
+        public static int StrengthOf(Faction faction, CoreWorld world)
         {
             int total = 0;
             foreach (CoreSettlement settlement in world.Settlements)
