@@ -101,15 +101,4 @@ namespace SimWorld.Director
     {
         protected override bool TryExecuteWorker(IncidentParms parms) => true;
     }
-
-    /// <summary>
-    /// Raids and other point-scaled threats. Squad composition and tactic selection from
-    /// <see cref="IncidentParms.points"/> and tech level land with the Factions/Combat systems; until then this
-    /// only validates that there are points to spend so the chronicle can note a threat was due.
-    /// </summary>
-    /// <summary>Placeholder until pawn generation exists: records that a wanderer would have joined the civilization.</summary>
-    public sealed class IncidentWorker_WandererJoin : IncidentWorker
-    {
-        protected override bool TryExecuteWorker(IncidentParms parms) => true;
-    }
 }
