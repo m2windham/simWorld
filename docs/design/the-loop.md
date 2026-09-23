@@ -79,6 +79,32 @@ In order, and deliberately short:
    its own systems. Ours should strain food, hauling, housing and mood as it
    grows. Much of this exists; whether it *binds* — whether scale actually
    creates difficulty — is measurable and unmeasured.
+
+   On housing, two facts are already in the code and neither was put there with
+   this decision in mind. `SettlementConstructionInitiative` builds exactly
+   three things: a `Bed` per citizen (uncapped, so it scales), walls at
+   `ceil(citizens × 2)` — **capped at 40 whatever the population**
+   (`ConstructionInitiativeTuning.MaxWallShelterCount`) — and a `StorageHut`
+   per 50 stored goods. The wall cap has a stated and reasonable rationale: it
+   stops one civilization-scale pass trying to wall in an entire population. But
+   with one settlement that rationale is much weaker, and the effect is that the
+   **built environment stops growing at about twenty citizens while the
+   population does not.** A settlement of 150 looks like a settlement of 20 with
+   more beds in it.
+
+   There is also **no dwelling at all** — no `House`, no room, nothing between a
+   bed and a wall. This surfaced from the host side: sixteen dwelling models
+   shipped there and resolve to no `defName` the core has
+   (`simWorld.Host` [#9](https://github.com/m2windham/simWorld.Host/pull/9)).
+   That is a modelling lane aiming at a concept this core does not have, and
+   it is worth asking whether the core is the side that is wrong. A settlement
+   you watch grow is exactly the game where seeing a house go up *is* the
+   progress — it is what Timberborn and Banished trade on — and it is where
+   mood, rest and ownership would naturally attach. **Open question, not a
+   decision:** a multi-cell building is not representable today (`ThingDef.size`
+   defaults to 1×1 and no shipped content sets a footprint), so this costs more
+   than content. Measure whether housing binds before deciding it needs a new
+   kind of thing.
 3. **Then look at whether the loop is fun**, with the bench's own instruments:
    curated moments, days with anything happening, how far mood and food swing.
    Flat is the failure state.
