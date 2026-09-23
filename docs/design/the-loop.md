@@ -80,17 +80,39 @@ In order, and deliberately short:
    grows. Much of this exists; whether it *binds* — whether scale actually
    creates difficulty — is measurable and unmeasured.
 
-   On housing, two facts are already in the code and neither was put there with
-   this decision in mind. `SettlementConstructionInitiative` builds exactly
-   three things: a `Bed` per citizen (uncapped, so it scales), walls at
-   `ceil(citizens × 2)` — **capped at 40 whatever the population**
-   (`ConstructionInitiativeTuning.MaxWallShelterCount`) — and a `StorageHut`
-   per 50 stored goods. The wall cap has a stated and reasonable rationale: it
-   stops one civilization-scale pass trying to wall in an entire population. But
-   with one settlement that rationale is much weaker, and the effect is that the
-   **built environment stops growing at about twenty citizens while the
-   population does not.** A settlement of 150 looks like a settlement of 20 with
-   more beds in it.
+   On housing, the code already answers this and the answer is worse than a
+   tuning problem. `SettlementConstructionInitiative` builds exactly three
+   things — a `Bed` per citizen, walls at `ceil(citizens × 2)` capped at 40
+   (`ConstructionInitiativeTuning.MaxWallShelterCount`), and a `StorageHut` per
+   50 stored goods — and it places every one of them at a **uniformly random
+   cell on the whole map**:
+
+   ```csharp
+   var candidate = new IntVec3(Rand.Range(0, map.Size.x), 0, Rand.Range(0, map.Size.z));
+   if (GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _))
+   ```
+
+   `CanPlaceBlueprintAt` checks bounds, terrain affordance and occupancy.
+   Nothing else. There is no anchor, no settlement centre, and **no reference to
+   the home area at all**, though one exists in this codebase.
+
+   So the settlement never builds a structure. It scatters forty isolated wall
+   tiles and one bed per citizen across forty thousand cells. Nothing encloses
+   anything; the beds stand in open wilderness. The file's own comment reads "a
+   bed for a person before a wall around them" — no wall is ever around
+   anything.
+
+   This is the project's recurring shape once more. The **need** computation is
+   careful and tested: targets, caps, edict bias, shortfall counting against
+   built-or-planned, a stable sort. The **placement** — the half that decides
+   whether any of it becomes a place — is a random coordinate. It may have been
+   a knowing simplification; it is not one the game can keep, because what the
+   player watches is this one settlement, and growth currently produces
+   scattered tiles rather than a village.
+
+   The wall cap is a footnote next to it, and reads differently now:
+   `MaxWallShelterCount`'s comment worries about "walling off its entire
+   population's worth of perimeter." There is no perimeter.
 
    There is also **no dwelling at all** — no `House`, no room, nothing between a
    bed and a wall. This surfaced from the host side: sixteen dwelling models
