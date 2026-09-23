@@ -87,6 +87,9 @@ namespace SimWorld.Bench
                 case "tension":
                     TensionSuite.Run(opt);
                     break;
+                case "storyteller":
+                    StorytellerSuite.Run(opt);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -268,9 +271,9 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | storyteller | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
-  --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc, probe, tension.
+  --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc, probe, tension, storyteller.
                           For --suite tension the span is read in years: 60 days to the year, which is also
                           its sample interval, so --days 12000 is a 200-year run.
   --seed <N>              RandomStream seed (default 12345).
@@ -290,10 +293,10 @@ OPTIONS
   --solo <true|false>     for --suite tension: start the player alone and let rivals emerge (default true,
                           the same world shape --suite probe uses), or generate a world already full of
                           rival civilizations (false).
-  --band <N>              for --suite tension: founding band size (default 25, the same band --suite probe
-                          founds with). A knob rather than a constant because that band does not survive a
-                          long unwatched run — see that suite's own doc. Spec §5b.3 fixes the legal range at
-                          20-40; outside it the founder throws.
+  --band <N>              for --suite tension and --suite storyteller: founding band size (default 25, the
+                          same band --suite probe founds with). A knob rather than a constant because that
+                          band does not survive a long unwatched run — see that suite's own doc. Spec §5b.3
+                          fixes the legal range at 20-40; outside it the founder throws.
   --help, -h              show this text.
 
 SUITES
@@ -329,6 +332,15 @@ SUITES
                 tension before anything is built on it: does it move, does its rate of change decay across the
                 run's thirds, does it survive the world settling, is it deterministic. An instrument only —
                 nothing in the simulation acts on the reading. Not in `all`: slow, and run on purpose.
+  storyteller   OUTCOMES, not time: one watched, played settlement at founding scale, ticked for --days, with
+                StorytellerUtility.DefaultThreatPointsNow read once per in-game day and every multiplier in it
+                reported as its own column — so no number in the table is a black box — plus every incident
+                the storyteller fired, whether its worker returned true, and what it actually did (a stub
+                worker that returns true while doing nothing is reported as such, detected from its IL rather
+                than from a list of def names). Finally the shape of the run: how far the points moved, how
+                often anything happened, the longest quiet stretch, and --suite probe's own ""was it
+                interesting"" columns beside them. It changes no tuning constant and is not a target. Not in
+                `all`: slow, and run on purpose.
   all           Runs every suite in sequence (scaling first; attribution's N is derived from its result).
 
 EXAMPLES
@@ -336,6 +348,7 @@ EXAMPLES
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- --suite all
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- --suite probe --days 6 --seed 12345
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- --suite tension --days 12000 --seed 12345
+  dotnet run -c Release --project tools/bench/SimWorld.Bench -- --suite storyteller --days 60 --seed 12345
 ");
         }
     }
