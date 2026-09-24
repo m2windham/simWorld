@@ -31,9 +31,12 @@ namespace SimWorld.Health
     /// injury death and an infection still a disease death on the ledger's other axis. That axis answers a
     /// different question, and it was already right.
     ///
-    /// <para/><b>It under-claims, never over-claims.</b> A wound nobody sent — a brawl, a fall, a native
-    /// animal — carries null, and so does whatever it causes. Where two sources feed one hediff, the larger
-    /// share wins, so a raid is never credited with a death its wound was the lesser part of.
+    /// <para/><b>It carries provenance; it does not invent it.</b> A wound nobody sent — a brawl, a trap, a
+    /// native animal — carries null, and so does whatever it causes. Where two sources feed one hediff, the one
+    /// feeding it more wins: the larger blow for a merged wound, the heavier bleeder at that moment for blood
+    /// loss. That last is a judgement, not a share: blood loss keeps no tally per source, so a death is
+    /// credited to what was bleeding into it when it became lethal, and a lesser, earlier raid wound that
+    /// had already been tended claims nothing.
     /// </summary>
     public static class WoundProvenance
     {
