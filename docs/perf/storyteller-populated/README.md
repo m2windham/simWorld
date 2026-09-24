@@ -8,6 +8,13 @@ Every earlier storyteller reading was taken in a world with **no enemies**: the
 suite hardcoded `soloStart`, so `RaidEnemy` could not fire. These are the first
 runs in the world a player actually plays.
 
+> **These numbers belong to commit `959f1f2`, not to whatever is current.** A
+> seed names a world only for a given tree: any change to how many random draws
+> something takes shifts every roll after it. The construction carry tracker,
+> merged right after these runs, did exactly that — on the tree that followed,
+> seed 12345's first raid comes on day 17 at 623 points, not day 12. Seed 777
+> happened to reproduce. Re-run rather than compare against these tables.
+
 | File | World | Seed | Days |
 | :--- | :--- | ---: | ---: |
 | `pop-12345.txt` | populated | 12345 | 60 |
