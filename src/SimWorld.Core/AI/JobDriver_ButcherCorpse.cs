@@ -10,8 +10,9 @@ namespace SimWorld.AI
     /// <c>JobDriver_DoBill</c> hauling a corpse ingredient to a butcher table and working a
     /// <c>ButcherCorpseFlesh</c> bill). Target A is the corpse, target B the bench.
     /// <para/>
-    /// <b>Carrying, with nothing to carry it in.</b> This port has no carry tracker, so the corpse is taken
-    /// off the map at the pickup toil and put back on at the bench — the same abstract carry
+    /// <b>Carrying, without the carry tracker.</b> This driver predates <see cref="Pawns.Pawn_CarryTracker"/>
+    /// and keeps its own field instead, so the corpse is taken off the map at the pickup toil and put back on
+    /// at the bench — the same abstract carry
     /// <see cref="JobDriver_HaulToCell"/> and <see cref="JobDriver_Warden_Feed"/> already use. The difference
     /// that matters is that a corpse is not interchangeable with another of its def (it holds a specific
     /// person or animal), so the real Thing travels: nothing is destroyed and re-created, and

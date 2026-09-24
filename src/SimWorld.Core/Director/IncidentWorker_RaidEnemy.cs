@@ -104,6 +104,16 @@ namespace SimWorld.Director
             List<Pawn> pawns = PawnGroupMakerUtility.GeneratePawns(groupParms);
             if (pawns.Count == 0) return false;
 
+            // Every raider remembers that this incident put it here, exactly as IncidentWorker_ManhunterPack's
+            // animals do — and before either path below, because both read it. On a watched map a citizen shot
+            // dead is credited through the killer (StorytellerDeathEvents.SourceOf), and a citizen who is only
+            // wounded carries the raid on the wound itself (Hediff.sourceIncident, stamped from this field by
+            // DamageWorker_AddInjury), so bleeding out or dying of the infection a day later is still the
+            // raid's doing. Unwatched, SettlementRaidResolver credits its kills to whatever the squad says it
+            // came from. Without this line every one of those read null, and a raid that wiped out a
+            // settlement was reported as having killed nobody (docs/perf/storyteller-populated).
+            for (int i = 0; i < pawns.Count; i++) pawns[i].spawnedByIncident = def?.defName;
+
             // Which settlement the raid falls on: a civilization of several towns is raided somewhere in
             // particular, weighted by where its people are. Selection is deliberately left alone — it still
             // reaches every settlement, watched or not — because the fix for "raids land where nobody is

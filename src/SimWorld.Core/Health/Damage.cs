@@ -157,6 +157,12 @@ namespace SimWorld.Health
 
             HediffDef hediffDef = ChooseHediffDef(damageDef, part);
             var injury = (Hediff_Injury)HediffMaker.MakeHediff(hediffDef, pawn, part);
+
+            // The wound remembers who sent the one who dealt it, set before AddHediff because AddHediff is
+            // where a lethal blow kills. RimWorld records the weapon on the injury at this same point; what a
+            // death days later needs is the incident, and this is the last moment anything knows it. See
+            // WoundProvenance.
+            injury.sourceIncident = WoundProvenance.OfBlow(dinfo);
             injury.Severity = amount;
             injury.TryGetComp<HediffComp_GetsPermanent>()?.PreFinalizeInjury();
 

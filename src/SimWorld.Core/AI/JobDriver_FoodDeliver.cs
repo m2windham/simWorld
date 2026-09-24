@@ -18,14 +18,15 @@ namespace SimWorld.AI
     /// the nearest food in the room it is standing in. See <see cref="WorkGiver_Warden_DeliverFood"/>'s doc
     /// for why that is the whole value of this job in a port that confines nobody.
     /// <para/>
-    /// <b>Carrying is modelled abstractly</b>, exactly as <see cref="JobDriver_HaulToCell"/>,
-    /// <see cref="JobDriver_Warden_Feed"/> and <see cref="Building.JobDriver_HaulToBuildingSite"/> already do
-    /// it: no carry-tracker exists in this codebase, so the meal leaves the source cell when the pawn reaches
-    /// it and nothing visibly follows the pawn in between. The whole-Thing-versus-split distinction is
+    /// <b>Carrying is modelled abstractly</b>, exactly as <see cref="JobDriver_HaulToCell"/> and
+    /// <see cref="JobDriver_Warden_Feed"/> do it: this driver predates <see cref="Pawns.Pawn_CarryTracker"/> and
+    /// has not been moved onto it, so the meal leaves the source cell when the pawn reaches it and nothing
+    /// visibly follows the pawn in between. The whole-Thing-versus-split distinction is
     /// <see cref="JobDriver_HaulToCell"/>'s, kept for the same reason: a one-meal stack travels as the real
     /// object (so a <see cref="Things.CompQuality"/> or a damaged item arrives as itself), and only a
-    /// genuinely stackable split is rebuilt by def at the far end. An interrupted delivery drops the meal at
-    /// the pawn's feet (<see cref="Notify_Ending"/>) rather than destroying it.
+    /// genuinely stackable split is rebuilt by def at the far end. An interrupted delivery of a whole one-meal
+    /// stack drops the meal at the pawn's feet (<see cref="Notify_Ending"/>) rather than destroying it; a meal
+    /// split off a bigger stack is lost, as <see cref="JobDriver_HaulToCell"/>'s split count is.
     /// </summary>
     public sealed class JobDriver_FoodDeliver : JobDriver
     {

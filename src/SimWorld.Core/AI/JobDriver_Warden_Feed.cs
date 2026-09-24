@@ -6,10 +6,10 @@ namespace SimWorld.AI
 {
     /// <summary>
     /// Carries one food item to a downed prisoner and feeds them directly (RimWorld: a trim of
-    /// <c>RimWorld.JobDriver_FeedPatient</c> — no <c>ThingOwner</c>/carry-tracker exists in this codebase yet,
-    /// so "carrying" is modelled the same abstract way <see cref="SimWorld.Building.JobDriver_HaulToBuildingSite"/>
-    /// already does: the pawn visits the food, then the prisoner, and the food's stack simply drops at the
-    /// end rather than visibly following the pawn in between). Target A is the food, target B the prisoner.
+    /// <c>RimWorld.JobDriver_FeedPatient</c> — this driver does not carry through
+    /// <see cref="SimWorld.Pawns.Pawn_CarryTracker"/>, so "carrying" is modelled abstractly: the pawn visits the
+    /// food, then the prisoner, and the food's stack simply drops at the end rather than visibly following the
+    /// pawn in between). Target A is the food, target B the prisoner.
     /// </summary>
     public sealed class JobDriver_Warden_Feed : JobDriver
     {

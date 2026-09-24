@@ -5,8 +5,8 @@ using SimWorld.Things;
 namespace SimWorld.AI
 {
     /// <summary>
-    /// Carries a downed patient to a bed (RimWorld: a trim of <c>RimWorld.JobDriver_TakeToBed</c> — no
-    /// <c>ThingOwner</c>/carry-tracker exists in this codebase yet, so "carrying" is modelled the same
+    /// Carries a downed patient to a bed (RimWorld: a trim of <c>RimWorld.JobDriver_TakeToBed</c> — this
+    /// driver does not carry through <see cref="Pawns.Pawn_CarryTracker"/>, so "carrying" is modelled the same
     /// abstract way <see cref="JobDriver_Warden_Feed"/> already does for food: the rescuer visits the downed
     /// patient, then walks to the bed, and the patient's own <see cref="Thing.Position"/> jumps there the
     /// moment the rescuer arrives — nothing visibly follows the rescuer in between). Target A is the patient,

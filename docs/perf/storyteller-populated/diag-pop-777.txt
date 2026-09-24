@@ -1,0 +1,138 @@
+day | pop | points | deaths by cause | hostiles on map: standing/downed/dead | manhunters alive | prisoners held | citizens downed
+0 | 25 | 262.5 | - | 0/0/0 | 0 | 0 | 0
+1 | 25 | 281.4 | - | 0/0/0 | 0 | 0 | 0
+2 | 25 | 303.4 | - | 0/0/0 | 0 | 0 | 2
+3 | 25 | 326.8 | - | 0/0/0 | 0 | 0 | 1
+  [day 4 tick 210000] FIRED TraderCaravanArrival points=0.0
+  [day 4 tick 240000] FIRED ManhunterPack points=350.5
+4 | 25 | 350.7 | - | 0/0/0 | 4 | 0 | 0
+5 | 25 | 375.0 | - | 0/0/0 | 0 | 0 | 0
+6 | 25 | 399.1 | - | 0/0/0 | 0 | 0 | 0
+7 | 25 | 425.1 | - | 0/0/0 | 0 | 0 | 0
+8 | 25 | 451.5 | - | 0/0/0 | 0 | 0 | 0
+  [day 9 tick 520000] FIRED TraderCaravanArrival points=0.0
+9 | 25 | 478.5 | - | 0/0/0 | 0 | 0 | 0
+  [day 10 tick 589000] FIRED VisitorGroup points=0.0
+10 | 25 | 504.6 | - | 0/0/0 | 0 | 0 | 0
+11 | 25 | 523.6 | - | 0/0/0 | 0 | 0 | 1
+12 | 25 | 544.2 | - | 0/0/0 | 0 | 0 | 1
+13 | 25 | 564.5 | - | 0/0/0 | 0 | 0 | 0
+14 | 25 | 580.8 | - | 0/0/0 | 0 | 0 | 0
+15 | 25 | 605.0 | - | 0/0/0 | 0 | 0 | 0
+16 | 25 | 626.0 | - | 0/0/0 | 0 | 0 | 0
+17 | 25 | 646.2 | - | 0/0/0 | 0 | 0 | 0
+18 | 25 | 668.0 | - | 0/0/0 | 0 | 0 | 0
+19 | 25 | 687.6 | - | 0/0/0 | 0 | 0 | 0
+20 | 25 | 710.6 | - | 0/0/0 | 0 | 0 | 0
+21 | 25 | 723.1 | - | 0/0/0 | 0 | 0 | 0
+22 | 25 | 736.1 | - | 0/0/0 | 0 | 0 | 0
+23 | 25 | 743.1 | - | 0/0/0 | 0 | 0 | 0
+24 | 25 | 759.1 | - | 0/0/0 | 0 | 0 | 0
+25 | 25 | 774.9 | - | 0/0/0 | 0 | 0 | 0
+26 | 25 | 788.1 | - | 0/0/0 | 0 | 0 | 0
+27 | 25 | 792.4 | - | 0/0/0 | 0 | 0 | 0
+  [day 28 tick 1661771] LETTER Death: Yara :: Yara has died of infection (extreme).
+28 | 24 | 780.4 | Disease=1 | 0/0/0 | 0 | 0 | 0
+  [day 29 tick 1683000] FIRED Eclipse points=0.0
+29 | 24 | 816.0 | Disease=1 | 0/0/0 | 0 | 0 | 0
+  [day 30 tick 1769000] FIRED RaidEnemy points=817.7
+  [day 30 tick 1771349] LETTER Death: Kade :: Kade has been beaten to death.
+  [day 30 tick 1772121] LETTER Death: Harlan :: Harlan has been cut to death.
+  [day 30 tick 1777762] LETTER Death: muffalo5 :: muffalo5 has been cut to death.
+  [day 30 tick 1786562] LETTER Death: Oren :: Oren has died of blood loss (severe).
+30 | 21 | 580.2 | Disease=1,Injury=3 | 0/1/0 | 0 | 0 | 15
+  [day 31 tick 1821000] FIRED ManhunterPack points=588.0
+31 | 21 | 613.5 | Disease=1,Injury=3 | 0/0/0 | 0 | 0 | 2
+  [day 32 tick 1863202] LETTER Death: Senna :: Senna has died of infection (extreme).
+  [day 32 tick 1874869] LETTER Death: Elowen :: Elowen has died of infection (extreme).
+  [day 32 tick 1895297] LETTER Death: Vance :: Vance has died of infection (extreme).
+  [day 32 tick 1909000] FIRED ColdSnap points=0.0
+32 | 18 | 551.6 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 1
+33 | 18 | 582.8 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 0
+34 | 18 | 601.0 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 0
+35 | 18 | 609.9 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 0
+36 | 18 | 618.5 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 0
+37 | 18 | 628.3 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 0
+38 | 18 | 638.5 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 0
+39 | 18 | 648.4 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 0
+40 | 18 | 659.1 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 0
+41 | 18 | 674.0 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 0
+  [day 42 tick 2502000] FIRED Drought points=0.0
+42 | 18 | 722.8 | Disease=4,Injury=3 | 0/0/0 | 0 | 0 | 1
+  [day 43 tick 2556607] LETTER Death: Rosalind :: Rosalind has died of infection (extreme).
+43 | 17 | 703.8 | Disease=5,Injury=3 | 0/0/0 | 0 | 0 | 0
+44 | 17 | 708.8 | Disease=5,Injury=3 | 0/0/0 | 0 | 0 | 0
+45 | 17 | 716.0 | Disease=5,Injury=3 | 0/0/0 | 0 | 0 | 0
+  [day 46 tick 2758000] FIRED RaidEnemy points=722.3
+  [day 46 tick 2758440] LETTER Death: husky16 :: husky16 has been cut to death.
+46 | 17 | 695.5 | Disease=5,Injury=3 | 15/2/0 | 0 | 0 | 6
+  [day 47 tick 2760311] LETTER Death: Kaia :: Kaia has been beaten to death.
+  [day 47 tick 2764516] LETTER Death: chicken15 :: chicken15 has been cut to death.
+  [day 47 tick 2772884] LETTER Death: husky17 :: husky17 has died of blood loss (severe).
+  [day 47 tick 2774295] LETTER Death: Aaron :: Aaron has died of blood loss (severe).
+  [day 47 tick 2776585] LETTER Death: husky2 :: husky2 has died of blood loss (extreme).
+  [day 47 tick 2780896] LETTER Death: Vance :: Vance has died of blood loss (extreme).
+  [day 47 tick 2782425] LETTER Death: Yorick :: Yorick has died of blood loss (extreme).
+  [day 47 tick 2782817] LETTER Death: Giselle :: Giselle has died of blood loss (extreme).
+  [day 47 tick 2783477] LETTER Death: Aaron :: Aaron has died of infection (extreme).
+  [day 47 tick 2784046] LETTER Death: Tobin :: Tobin has died of blood loss (extreme).
+  [day 47 tick 2784247] LETTER Death: Idris :: Idris has died of blood loss (severe).
+  [day 47 tick 2784496] LETTER Death: Jasper :: Jasper has died of blood loss (extreme).
+  [day 47 tick 2785072] LETTER Death: Fira :: Fira has died of blood loss (extreme).
+  [day 47 tick 2786000] FIRED RaidEnemy points=262.0
+  [day 47 tick 2788496] LETTER Death: husky7 :: husky7 has died of blood loss (extreme).
+  [day 47 tick 2794193] LETTER Death: muffalo4 :: muffalo4 has died of blood loss (extreme).
+  [day 47 tick 2805008] LETTER Death: Alden :: Alden has died of blood loss (extreme).
+47 | 6 | 244.8 | Disease=6,Injury=13 | 0/1/0 | 0 | 0 | 3
+48 | 6 | 258.8 | Disease=6,Injury=13 | 0/1/0 | 0 | 0 | 1
+49 | 6 | 258.8 | Disease=6,Injury=13 | 0/1/0 | 0 | 0 | 0
+50 | 6 | 269.1 | Disease=6,Injury=13 | 0/1/0 | 0 | 0 | 1
+  [day 51 tick 3012000] FIRED WandererJoin points=0.0
+  [day 51 tick 3012627] LETTER Death: Rosalind :: Rosalind has died of infection (extreme).
+51 | 6 | 287.6 | Disease=7,Injury=13 | 0/1/0 | 0 | 0 | 0
+  [day 52 tick 3067000] FIRED Eclipse points=0.0
+52 | 6 | 295.7 | Disease=7,Injury=13 | 0/1/0 | 0 | 0 | 0
+53 | 6 | 301.2 | Disease=7,Injury=13 | 0/0/0 | 0 | 0 | 0
+54 | 6 | 305.1 | Disease=7,Injury=13 | 0/0/0 | 0 | 0 | 0
+  [day 55 tick 3244000] FIRED ManhunterPack points=305.2
+55 | 6 | 306.4 | Disease=7,Injury=13 | 0/0/0 | 4 | 0 | 5
+  [day 56 tick 3321000] FIRED RaidEnemy points=309.6
+  [day 56 tick 3325755] LETTER Death: Marisol :: Marisol has been beaten to death.
+56 | 5 | 229.9 | Disease=7,Injury=14 | 0/0/0 | 4 | 0 | 4
+57 | 5 | 245.0 | Disease=7,Injury=14 | 0/0/0 | 4 | 0 | 1
+  [day 58 tick 3435179] LETTER Death: muffalo13 :: muffalo13 has died of infection (extreme).
+  [day 58 tick 3443472] LETTER Death: Ursa :: Ursa has died of infection (extreme).
+58 | 4 | 214.6 | Disease=8,Injury=14 | 0/0/0 | 4 | 0 | 0
+  [day 59 tick 3539000] FIRED RaidEnemy points=221.7
+59 | 4 | 223.7 | Disease=8,Injury=14 | 5/0/0 | 4 | 0 | 0
+  [day 60 tick 3558000] FIRED RaidEnemy points=221.0
+  [day 60 tick 3564834] LETTER Death: chicken18 :: chicken18 has been beaten to death.
+  [day 60 tick 3568093] LETTER Death: Tamsin :: Tamsin has been cut to death.
+60 | 3 | 160.8 | Disease=8,Injury=15 | 0/0/0 | 4 | 0 | 2
+
+every citizen ever on the roster: 26
+  dead: Tobin cause=Injury
+  dead: Giselle cause=Injury
+  dead: Fira cause=Injury
+  dead: Harlan cause=Injury
+  dead: Elowen cause=Disease
+  dead: Aaron cause=Injury
+  dead: Yara cause=Disease
+  dead: Oren cause=Injury
+  dead: Kade cause=Injury
+  dead: Rosalind cause=Disease
+  dead: Vance cause=Injury
+  dead: Alden cause=Injury
+  dead: Kaia cause=Injury
+  dead: Vance cause=Disease
+  dead: Rosalind cause=Disease
+  dead: Aaron cause=Disease
+  dead: Ursa cause=Disease
+  dead: Jasper cause=Injury
+  dead: Senna cause=Disease
+  dead: Yorick cause=Injury
+  dead: Tamsin cause=Injury
+  dead: Idris cause=Injury
+  dead: Marisol cause=Injury
+raiders ever on the map: 23, of which dead 12, downed 0, now prisoners of the player 0
+exit=0

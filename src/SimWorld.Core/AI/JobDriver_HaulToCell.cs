@@ -9,10 +9,10 @@ namespace SimWorld.AI
     /// <summary>
     /// Carries one item stack to a stockpile cell and merges or drops it there (RimWorld:
     /// <c>RimWorld.JobDriver_HaulToCell</c>). Target A is the item, target B the destination cell.
-    /// <b>Carrying is modelled abstractly</b>, the same way <see cref="Building.JobDriver_HaulToBuildingSite"/>
-    /// and <see cref="JobDriver_Warden_Feed"/> already do it: no carry-tracker exists in this codebase, so
-    /// the goods leave the source cell the moment the pawn reaches it, with nothing visibly following the
-    /// pawn to the stockpile in between.
+    /// <b>Carrying is modelled abstractly</b>, the same way <see cref="JobDriver_Warden_Feed"/> does it: this
+    /// driver predates <see cref="Pawns.Pawn_CarryTracker"/> and has not been moved onto it, so the goods leave
+    /// the source cell the moment the pawn reaches it, with nothing visibly following the pawn to the stockpile
+    /// in between.
     /// <para/>
     /// <b>The whole Thing travels, when the whole Thing is what moves.</b> This driver used to destroy the
     /// source and build a fresh Thing of the same def at the destination. That is lossless only for goods
@@ -23,10 +23,12 @@ namespace SimWorld.AI
     /// taken off the map and put back down at the destination; only a partial stack — which by definition is
     /// a stackable good, where one unit really is interchangeable with another — is still split off by count.
     /// <para/>
-    /// An interrupted carry now drops the goods at the pawn's feet (<see cref="Notify_Ending"/>) instead of
-    /// destroying them. A save taken mid-carry still loses them, as it always did: no
-    /// <see cref="JobDriver"/> in this port is Scribed, so nothing re-links a Thing that is off the map when
-    /// the save is written. A real carry tracker closes that window and is not in this port.
+    /// An interrupted whole-stack carry drops the goods at the pawn's feet (<see cref="Notify_Ending"/>)
+    /// instead of destroying them. <b>A split-off count does not:</b> it exists only as a number on the job, so
+    /// an interrupted partial carry loses it — the defect <see cref="Building.JobDriver_HaulToBuildingSite"/>
+    /// had until it carried through <see cref="Pawns.Pawn_CarryTracker"/>. A save taken mid-carry loses the
+    /// goods either way: no <see cref="JobDriver"/> in this port is Scribed, so nothing re-links a Thing that is
+    /// off the map when the save is written. Moving this driver onto the carry tracker closes both.
     /// </summary>
     public sealed class JobDriver_HaulToCell : JobDriver
     {
