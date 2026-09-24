@@ -16,19 +16,31 @@ namespace SimWorld.Things
     /// numbers at all.
     /// <para/>
     /// <b>Translation — when generation runs.</b> RimWorld generates implied defs inside its load pass,
-    /// between reading XML and resolving cross-references. This port's <see cref="DefLoader"/> has no
-    /// implied-def hook, and a Def's own <c>ResolveReferences</c> cannot reach the database being loaded
-    /// (<see cref="DefDatabase.Global"/> still points at whatever the *last* load produced — the same trap
-    /// <see cref="Crafting.ThingFilter"/> documents and defers around). So generation is lazy and idempotent,
-    /// exactly like <c>Research.EndlessResearch.MintOrGet</c>: the first caller that needs a corpse def mints
-    /// every race's at once, and every later call finds them already there. <see cref="EnsureGenerated()"/>
-    /// is public so a host can do it eagerly right after loading content and never pay for it later.
+    /// between reading XML and resolving cross-references. This port runs them at the <i>end</i> of the load
+    /// pass instead (<see cref="ImpliedDefsAttribute"/>, called from <see cref="DefLoader.Load"/>), because a
+    /// generator here needs the authored content already resolved to read a race off it — and because the
+    /// database being loaded has to be passed in explicitly: <see cref="DefDatabase.Global"/> still points at
+    /// whatever the *last* load produced, the same trap <see cref="Crafting.ThingFilter"/> documents and
+    /// defers around. Every entry point below therefore takes a <see cref="DefDatabase"/>, and none of them
+    /// reads <c>Global</c> except the convenience overloads a caller outside a load uses.
     /// <para/>
-    /// Minting all races together rather than one at a time is deliberate: a <see cref="ThingFilter"/> and a
-    /// <see cref="ThingCategoryDef"/> both cache the def set they see on first use, so a partial mint could
-    /// let a stockpile that allows "animal corpses" allow some races and not others depending on who died
-    /// first.
+    /// <b>It used to be lazy, and that was a determinism defect.</b> Generation ran on the first caller that
+    /// needed a corpse def — the first death — so until somebody died the database did not contain these
+    /// defs at all. <see cref="Crafting.ThingFilter.SetAllowAll"/> and
+    /// <see cref="ThingCategoryDef.ChildThingDefs"/> both <i>snapshot</i> the def set the first time they are
+    /// used and keep that snapshot for ever, and <see cref="DefDatabase.Global"/> outlives a game — so a
+    /// stockpile painted before the first death allowed no corpse in the first game of a process and every
+    /// corpse in the second, purely because the earlier game had already minted them. Two runs of one seed
+    /// diverged on that alone: one settlement hauled its dead and the other did not, with no difference in
+    /// any observable state at the moment the two chose differently. Minting inside the load makes the def
+    /// set a pure function of the content, which is what every snapshot downstream already assumes it is.
+    /// <para/>
+    /// Minting all races together rather than one at a time is deliberate for the same reason, and remains
+    /// so: a <see cref="ThingFilter"/> and a <see cref="ThingCategoryDef"/> both cache the def set they see
+    /// on first use, so a partial mint could let a stockpile that allows "animal corpses" allow some races
+    /// and not others depending on who died first.
     /// </summary>
+    [ImpliedDefs]
     public static class CorpseDefGenerator
     {
         /// <summary>RimWorld's own naming: <c>Corpse_Husky</c> for the <c>Husky</c> race.</summary>
