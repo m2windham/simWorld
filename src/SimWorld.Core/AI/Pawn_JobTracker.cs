@@ -76,8 +76,17 @@ namespace SimWorld.AI
             curDriver.Notify_Starting();
         }
 
-        /// <summary>Ends the current job (a no-op if there is none), releases its reservations, and — unless
-        /// <paramref name="startNewJob"/> is false — immediately looks for a new one.</summary>
+        /// <summary>Ends the current job (a no-op if there is none), releases its reservations, puts down
+        /// whatever the pawn is still holding, and — unless <paramref name="startNewJob"/> is false —
+        /// immediately looks for a new one.
+        /// <para/>
+        /// <b>The drop is here, not in any driver</b>, because every way a job can end comes through this
+        /// method — its own last toil, a failed toil, a player's order (<see cref="StartJob"/>), the constant
+        /// think tree, being downed (<see cref="Pawn.Notify_Downed"/>), dying (<see cref="Pawn.Notify_Died"/>),
+        /// a tier demotion. RimWorld puts it in the same place (<c>Pawn_JobTracker.CleanupCurrentJob</c>), so a
+        /// job that ends early leaves its load at the pawn's feet whatever ended it. RimWorld's
+        /// <c>JobDef.carryThingAfterJob</c>, for the few jobs that hand a carried Thing on to the next, is not
+        /// ported: nothing here chains a carry across jobs.</summary>
         public void EndCurrentJob(JobCondition condition, bool startNewJob = true)
         {
             if (curJob == null) return;
@@ -86,6 +95,7 @@ namespace SimWorld.AI
             curDriver = null;
             pawn.Map?.reservationManager.ReleaseAllClaimedBy(pawn);
             pawn.pather?.StopDead();
+            if (pawn.carryTracker?.CarriedThing != null) pawn.carryTracker.TryDropCarriedThing(pawn.Position, out _);
             if (startNewJob) TryFindAndStartJob();
         }
 

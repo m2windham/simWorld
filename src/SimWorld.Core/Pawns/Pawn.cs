@@ -75,6 +75,10 @@ namespace SimWorld.Pawns
         /// <summary>Apparel this pawn is wearing (RimWorld: <c>Pawn.apparel</c>); see <see cref="Pawn_ApparelTracker"/>.</summary>
         public Pawn_ApparelTracker apparel = null!;
 
+        /// <summary>What this pawn is holding in its hands while it hauls (RimWorld: <c>Pawn.carryTracker</c>);
+        /// see <see cref="Pawn_CarryTracker"/>.</summary>
+        public Pawn_CarryTracker carryTracker = null!;
+
         public Gender gender;
         public PawnKindDef? kindDef;
         public Name? Name;
@@ -387,6 +391,7 @@ namespace SimWorld.Pawns
             pather ??= new Pawn_PathFollower(this);
             equipment ??= new Pawn_EquipmentTracker(this);
             apparel ??= new Pawn_ApparelTracker(this);
+            carryTracker ??= new Pawn_CarryTracker(this);
         }
 
         // ---- ITickable ----
@@ -487,6 +492,10 @@ namespace SimWorld.Pawns
             Pawn_ApparelTracker? ap = apparel;
             Scribe_Deep.Look(ref ap, "apparel", this);
             apparel = ap ?? new Pawn_ApparelTracker(this);
+            // A save written before pawns carried anything has no node here and loads an empty pair of hands.
+            Pawn_CarryTracker? ct = carryTracker;
+            Scribe_Deep.Look(ref ct, "carryTracker", this);
+            carryTracker = ct ?? new Pawn_CarryTracker(this);
             Scribe_Values.Look(ref gender, "gender", Gender.None);
             PawnKindDef? kd = kindDef;
             Scribe_Defs.Look(ref kd, "kindDef");

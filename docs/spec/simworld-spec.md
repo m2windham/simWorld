@@ -860,11 +860,11 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   No stockpile at all (or every matching one already full) is this giver's
   honest "no job" — one storage kind, no priority tiers, so there is nowhere
   else for `StoreUtility`'s job to send it, and this port does not invent a
-  dumping ground. Carrying itself is modelled the same abstract way
-  `JobDriver_HaulToBuildingSite`/`JobDriver_Warden_Feed` already do it (no
-  carry-tracker exists in this codebase): the source stack leaves its cell the
-  moment the pawn reaches it, nothing visibly follows the pawn to the stockpile
-  in between. When the carry takes the whole stack the Thing itself travels and
+  dumping ground. Carrying itself is modelled abstractly, as
+  `JobDriver_Warden_Feed` does it (this driver predates `Pawn_CarryTracker`,
+  which only `JobDriver_HaulToBuildingSite` carries through so far): the source
+  stack leaves its cell the moment the pawn reaches it, nothing visibly follows
+  the pawn to the stockpile in between. When the carry takes the whole stack the Thing itself travels and
   is put back down at the destination, so anything carrying per-instance state
   (quality, hit points, a `Corpse`'s inner pawn) survives the trip; only a
   partial stack, where one unit really is interchangeable with another, is
