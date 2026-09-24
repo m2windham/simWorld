@@ -1,0 +1,113 @@
+day | pop | points | deaths by cause | hostiles on map: standing/downed/dead | manhunters alive | prisoners held | citizens downed
+0 | 25 | 262.5 | - | 0/0/0 | 0 | 0 | 0
+1 | 25 | 283.5 | - | 0/0/0 | 0 | 0 | 0
+2 | 25 | 304.6 | - | 0/0/0 | 0 | 0 | 1
+  [day 3 tick 126840] LETTER Death: Elian :: Elian has been bitten to death.
+3 | 24 | 290.7 | Injury=1 | 0/0/0 | 0 | 0 | 1
+  [day 4 tick 221481] LETTER Death: Halle :: Halle has died of infection (extreme).
+  [day 4 tick 240000] FIRED ManhunterPack points=291.4
+4 | 23 | 291.5 | Disease=1,Injury=1 | 0/0/0 | 3 | 0 | 1
+  [day 5 tick 272555] LETTER Death: Niall :: Niall has died of infection (extreme).
+5 | 22 | 295.6 | Disease=2,Injury=1 | 0/0/0 | 1 | 0 | 1
+  [day 6 tick 339846] LETTER Death: muffalo6 :: muffalo6 has died of infection (extreme).
+6 | 22 | 316.5 | Disease=2,Injury=1 | 0/0/0 | 0 | 0 | 0
+7 | 22 | 338.3 | Disease=2,Injury=1 | 0/0/0 | 0 | 0 | 0
+8 | 22 | 359.9 | Disease=2,Injury=1 | 0/0/0 | 0 | 0 | 0
+9 | 22 | 382.8 | Disease=2,Injury=1 | 0/0/0 | 0 | 0 | 0
+  [day 10 tick 545000] FIRED ManhunterPack points=383.4
+10 | 22 | 405.9 | Disease=2,Injury=1 | 0/0/0 | 0 | 0 | 0
+11 | 22 | 429.6 | Disease=2,Injury=1 | 0/0/0 | 0 | 0 | 0
+  [day 12 tick 711000] FIRED RaidEnemy points=436.6
+  [day 12 tick 714770] LETTER Death: Niall :: Niall has been cut to death.
+12 | 21 | 309.6 | Disease=2,Injury=2 | 5/6/0 | 0 | 0 | 14
+13 | 21 | 313.4 | Disease=2,Injury=2 | 0/1/0 | 0 | 0 | 9
+  [day 14 tick 797432] LETTER Death: Della :: Della has died of infection (extreme).
+  [day 14 tick 799263] LETTER Death: Kestrel :: Kestrel has died of infection (extreme).
+  [day 14 tick 802000] FIRED RaidEnemy points=293.1
+  [day 14 tick 802646] LETTER Death: husky5 :: husky5 has been cut to death.
+  [day 14 tick 809662] LETTER Death: Warrick :: Warrick has died of infection (extreme).
+  [day 14 tick 815135] LETTER Death: Quinley :: Quinley has died of infection (extreme).
+  [day 14 tick 821737] LETTER Death: Jarrah :: Jarrah has died of infection (extreme).
+14 | 16 | 248.5 | Disease=7,Injury=2 | 0/0/0 | 0 | 0 | 10
+  [day 15 tick 897588] LETTER Death: Lyra :: Lyra has died of infection (extreme).
+15 | 15 | 251.3 | Disease=8,Injury=2 | 0/0/0 | 0 | 0 | 0
+  [day 16 tick 919300] LETTER Death: muffalo20 :: muffalo20 has died of infection (extreme).
+  [day 16 tick 923654] LETTER Death: muffalo21 :: muffalo21 has died of infection (extreme).
+  [day 16 tick 926000] FIRED GiveQuest_Random points=0.0
+  [day 16 tick 957594] LETTER Death: Kira :: Kira has been bitten to death.
+16 | 14 | 248.3 | Disease=8,Injury=3 | 0/0/0 | 0 | 0 | 3
+  [day 17 tick 970025] LETTER Death: Jolene :: Jolene has been bitten to death.
+  [day 17 tick 1003415] LETTER Death: muffalo23 :: muffalo23 has died of infection (extreme).
+17 | 13 | 244.1 | Disease=8,Injury=4 | 0/0/0 | 0 | 0 | 0
+  [day 18 tick 1059000] FIRED Disease_Flu points=0.0
+  [day 18 tick 1065138] LETTER Death: Halle :: Halle has been bitten to death.
+18 | 12 | 229.8 | Disease=8,Injury=5 | 0/0/0 | 0 | 0 | 2
+19 | 12 | 248.3 | Disease=8,Injury=5 | 0/0/0 | 0 | 0 | 2
+  [day 20 tick 1148832] LETTER Death: muffalo26 :: muffalo26 has died of infection (extreme).
+  [day 20 tick 1153512] LETTER Death: chicken10 :: chicken10 has been shot to death.
+  [day 20 tick 1177426] LETTER Death: muffalo25 :: muffalo25 has died of infection (extreme).
+20 | 12 | 260.0 | Disease=8,Injury=5 | 0/0/0 | 0 | 0 | 1
+  [day 21 tick 1251000] FIRED RaidEnemy points=257.1
+  [day 21 tick 1253505] LETTER Death: Dorian :: Dorian has been cut to death.
+  [day 21 tick 1253595] LETTER Death: Elian :: Elian has been cut to death.
+  [day 21 tick 1254559] LETTER Death: husky14 :: husky14 has been cut to death.
+  [day 21 tick 1256657] LETTER Death: Juniper :: Juniper has died of infection (extreme).
+21 | 9 | 166.8 | Disease=9,Injury=7 | 1/4/0 | 0 | 0 | 9
+  [day 22 tick 1264237] LETTER Death: husky12 :: husky12 has died of blood loss (severe).
+  [day 22 tick 1264712] LETTER Death: Adara :: Adara has died of blood loss (severe).
+  [day 22 tick 1264756] LETTER Death: Elian :: Elian has died of blood loss (severe).
+  [day 22 tick 1273704] LETTER Death: husky13 :: husky13 has died of blood loss (extreme).
+  [day 22 tick 1275537] LETTER Death: Oona :: Oona has died of blood loss (extreme).
+  [day 22 tick 1277175] LETTER Death: Alden :: Alden has died of blood loss (extreme).
+  [day 22 tick 1282577] LETTER Death: Quill :: Quill has died of blood loss (extreme).
+  [day 22 tick 1283506] LETTER Death: Dashiell :: Dashiell has died of blood loss (extreme).
+  [day 22 tick 1294278] LETTER Death: muffalo27 :: muffalo27 has died of blood loss (extreme).
+22 | 3 | 65.6 | Disease=9,Injury=13 | 0/0/0 | 0 | 0 | 2
+  [day 23 tick 1342387] LETTER Death: muffalo22 :: muffalo22 has died of infection (extreme).
+23 | 3 | 68.7 | Disease=9,Injury=13 | 0/0/0 | 0 | 0 | 0
+24 | 3 | 69.1 | Disease=9,Injury=13 | 0/0/0 | 0 | 0 | 0
+25 | 3 | 73.0 | Disease=9,Injury=13 | 0/0/0 | 0 | 0 | 0
+  [day 26 tick 1513073] LETTER Death: Persephone :: Persephone has died of infection (extreme).
+26 | 2 | 47.2 | Disease=10,Injury=13 | 0/0/0 | 0 | 0 | 1
+  [day 27 tick 1583000] FIRED RaidEnemy points=46.3
+  [day 27 tick 1583073] LETTER Death: chicken12 :: chicken12 has been cut to death.
+  [day 27 tick 1587142] LETTER Death: chicken9 :: chicken9 has been cut to death.
+  [day 27 tick 1600073] LETTER Death: Quill :: Quill has died of blood loss (severe).
+  [day 27 tick 1615000] FIRED RaidEnemy points=35.0
+  [day 27 tick 1616025] LETTER Death: Delphine :: Delphine has died of infection (extreme).
+27 | 0 | 35.0 | Disease=11,Injury=14 | 0/1/0 | 0 | 0 | 1
+  [day 28 tick 1622000] LETTER Death: muffalo19 :: muffalo19 has been crushed to death.
+  [day 28 tick 1622000] FIRED Earthquake points=0.0
+28 | 0 | 35.0 | Disease=11,Injury=14 | 0/0/0 | 0 | 0 | 1
+  [day 29 tick 1703128] LETTER Death: husky16 :: husky16 has died of infection (extreme).
+29 | 0 | 35.0 | Disease=11,Injury=14 | 0/0/0 | 0 | 0 | 0
+30 | 0 | 35.0 | Disease=11,Injury=14 | 0/0/0 | 0 | 0 | 0
+
+every citizen ever on the roster: 25
+  dead: Dashiell cause=Injury
+  dead: Delphine cause=Disease
+  dead: Quill cause=Injury
+  dead: Lyra cause=Disease
+  dead: Quill cause=Injury
+  dead: Halle cause=Injury
+  dead: Alden cause=Injury
+  dead: Juniper cause=Disease
+  dead: Elian cause=Injury
+  dead: Oona cause=Injury
+  dead: Kestrel cause=Disease
+  dead: Della cause=Disease
+  dead: Elian cause=Injury
+  dead: Adara cause=Injury
+  dead: Jarrah cause=Disease
+  dead: Kira cause=Injury
+  dead: Niall cause=Disease
+  dead: Quinley cause=Disease
+  dead: Dorian cause=Injury
+  dead: Halle cause=Disease
+  dead: Elian cause=Injury
+  dead: Jolene cause=Injury
+  dead: Warrick cause=Disease
+  dead: Persephone cause=Disease
+  dead: Niall cause=Injury
+raiders ever on the map: 17, of which dead 17, downed 0, now prisoners of the player 0
+exit=0

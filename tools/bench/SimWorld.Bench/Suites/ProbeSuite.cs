@@ -127,12 +127,15 @@ namespace SimWorld.Bench.Suites
             return new ArmResult(samples, ticks, sw.Elapsed.TotalSeconds);
         }
 
-        private static World.Settlement? FirstSettlement(Game game)
-        {
-            if (game.World == null) return null;
-            foreach (World.Settlement s in game.World.Settlements) return s;
-            return null;
-        }
+        /// <summary>
+        /// The player's own founding settlement. Not the first settlement in the world: in a populated world,
+        /// world generation places rival civilizations before <c>Game.NewGame</c> founds the player, so the
+        /// first one is a rival's. <c>StorytellerSuite</c> hit exactly this the first time it ran populated —
+        /// it opened a rival tribal town and measured that. This suite still pins <c>soloStart: true</c>,
+        /// where the two lookups agree, so nothing it has ever reported was affected; the fix is here so that
+        /// letting it run populated later cannot quietly measure the wrong town.
+        /// </summary>
+        private static World.Settlement? FirstSettlement(Game game) => game.CivilizationTarget.Seat;
 
         // ---- the metric vector ----
 
