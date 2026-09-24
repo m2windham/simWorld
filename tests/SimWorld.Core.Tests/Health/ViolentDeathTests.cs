@@ -24,10 +24,15 @@ namespace SimWorld.Tests.Health
     ///
     /// <para/><b>What this suite exists to stop happening again.</b> Nothing in the port read the flag, so
     /// every death was the same event: an old woman dying in her sleep, a man cut down in the street and a
-    /// patient lost on the operating table were indistinguishable to the storyteller, to the people in the
-    /// room and to the letter stack. Three things now turn on it — the adaptation the storyteller pays, the
-    /// memory the witnesses keep, and what the player is told — and each is asserted here in both
-    /// directions, because a classifier that says "violent" to everything is exactly as useless as none.
+    /// patient lost on the operating table were indistinguishable to the people in the room and to the letter
+    /// stack. Two things turn on it, the memory the witnesses keep and what the player is told, and each is
+    /// asserted here in both directions, because a classifier that says "violent" to everything is exactly as
+    /// useless as none.
+    ///
+    /// <para/>The adaptation the storyteller pays used to turn on it too, and no longer does: RimWorld charges
+    /// every colonist death whatever the cause, and asks about violence only for a downing. The tests below
+    /// that touch adaptation pin that the classifier is <i>not</i> consulted there;
+    /// <c>Tests.Director.DeathAdaptationTests</c> has the full case.
     /// </summary>
     public class ViolentDeathTests : ContentTestBase
     {
@@ -123,11 +128,11 @@ namespace SimWorld.Tests.Health
         }
 
         [Fact]
-        public void Dying_of_something_that_is_not_violence_does_not()
+        public void Dying_of_something_that_is_not_violence_eases_it_just_the_same()
         {
-            // The whole reason the raid lane raised Notify_ColonistDied from SettlementRaidResolver instead
-            // of from the death funnel: without a classifier, a civilization of long-lived people would have
-            // read to the storyteller as one under constant attack.
+            // RimWorld's AdaptationEvent.Died asks nothing about the cause. This port used to charge only a
+            // violent death, and that is what let a citizen who bled out after a raid (no DamageInfo at the
+            // end) go unseen by the storyteller.
             float quiet = BuildQuietTime();
             Pawn age = NewHuman("Age");
             Pawn surgery = NewHuman("Surgery");
@@ -136,9 +141,9 @@ namespace SimWorld.Tests.Health
             age.health.Kill(null, null);
             surgery.health.Kill(new DamageInfo(SurgeryDamageDefOf.SurgicalCut, 999f), null);
 
-            Assert.True(age.Dead);
-            Assert.True(surgery.Dead);
-            Assert.Equal(quiet, Adaptation.AdaptDays, 4);
+            Assert.False(age.health.DiedViolently);
+            Assert.False(surgery.health.DiedViolently);
+            Assert.Equal(quiet - 2 * StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
         }
 
         [Fact]
@@ -157,19 +162,18 @@ namespace SimWorld.Tests.Health
         }
 
         [Fact]
-        public void A_raid_death_is_still_charged_exactly_once()
+        public void A_death_is_charged_exactly_once()
         {
-            // SettlementRaidResolver settles its battle arithmetically and kills through
-            // FamilyManager.HandleDeath, which hands Kill no DamageInfo — so those deaths read as
-            // non-violent here and stay the resolver's to count. Belt and braces against double-charging.
+            // Kill returns early for a pawn already dead, so a second call (a second hit on a corpse-to-be, a
+            // sweep that reaches the same body twice) cannot charge the storyteller again. The raid resolver's
+            // own once-only is pinned against the real resolver in DeathAdaptationTests.
             float quiet = BuildQuietTime();
             Pawn citizen = NewHuman("Citizen");
             CivilizationOf(citizen);
 
             citizen.health.Kill(null, null);
-            Assert.Equal(quiet, Adaptation.AdaptDays, 4);
+            citizen.health.Kill(Violence(), null);
 
-            Adaptation.Notify_ColonistDied();
             Assert.Equal(quiet - StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
         }
 

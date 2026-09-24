@@ -27,11 +27,9 @@ namespace SimWorld.Tests.Director
     /// from <c>FamilyManager.HandleDeath</c>, so that dying of old age would not ease the storyteller.
     /// Downing has no comparable non-threat cause to exclude and exactly one funnel —
     /// <c>Pawn_HealthTracker.MakeDowned</c> — so the hook goes there, which is where RimWorld raises it too.
-    /// <i>The death side has since caught up</i>: <c>DamageDef.externalViolence</c> is the classifier that was
-    /// missing, so <see cref="StorytellerDeathEvents"/> now raises the same hook from the death funnel for a
-    /// violent death and stays silent for age, starvation, disease and a surgery that went wrong — see
-    /// <c>Tests.Health.ViolentDeathTests</c>. The raid resolver still counts its own, because a battle it
-    /// settled arithmetically kills with no <c>DamageInfo</c> at all.
+    /// <i>The death side has since caught up</i>, and then went further: <see cref="StorytellerDeathEvents"/>
+    /// raises the death hook from the death funnel for every death of ours, whatever the cause, which is
+    /// RimWorld's rule (<c>Tests.Director.DeathAdaptationTests</c>). The raid resolver no longer counts its own.
     /// What downing does have, and death did not, is that the funnel runs for raiders and animals as well as
     /// for citizens: the guard those tests pin is the whole reason
     /// <see cref="StorytellerPawnEvents"/> exists as a class rather than as one more line.
@@ -117,7 +115,7 @@ namespace SimWorld.Tests.Director
         // ---- not counted twice ----
 
         [Fact]
-        public void A_citizen_downed_and_then_killed_does_not_move_adaptation_twice()
+        public void A_citizen_downed_and_then_dying_pays_for_each_once()
         {
             float quiet = BuildQuietTime();
             Pawn citizen = NewHuman("Citizen");
@@ -128,13 +126,13 @@ namespace SimWorld.Tests.Director
             Assert.Equal(quiet - StoryWatcher_Adaptation.DownedAdaptDaysPenalty, afterDowning, 4);
 
             // Pawn_HealthTracker.Kill sets the dead state directly and never passes back through MakeDowned,
-            // so the downing is not charged again on the way out. Nor is the death: this one carries no
-            // DamageInfo, so StorytellerDeathEvents reads it as a death rather than a killing and leaves the
-            // curve alone (ViolentDeathTests covers the case where it does not).
+            // so the downing is not charged again on the way out. The death is charged, once, whatever it was:
+            // this one carries no DamageInfo, like a bleed-out, and RimWorld's AdaptationEvent.Died does not
+            // ask (DeathAdaptationTests).
             citizen.health.Kill(null, null);
 
             Assert.True(citizen.Dead);
-            Assert.Equal(afterDowning, Adaptation.AdaptDays, 4);
+            Assert.Equal(afterDowning - StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
         }
 
         [Fact]

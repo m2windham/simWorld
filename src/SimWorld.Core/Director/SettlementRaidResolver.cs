@@ -217,18 +217,14 @@ namespace SimWorld.Director
             int citizensKilled = KillCitizens(settlement, citizensToKill, rand, ProvenanceOf(raiders));
             int cohortLost = cohortToLose > 0 ? settlement.RemoveStatisticalPeople(cohortToLose) : 0;
 
-            // RimWorld's adaptation drops when the player loses people to a threat, which is what makes the
-            // next raid smaller after a bad one. Only named citizens count toward it: a cohort head is a
-            // citizen, but the penalty is per person, and three hundred anonymous losses would zero the curve
-            // in one raid — whereas losing three people you knew is exactly the event the curve is for.
-            //
-            // Still charged from here, and still exactly once. StorytellerDeathEvents.Notify_PawnDied now
-            // charges the same hook for a violent death anywhere — but "violent" there means a DamageDef
-            // that declares externalViolence, and this resolver settles its battle arithmetically and kills
-            // through FamilyManager.HandleDeath, which hands Kill no DamageInfo at all. So these deaths read
-            // as non-violent to that hook and are counted here, once, as they always were. A death from age
-            // reaches neither.
-            for (int i = 0; i < citizensKilled; i++) Find.Storyteller.adaptation.Notify_ColonistDied();
+            // RimWorld's adaptation drops when the player loses people, which is what makes the next raid
+            // smaller after a bad one. The citizens killed above have already paid it: HandleDeath reaches
+            // Pawn_HealthTracker.Kill, and StorytellerDeathEvents.Notify_PawnDied charges every death of the
+            // storyteller's own civilization there, whatever the cause (RimWorld's AdaptationEvent.Died). This
+            // resolver used to charge them a second time by hand, because that funnel only counted deaths with
+            // violent damage behind them and these have none. Only named citizens count: the cohort loses heads
+            // through RemoveStatisticalPeople, which kills nobody, and three hundred anonymous losses would zero
+            // the curve in one raid, where losing three people you knew is exactly the event the curve is for.
             int raidersKilled = KillRaiders(livingRaiders, raiderDeaths, rand);
             int looted = repelled ? 0 : Loot(settlement, rand);
 

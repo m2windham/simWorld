@@ -13,53 +13,52 @@ namespace SimWorld.Director
     /// its own file for the usual reason (<c>CLAUDE.md</c>), and split from it because the two ask different
     /// questions of the same pawn.
     ///
-    /// <para/><b>What could not be told apart before.</b> <see cref="DamageDef.externalViolence"/> is how
-    /// RimWorld separates a killing from a death, and no line of this port read it — so a citizen shot in
-    /// the street, a citizen who starved, and a citizen who died of old age in her sleep were one
-    /// undifferentiated event. Two consequences turned on that difference and neither could be written:
+    /// <para/><b>Adaptation is charged for every death of ours, whatever it was.</b> That is RimWorld's rule,
+    /// and it is simpler than the one this port had. <c>Verse.Pawn.Kill</c> raises
+    /// <c>Find.Storyteller.Notify_PawnEvent(this, AdaptationEvent.Died)</c> with no <c>DamageInfo</c> at all,
+    /// and <c>RimWorld.StoryWatcher_Adaptation.Notify_PawnEvent</c> filters only on who the pawn is
+    /// (humanlike, <c>IsColonist</c>, not a prisoner) before charging
+    /// <c>adaptDaysLossFromColonistLostByPostPopulation</c>. The one violence test in that method,
+    /// <c>dinfo.Value.Def.ExternalViolenceFor(p)</c>, sits on the <c>Downed</c> branch and nowhere else.
+    /// Read in two decompiles, of 1.0 (josh-m/RW-Decompile, where the call is inline in <c>Kill</c>) and of
+    /// 1.6 (Dyyrlysh/RimworldDecompile, where it moved to <c>DoKillSideEffects</c>), and the same in both.
     ///
-    /// <list type="bullet">
-    /// <item>The storyteller eases off a civilization that is losing people <i>to threats</i>. That is the
-    /// whole meaning of <see cref="StoryWatcher_Adaptation"/>: quiet time builds slack, and casualties
-    /// spend it. A death from age is not a casualty, and charging one would make a long-lived population
-    /// read as a besieged one — which is exactly why the raid lane raised
-    /// <see cref="StoryWatcher_Adaptation.Notify_ColonistDied"/> from <c>SettlementRaidResolver</c> and
-    /// deliberately not from <c>FamilyManager.HandleDeath</c>. That call site was the workaround for a
-    /// missing classifier. This is the classifier, so every violent death now counts, including the ones
-    /// that happen on a map where no raid resolver is watching.</item>
-    /// <item>The letter says what happened, which needs <see cref="DamageDef.deathMessage"/> — content that
-    /// has shipped since the damage module landed and whose recorded reason for being unread ("host-facing
-    /// text for a death letter the core does not compose") expired the moment the core had a letter stack.
-    /// Six systems raise letters through it; a death raised none.</item>
-    /// </list>
+    /// <para/>This port used to charge only a death whose <see cref="DamageInfo"/> declared
+    /// <see cref="DamageDef.externalViolence"/>, on the argument that a death from age is not a casualty. It
+    /// was never recorded as a translation, and it cost more than it bought: most people a raid kills are
+    /// not killed by the blow. They are downed, and they bleed out or die of the infected wound later, with
+    /// <c>dinfo: null</c>, so a violence gate read them as natural deaths and the storyteller never paid for
+    /// them. In the populated runs adaptation rose on the day six people bled out
+    /// (<c>docs/perf/storyteller-populated</c>). RimWorld never had that hole because it never asks.
     ///
-    /// <para/><b>Double-charging is what the two gates are for.</b> A raid settled abstractly by
-    /// <c>SettlementRaidResolver</c> kills through <c>FamilyManager.HandleDeath</c>, which has no
-    /// <see cref="DamageInfo"/> to hand <c>Kill</c> — so those deaths read as non-violent here and are
-    /// charged once, by the resolver, exactly as they were before. A death with real damage behind it is
-    /// charged once, here. No death is charged twice, and the test suite pins it.
+    /// <para/><b>One charging site.</b> A raid settled abstractly by <c>SettlementRaidResolver</c> kills
+    /// through <c>FamilyManager.HandleDeath</c>, which reaches <c>Kill</c> and so reaches here like any other
+    /// death. The resolver used to charge its own dead because the violence gate here turned them away; with
+    /// the gate gone it does not, so no death is charged twice. The test suite pins that.
+    ///
+    /// <para/><b>The letter</b> says what happened, which needs <see cref="DamageDef.deathMessage"/>, content
+    /// that had shipped since the damage module landed and that nothing read until the core had a letter
+    /// stack.
     /// </summary>
     public static class StorytellerDeathEvents
     {
         /// <summary>
         /// Raised from <c>Pawn_HealthTracker.Kill</c> for every death in the port, however it happened.
-        /// Returns whether the storyteller's adaptation was actually charged — a test wants to tell "not one
-        /// of ours" and "not a violent death" from "counted".
+        /// Returns whether the storyteller's adaptation was charged, which is exactly whether the pawn was one
+        /// of ours. A test uses it to tell "not one of ours" from "counted".
         /// </summary>
         public static bool Notify_PawnDied(Pawn pawn, DamageInfo? dinfo, Hediff? culprit)
         {
             if (pawn == null) return false;
 
-            bool violent = dinfo != null && dinfo.Def.externalViolence;
             bool ours = StorytellerPawnEvents.IsCivilizationMember(pawn, allowDead: true);
 
             SendDeathLetter(pawn, dinfo, culprit);
 
             // The ledger takes every death of ours, whatever killed them, and takes it here because this is
-            // the only place every death in the port passes through. It sits above the violence gate on
-            // purpose: starvation and disease are not violent and are exactly the two causes that had no
-            // sink at all before (see DeathLedger and DeathCauseClassifier). Counted once per body, because
-            // Pawn_HealthTracker.Kill returns early for a pawn already dead.
+            // the only place every death in the port passes through. Starvation and disease are exactly the
+            // two causes that had no sink at all before (see DeathLedger and DeathCauseClassifier). Counted
+            // once per body, because Pawn_HealthTracker.Kill returns early for a pawn already dead.
             if (ours)
             {
                 Find.Storyteller.deaths.Record(pawn.health.CauseOfDeath);
@@ -82,9 +81,11 @@ namespace SimWorld.Director
             // people while nobody is watching has to be able to feel it. See Thoughts.BereavementUtility.
             if (ours) SimWorld.Thoughts.BereavementUtility.Notify_CitizenDied(pawn);
 
-            if (!violent) return false;
             if (!ours) return false;
 
+            // RimWorld's AdaptationEvent.Died: every colonist death, with no question asked about the cause
+            // (see the class doc for where that rule is read). A citizen who bleeds out a day after a raid, or
+            // dies of the infected wound, is charged here exactly as one shot dead on the spot is.
             Find.Storyteller.adaptation.Notify_ColonistDied();
             return true;
         }

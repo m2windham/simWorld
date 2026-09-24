@@ -47,8 +47,13 @@ namespace SimWorld.Director
             }
         }
 
+        /// <summary>A citizen went down. Raised by <see cref="StorytellerPawnEvents.Notify_PawnDowned"/>.</summary>
         public void Notify_ColonistDowned() => adaptDays = System.Math.Max(0f, adaptDays - DownedAdaptDaysPenalty);
 
+        /// <summary>
+        /// A citizen died, of anything (RimWorld: <c>AdaptationEvent.Died</c>, which asks nothing about the
+        /// cause). Raised by <see cref="StorytellerDeathEvents.Notify_PawnDied"/> and nowhere else.
+        /// </summary>
         public void Notify_ColonistDied() => adaptDays = System.Math.Max(0f, adaptDays - DeathAdaptDaysPenalty);
 
         public void ExposeData()
