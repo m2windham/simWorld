@@ -190,9 +190,9 @@ namespace SimWorld.Tests.Building
         /// Two things are held fixed so this measures the carry and nothing else. Every citizen builds at skill
         /// 20, because a failed attempt refunds only half of what the Frame held (<see cref="Frame.FailConstruction"/>,
         /// RimWorld's own cost) and with no spare logs one failure makes the wall unfinishable whatever the
-        /// hauling does. And the interruption is the player's own order, because left alone nobody is ever
-        /// interrupted mid-carry in this settlement's opening hours: a sweep of this scenario over 201 tick
-        /// streams saw none.
+        /// hauling does. And the interruption is the player's own order, because left alone one is rare: over
+        /// 201 tick streams of <c>MapCommandsTests</c>' own wall with 10 logs, no haul was interrupted
+        /// mid-carry, and with 40 logs two were, both late in the run.
         /// </summary>
         [Fact]
         public void A_player_designated_wall_is_built_from_exactly_its_cost_though_its_hauler_is_ordered_away()
