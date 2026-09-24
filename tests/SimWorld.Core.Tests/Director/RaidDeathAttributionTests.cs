@@ -341,6 +341,34 @@ namespace SimWorld.Tests.Director
         }
 
         /// <summary>
+        /// Blood loss has no single cause, so it answers for what was bleeding into it when it became lethal —
+        /// not for whatever first opened it. A raid wound that was tended and stopped bleeding does not own a
+        /// death that a later, unrelated wound bled to the end.
+        /// </summary>
+        [Fact]
+        public void A_bleed_out_belongs_to_what_was_bleeding_when_it_became_lethal()
+        {
+            Pawn victim = NewHuman("Victim");
+            Pawn neighbour = NewHuman("Neighbour");
+            CivilizationOf(victim, neighbour);
+
+            Hit(victim, Raider(), "Cut", 20f, "torso");
+            RunTicks(2000, victim);
+            Hediff bloodLoss = victim.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.BloodLoss)!;
+            Assert.Equal(Raid, bloodLoss.sourceIncident);   // the raid opened it
+
+            TendUtility.DoTend(victim, 1f);
+            Assert.Equal(0f, victim.health.hediffSet.BleedRateTotal);
+
+            DownWithBleedingStumps(victim, neighbour);
+            RunUntilDead(victim);
+
+            Assert.Same(HediffDefOf.BloodLoss, victim.health.DeathCauseHediff);
+            Assert.Equal(1, Ledger.Total);
+            Assert.Equal(0, Ledger.AttributedTo(Raid));   // ...but the neighbour's wounds finished it
+        }
+
+        /// <summary>
         /// One wound from two blows belongs to whichever made more of it. A bruise is the shipped injury that
         /// merges; a raider's tap on a neighbour's beating does not make the beating the raid's, and the
         /// reverse does.
