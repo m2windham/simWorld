@@ -290,9 +290,10 @@ OPTIONS
   --target-tick-ns <csv>  N sweep for --suite targets' tick-loop A/B (default 250,500,1000).
   --without <csv>         names to ablate for --suite probe's second arm, e.g. ManhunterPack. The probe
                           then runs each arm twice, with and without, and reports the difference.
-  --solo <true|false>     for --suite tension: start the player alone and let rivals emerge (default true,
-                          the same world shape --suite probe uses), or generate a world already full of
-                          rival civilizations (false).
+  --solo <true|false>     for --suite tension and --suite storyteller: start the player alone and let rivals
+                          emerge (default true, the same world shape --suite probe uses), or generate a world
+                          already full of rival civilizations (false). A solo storyteller run has nobody to
+                          raid the player until a rival emerges; its heading says which world it was.
   --band <N>              for --suite tension and --suite storyteller: founding band size (default 25, the
                           same band --suite probe founds with). A knob rather than a constant because that
                           band does not survive a long unwatched run — see that suite's own doc. Spec §5b.3

@@ -36,6 +36,13 @@ namespace SimWorld.Bench.Suites
     /// settlement's interior and puts its citizens at Full tier, so a raid arrives as pawns on a map and is
     /// fought, rather than being settled arithmetically by <c>SettlementRaidResolver</c>.
     ///
+    /// <para/><b>Which world — read the heading before any table.</b> <c>--solo</c> chooses it, and solo is
+    /// the default so a run with no flag replays every earlier one. A solo world has no civilization but the
+    /// player's at time zero, so <c>RaidEnemy</c>, which picks its raider from hostile civilizations, cannot
+    /// fire in it until emergence founds one. The first readings of this suite were taken with solo hardcoded
+    /// and were very nearly read as findings about raids; the heading and table 0 now name the world, and
+    /// table 0 lists every rival and where it stood with the player at the start and the end.
+    ///
     /// <para/><b>What each table can and cannot see — read this before believing a cell.</b>
     ///
     /// <para/><i>Table 1 (the curve)</i> is exact and has no caveat. Every column is recomputed in this suite
@@ -121,10 +128,17 @@ namespace SimWorld.Bench.Suites
 
             Report.Heading(
                 "Storyteller probe — the threat curve over " + opt.Days.ToString(CultureInfo.InvariantCulture)
-                + " in-game days at founding scale");
+                + " in-game days at founding scale, " + WorldShape(opt));
             Report.Note(
                 "One arm: **watched and played**. The founding settlement is opened, so its citizens run at "
-                + "Full tier and a threat arrives on a real map. Founding band " + Report.Int(opt.Band)
+                + "Full tier and a threat arrives on a real map. **World: "
+                + (opt.Solo
+                    ? "solo** — the player's civilization is the only one generated, and a rival exists only "
+                    + "once emergence founds one, so `RaidEnemy` has nobody to raid with until then. Read every "
+                    + "threat finding below as a finding about a world with no enemies in it."
+                    : "populated** — rival civilizations are generated at time zero, as a player's world has "
+                    + "them. Table 0 lists who they are and where they stand with the player.")
+                + " Founding band " + Report.Int(opt.Band)
                 + " (spec §5b.3 allows 20-40), seed " + opt.Seed.ToString(CultureInfo.InvariantCulture)
                 + ", storyteller and difficulty as `Game.NewGame` defaults them. **This suite changes no "
                 + "tuning constant and is not a target** — see its class doc, and `CLAUDE.md` on what happens "
@@ -132,6 +146,7 @@ namespace SimWorld.Bench.Suites
 
             ArmResult arm = RunArm(opt, opt.Days);
 
+            EmitWorld(opt, arm);
             EmitCurve(arm);
             EmitFirings(arm);
             EmitShape(opt, arm);
@@ -155,11 +170,14 @@ namespace SimWorld.Bench.Suites
                 ScenarioDefOf.TribalStart.scenario,
                 opt.Seed.ToString(CultureInfo.InvariantCulture),
                 subdivisionOverride: 3,
-                soloStart: true,
+                soloStart: opt.Solo,
                 bandSize: opt.Band);
 
-            SimWorld.World.Settlement? home = FirstSettlement(game);
+            SimWorld.World.Settlement? home = PlayerSeat(game);
             if (home == null) throw new InvalidOperationException("storyteller: the new game founded no settlement");
+            RequirePlayers(home);
+
+            List<FactionReading> worldAtStart = ReadFactions();
 
             GodCommands.OpenSettlement(home.tile);
 
@@ -192,7 +210,7 @@ namespace SimWorld.Bench.Suites
                     log.SettleAttributed();
 
                     // Re-resolve: the roster changes under us and a settlement can in principle be lost.
-                    SimWorld.World.Settlement current = FirstSettlement(game) ?? home;
+                    SimWorld.World.Settlement current = PlayerSeat(game) ?? home;
                     samples.Add(SampleCurve(day, game, current, rollup));
                 }
             }
@@ -204,15 +222,124 @@ namespace SimWorld.Bench.Suites
             log.SettleAttributed();
             sw.Stop();
 
-            return new ArmResult(samples, log, ticks, sw.Elapsed.TotalSeconds);
+            return new ArmResult(samples, log, ticks, sw.Elapsed.TotalSeconds, worldAtStart, ReadFactions());
         }
 
-        private static SimWorld.World.Settlement? FirstSettlement(Game game)
+        /// <summary>
+        /// The player's own founding settlement — <see cref="CivilizationTarget.Seat"/>, the oldest settlement
+        /// of the civilization the storyteller is telling its story about.
+        ///
+        /// <para/><b>Not "the first settlement in the world", which is what this used to read.</b> In a solo
+        /// world the two are the same object, because the player's founding is the only settlement at time
+        /// zero and every emerged rival is appended after it. In a populated world they are not:
+        /// <c>WorldGenStep_Factions</c> places every rival's settlements before <c>Game.NewGame</c> founds the
+        /// player's, so the first one is a rival's, and a <c>--solo false</c> run on seed 12345 opened a
+        /// tribal town called Elderwood and watched <i>it</i> while the player's band sat unattended.
+        /// <see cref="RequirePlayers"/> is what caught that, and it stays so the suite refuses rather than
+        /// measures the wrong town.
+        /// </summary>
+        private static SimWorld.World.Settlement? PlayerSeat(Game game) => game.CivilizationTarget.Seat;
+
+        private static void RequirePlayers(SimWorld.World.Settlement home)
         {
-            if (game.World == null) return null;
-            foreach (SimWorld.World.Settlement s in game.World.Settlements) return s;
+            if (ReferenceEquals(home.faction, Find.FactionManager.OfPlayer)) return;
+            throw new InvalidOperationException(
+                "storyteller: the settlement this suite would open is " + home.name + " of "
+                + (home.faction?.name ?? "no faction") + ", not the player's");
+        }
+
+        /// <summary>Every civilization other than the player's and where it stands with the player right now.
+        /// Read, never written: this is the population <c>IncidentWorker_RaidEnemy</c> picks a raider from.</summary>
+        private static List<FactionReading> ReadFactions()
+        {
+            var rows = new List<FactionReading>();
+            SimWorld.Factions.Faction? player = Find.FactionManager.OfPlayer;
+            foreach (SimWorld.Factions.Faction f in Find.FactionManager.AllFactionsListForReading)
+            {
+                if (ReferenceEquals(f, player) || f.def.hidden) continue;
+                rows.Add(new FactionReading(
+                    f,
+                    player == null ? "-" : f.RelationKindWith(player).ToString().ToLowerInvariant(),
+                    player == null ? 0 : f.GoodwillWith(player),
+                    player != null && f.HostileTo(player),
+                    f.defeated));
+            }
+            return rows;
+        }
+
+        // ---- table 0: the world the reading was taken in ----
+
+        private static void EmitWorld(BenchOptions opt, ArmResult arm)
+        {
+            Report.SubHeading("0. the world this run was taken in: " + WorldShape(opt));
+
+            if (arm.WorldAtStart.Count == 0 && arm.WorldAtEnd.Count == 0)
+            {
+                Report.Note(
+                    "No civilization but the player's existed at any point in this run. `RaidEnemy` picks its "
+                    + "raider from hostile civilizations (`FactionManager.RandomEnemyFaction`), so over this run it "
+                    + "**could not fire, by construction** — whatever table 2 says about it is a statement about "
+                    + "this world, not about raids.");
+                return;
+            }
+
+            var rows = new List<string[]>();
+            var seen = new HashSet<SimWorld.Factions.Faction>();
+            foreach (FactionReading start in arm.WorldAtStart)
+            {
+                seen.Add(start.Faction);
+                FactionReading? end = Lookup(arm.WorldAtEnd, start.Faction);
+                rows.Add(WorldRow(start.Faction, start.Describe(), end?.Describe() ?? "gone"));
+            }
+            foreach (FactionReading end in arm.WorldAtEnd)
+            {
+                if (seen.Contains(end.Faction)) continue;
+                rows.Add(WorldRow(end.Faction, "not yet in existence", end.Describe()));
+            }
+
+            Report.Table(
+                new[] { "civilization", "def", "tech", "day 0", "day " + Report.Int(opt.Days), "raids from day" },
+                rows);
+
+            int hostileStart = 0;
+            foreach (FactionReading r in arm.WorldAtStart) if (r.Hostile && !r.Defeated) hostileStart++;
+            int hostileEnd = 0;
+            foreach (FactionReading r in arm.WorldAtEnd) if (r.Hostile && !r.Defeated) hostileEnd++;
+
+            Report.Note(
+                "Relations are to the player, as `goodwill` and the kind it reads as. `raids from day` is the "
+                + "def's `earliestRaidDays`, which `FactionRaidRules.CanRaidYet` holds a raider to. Hostile and "
+                + "undefeated: " + Report.Int(hostileStart) + " at day 0, " + Report.Int(hostileEnd) + " at day "
+                + Report.Int(opt.Days) + ". `RaidEnemy` can pick a raider only from those, and only once its "
+                + "`raids from day` has passed.");
+        }
+
+        private static FactionReading? Lookup(List<FactionReading> rows, SimWorld.Factions.Faction faction)
+        {
+            for (int i = 0; i < rows.Count; i++)
+            {
+                if (ReferenceEquals(rows[i].Faction, faction)) return rows[i];
+            }
             return null;
         }
+
+        private static string[] WorldRow(SimWorld.Factions.Faction f, string atStart, string atEnd) => new[]
+        {
+            f.name,
+            f.def.defName,
+            f.def.techLevel.ToString(),
+            atStart,
+            atEnd,
+            f.def.permanentEnemy
+                ? Report.Int(f.def.earliestRaidDays) + " (permanent enemy)"
+                : Report.Int(f.def.earliestRaidDays),
+        };
+
+        /// <summary>Which world a run was taken in, said in words — a solo reading was once read as a general
+        /// one, and a label on the heading is the cheapest way to make that hard to do again.</summary>
+        private static string WorldShape(BenchOptions opt) => opt.Solo
+            ? "solo world (`--solo true`, the default)"
+            : "populated world (`--solo false`)";
 
         // ---- table 1: the threat curve, decomposed ----
 
@@ -677,7 +804,9 @@ namespace SimWorld.Bench.Suites
 
         private sealed class ArmResult
         {
-            public ArmResult(List<CurveSample> samples, FiringLog log, long ticks, double seconds)
+            public ArmResult(
+                List<CurveSample> samples, FiringLog log, long ticks, double seconds,
+                List<FactionReading> worldAtStart, List<FactionReading> worldAtEnd)
             {
                 Samples = samples;
                 Firings = log.Firings;
@@ -686,9 +815,17 @@ namespace SimWorld.Bench.Suites
                 OrphanDeaths = log.OrphanDeaths;
                 OrphanStructures = log.OrphanStructures;
                 OrphanNutrition = log.OrphanNutrition;
+                WorldAtStart = worldAtStart;
+                WorldAtEnd = worldAtEnd;
             }
 
             public List<CurveSample> Samples { get; }
+
+            /// <summary>Every civilization but the player's, as it stood at time zero.</summary>
+            public List<FactionReading> WorldAtStart { get; }
+
+            /// <summary>The same, on the run's last day — including any civilization emergence founded since.</summary>
+            public List<FactionReading> WorldAtEnd { get; }
 
             public List<Firing> Firings { get; }
 
@@ -705,6 +842,32 @@ namespace SimWorld.Bench.Suites
             public float OrphanNutrition { get; }
 
             public bool OrphanedAttribution => OrphanDeaths > 0 || OrphanStructures > 0 || OrphanNutrition > 0f;
+        }
+
+        /// <summary>One civilization's standing with the player at one instant.</summary>
+        private sealed class FactionReading
+        {
+            public FactionReading(SimWorld.Factions.Faction faction, string kind, int goodwill, bool hostile, bool defeated)
+            {
+                Faction = faction;
+                Kind = kind;
+                Goodwill = goodwill;
+                Hostile = hostile;
+                Defeated = defeated;
+            }
+
+            public SimWorld.Factions.Faction Faction { get; }
+
+            public string Kind { get; }
+
+            public int Goodwill { get; }
+
+            public bool Hostile { get; }
+
+            public bool Defeated { get; }
+
+            public string Describe() =>
+                Kind + " (" + Goodwill.ToString(CultureInfo.InvariantCulture) + ")" + (Defeated ? ", defeated" : "");
         }
     }
 
