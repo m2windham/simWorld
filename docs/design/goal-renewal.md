@@ -4,6 +4,31 @@ The single most consistent finding from researching this genre, and the design
 that follows from it. This is a decision record, not a plan — the mechanism it
 describes is not built yet, and the reasoning matters more than the shape.
 
+> ## ⚠ Status: superseded by [`the-loop.md`](the-loop.md), after §8 step 1 falsified it
+>
+> **Do not build from this document.** The renewal mechanism is the storyteller, scaled to
+> your own growth — RimWorld's model, already ported as
+> `StorytellerUtility.DefaultThreatPointsNow`. Tensions and prospects are retired.
+> `the-loop.md` is the current decision record.
+>
+> The measurement that led there is below and is still worth reading, because it is the
+> reason the design changed rather than an opinion about it.
+>
+> Relative standing — the candidate this document proposed building on — is
+> **mathematically constant** after a run's opening years. Measured over 240
+> in-game years, its mean year-on-year movement by third was **0.1202, then
+> 0.0000, then 0.0000**: flat for 160 consecutive years, not merely quieter.
+>
+> That is §2's objection to `MomentCurator` reached by a different route. Not a
+> depleting novelty budget — a quantity that cannot change. §7 named exactly this
+> test and it came back negative, so **§8 step 2 does not proceed**. The full
+> result and what it implies are in [§9](#9-what-the-measurement-actually-found),
+> which was written after the sections above and supersedes them where they
+> disagree.
+>
+> The sections above are left as written rather than quietly edited, because the
+> reasoning that led to a wrong prediction is the useful part.
+
 ## 1. The failure mode, which is nearly universal
 
 "Ran out of things to do" is the named, recurring complaint in **every** game
@@ -166,3 +191,114 @@ most invested:
 Step 1 is deliberately unglamorous and deliberately first. The whole argument in
 §2 is that a generator can look right and still go quiet, and the only way to
 know is to measure the rate over time rather than to reason about it.
+
+---
+
+## 9. What the measurement actually found
+
+§8 step 1 ran. `Director/StandingReader.cs` reads relative standing; the bench's
+`tension` suite samples it yearly. Run: 240 in-game years, 241 samples, 864
+million ticks, seed 12345.
+
+The four questions from §8, answered with numbers.
+
+### 1. Does it move? Barely, and only while the player was dying
+
+| | |
+| :--- | ---: |
+| Headline gap, min → max | 3.289 → 8.943 |
+| Standard deviation | 0.418 |
+| Of which, years 0–3 | the **entire** range |
+| Years 3 → 240 | 3.29 → 3.30 |
+
+A range of about **0.01 across 237 years** — while own strength went from 901 to
+34,919,370, a factor of 38,756. The subject grew forty thousand-fold and the
+reading did not move.
+
+### 2. Does its rate of change decay? Yes, to exactly zero
+
+Mean absolute year-on-year movement, log2 units, by third of the run:
+
+| Series | 1st third | 2nd third | 3rd third |
+| :--- | ---: | ---: | ---: |
+| Gap (headline) | 0.1202 | **0.0000** | **0.0000** |
+| Gap to weakest rival | 0.1202 | **0.0000** | **0.0000** |
+| Gap to strongest rival | 0.0011 | **0.0000** | **0.0000** |
+
+This is the load-bearing answer and it is unambiguous. Not "quieter" — flat.
+
+### 3. Does it survive the world settling? The world never settled
+
+Rivals stayed at 13–14 throughout; zero samples were undefined. The reading
+remained perfectly available and perfectly useless. **The failure mode is
+meaninglessness while still being defined**, which is worse than unavailability:
+an offer built on it would keep firing forever with nothing behind it.
+
+### 4. Is it deterministic? Yes
+
+Same seed, same series, both subjects. The reader draws no randomness at all.
+
+## 10. Why it is constant, and where the fix is
+
+Two structural causes, both verified in the code rather than inferred:
+
+1. **Growth is noiseless and identical everywhere.** `Settlement.cs`'s
+   statistical path is `statisticalPopulation * (1.0 + StatisticalNetGrowthPerYear)`
+   with `StatisticalNetGrowthPerYear = 0.045f` — a compound multiplier with no
+   random draw. Every Statistical cohort grows at exactly the same rate, so
+   **ratios between civilizations are constant by arithmetic.** No reading of
+   relative size can vary while this holds.
+2. **Emergence permanently switches itself off.** `EmergenceManager`'s
+   `if (existingCount >= def.maxCountAtGameStart) continue;` skips any faction def
+   already at its cap, and a crowded world generation saturates every def at
+   startup. The civilization count sat at 15 for 240 years and could never move.
+
+**The fix is in the simulation, not in the reading.** A prospect layer over a
+constant is a prospect layer over a constant however well it is written.
+
+## 11. What this does and does not prove
+
+**It does not prove tensions in general are the wrong idea.** One tension was
+tested. Over-claiming from a single negative would be the same error in the
+opposite direction, and this project has a rule about that.
+
+**What it does establish:** "always present" does not imply "always changing",
+and §3 quietly assumed it did. Every candidate tension in that list now needs
+its movement *measured* before anything is built on it — not argued for from the
+fact that it is continuous. That is a cheap check and it has just caught a design
+that looked obviously right.
+
+## 12. A larger finding that arrived sideways
+
+The lane could not measure the player's own civilization, because **it dies
+within five years in every configuration tested**, unwatched, at founding scale:
+
+| Configuration | Own population by year | Deaths |
+| :--- | :--- | ---: |
+| `--solo false --band 25` | 25, 15, 2, 0 | 24 injury |
+| `--solo true --band 25` | 25, 10, 5, 1, 0 | 25 injury |
+| `--solo true --band 40` | 40, 27, 23, 9, 2, 0 | 46 injury |
+| `--solo false --band 40 --seed 777` | 40, 17, 14, 3, 2, 0 | 38 injury |
+
+The `--solo true` runs have **no rival civilization in existence at all**, so this
+is not conquest. It is `SettlementRaidResolver` settling threats against an
+unattended settlement. And there is no larger-band workaround: spec §5b.3 fixes
+`FoundingBandRange` at 20–40, so 40 is the whole budget.
+
+This contradicts `docs/design/phase-2-pressure.md` head-on, which states:
+
+> A settlement that is well built must be genuinely fine unwatched.
+
+It is not fine. It is dead in five years with nothing attacking it but the
+abstract threat resolver. **This is more urgent than goal renewal**, because a
+renewal layer offering occasions to a civilization that cannot survive its own
+first decade is furniture. It was found only because measuring one thing honestly
+required a subject that lasts, and there wasn't one.
+
+> **Closed as not-a-bug by [`the-loop.md`](the-loop.md).** The sentence it contradicts is
+> retired along with the rest of that framing: with one settlement there is nothing you own
+> that runs unwatched, and in RimWorld — the one benchmark game with more than one colony —
+> an unvisited colony genuinely can be lost. The numbers above are still a true reading of
+> `SettlementRaidResolver` against an unattended settlement; they are simply no longer
+> measuring a requirement. What *is* now worth measuring is the same settlement **watched
+> and played**, which is item 1 of `the-loop.md` §5.

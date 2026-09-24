@@ -123,6 +123,53 @@ touches these types from outside, so reach for the qualified form first.
   Check for the code you depend on rather than assuming it is there: one lane
   was briefed to build on a module its worktree did not yet have.
 
+### Commit first, verify second
+
+The suite takes over an hour, and three lanes have now been killed partway
+through one — by a session ending, a quota pause, a container reclaim. Each
+time, hours of work survived only because it happened to still be on disk.
+
+So **commit before you start the long verification, not after.** Say plainly in
+the message that it is unverified, then amend or add a commit once the suite
+comes back. A lane branch is not the feature branch: an unverified commit there
+costs nothing and protects everything. Work that exists only as uncommitted
+files is one interruption from gone.
+
+### Your scratchpad is not lane-private
+
+A lane wrote a mutation script to the shared scratchpad to prove its guards
+both ways. A concurrent lane overwrote it mid-run. The result was not a crash:
+one mutation silently became a no-op and produced a **plausible-looking
+duplicate result**, and the restore that should have followed was swallowed,
+leaving a mutated source file on disk.
+
+A false "I proved it both ways" is worse than no proof, because it is believed.
+That lane caught it on a checksum and re-ran everything from scratch.
+
+So: put lane tooling in a **lane-private subdirectory**, and make any script
+that mutates a file **assert that the mutation changed it** and that the
+restore is byte-identical. A mutation that does not change the file must abort,
+never pass quietly.
+
+**The process table is shared too.** A lane cleaned up after itself with
+`pkill -f testhost`. That pattern matches every lane's test host on the
+machine, and it killed the coordinator's full-suite run in another tree an hour
+in. The run did not fail — it stopped, printed no summary line, and a pipeline
+ending in `grep | head` reported success on the stub of a log.
+
+Kill **by PID you have checked is yours**, never by a pattern. And never trust
+a test run's exit code through a pipe: require the `Passed!` / `Failed!`
+summary line before believing anything, and treat its absence as the run not
+having happened.
+
+### Do not run three suites at once
+
+Three concurrent lanes each running the full suite turned a 75-minute run into
+two hours and twenty, and every lane was blocked for all of it. Worktrees keep
+them *correct* — separate `artifacts/`, no content-copy collision — but they
+share a CPU. Stagger the verification runs even when the lanes themselves
+overlap.
+
 ## Working alongside the Unity host, and alongside other agents
 
 The host lives in its own repository (`simWorld.Host`), not in this one. Two
