@@ -34,7 +34,13 @@ namespace SimWorld.Tests.Defs
     /// fixture's, because the defect is precisely that the shared database's contents depend on what ran
     /// before — a test that asked <see cref="DefDatabase.Global"/> would pass or fail on test ordering, which
     /// is the failure mode <c>Wiring.CoreUnderAudit</c> already warns about in as many words.
+    ///
+    /// <para/>In the "GlobalDefs" collection because one test below re-points
+    /// <see cref="DefDatabase.Global"/> at its own database for the length of an assertion, and every test
+    /// that reads <c>Global</c> shares that collection precisely so none of them ever runs beside another
+    /// that is moving it.
     /// </summary>
+    [Collection("GlobalDefs")]
     public class ImpliedDefsTests
     {
         /// <summary>
