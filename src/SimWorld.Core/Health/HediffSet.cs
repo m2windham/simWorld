@@ -143,6 +143,7 @@ namespace SimWorld.Health
             }
             var missing = (Hediff_MissingPart)HediffMaker.MakeHediff(HediffDefOf.MissingBodyPart, pawn, part);
             missing.lastInjury = injury.def;
+            missing.sourceIncident = injury.sourceIncident;   // a fresh stump bleeds; see WoundProvenance
             missing.IsFresh = true;
             hediffs.Add(missing);
             missing.PostAdd(null);

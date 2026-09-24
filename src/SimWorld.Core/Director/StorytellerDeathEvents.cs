@@ -67,10 +67,12 @@ namespace SimWorld.Director
                 // Second axis: not what they died of, but what killed them. An on-map violent death answers
                 // this from its instigator; a raid or pack resolved abstractly has no instigator to read at
                 // all, so the worker that resolved it attributes its own toll from the outcome it already
-                // computes instead (see IncidentWorker_ManhunterPack). A disease death sits between the two —
-                // it does reach here, through this exact funnel, but dinfo is null (nothing struck the pawn),
-                // so it has no instigator either. SourceOf's second argument is that case's answer: the
-                // culprit hediff's own provenance, set by whichever incident caused it.
+                // computes instead (see IncidentWorker_ManhunterPack). A disease death, and a wound that kills
+                // later — bleeding out, or the infection it turned into — sit between the two: they reach here
+                // through this exact funnel, but dinfo is null (nothing struck the pawn just now), so there is
+                // no instigator to ask. SourceOf's second argument is that case's answer: the culprit hediff's
+                // own provenance, stamped by the incident that caused it or carried down the wound chain from
+                // the blow (Health.WoundProvenance).
                 Find.Storyteller.deaths.RecordAttributed(SourceOf(dinfo, culprit));
             }
 
@@ -88,6 +90,31 @@ namespace SimWorld.Director
         }
 
         /// <summary>
+        /// What killed them, as opposed to what they died of: the <c>defName</c> of the incident that put the
+        /// killer — or the condition, or the wound — in the world, or null when nobody is to blame in that
+        /// sense: a death by age or hunger, or a killer, illness or wound that was always here.
+        ///
+        /// <para/>Attribution is by <i>provenance</i> rather than by timing. An ambient "what was happening at
+        /// the time" window would have been cheaper and would have been wrong: a citizen who starves while a
+        /// threat is on the map did not die of the threat. Asking the corpse's killer where it came from
+        /// cannot make that mistake, and neither can asking the hediff that finished them the same question.
+        /// It also cuts the other way, and that is the case that was missed: a citizen downed in a raid who
+        /// bleeds out the next day died long after the threat left, and was still killed by it.
+        ///
+        /// <para/><b>The instigator is asked first, and the hediff when there is no instigator to ask.</b>
+        /// A death on the spot carries a <see cref="DamageInfo"/>, so its instigator's own
+        /// <see cref="Pawns.Pawn.spawnedByIncident"/> answers it; the culprit there is the wound that blow just
+        /// made, stamped from that same instigator, so the two cannot disagree. A disease death, a bleed-out and
+        /// an infected wound carry no <see cref="DamageInfo"/> at all — <see cref="Pawn_HealthTracker.Kill"/> was
+        /// called with <c>dinfo: null</c> — so they fall through to <paramref name="culprit"/>'s own
+        /// <see cref="Hediff.sourceIncident"/>: the incident that started the illness, or, for blood loss and
+        /// infection, the one behind the wound that caused them (<see cref="Health.WoundProvenance"/>). Either
+        /// source, once read, is exactly what <see cref="DeathLedger.RecordAttributed"/> is handed.
+        /// </summary>
+        internal static string? SourceOf(DamageInfo? dinfo, Hediff? culprit) =>
+            (dinfo?.Instigator is Pawn killer ? killer.spawnedByIncident : null) ?? culprit?.sourceIncident;
+
+        /// <summary>
         /// One letter per death of somebody the player has a stake in
         /// (<see cref="PawnUtility.ShouldSendNotificationAbout"/>: their own people and the prisoners they
         /// hold). RimWorld's <c>Pawn_HealthTracker.NotifyPlayerOfKilled</c> composes the same three-way
@@ -95,27 +122,6 @@ namespace SimWorld.Director
         /// <see cref="DamageDef.deathMessage"/> first, then the hediff that finished them, then a bare
         /// statement of the fact.
         /// </summary>
-        /// <summary>
-        /// What killed them, as opposed to what they died of: the <c>defName</c> of the incident that put the
-        /// killer — or the condition — in the world, or null when nobody is to blame in that sense: a death by
-        /// age or hunger, or a killer or illness that was always here.
-        ///
-        /// <para/>Attribution is by <i>provenance</i> rather than by timing. An ambient "what was happening at
-        /// the time" window would have been cheaper and would have been wrong: a citizen who starves while a
-        /// threat is on the map did not die of the threat. Asking the corpse's killer where it came from
-        /// cannot make that mistake, and neither can asking the hediff that finished them the same question.
-        ///
-        /// <para/><b>The instigator is asked first, and the hediff only when there is no instigator to ask.</b>
-        /// A violent death always carries a <see cref="DamageInfo"/>, so its instigator's own
-        /// <see cref="Pawns.Pawn.spawnedByIncident"/> is definitive there and <paramref name="culprit"/> is
-        /// never consulted for it. A disease death carries no <see cref="DamageInfo"/> at all — nothing struck
-        /// the pawn, <see cref="Pawn_HealthTracker.Kill"/> was called with <c>dinfo: null</c> — so it falls
-        /// through to <paramref name="culprit"/>'s own <see cref="Hediff.sourceIncident"/> instead. Either
-        /// source, once read, is exactly what <see cref="DeathLedger.RecordAttributed"/> is handed.
-        /// </summary>
-        internal static string? SourceOf(DamageInfo? dinfo, Hediff? culprit) =>
-            (dinfo?.Instigator is Pawn killer ? killer.spawnedByIncident : null) ?? culprit?.sourceIncident;
-
         private static void SendDeathLetter(Pawn pawn, DamageInfo? dinfo, Hediff? culprit)
         {
             if (!PawnUtility.ShouldSendNotificationAbout(pawn)) return;
