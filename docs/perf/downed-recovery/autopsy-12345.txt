@@ -1,0 +1,10 @@
+Dashiell#0 cause=Disease last seen: cons=0.02 breath=0.77 pump=1.00 filt=1.00 metab=0.65 pain=0.78 bloodLoss=0.00 infections=[0.77,0.62,0.63] imm=0.80
+Juniper#42 cause=Injury last seen: cons=0.41 breath=0.77 pump=0.93 filt=1.00 metab=1.00 pain=0.30 bloodLoss=0.00 infections=[0.63] imm=0.67
+Delphine#6 cause=Injury last seen: cons=0.73 breath=1.00 pump=1.00 filt=1.00 metab=1.00 pain=0.55 bloodLoss=0.00 infections=[] imm=0.00
+Jolene#126 cause=Injury last seen: cons=0.32 breath=0.88 pump=0.93 filt=1.00 metab=1.00 pain=0.25 bloodLoss=0.00 infections=[0.81,0.67] imm=0.90
+Quill#24 cause=Disease last seen: cons=0.12 breath=0.70 pump=1.00 filt=1.00 metab=1.00 pain=0.80 bloodLoss=0.26 infections=[0.70,0.62] imm=0.73
+Jarrah#84 cause=Disease last seen: cons=0.14 breath=1.00 pump=1.00 filt=0.67 metab=1.00 pain=0.83 bloodLoss=0.00 infections=[0.66,0.62] imm=0.81
+Oona#54 cause=Disease last seen: cons=0.34 breath=0.80 pump=1.00 filt=1.00 metab=1.00 pain=0.66 bloodLoss=0.00 infections=[1.00,0.06] imm=0.99
+Halle#114 cause=Disease last seen: cons=0.02 breath=0.73 pump=1.00 filt=0.50 metab=1.00 pain=0.51 bloodLoss=0.00 infections=[1.00,0.38] imm=0.96
+Elian#72 cause=Disease last seen: cons=0.13 breath=0.77 pump=1.00 filt=0.77 metab=1.00 pain=0.70 bloodLoss=0.00 infections=[0.62,0.63] imm=0.70
+Kira#90 cause=Disease last seen: cons=0.25 breath=1.00 pump=1.00 filt=1.00 metab=1.00 pain=0.30 bloodLoss=0.00 infections=[1.00,0.82,0.84] imm=0.98

@@ -1,0 +1,321 @@
+# save
+  [tick 231000] FIRED ColdSnap points=0.00
+  [tick 240000] FIRED ManhunterPack points=329.33
+  [tick 553000] FIRED Flashstorm points=0.00
+  [tick 572000] FIRED VisitorGroup points=0.00
+  [tick 648000] FIRED Drought points=0.00
+  [tick 996000] FIRED RaidEnemy points=622.97
+saved at tick 1010000, raid fired at 996000; citizens alive 25, downed by the raid and alive 13, downed now 8, wound infections present 0, hostiles standing 0
+# casualties
+0	Dashiell
+18	Lyra
+30	Halle
+42	Juniper
+48	Elian
+54	Oona
+60	Kestrel
+84	Jarrah
+108	Dorian
+114	Halle
+126	Jolene
+132	Warrick
+144	Niall
+
+# continuation 1, before arm
+  [tick 1095131] Halle has died of infection (extreme).
+  [tick 1096521] Dashiell has died of infection (extreme).
+  [tick 1452000] FIRED TraderCaravanArrival points=0.00
+loaded at tick 1011000, ran to 1680000 with continuation seed 1
+  Dashiell#0: DEAD Disease (WoundInfection), infected
+  Lyra#18: alive
+  Halle#30: DEAD Disease (WoundInfection), infected
+  Juniper#42: alive, infected
+  Elian#48: alive
+  Oona#54: alive, infected
+  Kestrel#60: alive, infected
+  Jarrah#84: alive, infected
+  Dorian#108: alive
+  Halle#114: alive, infected
+  Jolene#126: alive, infected
+  Warrick#132: alive, infected
+  Niall#144: alive, infected
+PAIR casualties=13 survived=11 diedOfInfection=2 diedOfBloodLoss=0 diedOther=0 everInfected=10 citizensAliveAtEnd=23
+
+# continuation 1, after arm
+  [tick 1132000] FIRED TraderCaravanArrival points=0.00
+  [tick 1176635] Della has died of infection (extreme).
+  [tick 1337000] FIRED ManhunterPack points=650.68
+  [tick 1344000] FIRED WandererJoin points=0.00
+loaded at tick 1011000, ran to 1680000 with continuation seed 1
+  Dashiell#0: alive
+  Lyra#18: alive
+  Halle#30: alive, infected
+  Juniper#42: alive
+  Elian#48: alive
+  Oona#54: alive
+  Kestrel#60: alive
+  Jarrah#84: alive, infected
+  Dorian#108: alive
+  Halle#114: alive
+  Jolene#126: alive
+  Warrick#132: alive
+  Niall#144: alive
+PAIR casualties=13 survived=13 diedOfInfection=0 diedOfBloodLoss=0 diedOther=0 everInfected=2 citizensAliveAtEnd=25
+
+# continuation 2, before arm
+  [tick 1050648] Quill has been bitten to death.
+  [tick 1093059] Kestrel has died of infection (extreme).
+  [tick 1094427] Oona has died of infection (extreme).
+loaded at tick 1011000, ran to 1680000 with continuation seed 2
+  Dashiell#0: alive, infected
+  Lyra#18: alive, infected
+  Halle#30: alive, infected
+  Juniper#42: alive, infected
+  Elian#48: alive
+  Oona#54: DEAD Disease (WoundInfection), infected
+  Kestrel#60: DEAD Disease (WoundInfection), infected
+  Jarrah#84: alive
+  Dorian#108: alive, infected
+  Halle#114: alive
+  Jolene#126: alive, infected
+  Warrick#132: alive, infected
+  Niall#144: alive, infected
+PAIR casualties=13 survived=11 diedOfInfection=2 diedOfBloodLoss=0 diedOther=0 everInfected=10 citizensAliveAtEnd=22
+
+# continuation 2, after arm
+  [tick 1110729] Niall has died of infection (extreme).
+  [tick 1348000] FIRED Disease_Flu points=0.00
+loaded at tick 1011000, ran to 1680000 with continuation seed 2
+  Dashiell#0: alive
+  Lyra#18: alive
+  Halle#30: alive
+  Juniper#42: alive, infected
+  Elian#48: alive, infected
+  Oona#54: alive, infected
+  Kestrel#60: alive
+  Jarrah#84: alive
+  Dorian#108: alive
+  Halle#114: alive, infected
+  Jolene#126: alive
+  Warrick#132: alive, infected
+  Niall#144: DEAD Disease (WoundInfection), infected
+PAIR casualties=13 survived=12 diedOfInfection=1 diedOfBloodLoss=0 diedOther=0 everInfected=6 citizensAliveAtEnd=24
+
+# continuation 3, before arm
+  [tick 1119870] Alden has died of infection (extreme).
+  [tick 1255000] FIRED Flashstorm points=0.00
+  [tick 1307000] FIRED Eclipse points=0.00
+  [tick 1581000] FIRED Eclipse points=0.00
+  [tick 1666000] FIRED Disease_Flu points=0.00
+loaded at tick 1011000, ran to 1680000 with continuation seed 3
+  Dashiell#0: alive, infected
+  Lyra#18: alive
+  Halle#30: alive, infected
+  Juniper#42: alive
+  Elian#48: alive
+  Oona#54: alive, infected
+  Kestrel#60: alive, infected
+  Jarrah#84: alive
+  Dorian#108: alive, infected
+  Halle#114: alive
+  Jolene#126: alive, infected
+  Warrick#132: alive, infected
+  Niall#144: alive, infected
+PAIR casualties=13 survived=13 diedOfInfection=0 diedOfBloodLoss=0 diedOther=0 everInfected=8 citizensAliveAtEnd=24
+
+# continuation 3, after arm
+  [tick 1095000] Dorian has been crushed to death.
+  [tick 1095000] Lyra has been crushed to death.
+  [tick 1095000] muffalo has been crushed to death.
+  [tick 1095000] muffalo2 has been crushed to death.
+  [tick 1095000] FIRED Earthquake points=0.00
+  [tick 1253000] FIRED RaidEnemy points=507.09
+  [tick 1354000] FIRED RaidEnemy points=494.37
+  [tick 1355224] Elian has been cut to death.
+  [tick 1355272] Della has been beaten to death.
+  [tick 1373775] Alden has died of blood loss (severe).
+loaded at tick 1011000, ran to 1680000 with continuation seed 3
+  Dashiell#0: alive
+  Lyra#18: DEAD Injury (Cut), infected
+  Halle#30: alive, infected
+  Juniper#42: alive, infected
+  Elian#48: alive
+  Oona#54: alive
+  Kestrel#60: alive, infected
+  Jarrah#84: alive
+  Dorian#108: DEAD Injury (Cut), infected
+  Halle#114: alive, infected
+  Jolene#126: alive, infected
+  Warrick#132: alive, infected
+  Niall#144: alive, infected
+PAIR casualties=13 survived=11 diedOfInfection=0 diedOfBloodLoss=0 diedOther=2 everInfected=9 citizensAliveAtEnd=20
+
+# continuation 4, before arm
+  [tick 1066000] FIRED WandererJoin points=0.00
+  [tick 1095215] Niall has died of infection (extreme).
+  [tick 1095827] Jolene has died of infection (extreme).
+  [tick 1096031] Kestrel has died of infection (extreme).
+  [tick 1109227] Halle has died of infection (extreme).
+  [tick 1111377] Juniper has died of infection (extreme).
+loaded at tick 1011000, ran to 1680000 with continuation seed 4
+  Dashiell#0: alive
+  Lyra#18: alive
+  Halle#30: DEAD Disease (WoundInfection), infected
+  Juniper#42: DEAD Disease (WoundInfection), infected
+  Elian#48: alive, infected
+  Oona#54: alive, infected
+  Kestrel#60: DEAD Disease (WoundInfection), infected
+  Jarrah#84: alive, infected
+  Dorian#108: alive, infected
+  Halle#114: alive, infected
+  Jolene#126: DEAD Disease (WoundInfection), infected
+  Warrick#132: alive, infected
+  Niall#144: DEAD Disease (WoundInfection), infected
+PAIR casualties=13 survived=8 diedOfInfection=5 diedOfBloodLoss=0 diedOther=0 everInfected=11 citizensAliveAtEnd=21
+
+# continuation 4, after arm
+  [tick 1099000] FIRED TraderCaravanArrival points=0.00
+  [tick 1124339] Lyra has died of infection (extreme).
+  [tick 1198000] FIRED RaidEnemy points=551.94
+  [tick 1215000] FIRED RaidEnemy points=471.70
+  [tick 1216023] Della has been cut to death.
+  [tick 1219139] Halle has been cut to death.
+  [tick 1224869] Juniper has died of blood loss (severe).
+  [tick 1226933] Quill has died of blood loss (severe).
+  [tick 1285000] FIRED Eclipse points=0.00
+  [tick 1538000] FIRED RaidEnemy points=489.39
+  [tick 1539120] Dashiell has been beaten to death.
+  [tick 1553536] Elian has died of blood loss (severe).
+  [tick 1659000] FIRED WandererJoin points=0.00
+  [tick 1668000] husky7 has been crushed to death.
+  [tick 1668000] Jarrah has been crushed to death.
+  [tick 1668000] FIRED Earthquake points=0.00
+  [tick 1671000] FIRED RaidEnemy points=383.41
+  [tick 1675468] Alden has been cut to death.
+  [tick 1677519] Warrick has been cut to death.
+  [tick 1679072] husky6 has died of bruise.
+loaded at tick 1011000, ran to 1680000 with continuation seed 4
+  Dashiell#0: DEAD Injury (Crush), infected
+  Lyra#18: DEAD Disease (WoundInfection), infected
+  Halle#30: alive, infected
+  Juniper#42: DEAD Injury (BloodLoss)
+  Elian#48: alive, infected
+  Oona#54: alive
+  Kestrel#60: alive, infected
+  Jarrah#84: DEAD Injury (Cut)
+  Dorian#108: alive
+  Halle#114: DEAD Injury (Cut)
+  Jolene#126: alive, infected
+  Warrick#132: DEAD Injury (Cut)
+  Niall#144: alive, infected
+PAIR casualties=13 survived=7 diedOfInfection=1 diedOfBloodLoss=1 diedOther=4 everInfected=7 citizensAliveAtEnd=16
+
+# continuation 5, before arm
+  [tick 1069000] FIRED RaidEnemy points=470.26
+  [tick 1109244] Dashiell has died of infection (extreme).
+  [tick 1116025] Elian has died of infection (extreme).
+  [tick 1156833] Quill has died of infection (extreme).
+  [tick 1163752] muffalo8 has died of infection (extreme).
+  [tick 1177734] husky5 has died of infection (extreme).
+  [tick 1261000] FIRED RaidEnemy points=474.28
+  [tick 1261607] husky3 has been cut to death.
+  [tick 1346000] FIRED ManhunterPack points=454.39
+loaded at tick 1011000, ran to 1680000 with continuation seed 5
+  Dashiell#0: DEAD Disease (WoundInfection), infected
+  Lyra#18: alive, infected
+  Halle#30: alive, infected
+  Juniper#42: alive
+  Elian#48: DEAD Disease (WoundInfection), infected
+  Oona#54: alive, infected
+  Kestrel#60: alive, infected
+  Jarrah#84: alive, infected
+  Dorian#108: alive, infected
+  Halle#114: alive
+  Jolene#126: alive, infected
+  Warrick#132: alive, infected
+  Niall#144: alive, infected
+PAIR casualties=13 survived=11 diedOfInfection=2 diedOfBloodLoss=0 diedOther=0 everInfected=11 citizensAliveAtEnd=22
+
+# continuation 5, after arm
+  [tick 1088000] FIRED Disease_Flu points=0.00
+  [tick 1371000] FIRED TraderCaravanArrival points=0.00
+loaded at tick 1011000, ran to 1680000 with continuation seed 5
+  Dashiell#0: alive, infected
+  Lyra#18: alive
+  Halle#30: alive, infected
+  Juniper#42: alive
+  Elian#48: alive
+  Oona#54: alive
+  Kestrel#60: alive, infected
+  Jarrah#84: alive, infected
+  Dorian#108: alive
+  Halle#114: alive
+  Jolene#126: alive
+  Warrick#132: alive
+  Niall#144: alive
+PAIR casualties=13 survived=13 diedOfInfection=0 diedOfBloodLoss=0 diedOther=0 everInfected=4 citizensAliveAtEnd=25
+
+# continuation 6, before arm
+  [tick 1051442] Halle has been bitten to death.
+  [tick 1104593] Oona has died of infection (extreme).
+  [tick 1123604] Juniper has died of infection (extreme).
+  [tick 1126092] Quill has died of infection (extreme).
+  [tick 1261000] FIRED Eclipse points=0.00
+  [tick 1319000] husky5 has been crushed to death.
+  [tick 1319000] FIRED Earthquake points=0.00
+  [tick 1395000] FIRED ColdSnap points=0.00
+  [tick 1642000] FIRED RaidEnemy points=622.18
+  [tick 1644210] Niall has been cut to death.
+  [tick 1650216] Alden has been cut to death.
+  [tick 1650849] husky has been cut to death.
+  [tick 1655822] Elian has died of blood loss (severe).
+  [tick 1657232] Adara has died of blood loss (severe).
+loaded at tick 1011000, ran to 1680000 with continuation seed 6
+  Dashiell#0: alive, infected
+  Lyra#18: alive, infected
+  Halle#30: alive, infected
+  Juniper#42: DEAD Disease (WoundInfection), infected
+  Elian#48: DEAD Injury (BloodLoss)
+  Oona#54: DEAD Disease (WoundInfection), infected
+  Kestrel#60: alive, infected
+  Jarrah#84: alive, infected
+  Dorian#108: alive, infected
+  Halle#114: DEAD Injury (Bite), infected
+  Jolene#126: alive, infected
+  Warrick#132: alive, infected
+  Niall#144: alive, infected
+PAIR casualties=13 survived=9 diedOfInfection=2 diedOfBloodLoss=1 diedOther=1 everInfected=12 citizensAliveAtEnd=17
+
+# continuation 6, after arm
+  [tick 1067975] muffalo has been shot to death.
+  [tick 1123000] FIRED ManhunterPack points=551.45
+  [tick 1188000] FIRED RaidEnemy points=585.95
+  [tick 1188073] Alden has been cut to death.
+  [tick 1232767] muffalo10 has died of infection (extreme).
+  [tick 1268000] FIRED WandererJoin points=0.00
+  [tick 1307000] FIRED ManhunterPack points=545.14
+  [tick 1343000] FIRED RaidEnemy points=568.18
+  [tick 1345805] Elian has been beaten to death.
+  [tick 1347254] Adara has been cut to death.
+  [tick 1355772] muffalo4 has been cut to death.
+  [tick 1356256] Elian has died of blood loss (severe).
+  [tick 1360903] husky7 has been cut to death.
+  [tick 1557000] FIRED TraderCaravanArrival points=0.00
+  [tick 1560000] FIRED RaidEnemy points=498.86
+  [tick 1562255] Lyra has been cut to death.
+  [tick 1577000] FIRED ColdSnap points=0.00
+loaded at tick 1011000, ran to 1680000 with continuation seed 6
+  Dashiell#0: alive
+  Lyra#18: DEAD Injury (Cut), infected
+  Halle#30: alive
+  Juniper#42: alive
+  Elian#48: alive
+  Oona#54: alive, infected
+  Kestrel#60: alive
+  Jarrah#84: alive, infected
+  Dorian#108: alive, infected
+  Halle#114: alive, infected
+  Jolene#126: alive, infected
+  Warrick#132: alive, infected
+  Niall#144: alive
+PAIR casualties=13 survived=12 diedOfInfection=0 diedOfBloodLoss=0 diedOther=1 everInfected=7 citizensAliveAtEnd=21
