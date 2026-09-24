@@ -4,7 +4,7 @@
   <!--
     Diseases the body fights (RimWorld: Hediffs_Diseases_Infectious). Severity climbs until immunity reaches 1,
     then falls; tending slows the climb by severityPerDayTended × tend quality. An untended infection or plague
-    outruns immunity; flu does not.
+    outruns immunity; flu does not. WoundInfection is ported from RimWorld's own def; see its comment.
   -->
 
   <HediffDef Name="DiseaseBase" Abstract="True">
@@ -14,30 +14,60 @@
     <lethalSeverity>1</lethalSeverity>
   </HediffDef>
 
+  <!--
+    WoundInfection, ported from RimWorld's own def as the wiki's generated def dump gives it
+    (rimworldwiki.com/wiki/Hediffs/Core/Local/Infections). Until lane/downed it was not that def, and the
+    difference was what killed people after a raid: this port's "extreme" stage began at 0.62 and took 0.2
+    consciousness, its "major" stage 0.05 more, so two or three infections at once summed to a consciousness of
+    zero and killed a citizen whose worst infection had not reached 0.8 and whose immunity was nearly won.
+    RimWorld's rule is the one the wiki states in words: "If the patient can become immune before their worst
+    infection reaches 100%, they have beaten all their infections." Its stages only ever take 0.05 consciousness
+    before the last one, and the last one caps consciousness at 0.1 (setMax) rather than subtracting from it, so
+    any number of infections downs a pawn but none of them kills until one reaches lethalSeverity.
+    Seed 12345, populated, before this change: 4 of the 7 citizens who died of infection after the day-17 raid
+    died that way, every infection they carried below 0.8.
+
+    Ported with it, and harsher: RimWorld tends an infection for 12 hours, not 24, and immunity decays at -0.4
+    a day once the infection is gone, not -0.3.
+
+    NOT ported, on purpose - immunityPerDaySick. RimWorld's def says 0.6441, but it is multiplied by the
+    ImmunityGainSpeed stat, which RimWorld raises x1.10 for a resting pawn and x1.07 more in a standard bed
+    (wiki: Immunity_gain_speed). This port has neither stat part, and 0.7 is already 0.6441 x 1.10 to within a
+    percent. Porting the number without its multiplier would make this def harsher than RimWorld's rather than
+    closer to it; porting the multiplier needs a rule for whether a downed pawn on the ground counts as resting,
+    which could not be sourced from here. Recorded rather than guessed.
+  -->
   <HediffDef ParentName="DiseaseBase">
     <defName>WoundInfection</defName>
     <label>infection</label>
     <initialSeverity>0.001</initialSeverity>
     <comps>
       <li Class="SimWorld.Health.HediffCompProperties_TendDuration">
-        <baseTendDurationHours>24</baseTendDurationHours>
+        <baseTendDurationHours>12</baseTendDurationHours>
         <severityPerDayTended>-0.53</severityPerDayTended>
       </li>
       <li Class="SimWorld.Health.HediffCompProperties_Immunizable">
         <immunityPerDaySick>0.7</immunityPerDaySick>
         <severityPerDayNotImmune>0.84</severityPerDayNotImmune>
-        <immunityPerDayNotSick>-0.3</immunityPerDayNotSick>
+        <immunityPerDayNotSick>-0.4</immunityPerDayNotSick>
         <severityPerDayImmune>-0.7</severityPerDayImmune>
       </li>
     </comps>
     <stages>
       <li>
         <label>minor</label>
+        <painOffset>0.05</painOffset>
       </li>
       <li>
         <minSeverity>0.33</minSeverity>
         <label>major</label>
-        <painOffset>0.05</painOffset>
+        <painOffset>0.08</painOffset>
+      </li>
+      <li>
+        <minSeverity>0.78</minSeverity>
+        <label>extreme</label>
+        <lifeThreatening>true</lifeThreatening>
+        <painOffset>0.12</painOffset>
         <capMods>
           <li>
             <capacity>Consciousness</capacity>
@@ -46,14 +76,18 @@
         </capMods>
       </li>
       <li>
-        <minSeverity>0.62</minSeverity>
+        <minSeverity>0.87</minSeverity>
         <label>extreme</label>
         <lifeThreatening>true</lifeThreatening>
-        <painOffset>0.1</painOffset>
+        <painOffset>0.85</painOffset>
         <capMods>
           <li>
             <capacity>Consciousness</capacity>
-            <offset>-0.2</offset>
+            <setMax>0.1</setMax>
+          </li>
+          <li>
+            <capacity>Breathing</capacity>
+            <offset>-0.05</offset>
           </li>
         </capMods>
       </li>
