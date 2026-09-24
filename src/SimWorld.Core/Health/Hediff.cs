@@ -451,9 +451,32 @@ namespace SimWorld.Health
         }
     }
 
-    /// <summary>Untended wounds roll for infection after a delay (RimWorld: <c>HediffComp_Infecter</c>).</summary>
+    /// <summary>
+    /// Untended wounds roll for infection after a delay (RimWorld: <c>HediffComp_Infecter</c>). When the timer
+    /// runs out the wound becomes infected with its def's <see cref="HediffCompProperties_Infecter.infectionChance"/>,
+    /// scaled down if it has been tended by then — by <see cref="TendedChanceFactor"/>, RimWorld's own line from
+    /// 85% at tend quality 0 to 5% at tend quality 1 (wiki: Infection). Until lane/downed the line ran from 100%
+    /// to 10%, with no source recorded.
+    /// <para/>
+    /// <b>Not ported:</b> RimWorld also multiplies by the room the wound was tended in (50% in a clean floored
+    /// room, 32% on sterile tile), by the difficulty's player-pawn infection factor, and by an animal factor.
+    /// This port has no room cleanliness a tend could be read against and no such difficulty field, and the
+    /// animal factor's value disagrees between the wiki's own text and its version history; every tend here is
+    /// read as RimWorld's "outdoors", factor 1, which is the harsh end.
+    /// </summary>
     public class HediffComp_Infecter : HediffComp
     {
+        /// <summary>RimWorld's tended-wound infection factor at tend quality 0 (wiki: Infection).</summary>
+        public const float TendedChanceFactorAtQualityZero = 0.85f;
+
+        /// <summary>RimWorld's tended-wound infection factor at tend quality 1 (wiki: Infection).</summary>
+        public const float TendedChanceFactorAtQualityOne = 0.05f;
+
+        /// <summary>How much a tend of <paramref name="tendQuality"/> scales a wound's infection chance: linear
+        /// from <see cref="TendedChanceFactorAtQualityZero"/> to <see cref="TendedChanceFactorAtQualityOne"/>.</summary>
+        public static float TendedChanceFactor(float tendQuality) =>
+            GenMath.Lerp(TendedChanceFactorAtQualityZero, TendedChanceFactorAtQualityOne, GenMath.Clamp01(tendQuality));
+
         private int ticksUntilInfect = -1;
 
         public HediffCompProperties_Infecter Props => (HediffCompProperties_Infecter)props;
@@ -480,7 +503,7 @@ namespace SimWorld.Health
             float chance = Props.infectionChance;
             if (parent.IsTended)
             {
-                chance *= 1f - 0.9f * GenMath.Clamp01(parent.TendQuality);
+                chance *= TendedChanceFactor(parent.TendQuality);
             }
             if (Rand.Chance(chance))
             {

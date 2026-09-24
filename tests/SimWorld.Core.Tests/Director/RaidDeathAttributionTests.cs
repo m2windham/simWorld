@@ -132,15 +132,21 @@ namespace SimWorld.Tests.Director
             return sawDowned;
         }
 
+        private const int CohortSize = 40;
+
         /// <summary>
         /// A cohort each cut once by <paramref name="by"/> and left untended, ticked until the first wound turns
         /// septic through <see cref="HediffComp_Infecter"/> — the real roll, not a stand-in. The cut is the one
         /// <c>HealthTests.Untended_wounds_sometimes_get_infected</c> uses, which nobody bleeds out from.
+        /// <para/>
+        /// <see cref="CohortSize"/> is sized for the chance, not for the test: a cut is infected 15% of the time
+        /// (RimWorld's own figure, which lane/downed ported in place of 40%), so twelve untended cuts all stay
+        /// clean about one run in seven, and forty about one in 670.
         /// </summary>
         private static Pawn FirstInfected(Pawn? by, string cohortName)
         {
             var cohort = new List<Pawn>();
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < CohortSize; i++)
             {
                 Pawn p = NewHuman(cohortName + i);
                 Hit(p, by, "Cut", 10f, "torso");
