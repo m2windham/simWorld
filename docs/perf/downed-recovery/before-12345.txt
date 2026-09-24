@@ -1,0 +1,186 @@
+start: humans=25 everWork=25 doctorActive=24 beds=0
+  emergency givers: FightFires, DoctorTendEmergency
+  normal givers (first 12): DoctorTend, DoctorFeedHumanlikes, DoctorRescue, WardenFeed, WardenDeliverFood, WardenAttemptRecruit, TrainAnimals, TameAnimals, CookMeals, ButcherCorpses, Hunt, ConstructFinishFrames
+day | humans alive | humans downed | beds | episodes open/closed
+1 | 25 | 0 | 1 | 0/0
+2 | 25 | 0 | 1 | 0/0
+3 | 25 | 1 | 1 | 1/1
+  [day 4 tick 231000] FIRED ColdSnap points=0.0
+  [day 4 tick 240000] FIRED ManhunterPack points=329.3
+4 | 25 | 1 | 1 | 1/3
+5 | 25 | 0 | 1 | 0/4
+6 | 25 | 0 | 1 | 0/4
+7 | 25 | 0 | 1 | 0/4
+8 | 25 | 0 | 1 | 0/4
+9 | 25 | 0 | 1 | 0/4
+  [day 10 tick 553000] FIRED Flashstorm points=0.0
+  [day 10 tick 572000] FIRED VisitorGroup points=0.0
+10 | 25 | 0 | 1 | 0/4
+  [day 11 tick 648000] FIRED Drought points=0.0
+11 | 25 | 0 | 1 | 0/4
+12 | 25 | 0 | 1 | 0/4
+13 | 25 | 0 | 1 | 0/4
+14 | 25 | 0 | 1 | 0/4
+15 | 25 | 0 | 1 | 0/4
+16 | 25 | 0 | 1 | 0/4
+  [day 17 tick 996000] FIRED RaidEnemy points=623.0
+17 | 25 | 7 | 1 | 7/15
+18 | 25 | 2 | 1 | 2/25
+  [day 19 tick 1085036] LETTER Death: Dashiell :: Dashiell has died of infection (extreme).
+  [day 19 tick 1087000] FIRED RaidEnemy points=500.4
+  [day 19 tick 1089430] LETTER Death: Juniper :: Juniper has been cut to death.
+  [day 19 tick 1090743] LETTER Death: Delphine :: Delphine has been cut to death.
+  [day 19 tick 1093671] LETTER Death: Jolene :: Jolene has been cut to death.
+  [day 19 tick 1098416] LETTER Death: Quill :: Quill has died of infection (extreme).
+  [day 19 tick 1102178] LETTER Death: Jarrah :: Jarrah has died of infection (extreme).
+  [day 19 tick 1113922] LETTER Death: Oona :: Oona has died of infection (extreme).
+  [day 19 tick 1135010] LETTER Death: muffalo21 :: muffalo21 has died of infection (extreme).
+19 | 18 | 2 | 1 | 2/38
+  [day 20 tick 1164390] LETTER Death: Halle :: Halle has died of infection (extreme).
+  [day 20 tick 1168860] LETTER Death: Elian :: Elian has died of infection (extreme).
+  [day 20 tick 1191790] LETTER Death: husky5 :: husky5 has died of infection (extreme).
+20 | 16 | 0 | 1 | 0/42
+  [day 21 tick 1208555] LETTER Death: husky6 :: husky6 has died of infection (extreme).
+  [day 21 tick 1221000] FIRED ManhunterPack points=335.4
+21 | 16 | 0 | 1 | 0/42
+22 | 16 | 0 | 1 | 0/42
+  [day 23 tick 1320010] LETTER Death: muffalo25 :: muffalo25 has died of infection (extreme).
+  [day 23 tick 1331654] LETTER Death: muffalo23 :: muffalo23 has died of infection (extreme).
+  [day 23 tick 1334380] LETTER Death: muffalo22 :: muffalo22 has died of infection (extreme).
+23 | 16 | 0 | 1 | 0/42
+24 | 16 | 0 | 1 | 0/42
+25 | 16 | 0 | 1 | 0/42
+  [day 26 tick 1537880] LETTER Death: Kira :: Kira has died of infection (extreme).
+26 | 15 | 0 | 1 | 0/44
+27 | 15 | 0 | 1 | 0/44
+28 | 15 | 0 | 1 | 0/44
+
+episodes (humanlike citizens of the player's faction, one row per downing):
+pawn | downed day.tick | bleed@down | maxBleed | rescueJob | inBed | tendJobs | firstTendJob | firstTended | outcome | +ticks | bloodLoss
+Niall#96 | 2.41430 | 0.52 | 0.52 | +3900 by Elian | +6300 | 1 | +60 | +0 | recovered | 11790 | 0.00
+    others doing (samples): Mine=310, SocialRelax=51, LayDown=50, Skygaze=17, Ingest=9, Rescue=7, FeedPatient=4, TendPatient=3
+Niall#96 | 2.54810 | 0.52 | 0.52 | +10260 by Elian | +11040 | 3 | +0 | +0 | recovered | 20610 | 0.00
+    others doing (samples): LayDown=600, Mine=177, Ingest=15, FeedPatient=7, TendPatient=5, Tame=4, SocialRelax=3, Train=3
+Niall#96 | 3.16020 | 0.52 | 0.52 | +4830 by Kira | +4920 | 1 | +0 | +0 | recovered | 21000 | 0.00
+    others doing (samples): Mine=686, LayDown=55, Ingest=27, SocialRelax=25, Rescue=19, FeedPatient=11, TendPatient=9, Harvest=5
+Niall#96 | 3.38100 | 0.52 | 0.52 | +19050 by Kestrel | +0 | 3 | +0 | +0 | recovered | 61620 | 0.00
+    others doing (samples): LayDown=739, HaulToCell=652, Mine=589, SocialRelax=139, CutPlant=80, Ingest=63, FeedPatient=56, Tame=41
+Juniper#42 | 16.37740 | 2.16 | 2.16 | - | - | 5 | +0 | +5760 | recovered | 40950 | 0.00
+    others doing (samples): LayDown=474, Harvest=267, Sow=173, HaulToCell=101, AttackStatic=89, FeedPatient=82, TendPatient=47, CutPlant=14
+Oona#54 | 16.37950 | 3.60 | 3.60 | - | - | 3 | +0 | - | recovered | 3990 | 0.21
+    others doing (samples): AttackStatic=59, TendPatient=16, LayDown=15, Harvest=8, Train=2, Sow=1
+Dorian#108 | 16.38100 | 2.52 | 2.52 | - | - | 1 | +0 | - | recovered | 300 | 0.01
+Kestrel#60 | 16.38370 | 2.02 | 2.02 | - | - | 1 | +0 | - | recovered | 30 | 0.00
+Kestrel#60 | 16.38460 | 2.61 | 2.61 | - | - | 3 | +0 | +1530 | recovered | 31740 | 0.00
+    others doing (samples): LayDown=301, Harvest=256, Sow=139, AttackStatic=80, FeedPatient=67, TendPatient=32, Ingest=9, Tame=4
+Elian#48 | 16.38490 | 2.75 | 2.75 | - | - | 1 | +0 | - | recovered | 1230 | 0.05
+    others doing (samples): AttackStatic=21, TendPatient=6, LayDown=4, Harvest=2, Train=1
+Dashiell#0 | 16.38580 | 3.70 | 3.70 | +16110 by Oona | +16410 | 2 | +0 | +1410 | recovered | 18480 | 0.00
+    others doing (samples): Harvest=218, LayDown=140, AttackStatic=80, FeedPatient=32, TendPatient=25, Ingest=9, Tame=4, Rescue=4
+Halle#30 | 16.38940 | 1.30 | 1.30 | - | - | 1 | +510 | - | recovered | 1560 | 0.02
+    others doing (samples): AttackStatic=31, TendPatient=8, LayDown=7, Harvest=2, Train=1
+Niall#144 | 16.38940 | 1.20 | 1.20 | +17010 by Quinley | +18090 | 1 | +390 | +0 | recovered | 33990 | 0.00
+    others doing (samples): LayDown=344, Harvest=256, Sow=171, AttackStatic=80, FeedPatient=72, TendPatient=34, HaulToCell=12, Ingest=9
+Dorian#108 | 16.39090 | 2.61 | 2.61 | - | - | 2 | +900 | +1440 | recovered | 29910 | 0.00
+    others doing (samples): LayDown=283, Harvest=254, Sow=121, AttackStatic=69, FeedPatient=64, TendPatient=29, Ingest=9, Tame=4
+Halle#114 | 16.39330 | 2.71 | 2.71 | - | +0 | 2 | +390 | - | recovered | 930 | 0.04
+    others doing (samples): AttackStatic=20, TendPatient=6, LayDown=5
+Warrick#132 | 16.39750 | 3.23 | 3.23 | - | - | 3 | +3360 | +3600 | recovered | 34410 | 0.00
+    others doing (samples): LayDown=359, Harvest=254, Sow=171, FeedPatient=76, AttackStatic=59, TendPatient=30, HaulToCell=28, Ingest=10
+Elian#48 | 16.39780 | 0.60 | 0.60 | - | - | 0 | - | +0 | recovered | 1650 | 0.06
+    others doing (samples): AttackStatic=32, LayDown=7, TendPatient=5
+Jarrah#84 | 16.40650 | 2.25 | 2.25 | - | - | 3 | +0 | - | recovered | 1080 | 0.04
+    others doing (samples): AttackStatic=22, LayDown=4, TendPatient=3
+Halle#30 | 16.40710 | 0.66 | 0.66 | - | - | 1 | +30 | +0 | recovered | 1740 | 0.01
+    others doing (samples): AttackStatic=35, LayDown=7, TendPatient=4
+Jolene#126 | 16.41040 | 1.65 | 1.65 | - | - | 3 | +90 | +0 | recovered | 38580 | 0.00
+    others doing (samples): LayDown=470, Harvest=254, Sow=171, HaulToCell=102, FeedPatient=82, AttackStatic=38, TendPatient=31, CutPlant=14
+Lyra#18 | 16.42060 | 3.96 | 3.96 | - | - | 2 | +390 | +1440 | recovered | 4980 | 0.08
+    others doing (samples): Harvest=63, LayDown=29, AttackStatic=14, TendPatient=9, FeedPatient=6, Ingest=4, Tame=4
+Halle#30 | 16.42630 | 0.66 | 0.66 | - | - | 1 | +480 | +0 | recovered | 30420 | 0.00
+    others doing (samples): LayDown=327, Harvest=254, Sow=171, FeedPatient=72, TendPatient=21, HaulToCell=12, Ingest=9, CutPlant=6
+Halle#114 | 17.31800 | 2.70 | 2.70 | - | - | 1 | +0 | +0 | recovered | 960 | 0.05
+    others doing (samples): LayDown=22, Harvest=22, TendPatient=2, Tame=2
+Dashiell#0 | 17.37890 | 0.00 | 0.00 | - | - | 0 | - | +0 | recovered | 2370 | 0.00
+    others doing (samples): Harvest=46, LayDown=18, Sow=13, TendPatient=7, Tame=4, Train=3, AttackStatic=1
+Kestrel#60 | 17.38310 | 0.90 | 0.90 | - | - | 1 | +30 | +0 | recovered | 19890 | 0.00
+    others doing (samples): Sow=355, HaulToCell=154, LayDown=126, Harvest=54, TendPatient=17, Rescue=15, CutPlant=14, Train=7
+Elian#48 | 17.43860 | 0.00 | 0.00 | - | - | 1 | +4890 | +0 | recovered | 55860 | 0.00
+    others doing (samples): HaulToCell=375, LayDown=367, Sow=235, FeedPatient=136, AttackStatic=97, SocialRelax=85, TendPatient=52, Harvest=49
+Dashiell#0 | 17.51900 | 0.00 | 0.00 | +3600 by Dorian | +4680 | 2 | +7560 | +0 | died:Disease | 13140 | 0.00
+    others doing (samples): HaulToCell=316, LayDown=95, CutPlant=27, SocialRelax=16, Rescue=11, FeedPatient=9, TendPatient=8, Ingest=3
+Kira#90 | 18.00570 | 0.90 | 0.90 | - | - | 1 | +120 | +0 | recovered | 5820 | 0.00
+    others doing (samples): HaulToCell=123, LayDown=41, SocialRelax=17, CutPlant=12, FeedPatient=11, TendPatient=7, Skygaze=6, Ingest=2
+Warrick#132 | 18.08010 | 0.99 | 0.99 | - | - | 2 | +210 | +0 | recovered | 58350 | 0.00
+    others doing (samples): LayDown=488, FeedPatient=209, HaulToCell=170, AttackStatic=90, Harvest=73, SocialRelax=56, TendPatient=47, Ingest=24
+Dorian#108 | 18.08100 | 0.00 | 0.00 | - | - | 2 | +9240 | +0 | recovered | 48300 | 0.00
+    others doing (samples): LayDown=359, FeedPatient=189, HaulToCell=95, AttackStatic=90, Harvest=73, SocialRelax=56, TendPatient=45, Ingest=17
+Oona#54 | 18.08310 | 0.60 | 0.60 | - | - | 2 | +930 | +0 | recovered | 9570 | 0.02
+    others doing (samples): AttackStatic=89, LayDown=34, SocialRelax=28, TendPatient=21, Skygaze=8, FeedPatient=2, CutPlant=1, HaulToCell=1
+Jolene#126 | 18.08430 | 0.00 | 0.00 | - | - | 0 | - | +0 | recovered | 5190 | 0.00
+    others doing (samples): AttackStatic=56, LayDown=18, TendPatient=8, Skygaze=7, SocialRelax=4, FeedPatient=1
+Quill#24 | 18.08490 | 2.64 | 2.64 | - | - | 3 | +120 | +0 | died:Disease | 9930 | 0.26
+    others doing (samples): AttackStatic=80, SocialRelax=34, LayDown=32, TendPatient=20, Skygaze=7, FeedPatient=1, Ingest=1
+Quinley#102 | 18.08640 | 1.80 | 1.80 | - | - | 4 | +210 | +0 | recovered | 33150 | 0.00
+    others doing (samples): LayDown=215, FeedPatient=135, AttackStatic=81, SocialRelax=56, Harvest=50, TendPatient=28, HaulToCell=11, Ingest=8
+Quill#12 | 18.08910 | 2.44 | 2.44 | - | - | 1 | +0 | +0 | recovered | 2880 | 0.02
+    others doing (samples): AttackStatic=33, LayDown=15, TendPatient=6, SocialRelax=4, Skygaze=4, FeedPatient=1
+Elian#72 | 18.09210 | 3.03 | 3.03 | - | - | 4 | +30 | +450 | recovered | 37080 | 0.00
+    others doing (samples): LayDown=253, FeedPatient=165, AttackStatic=73, Harvest=70, SocialRelax=56, TendPatient=28, Ingest=12, HaulToCell=11
+Lyra#18 | 18.09870 | 1.65 | 1.65 | - | - | 3 | +270 | +0 | recovered | 46320 | 0.00
+    others doing (samples): LayDown=347, FeedPatient=187, HaulToCell=94, Harvest=73, AttackStatic=67, SocialRelax=54, TendPatient=38, Ingest=17
+Jarrah#84 | 18.10260 | 1.43 | 1.43 | - | - | 1 | +240 | +0 | died:Disease | 11940 | 0.00
+    others doing (samples): AttackStatic=60, LayDown=46, SocialRelax=39, FeedPatient=20, TendPatient=15, Harvest=10, Skygaze=5, Ingest=3
+Halle#114 | 18.10320 | 0.66 | 0.66 | +69900 by Kira | +70920 | 4 | +0 | +0 | died:Disease | 74070 | 0.00
+    others doing (samples): LayDown=642, HaulToCell=328, FeedPatient=223, Harvest=83, AttackStatic=61, SocialRelax=58, TendPatient=44, GotoWander=39
+Quill#12 | 18.12210 | 0.66 | 0.66 | - | - | 2 | +2940 | +0 | recovered | 31980 | 0.00
+    others doing (samples): LayDown=218, FeedPatient=153, Harvest=57, SocialRelax=52, AttackStatic=40, TendPatient=21, Ingest=11, HaulToCell=11
+Elian#72 | 19.00180 | 0.00 | 0.00 | +9510 by Elian | +10560 | 1 | +22530 | +0 | died:Disease | 28680 | 0.00
+    others doing (samples): LayDown=289, HaulToCell=203, GotoWander=55, SocialRelax=39, FeedPatient=31, Rescue=29, CutPlant=25, Harvest=24
+Quill#12 | 19.37500 | 0.00 | 0.00 | +13230 by Kira | - | 0 | - | +0 | recovered | 13890 | 0.00
+    others doing (samples): HaulToCell=182, LayDown=81, CutPlant=17, Skygaze=14, SocialRelax=14, Harvest=13, FeedPatient=11, TendPatient=8
+Elian#48 | 25.17160 | 0.00 | 0.00 | +11160 by Kestrel | +12300 | 1 | +1860 | +0 | recovered | 30750 | 0.00
+    others doing (samples): HaulToCell=211, LayDown=201, Harvest=183, SocialRelax=42, FeedPatient=25, Hunt=23, CutPlant=13, Ingest=11
+Kira#90 | 25.20040 | 0.00 | 0.00 | +6300 by Della | +7470 | 0 | - | +0 | died:Disease | 17850 | 0.00
+    others doing (samples): HaulToCell=126, LayDown=117, Harvest=102, SocialRelax=34, FeedPatient=19, CutPlant=8, Ingest=7, Rescue=6
+
+wound infections on humanlike citizens:
+pawn | part | onset | firstTended | %tended | tends | meanQ | maxSev | immAtMax | igs | %downed | %inBed | outcome | +ticks
+Niall#96 | left leg | 3.07590 | +960 | 99% | 3 | 0.56 | 0.73 | 1.00 | 1.00 | 69% | 66% | cured | 130710
+Niall#96 | right arm | 3.10740 | +1170 | 99% | 3 | 0.43 | 0.83 | 1.00 | 1.00 | 62% | 59% | cured | 139290
+Warrick#132 | left lung | 13.50580 | +600 | 99% | 3 | 0.34 | 0.96 | 1.00 | 1.00 | 0% | 0% | cured | 151500
+Elian#48 | left arm | 16.55860 | +330 | 99% | 3 | 0.48 | 0.94 | 1.00 | 1.00 | 40% | 0% | cured | 139530
+Dashiell#0 | torso | 16.56460 | +750 | 98% | 2 | 0.31 | 0.77 | 0.80 | 1.00 | 23% | 41% | died:Disease | 68580
+Jolene#126 | heart | 16.56880 | +1170 | 98% | 2 | 0.34 | 0.81 | 0.90 | 1.00 | 36% | 0% | died:Injury | 76800
+Jolene#126 | right hand | 16.57780 | +480 | 99% | 2 | 0.57 | 0.67 | 0.90 | 1.00 | 35% | 0% | died:Injury | 75900
+Warrick#132 | right leg | 17.05040 | +510 | 98% | 1 | 0.59 | 0.17 | 1.00 | 1.00 | 32% | 0% | cured | 28230
+Dashiell#0 | stomach | 17.06570 | +360 | 99% | 2 | 0.50 | 0.62 | 0.80 | 1.00 | 26% | 31% | died:Disease | 58470
+Warrick#132 | right shoulder | 17.06930 | +570 | 97% | 1 | 0.43 | 0.17 | 1.00 | 1.00 | 26% | 0% | cured | 27630
+Dashiell#0 | right leg | 17.08220 | +270 | 99% | 2 | 0.39 | 0.63 | 0.80 | 1.00 | 27% | 29% | died:Disease | 56820
+Oona#54 | left leg | 17.09360 | +330 | 99% | 2 | 0.22 | 1.00 | 0.99 | 1.00 | 11% | 0% | died:Disease | 84570
+Lyra#18 | left leg | 17.10860 | +1590 | 98% | 2 | 0.58 | 0.68 | 1.00 | 1.00 | 37% | 0% | cured | 124890
+Juniper#42 | left leg | 17.12180 | +390 | 99% | 2 | 0.48 | 0.63 | 0.67 | 1.00 | 11% | 0% | died:Injury | 57270
+Jarrah#84 | left hand | 17.12780 | +1560 | 97% | 2 | 0.51 | 0.66 | 0.81 | 1.00 | 17% | 0% | died:Disease | 69420
+Jarrah#84 | right arm | 17.13470 | +1710 | 97% | 2 | 0.59 | 0.62 | 0.81 | 1.00 | 17% | 0% | died:Disease | 68730
+Warrick#132 | torso | 17.15240 | +1530 | 88% | 1 | 0.50 | 0.09 | 1.00 | 1.00 | 0% | 0% | cured | 13560
+Quill#24 | left leg | 17.15780 | +600 | 99% | 2 | 0.33 | 0.70 | 0.73 | 1.00 | 15% | 0% | died:Disease | 62640
+Alden#36 | torso | 17.16200 | +360 | 99% | 3 | 0.44 | 0.89 | 1.00 | 1.00 | 0% | 18% | cured | 139530
+Dorian#108 | right hand | 17.20070 | +1770 | 98% | 3 | 0.54 | 0.77 | 1.00 | 1.00 | 35% | 0% | cured | 135630
+Quill#24 | right arm | 17.28050 | +1410 | 97% | 1 | 0.20 | 0.62 | 0.73 | 1.00 | 19% | 0% | died:Disease | 50370
+Halle#114 | torso | 18.01860 | +330 | 99% | 2 | 0.24 | 1.00 | 0.96 | 1.00 | 89% | 3% | died:Disease | 82530
+Oona#54 | right leg | 18.28860 | +1320 | 73% | 1 | 0.38 | 0.06 | 0.99 | 1.00 | 0% | 0% | died:Disease | 5070
+Elian#72 | left lung | 18.29070 | +990 | 98% | 2 | 0.50 | 0.62 | 0.70 | 1.00 | 76% | 30% | died:Disease | 59790
+Elian#72 | left leg | 18.35790 | +450 | 99% | 1 | 0.24 | 0.63 | 0.70 | 1.00 | 73% | 34% | died:Disease | 53070
+Quill#12 | right arm | 18.39750 | +720 | 99% | 3 | 0.45 | 0.94 | 1.00 | 1.00 | 12% | 12% | cured | 144450
+Della#66 | liver | 18.44640 | +600 | 99% | 3 | 0.40 | 0.85 | 1.00 | 1.00 | 0% | 0% | cured | 140550
+Halle#114 | right lung | 18.52320 | +1830 | 94% | 1 | 0.26 | 0.38 | 0.96 | 1.00 | 100% | 9% | died:Disease | 32070
+Elian#48 | torso | 24.09930 | +390 | 99% | 3 | 0.46 | 0.78 | 1.00 | 1.00 | 22% | 34% | cured | 136830
+Kira#90 | right leg | 24.13650 | +1410 | 98% | 2 | 0.24 | 1.00 | 0.98 | 1.00 | 21% | 12% | died:Disease | 84240
+Kira#90 | left leg | 24.15480 | +630 | 99% | 2 | 0.42 | 0.82 | 0.98 | 1.00 | 21% | 12% | died:Disease | 82410
+Kira#90 | torso | 24.20100 | +1710 | 97% | 2 | 0.38 | 0.84 | 0.98 | 1.00 | 22% | 13% | died:Disease | 77790
+Elian#48 | left arm | 24.25350 | +1050 | 99% | 3 | 0.45 | 0.81 | 1.00 | 1.00 | 25% | 39% | cured | 121650
+SUMMARY infections=33 cured=14 died=19 open=0 pawnsInfected=17
+
+SUMMARY episodes=44 recovered=38 died=6 stillDown=0 | rescueJobIssued=12 reachedBed=12 tendJobIssued=39 tended=37
+SUMMARY citizensEverDowned=19 aliveAtEnd=10 deadAtEnd=9
+SUMMARY deaths by cause among ever-downed: Disease=7, Injury=2

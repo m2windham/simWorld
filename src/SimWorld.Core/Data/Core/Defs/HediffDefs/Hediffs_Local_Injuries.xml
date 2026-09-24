@@ -3,6 +3,14 @@
 
   <!-- Wounds left by damage (RimWorld: Hediffs_Local_Injuries). Severity is the damage amount; pain and bleeding scale with it. -->
 
+  <!--
+    infectionChance is RimWorld's own, per the wiki's generated def dump (rimworldwiki.com/wiki/Hediffs/Core/Local/Injuries):
+    0.15 for Cut, Scratch, Stab, Gunshot and Crush, 0.30 for Bite and Burn. Until lane/downed these were 0.4 (0.5 for a bite,
+    0.3 for a crush), with no source recorded - between two and three times RimWorld's, which after a raid meant more
+    infections than a settlement's doctors could win the immunity race on. HediffComp_Infecter applies the chance when its
+    timer runs out, scaled down by tend quality; see that class.
+  -->
+
   <HediffDef Name="InjuryBase" Abstract="True">
     <hediffClass>SimWorld.Health.Hediff_Injury</hediffClass>
     <tendable>true</tendable>
@@ -16,7 +24,7 @@
     <comps>
       <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
       <li Class="SimWorld.Health.HediffCompProperties_Infecter">
-        <infectionChance>0.4</infectionChance>
+        <infectionChance>0.15</infectionChance>
       </li>
       <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
         <permanentLabel>cut scar</permanentLabel>
@@ -37,7 +45,7 @@
     <comps>
       <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
       <li Class="SimWorld.Health.HediffCompProperties_Infecter">
-        <infectionChance>0.4</infectionChance>
+        <infectionChance>0.15</infectionChance>
       </li>
       <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
         <permanentLabel>scratch scar</permanentLabel>
@@ -58,7 +66,7 @@
     <comps>
       <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
       <li Class="SimWorld.Health.HediffCompProperties_Infecter">
-        <infectionChance>0.4</infectionChance>
+        <infectionChance>0.15</infectionChance>
       </li>
       <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
         <permanentLabel>stab scar</permanentLabel>
@@ -79,7 +87,7 @@
     <comps>
       <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
       <li Class="SimWorld.Health.HediffCompProperties_Infecter">
-        <infectionChance>0.5</infectionChance>
+        <infectionChance>0.3</infectionChance>
       </li>
       <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
         <permanentLabel>bite scar</permanentLabel>
@@ -100,7 +108,7 @@
     <comps>
       <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
       <li Class="SimWorld.Health.HediffCompProperties_Infecter">
-        <infectionChance>0.4</infectionChance>
+        <infectionChance>0.15</infectionChance>
       </li>
       <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
         <permanentLabel>old gunshot</permanentLabel>
@@ -121,7 +129,7 @@
     <comps>
       <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
       <li Class="SimWorld.Health.HediffCompProperties_Infecter">
-        <infectionChance>0.3</infectionChance>
+        <infectionChance>0.15</infectionChance>
       </li>
       <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
         <permanentLabel>crush scar</permanentLabel>

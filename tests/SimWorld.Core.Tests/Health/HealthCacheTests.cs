@@ -155,8 +155,9 @@ namespace SimWorld.Tests.Health
                 steps++;
             }
 
-            // The nudge that finally crosses into stage 1 ("major", capMods Consciousness -0.05) must still
-            // be caught, even though it looked exactly like every nudge before it.
+            // The nudge that finally crosses into stage 1 ("major": pain 0.05 -> 0.08, which consciousness reads
+            // through PainConsciousnessFactor) must still be caught, even though it looked exactly like every
+            // nudge before it.
             Assert.Equal(1, infection.CurStageIndex);
             Assert.True(pawn.health.capacities.GetLevel(consciousness) < consciousnessBeforeMajor,
                 "crossing into the major stage must lower consciousness, and the cache must show it");

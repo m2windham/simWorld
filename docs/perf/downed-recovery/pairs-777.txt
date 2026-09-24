@@ -1,0 +1,377 @@
+# save
+  [tick 210000] FIRED TraderCaravanArrival points=0.00
+  [tick 240000] FIRED ManhunterPack points=350.54
+  [tick 520000] FIRED TraderCaravanArrival points=0.00
+  [tick 589000] FIRED VisitorGroup points=0.00
+  [tick 1661771] Yara has died of infection (extreme).
+  [tick 1683000] FIRED Eclipse points=0.00
+  [tick 1769000] FIRED RaidEnemy points=817.70
+  [tick 1771349] Kade has been beaten to death.
+  [tick 1772121] Harlan has been cut to death.
+  [tick 1777762] muffalo5 has been cut to death.
+saved at tick 1784000, raid fired at 1769000; citizens alive 22, downed by the raid and alive 22, downed now 22, wound infections present 0, hostiles standing 11
+# casualties
+0	Tobin
+6	Giselle
+12	Oren
+18	Fira
+30	Elowen
+36	Aaron
+48	Oren
+54	Calla
+66	Rosalind
+72	Vance
+78	Yara
+84	Alden
+90	Kaia
+96	Vance
+102	Rosalind
+108	Aaron
+114	Ursa
+120	Jasper
+126	Senna
+132	Yorick
+138	Tamsin
+144	Idris
+
+# continuation 1, before arm
+  [tick 1786562] Oren has died of blood loss (severe).
+  [tick 1865769] Rosalind has died of infection (extreme).
+  [tick 1875374] Tobin has died of infection (extreme).
+  [tick 1902478] Oren has died of infection (extreme).
+  [tick 2105000] FIRED Eclipse points=0.00
+  [tick 2333013] Senna has died of infection (extreme).
+  [tick 2458000] FIRED WandererJoin points=0.00
+  [tick 2503000] FIRED TraderCaravanArrival points=0.00
+loaded at tick 1785000, ran to 2520000 with continuation seed 1
+  Tobin#0: DEAD Disease (WoundInfection), infected
+  Giselle#6: alive, infected
+  Oren#12: DEAD Disease (WoundInfection), infected
+  Fira#18: alive
+  Elowen#30: alive, infected
+  Aaron#36: alive, infected
+  Oren#48: DEAD Injury (BloodLoss)
+  Calla#54: alive
+  Rosalind#66: alive, infected
+  Vance#72: alive
+  Yara#78: alive, infected
+  Alden#84: alive
+  Kaia#90: alive, infected
+  Vance#96: alive, infected
+  Rosalind#102: DEAD Disease (WoundInfection), infected
+  Aaron#108: alive
+  Ursa#114: alive
+  Jasper#120: alive
+  Senna#126: DEAD Disease (WoundInfection), infected
+  Yorick#132: alive, infected
+  Tamsin#138: alive, infected
+  Idris#144: alive
+PAIR casualties=22 survived=17 diedOfInfection=4 diedOfBloodLoss=1 diedOther=0 everInfected=13 citizensAliveAtEnd=18
+
+# continuation 1, after arm
+  [tick 1786562] Oren has died of blood loss (severe).
+  [tick 1881118] Tamsin has died of infection (extreme).
+  [tick 1893070] Rosalind has died of infection (extreme).
+  [tick 2171000] FIRED RaidEnemy points=645.69
+  [tick 2173095] husky7 has been cut to death.
+  [tick 2174054] Idris has been cut to death.
+  [tick 2182277] Oren has died of blood loss (severe).
+  [tick 2184566] Elowen has died of blood loss (severe).
+  [tick 2185457] Giselle has died of blood loss (severe).
+  [tick 2187510] Rosalind has died of blood loss (severe).
+  [tick 2194892] Senna has died of blood loss (extreme).
+  [tick 2195937] Calla has died of blood loss (severe).
+  [tick 2196428] Alden has died of blood loss (severe).
+  [tick 2276207] Fira has died of infection (extreme).
+  [tick 2333000] FIRED WandererJoin points=0.00
+  [tick 2420000] FIRED ColdSnap points=0.00
+loaded at tick 1785000, ran to 2520000 with continuation seed 1
+  Tobin#0: alive, infected
+  Giselle#6: DEAD Injury (BloodLoss)
+  Oren#12: DEAD Injury (BloodLoss)
+  Fira#18: DEAD Disease (WoundInfection), infected
+  Elowen#30: DEAD Injury (BloodLoss)
+  Aaron#36: alive, infected
+  Oren#48: DEAD Injury (BloodLoss)
+  Calla#54: DEAD Injury (BloodLoss)
+  Rosalind#66: DEAD Disease (WoundInfection), infected
+  Vance#72: alive, infected
+  Yara#78: alive
+  Alden#84: DEAD Injury (BloodLoss)
+  Kaia#90: alive
+  Vance#96: alive, infected
+  Rosalind#102: DEAD Injury (BloodLoss), infected
+  Aaron#108: alive
+  Ursa#114: alive, infected
+  Jasper#120: alive
+  Senna#126: DEAD Injury (BloodLoss)
+  Yorick#132: alive, infected
+  Tamsin#138: DEAD Disease (WoundInfection), infected
+  Idris#144: DEAD Injury (Cut)
+PAIR casualties=22 survived=10 diedOfInfection=3 diedOfBloodLoss=8 diedOther=1 everInfected=10 citizensAliveAtEnd=11
+
+# continuation 2, before arm
+  [tick 1786562] Oren has died of blood loss (severe).
+  [tick 1874748] Elowen has died of infection (extreme).
+  [tick 1877784] Jasper has died of infection (extreme).
+  [tick 1878109] Aaron has died of infection (extreme).
+  [tick 1879390] Aaron has died of infection (extreme).
+  [tick 1896061] muffalo4 has died of infection (extreme).
+  [tick 1904228] Yorick has died of infection (extreme).
+  [tick 2031000] FIRED WandererJoin points=0.00
+  [tick 2092000] FIRED Flashstorm points=0.00
+  [tick 2100000] FIRED ColdSnap points=0.00
+  [tick 2177000] FIRED RaidEnemy points=581.85
+  [tick 2178948] husky2 has died of bruise.
+  [tick 2271377] Kaia has died of infection (extreme).
+  [tick 2284000] FIRED VisitorGroup points=0.00
+  [tick 2291620] husky7 has died of infection (extreme).
+  [tick 2294675] Oren has died of infection (extreme).
+  [tick 2342000] FIRED VisitorGroup points=0.00
+  [tick 2364000] FIRED RaidEnemy points=513.72
+  [tick 2366628] Rosalind has been cut to death.
+  [tick 2373968] Alden has died of blood loss (severe).
+  [tick 2383387] Idris has died of blood loss (severe).
+  [tick 2383532] Senna has died of blood loss (severe).
+  [tick 2383801] Juniper has died of blood loss (severe).
+  [tick 2384632] Fira has died of blood loss (extreme).
+  [tick 2385632] Yara has died of blood loss (extreme).
+  [tick 2386006] Tobin has died of blood loss (extreme).
+  [tick 2389757] Giselle has died of blood loss (extreme).
+loaded at tick 1785000, ran to 2520000 with continuation seed 2
+  Tobin#0: DEAD Injury (BloodLoss)
+  Giselle#6: DEAD Injury (BloodLoss), infected
+  Oren#12: DEAD Disease (WoundInfection), infected
+  Fira#18: DEAD Injury (BloodLoss), infected
+  Elowen#30: DEAD Disease (WoundInfection), infected
+  Aaron#36: DEAD Disease (WoundInfection), infected
+  Oren#48: DEAD Injury (BloodLoss)
+  Calla#54: alive, infected
+  Rosalind#66: DEAD Injury (Cut), infected
+  Vance#72: alive, infected
+  Yara#78: DEAD Injury (BloodLoss), infected
+  Alden#84: DEAD Injury (BloodLoss)
+  Kaia#90: DEAD Disease (WoundInfection), infected
+  Vance#96: alive, infected
+  Rosalind#102: alive, infected
+  Aaron#108: DEAD Disease (WoundInfection), infected
+  Ursa#114: alive, infected
+  Jasper#120: DEAD Disease (WoundInfection), infected
+  Senna#126: DEAD Injury (BloodLoss)
+  Yorick#132: DEAD Disease (WoundInfection), infected
+  Tamsin#138: alive, infected
+  Idris#144: DEAD Injury (BloodLoss), infected
+PAIR casualties=22 survived=6 diedOfInfection=7 diedOfBloodLoss=8 diedOther=1 everInfected=18 citizensAliveAtEnd=6
+
+# continuation 2, after arm
+  [tick 1786562] Oren has died of blood loss (severe).
+  [tick 2375000] FIRED ManhunterPack points=797.78
+  [tick 2505000] FIRED ManhunterPack points=849.40
+loaded at tick 1785000, ran to 2520000 with continuation seed 2
+  Tobin#0: alive
+  Giselle#6: alive
+  Oren#12: alive
+  Fira#18: alive, infected
+  Elowen#30: alive
+  Aaron#36: alive
+  Oren#48: DEAD Injury (BloodLoss)
+  Calla#54: alive
+  Rosalind#66: alive
+  Vance#72: alive
+  Yara#78: alive
+  Alden#84: alive
+  Kaia#90: alive
+  Vance#96: alive
+  Rosalind#102: alive
+  Aaron#108: alive
+  Ursa#114: alive
+  Jasper#120: alive
+  Senna#126: alive, infected
+  Yorick#132: alive, infected
+  Tamsin#138: alive, infected
+  Idris#144: alive
+PAIR casualties=22 survived=21 diedOfInfection=0 diedOfBloodLoss=1 diedOther=0 everInfected=4 citizensAliveAtEnd=21
+
+# continuation 3, before arm
+  [tick 1786562] Oren has died of blood loss (severe).
+  [tick 1889344] Vance has died of infection (extreme).
+  [tick 1929000] FIRED ColdSnap points=0.00
+  [tick 2006000] FIRED TraderCaravanArrival points=0.00
+  [tick 2080000] FIRED RaidEnemy points=654.87
+  [tick 2103000] FIRED Flashstorm points=0.00
+  [tick 2116000] FIRED ManhunterPack points=619.55
+  [tick 2150000] FIRED VisitorGroup points=0.00
+  [tick 2358000] FIRED RaidEnemy points=703.17
+  [tick 2359922] husky2 has been cut to death.
+  [tick 2359957] Senna has been beaten to death.
+  [tick 2362441] Rosalind has been cut to death.
+  [tick 2366958] Rosalind has died of blood loss (severe).
+  [tick 2369157] Calla has died of blood loss (severe).
+  [tick 2370112] Fira has died of blood loss (severe).
+  [tick 2370285] Yorick has died of blood loss (severe).
+  [tick 2377436] husky7 has died of blood loss (severe).
+  [tick 2377927] Idris has died of blood loss (extreme).
+  [tick 2379086] Elowen has died of blood loss (extreme).
+  [tick 2379452] Yara has died of blood loss (severe).
+  [tick 2383095] Aaron has died of blood loss (extreme).
+  [tick 2383096] Vance has died of blood loss (extreme).
+  [tick 2387573] muffalo4 has died of blood loss (extreme).
+  [tick 2388317] Giselle has died of blood loss (extreme).
+  [tick 2389044] Kaia has died of blood loss (extreme).
+  [tick 2390803] muffalo13 has died of blood loss (extreme).
+  [tick 2398175] Aaron has died of blood loss (extreme).
+  [tick 2399888] Tamsin has died of blood loss (extreme).
+  [tick 2435629] Ursa has died of infection (extreme).
+  [tick 2483133] Oren has died of infection (extreme).
+loaded at tick 1785000, ran to 2520000 with continuation seed 3
+  Tobin#0: alive, infected
+  Giselle#6: DEAD Injury (BloodLoss), infected
+  Oren#12: DEAD Disease (WoundInfection), infected
+  Fira#18: DEAD Injury (BloodLoss)
+  Elowen#30: DEAD Injury (BloodLoss), infected
+  Aaron#36: DEAD Injury (BloodLoss), infected
+  Oren#48: DEAD Injury (BloodLoss)
+  Calla#54: DEAD Injury (BloodLoss)
+  Rosalind#66: DEAD Injury (BloodLoss), infected
+  Vance#72: DEAD Injury (BloodLoss), infected
+  Yara#78: DEAD Injury (BloodLoss), infected
+  Alden#84: alive, infected
+  Kaia#90: DEAD Injury (BloodLoss), infected
+  Vance#96: DEAD Disease (WoundInfection), infected
+  Rosalind#102: DEAD Injury (Cut)
+  Aaron#108: DEAD Injury (BloodLoss)
+  Ursa#114: DEAD Disease (WoundInfection), infected
+  Jasper#120: alive, infected
+  Senna#126: DEAD Injury (Crush), infected
+  Yorick#132: DEAD Injury (BloodLoss), infected
+  Tamsin#138: DEAD Injury (BloodLoss), infected
+  Idris#144: DEAD Injury (BloodLoss), infected
+PAIR casualties=22 survived=3 diedOfInfection=3 diedOfBloodLoss=14 diedOther=2 everInfected=17 citizensAliveAtEnd=3
+
+# continuation 3, after arm
+  [tick 1786562] Oren has died of blood loss (severe).
+  [tick 1880000] FIRED RaidEnemy points=624.13
+  [tick 1882209] Vance has been beaten to death.
+  [tick 1892626] Tobin has died of blood loss (severe).
+  [tick 1897535] Aaron has died of blood loss (severe).
+  [tick 1900945] husky2 has died of blood loss (extreme).
+  [tick 1903245] Yorick has died of blood loss (severe).
+  [tick 1911138] Rosalind has died of blood loss (extreme).
+  [tick 1912577] Oren has died of blood loss (extreme).
+  [tick 1919563] muffalo13 has died of blood loss (extreme).
+  [tick 1920907] Idris has died of blood loss (extreme).
+  [tick 1921186] Ursa has died of blood loss (extreme).
+  [tick 1922776] Jasper has died of blood loss (extreme).
+  [tick 1923797] Giselle has died of blood loss (extreme).
+  [tick 1926616] Vance has died of blood loss (extreme).
+  [tick 1927328] Alden has died of blood loss (extreme).
+  [tick 1927376] husky7 has died of blood loss (extreme).
+  [tick 1932566] Elowen has died of blood loss (extreme).
+  [tick 1944975] Aaron has died of blood loss (extreme).
+  [tick 1948712] Senna has died of blood loss (extreme).
+  [tick 1955697] Calla has died of blood loss (extreme).
+  [tick 1958000] FIRED WandererJoin points=0.00
+  [tick 1988000] FIRED TraderCaravanArrival points=0.00
+  [tick 2197313] Kaia has died of infection (extreme).
+  [tick 2215257] Rosalind has been bitten to death.
+loaded at tick 1785000, ran to 2520000 with continuation seed 3
+  Tobin#0: DEAD Injury (BloodLoss)
+  Giselle#6: DEAD Injury (BloodLoss), infected
+  Oren#12: DEAD Injury (BloodLoss)
+  Fira#18: alive
+  Elowen#30: DEAD Injury (BloodLoss)
+  Aaron#36: DEAD Injury (BloodLoss), infected
+  Oren#48: DEAD Injury (BloodLoss)
+  Calla#54: DEAD Injury (BloodLoss)
+  Rosalind#66: DEAD Injury (BloodLoss)
+  Vance#72: DEAD Injury (BloodLoss)
+  Yara#78: alive
+  Alden#84: DEAD Injury (BloodLoss), infected
+  Kaia#90: DEAD Disease (WoundInfection), infected
+  Vance#96: DEAD Injury (Crush)
+  Rosalind#102: DEAD Injury (Bite)
+  Aaron#108: DEAD Injury (BloodLoss)
+  Ursa#114: DEAD Injury (BloodLoss), infected
+  Jasper#120: DEAD Injury (BloodLoss)
+  Senna#126: DEAD Injury (BloodLoss), infected
+  Yorick#132: DEAD Injury (BloodLoss)
+  Tamsin#138: alive, infected
+  Idris#144: DEAD Injury (BloodLoss)
+PAIR casualties=22 survived=3 diedOfInfection=1 diedOfBloodLoss=16 diedOther=2 everInfected=7 citizensAliveAtEnd=4
+
+# continuation 4, before arm
+  [tick 1786562] Oren has died of blood loss (severe).
+  [tick 1870098] Tobin has died of infection (extreme).
+  [tick 1877636] Yara has died of infection (extreme).
+  [tick 1901820] Senna has died of infection (extreme).
+  [tick 1904127] Yorick has died of infection (extreme).
+  [tick 2024000] FIRED ManhunterPack points=550.57
+  [tick 2246000] FIRED HeatWave points=0.00
+  [tick 2298638] muffalo12 has died of infection (extreme).
+  [tick 2318000] FIRED VisitorGroup points=0.00
+  [tick 2493000] FIRED RaidEnemy points=681.24
+  [tick 2504408] Alden has died of blood loss (severe).
+  [tick 2505118] husky2 has been cut to death.
+  [tick 2505904] husky7 has been cut to death.
+  [tick 2507737] husky3 has been cut to death.
+  [tick 2513000] FIRED WandererJoin points=0.00
+loaded at tick 1785000, ran to 2520000 with continuation seed 4
+  Tobin#0: DEAD Disease (WoundInfection), infected
+  Giselle#6: alive, infected
+  Oren#12: alive
+  Fira#18: alive, infected
+  Elowen#30: alive
+  Aaron#36: alive, infected
+  Oren#48: DEAD Injury (BloodLoss)
+  Calla#54: alive, infected
+  Rosalind#66: alive, infected
+  Vance#72: alive, infected
+  Yara#78: DEAD Disease (WoundInfection), infected
+  Alden#84: DEAD Injury (BloodLoss), infected
+  Kaia#90: alive, infected
+  Vance#96: alive, infected
+  Rosalind#102: alive, infected
+  Aaron#108: alive
+  Ursa#114: alive
+  Jasper#120: alive, infected
+  Senna#126: DEAD Disease (WoundInfection), infected
+  Yorick#132: DEAD Disease (WoundInfection), infected
+  Tamsin#138: alive
+  Idris#144: alive
+PAIR casualties=22 survived=16 diedOfInfection=4 diedOfBloodLoss=2 diedOther=0 everInfected=15 citizensAliveAtEnd=17
+
+# continuation 4, after arm
+  [tick 1786562] Oren has died of blood loss (severe).
+  [tick 1802000] FIRED RaidEnemy points=581.14
+  [tick 1804152] Idris has been beaten to death.
+  [tick 1880080] husky7 has died of infection (extreme).
+  [tick 1881431] Tamsin has died of infection (extreme).
+  [tick 1881750] Aaron has died of infection (extreme).
+  [tick 1887389] Yorick has died of infection (extreme).
+  [tick 1948000] FIRED ColdSnap points=0.00
+  [tick 2316000] FIRED Flashstorm points=0.00
+  [tick 2385000] FIRED WandererJoin points=0.00
+loaded at tick 1785000, ran to 2520000 with continuation seed 4
+  Tobin#0: alive
+  Giselle#6: alive
+  Oren#12: alive
+  Fira#18: alive, infected
+  Elowen#30: alive
+  Aaron#36: DEAD Disease (WoundInfection), infected
+  Oren#48: DEAD Injury (BloodLoss)
+  Calla#54: alive
+  Rosalind#66: alive
+  Vance#72: alive
+  Yara#78: alive
+  Alden#84: alive
+  Kaia#90: alive, infected
+  Vance#96: alive
+  Rosalind#102: alive
+  Aaron#108: alive
+  Ursa#114: alive
+  Jasper#120: alive
+  Senna#126: alive, infected
+  Yorick#132: DEAD Disease (WoundInfection), infected
+  Tamsin#138: DEAD Disease (WoundInfection), infected
+  Idris#144: DEAD Injury (Crush)
+PAIR casualties=22 survived=17 diedOfInfection=3 diedOfBloodLoss=1 diedOther=1 everInfected=6 citizensAliveAtEnd=18

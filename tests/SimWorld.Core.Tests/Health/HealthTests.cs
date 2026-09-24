@@ -397,8 +397,11 @@ namespace SimWorld.Tests.Health
         [Fact]
         public void Untended_wounds_sometimes_get_infected()
         {
+            // Forty, not twenty: a cut is infected 15% of the time (RimWorld's figure, ported by lane/downed in
+            // place of 40%), so twenty all stay clean about one run in twenty-six and forty about one in 670.
+            const int cohort = 40;
             var pawns = new List<Pawn>();
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < cohort; i++)
             {
                 Pawn p = NewHuman("P" + i);
                 Hit(p, "Cut", 10f, "torso");
@@ -406,7 +409,7 @@ namespace SimWorld.Tests.Health
             }
             RunTicks(45000, pawns.ToArray());
             int infected = pawns.Count(p => p.health.hediffSet.HasHediff(HediffDefOf.WoundInfection));
-            Assert.InRange(infected, 1, 19);
+            Assert.InRange(infected, 1, cohort - 1);
             Assert.All(pawns, p => Assert.False(p.Dead));
 
             Pawn sick = pawns.First(p => p.health.hediffSet.HasHediff(HediffDefOf.WoundInfection));
