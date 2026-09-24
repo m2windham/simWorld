@@ -10,8 +10,11 @@ namespace SimWorld.Building
     /// from <see cref="Zone"/> on purpose: any number of Areas can overlap the same cell and a cell can sit
     /// in both an Area and a Zone at once (a stockpile inside the home area, say) — RimWorld's own split,
     /// kept here rather than folded into Zone. This pass ships only the one Area every RimWorld map has from
-    /// the start, <see cref="AreaManager.Home"/> (RimWorld: <c>Verse.Area_Home</c>); nothing yet reads it
-    /// (no hauling/wandering restriction exists to consult it) — see this module's report.
+    /// the start, <see cref="AreaManager.Home"/> (RimWorld: <c>Verse.Area_Home</c>). The player paints it
+    /// (<see cref="Map.View.MapCommands.SetHomeArea"/>). Two things read it:
+    /// <see cref="Filth.CleaningBounds"/> for where cleaning goes, and
+    /// <see cref="SettlementConstructionInitiative"/> for where the settlement builds. Hauling and wandering
+    /// do not read it yet.
     /// </summary>
     public sealed class Area
     {
