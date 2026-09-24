@@ -155,11 +155,11 @@ namespace SimWorld.Tests.Map
 
             // Materials right where a builder already stands, so nothing here depends on how far the
             // generated map happens to put wood from the site — only on the command and the job loop.
-            // Plenty of it, not twice the wall's cost: a failed attempt by a low-skill citizen refunds only
-            // half of what was delivered (Frame.FailConstruction), and a haul interrupted between pickup and
-            // delivery loses what it picked up (JobDriver_HaulToBuildingSite has no carry tracker to hand it
-            // back). With 10 logs this test failed on 18 of 200 reseeded tick streams even before placement
-            // changed; with 40 it builds on all 200, before and after.
+            // Plenty of it, not twice the wall's cost: the band's other citizens build too, at their own
+            // skill, and a failed attempt refunds only half of what the Frame held (Frame.FailConstruction).
+            // With 10 logs, failed attempts alone left the wall short on 25 of 201 tick streams (the original
+            // plus 200 reseeds); with 40 it builds on all of them. None of those 25 was an interrupted haul —
+            // and an interrupted haul no longer loses its load anyway (Building/ConstructionHaulCarryTests).
             Thing logs = ThingMaker.MakeThing(Def("WoodLog"));
             logs.stackCount = 40;
             GenSpawn.Spawn(logs, builder.Position, map);
