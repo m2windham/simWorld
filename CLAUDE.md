@@ -151,6 +151,17 @@ that mutates a file **assert that the mutation changed it** and that the
 restore is byte-identical. A mutation that does not change the file must abort,
 never pass quietly.
 
+**The process table is shared too.** A lane cleaned up after itself with
+`pkill -f testhost`. That pattern matches every lane's test host on the
+machine, and it killed the coordinator's full-suite run in another tree an hour
+in. The run did not fail — it stopped, printed no summary line, and a pipeline
+ending in `grep | head` reported success on the stub of a log.
+
+Kill **by PID you have checked is yours**, never by a pattern. And never trust
+a test run's exit code through a pipe: require the `Passed!` / `Failed!`
+summary line before believing anything, and treat its absence as the run not
+having happened.
+
 ### Do not run three suites at once
 
 Three concurrent lanes each running the full suite turned a 75-minute run into
