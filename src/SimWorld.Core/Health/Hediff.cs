@@ -19,14 +19,17 @@ namespace SimWorld.Health
 
         /// <summary>
         /// What put this hediff on the pawn — the <c>defName</c> of the <see cref="Director.IncidentDef"/> that
-        /// caused it, or null when nothing did (an injury from combat, a starvation hediff, anything else that
-        /// reaches <see cref="Pawn_HealthTracker.AddHediff(Hediff, BodyPartRecord?, DamageInfo?)"/> without one).
-        /// Mirrors <see cref="Pawns.Pawn.spawnedByIncident"/> one level down: that field answers "who spawned
-        /// this pawn", and a death by violence already reads its answer off <c>DamageInfo.Instigator</c> — but a
-        /// disease death has no instigator at all, so the hediff that killed the pawn has to carry its own
-        /// provenance for <see cref="Director.StorytellerDeathEvents.SourceOf"/> to credit. Set by whichever
-        /// worker adds the hediff (see <see cref="Director.IncidentWorker_Disease"/>); read nowhere else, so an
-        /// ordinary hediff with no incident behind it costs one null reference and nothing more.
+        /// caused it, or null when nothing did (a starvation hediff, a wound from a brawl, anything else with no
+        /// incident behind it). Mirrors <see cref="Pawns.Pawn.spawnedByIncident"/> one level down: that field
+        /// answers "who spawned this pawn", and a death on the spot reads its answer off
+        /// <c>DamageInfo.Instigator</c> — but a death with no instigator (a disease; a wound that kills a day
+        /// later by bleeding or by infection) has nobody to ask, so the hediff that killed the pawn has to carry
+        /// its own provenance for <see cref="Director.StorytellerDeathEvents.SourceOf"/> to credit.
+        ///
+        /// <para/>Set by <see cref="Director.IncidentWorker_Disease"/> for the illness it starts, and along the
+        /// wound chain by <see cref="WoundProvenance"/>: an injury from the blow's instigator, and a missing
+        /// part, an infection or blood loss from the wound that caused it. Scribed, so a wound saved mid-bleed
+        /// still knows where it came from.
         /// </summary>
         public string? sourceIncident;
 
@@ -504,7 +507,11 @@ namespace SimWorld.Health
             }
             if (Rand.Chance(chance))
             {
-                Pawn.health.AddHediff(HediffDefOf.WoundInfection, parent.Part);
+                // AddHediff(def, part)'s own two steps, split so the infection can take its wound's provenance
+                // before it is added: a citizen who dies of an infected raid wound was killed by the raid.
+                Hediff infection = HediffMaker.MakeHediff(HediffDefOf.WoundInfection, Pawn, parent.Part);
+                infection.sourceIncident = parent.sourceIncident;
+                Pawn.health.AddHediff(infection, parent.Part);
             }
         }
 
@@ -566,6 +573,10 @@ namespace SimWorld.Health
         public override bool TryMergeWith(Hediff other)
         {
             if (!(other is Hediff_Injury injury) || !CanMerge(injury)) return false;
+
+            // One wound from two blows belongs to whichever blow made more of it (ties keep the one already
+            // here) — never simply the latest, which would hand a large wound to a scratch. See WoundProvenance.
+            if (injury.Severity > Severity) sourceIncident = injury.sourceIncident;
             Severity += injury.Severity;
             ageTicks = 0;
             return true;
