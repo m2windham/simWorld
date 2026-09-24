@@ -60,8 +60,9 @@ namespace SimWorld.Bench.Suites
     /// <item><b>stub</b> — the worker's own effect method contains no effect. Detected structurally, by the IL
     /// of the most derived <c>TryExecuteWorker</c> being a bare <c>ldc.i4.1; ret</c> (with
     /// <see cref="IncidentWorker_Placeholder"/> as a belt-and-braces second test), never from a list of def
-    /// names this suite would have to be told to update. Four shipped incidents are stubs today and a table
-    /// that showed them as pressure would be lying about what the player is under.</item>
+    /// names this suite would have to be told to update. Three shipped incidents are stubs today — it was
+    /// four until <c>WandererJoin</c> gained a real worker — and a table that showed them as pressure would
+    /// be lying about what the player is under.</item>
     /// </list>
     ///
     /// <para/><i>The "what it did" column</i> is built only from quantities this port already attributes, and
