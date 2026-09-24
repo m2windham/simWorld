@@ -21,8 +21,8 @@
     consciousness, its "major" stage 0.05 more, so two or three infections at once summed to a consciousness of
     zero and killed a citizen whose worst infection had not reached 0.8 and whose immunity was nearly won.
     RimWorld's rule is the one the wiki states in words: "If the patient can become immune before their worst
-    infection reaches 100%, they have beaten all their infections." Its stages only ever take 0.05 consciousness
-    before the last one, and the last one caps consciousness at 0.1 (setMax) rather than subtracting from it, so
+    infection reaches 100%, they have beaten all their infections." Its stages take no consciousness below 0.78
+    and 0.05 from there, and the last one caps consciousness at 0.1 (setMax) rather than subtracting from it, so
     any number of infections downs a pawn but none of them kills until one reaches lethalSeverity.
     Seed 12345, populated, before this change: 4 of the 7 citizens who died of infection after the day-17 raid
     died that way, every infection they carried below 0.8.
@@ -32,10 +32,11 @@
 
     NOT ported, on purpose - immunityPerDaySick. RimWorld's def says 0.6441, but it is multiplied by the
     ImmunityGainSpeed stat, which RimWorld raises x1.10 for a resting pawn and x1.07 more in a standard bed
-    (wiki: Immunity_gain_speed). This port has neither stat part, and 0.7 is already 0.6441 x 1.10 to within a
-    percent. Porting the number without its multiplier would make this def harsher than RimWorld's rather than
-    closer to it; porting the multiplier needs a rule for whether a downed pawn on the ground counts as resting,
-    which could not be sourced from here. Recorded rather than guessed.
+    (wiki: Immunity_gain_speed). This port has neither stat part, and 0.7 is already 0.6441 x 1.10, RimWorld's
+    figure for a resting patient, to within a percent. Porting the number without its multiplier would make
+    every resting patient here fight infection more slowly than RimWorld's does; porting the multiplier needs a
+    rule for whether a downed pawn on the ground counts as resting, which could not be sourced from here.
+    Recorded rather than guessed.
   -->
   <HediffDef ParentName="DiseaseBase">
     <defName>WoundInfection</defName>
