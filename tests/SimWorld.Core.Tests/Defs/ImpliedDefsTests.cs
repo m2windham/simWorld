@@ -113,7 +113,7 @@ namespace SimWorld.Tests.Defs
                     Assert.True(
                         corpse != null && filter.Allows(corpse),
                         "A filter that allows everything does not allow " + race.defName + "'s corpse, so a "
-                        + "settlement painting its granary before the first death can never haul its dead.");
+                        + "stockpile opened to everything before the first death would still refuse the dead.");
                 }
             }
             finally

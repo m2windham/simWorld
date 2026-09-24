@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 2551,
+  "testsTotal": 2568,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1428,7 +1428,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 261,
+      "tests": 270,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1506,11 +1506,11 @@
       "id": "building",
       "n": 16,
       "rimworld": "Colony Building & Environment",
-      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative.",
+      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative. Where it places them: inside the player's painted home area when there is one, by the same on/off rule CleaningBounds reads, and otherwise around the hub GenStep_Roads carves — never the whole map. A home area too full to hold the need makes the settlement wait rather than spill outside it, so painting small stays a decision with a cost. Stockpile defaults follow RimWorld's ordinary preset in refusing corpses (StorageSettingsPreset excludes the Corpses category rather than copying RimWorld's eight-category allow-list, because this content has no Weapons, Apparel or Buildings category and an allow-list would silently refuse weapons). One deliberate deviation: Chunks stay allowed, where RimWorld's ordinary stockpile refuses them, because the masons' guild needs them banked.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
       "status": "translated",
-      "tests": 99,
+      "tests": 107,
       "items": [
         {
           "id": "building.zones",

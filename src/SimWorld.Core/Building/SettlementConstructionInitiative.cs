@@ -26,6 +26,11 @@ namespace SimWorld.Building
     /// handful of walls once there is anyone to shelter, and storage sized to what the settlement's own
     /// <see cref="World.Settlement.Stores"/> ledger actually holds. See <see cref="ComputeNeeds"/>.
     /// <para/>
+    /// <b>Where it builds.</b> Inside the player's home area when one is painted, and never outside it,
+    /// even when the area is full. With no home area painted, it builds around the road hub. See
+    /// <see cref="TryFindPlacementCell"/>, and <see cref="HomeAreaFullExplanation"/> for what a full home
+    /// area does and how that is reported.
+    /// <para/>
     /// <b>Only <see cref="World.Settlement.Citizens"/> count toward a need, never
     /// <see cref="World.Settlement.StatisticalPopulation"/>.</b> A Statistical citizen has no individual
     /// <c>Pawn</c> object by the tiering system's own design (spec §11.3) — there is no one there to
@@ -258,26 +263,162 @@ namespace SimWorld.Building
         }
 
         /// <summary>
-        /// Picks a valid cell for <paramref name="entityDef"/> by sampling at random rather than scanning the
-        /// map — deterministic given the ambient <see cref="Rand"/> stream (CLAUDE.md: "all randomness goes
-        /// through a seeded RandomStream"), and cheap regardless of map size. Validity is entirely
-        /// <see cref="GenConstruct.CanPlaceBlueprintAt"/>'s own call — this never overlaps or blocks a
-        /// Blueprint, Frame or edifice already there, because that is exactly what that check already
-        /// refuses.
+        /// Where the next <paramref name="entityDef"/> goes. There are two anchors, taken in order. It is never
+        /// a uniformly random cell anywhere on the map, which is what this used to be
+        /// (<c>docs/design/the-loop.md</c> §5 item 2): that scattered a settlement's beds and lone wall tiles
+        /// across tens of thousands of cells, so the settlement never looked like one place.
+        /// <list type="number">
+        /// <item><b>The player's home area, when one is painted.</b> The same switch
+        /// <see cref="Filth.CleaningBounds.IsCleanable(Map.Map, IntVec3)"/> already uses: any painted cell at all
+        /// makes the home area the authority. <see cref="Map.View.MapCommands.SetHomeArea"/> is how the player
+        /// writes it, and this class already shares the <i>what</i> with the player
+        /// (<see cref="CountBuiltOrPlanned"/> counts their blueprint the same as its own). Reading the home
+        /// area makes it share the <i>where</i> as well. <b>It binds:</b> when the area has no room left for a
+        /// need, that need waits, and nothing goes outside it. See
+        /// <see cref="HomeAreaFullExplanation"/> for why, and for how the wait is reported.</item>
+        /// <item><b>Otherwise, the road hub.</b> <see cref="RoadHub"/> is the cell every street
+        /// <c>MapGen.GenStep_Roads</c> carves runs to. Placement first uses the square
+        /// <see cref="ConstructionInitiativeTuning.HubPlacementRadius"/> cells either side of it, then doubles
+        /// the square outward whenever it has no room left, until the square covers the map. A settlement
+        /// with no home area grows out from its middle and never stalls while the map has room. Nobody said
+        /// where to build, so no expressed intent is overridden.</item>
+        /// </list>
+        /// Inside whichever domain applies, the cell is one seeded draw from the ambient <see cref="Rand"/>
+        /// stream over every cell that fits. The draw is exact rather than sampled, so "no cell" means
+        /// "no room", not "unlucky". The cells are chosen at random, not laid out. This deliberately designs no
+        /// layout: forty walls at random cells inside a home area still do not make a building, and whether
+        /// autonomous layout needs to be smarter is a later decision to take against a measurement. Validity
+        /// is still entirely <see cref="GenConstruct.CanPlaceBlueprintAt"/>'s call, so this never overlaps or
+        /// blocks a Blueprint, Frame or edifice already there.
         /// </summary>
         private static bool TryFindPlacementCell(Map.Map map, ThingDef entityDef, out IntVec3 cell)
         {
-            for (int attempt = 0; attempt < ConstructionInitiativeTuning.MaxPlacementAttempts; attempt++)
+            Area home = map.areaManager.Home;
+            if (home.TrueCount > 0) return TryPickCell(map, entityDef, map.AllCells, home, out cell);
+
+            IntVec3 hub = RoadHub(map);
+            for (int radius = Math.Max(1, ConstructionInitiativeTuning.HubPlacementRadius); ; radius *= 2)
             {
-                var candidate = new IntVec3(Rand.Range(0, map.Size.x), 0, Rand.Range(0, map.Size.z));
-                if (GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _))
+                CellRect square = CellRect.CenteredOn(hub, radius).ClipInsideMap(map);
+                if (TryPickCell(map, entityDef, square.Cells, null, out cell)) return true;
+                if (square.Width >= map.Size.x && square.Height >= map.Size.z) return false; // the whole map is full
+            }
+        }
+
+        /// <summary>
+        /// The map's hub: the cell <c>MapGen.GenStep_Roads</c> runs every street to ("a hub", in that class's
+        /// own doc). It is also where <see cref="World.Settlement"/> stands a founding band when the map is
+        /// first entered, because that class's own anchor falls back to the same cell before anything is
+        /// built. On a tile with no roads it is still the middle the founders arrived at. The expression is
+        /// restated rather than shared, because <c>GenStep_Roads</c> computes it inline.
+        /// </summary>
+        private static IntVec3 RoadHub(Map.Map map) => new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
+
+        /// <summary>
+        /// One seeded draw over every candidate that <see cref="Fits"/>. It counts the fitting cells, draws an
+        /// index with <see cref="Rand.Range(int, int)"/>, then walks to that index. That is two passes, one
+        /// draw and no allocation, and it is uniform over the cells that actually fit. False only when none
+        /// fit.
+        /// </summary>
+        private static bool TryPickCell(Map.Map map, ThingDef entityDef, IEnumerable<IntVec3> candidates, Area? within, out IntVec3 cell)
+        {
+            int fitting = CountFitting(map, entityDef, candidates, within);
+            if (fitting > 0)
+            {
+                int pick = Rand.Range(0, fitting);
+                foreach (IntVec3 c in candidates)
                 {
-                    cell = candidate;
-                    return true;
+                    if (!Fits(map, entityDef, c, within)) continue;
+                    if (pick-- == 0)
+                    {
+                        cell = c;
+                        return true;
+                    }
                 }
             }
             cell = default;
             return false;
+        }
+
+        private static int CountFitting(Map.Map map, ThingDef entityDef, IEnumerable<IntVec3> candidates, Area? within)
+        {
+            int n = 0;
+            foreach (IntVec3 c in candidates)
+            {
+                if (Fits(map, entityDef, c, within)) n++;
+            }
+            return n;
+        }
+
+        /// <summary>Whether <paramref name="entityDef"/> could be planned at <paramref name="cell"/>. With an
+        /// area to stay inside, its whole footprint must be in that area, not just the cell it is anchored
+        /// on. A bed half inside the home area is a bed outside it.</summary>
+        private static bool Fits(Map.Map map, ThingDef entityDef, IntVec3 cell, Area? within)
+        {
+            if (within != null)
+            {
+                if (!within[cell]) return false;
+                if (entityDef.size.x > 1 || entityDef.size.z > 1)
+                {
+                    foreach (IntVec3 f in GenAdj.OccupiedRect(cell, default, entityDef.size).Cells)
+                    {
+                        if (!within[f]) return false;
+                    }
+                }
+            }
+            return GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out _);
+        }
+
+        /// <summary>
+        /// What the settlement is waiting on the player for, in the simulation's own words. It is one
+        /// sentence naming every need that still has a shortfall and has no room left for another inside the
+        /// painted home area. It is null when no home area is painted, and null when everything the
+        /// settlement still lacks has somewhere inside the area to go.
+        /// <para/>
+        /// <b>Why a full home area waits instead of spilling over.</b> The home area is a standing rule the
+        /// player set. Building outside it once it fills would be the defect this class used to have, just
+        /// deferred until the area filled: a player input the simulation declines to carry
+        /// (<c>docs/design/player-first.md</c> §2). Falling back to the hub or the whole map would also turn
+        /// the one cost in this decision into a cost the player can shrug off. The player painted small, the
+        /// settlement grew, and the citizens now go without a bed until the player widens the area. That is a
+        /// decision with a consequence, carried through the simulation's own machinery (<c>Need_Rest</c>
+        /// already rests a pawn slower without a bed). Widening the area is the lever, and the next gated pass
+        /// uses the new room with no other input. The unplaced shortfall is carried forward exactly as a full
+        /// map already carried it.
+        /// <para/>
+        /// <b>Why a query and not a letter.</b> A full home area is a condition that persists, not an event.
+        /// A letter can be dismissed, and this rule would re-send it on the next gated pass for as long as the
+        /// condition held, every <see cref="ConstructionInitiativeTuning.IntervalTicks"/> ticks. Sending it
+        /// only once needs remembered state that nothing here could save without editing a shared file. The
+        /// shape RimWorld uses for exactly this (<c>Alert_NeedColonistBeds</c>) is an alert: derived on every
+        /// read, never stored, gone the moment the condition is. This method is that shape. It cannot go
+        /// stale, needs no Scribe, and clears itself when the player widens the area. Showing it is the host
+        /// seam's job (<c>God/View</c>), and nothing reads it yet. See this lane's report.
+        /// </summary>
+        public static string? HomeAreaFullExplanation(Settlement settlement, Map.Map map)
+        {
+            if (settlement == null) throw new ArgumentNullException(nameof(settlement));
+            if (map == null) throw new ArgumentNullException(nameof(map));
+
+            Area home = map.areaManager.Home;
+            if (home.TrueCount == 0) return null;
+
+            List<string>? waiting = null;
+            foreach (Need need in ComputeNeeds(settlement, map))
+            {
+                int shortfall = need.Target - CountBuiltOrPlanned(map, need.EntityDef);
+                if (shortfall <= 0) continue;
+                if (CountFitting(map, need.EntityDef, map.AllCells, home) > 0) continue;
+                waiting ??= new List<string>();
+                waiting.Add(shortfall + " " + need.EntityDef.label + (shortfall == 1 ? "" : "s"));
+            }
+            if (waiting == null) return null;
+
+            string what = waiting.Count == 1
+                ? waiting[0]
+                : string.Join(", ", waiting.Take(waiting.Count - 1)) + " and " + waiting[waiting.Count - 1];
+            return settlement.name + " has run out of room in its home area: " + what
+                + " waiting for space. It will not build outside the home area; widen it to make room.";
         }
 
         private static void PlaceBlueprint(Map.Map map, ThingDef entityDef, IntVec3 cell)

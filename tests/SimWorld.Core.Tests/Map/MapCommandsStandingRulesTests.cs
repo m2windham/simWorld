@@ -496,7 +496,7 @@ namespace SimWorld.Tests.Map
             IntVec3 cell = FreeCellNear(map, AnyCitizenOn(settlement, map).Position);
             Assert.Equal(MapCommandOutcome.Done, MapCommands.MarkStockpile(new[] { cell }).Outcome);
             var stockpile = (Zone_Stockpile)map.zoneManager.ZoneAt(cell)!;
-            Assert.True(stockpile.filter.Allows(Def("WoodLog")), "MarkStockpile should start out allowing everything");
+            Assert.True(stockpile.filter.Allows(Def("WoodLog")), "MarkStockpile should start out allowing ordinary goods");
 
             MapCommandResult result = MapCommands.SetStockpileFilter(cell, new[] { "WoodLog", "NoSuchThingDefAtAll" });
 

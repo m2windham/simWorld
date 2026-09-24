@@ -155,8 +155,13 @@ namespace SimWorld.Tests.Map
 
             // Materials right where a builder already stands, so nothing here depends on how far the
             // generated map happens to put wood from the site — only on the command and the job loop.
+            // Plenty of it, not twice the wall's cost: a failed attempt by a low-skill citizen refunds only
+            // half of what was delivered (Frame.FailConstruction), and a haul interrupted between pickup and
+            // delivery loses what it picked up (JobDriver_HaulToBuildingSite has no carry tracker to hand it
+            // back). With 10 logs this test failed on 18 of 200 reseeded tick streams even before placement
+            // changed; with 40 it builds on all 200, before and after.
             Thing logs = ThingMaker.MakeThing(Def("WoodLog"));
-            logs.stackCount = 10;
+            logs.stackCount = 40;
             GenSpawn.Spawn(logs, builder.Position, map);
 
             Assert.Null(map.edificeGrid[site]);
@@ -230,8 +235,8 @@ namespace SimWorld.Tests.Map
 
             Assert.Equal(MapCommandOutcome.Done, marked.Outcome);
             var stockpile = Assert.IsType<Zone_Stockpile>(map.zoneManager.ZoneAt(cell));
-            // Accepts everything, the same default EnsureGranary gives the AI's own granary — a player
-            // stockpile is not a narrower kind of storage.
+            // Accepts goods, with the same default EnsureGranary gives the AI's own granary — a player
+            // stockpile is not a narrower kind of storage. (Neither takes bodies: Economy/SettlementDeadTests.)
             Assert.True(stockpile.filter.Allows(Def("WoodLog")));
         }
 

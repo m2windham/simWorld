@@ -248,7 +248,9 @@ namespace SimWorld.Map.View
         /// Adds or removes <paramref name="cells"/> from <see cref="Building.AreaManager.Home"/> — "clean and
         /// tidy here, from now on" (or not). See the class doc for why this is the first call in the whole
         /// codebase that ever writes to the home area, and what that changes for
-        /// <see cref="Filth.CleaningBounds"/>.
+        /// <see cref="Filth.CleaningBounds"/>. It is also "build here". Once any cell is painted,
+        /// <see cref="Building.SettlementConstructionInitiative"/> places everything the settlement decides it
+        /// needs inside the home area, and nothing outside it.
         ///
         /// <para/>Refuses only: no map open; no cells given; any cell off the map. <b>Never</b> refuses a home
         /// area that excludes the player's whole settlement, or one that leaves a single filthy room outside

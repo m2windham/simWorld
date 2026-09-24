@@ -151,6 +151,16 @@ that mutates a file **assert that the mutation changed it** and that the
 restore is byte-identical. A mutation that does not change the file must abort,
 never pass quietly.
 
+**A byte-identical restore can still test the wrong binary.** One lane restored
+a mutated file by copying the original back — timestamp and all. The build saw
+a file older than its last output, skipped recompiling, and the "restored" run
+tested the mutated code a second time. The proof looked like it passed both
+ways and had in fact run one way twice.
+
+So after a restore, **touch the file** (or build with `--no-incremental`), and
+confirm the rebuilt assembly is newer than the restored source before you trust
+the run that follows it.
+
 **The process table is shared too.** A lane cleaned up after itself with
 `pkill -f testhost`. That pattern matches every lane's test host on the
 machine, and it killed the coordinator's full-suite run in another tree an hour
