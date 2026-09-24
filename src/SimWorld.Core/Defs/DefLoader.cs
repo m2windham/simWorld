@@ -283,6 +283,13 @@ namespace SimWorld.Defs
                 }
             }
 
+            // Implied Defs last, once every authored Def is in the database and resolved: a generator reads
+            // the loaded content to decide what to mint (RimWorld: DefGenerator.GenerateImpliedDefs_PostResolve).
+            // Inside the load pass rather than on first use, because a Def set that is still growing during
+            // play is a mutable global that two caches downstream have already snapshotted — see
+            // ImpliedDefHelper's own doc for the determinism failure that costs.
+            ImpliedDefHelper.GenerateAll(Database, Types, errors);
+
             if (Options.RunConfigErrors)
             {
                 foreach (Def def in loaded)
