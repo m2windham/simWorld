@@ -230,8 +230,8 @@ namespace SimWorld.Tests.Map
 
             Assert.Equal(MapCommandOutcome.Done, marked.Outcome);
             var stockpile = Assert.IsType<Zone_Stockpile>(map.zoneManager.ZoneAt(cell));
-            // Accepts everything, the same default EnsureGranary gives the AI's own granary — a player
-            // stockpile is not a narrower kind of storage.
+            // Accepts goods, with the same default EnsureGranary gives the AI's own granary — a player
+            // stockpile is not a narrower kind of storage. (Neither takes bodies: Economy/SettlementDeadTests.)
             Assert.True(stockpile.filter.Allows(Def("WoodLog")));
         }
 

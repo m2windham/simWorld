@@ -59,8 +59,8 @@ namespace SimWorld.Economy
     /// <c>AI.HaulAIUtility.IsInValidStorage</c> already defines as "stored"), which is the same thing a
     /// civilization means by its stock. Everything lying loose is left alone, so the map's own systems keep
     /// working on it: a chunk beside the stonecutter's table, a meal somebody dropped, the ingredients
-    /// <c>Crafting.WorkGiver_DoBill</c> needs within its own search radius of a bench. Two further guards, both
-    /// reading rules this codebase already has rather than inventing one:
+    /// <c>Crafting.WorkGiver_DoBill</c> needs within its own search radius of a bench. Three further guards,
+    /// each reading something this codebase already has rather than inventing it:
     /// <list type="bullet">
     /// <item>A stack anybody has <b>reserved</b> is never banked (<c>Map.ReservationManager.IsReserved</c>) —
     /// a citizen who has taken a job on a thing is using it, and that is exactly what a reservation says.</item>
@@ -69,6 +69,12 @@ namespace SimWorld.Economy
     /// half alone — because the map is where people eat (<c>AI.JobGiver_GetFood</c> sends a hungry pawn to a
     /// Thing), so banking a town's whole larder would starve it while the ledger said it was rich. The reserve
     /// is that class's number, not a second one invented here.</item>
+    /// <item>A thing that <b>holds a pawn</b> — a body — is never banked, whatever the stockpile under it
+    /// allows (<see cref="HoldsPawn"/>). Banking moves by destroying, and destroying a <c>Things.Corpse</c>
+    /// destroys the person inside it: the one copy of a dead citizen the game still keeps once the roster has
+    /// let them go. A settlement's dead are its people, not its stock. The granary refusing bodies
+    /// (<see cref="EnsureGranary"/>) keeps them out of storage in the first place; this holds even where a
+    /// player has painted a stockpile to take them.</item>
     /// </list>
     ///
     /// <para/><b>The granary, and why this class paints one.</b> Nothing in <c>src/</c> had ever created a
@@ -299,6 +305,7 @@ namespace SimWorld.Economy
                 {
                     Thing? stack = HaulAIUtility.ExistingStackAt(map, cells[c]);
                     if (stack == null || !stack.Spawned || stack.stackCount <= 0) continue;
+                    if (HoldsPawn(stack)) continue;
                     if (!stockpile.filter.Allows(stack.def)) continue;
                     if (map.reservationManager.IsReserved(stack)) continue;
 
@@ -315,6 +322,22 @@ namespace SimWorld.Economy
             }
             return banked;
         }
+
+        /// <summary>
+        /// Whether <paramref name="thing"/> holds a pawn, and so must never be banked: banking destroys what it
+        /// moves, and a <see cref="Corpse"/> takes its <see cref="Corpse.InnerPawn"/> with it when destroyed
+        /// (<see cref="Corpse.Destroy"/>). Asked of the instance, not the def or the stockpile's filter, so it
+        /// holds wherever a body comes to rest — including a stockpile a player has told to take bodies.
+        ///
+        /// <para/><b>Why it reads <see cref="Corpse"/> rather than a holder interface.</b> RimWorld asks this
+        /// through <c>IThingHolder</c>/<c>ThingOwner</c>. This port has no container layer: nothing holds a Thing
+        /// inside another Thing (<see cref="Corpse"/>'s own doc), and the corpse's
+        /// <see cref="Corpse.InnerPawn"/>/<c>Pawn.corpse</c> pair is the only holding relation in the codebase.
+        /// An interface with one implementer would be a guess at the shape of a layer nobody has built. So this
+        /// is the one place that knows; when something else comes to hold a pawn (a grave, a casket), this is
+        /// what grows to ask it.
+        /// </summary>
+        private static bool HoldsPawn(Thing thing) => thing is Corpse corpse && corpse.InnerPawn != null;
 
         private static bool HasStockpile(IReadOnlyList<Zone> zones)
         {
@@ -378,9 +401,14 @@ namespace SimWorld.Economy
         /// that seed through <see cref="GenRadial.RadialPattern"/> — nearest-first, deterministic, no draw on
         /// the shared <see cref="Rand"/> stream for a decision that has a perfectly good ordered answer.
         ///
-        /// <para/><b>What it accepts.</b> Everything. The granary is not where a settlement decides what is
-        /// worth keeping — <see cref="BankStoredGoods"/> is, and it is the one that knows about larders and
-        /// reservations. A narrow filter here would only make goods pile up outside a store that had room.
+        /// <para/><b>What it accepts.</b> What any new stockpile accepts: RimWorld's
+        /// <see cref="StorageSettingsPreset.DefaultStockpile"/> — every kind of goods, and no bodies. The granary
+        /// is not where a settlement decides which goods are worth keeping — <see cref="BankStoredGoods"/> is,
+        /// and it is the one that knows about larders and reservations; a narrower filter would only make goods
+        /// pile up outside a store that had room. But a body is not goods. It used to be painted with
+        /// <c>SetAllowAll</c>, which since corpse defs are minted at load meant every granary in every game took
+        /// the settlement's dead, and banking then destroyed them (see <see cref="HoldsPawn"/>). RimWorld's
+        /// ordinary stockpile has never taken a body: they go to a dumping stockpile or a grave.
         /// </summary>
         public static int EnsureGranary(Settlement settlement, Map.Map map)
         {
@@ -414,17 +442,26 @@ namespace SimWorld.Economy
         {
             var granary = new Zone_Stockpile { label = SettlementStockTuning.GranaryLabel };
             map.zoneManager.RegisterZone(granary);
-            granary.filter.SetAllowAll(null);
+            granary.filter.SetFromPreset(StorageSettingsPreset.DefaultStockpile);
             return granary;
         }
 
-        /// <summary>Every spawned haulable stack on <paramref name="map"/> that is not already resting in
-        /// storage — the settlement's backlog, and the only thing that sizes its granary. Ordered by
-        /// <c>ListerThings</c>' own stable order, so the seed cell two identical runs pick is the same
-        /// cell.</summary>
+        /// <summary>
+        /// Every spawned haulable stack on <paramref name="map"/> that is not already resting in storage and
+        /// that the granary would take — the settlement's backlog, and the only thing that sizes its granary.
+        /// Ordered by <c>ListerThings</c>' own stable order, so the seed cell two identical runs pick is the same
+        /// cell.
+        ///
+        /// <para/><b>Only what the granary would take.</b> Read against the granary's own filter, or the one a
+        /// new granary would be painted with. A body lying where it fell is not backlog for a store that refuses
+        /// it: counted, it would grow the granary by a cell nothing can fill for as long as the body lies there,
+        /// and — were it the first loose thing on the map — seed the granary on top of the dead.
+        /// </summary>
         public static List<Thing> HomelessStacks(Map.Map map)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
+
+            Crafting.ThingFilter granaryTakes = GranaryOf(map)?.filter ?? NewGranaryFilter();
 
             var found = new List<Thing>();
             IReadOnlyList<Thing> haulables = map.listerThings.ThingsInGroup(ThingRequestGroup.HaulableEver);
@@ -433,9 +470,17 @@ namespace SimWorld.Economy
                 Thing t = haulables[i];
                 if (!t.Spawned || t.stackCount <= 0) continue;
                 if (HaulAIUtility.IsInValidStorage(t)) continue;
+                if (!granaryTakes.Allows(t.def)) continue;
                 found.Add(t);
             }
             return found;
+        }
+
+        private static Crafting.ThingFilter NewGranaryFilter()
+        {
+            var filter = new Crafting.ThingFilter();
+            filter.SetFromPreset(StorageSettingsPreset.DefaultStockpile);
+            return filter;
         }
 
         /// <summary>Stockpile cells on <paramref name="map"/> with no item on them — storage the settlement

@@ -268,11 +268,18 @@ namespace SimWorld.Map.View
         }
 
         /// <summary>
-        /// Marks a new <see cref="Building.Zone_Stockpile"/> over <paramref name="cells"/>, accepting
-        /// everything — "store things here". See the class doc for how this coexists with
+        /// Marks a new <see cref="Building.Zone_Stockpile"/> over <paramref name="cells"/> — "store things
+        /// here". See the class doc for how this coexists with
         /// <see cref="Economy.SettlementStockInitiative"/>'s own granary; unlike the granary and the field,
         /// hauling reads every stockpile on the map without regard to label, so this starts working the
         /// moment it is placed.
+        ///
+        /// <para/>It starts with RimWorld's ordinary stockpile settings
+        /// (<see cref="StorageSettingsPreset.DefaultStockpile"/>), the same the granary gets: every kind of
+        /// goods, and no bodies — in RimWorld the dead go to a dumping stockpile or a grave, never into the
+        /// stores by default. A player who does want bodies kept here says so with
+        /// <see cref="SetStockpileFilter"/>, as they would on RimWorld's storage tab; and even then the
+        /// settlement never banks one (<c>Economy.SettlementStockInitiative.BankStoredGoods</c>).
         ///
         /// <para/>Refuses only: any cell off the map (<see cref="MapCommandOutcome.OffMap"/>); any cell
         /// already claimed by another zone (<see cref="MapCommandOutcome.Occupied"/>), checked up front for
@@ -288,7 +295,7 @@ namespace SimWorld.Map.View
             if (cellsBad != null) return cellsBad;
 
             var zone = new Zone_Stockpile();
-            zone.filter.SetAllowAll(null);
+            zone.filter.SetFromPreset(StorageSettingsPreset.DefaultStockpile);
             map.zoneManager.RegisterZone(zone);
             for (int i = 0; i < cells.Count; i++) map.zoneManager.AddCell(zone, cells[i]);
 
