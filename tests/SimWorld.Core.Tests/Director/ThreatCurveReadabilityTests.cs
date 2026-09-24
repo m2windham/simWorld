@@ -27,10 +27,11 @@ namespace SimWorld.Tests.Director
     /// to report whether a worker returned true, and <see cref="Storyteller.IncidentFired"/> does not carry
     /// the answer — so it reads the chronicle's tail inside the handler. Reorder <see cref="Storyteller.TryFire"/>
     /// and that column starts lying silently.</item>
-    /// <item><b>Which shipped incidents do nothing.</b> Four shipped workers return true and have no effect.
+    /// <item><b>Which shipped incidents do nothing.</b> Three shipped workers return true and have no effect.
     /// The suite detects them structurally, from the IL of the worker's own effect method; this pins both
     /// that the detection works and which incidents it currently catches, so the day one of them gets a real
-    /// worker is a day somebody is told.</item>
+    /// worker is a day somebody is told. That day has already come once: this said <i>four</i> until
+    /// <c>WandererJoin</c> gained a real worker, and this test is how the change announced itself.</item>
     /// </list>
     /// </summary>
     public class ThreatCurveReadabilityTests : ContentTestBase
@@ -242,7 +243,7 @@ namespace SimWorld.Tests.Director
         }
 
         [Fact]
-        public void The_shipped_incidents_that_fire_and_do_nothing_are_the_recorded_four()
+        public void The_shipped_incidents_that_fire_and_do_nothing_are_the_recorded_three()
         {
             Assert.Empty(Content.Result.Errors);
 
@@ -252,13 +253,18 @@ namespace SimWorld.Tests.Director
                 if (HasNoEffect(def.Worker)) stubs.Add(def.defName);
             }
 
-            // An inventory, not a tuning constant: these four incidents return true and change nothing, so a
+            // An inventory, not a tuning constant: these three incidents return true and change nothing, so a
             // reading that counted them as pressure would be wrong. If this fails because an incident gained a
             // real worker, that is good news — delete it from this list and from the finding in the bench's
-            // own report. If it fails because a fifth stub was added, that is the thing this test exists to
+            // own report. If it fails because a fourth stub was added, that is the thing this test exists to
             // catch.
+            //
+            // It has already earned its keep once. It listed WandererJoin and failed the moment that lane's
+            // real worker merged — two lanes written against the same base, neither wrong, and this is what
+            // noticed. The list is deliberately explicit rather than a count for exactly that reason: a count
+            // would have stayed green if one stub had been implemented and another added.
             Assert.Equal(
-                new[] { "Eclipse", "ToxicFallout", "VisitorGroup", "WandererJoin" },
+                new[] { "Eclipse", "ToxicFallout", "VisitorGroup" },
                 stubs.ToArray());
         }
 
