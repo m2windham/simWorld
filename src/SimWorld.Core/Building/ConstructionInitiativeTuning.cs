@@ -33,12 +33,31 @@ namespace SimWorld.Building
         public const int MaxBlueprintsPerTick = 3;
 
         /// <summary>
-        /// Random cells tried before giving up on placing one more unit of a given need this tick.
+        /// Random whole-map cells tried before giving up on placing one more blueprint this tick.
         /// <see cref="GenConstruct.CanPlaceBlueprintAt"/> is a handful of grid lookups, not a full-map scan,
-        /// so a bounded number of misses is far cheaper than scanning every cell on a large map; a map that
+        /// so a bounded number of misses is far cheaper than scanning every cell on a large map. A map that
         /// genuinely has no room left simply carries its shortfall forward to the next gated tick.
+        /// <para/>
+        /// <see cref="SettlementConstructionInitiative"/> no longer uses this. It draws inside the home area
+        /// or around the road hub (<see cref="HubPlacementRadius"/>). The remaining reader is
+        /// <see cref="SettlementWorksInitiative"/>'s unanchored fallback.
         /// </summary>
         public const int MaxPlacementAttempts = 40;
+
+        /// <summary>
+        /// Half-width, in cells, of the square around the map's road hub that a settlement with no home area
+        /// painted builds inside first. This is SimWorld's own figure: RimWorld's player places every
+        /// blueprint, so there is no autonomous "how far from the middle" figure to source. It is sized to the
+        /// founding band. A 25×25 square is 625 cells. The largest band
+        /// <see cref="World.SettlementTuning.FoundingBandRange"/> founds wants about eighty things: a bed each,
+        /// plus walls capped at <see cref="MaxWallShelterCount"/>. The square holds that whole need at about one
+        /// cell in eight. That is dense enough to read as one place, and loose enough that a random draw rarely
+        /// walls a cell in. When the square has no room left, the search doubles outward until it covers the
+        /// map, so the settlement grows out from its middle rather than stalling. Pinned by
+        /// <c>ConstructionPlacementTests</c> as "well nearer the hub than uniform placement", never by this
+        /// literal.
+        /// </summary>
+        public const int HubPlacementRadius = 12;
 
         /// <summary>
         /// Wall blueprints wanted per citizen once a settlement has any citizens at all — SimWorld's own
