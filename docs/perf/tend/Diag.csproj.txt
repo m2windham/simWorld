@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Lane-private (lane/tend). Not part of the repo. References the lane/tend worktree's Core project so it
+       measures whatever that tree currently holds. Build it only while no test run is going in
+       /home/user/wt-tend (it rebuilds Core into that tree's artifacts/). Each measured arm is published to its
+       own directory so a later rebuild cannot change a binary that is already running. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AssemblyName>TendDiag</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="/home/user/wt-tend/src/SimWorld.Core/SimWorld.Core.csproj" />
+  </ItemGroup>
+</Project>

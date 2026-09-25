@@ -1,0 +1,247 @@
+start: citizens=25 doctorActive=22 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3), ConstructDeliverResourcesToFrames(3), ConstructDeliverResourcesToBlueprints(3)
+  doctor priority histogram: p0=3, p3=22
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:7, 4:2, 8:1
+  armed citizens: 25
+day 1 | citizens 25 | downed 0 | hostiles standing 0 | beds 0
+  [1.49173] DEATH Senna has been bitten to death.
+day 2 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 3 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [3.07000] FIRED GiveQuest_Random points=0.00
+  [4.00000] FIRED ManhunterPack points=322.91
+day 4 | citizens 24 | downed 0 | hostiles standing 4 | beds 0
+day 5 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 6 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 7 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 8 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 9 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [9.54000] FIRED ManhunterPack points=451.60
+day 10 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [10.40000] FIRED Drought points=0.00
+day 11 | citizens 24 | downed 1 | hostiles standing 0 | beds 0
+day 12 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 13 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 14 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 15 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 16 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 17 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 18 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 19 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 20 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 21 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 22 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 23 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [23.55000] FIRED Earthquake points=0.00
+day 24 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 25 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [25.37000] FIRED RaidEnemy points=727.00
+  [25.40674] DEATH chicken4 has died of bruise.
+  [25.53206] DEATH Tobin has died of blood loss (severe).
+day 26 | citizens 23 | downed 17 | hostiles standing 1 | beds 0
+  [26.01038] DEATH Rosalind has died of blood loss (extreme).
+  [26.01646] DEATH Elowen has died of blood loss (extreme).
+  [26.02070] RAID CLEAR fired 25.37000: +25070 ticks, peak 18 hostiles; raiders dead 9, down 9, left map 0; citizens able 6, downed 15
+day 27 | citizens 21 | downed 2 | hostiles standing 0 | beds 0
+  [27.27915] DEATH muffalo28 has died of infection (extreme).
+  [27.29000] FIRED RaidEnemy points=574.29
+  [27.34638] DEATH Yara has been beaten to death.
+  [27.39000] FIRED WandererJoin points=0.00
+  [27.43230] RAID CLEAR fired 27.29000: +14230 ticks, peak 14 hostiles; raiders dead 1, down 6, left map 7; citizens able 1, downed 20
+day 28 | citizens 21 | downed 11 | hostiles standing 0 | beds 0
+day 29 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+  [29.29757] DEATH muffalo18 has died of infection (extreme).
+day 30 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+  [30.14183] DEATH chicken10 has been cut to death.
+day 31 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+day 32 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+day 33 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+  [33.30000] FIRED Eclipse points=0.00
+day 34 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+day 35 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+day 36 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+  [36.28000] FIRED GiveQuest_Random points=0.00
+  [36.46000] FIRED HeatWave points=0.00
+day 37 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+day 38 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+day 39 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+day 40 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+day 41 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+day 42 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+  [42.23000] FIRED TraderCaravanArrival points=0.00
+day 43 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+  [43.33000] FIRED RaidEnemy points=781.75
+  [43.50537] DEATH Oren has died of blood loss (severe).
+  [43.51647] DEATH Kade has died of blood loss (severe).
+  [43.52313] DEATH Harlan has died of blood loss (extreme).
+  [43.52540] DEATH muffalo5 has died of blood loss (severe).
+  [43.52889] DEATH Yara has died of blood loss (severe).
+  [43.53288] DEATH Alden has died of blood loss (extreme).
+  [43.53520] RAID CLEAR fired 43.33000: +20520 ticks, peak 18 hostiles; raiders dead 2, down 7, left map 9; citizens able 0, downed 16
+  [43.56175] DEATH Aaron has died of blood loss (extreme).
+  [43.56524] DEATH muffalo16 has died of blood loss (severe).
+  [43.57744] DEATH Kaia has died of blood loss (extreme).
+  [43.57890] DEATH husky2 has died of blood loss (severe).
+  [43.58696] DEATH Vance has died of blood loss (severe).
+day 44 | citizens 13 | downed 13 | hostiles standing 0 | beds 0
+  [44.00902] DEATH Oren has died of blood loss (extreme).
+  [44.01336] DEATH Nolan has died of blood loss (extreme).
+  [44.02790] DEATH Rosalind has died of blood loss (extreme).
+  [44.04076] DEATH Vance has died of blood loss (severe).
+  [44.05937] DEATH Calla has died of blood loss (extreme).
+  [44.07497] DEATH muffalo13 has died of blood loss (extreme).
+  [44.07535] DEATH Aaron has died of blood loss (severe).
+  [44.08040] DEATH muffalo15 has died of blood loss (extreme).
+  [44.08507] DEATH muffalo19 has died of blood loss (extreme).
+  [44.11776] DEATH Jasper has died of blood loss (extreme).
+  [44.11879] DEATH muffalo17 has died of blood loss (extreme).
+  [44.13268] DEATH Tamsin has died of blood loss (extreme).
+  [44.14088] DEATH muffalo14 has died of blood loss (extreme).
+  [44.17087] DEATH muffalo27 has died of blood loss (extreme).
+  [44.18953] DEATH muffalo4 has died of blood loss (extreme).
+  [44.22937] DEATH Giselle has died of blood loss (extreme).
+day 45 | citizens 4 | downed 4 | hostiles standing 0 | beds 0
+  [45.03352] DEATH Fira has died of infection (extreme).
+  [45.13651] DEATH Idris has died of infection (extreme).
+  [45.30947] DEATH Ursa has died of infection (extreme).
+day 46 | citizens 1 | downed 1 | hostiles standing 0 | beds 0
+day 47 | citizens 1 | downed 1 | hostiles standing 0 | beds 0
+  [47.50000] FIRED VisitorGroup points=0.00
+day 48 | citizens 1 | downed 1 | hostiles standing 0 | beds 0
+day 49 | citizens 1 | downed 1 | hostiles standing 0 | beds 0
+day 50 | citizens 1 | downed 1 | hostiles standing 0 | beds 0
+day 51 | citizens 1 | downed 1 | hostiles standing 0 | beds 0
+day 52 | citizens 1 | downed 1 | hostiles standing 0 | beds 0
+  [52.04000] FIRED TraderCaravanArrival points=0.00
+  [52.59745] DEATH Yorick has died of malnutrition (extreme).
+day 53 | citizens 0 | downed 0 | hostiles standing 0 | beds 0
+day 54 | citizens 0 | downed 0 | hostiles standing 0 | beds 0
+  [54.05000] FIRED ManhunterPack points=35.00
+  [54.59000] FIRED RaidEnemy points=35.00
+day 55 | citizens 0 | downed 0 | hostiles standing 3 | beds 0
+  [55.03933] DEATH husky10 has died of bruise.
+  [55.06210] RAID CLEAR fired 54.59000: +7210 ticks, peak 3 hostiles; raiders dead 0, down 1, left map 1; citizens able 0, downed 0
+day 56 | citizens 0 | downed 0 | hostiles standing 0 | beds 0
+  [56.07000] FIRED TraderCaravanArrival points=0.00
+day 57 | citizens 0 | downed 0 | hostiles standing 0 | beds 0
+day 58 | citizens 0 | downed 0 | hostiles standing 0 | beds 0
+  [58.31000] FIRED TraderCaravanArrival points=0.00
+day 59 | citizens 0 | downed 0 | hostiles standing 0 | beds 0
+day 60 | citizens 0 | downed 0 | hostiles standing 0 | beds 0
+
+RAIDS
+  fired 25.37000 points 727.00 peak hostiles 18 clear +25070 raiders dead/down/left 9/9/0 citizens able/downed at clear 6/15
+  fired 27.29000 points 574.29 peak hostiles 14 clear +14230 raiders dead/down/left 1/6/7 citizens able/downed at clear 1/20
+  fired 43.33000 points 781.75 peak hostiles 18 clear +20520 raiders dead/down/left 2/7/9 citizens able/downed at clear 0/16
+  fired 54.59000 points 35.00 peak hostiles 3 clear +7210 raiders dead/down/left 0/1/1 citizens able/downed at clear 0/0
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#66 | 10.10980 | 2.70 | 0.01 | 21961 | 0 | 23 | 23 | +0 | +0 | Aaron#36(4,Sow) | +0 | 0/1 | recovered | 330 | - | 
+Rosalind#66 | 10.11640 | 1.05 | 0.02 | 55754 | 0 | 23 | 23 | +0 | +0 | Fira#18(2,Sow) | +0 | 0/1 | recovered | 30870 | - | 
+Rosalind#66 | 10.55350 | 0.15 | 0.00 | 400000 | 0 | 23 | 23 | +0 | +30 | Idris#144(1,GotoWander) | +0 | 0/2 | recovered | 30360 | - | 
+Vance#96 | 21.10890 | 1.80 | 0.01 | 33099 | 0 | 23 | 23 | +0 | +0 | Aaron#36(4,Sow) | +720 | 0/2 | recovered | 21330 | - | 
+Calla#54 | 23.01590 | 0.00 | 0.00 | - | 0 | 23 | 23 | +0 | +2310 | Ursa#114(3,GotoWander) | +0 | 0/0 | recovered | 8010 | - | 
+Fira#18 | 25.38580 | 1.30 | 0.00 | 46096 | 18 | 23 | 10 | - | +0 | Jasper#120(1,GotoWander) | - | 32/0 | recovered | 9660 | - | 
+Giselle#6 | 25.38970 | 2.00 | 0.00 | 29966 | 18 | 22 | 16 | - | +330 | Vance#96(1,HaulToCell) | - | 6/0 | recovered | 1590 | - | 
+Aaron#36 | 25.39630 | 1.56 | 0.00 | 38461 | 16 | 21 | 5 | +22440 | +18720 | Harlan#24(2,Ingest) | +18960 | 63/0 | recovered | 31320 | - | 
+Jasper#120 | 25.39810 | 2.14 | 0.00 | 27936 | 16 | 20 | 5 | +22260 | +18060 | Harlan#24(2,Ingest) | +18330 | 61/0 | recovered | 30420 | - | 
+Calla#54 | 25.39840 | 0.62 | 0.00 | 96716 | 16 | 19 | 10 | - | - | - | - | 33/0 | recovered | 9840 | - | 
+Vance#72 | 25.39870 | 1.56 | 0.00 | 38405 | 15 | 18 | 5 | +22200 | +1320 | Vance#96(1,AttackStatic) | +18000 | 60/0 | recovered | 28620 | - | 
+Oren#12 | 25.40110 | 3.41 | 0.01 | 17375 | 14 | 17 | 5 | +21960 | +0 | Rosalind#66(1,Harvest) | +30 | 0/0 | recovered | 32880 | - | 
+Tobin#0 | 25.40200 | 2.50 | 0.00 | 23884 | 14 | 16 | 7 | - | +12930 | Yara#78(8,Ingest) | +0 | 44/0 | died | 13020 | BloodLoss | cons=0.07 breath=0.30 pump=1.00 filt=1.00 pain=0.89 bloodLoss=0.45 bleed=2.39 injuries=7 tended=0 infections=0
+Rosalind#66 | 25.40590 | 3.41 | 0.01 | 17484 | 12 | 16 | 5 | - | +20340 | Harlan#24(2,Ingest) | +0 | 68/0 | died | 20460 | BloodLoss | cons=0.10 breath=0.67 pump=1.00 filt=1.00 pain=0.77 bloodLoss=1.00 bleed=3.22 injuries=6 tended=0 infections=0
+Giselle#6 | 25.40650 | 0.66 | 0.04 | 87047 | 12 | 15 | 5 | +21420 | +20400 | Harlan#24(2,Ingest) | +0 | 69/0 | recovered | 30180 | - | 
+Elowen#30 | 25.41040 | 3.41 | 0.00 | 17508 | 11 | 14 | 5 | - | - | - | - | 69/0 | died | 20610 | BloodLoss | cons=0.10 breath=0.60 pump=1.00 filt=1.00 pain=0.77 bloodLoss=1.00 bleed=3.19 injuries=6 tended=0 infections=0
+Rosalind#102 | 25.41490 | 0.89 | 0.00 | 67416 | 9 | 13 | 6 | - | - | - | +0 | 45/0 | recovered | 13500 | - | 
+Yorick#132 | 25.43020 | 3.34 | 0.04 | 17325 | 6 | 12 | 5 | +19050 | +16830 | Harlan#24(2,Ingest) | +17040 | 57/0 | recovered | 77550 | - | 
+Ursa#114 | 25.43110 | 0.66 | 0.00 | 90909 | 6 | 11 | 10 | - | - | - | +0 | 9/0 | recovered | 2550 | - | 
+Alden#84 | 25.45120 | 3.95 | 0.05 | 14468 | 6 | 10 | 5 | +16950 | +15360 | Harlan#24(2,Ingest) | +15570 | 52/0 | recovered | 83670 | - | 
+Ursa#114 | 25.45720 | 1.28 | 0.01 | 46217 | 6 | 10 | 9 | - | - | - | +0 | 18/0 | recovered | 5340 | - | 
+Fira#18 | 25.48330 | 1.39 | 0.15 | 36870 | 5 | 10 | 5 | +13740 | +14070 | Yara#78(8,Ingest) | +14700 | 45/4 | recovered | 35310 | - | 
+Tamsin#138 | 25.49800 | 2.75 | 0.00 | 21738 | 5 | 10 | 5 | +12270 | +11520 | Harlan#24(2,Ingest) | +11850 | 40/0 | recovered | 35130 | - | 
+Kade#60 | 25.50700 | 2.84 | 0.06 | 19853 | 4 | 9 | 5 | - | - | - | - | 25/0 | recovered | 7500 | - | 
+Ursa#114 | 25.51450 | 1.88 | 0.09 | 29001 | 4 | 9 | 5 | +10620 | +9240 | Harlan#24(2,Ingest) | +0 | 32/0 | recovered | 34410 | - | 
+Calla#54 | 25.51540 | 0.72 | 0.04 | 79894 | 4 | 8 | 5 | - | +7050 | Harlan#24(2,Ingest) | - | 24/0 | recovered | 7230 | - | 
+Kaia#90 | 25.52410 | 3.32 | 0.12 | 15882 | 4 | 7 | 5 | +9660 | +7860 | Harlan#24(2,Ingest) | +8070 | 27/0 | recovered | 33780 | - | 
+Vance#96 | 25.54120 | 1.32 | 0.00 | 45360 | 4 | 6 | 5 | +7950 | +4650 | Harlan#24(2,Ingest) | +0 | 16/0 | recovered | 30900 | - | 
+Rosalind#102 | 25.55260 | 1.50 | 0.11 | 35786 | 3 | 6 | 5 | +6810 | +4380 | Harlan#24(2,Ingest) | +0 | 15/0 | recovered | 12930 | - | 
+Idris#144 | 25.57600 | 3.39 | 0.05 | 16875 | 3 | 5 | 5 | +4470 | +5280 | Harlan#24(2,Ingest) | +5790 | 15/5 | recovered | 32850 | - | 
+Kade#60 | 25.58290 | 3.43 | 0.36 | 11126 | 3 | 5 | 5 | +3780 | +4110 | Yara#42(2,Ingest) | +4650 | 12/3 | recovered | 32310 | - | 
+Oren#12 | 26.20910 | 0.00 | 0.00 | - | 0 | 11 | 11 | +0 | +90 | Oren#48(3,FeedPatient) | +0 | 0/0 | recovered | 1680 | - | 
+Aaron#36 | 27.13590 | 0.00 | 0.00 | - | 0 | 20 | 14 | +0 | +12480 | Harlan#24(2,Harvest) | +0 | 0/0 | recovered | 18540 | - | 
+Kade#60 | 27.30450 | 0.77 | 0.01 | 76814 | 14 | 19 | 1 | - | +180 | Oren#48(3,Ingest) | +0 | 30/0 | recovered | 9150 | - | 
+Giselle#6 | 27.30600 | 0.60 | 0.00 | 100000 | 13 | 18 | 4 | - | +60 | Harlan#24(2,Harvest) | +0 | 17/0 | recovered | 4830 | - | 
+Yorick#132 | 27.31050 | 2.50 | 0.25 | 18035 | 12 | 17 | 0 | +12180 | +0 | Yara#42(2,Harvest) | +0 | 41/9 | died | 1528710 | Malnutrition | cons=0.50 breath=1.00 pump=1.00 filt=0.80 pain=0.00 bloodLoss=0.00 bleed=0.00 injuries=0 tended=0 infections=0
+Jasper#120 | 27.31380 | 0.72 | 0.00 | 83333 | 12 | 16 | 0 | +11850 | +210 | Yara#78(8,Ingest) | +0 | 26/0 | recovered | 25650 | - | 
+Rosalind#102 | 27.31410 | 1.20 | 0.00 | 49940 | 12 | 15 | 14 | - | - | - | +0 | 1/0 | recovered | 180 | - | 
+Kaia#90 | 27.31500 | 2.64 | 0.00 | 22649 | 12 | 14 | 0 | +11730 | +8100 | Nolan#26867(1,(none)) | +0 | 29/0 | recovered | 24690 | - | 
+Harlan#24 | 27.31890 | 3.18 | 0.00 | 18825 | 11 | 14 | 0 | +11340 | +15300 | Vance#72(3,Ingest) | +0 | 38/13 | recovered | 53280 | - | 
+Aaron#36 | 27.32220 | 1.32 | 0.00 | 45454 | 11 | 13 | 1 | - | - | - | +0 | 21/0 | recovered | 6360 | - | 
+Vance#96 | 27.32220 | 1.20 | 0.00 | 49941 | 11 | 13 | 0 | +11010 | +15900 | Fira#18(2,Ingest) | +0 | 37/17 | recovered | 41400 | - | 
+Rosalind#102 | 27.32280 | 1.85 | 0.01 | 31991 | 11 | 12 | 0 | +10950 | +13140 | Vance#72(3,Ingest) | +0 | 37/8 | recovered | 25110 | - | 
+Tamsin#138 | 27.32880 | 1.92 | 0.01 | 30817 | 11 | 11 | 0 | +10350 | +15720 | Fira#18(2,Ingest) | +0 | 35/20 | recovered | 28350 | - | 
+Idris#144 | 27.33840 | 1.80 | 0.00 | 33211 | 10 | 10 | 0 | +9390 | +14550 | Vance#72(3,Ingest) | +0 | 32/18 | recovered | 32490 | - | 
+Oren#48 | 27.33930 | 2.86 | 0.03 | 20322 | 10 | 9 | 0 | +9300 | +5340 | Nolan#26867(1,(none)) | +5670 | 18/0 | recovered | 22320 | - | 
+Ursa#114 | 27.34380 | 3.23 | 0.03 | 18054 | 10 | 8 | 0 | +8850 | +11790 | Vance#72(3,Ingest) | +0 | 30/10 | recovered | 54720 | - | 
+Yara#42 | 27.34560 | 2.02 | 0.00 | 29634 | 10 | 7 | 0 | +8670 | +11370 | Vance#72(3,Ingest) | +11610 | 29/9 | recovered | 35340 | - | 
+Oren#12 | 27.34980 | 0.60 | 0.00 | 100000 | 10 | 5 | 1 | - | - | - | +0 | 17/0 | recovered | 5220 | - | 
+Alden#84 | 27.35190 | 0.22 | 0.32 | 186785 | 10 | 4 | 1 | - | - | - | +0 | 20/0 | recovered | 6000 | - | 
+Giselle#6 | 27.35520 | 1.25 | 0.02 | 47410 | 9 | 4 | 0 | +7710 | +11370 | Vance#72(3,Ingest) | +0 | 26/13 | recovered | 37710 | - | 
+Vance#72 | 27.35970 | 2.14 | 0.01 | 27835 | 9 | 3 | 0 | +7260 | +7170 | Fira#18(2,(none)) | +0 | 25/0 | recovered | 7920 | - | 
+Fira#18 | 27.36270 | 0.10 | 0.00 | 600000 | 9 | 2 | 0 | - | - | - | +0 | 22/0 | recovered | 6570 | - | 
+Calla#54 | 27.37470 | 1.32 | 0.00 | 45454 | 9 | 1 | 0 | +5760 | +6450 | Fira#18(2,(none)) | +0 | 20/4 | recovered | 18210 | - | 
+Aaron#108 | 27.39600 | 1.32 | 0.00 | 45586 | 9 | 3 | 0 | +3630 | +9750 | Nolan#26867(1,(none)) | +0 | 13/27 | recovered | 15600 | - | 
+Oren#12 | 27.40800 | 1.24 | 0.02 | 47426 | 9 | 3 | 0 | +2430 | +3960 | Vance#72(3,Ingest) | +0 | 9/6 | recovered | 23190 | - | 
+Alden#84 | 27.41280 | 0.87 | 0.30 | 48304 | 9 | 3 | 0 | +1950 | +2940 | Vance#72(3,Ingest) | +0 | 7/5 | recovered | 31710 | - | 
+Aaron#36 | 27.41490 | 0.12 | 0.12 | 439456 | 9 | 2 | 0 | +1740 | +5610 | Fira#18(2,Ingest) | +0 | 6/13 | recovered | 27960 | - | 
+Kade#60 | 27.41910 | 1.23 | 0.08 | 44919 | 8 | 1 | 0 | +1320 | +6180 | Vance#72(3,Ingest) | +0 | 5/17 | recovered | 6480 | - | 
+Nolan#26867 | 27.42420 | 2.69 | 0.01 | 22182 | 7 | 0 | 0 | +810 | +3960 | Fira#18(2,Ingest) | +4260 | 3/11 | recovered | 6930 | - | 
+Vance#96 | 29.09210 | 0.00 | 0.00 | - | 0 | 19 | 19 | +0 | +7290 | Nolan#26867(1,GotoWander) | +0 | 0/0 | recovered | 16800 | - | 
+Vance#72 | 29.27480 | 0.00 | 0.00 | - | 0 | 19 | 19 | +0 | +1230 | Harlan#24(2,Ingest) | +0 | 0/0 | recovered | 5250 | - | 
+Harlan#24 | 29.34920 | 0.00 | 0.00 | - | 0 | 19 | 19 | +0 | +2430 | Vance#72(3,Harvest) | +0 | 0/0 | recovered | 6900 | - | 
+Idris#144 | 30.08940 | 0.54 | 0.00 | 111110 | 0 | 19 | 19 | +0 | +0 | Ursa#114(3,Sow) | +0 | 0/0 | recovered | 4590 | - | 
+Idris#144 | 32.11670 | 0.00 | 0.00 | - | 0 | 19 | 19 | +0 | +780 | Oren#48(3,GotoWander) | +0 | 0/0 | recovered | 6720 | - | 
+Kade#60 | 43.33330 | 1.98 | 0.00 | 30291 | 18 | 19 | 1 | - | +0 | Rosalind#102(2,GotoWander) | +0 | 61/0 | died | 18330 | BloodLoss | cons=0.17 breath=0.67 pump=1.00 filt=0.50 pain=0.37 bloodLoss=0.45 bleed=1.76 injuries=3 tended=0 infections=0
+Jasper#120 | 43.33840 | 2.10 | 0.00 | 28522 | 18 | 18 | 0 | +19680 | +0 | Calla#54(1,GotoWander) | +0 | 66/61 | died | 37950 | BloodLoss | cons=0.10 breath=0.73 pump=1.00 filt=1.00 pain=0.74 bloodLoss=1.00 bleed=1.84 injuries=6 tended=0 infections=0
+Giselle#6 | 43.34110 | 1.20 | 0.00 | 49944 | 18 | 17 | 12 | - | +660 | Harlan#24(2,Harvest) | +0 | 3/0 | recovered | 2520 | - | 
+Fira#18 | 43.34650 | 1.61 | 0.00 | 37267 | 16 | 16 | 0 | +18870 | +420 | Idris#144(1,AttackStatic) | +0 | 14/0 | recovered | 31590 | - | 
+Harlan#24 | 43.35100 | 3.96 | 0.01 | 14991 | 13 | 15 | 1 | - | - | - | +0 | 58/0 | died | 17220 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=1.00 pain=0.78 bloodLoss=1.00 bleed=3.75 injuries=6 tended=0 infections=0
+Vance#72 | 43.35610 | 1.67 | 0.00 | 35767 | 13 | 14 | 0 | +17910 | +1830 | Oren#48(3,Ingest) | - | 60/17 | died | 23100 | BloodLoss | cons=0.17 breath=0.37 pump=1.00 filt=1.00 pain=0.52 bloodLoss=0.45 bleed=1.45 injuries=3 tended=0 infections=0
+Alden#84 | 43.36030 | 3.89 | 0.02 | 15209 | 12 | 13 | 0 | - | - | - | - | 57/0 | died | 17280 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=0.67 pain=0.88 bloodLoss=1.00 bleed=3.75 injuries=4 tended=0 infections=0
+Ursa#114 | 43.36090 | 1.25 | 0.01 | 47921 | 12 | 12 | 7 | - | - | - | +0 | 10/0 | recovered | 2970 | - | 
+Giselle#6 | 43.36720 | 0.66 | 0.00 | 90765 | 12 | 12 | 7 | - | - | - | +0 | 8/0 | recovered | 2310 | - | 
+Kaia#90 | 43.36960 | 3.35 | 0.02 | 17590 | 12 | 11 | 0 | +16560 | - | - | +0 | 55/14 | died | 20790 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=1.00 pain=0.89 bloodLoss=1.00 bleed=3.13 injuries=7 tended=2 infections=1
+Rosalind#102 | 43.37500 | 2.85 | 0.02 | 20668 | 11 | 10 | 0 | +16020 | - | - | +0 | 54/31 | died | 25290 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=1.00 pain=0.82 bloodLoss=1.00 bleed=2.61 injuries=8 tended=2 infections=0
+Yara#42 | 43.37830 | 2.22 | 0.01 | 26725 | 11 | 9 | 0 | - | - | - | - | 50/0 | died | 15060 | BloodLoss | cons=0.18 breath=0.50 pump=1.00 filt=1.00 pain=0.86 bloodLoss=0.45 bleed=2.09 injuries=4 tended=0 infections=0
+Idris#144 | 43.38220 | 3.41 | 0.02 | 17336 | 10 | 8 | 2 | - | +0 | Oren#12(1,LayDown) | +0 | 1/0 | recovered | 9510 | - | 
+Oren#12 | 43.38880 | 2.75 | 0.01 | 21711 | 10 | 7 | 1 | - | - | - | +0 | 39/0 | died | 11670 | BloodLoss | cons=0.13 breath=0.81 pump=1.00 filt=0.45 pain=0.71 bloodLoss=0.45 bleed=2.64 injuries=7 tended=2 infections=0
+Giselle#6 | 43.39120 | 1.32 | 0.01 | 44909 | 10 | 8 | 3 | - | - | - | +0 | 10/0 | recovered | 2910 | - | 
+Ursa#114 | 43.39330 | 1.32 | 0.05 | 43199 | 10 | 7 | 0 | +14190 | +52170 | Fira#18(2,Ingest) | +0 | 47/129 | recovered | 85710 | - | 
+Aaron#36 | 43.39570 | 3.95 | 0.05 | 14475 | 10 | 6 | 0 | +13950 | - | - | - | 47/9 | died | 16620 | BloodLoss | cons=0.10 breath=0.63 pump=1.00 filt=1.00 pain=0.78 bloodLoss=1.00 bleed=3.75 injuries=6 tended=0 infections=0
+Oren#48 | 43.40230 | 3.33 | 0.02 | 17663 | 9 | 5 | 0 | +13290 | - | - | - | 44/25 | died | 20700 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=0.67 pain=0.87 bloodLoss=1.00 bleed=3.17 injuries=6 tended=0 infections=0
+Calla#54 | 43.40620 | 2.86 | 0.01 | 20686 | 9 | 4 | 0 | +12900 | - | - | +0 | 43/41 | died | 25320 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=1.00 pain=0.81 bloodLoss=1.00 bleed=2.61 injuries=7 tended=1 infections=0
+Aaron#108 | 43.41910 | 1.65 | 0.00 | 36363 | 9 | 3 | 0 | +11610 | - | - | +0 | 39/47 | died | 25650 | BloodLoss | cons=0.11 breath=0.50 pump=0.47 filt=1.00 pain=0.21 bloodLoss=0.45 bleed=1.25 injuries=2 tended=0 infections=0
+Nolan#26867 | 43.44550 | 3.94 | 0.03 | 14728 | 9 | 3 | 0 | +8970 | - | - | - | 30/26 | died | 16800 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=1.00 pain=0.90 bloodLoss=1.00 bleed=3.78 injuries=5 tended=0 infections=0
+Giselle#6 | 43.46560 | 1.95 | 0.12 | 26905 | 9 | 2 | 0 | +6960 | - | - | +0 | 23/98 | died | 36390 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=0.63 pain=0.51 bloodLoss=1.00 bleed=1.71 injuries=5 tended=2 infections=1
+Idris#144 | 43.48210 | 0.11 | 0.00 | 545454 | 9 | 2 | 0 | +5310 | +43980 | Fira#18(2,Ingest) | +0 | 18/131 | recovered | 64320 | - | 
+Tamsin#138 | 43.49140 | 2.85 | 0.06 | 19913 | 9 | 1 | 0 | +4380 | - | - | - | 15/14 | recovered | 8490 | - | 
+Vance#96 | 43.52740 | 2.75 | 0.02 | 21474 | 9 | 0 | 0 | +780 | - | - | +0 | 3/35 | died | 11340 | BloodLoss | cons=0.18 breath=0.42 pump=1.00 filt=1.00 pain=0.66 bloodLoss=0.45 bleed=2.64 injuries=5 tended=0 infections=0
+Tamsin#138 | 43.58950 | 2.77 | 0.45 | 11900 | 0 | 0 | 0 | +0 | - | - | - | 0/48 | died | 14340 | BloodLoss | cons=0.10 breath=0.83 pump=1.00 filt=1.00 pain=0.76 bloodLoss=1.00 bleed=2.62 injuries=6 tended=0 infections=0
+Fira#18 | 44.54090 | 0.00 | 0.00 | - | 0 | 1 | 0 | +0 | - | - | +0 | 0/0 | died | 9270 | WoundInfection | cons=0.10 breath=0.95 pump=1.00 filt=0.65 pain=1.00 bloodLoss=0.00 bleed=0.00 injuries=6 tended=6 infections=1
+Idris#144 | 44.55290 | 0.00 | 0.00 | - | 0 | 0 | 0 | +0 | - | - | +0 | 0/0 | recovered | 7440 | - | 
+Idris#144 | 45.04170 | 0.00 | 0.00 | - | 0 | 0 | 0 | +0 | - | - | +0 | 0/0 | died | 9510 | WoundInfection | cons=0.10 breath=0.95 pump=1.00 filt=0.93 pain=1.00 bloodLoss=0.00 bleed=0.00 injuries=8 tended=8 infections=1
+Ursa#114 | 45.15270 | 0.00 | 0.38 | - | 0 | 0 | 0 | +0 | - | - | +0 | 0/0 | died | 15690 | WoundInfection | cons=0.10 breath=0.92 pump=1.00 filt=0.50 pain=0.89 bloodLoss=0.28 bleed=0.00 injuries=2 tended=2 infections=1
+
+TIME TO FIRST TEND JOB (ticks), n=62 of 95 downings: min 0 p25 330 median 5340 p75 12480 p90 16830 max 52170
+  sorted: 0 0 0 0 0 0 0 0 0 0 30 60 90 180 210 330 420 660 780 1230 1320 1830 2310 2430 2940 3960 3960 4110 4380 4650 5280 5340 5610 6180 6450 7050 7170 7290 7860 8100 9240 9750 11370 11370 11520 11790 12480 12930 13140 14070 14550 15300 15360 15720 15900 16830 18060 18720 20340 20400 43980 52170
+  bleeding at downing: 84, never tended: 29
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=52: min 0 p25 0 median 330 p75 2940 p90 5370 max 38670
+  sorted: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 30 90 330 330 690 780 810 990 1230 1530 2190 2310 2430 2700 2940 3150 3660 3870 3960 4860 4890 5160 5370 6120 7290 12480 37980 38670
+DEATHS among downed: BloodLoss=20, WoundInfection=3, Malnutrition=1
+  of which never had a tend job: 18; never tended: 8
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (188 samples): LayDown(asleep)=580, AttackStatic=453, Harvest=91, TendPatient=78, GotoWander(mental)=72, Hunt=29, HaulToCell=21, Ingest=17, Hunt(mental)=14, AttackStatic(mental)=9, Train=5, SocialRelax=5, GotoWander=4, (none)=1, FeedPatient=1
+  map clear (169 samples): LayDown(asleep)=128, TendPatient=74, Sow=61, GotoWander=18, Ingest=14, GotoWander(mental)=10, FeedPatient=8, SocialRelax=7, Tame=6, Train=2, GoForWalk=1, AttackStatic=1
+  mean rest level of the asleep, map clear: 0.57

@@ -22,6 +22,10 @@ namespace SimWorld.Building
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
             if (!thing.Spawned) return false;
+            // RimWorld hands a builder the blocking-thing job instead of a delivery while something stands in
+            // the way (GenConstruct.HandleBlockingThingJob), and for another pawn that is no job at all: wait
+            // for them to move. A pawn on the blueprint of an impassable building would be walled in by its frame.
+            if (thing is Blueprint blueprint && GenConstruct.FirstBlockingPawn(blueprint, pawn) != null) return false;
             if (!pawn.Map!.reservationManager.CanReserve(pawn, thing)) return false;
             return FindNeededResource(pawn, thing) != null;
         }

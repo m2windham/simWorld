@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    A tree (RimWorld: Plant_TreePoplar, from Plants_Wild_Temperate). Its own file, additively.
+
+    WHY IT EXISTS. Every building the settlement decides it needs costs wood (Buildings_Structural.xml), and
+    before this file nothing on a generated map could ever produce any. WoodLog's own description said "harvested
+    from a tree", and there was no tree. The only wood a map ever held was the odd stack of ruin loot
+    (MapGen.GenStep_Ruins), so a founding band placed a bed blueprint for every citizen and then waited for
+    materials that could not exist: seed 777 of the storyteller bench had no wood on its map at all and built
+    no bed in 45 days.
+
+    ONE SPECIES. RimWorld scatters a biome's own trees (oak and poplar in a temperate forest, pine in a boreal
+    one, teak in a jungle). This port has one generic undergrowth marker (Plants_Wild.xml) rather than per-biome
+    plant lists, so it gets one tree to match, placed at the density the tile's Timber deposit promises
+    (MapGen.GenStep_Trees). Poplar is the one RimWorld grows in the most biomes (temperate forest, boreal
+    forest and grassland).
+
+    THE NUMBERS are RimWorld's, from the wiki's poplar page: harvest yield 27 wood, 15.05 days to grow, path
+    cost 42, pass-through-only, 200 hit points, 80% flammability, 25% cover. harvestMinGrowth 0.4 is the wiki's
+    trees page ("at 40% growth, it is possible to obtain 50% of their yield"); this port's Plant.Harvest scales
+    yield linearly with growth, so a 40% tree gives 40% rather than 50%, the deviation Plant.Harvest already
+    records. Cutting takes JobDriver_PlantWork.CutWorkAmount, not RimWorld's 800 ticks, because this port's
+    PlantProperties carries no per-species harvestWork.
+  -->
+
+  <ThingDef>
+    <defName>Plant_TreePoplar</defName>
+    <label>poplar tree</label>
+    <description>A fast-growing tree with pale bark. Felled, it gives good straight wood.</description>
+    <category>Plant</category>
+    <thingClass>SimWorld.Building.Plant</thingClass>
+    <tickerType>Long</tickerType>
+    <passability>PassThroughOnly</passability>
+    <pathCost>42</pathCost>
+    <fillPercent>0.25</fillPercent>
+    <useHitPoints>true</useHitPoints>
+    <destroyable>true</destroyable>
+    <selectable>true</selectable>
+    <statBases>
+      <MaxHitPoints>200</MaxHitPoints>
+      <Flammability>0.8</Flammability>
+    </statBases>
+    <plant>
+      <growDays>15.05</growDays>
+      <harvestedThingDef>WoodLog</harvestedThingDef>
+      <harvestYield>27</harvestYield>
+      <harvestMinGrowth>0.4</harvestMinGrowth>
+      <harvestTag>Wood</harvestTag>
+    </plant>
+  </ThingDef>
+
+</Defs>

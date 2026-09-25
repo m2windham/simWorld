@@ -5,7 +5,8 @@
     The humanlike priority think tree (system 9: AI), matching simworld-spec.md §7.4's diagram order:
     danger/mental-state overrides needs, needs override directed orders, directed orders override the god
     layer's standing edicts (system 12), and edicts override routine work — a final wander tier keeps an
-    otherwise-idle pawn doing *something*. The edict tier sits strictly between a queued directed order and
+    otherwise-idle pawn doing *something*. One kind of work is not routine: emergency work (fires, and a
+    colonist who will bleed to death) sits above every need but starvation, as it does in RimWorld. The edict tier sits strictly between a queued directed order and
     routine work: a citizen still eats, rests and obeys a direct order before a civilization-scale edict, and
     an edict still only ever wins a job routine work would otherwise have offered — see JobGiver_Edicts's own
     doc for why that ordering is §10's "citizens keep full agency" clause made concrete.
@@ -64,6 +65,35 @@
         -->
         <li Class="SimWorld.AI.ThinkNode_Duty" />
 
+        <!--
+          Emergency work — firefighting and urgent tending — above every need but starvation. RimWorld's
+          humanlike tree has this pair in this order in its colonist block ("starving? eat", then JobGiver_Work
+          with emergency=true), both above MainColonistBehaviorCore, the priority sorter where eating, sleeping,
+          recreation and routine work compete. So a RimWorld doctor who is tired, hungry or bored still tends
+          the colonist who will bleed to death inside eighteen hours first, and a sleeping one gets up to do it
+          (JobDriver_LayDown). The order was read from a structural dump of RimWorld's ThinkTreeDefs (the
+          RimWorld-zh Defs templates), not from the shipped XML itself, so it is pinned by test
+          (EmergencyWorkTests) rather than by the claim.
+
+          This port had only the lower JobGiver_Work, which scanned the emergency list and then the routine one
+          below hunger, sleep and recreation. On the populated storyteller world the survivors of a raid went to
+          bed beside the people bleeding out next to them, and slept until rested.
+
+          Below the fight and duty tiers, which are this port's own (CombatPostureUtility, DutyDef): a citizen
+          with an enemy in reach fights first, as this port has always decided. What counts as urgent is
+          SimWorld.Health.HealthAIUtility.ShouldBeTendedNowUrgent — RimWorld's eighteen-hour rule — so a slow
+          bleed gets nobody out of bed.
+        -->
+        <li Class="SimWorld.AI.ThinkNode_ConditionalStarving">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_GetFood" />
+          </subNodes>
+        </li>
+
+        <li Class="SimWorld.AI.JobGiver_Work">
+          <emergency>true</emergency>
+        </li>
+
         <li Class="SimWorld.AI.ThinkNode_ConditionalHungry">
           <subNodes>
             <li Class="SimWorld.AI.JobGiver_GetFood" />
@@ -104,6 +134,7 @@
 
         <li Class="SimWorld.AI.JobGiver_Edicts" />
 
+        <!-- Routine work: the normal work-giver list only. The emergency list has its own tier, above needs. -->
         <li Class="SimWorld.AI.JobGiver_Work" />
 
         <!--

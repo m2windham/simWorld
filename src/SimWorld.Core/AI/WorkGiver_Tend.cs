@@ -12,8 +12,16 @@ namespace SimWorld.AI
     /// <c>DoctorTendEmergency</c> and <c>DoctorTend</c> content <c>WorkGiverDef</c>s, exactly as RimWorld's own
     /// single <c>WorkGiver_Tend</c> class does for both — <see cref="WorkGiverDef.emergency"/> alone tells them
     /// apart, and <see cref="TendUtility.NeedsEmergencyTend"/> (see that method's own doc) sorts every patient
-    /// into exactly one of the two, so a bleeding patient is only ever a candidate for the emergency giver and
-    /// an ordinary wound only ever a candidate for the ordinary one — never both, and never neither.
+    /// into exactly one of the two, so a patient bleeding to death is only ever a candidate for the emergency
+    /// giver and anything slower only ever a candidate for the ordinary one — never both, and never neither.
+    /// <para/>
+    /// <b>Not RimWorld's: the patient need not be in bed.</b> RimWorld's <c>WorkGiver_Tend.HasJobOnThing</c>
+    /// (1.0 decompile) requires <c>GoodLayingStatusForTend</c>, which for a humanlike patient is
+    /// <c>patient.InBed()</c> — urgent or not — so a colonist downed on open ground is rescued to a bed first
+    /// and tended there, and with no bed or sleeping spot on the map is not tended by anyone who was not ordered
+    /// to. This port tends wherever the patient lies. Kept deliberately: most settlements in play have no bed
+    /// yet, and porting the gate would leave every raid casualty untended rather than merely unrescued. It
+    /// wants revisiting once settlements reliably build beds.
     /// <para/>
     /// <b>Self-tend:</b> a pawn is never its own patient here, matching RimWorld's own <c>WorkGiver_Tend</c>
     /// (which refuses <c>t == pawn</c> the same way) — RimWorld's separate "auto-tend" mechanic, letting a

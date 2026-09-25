@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Felling trees for the settlement's own building sites (system 16: Building). Its own file, as
+    WorkGivers_Butchery.xml is: Pawn_WorkSettings collects givers from the whole DefDatabase by workType.
+
+    Construction, below delivering materials to frames (90) and blueprints (85) and above repairing (80): a
+    builder with wood to carry carries it, one with none fells a tree, and patching up what already stands
+    comes after both. Why this is Construction and not RimWorld's PlantCutting is in
+    SimWorld.Building.WorkGiver_ConstructChopWood's own doc. Manipulation: felling a tree is handwork, and
+    a pawn who cannot use their hands should not be sent to do it.
+  -->
+
+  <WorkGiverDef>
+    <defName>ConstructChopWood</defName>
+    <label>chop wood for construction</label>
+    <verb>Chop</verb>
+    <gerund>chopping wood</gerund>
+    <workType>Construction</workType>
+    <priorityInType>83</priorityInType>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+    <giverClass>SimWorld.Building.WorkGiver_ConstructChopWood</giverClass>
+  </WorkGiverDef>
+
+</Defs>

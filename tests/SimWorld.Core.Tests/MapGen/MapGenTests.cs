@@ -80,11 +80,12 @@ namespace SimWorld.Tests.MapGen
         [Fact]
         public void MapGen_content_is_fully_loaded_and_bound()
         {
-            // Nine since GenSteps_Animals.xml added the wildlife step (see SimWorld.MapGen.GenStep_Animals).
-            Assert.Equal(9, DefDatabase<GenStepDef>.DefCount);
+            // Ten: GenSteps_Animals.xml added the wildlife step (SimWorld.MapGen.GenStep_Animals) and
+            // GenSteps_Trees.xml the trees (SimWorld.MapGen.GenStep_Trees).
+            Assert.Equal(10, DefDatabase<GenStepDef>.DefCount);
             Assert.Equal(1, DefDatabase<MapGeneratorDef>.DefCount);
             Assert.NotNull(MapGeneratorDefOf.Base);
-            Assert.Equal(9, MapGeneratorDefOf.Base.genSteps.Count);
+            Assert.Equal(10, MapGeneratorDefOf.Base.genSteps.Count);
 
             Assert.NotNull(MapGenTerrainDefOf.SoilRich);
             Assert.NotNull(MapGenTerrainDefOf.Marsh);

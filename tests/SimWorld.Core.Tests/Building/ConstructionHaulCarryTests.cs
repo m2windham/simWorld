@@ -207,8 +207,12 @@ namespace SimWorld.Tests.Building
             foreach (Thing log in map.listerThings.ThingsOfDef(Wood).ToList()) log.Destroy();
             Pawn builder = citizens[0];
             ThingDef wall = Def("Wall");
+            // Nearest free cell, not the builder's own: a wall blueprint under a standing pawn waits for them
+            // to move before its frame goes up (GenConstruct.FirstBlockingPawn), and the rest of the band
+            // would take other work meanwhile. This test is about the carry, not about who stands where.
             IntVec3 site = GenRadial.RadialPattern.Select(o => builder.Position + o)
-                .First(c => GenGrid.InBounds(c, map) && GenConstruct.CanPlaceBlueprintAt(wall, c, map, out _));
+                .First(c => GenGrid.InBounds(c, map) && GenConstruct.CanPlaceBlueprintAt(wall, c, map, out _)
+                    && !map.thingGrid.ThingsListAt(c).Any(t => t is Pawn));
             Thing logs = ThingMaker.MakeThing(Wood);
             logs.stackCount = WallCost;
             GenSpawn.Spawn(logs, builder.Position, map);

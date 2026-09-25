@@ -73,9 +73,23 @@ namespace SimWorld.Tests.Health
 
         private static BodyPartRecord Part(Pawn p, string label) => p.RaceProps.body!.GetPartByLabel(label)!;
 
-        /// <summary>A bleeding, tendable wound (RimWorld's own "Cut" injury bleeds) — the emergency case.</summary>
+        /// <summary>A bleeding, tendable wound (RimWorld's own "Cut" injury bleeds) — but one cut on an arm is days
+        /// from killing anybody, so it is ordinary doctoring, not an emergency (RimWorld's eighteen-hour rule, see
+        /// <see cref="HealthAIUtility.ShouldBeTendedNowUrgent"/>).</summary>
         private static void MakeBleedingWound(Pawn p) =>
             DefDatabase<DamageDef>.GetNamed("Cut").Worker.Apply(new DamageInfo(DefDatabase<DamageDef>.GetNamed("Cut"), 6f, hitPart: Part(p, "left arm")), p);
+
+        /// <summary>The emergency case: cuts over every limb until the patient will bleed to death inside
+        /// <see cref="HealthAIUtility.UrgentTicksUntilDeathDueToBloodLoss"/>.</summary>
+        private static void MakeUrgentBleeding(Pawn p)
+        {
+            string[] parts = { "left arm", "right arm", "left leg", "right leg", "torso" };
+            for (int i = 0; i < 20 && !HealthAIUtility.ShouldBeTendedNowUrgent(p); i++)
+            {
+                DefDatabase<DamageDef>.GetNamed("Cut").Worker.Apply(new DamageInfo(DefDatabase<DamageDef>.GetNamed("Cut"), 6f, hitPart: Part(p, parts[i % parts.Length])), p);
+            }
+            Assert.True(HealthAIUtility.ShouldBeTendedNowUrgent(p));
+        }
 
         /// <summary>An ordinary, non-bleeding tendable wound (a bruise never bleeds — see
         /// Hediffs_Local_Injuries.xml's own comment) — the routine case.</summary>
@@ -163,20 +177,26 @@ namespace SimWorld.Tests.Health
             doctor.faction = f;
             Pawn bleeder = SpawnHuman(map, new IntVec3(4, 0, 4), "Bleeder");
             bleeder.faction = f;
-            MakeBleedingWound(bleeder);
+            MakeUrgentBleeding(bleeder);
             Pawn bruised = SpawnHuman(map, new IntVec3(2, 0, 2), "Bruised");
             bruised.faction = f;
             MakeOrdinaryWound(bruised);
+            Pawn scratched = SpawnHuman(map, new IntVec3(6, 0, 6), "Scratched");
+            scratched.faction = f;
+            MakeBleedingWound(scratched);
 
             Assert.True(TendUtility.NeedsEmergencyTend(bleeder));
             Assert.False(TendUtility.NeedsEmergencyTend(bruised));
+            Assert.False(TendUtility.NeedsEmergencyTend(scratched), "a slow bleed is ordinary doctoring");
 
             var emergency = new WorkGiver_Tend { def = DefDatabase<WorkGiverDef>.GetNamed("DoctorTendEmergency") };
             var ordinary = new WorkGiver_Tend { def = DefDatabase<WorkGiverDef>.GetNamed("DoctorTend") };
 
             Assert.True(emergency.HasJobOnThing(doctor, bleeder));
             Assert.False(emergency.HasJobOnThing(doctor, bruised));
+            Assert.False(emergency.HasJobOnThing(doctor, scratched));
             Assert.True(ordinary.HasJobOnThing(doctor, bruised));
+            Assert.True(ordinary.HasJobOnThing(doctor, scratched));
             Assert.False(ordinary.HasJobOnThing(doctor, bleeder));
 
             Job? job = emergency.JobOnThing(doctor, bleeder);
@@ -197,7 +217,7 @@ namespace SimWorld.Tests.Health
             prisoner.health.ForceDowned = true;
             CaptureUtility.Capture(doctor, prisoner);
             prisoner.health.ForceDowned = false;
-            MakeBleedingWound(prisoner);
+            MakeUrgentBleeding(prisoner);
 
             var emergency = new WorkGiver_Tend { def = DefDatabase<WorkGiverDef>.GetNamed("DoctorTendEmergency") };
             Assert.True(emergency.HasJobOnThing(doctor, prisoner));
@@ -376,7 +396,7 @@ namespace SimWorld.Tests.Health
             MakeOrdinaryWound(bruised);
             Pawn bleeder = SpawnHuman(map, new IntVec3(9, 0, 9), "Bleeder");
             bleeder.faction = f;
-            MakeBleedingWound(bleeder);
+            MakeUrgentBleeding(bleeder);
 
             doctor.jobs.TryFindAndStartJob();
 

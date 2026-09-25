@@ -32,6 +32,19 @@ namespace SimWorld.Defs
         /// <summary>Minimum terrain fertility (<see cref="Map.TerrainDef.fertility"/>) a cell needs before a
         /// growing zone will sow this def there at all.</summary>
         public float sowMinFertility;
+
+        /// <summary>
+        /// What kind of harvest this plant gives (RimWorld: <c>PlantProperties.harvestTag</c>). RimWorld's
+        /// content uses <c>"Standard"</c> for crops and <c>"Wood"</c> for trees; only the second is read here,
+        /// through <see cref="IsTree"/>. Unset means an ordinary plant.
+        /// </summary>
+        public string? harvestTag;
+
+        /// <summary>A plant whose harvest is wood (RimWorld: <c>PlantProperties.IsTree</c>, the same test on
+        /// the same tag). A tree is felled for its wood by
+        /// <see cref="Building.WorkGiver_ConstructChopWood"/>, never foraged by
+        /// <see cref="Building.WorkGiver_GrowerHarvest"/> outside a growing zone.</summary>
+        public bool IsTree => harvestTag == "Wood";
     }
 
     /// <summary>

@@ -27,12 +27,29 @@ namespace SimWorld.Building
             new CurvePoint(20, 2.0f),
         });
 
-        /// <summary>RimWorld's real ConstructSuccessChance skillNeedFactors curve is likewise not sourced
-        /// here; shape only (higher skill fails less often) is what this port claims.</summary>
+        /// <summary>
+        /// RimWorld's <c>ConstructSuccessChance</c> by Construction level, at full Manipulation and Sight: 75%
+        /// at level 0, 80%, 85%, then 2.5 points a level to 100% from level 8 (the wiki's
+        /// <c>Construct_Success_Chance</c> table). Manipulation's and Sight's share of the stat is not ported,
+        /// the same limitation as the speed curve above.
+        /// <para/>
+        /// This used to be an unsourced straight line from 50% at level 0 to 100% at level 20, so a level-8
+        /// builder botched three attempts in ten where RimWorld's never does. Each botch refunds half the
+        /// materials (<see cref="Frame.FailConstruction"/>): on seed 12345 of the storyteller bench, three of
+        /// the first four bed frames failed and took twelve of the map's 52 logs with them, and once the map had
+        /// trees about four storage hut attempts in ten were botched.
+        /// </summary>
         public static readonly SimpleCurve SuccessChanceFromConstructionLevel = new SimpleCurve(new[]
         {
-            new CurvePoint(0, 0.5f),
-            new CurvePoint(20, 1.0f),
+            new CurvePoint(0, 0.75f),
+            new CurvePoint(1, 0.80f),
+            new CurvePoint(2, 0.85f),
+            new CurvePoint(3, 0.875f),
+            new CurvePoint(4, 0.90f),
+            new CurvePoint(5, 0.925f),
+            new CurvePoint(6, 0.95f),
+            new CurvePoint(7, 0.975f),
+            new CurvePoint(8, 1.0f),
         });
 
         public override bool TryMakePreToilReservations() =>
