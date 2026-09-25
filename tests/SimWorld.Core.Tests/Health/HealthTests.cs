@@ -270,7 +270,9 @@ namespace SimWorld.Tests.Health
             Pawn p = NewHuman();
             Hit(p, "Cut", 20f, "torso");
             Assert.Equal(0.25f, p.health.hediffSet.PainTotal, 3);
-            Assert.Equal(0.875f, Level(p, "Consciousness"), 3);
+            // RimWorld subtracts Clamp(LerpDouble(0.1, 1, 0, 0.4, pain), 0, 0.4), not a flat fraction of
+            // consciousness: at 0.25 pain that is 0.4 * (0.25 - 0.1) / (1 - 0.1) =~ 0.0667.
+            Assert.Equal(0.9333f, Level(p, "Consciousness"), 3);
             Assert.False(p.Downed);
         }
 
@@ -342,8 +344,11 @@ namespace SimWorld.Tests.Health
             Hediff bloodLoss = p.health.AddHediff(HediffDefOf.BloodLoss);
             bloodLoss.Severity = 0.5f;
             Assert.Equal("severe", bloodLoss.CurStage!.label);
-            Assert.Equal(0.7f, Level(p, "Consciousness"), 3);
-            Assert.Equal(0.4f, Level(p, "Moving"), 3);
+            // -0.4 Consciousness at "severe" is RimWorld's own number (rimworldwiki.com/wiki/Blood_loss).
+            Assert.Equal(0.6f, Level(p, "Consciousness"), 3);
+            // Moving = consciousness (0.6, feeding through PawnCapacityWorker_Moving) minus this stage's own
+            // (unsourced, port-invented) -0.3 Moving offset.
+            Assert.Equal(0.3f, Level(p, "Moving"), 3);
             Assert.False(p.Downed);
             bloodLoss.Severity = 0.7f;
             Assert.Equal(0.1f, Level(p, "Consciousness"), 3);

@@ -138,11 +138,27 @@ namespace SimWorld.Tests.Health
         public void A_within_stage_severity_nudge_leaves_cached_values_correct_and_a_stage_crossing_updates_them()
         {
             Pawn pawn = NewHuman();
+
+            // A baseline wound, well above RimWorld's own 0.1 floor for a consciousness pain penalty
+            // (PawnCapacityWorker_Consciousness), so the infection's own extra pain on crossing into "major"
+            // (0.05 -> 0.08) actually moves consciousness. With pain entirely from the infection, both 0.05
+            // and 0.08 sit below that floor and consciousness reads 1.0 before and after either way — which
+            // would let a stale capacity cache pass unnoticed. "torso" carries no Consciousness/BloodPumping/
+            // Breathing/BloodFiltration tag itself (Pain_lowers_consciousness pins this), so this baseline
+            // moves pain only, not the organ capacities Consciousness also reads.
+            BodyPartRecord torso = pawn.RaceProps.body!.GetPartByLabel("torso")!;
+            var baseline = (Hediff_Injury)HediffMaker.MakeHediff(Cut, pawn, torso);
+            baseline.Severity = 15f;
+            pawn.health.AddHediff(baseline, torso, null);
+            Assert.True(pawn.health.hediffSet.PainTotal > 0.1f,
+                $"fixture assumption: baseline pain ({pawn.health.hediffSet.PainTotal}) must clear RimWorld's 0.1 floor");
+
             Hediff infection = pawn.health.AddHediff(DefDatabase<HediffDef>.GetNamed("WoundInfection"));
             PawnCapacityDef consciousness = DefDatabase<PawnCapacityDef>.GetNamed("Consciousness");
 
             AssertCacheMatchesFreshRecompute(pawn, consciousness);
             Assert.Equal(0, infection.CurStageIndex);
+            float painBeforeMajor = pawn.health.hediffSet.PainTotal;
             float consciousnessBeforeMajor = pawn.health.capacities.GetLevel(consciousness);
 
             // Many small nudges, exactly the shape HediffComp_Immunizable produces, that all stay inside
@@ -155,12 +171,16 @@ namespace SimWorld.Tests.Health
                 steps++;
             }
 
-            // The nudge that finally crosses into stage 1 ("major": pain 0.05 -> 0.08, which consciousness reads
-            // through PainConsciousnessFactor) must still be caught, even though it looked exactly like every
-            // nudge before it.
+            // The nudge that finally crosses into stage 1 ("major": pain 0.05 -> 0.08 on top of the baseline)
+            // must still be caught, even though it looked exactly like every nudge before it. Both pain and
+            // the capacity cache (read through the same cached accessor the sim uses, pawn.health.capacities,
+            // not only through AssertCacheMatchesFreshRecompute's own fresh recompute) must reflect it.
             Assert.Equal(1, infection.CurStageIndex);
+            AssertCacheMatchesFreshRecompute(pawn, consciousness);
+            Assert.True(pawn.health.hediffSet.PainTotal > painBeforeMajor,
+                "crossing into the major stage must raise pain, and the cache must show it");
             Assert.True(pawn.health.capacities.GetLevel(consciousness) < consciousnessBeforeMajor,
-                "crossing into the major stage must lower consciousness, and the cache must show it");
+                "crossing into the major stage must lower consciousness, and the cached accessor must show it too");
         }
 
         [Fact]

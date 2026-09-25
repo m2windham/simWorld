@@ -28,6 +28,11 @@ namespace SimWorld
 
         public static float Lerp(float a, float b, float t) => a + (b - a) * t;
 
+        /// <summary>Maps <paramref name="x"/> from [<paramref name="inFrom"/>, <paramref name="inTo"/>] onto
+        /// [<paramref name="outFrom"/>, <paramref name="outTo"/>], unclamped (RimWorld: <c>Verse.GenMath.LerpDouble</c>).</summary>
+        public static float LerpDouble(float inFrom, float inTo, float outFrom, float outTo, float x) =>
+            outFrom + (outTo - outFrom) * (x - inFrom) / (inTo - inFrom);
+
         /// <summary>Where <paramref name="value"/> sits between <paramref name="a"/> and <paramref name="b"/>, clamped to [0, 1].</summary>
         public static float InverseLerp(float a, float b, float value)
         {
