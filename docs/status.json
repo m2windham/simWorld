@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 2610,
+  "testsTotal": 2638,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -389,6 +389,11 @@
         {
           "id": "mapgen.entry-trigger",
           "label": "Entering a settlement at settlement scope triggers GenerateMapFor and persists the result on the WorldObject — Settlement.EnterMap, generated once on first entry, sized by TotalPopulation, cached and Scribe round-tripped",
+          "done": true
+        },
+        {
+          "id": "mapgen.trees",
+          "label": "Generated maps have trees: GenStep_Trees scatters Plant_TreePoplar in proportion to the tile's Timber deposit, on its own seeded stream, so no other gen step's draws move. Before, the only wood on any map was ruin loot.",
           "done": true
         }
       ]
@@ -953,7 +958,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 178,
+      "tests": 186,
       "items": [
         {
           "id": "ai.thinktree",
@@ -1068,6 +1073,11 @@
         {
           "id": "ai.taminggate",
           "label": "Hunting never happened: twelve in-game days produced zero hunts and sixty-six tamings - the animal population was not hunted flat, it was tamed flat. Two links, both closed. (1) HuntingInitiative.WantsMeat counted Settlement.Stores, the abstract ledger a founding band is credited hundreds of nutrition into and that nothing draws down while the settlement has a map, because SettlementLarder feeds only citizens who are NOT spawned - the hunters were reading a granary their own people cannot eat out of and concluding they were rich. It now reads NutritionReachable, food a pawn standing on the map could walk to, which is the same figure SettlementStockInitiative measures its banking reserve against, so one number has two signs instead of two numbers disagreeing. (2) Taming had no gate at all. In RimWorld both verbs draw from designationManager.SpawnedDesignationsOfDef; this port has no Designation system, hunting's copy of that predicate was translated into HuntingInitiative and TAMING'S WAS TRANSLATED INTO NOTHING, so every wild animal was unconditional Handling work at naturalPriority 950 against Hunting's 850 and the hunt giver was never consulted. AI/TamingInitiative.cs is the missing half: a settlement keeps as much livestock as its surplus feeds, and while it is short of food the animals on its land are meat rather than livestock. No naturalPriority changed. The initiative was chosen over porting a Designation layer, recorded at the class: with no player a designation store is empty until something issues designations, and that something can only be a civilization-scale reader of settlement state, so the real choice is initiative-designation-giver versus initiative-giver, and five givers here have already translated the same predicate away.",
+          "done": true
+        },
+        {
+          "id": "ai.emergencywork",
+          "label": "Emergency work outranks sleep and hunger, as in RimWorld's colonist think tree: 'starving -> eat', then JobGiver_Work with emergency set, above every other need, order and edict; a sleeper looks for emergency work every 211 ticks (Toils_LayDown). Urgent tending is RimWorld's rule, bleeding to death inside 45,000 ticks. After a raid, bleed-outs fell 70 -> 1 and 63 -> 20 over ten paired seeds (docs/perf/tend/, EmergencyWorkTests). Recorded deviations: a sleeper asks only the emergency tier rather than re-running the whole tree, so this port's fight tier does not wake every sleeper for a raider in sight; and a humanlike patient is tended where they lie, where RimWorld 1.0 tends one only in bed.",
           "done": true
         }
       ]
@@ -1511,11 +1521,11 @@
       "id": "building",
       "n": 16,
       "rimworld": "Colony Building & Environment",
-      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative. Where it places them: inside the player's painted home area when there is one, by the same on/off rule CleaningBounds reads, and otherwise around the hub GenStep_Roads carves — never the whole map. A home area too full to hold the need makes the settlement wait rather than spill outside it, so painting small stays a decision with a cost. Stockpile defaults follow RimWorld's ordinary preset in refusing corpses (StorageSettingsPreset excludes the Corpses category rather than copying RimWorld's eight-category allow-list, because this content has no Weapons, Apparel or Buildings category and an allow-list would silently refuse weapons). One deliberate deviation: Chunks stay allowed, where RimWorld's ordinary stockpile refuses them, because the masons' guild needs them banked.",
+      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative. Where it places them: inside the player's painted home area when there is one, by the same on/off rule CleaningBounds reads, and otherwise around the hub GenStep_Roads carves — never the whole map. A home area too full to hold the need makes the settlement wait rather than spill outside it, so painting small stays a decision with a cost. Stockpile defaults follow RimWorld's ordinary preset in refusing corpses (StorageSettingsPreset excludes the Corpses category rather than copying RimWorld's eight-category allow-list, because this content has no Weapons, Apparel or Buildings category and an allow-list would silently refuse weapons). One deliberate deviation: Chunks stay allowed, where RimWorld's ordinary stockpile refuses them, because the masons' guild needs them banked. What the settlement builds on its own never walls off its own ground: autonomous placement refuses a site that would cut a region of the settlement off from the rest (PlacementConnectivityTests). RimWorld has no placement AI to port, so the rule is this port's, in the spirit of WorkGiver_Miner's roof-support judgment. Tree density (one per ~20 cells at full Timber) is this port's own figure, pinned as a trend, not a literal.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
       "status": "translated",
-      "tests": 116,
+      "tests": 136,
       "items": [
         {
           "id": "building.zones",
@@ -1570,6 +1580,16 @@
         {
           "id": "building.abstractconstruction",
           "label": "SettlementConstructionInitiative returned at 'if (map == null) return;', so a settlement nobody had ever opened built nothing, ever — the one need among food, medicine and shelter with no off-map answer at all (SettlementSubsistence and AbstractDiseaseResolver both already worked with no map). New file Building/AbstractSettlementConstruction.cs is the abstract twin: for a settlement with no InteriorMap it credits Settlement.Structures toward the same bed/wall/storage targets SettlementConstructionInitiative already computes (restated against the same ConstructionInitiativeTuning constants, since that class's own target arithmetic needs a Map.Map for wall-material choice and cannot be called without one), at a rate derived from citizen headcount and capped by the same MaxBlueprintsPerTick the map path already throttles itself to. Deliberately follows the existing convention of counting only Settlement.Citizens, never StatisticalPopulation, for the same reason the real class does — a Statistical citizen has no individual Pawn to swing a hammer. A no-op the instant a map exists, verified directly: nothing is read from or written to Structures for a settlement SettlementConstructionInitiative already owns. Tests: tests/SimWorld.Core.Tests/Building/AbstractSettlementConstructionTests.cs. Wired into Sim/Game.cs's WireTickHooks beside its map-path sibling: it arrived complete, unit-tested and unreachable — nothing in src/ called Tick(), so a settlement nobody had opened would still have built nothing for a whole run while its food and its medicine carried on working. Every test of it drove the class directly, so every test passed, and the repository's own wiring audit passed too. AbstractConstructionIsWiredTests runs the real loop and asserts the outcome instead; delete the wiring line and it is the only test in the suite that fails.",
+          "done": true
+        },
+        {
+          "id": "building.wood",
+          "label": "Beds get built. Placement had never been the problem: both populated seeds placed 24-25 bed blueprints on day 1 and still had them unframed on day 30, because no generated map had a tree and nothing a settlement did could make wood. Plant_TreePoplar (RimWorld's wiki numbers: 27 wood, 15.05 grow days, harvestMinGrowth 0.4) is generated by GenStep_Trees and regrown by WildPlantSpawner; WorkGiver_ConstructChopWood fells a tree while the map's sites need more wood than is on its way and clears one standing on a site (the Chop Wood designation, translated). Both seeds now build 25 of 25 beds on day 1 (WoodSupplyTests).",
+          "done": true
+        },
+        {
+          "id": "building.constructfailure",
+          "label": "Construction behaves like RimWorld's once it actually runs: a frame never goes up around a pawn (GenConstruct.FirstBlockingPawn, RimWorld's FirstBlockingThing with pawnToIgnore), a hauler steps out of its own frame, and ConstructSuccessChance is RimWorld's table by skill (75% at 0 to 100% at 8), replacing an unsourced 50-100% curve that botched a disproportionate share of frames (BlockedBlueprintTests).",
           "done": true
         }
       ]
