@@ -330,9 +330,13 @@ namespace SimWorld.Tests.World
             DamageDef cut = DefDatabase<DamageDef>.GetNamed("Cut");
             cut.Worker.Apply(new DamageInfo(cut, 6f, hitPart: patient.RaceProps.body!.GetPartByLabel("left arm")), patient);
 
+            // One cut on an arm is ordinary doctoring: under RimWorld's rule a patient is urgent only when bleeding
+            // to death inside 18 hours (TendUtility.NeedsEmergencyTend), and each patient belongs to exactly one of
+            // the two tend givers. The emergency tier has its own tests (AI/EmergencyWorkTests); this one is about
+            // the faction, so it asks the giver this wound actually reaches.
             Assert.True(DoctorUtility.IsCaredForBy(doctor, patient));
-            var emergency = new WorkGiver_Tend { def = DefDatabase<WorkGiverDef>.GetNamed("DoctorTendEmergency") };
-            Assert.True(emergency.HasJobOnThing(doctor, patient), "a citizen cannot treat a bleeding neighbour");
+            var tend = new WorkGiver_Tend { def = DefDatabase<WorkGiverDef>.GetNamed("DoctorTend") };
+            Assert.True(tend.HasJobOnThing(doctor, patient), "a citizen cannot treat a bleeding neighbour");
         }
 
         [Fact]
