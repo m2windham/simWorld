@@ -152,7 +152,8 @@ namespace SimWorld.Map.View
         internal ThingView(
             int thingId, string defName, string? stuffDefName, IntVec3 position, Rot4 rotation,
             IntVec3 occupiedMin, IntVec2 occupiedSize, int stackCount,
-            ThingCategory category, AltitudeLayer altitude, float healthFraction, float plantGrowth)
+            ThingCategory category, AltitudeLayer altitude, float healthFraction, float plantGrowth,
+            float buildProgress)
         {
             ThingId = thingId;
             DefName = defName;
@@ -166,6 +167,7 @@ namespace SimWorld.Map.View
             Altitude = altitude;
             HealthFraction = healthFraction;
             PlantGrowth = plantGrowth;
+            BuildProgress = buildProgress;
         }
 
         /// <summary>The Thing's stable id (<c>Thing.thingIDNumber</c>). A handle, not a reference: it survives
@@ -225,6 +227,12 @@ namespace SimWorld.Map.View
 
         /// <summary>True when <see cref="PlantGrowth"/> means something.</summary>
         public bool IsPlant => PlantGrowth >= 0f;
+
+        /// <summary>Construction completion for a <c>Blueprint</c> or <c>Frame</c> (0 = unstarted, 1 =
+        /// finished): a <c>Frame</c>'s own <see cref="Building.Frame.PercentComplete"/> clamped to [0, 1], 0
+        /// for a <c>Blueprint</c> (no materials delivered yet), and 1 for anything else — a finished building
+        /// included, so the host can use this one field regardless of which stage a site is in.</summary>
+        public float BuildProgress { get; }
     }
 
     /// <summary>

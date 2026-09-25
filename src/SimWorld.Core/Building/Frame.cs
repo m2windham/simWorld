@@ -44,6 +44,12 @@ namespace SimWorld.Building
         /// <summary>Total work-units this Frame's construction needs (RimWorld: <c>Frame.WorkToBuild</c>).</summary>
         public float WorkToBuild => EntityToBuild.GetStatValueAbstract(StatDefOf.WorkToBuild);
 
+        /// <summary>Fraction of <see cref="WorkToBuild"/> delivered so far (RimWorld: <c>Frame.PercentComplete</c>,
+        /// same shape — not clamped here, since RimWorld's is not either; <c>WorkToBuild</c>'s
+        /// <c>minValue</c> of 1 keeps this from dividing by zero). <c>Map/View</c>'s <c>ThingView.BuildProgress</c>
+        /// is the clamped, seam-facing read of this.</summary>
+        public float PercentComplete => workDone / WorkToBuild;
+
         public int MaterialDelivered(ThingDef material) => resourceContainer.TryGetValue(material, out int n) ? n : 0;
 
         /// <summary>How many more of <paramref name="material"/> this Frame still needs, 0 if none or already met.</summary>
