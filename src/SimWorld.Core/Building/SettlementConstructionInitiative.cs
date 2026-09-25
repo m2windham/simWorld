@@ -352,7 +352,8 @@ namespace SimWorld.Building
 
         /// <summary>Whether <paramref name="entityDef"/> could be planned at <paramref name="cell"/>. With an
         /// area to stay inside, its whole footprint must be in that area, not just the cell it is anchored
-        /// on. A bed half inside the home area is a bed outside it.</summary>
+        /// on. A bed half inside the home area is a bed outside it. Something that cannot be walked through
+        /// must also leave the ground around it connected; see <see cref="WouldCutOffGround"/>.</summary>
         private static bool Fits(Map.Map map, ThingDef entityDef, IntVec3 cell, Area? within)
         {
             if (within != null)
@@ -366,7 +367,63 @@ namespace SimWorld.Building
                     }
                 }
             }
-            return GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out _);
+            if (!GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out _)) return false;
+            return entityDef.passability != Traversability.Impassable || !WouldCutOffGround(map, entityDef, cell);
+        }
+
+        /// <summary>
+        /// Whether an impassable <paramref name="entityDef"/> at <paramref name="cell"/> would split the
+        /// walkable ground around it into pieces that could no longer reach each other.
+        /// <para/>
+        /// <b>Why.</b> This class places at random cells, and for as long as nothing it placed could be built
+        /// that cost nothing: a blueprint is walkable. Once the map had wood, storage huts went up by the
+        /// hundred (the target follows <see cref="World.Settlement.Stores"/>), and random impassable cells
+        /// packed around the hub closed into mazes: on seed 777 of the storyteller bench, by day 12 a citizen
+        /// stood among huts with no way out, every one of his job searches failing, and the simulation ran
+        /// fifteen times slower from then on. A player placing blueprints by hand would not wall their own
+        /// people in; this is the judgement that went with the player, the same kind of translation
+        /// <see cref="AI.WorkGiver_Miner"/> makes when it refuses to mine out a roof's support.
+        /// <para/>
+        /// <b>The rule is local and exact.</b> Walk the ring of cells around the footprint in order: each
+        /// step is a cardinal one, so ring cells in one unbroken run can reach each other without the
+        /// footprint. If every open cell of the ring lies in a single run, any path that crossed the footprint,
+        /// or cut a corner of it, can go round instead, and the placement disconnects nothing anywhere on the
+        /// map. Two or more runs mean the footprint would be the only link between them, so it is refused. A
+        /// cell counts as open when it is walkable now and no impassable blueprint or frame is already planned
+        /// on it, since that will be built too.
+        /// </summary>
+        private static bool WouldCutOffGround(Map.Map map, ThingDef entityDef, IntVec3 cell)
+        {
+            CellRect rect = GenAdj.OccupiedRect(cell, default, entityDef.size);
+            int minX = rect.minX - 1, maxX = rect.maxX + 1, minZ = rect.minZ - 1, maxZ = rect.maxZ + 1;
+
+            // The perimeter, clockwise from the top-left corner: every consecutive pair is a cardinal step.
+            var ring = new List<IntVec3>(2 * (maxX - minX + maxZ - minZ));
+            for (int x = minX; x < maxX; x++) ring.Add(new IntVec3(x, 0, maxZ));
+            for (int z = maxZ; z > minZ; z--) ring.Add(new IntVec3(maxX, 0, z));
+            for (int x = maxX; x > minX; x--) ring.Add(new IntVec3(x, 0, minZ));
+            for (int z = minZ; z < maxZ; z++) ring.Add(new IntVec3(minX, 0, z));
+
+            int runs = 0;
+            bool previousOpen = OpenGround(map, ring[ring.Count - 1]);
+            for (int i = 0; i < ring.Count; i++)
+            {
+                bool open = OpenGround(map, ring[i]);
+                if (open && !previousOpen) runs++;
+                previousOpen = open;
+            }
+            return runs > 1;
+        }
+
+        private static bool OpenGround(Map.Map map, IntVec3 c)
+        {
+            if (!GenGrid.InBounds(c, map) || !map.pathGrid.Walkable(c)) return false;
+            IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(c);
+            for (int i = 0; i < here.Count; i++)
+            {
+                if (here[i] is Blueprint bp && bp.EntityToBuild.passability == Traversability.Impassable) return false;
+            }
+            return true;
         }
 
         /// <summary>

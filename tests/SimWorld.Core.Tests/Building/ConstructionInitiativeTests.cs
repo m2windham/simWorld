@@ -402,10 +402,12 @@ namespace SimWorld.Tests.Building
                 if (construction != null) construction.Level = 20;
             }
 
-            // Materials are the one thing this test still places by hand: a settlement's starting resources
-            // are credited to Settlement.Stores as a def-count ledger, never spawned as a real Thing
-            // (Sim.Game.NewGame's own documented limitation — no map exists yet when a scenario's starting
-            // items are granted), so nothing in production puts real wood on this ground either.
+            // Materials are the one thing this test still places by hand, so that it pins the build and not
+            // the felling. A settlement's starting resources are credited to Settlement.Stores as a def-count
+            // ledger, never spawned as a real Thing (Sim.Game.NewGame's own documented limitation — no map
+            // exists yet when a scenario's starting items are granted). In production the wood comes from the
+            // map's own trees (MapGen.GenStep_Trees, felled by WorkGiver_ConstructChopWood); WoodSupplyTests
+            // covers that loop with nothing placed by hand.
             Thing wood = ThingMaker.MakeThing(Def("WoodLog"));
             wood.stackCount = 400;
             GenSpawn.Spawn(wood, FirstStandableCell(map), map);

@@ -102,7 +102,26 @@ namespace SimWorld.Building
                 }
 
                 Thing site = job.GetTarget(TargetIndex.B).Thing!;
-                Frame frame = site as Frame ?? ((Blueprint)site).ReplaceWithFrame();
+                // Somebody stepped onto the blueprint of an impassable building since the job was given: its
+                // frame would wall them in (GenConstruct.FirstBlockingPawn). The job ends and the load is put
+                // down, as RimWorld's TryReplaceWithSolidThing does. The hauler itself is not in the way; if
+                // it is standing on the site (a Touch path is satisfied there), it steps aside once the frame
+                // is up (GenConstruct.StepOffUnwalkableCell).
+                if (site is Blueprint blocked && GenConstruct.FirstBlockingPawn(blocked, pawn) != null)
+                {
+                    EndJobWith(JobCondition.Incompletable);
+                    return;
+                }
+                Frame frame;
+                if (site is Blueprint blueprint)
+                {
+                    frame = blueprint.ReplaceWithFrame();
+                    GenConstruct.StepOffUnwalkableCell(pawn);
+                }
+                else
+                {
+                    frame = (Frame)site;
+                }
                 int delivered = Math.Min(carried.stackCount, frame.MaterialStillNeeded(carried.def));
                 if (delivered <= 0) return; // nothing wanted after all: the job ends and puts the load down
 

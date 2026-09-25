@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The trees a new map is born with (RimWorld: the trees GenStep_Plants places). In its own file, as
+    GenSteps_Animals.xml is, so the step is declared without editing GenSteps.xml.
+
+    Order 620: after Scatterers (600), so a tree never lands on a chunk or a bush, and before Ruins (650) and
+    Roads (700), which clear whatever stands on the ground they need. See SimWorld.MapGen.GenStep_Trees for
+    why the step exists and SimWorld.MapGen.TreeTuning for how many trees a tile gets.
+  -->
+
+  <GenStepDef>
+    <defName>Trees</defName>
+    <order>620</order>
+    <workerClass>SimWorld.MapGen.GenStep_Trees</workerClass>
+  </GenStepDef>
+
+</Defs>

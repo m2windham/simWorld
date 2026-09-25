@@ -74,11 +74,18 @@ namespace SimWorld.Building
 
         private const int FoodPlantCellPurposeBase = 200;
 
-        /// <summary>Called once per map per tick from <see cref="Map.Map.MapTick"/>. Two kinds of wild plant
-        /// come back here, each toward its own density and both at the biome's one regrow pace: ordinary
-        /// scrub (<see cref="WildPlantDefOf.WildPlant"/>) and the plant that bears food
+        /// <summary>Purpose offsets for the tree's rolls, above both passes before it for the same reason the
+        /// food plant's sit above scrub's: adding trees moved no roll either of them makes.</summary>
+        private const int TreeChancePurpose = 300;
+
+        private const int TreeCellPurposeBase = 400;
+
+        /// <summary>Called once per map per tick from <see cref="Map.Map.MapTick"/>. Three kinds of wild plant
+        /// come back here, each toward its own density and all at the biome's one regrow pace: ordinary
+        /// scrub (<see cref="WildPlantDefOf.WildPlant"/>), the plant that bears food
         /// (<see cref="WildFoodDefOf.Plant_Berry"/> — see <see cref="WildFoodTuning"/> for why the second one
-        /// is load-bearing rather than decoration).</summary>
+        /// is load-bearing rather than decoration) and the tree (<see cref="TreeDefOf.Plant_TreePoplar"/>),
+        /// the map's one renewable source of wood.</summary>
         public static void WildPlantSpawnerTick(Map.Map map)
         {
             if (map == null) return;
@@ -95,7 +102,18 @@ namespace SimWorld.Building
                 chancePurpose: 0, cellPurposeBase: 0);
             RegrowToward(map, tile, biome, tick, WildFoodDefOf.Plant_Berry, DesiredWildFoodPlantCount(map, tile),
                 chancePurpose: FoodPlantChancePurpose, cellPurposeBase: FoodPlantCellPurposeBase);
+            // Trees (RimWorld's WildPlantSpawner regrows them with everything else): a forest felled for its
+            // wood comes back at the biome's pace, toward the count MapGen.GenStep_Trees placed. A regrown tree
+            // starts as a seedling and cannot be felled until it reaches its harvestMinGrowth, so the wood
+            // comes back more slowly than the trees do.
+            RegrowToward(map, tile, biome, tick, TreeDefOf.Plant_TreePoplar, DesiredTreeCount(map, tile),
+                chancePurpose: TreeChancePurpose, cellPurposeBase: TreeCellPurposeBase);
         }
+
+        /// <summary>How many trees this map's tile supports: <see cref="MapGen.TreeTuning.DesiredTreeCount"/>,
+        /// the formula <c>MapGen.GenStep_Trees</c> placed them with.</summary>
+        public static int DesiredTreeCount(Map.Map map, Tile tile) =>
+            map == null ? 0 : TreeTuning.DesiredTreeCount(map.cellIndices.NumGridCells, tile);
 
         /// <summary>One plant kind's regrowth: the same "a whole map's worth over the biome's regrow days,
         /// rolled once per tick while below target" model for both, differing only in what is being counted
@@ -153,7 +171,7 @@ namespace SimWorld.Building
                 int x = RandomStream.RangeSeeded(0, map.Size.x, SeedFor(map, tick, cellPurposeBase + attempt * 2));
                 int z = RandomStream.RangeSeeded(0, map.Size.z, SeedFor(map, tick, cellPurposeBase + attempt * 2 + 1));
                 var cell = new IntVec3(x, 0, z);
-                if (!CanRegrowAt(map, cell)) continue;
+                if (def.plant != null && def.plant.IsTree ? !TreeTuning.CanGrowTreeAt(map, cell) : !CanRegrowAt(map, cell)) continue;
 
                 Thing plant = ThingMaker.MakeThing(def);
                 if (plant is Plant seedling) seedling.Growth = Plant.SeedlingGrowth;

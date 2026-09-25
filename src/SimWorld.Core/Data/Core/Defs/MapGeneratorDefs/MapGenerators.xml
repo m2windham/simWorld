@@ -12,6 +12,8 @@
       <li>Caves</li>
       <li>Roofs</li>
       <li>Scatterers</li>
+      <!-- Declared in its own GenSteps_Trees.xml; see SimWorld.MapGen.GenStep_Trees. -->
+      <li>Trees</li>
       <li>Ruins</li>
       <li>Roads</li>
       <!-- Last: the map has stopped changing shape, so nothing clears the ground under a living animal.

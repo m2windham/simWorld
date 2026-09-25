@@ -161,6 +161,20 @@ namespace SimWorld.Tests.Building
             Assert.True(chance.Evaluate(20) > chance.Evaluate(0));
         }
 
+        /// <summary>RimWorld's ConstructSuccessChance by level at full Manipulation and Sight, from the wiki's
+        /// table: sourced, so pinned by value. 75% untrained, certain from level 8.</summary>
+        [Fact]
+        public void Construction_success_chance_is_RimWorlds_by_level()
+        {
+            SimpleCurve chance = JobDriver_ConstructFinishFrame.SuccessChanceFromConstructionLevel;
+            Assert.Equal(0.75f, chance.Evaluate(0), 3);
+            Assert.Equal(0.85f, chance.Evaluate(2), 3);
+            Assert.Equal(0.90f, chance.Evaluate(4), 3);
+            Assert.Equal(0.975f, chance.Evaluate(7), 3);
+            Assert.Equal(1f, chance.Evaluate(8), 3);
+            Assert.Equal(1f, chance.Evaluate(20), 3);
+        }
+
         [Fact]
         public void Failed_construction_consumes_some_materials_and_respawns_a_blueprint()
         {
@@ -170,7 +184,7 @@ namespace SimWorld.Tests.Building
                 Rand.Current = new RandomStream(seed);
                 CoreMap map = NewMap(8, 8);
                 Pawn pawn = SpawnHuman(map, new IntVec3(0, 0, 0));
-                SetConstructionSkill(pawn, 0); // 50% success chance at level 0
+                SetConstructionSkill(pawn, 0); // 75% success chance at level 0, RimWorld's
 
                 var site = new IntVec3(4, 0, 4);
                 GenSpawn.Spawn(ThingMaker.MakeThing(Def("Blueprint_Wall")), site, map);
@@ -197,7 +211,7 @@ namespace SimWorld.Tests.Building
                 Pawn.ResetThingIdCounter();
             }
 
-            Assert.InRange(failures, 4, 20); // a 50% chance over 24 tries lands well inside this band
+            Assert.InRange(failures, 1, 14); // a 25% chance of failing over 24 tries lands well inside this band
         }
 
         // ---- Scribe ----

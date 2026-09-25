@@ -68,14 +68,17 @@ namespace SimWorld.Tests.Map
         /// <summary>The first cell spiralling out from <paramref name="near"/> that could actually take
         /// <paramref name="entityDef"/> — the same physical check <c>GenConstruct</c> itself applies, walked
         /// deterministically (nearest first) rather than by the initiative's own random sampling, since a
-        /// test wants one predictable answer, not "eventually, probably".</summary>
+        /// test wants one predictable answer, not "eventually, probably". Never a cell somebody is standing
+        /// on: the frame of an impassable building waits for them to move (GenConstruct.FirstBlockingPawn),
+        /// and a citizen's own feet are the nearest cell of all.</summary>
         private static IntVec3 FindPlaceableCell(CoreMap map, ThingDef entityDef, IntVec3 near)
         {
             IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
             for (int i = 0; i < pattern.Count; i++)
             {
                 IntVec3 candidate = near + pattern[i];
-                if (GenGrid.InBounds(candidate, map) && GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _))
+                if (GenGrid.InBounds(candidate, map) && GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _)
+                    && !map.thingGrid.ThingsListAt(candidate).Any(t => t is Pawn))
                 {
                     return candidate;
                 }

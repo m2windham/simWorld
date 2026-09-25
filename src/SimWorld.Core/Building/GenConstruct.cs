@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using SimWorld.Defs;
 using SimWorld.Map;
+using SimWorld.Pawns;
 using SimWorld.Things;
 
 namespace SimWorld.Building
@@ -77,6 +78,66 @@ namespace SimWorld.Building
 
             failReason = null;
             return true;
+        }
+
+        /// <summary>
+        /// A pawn other than <paramref name="pawnToIgnore"/> standing where <paramref name="blueprint"/>'s
+        /// frame would go up, when what is being built is impassable; null when nobody is in the way or the
+        /// building can be walked through (RimWorld: the pawn half of
+        /// <c>GenConstruct.FirstBlockingThing(constructible, pawnToIgnore)</c>/<c>BlocksConstruction</c>,
+        /// which <c>Blueprint.TryReplaceWithSolidThing</c> checks, ignoring the delivering pawn, before it
+        /// spawns the frame).
+        /// <para/>
+        /// <b>Why it is needed.</b> A frame of an impassable building is itself impassable, so turning a
+        /// blueprint into one around a pawn walls that pawn in. Measured once construction could run at all
+        /// (seed 777 of the storyteller bench, after this lane gave the map trees): a storage hut went up
+        /// around a citizen standing on its blueprint; from that cell nothing was reachable, so every tick his
+        /// job search came back empty and started again, scanning every rock on the map, and the whole
+        /// simulation slowed from under a millisecond a tick to 46.
+        /// <para/>
+        /// The delivering pawn is ignored, as in RimWorld, and stepped aside once its frame is up
+        /// (<see cref="StepOffUnwalkableCell"/>): a Touch path to the site is satisfied by standing on it, so
+        /// a hauler who picked its load up from the site's own cell delivers from there.
+        /// </summary>
+        public static Pawn? FirstBlockingPawn(Blueprint blueprint, Pawn? pawnToIgnore)
+        {
+            Map.Map? map = blueprint.Map;
+            if (map == null || blueprint.EntityToBuild.passability != Traversability.Impassable) return null;
+
+            foreach (IntVec3 c in GenAdj.OccupiedRect(blueprint.Position, blueprint.Rotation, blueprint.EntityToBuild.size).Cells)
+            {
+                IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(c);
+                for (int i = 0; i < here.Count; i++)
+                {
+                    if (here[i] is Pawn pawn && !ReferenceEquals(pawn, pawnToIgnore)) return pawn;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Moves <paramref name="pawn"/> to the nearest cell it can stand on when the cell it is on can no
+        /// longer be walked; does nothing otherwise, and returns whether it moved. Standing in for RimWorld's
+        /// <c>Pawn_PathFollower.TryRecoverFromUnwalkablePosition</c>, which this port does not have, at the one
+        /// place construction creates the situation: a hauler that delivered from the site's own cell and
+        /// has just raised an impassable frame around itself. Measured before this existed: in the settlement
+        /// <c>MapCommandsStandingRulesTests</c> opens, a hauler that had picked its logs up from a storage
+        /// hut's blueprint delivered from that cell at tick 4739 and stayed inside the frame, jobless, for the
+        /// rest of the run.
+        /// </summary>
+        internal static bool StepOffUnwalkableCell(Pawn pawn)
+        {
+            Map.Map? map = pawn.Map;
+            if (map == null || map.pathGrid.Walkable(pawn.Position)) return false;
+            IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
+            for (int i = 1; i < pattern.Count; i++)
+            {
+                IntVec3 c = pawn.Position + pattern[i];
+                if (!GenGrid.InBounds(c, map) || !GenGrid.Standable(c, map)) continue;
+                pawn.Position = c;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
