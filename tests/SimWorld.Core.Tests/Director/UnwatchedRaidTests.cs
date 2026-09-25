@@ -348,6 +348,11 @@ namespace SimWorld.Tests.Director
             // A raid changes the director as well as the settlement: RimWorld's adaptation drops when the
             // player loses people to a threat, which is what makes the next raid smaller after a bad one.
             // Before this module nothing in the core called Notify_ColonistDied at all.
+            //
+            // The target is registered with the storyteller, because only its own civilization's dead are
+            // charged: the charge happens in the death funnel (StorytellerDeathEvents), which asks the same
+            // roster question the death ledger does. It used to be charged here by the resolver, for any
+            // settlement at all.
             DifficultyDef medium = DefDatabase<DifficultyDef>.GetNamed("Medium");
             StoryWatcher_Adaptation adaptation = Find.Storyteller.adaptation;
             for (int i = 0; i < 4000; i++) adaptation.AdaptationTick(medium);
@@ -360,7 +365,9 @@ namespace SimWorld.Tests.Director
             {
                 Settlement town = Town("Adapt" + i, 300 + i, citizens: 8, cohort: 0, steel: 0);
                 IncidentWorker_RaidEnemy worker = NewWorker();
-                Assert.True(Fire(worker, TargetOf(town), Raiders("Costly"), points: 900f));
+                var registered = new CivilizationTarget(Find.Storyteller);
+                registered.SetSettlements(new[] { town });
+                Assert.True(Fire(worker, registered, Raiders("Costly"), points: 900f));
                 killed = worker.LastRaidOutcome!.Value.CitizensKilled;
             }
             Assert.True(killed > 0, "no raid in forty tries killed a citizen, so this test proved nothing");

@@ -11,11 +11,10 @@ namespace SimWorld.Director
     /// to the one event this port raises from a pawn's own state machine — being downed.
     ///
     /// <para/><b>Why this is a class and not a line in <see cref="StoryWatcher_Adaptation"/>.</b> The watcher's
-    /// two hooks take no pawn: <see cref="StoryWatcher_Adaptation.Notify_ColonistDied"/> is raised by
-    /// <see cref="SettlementRaidResolver"/>, which has already decided who counts (only named citizens of the
-    /// settlement it just resolved a raid against), so the filtering lives at that call site. Downing has no
-    /// such call site — <c>Pawn_HealthTracker.MakeDowned</c> is the one funnel every downing in the port goes
-    /// through, and it runs for raiders and for animals just as much as for citizens. Somebody therefore has
+    /// two hooks take no pawn, so whoever raises them has to decide who counts first.
+    /// <c>Pawn_HealthTracker.MakeDowned</c> is the one funnel every downing in the port goes through (and
+    /// <c>Pawn_HealthTracker.Kill</c> the one every death does, see <see cref="StorytellerDeathEvents"/>),
+    /// and both run for raiders and for animals just as much as for citizens. Somebody therefore has
     /// to answer "is this one of ours" before the watcher is touched, and RimWorld answers it in exactly this
     /// position (its <c>Notify_PawnEvent</c> returns early for a non-player or non-humanlike pawn). Getting
     /// it wrong is not a small bug: an unguarded hook would ease the storyteller every time the colony
@@ -49,11 +48,17 @@ namespace SimWorld.Director
         /// <c>Pawn_HealthTracker.MakeDowned</c>, runs only on the transition from mobile to down (its caller
         /// guards with <c>if (!Downed)</c>), so a pawn who stays down through further damage is charged once;
         /// and <c>Pawn_HealthTracker.Kill</c> sets the dead state directly without ever passing through
-        /// <c>MakeDowned</c>, so dying never raises this. A citizen who is downed and then killed therefore
+        /// <c>MakeDowned</c>, so dying never raises this. A citizen who is downed and then dies therefore
         /// moves the curve once here and once on the death side
-        /// (<see cref="StorytellerDeathEvents.Notify_PawnDied"/>, or the raid resolver's own
-        /// <see cref="StoryWatcher_Adaptation.Notify_ColonistDied"/> call for a raid it settled abstractly) —
-        /// two events at two times, which is what both RimWorld and this port charge separately.
+        /// (<see cref="StorytellerDeathEvents.Notify_PawnDied"/>, which charges every death of ours): two
+        /// events at two times, which RimWorld charges separately too.
+        ///
+        /// <para/><b>Not yet RimWorld's rule, and recorded here so it is not mistaken for it.</b> RimWorld
+        /// charges a downing only when <c>dinfo</c> is present and <c>ExternalViolenceFor</c> the pawn, and
+        /// holds it until the end of the tick so that a pawn downed and killed in the same tick is charged
+        /// for the death alone (<c>StoryWatcher_Adaptation.pawnsJustDownedThisTick</c>). This port charges any
+        /// downing except one the life stage imposes, at once. So it charges a collapse from blood loss,
+        /// hunger or disease, which RimWorld does not.
         /// </summary>
         public static bool Notify_PawnDowned(Pawn pawn)
         {

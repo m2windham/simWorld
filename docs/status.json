@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 2600,
+  "testsTotal": 2610,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -853,7 +853,7 @@
         },
         {
           "id": "health.violentdeath",
-          "label": "Nothing anywhere separated a murder from a heart attack. DamageDef.externalViolence is read by three consumers now: Pawn_HealthTracker.DiedViolently, StorytellerDeathEvents (which charges adaptation for a violent death and composes the death letter, consuming DamageDef.deathMessage and binding the shipped-but-unbound Death LetterDef), and PawnDiedThoughtsUtility, which gives witnesses the shipped WitnessedDeathAlly memory that had no giver. Content had no non-violent damage at all, so Recipe_Surgery killed failed patients with plain Cut and a botched operation read as a murder; SurgicalCut is the same wound with externalViolence false. Deliberately NOT wired into the chronicle: RecordDeath already separates Death:Age from Death:Injury. What the chronicle actually lacks is any path from a map death to FamilyManager at all — a citizen beaten to death on an open map never shrinks a family, never bereaves anyone and never reaches the chronicle. That is a missing wire, not a missing field.",
+          "label": "Nothing anywhere separated a murder from a heart attack. DamageDef.externalViolence is read by three consumers now: Pawn_HealthTracker.DiedViolently, StorytellerDeathEvents (which composes the death letter — it charged adaptation for a violent death too, until director.deathadaptation dropped that gate for RimWorld's rule — consuming DamageDef.deathMessage and binding the shipped-but-unbound Death LetterDef), and PawnDiedThoughtsUtility, which gives witnesses the shipped WitnessedDeathAlly memory that had no giver. Content had no non-violent damage at all, so Recipe_Surgery killed failed patients with plain Cut and a botched operation read as a murder; SurgicalCut is the same wound with externalViolence false. Deliberately NOT wired into the chronicle: RecordDeath already separates Death:Age from Death:Injury. What the chronicle actually lacks is any path from a map death to FamilyManager at all — a citizen beaten to death on an open map never shrinks a family, never bereaves anyone and never reaches the chronicle. That is a missing wire, not a missing field.",
           "done": true
         },
         {
@@ -1080,7 +1080,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 220,
+      "tests": 230,
       "items": [
         {
           "id": "director.personality",
@@ -1155,6 +1155,11 @@
         {
           "id": "director.downedadaptation",
           "label": "StoryWatcher_Adaptation.Notify_ColonistDowned is raised — Pawn_HealthTracker's downing path now tells the narrator (src/SimWorld.Core/Director/StorytellerPawnEvents.cs), so adaptation eases after a mauling and not only after a funeral. Same shape as the Notify_ColonistDied hook this audit was written after.",
+          "done": true
+        },
+        {
+          "id": "director.deathadaptation",
+          "label": "The storyteller notices the dead. StorytellerDeathEvents.Notify_PawnDied charged adaptation only for a death whose DamageInfo declared externalViolence, a gate RimWorld does not have and this port never recorded as a translation: Pawn.Kill raises AdaptationEvent.Died with no DamageInfo, and StoryWatcher_Adaptation filters only on who the pawn is (read in the 1.0 and 1.6 decompiles). Most people a raid kills are downed first and bleed out or die of the infected wound later, with dinfo null, so the gate read them as natural deaths; in the populated runs adaptation rose on the day six people bled out. Every death of ours is now charged at that one funnel, and SettlementRaidResolver no longer charges its dead by hand, so none is charged twice (DeathAdaptationTests). Still not RimWorld's, and recorded at StorytellerPawnEvents.Notify_PawnDowned: the downing side charges non-violent collapses and does not hold a same-tick downing for the death.",
           "done": true
         },
         {

@@ -23,7 +23,8 @@ namespace SimWorld.Thoughts
     /// abstractly by SettlementRaidResolver kills through FamilyManager.HandleDeath, which has no DamageInfo
     /// to hand Kill, so those deaths read as non-violent here" — and compensated for it in the storyteller's
     /// adaptation charge. Nobody compensated for it in grief. One known fact, two systems, one of them
-    /// updated.
+    /// updated. (The adaptation charge has since stopped asking about violence at all, which is RimWorld's
+    /// rule for a death; the compensation it needed went with the question.)
     ///
     /// <para/><b>The witness gate is right and is left alone.</b> Requiring
     /// <c>DamageDef.externalViolence</c> before traumatising a room is correct: age, disease and a surgery
