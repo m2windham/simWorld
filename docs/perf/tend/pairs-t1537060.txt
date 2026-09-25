@@ -1,0 +1,1205 @@
+######## s777-t1537060 continuation seed 1, before arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 1
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.39837] DEATH husky10 has been cut to death.
+  [25.45352] DEATH chicken4 has been cut to death.
+  [25.54586] DEATH Tobin has died of blood loss (moderate).
+  [25.58818] DEATH Rosalind has died of blood loss (extreme).
+day 26 | citizens 22 | downed 20 | hostiles standing 0 | beds 0
+  [26.10919] DEATH muffalo18 has died of blood loss (extreme).
+  [26.13147] DEATH Idris has died of blood loss (extreme).
+  [26.18047] DEATH muffalo19 has died of blood loss (extreme).
+day 27 | citizens 21 | downed 2 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38070 | 2.02 | 0.01 | 29477 | 18 | 23 | 0 | +16890 | +0 | Yorick#132(3,?) | +0 | 57/16 | recovered | 39570 | - | 
+Yorick#132 | 25.38730 | 1.90 | 0.00 | 31578 | 18 | 22 | 0 | +16230 | +0 | Vance#72(3,GotoWander) | +20100 | 54/13 | recovered | 41430 | - | 
+Fira#18 | 25.39090 | 2.28 | 0.00 | 26275 | 18 | 21 | 0 | +15870 | +19050 | Oren#12(1,Ingest) | +19380 | 53/11 | recovered | 40380 | - | 
+Giselle#6 | 25.39390 | 1.96 | 0.00 | 30554 | 18 | 20 | 8 | - | +1440 | Rosalind#66(1,Harvest) | +1680 | 5/0 | recovered | 3840 | - | 
+Aaron#36 | 25.39570 | 2.74 | 0.00 | 21841 | 17 | 19 | 0 | +15390 | +270 | Rosalind#66(1,Harvest) | +1020 | 4/0 | recovered | 31380 | - | 
+Oren#12 | 25.39900 | 1.18 | 0.00 | 50847 | 16 | 18 | 0 | +15060 | +13050 | Alden#84(2,Ingest) | +13290 | 45/0 | recovered | 16890 | - | 
+Jasper#120 | 25.40080 | 1.92 | 0.00 | 31226 | 16 | 17 | 0 | +14880 | +12510 | Alden#84(2,Ingest) | +12870 | 43/0 | recovered | 25950 | - | 
+Calla#54 | 25.40320 | 1.56 | 0.00 | 38402 | 16 | 16 | 0 | +14640 | +1110 | Rosalind#66(1,Harvest) | +1530 | 5/0 | recovered | 14760 | - | 
+Ursa#114 | 25.40530 | 1.44 | 0.00 | 41635 | 15 | 15 | 0 | +14430 | +1320 | Rosalind#66(1,Harvest) | +0 | 48/21 | recovered | 49200 | - | 
+Alden#84 | 25.40620 | 1.02 | 0.00 | 58823 | 15 | 14 | 1 | - | - | - | - | 38/0 | recovered | 11370 | - | 
+Yara#42 | 25.40860 | 1.00 | 0.00 | 60000 | 14 | 13 | 0 | +14100 | +20520 | Oren#12(1,Ingest) | +20880 | 47/22 | recovered | 24030 | - | 
+Yara#78 | 25.41130 | 0.64 | 0.00 | 93750 | 14 | 12 | 0 | +13830 | +22710 | Oren#12(1,Ingest) | +23040 | 48/28 | recovered | 27150 | - | 
+Tobin#0 | 25.41610 | 1.65 | 0.03 | 35168 | 13 | 10 | 0 | - | +4050 | Kade#60(4,Ingest) | +0 | 43/0 | died | 12990 | BloodLoss | cons=0.04 breath=0.50 pump=0.27 filt=1.00 pain=0.64 bloodLoss=0.30 bleed=1.62 injuries=5 tended=3 infections=0
+Harlan#24 | 25.41610 | 1.32 | 0.00 | 45431 | 13 | 10 | 0 | +13350 | +22560 | Oren#12(1,Ingest) | +22980 | 47/30 | recovered | 26610 | - | 
+Rosalind#66 | 25.42030 | 3.95 | 0.03 | 14666 | 12 | 9 | 0 | +12930 | +11160 | Alden#84(2,Ingest) | +0 | 43/13 | died | 16800 | BloodLoss | cons=0.10 breath=0.67 pump=1.00 filt=1.00 pain=0.78 bloodLoss=1.00 bleed=3.75 injuries=6 tended=0 infections=0
+Oren#48 | 25.42540 | 3.96 | 0.01 | 15001 | 12 | 8 | 0 | +12420 | +9810 | Alden#84(2,Ingest) | +10050 | 34/0 | recovered | 32160 | - | 
+Vance#96 | 25.43230 | 0.22 | 0.00 | 272727 | 11 | 8 | 0 | +11730 | +18510 | Oren#12(1,Ingest) | +0 | 39/23 | recovered | 24990 | - | 
+Giselle#6 | 25.43290 | 0.66 | 0.03 | 88116 | 11 | 7 | 0 | +11670 | +14280 | Oren#12(1,Ingest) | +0 | 39/9 | recovered | 37740 | - | 
+Kaia#90 | 25.43350 | 0.12 | 0.00 | 499960 | 11 | 6 | 0 | +11610 | +19200 | Oren#12(1,Ingest) | - | 40/25 | recovered | 19470 | - | 
+Vance#72 | 25.43530 | 3.30 | 0.00 | 18126 | 11 | 5 | 0 | +11430 | +18510 | Oren#12(1,Ingest) | +18750 | 38/24 | still down | - | - | 
+Elowen#30 | 25.43740 | 1.68 | 0.00 | 35709 | 11 | 4 | 4 | - | - | - | - | 6/0 | recovered | 1710 | - | 
+Elowen#30 | 25.45540 | 2.33 | 0.04 | 24809 | 9 | 4 | 0 | +9420 | +17910 | Oren#12(1,Ingest) | +18300 | 34/27 | recovered | 40530 | - | 
+Aaron#108 | 25.45780 | 1.32 | 0.00 | 45408 | 9 | 3 | 0 | +9180 | +19740 | Oren#12(1,Ingest) | +0 | 33/35 | recovered | 41220 | - | 
+Kade#60 | 25.47190 | 4.43 | 0.04 | 12960 | 9 | 2 | 0 | +7770 | +12690 | Oren#12(1,Ingest) | +13740 | 26/20 | still down | - | - | 
+Tamsin#138 | 25.47940 | 2.86 | 0.01 | 20814 | 9 | 1 | 0 | +7020 | - | - | - | 24/9 | recovered | 9690 | - | 
+Idris#144 | 25.52680 | 3.41 | 0.01 | 17425 | 9 | 1 | 0 | +2280 | - | - | - | 10/58 | died | 20490 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=1.00 pain=0.77 bloodLoss=1.00 bleed=3.19 injuries=6 tended=0 infections=0
+Alden#84 | 25.53880 | 1.70 | 0.13 | 30660 | 9 | 0 | 0 | +1080 | +3120 | Oren#12(1,Ingest) | +3420 | 4/7 | recovered | 7110 | - | 
+Tamsin#138 | 25.58890 | 2.77 | 0.45 | 11905 | 0 | 2 | 2 | +0 | +3930 | Oren#12(1,Ingest) | +4200 | 2/12 | recovered | 28560 | - | 
+Alden#84 | 26.02820 | 0.60 | 0.17 | 83418 | 1 | 3 | 2 | +480 | +18210 | Fira#18(2,Ingest) | +0 | 1/60 | recovered | 29610 | - | 
+Calla#54 | 26.03030 | 0.60 | 0.00 | 100000 | 1 | 2 | 2 | +270 | +18210 | Fira#18(2,Ingest) | +0 | 0/61 | recovered | 52650 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=26 of 30 downings: min 0 p25 3120 median 13050 p75 18510 p90 20520 max 22710
+  sorted: 0 0 270 1110 1320 1440 3120 3930 4050 9810 11160 12510 12690 13050 14280 17910 18210 18210 18510 18510 19050 19200 19740 20520 22560 22710
+  bleeding at downing: 30, never tended: 4
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=24: min 0 p25 0 median 3930 p75 7590 p90 10560 max 17940
+  sorted: 0 0 0 0 0 0 0 0 0 2040 2610 3180 3930 4920 6420 6780 7080 7590 8490 8880 9210 10560 17730 17940
+DEATHS among downed: BloodLoss=3
+  of which never had a tend job: 1; never tended: 1
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (59 samples): LayDown(asleep)=132, AttackStatic=98, Harvest=47, TendPatient=24, Hunt=17, HaulToCell=16, GotoWander=8, SocialRelax=7, Ingest=6
+  map clear (86 samples): LayDown(asleep)=436, TendPatient=33, Ingest=22, Harvest=4, LayDown=1
+  mean rest level of the asleep, map clear: 0.38
+
+######## s777-t1537060 continuation seed 1, after arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 1
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+day 26 | citizens 24 | downed 4 | hostiles standing 0 | beds 0
+day 27 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38070 | 2.02 | 0.01 | 29477 | 18 | 23 | 15 | +6240 | +0 | Yorick#132(3,?) | +0 | 22/2 | recovered | 13320 | - | 
+Yorick#132 | 25.38730 | 1.90 | 0.00 | 31578 | 18 | 22 | 15 | +5580 | +0 | Vance#72(3,GotoWander) | +6030 | 18/2 | recovered | 43230 | - | 
+Fira#18 | 25.39090 | 2.28 | 0.00 | 26275 | 18 | 21 | 18 | - | +0 | Yara#42(2,LayDown) | - | 4/0 | recovered | 1350 | - | 
+Giselle#6 | 25.39390 | 1.20 | 0.00 | 49944 | 18 | 20 | 15 | +4920 | +4920 | Vance#72(3,AttackStatic) | +5250 | 16/1 | recovered | 22440 | - | 
+Aaron#36 | 25.39480 | 1.18 | 0.00 | 50847 | 16 | 19 | 15 | +4830 | +5280 | Elowen#30(3,AttackStatic) | +5850 | 17/3 | recovered | 10470 | - | 
+Oren#12 | 25.39810 | 2.19 | 0.01 | 27186 | 16 | 18 | 15 | +4500 | +0 | Elowen#30(3,HaulToCell) | +870 | 3/0 | recovered | 6180 | - | 
+Tobin#0 | 25.40560 | 2.04 | 0.01 | 29218 | 10 | 18 | 15 | +3750 | +3750 | Yara#78(8,AttackStatic) | +0 | 12/1 | recovered | 6900 | - | 
+Rosalind#66 | 25.40800 | 3.30 | 0.00 | 18156 | 10 | 17 | 15 | +3510 | +3510 | Yara#42(2,AttackStatic) | +0 | 12/2 | recovered | 28110 | - | 
+Harlan#24 | 25.41010 | 3.41 | 0.03 | 17123 | 9 | 16 | 15 | +3300 | +3300 | Jasper#120(1,AttackStatic) | +3750 | 11/2 | recovered | 7650 | - | 
+Fira#18 | 25.41100 | 0.66 | 0.04 | 87386 | 8 | 15 | 15 | +3210 | +3510 | Vance#96(1,AttackStatic) | +0 | 11/2 | recovered | 7740 | - | 
+Fira#18 | 25.51630 | 0.90 | 0.01 | 65948 | 1 | 20 | 20 | +540 | +60 | Alden#84(2,GotoWander) | +0 | 1/2 | recovered | 26010 | - | 
+Vance#96 | 26.06690 | 0.66 | 0.00 | 90909 | 1 | 20 | 20 | +30 | +30 | Elowen#30(3,AttackStatic) | +0 | 0/1 | recovered | 9930 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=12 of 12 downings: min 0 p25 0 median 3300 p75 3510 p90 4920 max 5280
+  sorted: 0 0 0 0 30 60 3300 3510 3510 3750 4920 5280
+  bleeding at downing: 12, never tended: 0
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=11: min 0 p25 0 median 0 p75 0 p90 300 max 450
+  sorted: 0 0 0 0 0 0 0 0 0 300 450
+DEATHS among downed: 
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (23 samples): AttackStatic=202, LayDown(asleep)=48, Harvest=41, TendPatient=29, Hunt=22, HaulToCell=19, AttackStatic(mental)=12, SocialRelax=9, GotoWander=9, FeedPatient=5, GotoWander(mental)=3, Ingest=2, Train=1, Skygaze=1
+  map clear (6 samples): LayDown(asleep)=34, TendPatient=28, Ingest=8, GotoWander(mental)=7, FeedPatient=7, SocialRelax=4, Train=3, Hunt=3, Harvest=3, HaulToCell=3, Skygaze=3, GotoWander=2
+  mean rest level of the asleep, map clear: 0.52
+
+######## s777-t1537060 continuation seed 2, before arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 2
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.39533] DEATH Giselle has been cut to death.
+  [25.42102] DEATH Jasper has been cut to death.
+  [25.48030] DEATH Rosalind has died of blood loss (severe).
+  [25.48738] DEATH Rosalind has died of blood loss (severe).
+  [25.54266] DEATH Elowen has died of blood loss (severe).
+  [25.57204] DEATH Kaia has died of blood loss (severe).
+  [25.58455] DEATH Aaron has died of blood loss (severe).
+day 26 | citizens 17 | downed 15 | hostiles standing 3 | beds 0
+  [26.00650] DEATH husky2 has died of blood loss (extreme).
+  [26.00856] DEATH Vance has died of blood loss (moderate).
+  [26.03549] DEATH husky10 has died of blood loss (extreme).
+  [26.05588] DEATH Tamsin has died of blood loss (moderate).
+  [26.06293] DEATH muffalo4 has died of blood loss (extreme).
+  [26.06932] DEATH Yara has died of blood loss (severe).
+day 27 | citizens 14 | downed 3 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 3.08 | 0.01 | 19229 | 18 | 23 | 7 | - | +0 | Tobin#0(1,?) | +0 | 34/0 | died | 10020 | BloodLoss | cons=0.08 breath=1.00 pump=0.27 filt=1.00 pain=0.68 bloodLoss=0.45 bleed=2.96 injuries=6 tended=1 infections=0
+Fira#18 | 25.38430 | 1.92 | 0.00 | 31250 | 18 | 22 | 10 | - | +30 | Rosalind#66(1,Ingest) | +660 | 2/0 | recovered | 6810 | - | 
+Rosalind#66 | 25.39090 | 3.22 | 0.01 | 18565 | 18 | 21 | 7 | - | - | - | +0 | 32/0 | died | 9660 | BloodLoss | cons=0.18 breath=0.50 pump=1.00 filt=1.00 pain=0.88 bloodLoss=0.45 bleed=3.14 injuries=7 tended=0 infections=0
+Tobin#0 | 25.39180 | 1.20 | 0.00 | 50000 | 18 | 20 | 7 | - | +120 | Vance#96(1,HaulToCell) | +0 | 32/0 | recovered | 9480 | - | 
+Yorick#132 | 25.39660 | 0.96 | 0.00 | 62500 | 16 | 18 | 2 | +23640 | +25650 | Idris#144(1,Ingest) | +25890 | 78/8 | recovered | 31500 | - | 
+Aaron#36 | 25.39900 | 1.90 | 0.00 | 31558 | 16 | 17 | 3 | - | - | - | - | 62/0 | died | 18570 | BloodLoss | cons=0.09 breath=0.35 pump=1.00 filt=1.00 pain=0.90 bloodLoss=0.45 bleed=1.80 injuries=7 tended=0 infections=0
+Oren#12 | 25.40050 | 1.97 | 0.00 | 30411 | 15 | 16 | 10 | - | +4530 | Harlan#24(2,Ingest) | - | 16/0 | recovered | 4860 | - | 
+Ursa#114 | 25.40470 | 0.72 | 0.00 | 83291 | 15 | 15 | 15 | - | - | - | +0 | 2/0 | recovered | 390 | - | 
+Alden#84 | 25.41130 | 1.98 | 0.01 | 30027 | 13 | 15 | 2 | +22170 | +2820 | Harlan#24(2,Ingest) | +3180 | 10/0 | still down | - | - | 
+Ursa#114 | 25.41190 | 0.84 | 0.00 | 71220 | 13 | 14 | 10 | - | +3120 | Harlan#24(2,Ingest) | +0 | 11/0 | recovered | 3390 | - | 
+Calla#54 | 25.42090 | 0.36 | 0.00 | 166666 | 10 | 13 | 4 | - | - | - | - | 33/0 | recovered | 9990 | - | 
+Vance#72 | 25.42330 | 1.44 | 0.00 | 41567 | 10 | 11 | 2 | - | - | - | - | 61/0 | died | 18540 | BloodLoss | cons=0.05 breath=0.13 pump=1.00 filt=1.00 pain=0.53 bloodLoss=0.30 bleed=1.30 injuries=4 tended=0 infections=0
+Vance#96 | 25.42690 | 1.14 | 0.00 | 52561 | 10 | 10 | 2 | +20610 | +21180 | Idris#144(1,Ingest) | +0 | 68/4 | recovered | 37020 | - | 
+Oren#12 | 25.44970 | 0.66 | 0.13 | 79519 | 9 | 11 | 4 | - | - | - | +0 | 20/0 | recovered | 5820 | - | 
+Harlan#24 | 25.45060 | 1.35 | 0.01 | 43957 | 9 | 10 | 2 | +18240 | - | - | - | 60/6 | recovered | 19800 | - | 
+Ursa#114 | 25.45300 | 0.11 | 0.02 | 532625 | 9 | 10 | 2 | +18000 | +20820 | Idris#144(1,Ingest) | +0 | 60/11 | recovered | 26160 | - | 
+Elowen#30 | 25.45360 | 3.06 | 0.06 | 18378 | 9 | 8 | 4 | - | - | - | - | 29/0 | died | 8910 | BloodLoss | cons=0.01 breath=0.63 pump=0.27 filt=1.00 pain=0.66 bloodLoss=0.45 bleed=2.97 injuries=5 tended=0 infections=0
+Fira#18 | 25.45360 | 0.66 | 0.00 | 90853 | 9 | 8 | 2 | +17940 | +23430 | Idris#144(1,Ingest) | +0 | 59/20 | recovered | 38280 | - | 
+Oren#48 | 25.46890 | 2.79 | 0.02 | 21011 | 8 | 7 | 4 | - | - | - | - | 14/0 | recovered | 4140 | - | 
+Tobin#0 | 25.48720 | 1.19 | 0.12 | 44260 | 8 | 7 | 2 | +14580 | +19470 | Idris#144(1,Ingest) | +0 | 48/18 | recovered | 46740 | - | 
+Kaia#90 | 25.48930 | 3.40 | 0.04 | 16871 | 7 | 6 | 3 | - | - | - | - | 27/0 | died | 8280 | BloodLoss | cons=0.08 breath=1.00 pump=1.00 filt=0.30 pain=0.80 bloodLoss=0.45 bleed=3.30 injuries=6 tended=0 infections=0
+Yara#42 | 25.50190 | 3.39 | 0.05 | 16835 | 6 | 5 | 2 | +13110 | +16620 | Idris#144(1,Ingest) | +17010 | 43/13 | still down | - | - | 
+Kade#60 | 25.50250 | 1.29 | 0.02 | 45847 | 6 | 4 | 3 | - | - | - | - | 24/0 | recovered | 7350 | - | 
+Oren#12 | 25.50850 | 0.74 | 0.15 | 68858 | 6 | 4 | 2 | +12450 | +15000 | Idris#144(1,Ingest) | +0 | 41/10 | recovered | 34740 | - | 
+Oren#48 | 25.51120 | 3.25 | 0.19 | 14965 | 6 | 4 | 2 | +12180 | +15300 | Idris#144(1,Ingest) | +15690 | 40/12 | still down | - | - | 
+Calla#54 | 25.52650 | 1.00 | 0.00 | 59872 | 4 | 4 | 2 | +10650 | +14550 | Idris#144(1,Ingest) | +15090 | 35/15 | recovered | 16230 | - | 
+Yara#78 | 25.55710 | 2.63 | 0.04 | 21967 | 5 | 3 | 2 | +7590 | - | - | - | 25/13 | died | 11250 | BloodLoss | cons=0.06 breath=1.00 pump=0.27 filt=1.00 pain=0.79 bloodLoss=0.45 bleed=2.56 injuries=6 tended=0 infections=0
+Tamsin#138 | 25.58950 | 2.49 | 0.07 | 22295 | 2 | 3 | 2 | +4350 | - | - | - | 14/8 | died | 6660 | BloodLoss | cons=0.04 breath=0.50 pump=0.27 filt=1.00 pain=0.66 bloodLoss=0.30 bleed=2.42 injuries=5 tended=0 infections=0
+Kade#60 | 25.59010 | 1.84 | 0.14 | 28043 | 2 | 2 | 2 | +4290 | +10260 | Idris#144(1,Ingest) | +10830 | 14/22 | recovered | 24060 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=16 of 29 downings: min 0 p25 3120 median 15000 p75 19470 p90 23430 max 25650
+  sorted: 0 30 120 2820 3120 4530 10260 14550 15000 15300 16620 19470 20820 21180 23430 25650
+  bleeding at downing: 29, never tended: 13
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=11: min 0 p25 2550 median 3120 p75 4890 p90 5490 max 5970
+  sorted: 0 570 2010 2550 2820 3120 3510 3900 4890 5490 5970
+DEATHS among downed: BloodLoss=8
+  of which never had a tend job: 7; never tended: 6
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (84 samples): AttackStatic=212, LayDown(asleep)=208, Harvest=65, Hunt=64, HaulToCell=13, TendPatient=13, GotoWander=9, Ingest=9, Train=7, Sow=6, SocialRelax=4, Hunt(mental)=4, AttackStatic(mental)=4
+  map clear (22 samples): TendPatient=20, LayDown(asleep)=17, Sow=8, CutPlant=7, HaulToCell=6, Ingest=5
+  mean rest level of the asleep, map clear: 0.26
+
+######## s777-t1537060 continuation seed 2, after arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 2
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.41655] DEATH husky10 has been cut to death.
+day 26 | citizens 24 | downed 7 | hostiles standing 0 | beds 0
+  [26.33000] FIRED VisitorGroup points=0.00
+day 27 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 3.08 | 0.01 | 19229 | 18 | 23 | 12 | +6930 | +0 | Tobin#0(1,?) | +0 | 23/4 | recovered | 54780 | - | 
+Fira#18 | 25.38430 | 1.92 | 0.00 | 31250 | 18 | 22 | 12 | +6510 | +30 | Rosalind#66(1,Ingest) | +7170 | 21/2 | recovered | 8610 | - | 
+Rosalind#66 | 25.39000 | 1.65 | 0.00 | 36398 | 18 | 21 | 12 | - | +0 | Alden#84(2,HaulToCell) | +0 | 16/0 | recovered | 4710 | - | 
+Tobin#0 | 25.39210 | 1.80 | 0.00 | 33359 | 18 | 20 | 12 | +5730 | +60 | Oren#12(1,LayDown) | +0 | 19/1 | recovered | 38850 | - | 
+Oren#12 | 25.39450 | 3.22 | 0.01 | 18526 | 18 | 19 | 12 | +5490 | +270 | Elowen#30(3,HaulToCell) | +5820 | 18/1 | recovered | 70140 | - | 
+Harlan#24 | 25.39540 | 2.52 | 0.01 | 23656 | 18 | 18 | 18 | - | - | - | - | 1/0 | recovered | 120 | - | 
+Giselle#6 | 25.39870 | 2.50 | 0.00 | 23949 | 16 | 18 | 12 | +5070 | +960 | Vance#96(1,AttackStatic) | +5340 | 17/1 | recovered | 12360 | - | 
+Harlan#24 | 25.39990 | 3.17 | 0.02 | 18513 | 16 | 17 | 12 | +4950 | +4950 | Jasper#120(1,AttackStatic) | +5340 | 16/2 | recovered | 36870 | - | 
+Yara#42 | 25.40170 | 1.80 | 0.00 | 33220 | 14 | 16 | 12 | +4770 | +660 | Elowen#30(3,AttackStatic) | +5100 | 16/1 | recovered | 7320 | - | 
+Ursa#114 | 25.40320 | 1.20 | 0.00 | 49989 | 13 | 15 | 12 | +4620 | +5010 | Elowen#30(3,AttackStatic) | +0 | 15/3 | recovered | 51540 | - | 
+Idris#144 | 25.40710 | 2.75 | 0.01 | 21582 | 10 | 14 | 12 | +4230 | +4560 | Vance#96(1,AttackStatic) | +5070 | 14/3 | recovered | 13680 | - | 
+Yorick#132 | 25.40800 | 0.72 | 0.00 | 83785 | 10 | 13 | 12 | +4140 | +4980 | Jasper#120(1,AttackStatic) | +5580 | 14/5 | recovered | 20160 | - | 
+Kade#60 | 25.41910 | 2.58 | 0.02 | 22848 | 5 | 12 | 12 | +3030 | +3030 | Vance#96(1,AttackStatic) | +3360 | 10/1 | recovered | 6090 | - | 
+Rosalind#66 | 25.43800 | 2.28 | 0.10 | 23694 | 3 | 12 | 12 | +1140 | +1410 | Calla#54(1,AttackStatic) | +0 | 4/3 | recovered | 36510 | - | 
+Yorick#132 | 26.11970 | 0.00 | 0.00 | - | 0 | 17 | 17 | +0 | +0 | Aaron#36(4,SocialRelax) | +0 | 0/0 | recovered | 3390 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=14 of 15 downings: min 0 p25 30 median 960 p75 4560 p90 4980 max 5010
+  sorted: 0 0 0 30 60 270 660 960 1410 3030 4560 4950 4980 5010
+  bleeding at downing: 14, never tended: 1
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=13: min 0 p25 0 median 0 p75 270 p90 390 max 840
+  sorted: 0 0 0 0 0 0 0 0 0 270 330 390 840
+DEATHS among downed: 
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (23 samples): AttackStatic=212, Harvest=48, LayDown(asleep)=28, HaulToCell=19, TendPatient=14, Hunt=12, GotoWander=9, SocialRelax=4, Ingest=2
+  map clear (5 samples): TendPatient=28, FeedPatient=9, Harvest=8, HaulToCell=7, Ingest=5, LayDown(asleep)=2, Hunt=1
+  mean rest level of the asleep, map clear: 0.27
+
+######## s777-t1537060 continuation seed 3, before arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 3
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.39563] DEATH Kaia has been cut to death.
+  [25.40354] DEATH chicken4 has been cut to death.
+  [25.49126] DEATH Tobin has died of blood loss (moderate).
+  [25.49973] DEATH Harlan has died of blood loss (severe).
+  [25.59430] DEATH Rosalind has died of blood loss (severe).
+day 26 | citizens 20 | downed 20 | hostiles standing 0 | beds 0
+  [26.01720] DEATH muffalo5 has died of blood loss (severe).
+  [26.02906] DEATH Elowen has died of blood loss (extreme).
+  [26.09293] DEATH muffalo4 has died of blood loss (extreme).
+  [26.12839] DEATH muffalo18 has died of blood loss (extreme).
+  [26.13475] DEATH Aaron has died of blood loss (extreme).
+  [26.30000] FIRED WandererJoin points=0.00
+day 27 | citizens 19 | downed 4 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 1.76 | 0.01 | 33768 | 18 | 23 | 0 | - | +0 | Harlan#24(2,?) | +0 | 72/0 | died | 21420 | BloodLoss | cons=0.17 breath=1.00 pump=0.33 filt=1.00 pain=0.38 bloodLoss=0.45 bleed=1.52 injuries=4 tended=1 infections=0
+Fira#18 | 25.38400 | 2.28 | 0.00 | 26236 | 18 | 22 | 0 | +21180 | +0 | Alden#84(2,Harvest) | +12510 | 42/0 | recovered | 50040 | - | 
+Harlan#24 | 25.39000 | 2.86 | 0.01 | 20791 | 18 | 21 | 2 | - | - | - | - | 33/0 | recovered | 9660 | - | 
+Giselle#6 | 25.39030 | 0.64 | 0.00 | 93874 | 18 | 20 | 1 | - | +690 | Oren#12(1,Ingest) | +1080 | 3/0 | recovered | 16200 | - | 
+Yorick#132 | 25.39180 | 1.32 | 0.00 | 45399 | 17 | 19 | 2 | - | +1200 | Oren#12(1,Ingest) | +1500 | 5/0 | recovered | 11580 | - | 
+Tobin#0 | 25.39780 | 2.34 | 0.00 | 25538 | 16 | 17 | 2 | - | +5910 | Kade#60(4,Ingest) | +0 | 31/0 | died | 9360 | BloodLoss | cons=0.05 breath=0.50 pump=0.33 filt=1.00 pain=0.80 bloodLoss=0.30 bleed=2.27 injuries=6 tended=0 infections=0
+Aaron#36 | 25.39990 | 2.04 | 0.00 | 29293 | 15 | 16 | 0 | +19590 | +3180 | Jasper#120(1,AttackStatic) | +22140 | 65/9 | recovered | 51960 | - | 
+Alden#84 | 25.40380 | 3.00 | 0.01 | 19854 | 14 | 15 | 7 | - | +2790 | Yara#42(2,AttackStatic) | - | 11/0 | recovered | 3150 | - | 
+Ursa#114 | 25.40890 | 0.60 | 0.00 | 100000 | 13 | 14 | 0 | +18690 | +1020 | Rosalind#66(1,HaulToCell) | +0 | 62/10 | recovered | 29370 | - | 
+Oren#12 | 25.41220 | 2.85 | 0.03 | 20440 | 13 | 12 | 2 | - | - | - | - | 30/0 | recovered | 8970 | - | 
+Oren#48 | 25.41220 | 1.32 | 0.00 | 45435 | 13 | 12 | 0 | +18360 | +420 | Rosalind#66(1,HaulToCell) | +690 | 2/0 | recovered | 30210 | - | 
+Vance#72 | 25.41520 | 0.82 | 0.00 | 73170 | 12 | 11 | 1 | - | +0 | Rosalind#66(1,HaulToCell) | +120 | 0/0 | recovered | 11370 | - | 
+Rosalind#66 | 25.41940 | 0.94 | 0.00 | 63820 | 12 | 10 | 0 | +17640 | - | - | +0 | 59/7 | recovered | 19770 | - | 
+Calla#54 | 25.42390 | 0.90 | 0.00 | 66657 | 11 | 9 | 0 | +17190 | +1380 | Alden#84(2,(none)) | +1620 | 5/0 | recovered | 22290 | - | 
+Vance#96 | 25.42540 | 0.36 | 0.00 | 166666 | 11 | 8 | 0 | - | +990 | Alden#84(2,(none)) | +0 | 4/0 | recovered | 15480 | - | 
+Elowen#30 | 25.43200 | 3.40 | 0.05 | 16774 | 9 | 7 | 0 | +16380 | - | - | - | 55/11 | died | 19710 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=1.00 pain=0.82 bloodLoss=1.00 bleed=3.19 injuries=6 tended=0 infections=1
+Jasper#120 | 25.44880 | 3.41 | 0.02 | 17283 | 9 | 7 | 0 | +14700 | +17850 | Vance#96(1,(none)) | +18060 | 49/11 | still down | - | - | 
+Alden#84 | 25.44940 | 0.90 | 0.14 | 57638 | 9 | 6 | 0 | +14640 | +18000 | Vance#96(1,(none)) | +0 | 49/12 | recovered | 19050 | - | 
+Yara#42 | 25.45990 | 2.75 | 0.01 | 21530 | 9 | 5 | 0 | +13590 | +16440 | Vance#96(1,(none)) | +16740 | 45/11 | recovered | 46500 | - | 
+Tamsin#138 | 25.46230 | 1.64 | 0.00 | 36548 | 9 | 4 | 0 | +13350 | +20580 | Vance#96(1,(none)) | +20970 | 44/25 | recovered | 33270 | - | 
+Kade#60 | 25.47100 | 3.89 | 0.01 | 15250 | 9 | 3 | 0 | +12480 | +16050 | Vance#96(1,(none)) | +16350 | 42/13 | still down | - | - | 
+Aaron#108 | 25.48540 | 2.86 | 0.03 | 20467 | 9 | 2 | 0 | +11040 | - | - | +0 | 37/46 | died | 24960 | BloodLoss | cons=0.10 breath=0.50 pump=1.00 filt=1.00 pain=0.76 bloodLoss=1.00 bleed=2.63 injuries=6 tended=0 infections=0
+Harlan#24 | 25.48870 | 2.88 | 0.40 | 12418 | 10 | 2 | 2 | - | - | - | - | 4/0 | died | 1110 | BloodLoss | cons=0.19 breath=0.54 pump=1.00 filt=1.00 pain=0.93 bloodLoss=0.45 bleed=2.87 injuries=7 tended=0 infections=0
+Yara#78 | 25.50730 | 2.31 | 0.01 | 25758 | 8 | 2 | 0 | +8850 | +14610 | Vance#96(1,(none)) | +15120 | 29/21 | recovered | 19950 | - | 
+Yorick#132 | 25.50880 | 0.66 | 0.00 | 90909 | 8 | 2 | 0 | +8700 | +30 | Oren#12(1,(none)) | +0 | 2/0 | recovered | 31080 | - | 
+Oren#12 | 25.51750 | 2.75 | 0.45 | 11957 | 8 | 1 | 0 | +7830 | +12390 | Vance#96(1,(none)) | +12690 | 26/16 | still down | - | - | 
+Idris#144 | 25.54930 | 3.33 | 0.02 | 17566 | 8 | 1 | 0 | +4650 | +18780 | Yara#78(8,Ingest) | +20340 | 15/52 | still down | - | - | 
+Giselle#6 | 25.56010 | 1.43 | 0.00 | 41979 | 8 | 1 | 0 | +3570 | - | - | +0 | 12/4 | recovered | 4620 | - | 
+Vance#72 | 25.56880 | 0.11 | 0.00 | 545454 | 8 | 0 | 0 | +2700 | +8970 | Vance#96(1,(none)) | +0 | 9/23 | recovered | 27810 | - | 
+Vance#96 | 25.58770 | 0.66 | 0.00 | 90909 | 8 | 0 | 0 | +810 | - | - | +0 | 3/7 | recovered | 2850 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=22 of 30 downings: min 0 p25 690 median 3180 p75 16050 p90 18000 max 20580
+  sorted: 0 0 0 30 420 690 990 1020 1200 1380 2790 3180 5910 8970 12390 14610 16050 16440 17850 18000 18780 20580
+  bleeding at downing: 30, never tended: 8
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=15: min 0 p25 0 median 3150 p75 5760 p90 7230 max 14130
+  sorted: 0 0 0 0 0 0 2850 3150 3360 3570 4560 5760 6270 7230 14130
+DEATHS among downed: BloodLoss=5
+  of which never had a tend job: 3; never tended: 2
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (72 samples): LayDown(asleep)=165, AttackStatic=111, Harvest=44, TendPatient=29, HaulToCell=20, Train=11, GotoWander=10, Hunt=10, Ingest=6, SocialRelax=5
+  map clear (52 samples): LayDown(asleep)=212, TendPatient=32, Ingest=9
+  mean rest level of the asleep, map clear: 0.36
+
+######## s777-t1537060 continuation seed 3, after arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 3
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.39470] DEATH Rosalind has died of bruise.
+day 26 | citizens 23 | downed 3 | hostiles standing 0 | beds 0
+  [26.34000] FIRED WandererJoin points=0.00
+day 27 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 1.76 | 0.01 | 33768 | 18 | 23 | 15 | +5490 | +0 | Harlan#24(2,?) | +0 | 18/4 | recovered | 15180 | - | 
+Fira#18 | 25.38400 | 2.28 | 0.00 | 26236 | 18 | 22 | 15 | +5100 | +0 | Alden#84(2,Harvest) | +5610 | 17/2 | recovered | 23040 | - | 
+Harlan#24 | 25.38850 | 4.29 | 0.00 | 13945 | 18 | 21 | 15 | +4650 | +30 | Yara#42(2,LayDown) | +5430 | 15/3 | recovered | 46410 | - | 
+Giselle#6 | 25.39060 | 1.42 | 0.00 | 42277 | 18 | 20 | 15 | +4440 | +60 | Idris#144(1,LayDown) | +4740 | 14/1 | recovered | 37770 | - | 
+Oren#12 | 25.39210 | 1.86 | 0.00 | 32184 | 18 | 19 | 15 | +4290 | +4290 | Vance#72(3,AttackStatic) | +4770 | 14/2 | recovered | 10380 | - | 
+Yorick#132 | 25.39780 | 0.98 | 0.00 | 61126 | 16 | 17 | 15 | +3720 | +3960 | Aaron#36(4,Ingest) | +4260 | 12/2 | recovered | 18180 | - | 
+Calla#54 | 25.40020 | 1.66 | 0.00 | 36037 | 14 | 16 | 15 | +3480 | +390 | Jasper#120(1,AttackStatic) | +3900 | 11/2 | recovered | 6660 | - | 
+Idris#144 | 25.42000 | 2.30 | 0.03 | 25254 | 5 | 15 | 15 | +1500 | +1500 | Kade#60(4,AttackStatic) | +1830 | 5/2 | recovered | 5130 | - | 
+Yorick#132 | 26.00180 | 0.00 | 0.00 | - | 0 | 19 | 19 | +0 | +30 | Oren#12(1,FeedPatient) | +0 | 0/0 | recovered | 1380 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=9 of 9 downings: min 0 p25 30 median 60 p75 1500 p90 3960 max 4290
+  sorted: 0 0 30 30 60 390 1500 3960 4290
+  bleeding at downing: 8, never tended: 0
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=9: min 0 p25 0 median 0 p75 0 p90 30 max 240
+  sorted: 0 0 0 0 0 0 0 30 240
+DEATHS among downed: 
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (18 samples): AttackStatic=190, LayDown(asleep)=26, Harvest=25, TendPatient=18, HaulToCell=16, Hunt=15, GotoWander=11, SocialRelax=5, AttackStatic(mental)=3, Hunt(mental)=3, Ingest=1
+  map clear (4 samples): TendPatient=25, Harvest=8, Ingest=7, FeedPatient=7, LayDown(asleep)=6, Train=4, Hunt=3
+  mean rest level of the asleep, map clear: 0.25
+
+######## s777-t1537060 continuation seed 4, before arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 4
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.40134] DEATH chicken4 has been beaten to death.
+  [25.40302] DEATH Rosalind has been cut to death.
+  [25.48450] DEATH Rosalind has died of blood loss (severe).
+day 26 | citizens 22 | downed 4 | hostiles standing 0 | beds 0
+  [26.22000] FIRED WandererJoin points=0.00
+day 27 | citizens 23 | downed 2 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 2.99 | 0.01 | 19885 | 18 | 23 | 12 | +9750 | +0 | Rosalind#66(1,?) | +0 | 33/2 | died | 10440 | BloodLoss | cons=0.08 breath=0.60 pump=1.00 filt=0.50 pain=0.80 bloodLoss=0.45 bleed=2.88 injuries=7 tended=1 infections=0
+Fira#18 | 25.39150 | 1.91 | 0.00 | 31360 | 17 | 22 | 15 | - | +660 | Rosalind#66(1,Ingest) | +870 | 3/0 | recovered | 3090 | - | 
+Kade#60 | 25.39960 | 1.68 | 0.00 | 35608 | 16 | 21 | 12 | +7800 | +9030 | Vance#96(1,Ingest) | +9810 | 26/6 | recovered | 18270 | - | 
+Giselle#6 | 25.39990 | 1.96 | 0.00 | 30571 | 15 | 20 | 12 | +7770 | +0 | Elowen#30(3,Harvest) | +7980 | 26/0 | still down | - | - | 
+Kaia#90 | 25.40380 | 0.72 | 0.00 | 83323 | 13 | 18 | 12 | +7380 | +240 | Vance#96(1,AttackStatic) | +7830 | 25/1 | recovered | 26010 | - | 
+Ursa#114 | 25.41010 | 2.09 | 0.00 | 28627 | 12 | 17 | 12 | +6750 | +6750 | Alden#84(2,AttackStatic) | +0 | 23/0 | recovered | 13830 | - | 
+Aaron#36 | 25.41070 | 1.65 | 0.00 | 36364 | 12 | 16 | 12 | +6690 | +0 | Vance#72(3,HaulToCell) | +7110 | 23/1 | recovered | 11280 | - | 
+Idris#144 | 25.41190 | 1.68 | 0.00 | 35616 | 12 | 15 | 12 | +6570 | +8010 | Yorick#132(3,AttackStatic) | - | 22/7 | recovered | 8790 | - | 
+Fira#18 | 25.42330 | 0.11 | 0.01 | 541529 | 11 | 15 | 12 | +5430 | +6180 | Vance#96(1,Ingest) | +0 | 18/4 | recovered | 47310 | - | 
+Elowen#30 | 25.42900 | 3.33 | 0.04 | 17357 | 7 | 14 | 12 | +4860 | +5250 | Oren#12(1,Ingest) | +5550 | 17/2 | recovered | 7950 | - | 
+Calla#54 | 25.44580 | 3.29 | 0.03 | 17692 | 4 | 13 | 12 | +3180 | +3600 | Alden#84(2,AttackStatic) | +3930 | 11/2 | recovered | 13830 | - | 
+Tobin#0 | 25.46260 | 2.60 | 0.07 | 21541 | 2 | 12 | 12 | +1500 | +1500 | Yorick#132(3,AttackStatic) | +0 | 5/0 | still down | - | - | 
+Fira#18 | 26.32250 | 0.00 | 0.00 | - | 0 | 20 | 20 | +0 | - | - | +0 | 0/0 | recovered | 5190 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=12 of 13 downings: min 0 p25 240 median 3600 p75 6180 p90 8010 max 9030
+  sorted: 0 0 0 240 660 1500 3600 5250 6180 6750 8010 9030
+  bleeding at downing: 12, never tended: 0
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=11: min 0 p25 0 median 0 p75 750 p90 1230 max 1440
+  sorted: 0 0 0 0 0 0 390 420 750 1230 1440
+DEATHS among downed: BloodLoss=1
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (33 samples): AttackStatic=214, LayDown(asleep)=188, Harvest=46, Hunt=29, TendPatient=17, HaulToCell=15, GotoWander=10, SocialRelax=4, Train=3, Ingest=2
+  map clear (7 samples): LayDown(asleep)=42, TendPatient=24, Harvest=14, Ingest=2, FeedPatient=2
+  mean rest level of the asleep, map clear: 0.60
+
+######## s777-t1537060 continuation seed 4, after arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 4
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+day 26 | citizens 24 | downed 4 | hostiles standing 0 | beds 0
+day 27 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 2.99 | 0.01 | 19885 | 18 | 23 | 14 | +6510 | +0 | Rosalind#66(1,?) | +0 | 22/3 | recovered | 34380 | - | 
+Rosalind#66 | 25.38850 | 2.20 | 0.00 | 27158 | 17 | 22 | 14 | +5670 | +0 | Aaron#36(4,GotoWander) | +0 | 19/1 | recovered | 51060 | - | 
+Fira#18 | 25.39030 | 1.92 | 0.00 | 31169 | 17 | 21 | 14 | +5490 | +0 | Oren#48(3,LayDown) | +2190 | 7/0 | recovered | 6810 | - | 
+Kaia#90 | 25.39600 | 1.86 | 0.00 | 32171 | 16 | 20 | 14 | +4920 | +0 | Alden#84(2,SocialRelax) | - | 17/1 | recovered | 5160 | - | 
+Jasper#120 | 25.39840 | 1.20 | 0.00 | 49922 | 13 | 19 | 14 | +4680 | +4920 | Alden#84(2,AttackStatic) | - | 16/2 | recovered | 5190 | - | 
+Oren#12 | 25.40050 | 3.68 | 0.02 | 16059 | 10 | 18 | 14 | +4470 | +0 | Kade#60(4,AttackStatic) | +960 | 3/0 | recovered | 47940 | - | 
+Harlan#24 | 25.41310 | 3.41 | 0.03 | 17161 | 8 | 17 | 14 | +3210 | +3210 | Tobin#0(1,AttackStatic) | +3630 | 11/1 | recovered | 7350 | - | 
+Oren#48 | 25.42090 | 3.40 | 0.03 | 17204 | 7 | 16 | 14 | +2430 | +2430 | Yorick#132(3,AttackStatic) | +2670 | 8/1 | recovered | 5940 | - | 
+Calla#54 | 25.42660 | 0.88 | 0.00 | 68340 | 6 | 15 | 14 | +1860 | +2100 | Yorick#132(3,AttackStatic) | +2310 | 6/1 | recovered | 6420 | - | 
+Kade#60 | 25.43380 | 1.97 | 0.05 | 28825 | 4 | 14 | 14 | +1140 | +1140 | Idris#144(1,AttackStatic) | +1560 | 4/1 | recovered | 7620 | - | 
+Harlan#24 | 25.58320 | 0.00 | 0.12 | - | 0 | 20 | 20 | +0 | +60 | Kade#60(4,GotoWander) | +0 | 0/0 | recovered | 2340 | - | 
+Fira#18 | 26.45780 | 0.18 | 0.00 | 333333 | 0 | 23 | 23 | +0 | +0 | Vance#96(1,SocialRelax) | +0 | 0/0 | recovered | 10260 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=12 of 12 downings: min 0 p25 0 median 60 p75 2100 p90 3210 max 4920
+  sorted: 0 0 0 0 0 0 60 1140 2100 2430 3210 4920
+  bleeding at downing: 11, never tended: 0
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=12: min 0 p25 0 median 0 p75 0 p90 240 max 240
+  sorted: 0 0 0 0 0 0 0 0 0 60 240 240
+DEATHS among downed: 
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (22 samples): AttackStatic=243, LayDown(asleep)=33, TendPatient=30, Harvest=28, Hunt=22, HaulToCell=16, GotoWander=10, SocialRelax=7, Train=3
+  map clear (3 samples): TendPatient=18, FeedPatient=10, Ingest=5, Harvest=5, Hunt=4, LayDown(asleep)=3
+  mean rest level of the asleep, map clear: 0.26
+
+######## s777-t1537060 continuation seed 5, before arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 5
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.39070] DEATH Fira has been cut to death.
+  [25.39727] DEATH Rosalind has been cut to death.
+  [25.40999] DEATH husky10 has died of bruise.
+  [25.41015] DEATH husky2 has died of bruise.
+  [25.46530] DEATH Oren has been cut to death.
+  [25.50010] DEATH Rosalind has died of blood loss (severe).
+  [25.50717] DEATH Giselle has died of blood loss (severe).
+  [25.51797] DEATH Oren has died of blood loss (severe).
+  [25.52341] DEATH chicken4 has been cut to death.
+  [25.55226] DEATH Elowen has died of blood loss (severe).
+  [25.58676] DEATH Vance has died of blood loss (severe).
+day 26 | citizens 16 | downed 16 | hostiles standing 0 | beds 0
+  [26.03272] DEATH Yara has died of blood loss (severe).
+  [26.07917] DEATH Calla has died of blood loss (extreme).
+  [26.08033] DEATH Harlan has died of blood loss (extreme).
+  [26.08925] DEATH Yorick has died of blood loss (extreme).
+  [26.09646] DEATH Tobin has died of blood loss (severe).
+  [26.13360] DEATH muffalo5 has died of blood loss (extreme).
+  [26.21479] DEATH muffalo17 has died of blood loss (extreme).
+  [26.25679] DEATH muffalo18 has died of blood loss (extreme).
+  [26.25787] DEATH muffalo19 has died of blood loss (extreme).
+  [26.30667] DEATH Idris has died of blood loss (extreme).
+day 27 | citizens 10 | downed 2 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 2.64 | 0.02 | 22361 | 18 | 23 | 3 | - | +0 | Rosalind#66(1,?) | +0 | 40/0 | died | 12000 | BloodLoss | cons=0.17 breath=0.37 pump=1.00 filt=1.00 pain=0.54 bloodLoss=0.45 bleed=2.49 injuries=5 tended=1 infections=0
+Yorick#132 | 25.38760 | 2.49 | 0.00 | 23991 | 18 | 22 | 0 | +21030 | +0 | Vance#72(3,GotoWander) | - | 70/30 | died | 30180 | BloodLoss | cons=0.10 breath=0.60 pump=1.00 filt=1.00 pain=0.87 bloodLoss=1.00 bleed=2.28 injuries=6 tended=0 infections=1
+Giselle#6 | 25.39750 | 2.88 | 0.01 | 20702 | 16 | 19 | 3 | - | - | - | - | 37/0 | died | 10980 | BloodLoss | cons=0.19 breath=0.48 pump=1.00 filt=1.00 pain=0.77 bloodLoss=0.45 bleed=2.77 injuries=6 tended=0 infections=0
+Calla#54 | 25.39840 | 2.64 | 0.00 | 22661 | 16 | 18 | 0 | +19950 | - | - | - | 67/27 | died | 28080 | BloodLoss | cons=0.10 breath=0.67 pump=1.00 filt=1.00 pain=0.80 bloodLoss=1.00 bleed=2.40 injuries=6 tended=0 infections=1
+Aaron#36 | 25.40170 | 0.90 | 0.00 | 66613 | 15 | 17 | 17 | - | - | - | - | 1/0 | recovered | 180 | - | 
+Vance#72 | 25.40350 | 1.54 | 0.00 | 38924 | 14 | 17 | 3 | - | - | - | - | 34/0 | recovered | 10140 | - | 
+Aaron#36 | 25.40380 | 0.90 | 0.00 | 66526 | 14 | 16 | 0 | +19410 | +27480 | Idris#144(1,Ingest) | - | 65/27 | recovered | 27720 | - | 
+Ursa#114 | 25.40710 | 0.24 | 0.00 | 250000 | 13 | 15 | 0 | +19080 | +540 | Oren#12(1,Ingest) | +0 | 64/28 | still down | - | - | 
+Elowen#30 | 25.40770 | 2.31 | 0.00 | 25906 | 13 | 14 | 1 | - | - | - | - | 49/0 | died | 14460 | BloodLoss | cons=0.12 breath=0.36 pump=1.00 filt=1.00 pain=0.79 bloodLoss=0.45 bleed=2.19 injuries=6 tended=0 infections=0
+Oren#12 | 25.41310 | 3.00 | 0.01 | 19884 | 12 | 13 | 1 | - | - | - | - | 35/0 | died | 10500 | BloodLoss | cons=0.08 breath=1.00 pump=1.00 filt=0.30 pain=0.80 bloodLoss=0.45 bleed=2.90 injuries=6 tended=0 infections=0
+Alden#84 | 25.42000 | 0.72 | 0.00 | 83611 | 11 | 12 | 0 | +17790 | +1740 | Yara#42(2,AttackStatic) | +25530 | 60/26 | recovered | 33990 | - | 
+Kaia#90 | 25.42420 | 1.54 | 0.02 | 38334 | 10 | 11 | 0 | +17370 | +25920 | Idris#144(1,Ingest) | +26370 | 58/30 | recovered | 31380 | - | 
+Jasper#120 | 25.42570 | 1.65 | 0.00 | 36307 | 10 | 10 | 0 | +17220 | +26220 | Idris#144(1,Ingest) | +26460 | 58/31 | recovered | 37260 | - | 
+Vance#96 | 25.43200 | 2.21 | 0.00 | 27073 | 10 | 9 | 0 | - | - | - | +0 | 52/0 | died | 15480 | BloodLoss | cons=0.20 breath=0.50 pump=1.00 filt=1.00 pain=0.81 bloodLoss=0.45 bleed=2.07 injuries=6 tended=0 infections=0
+Yara#42 | 25.44850 | 1.54 | 0.01 | 38758 | 9 | 8 | 0 | +14940 | +22020 | Idris#144(1,Ingest) | +22350 | 50/24 | recovered | 56640 | - | 
+Aaron#108 | 25.45600 | 1.32 | 0.00 | 45598 | 8 | 7 | 0 | +14190 | +20970 | Idris#144(1,Ingest) | +0 | 48/23 | recovered | 40830 | - | 
+Kade#60 | 25.46470 | 2.30 | 0.02 | 25560 | 8 | 6 | 0 | +13320 | +22560 | Idris#144(1,Ingest) | +22920 | 45/32 | recovered | 62400 | - | 
+Tamsin#138 | 25.48000 | 2.85 | 0.04 | 20260 | 8 | 4 | 1 | - | +2160 | Harlan#24(2,Ingest) | - | 31/0 | recovered | 9030 | - | 
+Yara#78 | 25.49230 | 2.31 | 0.01 | 25658 | 8 | 3 | 0 | +10560 | - | - | - | 35/11 | died | 14070 | BloodLoss | cons=0.12 breath=0.36 pump=1.00 filt=1.00 pain=0.79 bloodLoss=0.45 bleed=2.21 injuries=6 tended=0 infections=0
+Harlan#24 | 25.50550 | 3.88 | 0.01 | 15292 | 8 | 3 | 0 | +9240 | - | - | - | 31/27 | died | 17490 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=1.00 pain=0.88 bloodLoss=1.00 bleed=3.71 injuries=6 tended=0 infections=0
+Vance#72 | 25.50820 | 2.15 | 0.20 | 22417 | 8 | 2 | 0 | +8970 | +16710 | Idris#144(1,Ingest) | +17040 | 30/27 | recovered | 52020 | - | 
+Tobin#0 | 25.51300 | 1.98 | 0.00 | 30270 | 8 | 1 | 0 | +8490 | - | - | +0 | 29/33 | died | 18360 | BloodLoss | cons=0.10 breath=0.50 pump=1.00 filt=0.50 pain=0.37 bloodLoss=0.45 bleed=1.76 injuries=3 tended=0 infections=0
+Idris#144 | 25.57840 | 2.29 | 0.02 | 25574 | 7 | 1 | 0 | +1950 | - | - | - | 7/20 | recovered | 7890 | - | 
+Tamsin#138 | 25.58290 | 2.77 | 0.45 | 11899 | 7 | 0 | 0 | +1500 | +12090 | Idris#144(1,Ingest) | +12540 | 5/37 | still down | - | - | 
+Idris#144 | 26.11790 | 2.20 | 0.45 | 14985 | 0 | 1 | 1 | +0 | - | - | - | 0/63 | died | 18900 | BloodLoss | cons=0.10 breath=0.83 pump=1.00 filt=1.00 pain=0.74 bloodLoss=1.00 bleed=2.10 injuries=6 tended=0 infections=0
+
+TIME TO FIRST TEND JOB (ticks), n=13 of 25 downings: min 0 p25 1740 median 16710 p75 22560 p90 26220 max 27480
+  sorted: 0 0 540 1740 2160 12090 16710 20970 22020 22560 25920 26220 27480
+  bleeding at downing: 25, never tended: 12
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=11: min 0 p25 6780 median 7740 p75 9000 p90 9240 max 10590
+  sorted: 0 0 0 6780 7080 7740 8070 8550 9000 9240 10590
+DEATHS among downed: BloodLoss=11
+  of which never had a tend job: 9; never tended: 8
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (73 samples): LayDown(asleep)=243, AttackStatic=103, Harvest=54, TendPatient=18, Ingest=13, Hunt=9, HaulToCell=8, GotoWander=7, SocialRelax=4, Train=3
+  map clear (100 samples): LayDown(asleep)=222, TendPatient=16, Ingest=8
+  mean rest level of the asleep, map clear: 0.40
+
+######## s777-t1537060 continuation seed 5, after arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 5
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.39071] DEATH Fira has been cut to death.
+  [25.42129] DEATH Kade has been cut to death.
+day 26 | citizens 22 | downed 5 | hostiles standing 0 | beds 0
+day 27 | citizens 22 | downed 1 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 2.64 | 0.02 | 22361 | 18 | 23 | 10 | +8250 | +0 | Rosalind#66(1,?) | +0 | 28/3 | recovered | 27780 | - | 
+Yorick#132 | 25.38760 | 2.49 | 0.00 | 23991 | 18 | 22 | 16 | - | +0 | Vance#72(3,GotoWander) | - | 4/0 | recovered | 1440 | - | 
+Rosalind#66 | 25.38880 | 3.96 | 0.01 | 15057 | 18 | 21 | 10 | +7380 | +0 | Elowen#30(3,Harvest) | +0 | 25/2 | recovered | 18030 | - | 
+Giselle#6 | 25.39540 | 3.22 | 0.00 | 18593 | 17 | 19 | 10 | +6720 | +810 | Oren#12(1,LayDown) | +1260 | 4/0 | recovered | 26490 | - | 
+Tobin#0 | 25.39630 | 0.94 | 0.00 | 63829 | 16 | 18 | 10 | +6630 | +6660 | Vance#72(3,(none)) | +0 | 22/0 | recovered | 32430 | - | 
+Vance#72 | 25.39750 | 1.80 | 0.00 | 33312 | 16 | 17 | 14 | - | +1410 | Harlan#24(2,LayDown) | - | 5/0 | recovered | 1650 | - | 
+Yara#42 | 25.39900 | 1.52 | 0.00 | 39432 | 15 | 16 | 16 | - | - | - | - | 2/0 | recovered | 390 | - | 
+Calla#54 | 25.40230 | 1.56 | 0.00 | 38411 | 13 | 16 | 10 | +6030 | +180 | Harlan#24(2,LayDown) | +630 | 2/0 | recovered | 12450 | - | 
+Yara#42 | 25.40440 | 1.62 | 0.01 | 36652 | 12 | 16 | 10 | +5820 | +420 | Harlan#24(2,LayDown) | +720 | 3/0 | recovered | 29250 | - | 
+Yorick#132 | 25.40500 | 0.99 | 0.05 | 57496 | 12 | 15 | 10 | +5760 | +6180 | Vance#96(1,AttackStatic) | +0 | 20/2 | still down | - | - | 
+Oren#48 | 25.41130 | 2.64 | 0.01 | 22486 | 12 | 14 | 10 | - | +150 | Oren#12(1,LayDown) | - | 16/0 | recovered | 4890 | - | 
+Oren#12 | 25.41460 | 0.00 | 0.01 | - | 11 | 14 | 10 | +4800 | +4800 | Alden#84(2,AttackStatic) | +0 | 0/0 | recovered | 9330 | - | 
+Harlan#24 | 25.41580 | 0.66 | 0.02 | 89426 | 11 | 12 | 10 | - | - | - | +0 | 14/0 | recovered | 4080 | - | 
+Vance#72 | 25.41580 | 0.12 | 0.04 | 480317 | 11 | 12 | 10 | +4680 | - | - | +0 | 16/0 | recovered | 4710 | - | 
+Elowen#30 | 25.44580 | 3.23 | 0.06 | 17378 | 4 | 10 | 10 | +1680 | +1440 | Harlan#24(2,(none)) | +1980 | 6/1 | recovered | 3870 | - | 
+Giselle#6 | 26.15060 | 0.00 | 0.00 | - | 0 | 20 | 20 | +0 | +0 | Calla#54(1,GotoWander) | +0 | 0/0 | recovered | 4170 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=13 of 16 downings: min 0 p25 0 median 420 p75 1440 p90 6180 max 6660
+  sorted: 0 0 0 0 150 180 420 810 1410 1440 4800 6180 6660
+  bleeding at downing: 14, never tended: 3
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=10: min 0 p25 0 median 0 p75 0 p90 30 max 420
+  sorted: 0 0 0 0 0 0 0 0 30 420
+DEATHS among downed: 
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (28 samples): AttackStatic=246, TendPatient=39, LayDown(asleep)=31, Harvest=31, Hunt=23, HaulToCell=8, Train=8, GotoWander=7, SocialRelax=4
+  map clear (3 samples): TendPatient=17, LayDown(asleep)=10, Ingest=6, Harvest=4, Hunt=2
+  mean rest level of the asleep, map clear: 0.28
+
+######## s777-t1537060 continuation seed 6, before arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 6
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.47318] DEATH Harlan has been cut to death.
+  [25.49971] DEATH husky2 has been cut to death.
+  [25.50096] DEATH Vance has died of blood loss (severe).
+  [25.53794] DEATH chicken4 has been cut to death.
+  [25.54029] DEATH Yara has died of blood loss (severe).
+  [25.56795] DEATH Aaron has died of blood loss (moderate).
+  [25.57017] DEATH Oren has died of blood loss (severe).
+  [25.58726] DEATH Ursa has died of blood loss (severe).
+day 26 | citizens 18 | downed 16 | hostiles standing 0 | beds 0
+  [26.31000] FIRED RaidEnemy points=382.70
+  [26.31975] DEATH Idris has been beaten to death.
+  [26.38640] RAID CLEAR fired 26.31000: +7640 ticks, peak 9 hostiles; raiders dead 0, down 0, left map 9; citizens able 0, downed 17
+day 27 | citizens 17 | downed 6 | hostiles standing 0 | beds 0
+
+RAIDS
+  fired 26.31000 points 382.70 peak hostiles 9 clear +7640 raiders dead/down/left 0/0/9 citizens able/downed at clear 0/17
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38070 | 1.36 | 0.00 | 43965 | 18 | 23 | 0 | +20190 | +0 | Calla#54(1,?) | +0 | 68/19 | recovered | 31920 | - | 
+Kaia#90 | 25.39120 | 1.90 | 0.00 | 31578 | 18 | 22 | 21 | - | - | - | - | 1/0 | recovered | 270 | - | 
+Fira#18 | 25.39150 | 2.70 | 0.00 | 22222 | 18 | 21 | 0 | +19110 | +150 | Vance#96(1,HaulToCell) | +11280 | 38/0 | recovered | 29700 | - | 
+Kaia#90 | 25.39450 | 2.49 | 0.01 | 23829 | 18 | 21 | 0 | +18810 | +10470 | Rosalind#66(1,(none)) | +10770 | 36/0 | recovered | 37140 | - | 
+Calla#54 | 25.39540 | 1.79 | 0.00 | 33350 | 17 | 20 | 0 | +18720 | +0 | Rosalind#66(1,GotoWander) | +10380 | 35/0 | recovered | 38340 | - | 
+Rosalind#66 | 25.39720 | 1.42 | 0.00 | 42230 | 16 | 19 | 3 | - | +60 | Jasper#120(1,Harvest) | +0 | 33/0 | recovered | 9990 | - | 
+Yorick#132 | 25.39990 | 2.58 | 0.00 | 23266 | 16 | 18 | 7 | - | +0 | Giselle#6(3,Harvest) | - | 16/0 | recovered | 4770 | - | 
+Ursa#114 | 25.40320 | 1.92 | 0.00 | 31155 | 14 | 17 | 0 | +17940 | - | - | +0 | 60/1 | died | 18420 | BloodLoss | cons=0.17 breath=0.82 pump=1.00 filt=0.50 pain=0.65 bloodLoss=0.45 bleed=1.79 injuries=4 tended=0 infections=1
+Oren#12 | 25.40380 | 2.10 | 0.00 | 28571 | 14 | 16 | 0 | - | - | - | - | 56/0 | died | 16650 | BloodLoss | cons=0.03 breath=0.63 pump=0.27 filt=1.00 pain=0.51 bloodLoss=0.45 bleed=1.95 injuries=4 tended=0 infections=0
+Elowen#30 | 25.40560 | 2.31 | 0.00 | 25881 | 14 | 15 | 0 | +17700 | +22410 | Idris#144(1,Ingest) | +22740 | 59/16 | recovered | 60330 | - | 
+Tobin#0 | 25.40710 | 0.89 | 0.00 | 67476 | 14 | 13 | 3 | - | - | - | +0 | 31/0 | recovered | 9150 | - | 
+Alden#84 | 25.40710 | 1.92 | 0.00 | 31148 | 14 | 13 | 3 | - | - | - | - | 34/0 | recovered | 10080 | - | 
+Jasper#120 | 25.41460 | 0.20 | 0.00 | 301204 | 11 | 12 | 0 | +16800 | +19230 | Idris#144(1,Ingest) | +19590 | 56/9 | recovered | 19770 | - | 
+Aaron#36 | 25.41730 | 2.85 | 0.02 | 20642 | 11 | 11 | 3 | - | +9330 | Rosalind#66(1,(none)) | - | 31/0 | recovered | 9420 | - | 
+Oren#48 | 25.41850 | 0.70 | 0.00 | 85670 | 11 | 10 | 0 | +16410 | +19500 | Idris#144(1,Ingest) | +19710 | 55/11 | recovered | 19980 | - | 
+Giselle#6 | 25.42120 | 0.96 | 0.00 | 62500 | 11 | 9 | 2 | - | - | - | - | 34/0 | recovered | 10110 | - | 
+Vance#72 | 25.42840 | 1.02 | 0.00 | 58807 | 10 | 8 | 0 | +15420 | +18720 | Idris#144(1,Ingest) | +19200 | 52/12 | recovered | 73050 | - | 
+Vance#96 | 25.42900 | 3.89 | 0.04 | 14861 | 10 | 7 | 3 | - | - | - | +0 | 24/0 | died | 7200 | BloodLoss | cons=0.17 breath=0.50 pump=1.00 filt=1.00 pain=0.91 bloodLoss=0.45 bleed=3.81 injuries=6 tended=0 infections=0
+Yorick#132 | 25.44850 | 2.66 | 0.18 | 18564 | 9 | 7 | 0 | +13410 | +15780 | Yara#78(8,Ingest) | +16200 | 45/9 | recovered | 59910 | - | 
+Yara#42 | 25.45090 | 3.40 | 0.01 | 17445 | 8 | 6 | 1 | - | +2160 | Harlan#24(2,Ingest) | - | 30/0 | died | 8940 | BloodLoss | cons=0.07 breath=0.63 pump=1.00 filt=0.45 pain=0.80 bloodLoss=0.45 bleed=3.32 injuries=6 tended=0 infections=0
+Kade#60 | 25.46770 | 3.41 | 0.02 | 17325 | 8 | 5 | 0 | +11490 | +14790 | Yara#78(8,Ingest) | +15270 | 39/12 | recovered | 61830 | - | 
+Tamsin#138 | 25.49260 | 3.34 | 0.01 | 17791 | 8 | 3 | 0 | +9000 | +10110 | Yara#78(8,Ingest) | +10470 | 30/5 | recovered | 20700 | - | 
+Yara#78 | 25.50220 | 2.30 | 0.03 | 25432 | 8 | 4 | 0 | +8040 | - | - | - | 27/1 | recovered | 8460 | - | 
+Tobin#0 | 25.50280 | 1.50 | 0.07 | 37040 | 7 | 3 | 0 | +7980 | +1170 | Rosalind#66(1,(none)) | +0 | 5/0 | recovered | 25380 | - | 
+Alden#84 | 25.50850 | 2.51 | 0.25 | 17807 | 7 | 3 | 0 | +7410 | +840 | Rosalind#66(1,(none)) | +9570 | 25/7 | recovered | 50940 | - | 
+Aaron#36 | 25.51420 | 3.43 | 0.41 | 10356 | 7 | 3 | 0 | +6840 | +0 | Rosalind#66(1,(none)) | +30 | 0/0 | recovered | 44730 | - | 
+Rosalind#66 | 25.51780 | 2.02 | 0.20 | 23834 | 7 | 2 | 0 | +6480 | +8220 | Yara#78(8,Ingest) | +0 | 22/8 | recovered | 8850 | - | 
+Aaron#108 | 25.52350 | 3.95 | 0.04 | 14616 | 7 | 2 | 0 | - | - | - | +0 | 15/0 | died | 4470 | BloodLoss | cons=0.03 breath=0.13 pump=1.00 filt=1.00 pain=0.81 bloodLoss=0.30 bleed=3.90 injuries=6 tended=0 infections=0
+Giselle#6 | 25.53130 | 1.58 | 0.10 | 34217 | 7 | 1 | 0 | +5130 | +7920 | Idris#144(1,Ingest) | +8220 | 17/10 | recovered | 24120 | - | 
+Idris#144 | 25.54750 | 1.43 | 0.00 | 41799 | 7 | 0 | 0 | - | - | - | - | 11/0 | recovered | 3180 | - | 
+Oren#48 | 26.31350 | 0.66 | 0.00 | 90909 | 9 | 11 | 0 | +7290 | +150 | Idris#144(1,FeedPatient) | +0 | 24/6 | recovered | 8880 | - | 
+Giselle#6 | 26.32490 | 0.96 | 0.05 | 59419 | 9 | 9 | 0 | +6150 | +7020 | Rosalind#66(1,(none)) | +0 | 20/5 | still down | - | - | 
+Fira#18 | 26.32760 | 0.72 | 0.14 | 71562 | 9 | 8 | 0 | +5880 | +7770 | Rosalind#66(1,(none)) | +0 | 19/8 | still down | - | - | 
+Jasper#120 | 26.32880 | 0.60 | 0.00 | 100000 | 9 | 7 | 0 | +5760 | +8010 | Rosalind#66(1,(none)) | +0 | 19/9 | still down | - | - | 
+Rosalind#66 | 26.32910 | 1.14 | 0.22 | 41085 | 9 | 6 | 0 | +5730 | - | - | +0 | 19/3 | recovered | 6600 | - | 
+Calla#54 | 26.33300 | 0.00 | 0.00 | - | 9 | 3 | 1 | - | - | - | +0 | 0/0 | recovered | 780 | - | 
+Tobin#0 | 26.33300 | 0.36 | 0.00 | 166622 | 9 | 3 | 0 | +5340 | +8430 | Rosalind#66(1,(none)) | +0 | 18/12 | recovered | 12360 | - | 
+Kaia#90 | 26.33300 | 0.36 | 0.09 | 151733 | 9 | 3 | 0 | +5340 | +8640 | Oren#48(3,Ingest) | +0 | 18/12 | still down | - | - | 
+Rosalind#102 | 26.33330 | 0.45 | 0.19 | 108517 | 9 | 2 | 0 | +5310 | +8850 | Oren#48(3,Ingest) | +0 | 17/13 | recovered | 9030 | - | 
+Tamsin#138 | 26.33600 | 0.60 | 0.29 | 70616 | 9 | 1 | 0 | +5040 | +8610 | Rosalind#66(1,(none)) | +0 | 17/13 | recovered | 22230 | - | 
+Calla#54 | 26.34350 | 0.66 | 0.00 | 90909 | 9 | 1 | 0 | +4290 | +7170 | Oren#48(3,Ingest) | +0 | 14/11 | recovered | 8730 | - | 
+Aaron#36 | 26.36510 | 0.00 | 0.11 | - | 9 | 1 | 0 | +2130 | +7410 | Rosalind#102(2,Ingest) | +0 | 0/0 | still down | - | - | 
+Yara#78 | 26.36960 | 0.77 | 0.05 | 73972 | 9 | 0 | 0 | +1680 | +6750 | Rosalind#66(1,Ingest) | +0 | 5/22 | still down | - | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=31 of 43 downings: min 0 p25 1170 median 7920 p75 10110 p90 18720 max 22410
+  sorted: 0 0 0 0 60 150 150 840 1170 2160 6750 7020 7170 7410 7770 7920 8010 8220 8430 8610 8640 8850 9330 10110 10470 14790 15780 18720 19230 19500 22410
+  bleeding at downing: 41, never tended: 11
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=27: min 0 p25 0 median 2370 p75 3300 p90 3570 max 5280
+  sorted: 0 0 0 0 0 0 0 0 870 1110 1740 1890 2250 2370 2430 2790 2880 3090 3090 3300 3300 3300 3540 3570 4710 5070 5280
+DEATHS among downed: BloodLoss=5
+  of which never had a tend job: 4; never tended: 2
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (92 samples): LayDown(asleep)=242, AttackStatic=111, Harvest=65, TendPatient=27, GotoWander=17, HaulToCell=16, Hunt=14, SocialRelax=6, Ingest=6, FeedPatient=3
+  map clear (41 samples): TendPatient=81, LayDown(asleep)=45, Ingest=15
+  mean rest level of the asleep, map clear: 0.16
+
+######## s777-t1537060 continuation seed 6, after arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 6
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+day 26 | citizens 24 | downed 4 | hostiles standing 0 | beds 0
+day 27 | citizens 24 | downed 1 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38070 | 1.36 | 0.00 | 43965 | 18 | 23 | 13 | +7380 | +0 | Calla#54(1,?) | +0 | 25/2 | recovered | 18720 | - | 
+Kaia#90 | 25.39120 | 2.52 | 0.00 | 23809 | 18 | 22 | 13 | +6330 | +120 | Oren#12(1,LayDown) | +5550 | 18/0 | recovered | 33270 | - | 
+Fira#18 | 25.39270 | 2.82 | 0.00 | 21257 | 18 | 21 | 13 | - | +0 | Oren#48(3,LayDown) | - | 19/0 | recovered | 5610 | - | 
+Oren#12 | 25.39660 | 1.56 | 0.00 | 38461 | 16 | 20 | 13 | +5790 | +120 | Jasper#120(1,Harvest) | +6210 | 19/1 | recovered | 18930 | - | 
+Rosalind#66 | 25.40110 | 1.37 | 0.00 | 43578 | 15 | 19 | 13 | +5340 | +1110 | Yara#78(8,AttackStatic) | +0 | 17/0 | recovered | 36000 | - | 
+Harlan#24 | 25.40170 | 2.16 | 0.00 | 27701 | 15 | 18 | 13 | - | +1050 | Aaron#36(4,AttackStatic) | - | 15/0 | recovered | 4290 | - | 
+Calla#54 | 25.40290 | 0.66 | 0.02 | 89051 | 15 | 17 | 13 | - | - | - | +0 | 15/0 | recovered | 4590 | - | 
+Yorick#132 | 25.40620 | 2.88 | 0.00 | 20742 | 13 | 16 | 13 | +4830 | +600 | Giselle#6(3,AttackStatic) | +5190 | 16/1 | recovered | 36540 | - | 
+Oren#48 | 25.41040 | 1.56 | 0.00 | 38356 | 11 | 15 | 13 | +4410 | +180 | Jasper#120(1,AttackStatic) | +450 | 2/0 | recovered | 12990 | - | 
+Elowen#30 | 25.41850 | 2.30 | 0.02 | 25651 | 9 | 14 | 13 | +3600 | +3600 | Vance#72(3,AttackStatic) | +4230 | 12/2 | recovered | 7200 | - | 
+Yara#78 | 25.43380 | 1.53 | 0.02 | 38554 | 5 | 13 | 13 | +2070 | +2070 | Ursa#114(3,AttackStatic) | - | 7/0 | recovered | 2100 | - | 
+Harlan#24 | 25.45300 | 2.08 | 0.15 | 24542 | 2 | 15 | 15 | +150 | +150 | Fira#18(2,AttackStatic) | - | 1/1 | recovered | 480 | - | 
+Vance#96 | 25.48480 | 0.90 | 0.00 | 66608 | 0 | 16 | 16 | +0 | +120 | Aaron#36(4,HaulToCell) | +0 | 1/5 | still down | - | - | 
+Calla#54 | 25.56790 | 0.00 | 0.00 | - | 0 | 18 | 18 | +0 | +60 | Fira#18(2,GotoWander) | +0 | 0/0 | recovered | 1290 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=13 of 14 downings: min 0 p25 120 median 150 p75 1050 p90 2070 max 3600
+  sorted: 0 0 60 120 120 120 150 180 600 1050 1110 2070 3600
+  bleeding at downing: 13, never tended: 1
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=11: min 0 p25 0 median 0 p75 0 p90 60 max 120
+  sorted: 0 0 0 0 0 0 0 0 0 60 120
+DEATHS among downed: 
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (26 samples): AttackStatic=247, LayDown(asleep)=36, TendPatient=36, Harvest=35, Hunt=26, HaulToCell=21, GotoWander=18, SocialRelax=13, Ingest=1, FeedPatient=1
+  map clear (7 samples): TendPatient=26, HaulToCell=26, LayDown(asleep)=22, Ingest=10, SocialRelax=10, Hunt=7, Harvest=4, Skygaze=4, FeedPatient=3, GoForWalk=3, GotoWander=1
+  mean rest level of the asleep, map clear: 0.32
+
+######## s777-t1537060 continuation seed 7, before arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 7
+start: citizens=23 doctorActive=20 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=20
+  medicine skill histogram: 0:3, 1:7, 2:4, 3:6, 4:2, 8:1
+  armed citizens: 23
+  [25.45886] DEATH chicken4 has been cut to death.
+  [25.51000] FIRED Eclipse points=0.00
+  [25.56006] DEATH Elowen has died of blood loss (severe).
+  [25.56208] DEATH muffalo14 has died of blood loss (severe).
+day 26 | citizens 22 | downed 15 | hostiles standing 0 | beds 0
+  [26.03395] DEATH Aaron has died of blood loss (severe).
+day 27 | citizens 21 | downed 1 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Fira#18 | 25.38550 | 1.88 | 0.00 | 31852 | 18 | 22 | 0 | +15300 | +0 | Aaron#36(4,GotoWander) | +22560 | 51/24 | recovered | 57810 | - | 
+Giselle#6 | 25.39180 | 3.66 | 0.00 | 16374 | 18 | 21 | 0 | +14670 | +840 | Rosalind#66(1,Harvest) | +1110 | 4/0 | recovered | 52050 | - | 
+Kaia#90 | 25.39300 | 2.35 | 0.00 | 25520 | 18 | 20 | 0 | +14550 | +150 | Rosalind#66(1,Harvest) | +720 | 3/0 | recovered | 43890 | - | 
+Yorick#132 | 25.39390 | 0.48 | 0.00 | 125000 | 18 | 19 | 13 | - | +900 | Rosalind#66(1,Harvest) | - | 4/0 | recovered | 1200 | - | 
+Tobin#0 | 25.39510 | 0.36 | 0.00 | 166666 | 18 | 18 | 1 | - | +1080 | Rosalind#66(1,Harvest) | +0 | 5/0 | recovered | 12150 | - | 
+Aaron#36 | 25.39600 | 2.26 | 0.00 | 26548 | 18 | 17 | 0 | +14250 | +6450 | Rosalind#66(1,(none)) | +6660 | 23/0 | recovered | 14940 | - | 
+Harlan#24 | 25.39930 | 1.78 | 0.00 | 33672 | 17 | 16 | 0 | +13920 | +10680 | Alden#84(2,(none)) | +10920 | 36/0 | recovered | 27930 | - | 
+Alden#84 | 25.40290 | 1.42 | 0.00 | 42165 | 17 | 15 | 1 | - | +6300 | Rosalind#66(1,(none)) | - | 33/0 | recovered | 9900 | - | 
+Vance#72 | 25.40350 | 1.80 | 0.00 | 33333 | 17 | 14 | 1 | - | +5910 | Rosalind#66(1,(none)) | +6240 | 21/0 | recovered | 8340 | - | 
+Ursa#114 | 25.40440 | 1.20 | 0.00 | 49944 | 17 | 13 | 0 | +13410 | +5400 | Oren#48(3,Ingest) | +0 | 25/0 | still down | - | - | 
+Oren#48 | 25.40590 | 0.90 | 0.00 | 66666 | 17 | 13 | 4 | - | - | - | - | 15/0 | recovered | 4440 | - | 
+Oren#12 | 25.40830 | 1.56 | 0.00 | 38404 | 16 | 12 | 3 | - | +4710 | Oren#48(3,Ingest) | +5010 | 16/0 | recovered | 5760 | - | 
+Rosalind#66 | 25.41040 | 2.24 | 0.02 | 26278 | 16 | 10 | 3 | - | - | - | +0 | 15/0 | recovered | 4470 | - | 
+Yorick#132 | 25.41040 | 1.02 | 0.00 | 58738 | 16 | 10 | 0 | +12810 | +4470 | Rosalind#66(1,(none)) | +0 | 16/0 | recovered | 25920 | - | 
+Vance#96 | 25.41190 | 0.72 | 0.00 | 83333 | 16 | 9 | 0 | +12660 | +4530 | Rosalind#66(1,(none)) | +0 | 16/0 | recovered | 15630 | - | 
+Elowen#30 | 25.41280 | 2.31 | 0.01 | 25883 | 16 | 8 | 0 | +12570 | - | - | - | 42/7 | died | 14730 | BloodLoss | cons=0.17 breath=1.00 pump=0.33 filt=1.00 pain=0.38 bloodLoss=0.45 bleed=2.11 injuries=3 tended=0 infections=0
+Jasper#120 | 25.41550 | 1.56 | 0.00 | 38481 | 16 | 7 | 0 | - | +4140 | Kade#60(4,Ingest) | +4530 | 15/0 | recovered | 11880 | - | 
+Calla#54 | 25.41940 | 2.09 | 0.01 | 28594 | 16 | 6 | 1 | - | +3300 | Oren#48(3,Ingest) | +3600 | 12/0 | recovered | 8340 | - | 
+Yara#42 | 25.42510 | 3.12 | 0.01 | 19077 | 15 | 5 | 0 | +11340 | +15570 | Vance#96(1,Ingest) | +15990 | 38/15 | recovered | 54900 | - | 
+Yara#78 | 25.42780 | 2.00 | 0.00 | 29939 | 14 | 4 | 0 | +11070 | +15720 | Vance#96(1,Ingest) | - | 37/17 | recovered | 16080 | - | 
+Tamsin#138 | 25.45120 | 2.85 | 0.02 | 20537 | 14 | 4 | 0 | +8730 | - | - | - | 29/1 | recovered | 8910 | - | 
+Aaron#108 | 25.45420 | 1.98 | 0.01 | 30039 | 14 | 3 | 0 | +8430 | +17610 | Kade#60(4,Ingest) | +0 | 28/32 | died | 18000 | BloodLoss | cons=0.04 breath=0.17 pump=1.00 filt=1.00 pain=0.37 bloodLoss=0.45 bleed=1.76 injuries=3 tended=0 infections=0
+Oren#48 | 25.46320 | 1.61 | 0.04 | 35642 | 14 | 3 | 0 | +7530 | +12870 | Yara#78(8,Ingest) | +13440 | 25/20 | recovered | 20910 | - | 
+Rosalind#66 | 25.46710 | 2.87 | 0.19 | 16867 | 14 | 3 | 0 | +7140 | +3480 | Alden#84(2,(none)) | +0 | 12/0 | recovered | 35400 | - | 
+Kade#60 | 25.46920 | 1.14 | 0.00 | 52604 | 14 | 2 | 0 | +6930 | +3450 | Alden#84(2,(none)) | +3690 | 12/0 | recovered | 12480 | - | 
+Oren#12 | 25.47160 | 0.66 | 0.09 | 82902 | 14 | 1 | 1 | - | - | - | +0 | 2/0 | recovered | 630 | - | 
+Oren#12 | 25.48000 | 1.31 | 0.09 | 41747 | 14 | 1 | 0 | +5850 | +11700 | Vance#96(1,Ingest) | +0 | 20/22 | recovered | 31200 | - | 
+Idris#144 | 25.50460 | 3.24 | 0.01 | 18420 | 12 | 3 | 0 | +3390 | +10650 | Yara#78(8,Ingest) | +11850 | 11/28 | recovered | 27630 | - | 
+Alden#84 | 25.51600 | 1.42 | 0.18 | 34432 | 12 | 2 | 0 | +2250 | +5850 | Vance#96(1,Ingest) | +6120 | 8/13 | recovered | 35190 | - | 
+Tobin#0 | 25.51750 | 0.66 | 0.00 | 90909 | 12 | 2 | 0 | +2100 | - | - | +0 | 7/5 | recovered | 3510 | - | 
+Vance#72 | 25.51930 | 0.66 | 0.11 | 81153 | 12 | 1 | 0 | +1920 | +7710 | Kade#60(4,Ingest) | +0 | 6/20 | recovered | 27960 | - | 
+Calla#54 | 25.51990 | 0.00 | 0.06 | - | 12 | 0 | 0 | +1860 | - | - | +0 | 0/0 | recovered | 1890 | - | 
+Tamsin#138 | 25.55770 | 2.75 | 0.45 | 11948 | 0 | 4 | 4 | +0 | +5040 | Yara#78(8,Ingest) | +5340 | 0/18 | recovered | 33060 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=26 of 33 downings: min 0 p25 3450 median 5400 p75 10650 p90 15570 max 17610
+  sorted: 0 150 840 900 1080 3300 3450 3480 4140 4470 4530 4710 5040 5400 5850 5910 6300 6450 7710 10650 10680 11700 12870 15570 15720 17610
+  bleeding at downing: 32, never tended: 6
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=19: min 0 p25 0 median 0 p75 5340 p90 5850 max 9180
+  sorted: 0 0 0 0 0 0 0 0 0 0 3600 4230 4650 5040 5340 5790 5850 7260 9180
+DEATHS among downed: BloodLoss=2
+  of which never had a tend job: 1; never tended: 1
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (51 samples): LayDown(asleep)=124, AttackStatic=52, Harvest=31, TendPatient=27, HaulToCell=16, Hunt=13, Ingest=6, GotoWander=2
+  map clear (32 samples): LayDown(asleep)=118, TendPatient=48, Ingest=6, Train=5
+  mean rest level of the asleep, map clear: 0.36
+
+######## s777-t1537060 continuation seed 7, after arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 7
+start: citizens=23 doctorActive=20 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=20
+  medicine skill histogram: 0:3, 1:7, 2:4, 3:6, 4:2, 8:1
+  armed citizens: 23
+  [25.40115] DEATH Aaron has been beaten to death.
+day 26 | citizens 22 | downed 4 | hostiles standing 0 | beds 0
+day 27 | citizens 22 | downed 0 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Fira#18 | 25.38550 | 1.88 | 0.00 | 31852 | 18 | 22 | 12 | +8400 | +0 | Aaron#36(4,GotoWander) | +8670 | 28/1 | recovered | 17700 | - | 
+Giselle#6 | 25.39060 | 1.86 | 0.00 | 32258 | 18 | 21 | 12 | +7890 | +30 | Harlan#24(2,LayDown) | +630 | 2/0 | recovered | 65970 | - | 
+Kaia#90 | 25.39120 | 2.02 | 0.00 | 29702 | 18 | 20 | 19 | - | +30 | Yara#78(8,LayDown) | - | 1/0 | recovered | 270 | - | 
+Yorick#132 | 25.39330 | 2.22 | 0.00 | 26958 | 18 | 19 | 12 | +7620 | +0 | Kade#60(4,LayDown) | +660 | 2/0 | recovered | 40830 | - | 
+Harlan#24 | 25.39390 | 2.26 | 0.00 | 26548 | 17 | 19 | 12 | +7560 | +600 | Oren#12(1,LayDown) | +1170 | 4/0 | recovered | 62070 | - | 
+Tobin#0 | 25.39780 | 0.82 | 0.00 | 73490 | 15 | 18 | 12 | +7170 | +1260 | Alden#84(2,AttackStatic) | +0 | 24/3 | recovered | 7950 | - | 
+Kaia#90 | 25.39840 | 2.68 | 0.02 | 21959 | 15 | 17 | 12 | +7110 | +0 | Rosalind#66(1,Harvest) | +180 | 1/0 | recovered | 33150 | - | 
+Oren#12 | 25.40230 | 1.76 | 0.02 | 33529 | 14 | 15 | 12 | - | +0 | Rosalind#66(1,Harvest) | +90 | 0/0 | recovered | 5760 | - | 
+Rosalind#66 | 25.41220 | 1.53 | 0.00 | 39236 | 9 | 14 | 12 | +5730 | +5070 | Oren#12(1,(none)) | +0 | 18/0 | recovered | 10890 | - | 
+Elowen#30 | 25.41520 | 2.85 | 0.03 | 20325 | 9 | 12 | 12 | +5430 | +5430 | Calla#54(1,AttackStatic) | +5760 | 18/1 | recovered | 8130 | - | 
+Vance#96 | 25.41520 | 0.66 | 0.00 | 90851 | 9 | 12 | 12 | +5430 | +5670 | Ursa#114(3,Ingest) | +0 | 18/2 | recovered | 14100 | - | 
+Yorick#132 | 26.23970 | 0.00 | 0.00 | - | 0 | 19 | 19 | +0 | +30 | Idris#144(1,GotoWander) | +0 | 0/0 | recovered | 3990 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=12 of 12 downings: min 0 p25 0 median 30 p75 1260 p90 5430 max 5670
+  sorted: 0 0 0 0 30 30 30 600 1260 5070 5430 5670
+  bleeding at downing: 11, never tended: 0
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=10: min 0 p25 0 median 0 p75 0 p90 30 max 240
+  sorted: 0 0 0 0 0 0 0 0 30 240
+DEATHS among downed: 
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (28 samples): AttackStatic=270, Harvest=35, TendPatient=33, Hunt=21, HaulToCell=16, LayDown(asleep)=14, SocialRelax=3, GotoWander=2
+  map clear (3 samples): TendPatient=14, Ingest=12, LayDown(asleep)=6, Harvest=5, Train=1, FeedPatient=1
+  mean rest level of the asleep, map clear: 0.27
+
+######## s777-t1537060 continuation seed 8, before arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 8
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.38030] DEATH Rosalind has been cut to death.
+  [25.39926] DEATH chicken4 has been beaten to death.
+  [25.52066] DEATH Tobin has died of blood loss (severe).
+  [25.52748] DEATH Alden has died of blood loss (severe).
+  [25.58508] DEATH Tamsin has died of blood loss (severe).
+day 26 | citizens 20 | downed 19 | hostiles standing 7 | beds 0
+  [26.01790] DEATH husky2 has died of blood loss (severe).
+  [26.02358] DEATH Rosalind has died of blood loss (severe).
+  [26.06146] DEATH Elowen has died of blood loss (extreme).
+  [26.08312] DEATH Yara has died of blood loss (severe).
+  [26.08477] DEATH Oren has died of blood loss (extreme).
+day 27 | citizens 16 | downed 4 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Fira#18 | 25.38610 | 0.72 | 0.00 | 83267 | 18 | 22 | 0 | +23070 | +0 | Yorick#132(3,GotoWander) | - | 77/23 | recovered | 30030 | - | 
+Giselle#6 | 25.39450 | 1.22 | 0.00 | 49111 | 16 | 21 | 10 | - | +390 | Rosalind#66(1,Harvest) | - | 15/0 | recovered | 4380 | - | 
+Yorick#132 | 25.39510 | 0.88 | 0.00 | 68181 | 16 | 20 | 0 | +22170 | +28890 | Harlan#24(2,Ingest) | +29130 | 74/23 | recovered | 49650 | - | 
+Calla#54 | 25.39570 | 0.90 | 0.00 | 66666 | 16 | 19 | 0 | - | - | - | - | 62/0 | recovered | 18510 | - | 
+Jasper#120 | 25.39600 | 0.60 | 0.00 | 100000 | 16 | 18 | 14 | - | - | - | - | 7/0 | recovered | 1830 | - | 
+Kaia#90 | 25.39930 | 1.60 | 0.00 | 37396 | 13 | 17 | 0 | +21750 | +1380 | Vance#96(1,AttackStatic) | +27780 | 72/20 | recovered | 40230 | - | 
+Rosalind#66 | 25.40200 | 0.99 | 0.00 | 60606 | 12 | 16 | 11 | - | - | - | +0 | 10/0 | recovered | 2910 | - | 
+Vance#72 | 25.40410 | 0.96 | 0.00 | 62685 | 10 | 15 | 4 | - | - | - | - | 34/0 | recovered | 10080 | - | 
+Elowen#30 | 25.41250 | 2.85 | 0.01 | 20750 | 10 | 14 | 4 | - | - | - | - | 32/0 | recovered | 9600 | - | 
+Jasper#120 | 25.41490 | 1.24 | 0.01 | 48144 | 9 | 14 | 0 | +20190 | +27150 | Harlan#24(2,Ingest) | +27390 | 67/24 | recovered | 48540 | - | 
+Vance#96 | 25.42240 | 0.88 | 0.00 | 68168 | 9 | 13 | 0 | +19440 | +26640 | Harlan#24(2,Ingest) | +0 | 65/25 | recovered | 71580 | - | 
+Aaron#36 | 25.42330 | 1.98 | 0.01 | 29984 | 9 | 12 | 2 | - | +1020 | Rosalind#66(1,(none)) | - | 40/0 | recovered | 12060 | - | 
+Ursa#114 | 25.42570 | 1.32 | 0.00 | 45414 | 9 | 11 | 7 | - | +540 | Rosalind#66(1,(none)) | +0 | 3/0 | recovered | 5490 | - | 
+Rosalind#66 | 25.43380 | 1.60 | 0.03 | 36464 | 8 | 11 | 2 | - | +3480 | Oren#12(1,Ingest) | +0 | 35/0 | recovered | 10530 | - | 
+Tobin#0 | 25.43620 | 3.40 | 0.03 | 17038 | 8 | 10 | 4 | - | - | - | +0 | 28/0 | died | 8460 | BloodLoss | cons=0.09 breath=0.50 pump=1.00 filt=0.63 pain=0.80 bloodLoss=0.45 bleed=3.32 injuries=6 tended=0 infections=0
+Giselle#6 | 25.44070 | 1.31 | 0.06 | 42778 | 8 | 10 | 0 | +17610 | +26880 | Fira#18(2,Ingest) | +27210 | 59/32 | recovered | 51090 | - | 
+Alden#84 | 25.45270 | 3.89 | 0.02 | 15115 | 8 | 9 | 3 | - | - | - | - | 25/0 | died | 7500 | BloodLoss | cons=0.16 breath=0.67 pump=1.00 filt=0.63 pain=0.79 bloodLoss=0.45 bleed=3.80 injuries=5 tended=0 infections=0
+Kade#60 | 25.46380 | 2.85 | 0.02 | 20520 | 8 | 8 | 0 | +15300 | +23340 | Harlan#24(2,Ingest) | +23850 | 51/29 | still down | - | - | 
+Oren#12 | 25.46980 | 3.30 | 0.01 | 18043 | 8 | 7 | 0 | +14700 | - | - | - | 49/23 | died | 21510 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=0.50 pain=0.63 bloodLoss=1.00 bleed=3.04 injuries=5 tended=0 infections=0
+Ursa#114 | 25.48120 | 0.66 | 0.00 | 90909 | 8 | 7 | 1 | - | +6270 | Rosalind#66(1,Ingest) | +0 | 21/0 | recovered | 7740 | - | 
+Oren#48 | 25.48600 | 2.85 | 0.03 | 20319 | 8 | 6 | 0 | +13080 | +21120 | Fira#18(2,Ingest) | +21630 | 44/29 | still down | - | - | 
+Tamsin#138 | 25.49860 | 3.34 | 0.03 | 17443 | 8 | 5 | 0 | - | - | - | - | 29/0 | died | 8670 | BloodLoss | cons=0.17 breath=0.48 pump=1.00 filt=1.00 pain=0.90 bloodLoss=0.45 bleed=3.27 injuries=4 tended=0 infections=0
+Aaron#108 | 25.50070 | 2.86 | 0.02 | 20625 | 8 | 4 | 0 | +11610 | +16980 | Harlan#24(2,Ingest) | +0 | 39/19 | still down | - | - | 
+Vance#72 | 25.50640 | 1.56 | 0.09 | 34880 | 8 | 4 | 0 | +11040 | +17070 | Harlan#24(2,Ingest) | +17280 | 37/21 | recovered | 34710 | - | 
+Elowen#30 | 25.52110 | 2.79 | 0.45 | 11796 | 8 | 4 | 0 | +9570 | - | - | - | 32/15 | died | 14040 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=1.00 pain=0.76 bloodLoss=1.00 bleed=2.70 injuries=6 tended=0 infections=0
+Yara#42 | 25.52350 | 3.29 | 0.02 | 17881 | 8 | 3 | 0 | - | +2670 | Harlan#24(2,Ingest) | +3090 | 10/0 | recovered | 5940 | - | 
+Yara#78 | 25.53670 | 2.25 | 0.01 | 26495 | 7 | 2 | 0 | +8010 | - | - | - | 27/22 | died | 14670 | BloodLoss | cons=0.20 breath=0.73 pump=1.00 filt=0.67 pain=0.77 bloodLoss=0.45 bleed=2.15 injuries=5 tended=0 infections=0
+Aaron#36 | 25.54630 | 0.77 | 0.31 | 53452 | 7 | 3 | 2 | - | +0 | Rosalind#66(1,Ingest) | +0 | 2/0 | recovered | 720 | - | 
+Rosalind#66 | 25.54720 | 2.09 | 0.24 | 21791 | 7 | 2 | 0 | +6960 | - | - | +0 | 23/2 | died | 7650 | BloodLoss | cons=0.10 breath=0.60 pump=0.40 filt=1.00 pain=0.36 bloodLoss=0.45 bleed=1.99 injuries=3 tended=0 infections=0
+Harlan#24 | 25.55650 | 4.44 | 0.02 | 13206 | 7 | 2 | 0 | +6030 | +4440 | Yara#42(2,Ingest) | +4710 | 16/0 | recovered | 10410 | - | 
+Aaron#36 | 25.55800 | 1.43 | 0.32 | 28520 | 7 | 1 | 0 | +5880 | +14790 | Fira#18(2,Ingest) | +0 | 20/31 | still down | - | - | 
+Ursa#114 | 25.56100 | 0.66 | 0.02 | 89329 | 7 | 1 | 0 | +5580 | - | - | +0 | 19/29 | recovered | 14160 | - | 
+Idris#144 | 25.57330 | 3.39 | 0.05 | 16818 | 7 | 0 | 0 | +4350 | +12060 | Harlan#24(2,Ingest) | +12390 | 14/27 | recovered | 42690 | - | 
+Calla#54 | 25.58770 | 2.07 | 0.14 | 24811 | 7 | 1 | 0 | +2910 | +10350 | Harlan#24(2,Ingest) | +10620 | 10/26 | recovered | 31710 | - | 
+Yara#42 | 25.58860 | 0.66 | 0.14 | 77909 | 7 | 0 | 0 | - | - | - | +0 | 2/0 | recovered | 630 | - | 
+Yara#42 | 26.00450 | 0.66 | 0.15 | 77821 | 7 | 0 | 0 | - | - | - | +0 | 0/0 | recovered | 30 | - | 
+Yara#42 | 26.00510 | 0.66 | 0.15 | 77798 | 7 | 0 | 0 | +1170 | +5790 | Harlan#24(2,Ingest) | +0 | 4/16 | recovered | 9930 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=22 of 37 downings: min 0 p25 1380 median 10350 p75 21120 p90 26880 max 28890
+  sorted: 0 0 390 540 1020 1380 2670 3480 4440 5790 6270 10350 12060 14790 16980 17070 21120 23340 26640 26880 27150 28890
+  bleeding at downing: 37, never tended: 15
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=15: min 0 p25 5370 median 6960 p75 8040 p90 8910 max 9270
+  sorted: 0 0 0 4620 5370 6030 6720 6960 7200 7440 7710 8040 8040 8910 9270
+DEATHS among downed: BloodLoss=7
+  of which never had a tend job: 7; never tended: 5
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (77 samples): LayDown(asleep)=274, AttackStatic=129, Harvest=58, Hunt=20, TendPatient=15, Ingest=8, HaulToCell=4, GotoWander=1, CutPlant=1
+  map clear (32 samples): TendPatient=25, Ingest=5, LayDown(asleep)=2
+  mean rest level of the asleep, map clear: 0.10
+
+######## s777-t1537060 continuation seed 8, after arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 8
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.38030] DEATH Rosalind has been cut to death.
+  [25.40067] DEATH chicken4 has been beaten to death.
+  [25.40944] DEATH husky10 has been cut to death.
+day 26 | citizens 23 | downed 4 | hostiles standing 0 | beds 0
+  [26.55000] FIRED WandererJoin points=0.00
+day 27 | citizens 24 | downed 1 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Fira#18 | 25.38610 | 0.72 | 0.00 | 83267 | 18 | 22 | 15 | +5130 | +0 | Yorick#132(3,GotoWander) | - | 17/3 | recovered | 6030 | - | 
+Giselle#6 | 25.39600 | 1.30 | 0.00 | 46073 | 15 | 21 | 15 | +4140 | +2070 | Harlan#24(2,Ingest) | +2400 | 8/0 | recovered | 13230 | - | 
+Yorick#132 | 25.39780 | 2.40 | 0.00 | 24902 | 15 | 20 | 19 | - | +60 | Rosalind#66(1,Harvest) | - | 1/0 | recovered | 180 | - | 
+Calla#54 | 25.39930 | 1.78 | 0.00 | 33649 | 13 | 19 | 15 | +3810 | +30 | Kade#60(4,LayDown) | +780 | 2/0 | recovered | 30150 | - | 
+Yorick#132 | 25.40110 | 2.76 | 0.01 | 21441 | 12 | 19 | 15 | +3630 | +0 | Rosalind#66(1,Harvest) | +360 | 1/0 | still down | - | - | 
+Oren#12 | 25.40290 | 3.30 | 0.01 | 17984 | 10 | 18 | 15 | - | +150 | Yara#42(2,AttackStatic) | +690 | 2/0 | recovered | 2700 | - | 
+Rosalind#66 | 25.41250 | 2.75 | 0.01 | 21686 | 8 | 17 | 15 | +2490 | +60 | Alden#84(2,HaulToCell) | +0 | 8/2 | recovered | 10260 | - | 
+Harlan#24 | 25.42240 | 2.78 | 0.02 | 21133 | 6 | 16 | 15 | +1500 | +1500 | Vance#72(3,AttackStatic) | +1920 | 5/2 | recovered | 5820 | - | 
+Idris#144 | 25.42810 | 2.55 | 0.03 | 22760 | 2 | 15 | 15 | +930 | +930 | Vance#96(1,AttackStatic) | - | 3/2 | recovered | 1530 | - | 
+Oren#12 | 25.43110 | 0.11 | 0.03 | 529277 | 2 | 15 | 15 | +630 | +630 | Jasper#120(1,AttackStatic) | +0 | 2/2 | recovered | 32280 | - | 
+Harlan#24 | 25.50730 | 0.66 | 0.05 | 86337 | 1 | 17 | 17 | +30 | +30 | Vance#96(1,AttackStatic) | +0 | 0/0 | recovered | 30330 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=11 of 11 downings: min 0 p25 30 median 60 p75 930 p90 1500 max 2070
+  sorted: 0 0 30 30 60 60 150 630 930 1500 2070
+  bleeding at downing: 11, never tended: 0
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=9: min 0 p25 0 median 0 p75 0 p90 0 max 0
+  sorted: 0 0 0 0 0 0 0 0 0
+DEATHS among downed: 
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (17 samples): AttackStatic=209, TendPatient=30, Harvest=23, LayDown(asleep)=18, HaulToCell=12, Hunt=6, CutPlant=5, Ingest=2, GotoWander=1, TendPatient(mental)=1, AttackStatic(mental)=1
+  map clear (3 samples): TendPatient=17, Harvest=10, Ingest=7, LayDown(asleep)=4, GotoWander(mental)=3, FeedPatient=3, CutPlant=1, HaulToCell=1
+  mean rest level of the asleep, map clear: 0.26
+
+######## s777-t1537060 continuation seed 9, before arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 9
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.49048] DEATH chicken4 has been cut to death.
+  [25.49318] DEATH Harlan has been cut to death.
+  [25.50042] DEATH Oren has died of blood loss (severe).
+  [25.50446] DEATH Tobin has died of blood loss (moderate).
+  [25.51498] DEATH Rosalind has died of blood loss (severe).
+  [25.52215] DEATH Aaron has died of blood loss (severe).
+  [25.52917] DEATH Calla has died of blood loss (severe).
+  [25.56362] DEATH husky10 has been cut to death.
+  [25.56904] DEATH Kaia has died of blood loss (extreme).
+  [25.57272] DEATH Yara has died of blood loss (severe).
+  [25.58406] DEATH Elowen has died of blood loss (severe).
+day 26 | citizens 15 | downed 15 | hostiles standing 0 | beds 0
+  [26.00193] DEATH muffalo28 has died of blood loss (severe).
+  [26.03389] DEATH Yara has died of blood loss (severe).
+  [26.03470] DEATH husky2 has died of blood loss (extreme).
+  [26.06090] DEATH Rosalind has died of blood loss (severe).
+  [26.06247] DEATH Idris has died of blood loss (severe).
+  [26.07517] DEATH Giselle has died of blood loss (extreme).
+  [26.07972] DEATH Fira has died of blood loss (extreme).
+  [26.08896] DEATH Vance has died of blood loss (extreme).
+  [26.09705] DEATH Yorick has died of blood loss (extreme).
+  [26.10367] DEATH muffalo27 has died of blood loss (extreme).
+  [26.11519] DEATH muffalo18 has died of blood loss (extreme).
+  [26.12437] DEATH Oren has died of blood loss (extreme).
+  [26.13240] DEATH muffalo5 has died of blood loss (extreme).
+  [26.14637] DEATH muffalo13 has died of blood loss (extreme).
+  [26.16916] DEATH Vance has died of blood loss (severe).
+  [26.21840] DEATH muffalo15 has died of blood loss (extreme).
+  [26.24346] DEATH Ursa has died of blood loss (severe).
+  [26.24488] DEATH Tamsin has died of blood loss (extreme).
+  [26.26315] DEATH Aaron has died of blood loss (severe).
+  [26.29348] DEATH Alden has died of blood loss (severe).
+  [26.29387] DEATH muffalo19 has died of blood loss (extreme).
+  [26.30599] DEATH muffalo17 has died of blood loss (extreme).
+  [26.31067] DEATH Kade has died of blood loss (extreme).
+  [26.58000] FIRED HeatWave points=0.00
+day 27 | citizens 1 | downed 0 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 1.08 | 0.00 | 55453 | 18 | 23 | 4 | - | +0 | Rosalind#66(1,?) | +0 | 35/0 | recovered | 10380 | - | 
+Fira#18 | 25.39270 | 2.60 | 0.00 | 23074 | 18 | 22 | 0 | +18480 | - | - | - | 62/34 | died | 28710 | BloodLoss | cons=0.10 breath=0.85 pump=1.00 filt=1.00 pain=0.83 bloodLoss=1.00 bleed=2.39 injuries=7 tended=0 infections=0
+Rosalind#66 | 25.39630 | 2.68 | 0.01 | 22162 | 18 | 20 | 1 | - | - | - | +0 | 39/0 | died | 11880 | BloodLoss | cons=0.17 breath=0.67 pump=1.00 filt=0.67 pain=0.77 bloodLoss=0.45 bleed=2.60 injuries=6 tended=0 infections=0
+Giselle#6 | 25.39630 | 2.63 | 0.00 | 22699 | 18 | 20 | 0 | +18120 | - | - | - | 60/33 | died | 27900 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=1.00 pain=0.88 bloodLoss=1.00 bleed=2.47 injuries=6 tended=0 infections=0
+Yorick#132 | 25.39840 | 2.50 | 0.00 | 23899 | 17 | 19 | 0 | +17910 | - | - | - | 60/40 | died | 29880 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=0.70 pain=0.88 bloodLoss=1.00 bleed=2.30 injuries=6 tended=0 infections=1
+Aaron#36 | 25.40050 | 2.52 | 0.01 | 23679 | 17 | 18 | 17 | - | - | - | - | 1/0 | recovered | 300 | - | 
+Oren#12 | 25.40260 | 2.26 | 0.00 | 26452 | 16 | 17 | 16 | - | - | - | - | 1/0 | recovered | 330 | - | 
+Calla#54 | 25.40380 | 2.57 | 0.01 | 23176 | 16 | 17 | 1 | - | - | - | - | 42/0 | died | 12540 | BloodLoss | cons=0.18 breath=1.00 pump=1.00 filt=0.45 pain=0.77 bloodLoss=0.45 bleed=2.46 injuries=5 tended=0 infections=0
+Aaron#36 | 25.40470 | 2.64 | 0.02 | 22265 | 16 | 16 | 1 | - | +330 | Oren#12(1,Ingest) | - | 40/0 | died | 11760 | BloodLoss | cons=0.19 breath=0.54 pump=1.00 filt=1.00 pain=0.92 bloodLoss=0.45 bleed=2.56 injuries=7 tended=0 infections=0
+Vance#72 | 25.40740 | 2.64 | 0.00 | 22677 | 15 | 16 | 0 | +17010 | - | - | - | 57/37 | died | 28170 | BloodLoss | cons=0.10 breath=0.82 pump=1.00 filt=1.00 pain=0.85 bloodLoss=1.00 bleed=2.42 injuries=6 tended=0 infections=0
+Jasper#120 | 25.40770 | 0.54 | 0.00 | 111111 | 15 | 15 | 0 | +16980 | - | - | - | 57/18 | recovered | 22260 | - | 
+Oren#12 | 25.40860 | 2.37 | 0.02 | 24791 | 15 | 14 | 0 | +16890 | - | - | - | 56/49 | died | 31590 | BloodLoss | cons=0.10 breath=0.63 pump=1.00 filt=1.00 pain=0.86 bloodLoss=1.00 bleed=2.15 injuries=7 tended=0 infections=0
+Alden#84 | 25.41070 | 1.06 | 0.00 | 56504 | 14 | 13 | 0 | +16680 | - | - | - | 56/105 | died | 48300 | BloodLoss | cons=0.08 breath=0.64 pump=1.00 filt=0.45 pain=0.73 bloodLoss=0.45 bleed=0.86 injuries=5 tended=0 infections=0
+Ursa#114 | 25.41970 | 1.08 | 0.00 | 55413 | 10 | 12 | 0 | +15780 | - | - | +0 | 53/89 | died | 42390 | BloodLoss | cons=0.04 breath=1.00 pump=1.00 filt=0.22 pain=0.75 bloodLoss=0.45 bleed=0.97 injuries=5 tended=0 infections=2
+Kaia#90 | 25.42330 | 4.44 | 0.04 | 12928 | 10 | 11 | 0 | - | - | - | - | 48/0 | died | 14580 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=0.67 pain=0.89 bloodLoss=1.00 bleed=4.26 injuries=4 tended=0 infections=0
+Elowen#30 | 25.43710 | 2.30 | 0.01 | 25750 | 9 | 10 | 0 | +14040 | - | - | - | 47/2 | died | 14700 | BloodLoss | cons=0.17 breath=1.00 pump=0.33 filt=1.00 pain=0.37 bloodLoss=0.45 bleed=2.08 injuries=3 tended=0 infections=0
+Oren#48 | 25.44130 | 4.43 | 0.06 | 12763 | 10 | 9 | 3 | - | - | - | - | 19/0 | died | 5940 | BloodLoss | cons=0.09 breath=0.56 pump=1.00 filt=0.63 pain=0.91 bloodLoss=0.45 bleed=4.35 injuries=6 tended=0 infections=0
+Vance#96 | 25.44340 | 1.31 | 0.00 | 45588 | 10 | 8 | 0 | +13410 | - | - | +0 | 45/64 | died | 32580 | BloodLoss | cons=0.10 breath=0.50 pump=1.00 filt=0.55 pain=0.52 bloodLoss=0.45 bleed=1.12 injuries=4 tended=0 infections=1
+Tobin#0 | 25.45420 | 3.62 | 0.03 | 16021 | 9 | 7 | 2 | - | - | - | +0 | 17/0 | died | 5040 | BloodLoss | cons=0.04 breath=0.50 pump=0.27 filt=1.00 pain=0.67 bloodLoss=0.30 bleed=3.56 injuries=5 tended=0 infections=0
+Kade#60 | 25.45720 | 0.99 | 0.00 | 60606 | 9 | 6 | 4 | - | - | - | - | 9/0 | recovered | 2880 | - | 
+Aaron#108 | 25.46980 | 1.32 | 0.00 | 45408 | 9 | 5 | 0 | +10770 | - | - | +0 | 36/95 | died | 39360 | BloodLoss | cons=0.14 breath=0.27 pump=1.00 filt=1.00 pain=0.18 bloodLoss=0.45 bleed=0.85 injuries=2 tended=0 infections=0
+Yara#78 | 25.47940 | 3.30 | 0.01 | 18072 | 9 | 4 | 0 | - | - | - | - | 31/0 | died | 9360 | BloodLoss | cons=0.09 breath=1.00 pump=1.00 filt=0.28 pain=0.66 bloodLoss=0.45 bleed=3.19 injuries=5 tended=0 infections=0
+Yara#42 | 25.48450 | 2.31 | 0.00 | 25921 | 9 | 4 | 0 | +9300 | - | - | - | 31/19 | died | 14940 | BloodLoss | cons=0.04 breath=1.00 pump=0.33 filt=0.50 pain=0.37 bloodLoss=0.45 bleed=2.09 injuries=3 tended=0 infections=0
+Kade#60 | 25.48990 | 1.54 | 0.03 | 37870 | 10 | 4 | 0 | - | - | - | - | 22/0 | recovered | 6810 | - | 
+Tamsin#138 | 25.50160 | 2.03 | 0.15 | 24993 | 9 | 2 | 0 | +7590 | - | - | - | 25/89 | died | 34350 | BloodLoss | cons=0.10 breath=0.85 pump=1.00 filt=0.50 pain=0.45 bloodLoss=1.00 bleed=1.71 injuries=4 tended=0 infections=0
+Rosalind#102 | 25.50730 | 1.67 | 0.14 | 30954 | 9 | 1 | 0 | +7020 | - | - | +0 | 23/28 | died | 15360 | BloodLoss | cons=0.19 breath=1.00 pump=1.00 filt=0.45 pain=0.71 bloodLoss=0.45 bleed=1.59 injuries=6 tended=1 infections=1
+Idris#144 | 25.54960 | 2.74 | 0.02 | 21507 | 8 | 0 | 0 | +2790 | - | - | - | 9/28 | died | 11310 | BloodLoss | cons=0.18 breath=0.67 pump=1.00 filt=0.63 pain=0.66 bloodLoss=0.45 bleed=2.64 injuries=5 tended=0 infections=0
+Kade#60 | 25.56220 | 2.08 | 0.16 | 24187 | 9 | 0 | 0 | +1530 | +34770 | Jasper#120(1,Ingest) | - | 5/111 | died | 34860 | BloodLoss | cons=0.10 breath=1.00 pump=0.47 filt=1.00 pain=0.39 bloodLoss=1.00 bleed=1.61 injuries=3 tended=0 infections=2
+
+TIME TO FIRST TEND JOB (ticks), n=3 of 28 downings: min 0 p25 330 median 330 p75 34770 p90 34770 max 34770
+  sorted: 0 330 34770
+  bleeding at downing: 28, never tended: 25
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=1: min 33240 p25 33240 median 33240 p75 33240 p90 33240 max 33240
+  sorted: 33240
+DEATHS among downed: BloodLoss=22
+  of which never had a tend job: 20; never tended: 16
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (66 samples): LayDown(asleep)=226, AttackStatic=99, Harvest=57, TendPatient=17, Hunt=16, HaulToCell=14, GotoWander=12, SocialRelax=8, Ingest=7, Train=4
+  map clear (111 samples): LayDown(asleep)=91, Ingest=2
+  mean rest level of the asleep, map clear: 0.55
+
+######## s777-t1537060 continuation seed 9, after arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 9
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.56000] FIRED TraderCaravanArrival points=0.00
+day 26 | citizens 24 | downed 4 | hostiles standing 0 | beds 0
+day 27 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 1.08 | 0.00 | 55453 | 18 | 23 | 12 | +7380 | +0 | Rosalind#66(1,?) | +0 | 25/5 | recovered | 12180 | - | 
+Fira#18 | 25.39240 | 2.08 | 0.00 | 28745 | 18 | 22 | 12 | +6150 | +0 | Oren#48(3,LayDown) | - | 21/1 | recovered | 6480 | - | 
+Giselle#6 | 25.39660 | 2.52 | 0.00 | 23797 | 16 | 21 | 12 | +5730 | +90 | Kade#60(4,LayDown) | +5970 | 19/1 | recovered | 38370 | - | 
+Rosalind#66 | 25.39990 | 3.34 | 0.01 | 17773 | 15 | 20 | 13 | - | - | - | +0 | 14/0 | recovered | 4320 | - | 
+Oren#12 | 25.40230 | 1.66 | 0.00 | 36073 | 15 | 19 | 12 | +5160 | +990 | Vance#72(3,AttackStatic) | +5400 | 17/1 | recovered | 21360 | - | 
+Yorick#132 | 25.40320 | 1.50 | 0.00 | 39944 | 15 | 18 | 12 | +5070 | +900 | Jasper#120(1,AttackStatic) | +5430 | 17/1 | recovered | 5640 | - | 
+Aaron#36 | 25.40500 | 1.32 | 0.00 | 45431 | 14 | 17 | 12 | +4890 | +720 | Vance#96(1,AttackStatic) | +5250 | 17/1 | recovered | 13050 | - | 
+Ursa#114 | 25.40620 | 0.96 | 0.00 | 62500 | 13 | 16 | 12 | +4770 | +5130 | Elowen#30(3,AttackStatic) | +0 | 16/2 | recovered | 32040 | - | 
+Calla#54 | 25.40710 | 2.86 | 0.01 | 20873 | 12 | 15 | 12 | +4680 | +4680 | Tobin#0(1,AttackStatic) | +4920 | 16/1 | recovered | 8370 | - | 
+Alden#84 | 25.41190 | 1.44 | 0.00 | 41477 | 10 | 14 | 12 | +4200 | +30 | Yara#78(8,AttackStatic) | +390 | 1/0 | recovered | 62400 | - | 
+Harlan#24 | 25.41640 | 2.31 | 0.00 | 25913 | 9 | 13 | 12 | +3750 | +3960 | Vance#72(3,(none)) | +4530 | 13/2 | recovered | 7620 | - | 
+Rosalind#66 | 25.44370 | 3.40 | 0.22 | 13712 | 2 | 13 | 12 | +1020 | +1020 | Kade#60(4,AttackStatic) | +0 | 4/1 | recovered | 3540 | - | 
+Vance#72 | 25.44460 | 2.79 | 0.05 | 20332 | 2 | 12 | 12 | +930 | +930 | Vance#96(1,AttackStatic) | - | 3/0 | recovered | 1140 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=12 of 13 downings: min 0 p25 90 median 930 p75 1020 p90 4680 max 5130
+  sorted: 0 0 30 90 720 900 930 990 1020 3960 4680 5130
+  bleeding at downing: 13, never tended: 1
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=12: min 0 p25 0 median 0 p75 0 p90 210 max 360
+  sorted: 0 0 0 0 0 0 0 0 0 0 210 360
+DEATHS among downed: 
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (25 samples): AttackStatic=221, Harvest=46, LayDown(asleep)=44, HaulToCell=32, TendPatient=30, GotoWander=12, SocialRelax=9, Hunt=7, Ingest=3
+  map clear (5 samples): TendPatient=19, LayDown(asleep)=15, FeedPatient=15, Ingest=9, Harvest=6, HaulToCell=6, Hunt=2
+  mean rest level of the asleep, map clear: 0.27
+
+######## s777-t1537060 continuation seed 10, before arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 10
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.58217] DEATH Oren has died of blood loss (severe).
+  [25.58355] DEATH Aaron has died of blood loss (severe).
+day 26 | citizens 22 | downed 19 | hostiles standing 3 | beds 0
+  [26.01006] DEATH chicken4 has been cut to death.
+  [26.03015] DEATH Aaron has died of blood loss (extreme).
+  [26.03266] DEATH Elowen has died of blood loss (extreme).
+  [26.04388] DEATH Alden has died of blood loss (extreme).
+  [26.06990] DEATH Rosalind has died of blood loss (extreme).
+  [26.10368] DEATH muffalo14 has died of blood loss (extreme).
+day 27 | citizens 18 | downed 4 | hostiles standing 0 | beds 0
+
+RAIDS
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 2.58 | 0.01 | 23038 | 18 | 23 | 2 | - | +0 | Calla#54(1,?) | +0 | 97/0 | died | 28980 | BloodLoss | cons=0.10 breath=1.00 pump=1.00 filt=0.50 pain=0.63 bloodLoss=1.00 bleed=2.34 injuries=6 tended=1 infections=0
+Idris#144 | 25.39240 | 1.14 | 0.00 | 52576 | 14 | 22 | 3 | - | - | - | - | 73/0 | recovered | 21690 | - | 
+Calla#54 | 25.39270 | 1.48 | 0.00 | 40345 | 14 | 21 | 5 | - | +0 | Ursa#114(3,SocialRelax) | - | 51/0 | recovered | 15210 | - | 
+Fira#18 | 25.39660 | 2.18 | 0.01 | 27330 | 13 | 20 | 2 | +27450 | +0 | Alden#84(2,SocialRelax) | +30840 | 91/11 | still down | - | - | 
+Rosalind#66 | 25.39960 | 2.20 | 0.00 | 27150 | 13 | 19 | 2 | +27150 | +30090 | Yara#42(2,AttackStatic) | +0 | 90/11 | still down | - | - | 
+Yorick#132 | 25.41100 | 1.44 | 0.00 | 41563 | 10 | 18 | 2 | +26010 | +0 | Aaron#36(4,HaulToCell) | +29160 | 87/11 | recovered | 31950 | - | 
+Aaron#36 | 25.42810 | 3.40 | 0.03 | 17183 | 9 | 17 | 2 | - | - | - | - | 68/0 | died | 20220 | BloodLoss | cons=0.10 breath=0.67 pump=1.00 filt=1.00 pain=0.77 bloodLoss=1.00 bleed=3.19 injuries=6 tended=0 infections=0
+Kade#60 | 25.43530 | 0.71 | 0.00 | 84697 | 8 | 16 | 4 | - | - | - | - | 42/0 | recovered | 12870 | - | 
+Jasper#120 | 25.43590 | 0.99 | 0.00 | 60606 | 8 | 15 | 9 | - | - | - | - | 9/0 | recovered | 2640 | - | 
+Alden#84 | 25.44160 | 3.39 | 0.03 | 17217 | 8 | 14 | 2 | - | - | - | - | 67/0 | died | 20250 | BloodLoss | cons=0.10 breath=0.67 pump=1.00 filt=1.00 pain=0.82 bloodLoss=1.00 bleed=3.17 injuries=6 tended=0 infections=1
+Vance#72 | 25.44220 | 0.99 | 0.00 | 60606 | 8 | 13 | 9 | - | - | - | - | 9/0 | recovered | 2670 | - | 
+Ursa#114 | 25.44790 | 1.32 | 0.00 | 45390 | 8 | 12 | 2 | +22320 | +24360 | Yara#78(8,Ingest) | +0 | 74/8 | recovered | 32070 | - | 
+Elowen#30 | 25.45030 | 3.21 | 0.17 | 15429 | 8 | 11 | 2 | - | - | - | - | 60/0 | died | 18240 | BloodLoss | cons=0.10 breath=0.60 pump=1.00 filt=1.00 pain=0.74 bloodLoss=1.00 bleed=3.03 injuries=3 tended=0 infections=0
+Vance#96 | 25.45090 | 0.99 | 0.00 | 60606 | 8 | 10 | 2 | +22020 | +25410 | Yara#78(8,Ingest) | +0 | 73/13 | recovered | 26730 | - | 
+Giselle#6 | 25.46170 | 2.86 | 0.02 | 20668 | 8 | 9 | 5 | - | +2190 | Oren#12(1,Ingest) | - | 33/0 | recovered | 9660 | - | 
+Jasper#120 | 25.46320 | 1.60 | 0.03 | 36636 | 8 | 9 | 5 | - | - | - | - | 24/0 | recovered | 7110 | - | 
+Vance#72 | 25.46950 | 1.60 | 0.03 | 36606 | 8 | 9 | 5 | - | - | - | - | 24/0 | recovered | 7140 | - | 
+Kaia#90 | 25.47850 | 3.40 | 0.04 | 16961 | 8 | 8 | 5 | - | +300 | Oren#12(1,Ingest) | +510 | 2/0 | recovered | 5940 | - | 
+Oren#12 | 25.48600 | 3.19 | 0.01 | 18655 | 8 | 7 | 4 | - | - | - | - | 33/0 | died | 9630 | BloodLoss | cons=0.03 breath=1.00 pump=0.33 filt=0.63 pain=0.80 bloodLoss=0.45 bleed=3.09 injuries=6 tended=0 infections=0
+Aaron#108 | 25.49800 | 3.41 | 0.03 | 17113 | 7 | 6 | 4 | - | - | - | +0 | 29/0 | died | 8580 | BloodLoss | cons=0.20 breath=0.50 pump=1.00 filt=1.00 pain=0.80 bloodLoss=0.45 bleed=3.32 injuries=6 tended=0 infections=0
+Oren#48 | 25.52290 | 2.84 | 0.05 | 20140 | 7 | 5 | 3 | - | +1380 | Yara#78(8,Ingest) | +6180 | 20/0 | recovered | 7740 | - | 
+Kaia#90 | 25.53910 | 0.66 | 0.03 | 88586 | 6 | 6 | 2 | +13200 | +4800 | Harlan#24(2,Ingest) | +0 | 44/4 | still down | - | - | 
+Jasper#120 | 25.54150 | 2.08 | 0.17 | 23856 | 6 | 6 | 2 | +12960 | +15030 | Yara#42(2,AttackStatic) | +15420 | 43/8 | recovered | 27480 | - | 
+Vance#72 | 25.54240 | 2.14 | 0.16 | 23432 | 6 | 5 | 2 | +12870 | +15240 | Yara#78(8,Ingest) | +15570 | 43/9 | recovered | 36420 | - | 
+Calla#54 | 25.56100 | 1.42 | 0.30 | 29629 | 5 | 6 | 2 | +11010 | +13470 | Yara#42(2,AttackStatic) | +13950 | 37/10 | recovered | 26010 | - | 
+Giselle#6 | 25.56220 | 2.88 | 0.42 | 12147 | 5 | 5 | 2 | +10890 | +11790 | Yara#78(8,Ingest) | +12150 | 36/4 | still down | - | - | 
+Tobin#0 | 25.56310 | 1.37 | 0.01 | 43527 | 5 | 4 | 2 | +10800 | +2160 | Harlan#24(2,Ingest) | +0 | 8/0 | recovered | 13950 | - | 
+Kade#60 | 25.56790 | 1.36 | 0.07 | 41058 | 5 | 4 | 2 | +10320 | +13020 | Yara#78(8,Ingest) | +13260 | 34/10 | recovered | 14010 | - | 
+Harlan#24 | 25.59190 | 1.76 | 0.00 | 34053 | 3 | 3 | 2 | +7920 | +8550 | Yara#42(2,AttackStatic) | +8820 | 26/3 | recovered | 30270 | - | 
+Oren#48 | 26.01920 | 0.66 | 0.27 | 66203 | 3 | 4 | 2 | +5190 | +8730 | Yara#42(2,AttackStatic) | +0 | 17/15 | recovered | 32910 | - | 
+Idris#144 | 26.02610 | 1.01 | 0.24 | 44920 | 3 | 3 | 2 | +4500 | +4890 | Yara#78(8,Ingest) | +5400 | 15/3 | recovered | 8520 | - | 
+Tamsin#138 | 26.02850 | 2.07 | 0.06 | 27357 | 2 | 2 | 2 | +4260 | +4500 | Yara#42(2,AttackStatic) | +0 | 14/2 | recovered | 30780 | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=21 of 32 downings: min 0 p25 1380 median 4890 p75 13470 p90 24360 max 30090
+  sorted: 0 0 0 0 300 1380 2160 2190 4500 4800 4890 8550 8730 11790 13020 13470 15030 15240 24360 25410 30090
+  bleeding at downing: 32, never tended: 11
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=16: min 0 p25 240 median 2040 p75 2460 p90 3390 max 3540
+  sorted: 0 0 0 0 240 390 630 900 2040 2070 2370 2460 2700 2940 3390 3540
+DEATHS among downed: BloodLoss=6
+  of which never had a tend job: 5; never tended: 4
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (97 samples): LayDown(asleep)=332, AttackStatic=243, Harvest=77, HaulToCell=42, TendPatient=33, Hunt=32, GotoWander=15, Ingest=11, Sow=9, CutPlant=7, SocialRelax=6, Train=3
+  map clear (15 samples): TendPatient=27, Ingest=6, FeedPatient=5
+  mean rest level of the asleep, map clear: -
+
+######## s777-t1537060 continuation seed 10, after arm
+LOAD ERRORS (2): Could not resolve reference 'Thing_RawBerries25742' for Job.targetAThing. | Could not resolve reference 'Thing_RawBerries25742' for Reservation.targetThing.
+loaded /tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-tend/saves/s777-t1537060.xml at tick 1538000, continuation seed 10
+start: citizens=24 doctorActive=21 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoBillsArt(1), Research(1), DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3)
+  doctor priority histogram: p0=3, p3=21
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:6, 4:2, 8:1
+  armed citizens: 24
+  [25.43975] DEATH Giselle has been cut to death.
+  [25.47873] DEATH Harlan has died of blood loss (severe).
+day 26 | citizens 22 | downed 8 | hostiles standing 0 | beds 0
+  [26.46000] FIRED RaidEnemy points=576.34
+  [26.55954] DEATH husky2 has been cut to death.
+  [26.57416] DEATH husky10 has been cut to death.
+day 27 | citizens 22 | downed 21 | hostiles standing 5 | beds 0
+
+RAIDS
+  fired 26.46000 points 576.34 peak hostiles 14 clear never raiders dead/down/left 0/0/0 citizens able/downed at clear -1/-1
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#102 | 25.38010 | 2.58 | 0.01 | 23038 | 18 | 23 | 7 | +15090 | +0 | Calla#54(1,?) | +0 | 50/4 | recovered | 41580 | - | 
+Calla#54 | 25.38970 | 2.40 | 0.00 | 25000 | 17 | 22 | 21 | - | +0 | Rosalind#66(1,GotoWander) | - | 2/0 | recovered | 510 | - | 
+Fira#18 | 25.39270 | 1.02 | 0.00 | 58865 | 17 | 21 | 7 | +13830 | +390 | Yorick#132(3,Harvest) | +15870 | 47/6 | recovered | 43170 | - | 
+Calla#54 | 25.39540 | 2.40 | 0.02 | 24490 | 17 | 21 | 7 | - | +0 | Rosalind#66(1,GotoWander) | +450 | 2/0 | recovered | 11340 | - | 
+Idris#144 | 25.39660 | 1.32 | 0.01 | 45225 | 17 | 20 | 7 | +13440 | +330 | Rosalind#66(1,GotoWander) | +11280 | 37/0 | recovered | 16470 | - | 
+Oren#12 | 25.39960 | 1.04 | 0.00 | 57681 | 16 | 19 | 7 | - | - | - | - | 32/0 | recovered | 9630 | - | 
+Kade#60 | 25.40560 | 1.42 | 0.01 | 42029 | 14 | 18 | 7 | - | - | - | - | 32/0 | recovered | 9840 | - | 
+Rosalind#66 | 25.41040 | 0.60 | 0.01 | 99055 | 14 | 17 | 7 | +12060 | - | - | +0 | 41/6 | recovered | 14070 | - | 
+Harlan#24 | 25.41310 | 4.28 | 0.03 | 13595 | 13 | 16 | 7 | - | +0 | Aaron#36(4,HaulToCell) | - | 22/0 | died | 6570 | BloodLoss | cons=0.04 breath=1.00 pump=0.27 filt=1.00 pain=0.92 bloodLoss=0.45 bleed=4.21 injuries=5 tended=0 infections=0
+Tamsin#138 | 25.41700 | 3.35 | 0.00 | 17821 | 13 | 15 | 8 | - | - | - | - | 18/0 | recovered | 5130 | - | 
+Tobin#0 | 25.41790 | 0.66 | 0.00 | 90909 | 13 | 13 | 7 | +11310 | +13380 | Kade#60(4,Ingest) | +0 | 38/7 | recovered | 16470 | - | 
+Vance#96 | 25.41790 | 0.32 | 0.00 | 187482 | 13 | 13 | 7 | +11310 | +13650 | Elowen#30(3,AttackStatic) | +0 | 38/9 | recovered | 17430 | - | 
+Elowen#30 | 25.43410 | 2.85 | 0.04 | 20283 | 8 | 12 | 7 | - | - | - | - | 31/0 | recovered | 9240 | - | 
+Yara#42 | 25.45210 | 2.74 | 0.01 | 21585 | 8 | 10 | 7 | +7890 | +4650 | Oren#12(1,(none)) | +4950 | 17/0 | recovered | 35280 | - | 
+Oren#48 | 25.45270 | 0.99 | 0.00 | 60606 | 8 | 9 | 7 | - | - | - | - | 10/0 | recovered | 2760 | - | 
+Vance#72 | 25.45930 | 3.39 | 0.07 | 16461 | 7 | 8 | 7 | +7170 | +5010 | Kade#60(4,(none)) | +7530 | 23/2 | recovered | 28290 | - | 
+Tamsin#138 | 25.46890 | 3.95 | 0.26 | 11249 | 6 | 8 | 7 | +6210 | +6570 | Ursa#114(3,AttackStatic) | +7140 | 20/4 | recovered | 41250 | - | 
+Yorick#132 | 25.47430 | 3.62 | 0.02 | 16241 | 6 | 7 | 7 | +5670 | +2730 | Oren#12(1,(none)) | +5910 | 18/1 | recovered | 33810 | - | 
+Oren#48 | 25.48420 | 1.05 | 0.03 | 55684 | 6 | 7 | 7 | +4680 | +6300 | Kade#60(4,Ingest) | +6750 | 16/6 | recovered | 9210 | - | 
+Oren#12 | 25.50370 | 1.68 | 0.11 | 31683 | 4 | 7 | 7 | +2730 | +2730 | Jasper#120(1,AttackStatic) | +3150 | 9/2 | recovered | 38220 | - | 
+Calla#54 | 25.50970 | 0.66 | 0.00 | 90909 | 3 | 8 | 0 | +2130 | +3690 | Elowen#30(3,AttackStatic) | +0 | 8/5 | still down | - | - | 
+Aaron#36 | 26.46080 | 1.09 | 0.00 | 55045 | 14 | 20 | 0 | - | +0 | Yara#78(8,GotoWander) | - | 41/0 | recovered | 12270 | - | 
+Yorick#132 | 26.47130 | 0.70 | 0.00 | 85714 | 14 | 19 | 0 | - | +0 | Idris#144(1,GotoWander) | +0 | 38/0 | recovered | 11430 | - | 
+Tobin#0 | 26.47850 | 1.20 | 0.00 | 49984 | 14 | 18 | 0 | - | - | - | +0 | 41/0 | still down | - | - | 
+Tamsin#138 | 26.48030 | 0.60 | 0.32 | 68290 | 14 | 17 | 0 | - | - | - | +0 | 40/0 | still down | - | - | 
+Oren#48 | 26.48150 | 1.74 | 0.00 | 34482 | 14 | 16 | 0 | - | +180 | Alden#84(2,LayDown) | +0 | 40/0 | still down | - | - | 
+Oren#12 | 26.48180 | 0.66 | 0.00 | 90909 | 13 | 15 | 0 | - | - | - | +0 | 40/0 | still down | - | - | 
+Idris#144 | 26.48270 | 0.72 | 0.00 | 83333 | 13 | 14 | 0 | - | - | - | +0 | 40/0 | still down | - | - | 
+Jasper#120 | 26.48330 | 1.30 | 0.00 | 46153 | 12 | 13 | 0 | - | - | - | +0 | 39/0 | still down | - | - | 
+Vance#72 | 26.48630 | 0.72 | 0.07 | 77388 | 12 | 12 | 0 | - | - | - | +0 | 38/0 | still down | - | - | 
+Yara#42 | 26.48720 | 1.20 | 0.00 | 50000 | 12 | 11 | 0 | - | - | - | +0 | 38/0 | still down | - | - | 
+Yara#78 | 26.49020 | 0.10 | 0.03 | 582883 | 10 | 10 | 3 | - | - | - | +0 | 8/0 | recovered | 2460 | - | 
+Rosalind#66 | 26.49110 | 1.32 | 0.00 | 45374 | 10 | 9 | 3 | - | +750 | Kade#60(4,AttackStatic) | +0 | 8/0 | recovered | 2400 | - | 
+Vance#96 | 26.49200 | 0.60 | 0.00 | 99942 | 10 | 8 | 0 | - | - | - | +0 | 37/0 | still down | - | - | 
+Fira#18 | 26.49320 | 0.11 | 0.00 | 545454 | 10 | 7 | 1 | - | - | - | +0 | 16/0 | recovered | 4920 | - | 
+Kaia#90 | 26.49560 | 0.72 | 0.00 | 83270 | 8 | 6 | 0 | - | - | - | +0 | 35/0 | still down | - | - | 
+Elowen#30 | 26.49740 | 1.42 | 0.07 | 39202 | 7 | 5 | 0 | - | +120 | Alden#84(2,AttackStatic) | +0 | 8/0 | still down | - | - | 
+Kade#60 | 26.50100 | 1.44 | 0.00 | 41665 | 6 | 4 | 0 | - | - | - | +0 | 34/0 | still down | - | - | 
+Alden#84 | 26.51420 | 2.85 | 0.02 | 20680 | 6 | 3 | 0 | - | - | - | - | 29/0 | still down | - | - | 
+Yara#78 | 26.51540 | 0.76 | 0.01 | 78021 | 6 | 4 | 0 | - | - | - | +0 | 29/0 | still down | - | - | 
+Rosalind#102 | 26.52140 | 1.43 | 0.19 | 34088 | 6 | 3 | 1 | - | - | - | +0 | 6/0 | recovered | 1650 | - | 
+Rosalind#66 | 26.52350 | 1.98 | 0.05 | 28744 | 6 | 2 | 0 | - | +1890 | Fira#18(2,(none)) | +0 | 26/0 | still down | - | - | 
+Ursa#114 | 26.52950 | 2.39 | 0.01 | 24912 | 6 | 1 | 0 | - | - | - | +0 | 24/0 | still down | - | - | 
+Rosalind#102 | 26.53880 | 2.56 | 0.22 | 18323 | 6 | 1 | 0 | - | - | - | +0 | 21/0 | still down | - | - | 
+Fira#18 | 26.54630 | 0.77 | 0.00 | 78043 | 6 | 1 | 0 | - | - | - | +0 | 18/0 | still down | - | - | 
+Aaron#108 | 26.54690 | 0.99 | 0.00 | 60606 | 6 | 0 | 0 | - | - | - | +0 | 18/0 | still down | - | - | 
+Yorick#132 | 26.59010 | 1.35 | 0.06 | 41846 | 5 | 1 | 1 | - | +0 | Aaron#36(4,(none)) | +0 | 4/0 | still down | - | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=22 of 47 downings: min 0 p25 0 median 750 p75 4650 p90 6570 max 13650
+  sorted: 0 0 0 0 0 0 0 120 180 330 390 750 1890 2730 2730 3690 4650 5010 6300 6570 13380 13650
+  bleeding at downing: 47, never tended: 25
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=12: min 0 p25 0 median 0 p75 1560 p90 2070 max 2340
+  sorted: 0 0 0 0 0 0 0 360 1560 1620 2070 2340
+DEATHS among downed: BloodLoss=1
+  of which never had a tend job: 0; never tended: 1
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (98 samples): AttackStatic=520, TendPatient=79, LayDown(asleep)=65, Harvest=42, SocialRelax=38, GotoWander=33, Hunt=33, HaulToCell=27, Train=8, Ingest=4
+  map clear (9 samples): LayDown(asleep)=30, TendPatient=29, Ingest=19, Train=6
+  mean rest level of the asleep, map clear: 0.26
+

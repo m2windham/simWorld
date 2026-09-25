@@ -80,18 +80,22 @@ namespace SimWorld.Tests.AI
             // every citizen sat at the need's worst stage from day two onward — docs/WORK-REGISTER.md §9a.
             // An idle-recreation tier sits below work and above the wander, which is RimWorld's own slot for
             // JobGiver_IdleJoy.
+            // Emergency work (fires, a colonist bleeding to death) then went in above the needs, behind a
+            // starving-eats-first tier, as in RimWorld's own colonist block — see Tests.AI.EmergencyWorkTests.
             var root = (ThinkNode_Priority)ThinkTreeDefOf.Humanlike.thinkRoot;
             Assert.IsType<ThinkNode_ConditionalInMentalState>(root.subNodes[0]);
             Assert.IsType<JobGiver_AIFightEnemies>(root.subNodes[1]);
             Assert.IsType<ThinkNode_Duty>(root.subNodes[2]);
-            Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[3]);
-            Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[4]);
-            Assert.IsType<ThinkNode_ConditionalLowJoy>(root.subNodes[5]);
-            Assert.IsType<JobGiver_DirectedOrder>(root.subNodes[6]);
-            Assert.IsType<global::SimWorld.AI.JobGiver_Edicts>(root.subNodes[7]);
-            Assert.IsType<JobGiver_Work>(root.subNodes[8]);
-            Assert.IsType<JobGiver_IdleJoy>(root.subNodes[9]);
-            Assert.IsType<JobGiver_WanderAnywhere>(root.subNodes[10]);
+            Assert.IsType<ThinkNode_ConditionalStarving>(root.subNodes[3]);
+            Assert.True(Assert.IsType<JobGiver_Work>(root.subNodes[4]).emergency);
+            Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[5]);
+            Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[6]);
+            Assert.IsType<ThinkNode_ConditionalLowJoy>(root.subNodes[7]);
+            Assert.IsType<JobGiver_DirectedOrder>(root.subNodes[8]);
+            Assert.IsType<global::SimWorld.AI.JobGiver_Edicts>(root.subNodes[9]);
+            Assert.False(Assert.IsType<JobGiver_Work>(root.subNodes[10]).emergency);
+            Assert.IsType<JobGiver_IdleJoy>(root.subNodes[11]);
+            Assert.IsType<JobGiver_WanderAnywhere>(root.subNodes[12]);
 
             // And the mental-state tier hands a brawling pawn a job rather than leaving the mental state to
             // swing a verb out of its own tick at range zero — see MentalState_SocialFighting.

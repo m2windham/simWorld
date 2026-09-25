@@ -13,6 +13,13 @@ namespace SimWorld.AI
     /// </summary>
     public sealed class JobDriver_LayDown : JobDriver
     {
+        /// <summary>
+        /// How often a pawn lying down looks up to see whether something more important needs it (RimWorld:
+        /// <c>Toils_LayDown.LayDown</c>'s <c>IsHashIntervalTick(211)</c>, with <c>lookForOtherJobs</c> true for
+        /// <c>JobDriver_LayDown</c> — both read from the 1.0 decompile).
+        /// </summary>
+        public const int LookForOtherJobsIntervalTicks = 211;
+
         public override bool TryMakePreToilReservations()
         {
             LocalTargetInfo target = job.GetTarget(TargetIndex.A);
@@ -50,6 +57,23 @@ namespace SimWorld.AI
                 {
                     EndJobWith(JobCondition.InterruptForced);
                     return;
+                }
+                // Emergency work gets a sleeper up (RimWorld: the lying-down toil re-runs the think tree every
+                // 211 ticks, and "Emergency work" sits above the rest giver in its humanlike tree, so a doctor
+                // asleep beside a colonist bleeding to death gets up and tends them). Only that one tier is
+                // asked here, not the whole tree, and the narrowing is this port's: its tree carries the combat
+                // tier (the draft's stand-in, CombatPostureUtility) above needs, so a full re-run would get a
+                // sleeper out of bed for a raider it has merely seen — exactly what LayDown's
+                // casualInterruptible="false" exists to prevent (JobDefs_Core.xml). Hunger waking a sleeper,
+                // which RimWorld's full re-run can also do, is not asked about either.
+                if (pawn.IsHashIntervalTick(LookForOtherJobsIntervalTicks))
+                {
+                    Job? emergency = JobGiver_Work.TryGiveEmergencyJob(pawn);
+                    if (emergency != null)
+                    {
+                        pawn.jobs.StartJob(emergency, JobCondition.InterruptOptional);
+                        return;
+                    }
                 }
                 if (pawn.needs.rest != null && pawn.needs.rest.CurLevel >= 0.999f)
                 {

@@ -175,10 +175,17 @@ namespace SimWorld.Tests.Map
 
         /// <summary>A bleeding, tendable wound — RimWorld's own "Cut" injury bleeds, and this is the same
         /// two-line setup <c>Health.DoctorAITests</c> uses to make an emergency patient.</summary>
+        /// <summary>Bleeding badly enough to be emergency doctoring: cuts over the limbs until the patient will
+        /// bleed to death inside RimWorld's eighteen hours (<see cref="HealthAIUtility.ShouldBeTendedNowUrgent"/>).
+        /// One cut on an arm used to be enough; under that rule it is ordinary doctoring.</summary>
         private static void MakeBleedingWound(Pawn p)
         {
             DamageDef cut = DefDatabase<DamageDef>.GetNamed("Cut");
-            cut.Worker.Apply(new DamageInfo(cut, 6f, hitPart: p.RaceProps.body!.GetPartByLabel("left arm")!), p);
+            string[] parts = { "left arm", "right arm", "left leg", "right leg", "torso" };
+            for (int i = 0; i < 20 && !HealthAIUtility.ShouldBeTendedNowUrgent(p); i++)
+            {
+                cut.Worker.Apply(new DamageInfo(cut, 6f, hitPart: p.RaceProps.body!.GetPartByLabel(parts[i % parts.Length])!), p);
+            }
         }
 
         // ===========================================================================================
@@ -387,8 +394,8 @@ namespace SimWorld.Tests.Map
             // Not refused. Not warned about. Not quietly re-ordered into something sensible.
             Assert.Equal(MapCommandOutcome.Done, ordered.Outcome);
 
-            // And it is what he actually does: the directed-order tier sits above JobGiver_Work, so the order
-            // is what the tree hands back on his next pass even with an emergency patient waiting.
+            // And it is what he actually does: an order starts the moment it is given, so the think tree — its
+            // emergency-work tier, which outranks every need, included — is not asked again until it is done.
             RunTicks(2, everyone);
             Assert.Equal("Goto", doctor.jobs.curJob?.def.defName);
             Assert.True(doctor.jobs.curJob!.playerForced);

@@ -1,0 +1,131 @@
+start: citizens=25 doctorActive=22 beds=0
+  sample Tobin emergency givers: FightFires, DoctorTendEmergency
+  sample normal givers (first 14): DoctorTend(3), DoctorFeedHumanlikes(3), DoctorRescue(3), WardenFeed(3), WardenDeliverFood(3), WardenAttemptRecruit(3), TrainAnimals(3), TameAnimals(3), CookMeals(3), ButcherCorpses(3), Hunt(3), ConstructFinishFrames(3), ConstructDeliverResourcesToFrames(3), ConstructDeliverResourcesToBlueprints(3)
+  doctor priority histogram: p0=3, p3=22
+  medicine skill histogram: 0:3, 1:7, 2:5, 3:7, 4:2, 8:1
+  armed citizens: 25
+day 1 | citizens 25 | downed 0 | hostiles standing 0 | beds 0
+  [1.49173] DEATH Senna has been bitten to death.
+day 2 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 3 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [3.07000] FIRED GiveQuest_Random points=0.00
+  [4.00000] FIRED ManhunterPack points=322.91
+day 4 | citizens 24 | downed 0 | hostiles standing 4 | beds 0
+day 5 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 6 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 7 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 8 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 9 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [9.54000] FIRED ManhunterPack points=451.60
+day 10 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [10.40000] FIRED Drought points=0.00
+day 11 | citizens 24 | downed 1 | hostiles standing 0 | beds 0
+day 12 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 13 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 14 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 15 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 16 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 17 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 18 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 19 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 20 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 21 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 22 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 23 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [23.55000] FIRED Earthquake points=0.00
+day 24 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 25 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [25.37000] FIRED RaidEnemy points=727.00
+  [25.43470] RAID CLEAR fired 25.37000: +6470 ticks, peak 18 hostiles; raiders dead 2, down 16, left map 0; citizens able 16, downed 8
+day 26 | citizens 24 | downed 1 | hostiles standing 0 | beds 0
+day 27 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 28 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 29 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 30 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [30.30000] FIRED TraderCaravanArrival points=0.00
+day 31 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 32 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 33 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 34 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [34.52000] FIRED RaidEnemy points=828.18
+  [34.52423] DEATH chicken4 has been cut to death.
+  [34.58770] RAID CLEAR fired 34.52000: +6770 ticks, peak 19 hostiles; raiders dead 2, down 17, left map 0; citizens able 17, downed 7
+day 35 | citizens 24 | downed 7 | hostiles standing 0 | beds 0
+day 36 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [36.55093] DEATH Vance has been bitten to death.
+day 37 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 38 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+  [38.06000] FIRED ManhunterPack points=808.40
+day 39 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 40 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+  [40.49000] FIRED Eclipse points=0.00
+day 41 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 42 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 43 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 44 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 45 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 46 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 47 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 48 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 49 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 50 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+day 51 | citizens 23 | downed 0 | hostiles standing 0 | beds 0
+  [51.20000] FIRED WandererJoin points=0.00
+  [51.42000] FIRED ColdSnap points=0.00
+day 52 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 53 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 54 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 55 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 56 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 57 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 58 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+  [58.07000] FIRED ManhunterPack points=1236.05
+day 59 | citizens 24 | downed 0 | hostiles standing 0 | beds 0
+day 60 | citizens 25 | downed 1 | hostiles standing 0 | beds 0
+
+RAIDS
+  fired 25.37000 points 727.00 peak hostiles 18 clear +6470 raiders dead/down/left 2/16/0 citizens able/downed at clear 16/8
+  fired 34.52000 points 828.18 peak hostiles 19 clear +6770 raiders dead/down/left 2/17/0 citizens able/downed at clear 17/7
+
+EPISODES (one row per downing of a citizen)
+pawn | downed | bleed@down | bl@down | ttd@down | hostiles@down | able@down | minAble | threatClear | firstTendJob | tender(med,prev) | firstTended | waitH/waitC(x300) | outcome | +ticks | culprit | last look
+Rosalind#66 | 10.10980 | 2.70 | 0.01 | 21961 | 0 | 23 | 23 | +0 | +0 | Aaron#36(4,Sow) | +0 | 0/1 | recovered | 330 | - | 
+Rosalind#66 | 10.11640 | 1.05 | 0.02 | 55754 | 0 | 23 | 23 | +0 | +0 | Fira#18(2,Sow) | +0 | 0/1 | recovered | 30870 | - | 
+Rosalind#66 | 10.55350 | 0.15 | 0.00 | 400000 | 0 | 23 | 23 | +0 | +30 | Idris#144(1,GotoWander) | +0 | 0/2 | recovered | 30360 | - | 
+Vance#96 | 21.10890 | 1.80 | 0.01 | 33099 | 0 | 23 | 23 | +0 | +0 | Aaron#36(4,Sow) | +720 | 0/2 | recovered | 21330 | - | 
+Calla#54 | 23.01590 | 0.00 | 0.00 | - | 0 | 23 | 23 | +0 | +2310 | Ursa#114(3,GotoWander) | +0 | 0/0 | recovered | 8010 | - | 
+Fira#18 | 25.38580 | 1.30 | 0.00 | 46096 | 18 | 23 | 16 | +4890 | +0 | Jasper#120(1,GotoWander) | +2640 | 9/0 | recovered | 6660 | - | 
+Giselle#6 | 25.38970 | 2.00 | 0.00 | 29966 | 18 | 22 | 20 | - | +60 | Tobin#0(1,AttackStatic) | - | 5/0 | recovered | 1350 | - | 
+Oren#12 | 25.39510 | 3.33 | 0.01 | 17901 | 17 | 21 | 16 | +3960 | +0 | Vance#96(1,HaulToCell) | +4530 | 13/2 | recovered | 4680 | - | 
+Aaron#36 | 25.40200 | 2.40 | 0.00 | 24930 | 13 | 20 | 20 | - | +120 | Harlan#24(2,LayDown) | - | 2/0 | recovered | 330 | - | 
+Vance#72 | 25.40320 | 2.16 | 0.00 | 27730 | 12 | 20 | 16 | +3150 | +210 | Harlan#24(2,LayDown) | +420 | 1/0 | recovered | 6570 | - | 
+Rosalind#66 | 25.40590 | 3.90 | 0.00 | 15327 | 9 | 20 | 16 | +2880 | +2880 | Aaron#36(4,AttackStatic) | +0 | 9/2 | recovered | 3450 | - | 
+Harlan#24 | 25.41310 | 2.81 | 0.01 | 21154 | 8 | 19 | 16 | +2160 | +2160 | Tobin#0(1,AttackStatic) | +2940 | 7/3 | recovered | 7350 | - | 
+Kade#60 | 25.41400 | 2.85 | 0.05 | 20022 | 7 | 18 | 16 | +2070 | +2070 | Yara#78(8,AttackStatic) | +2760 | 7/3 | recovered | 9600 | - | 
+Vance#96 | 25.41640 | 0.66 | 0.00 | 90851 | 6 | 17 | 16 | +1830 | +1830 | Jasper#120(1,AttackStatic) | +0 | 6/1 | recovered | 12180 | - | 
+Giselle#6 | 25.42120 | 0.66 | 0.02 | 88734 | 4 | 16 | 16 | +1350 | +1350 | Alden#84(2,AttackStatic) | +0 | 4/3 | recovered | 25110 | - | 
+Vance#72 | 27.22560 | 0.00 | 0.00 | - | 0 | 23 | 23 | +0 | +1410 | Fira#18(2,GotoWander) | +0 | 0/0 | recovered | 6570 | - | 
+Aaron#108 | 30.52680 | 0.18 | 0.00 | 333333 | 0 | 23 | 23 | +0 | +0 | Calla#54(1,SocialFight) | +0 | 0/1 | recovered | 1320 | - | 
+Jasper#120 | 34.52890 | 0.44 | 0.00 | 136316 | 19 | 23 | 17 | +5880 | +0 | Fira#18(2,GotoWander) | +1110 | 3/0 | recovered | 12540 | - | 
+Aaron#108 | 34.53130 | 0.66 | 0.00 | 90909 | 19 | 22 | 19 | - | +0 | Elowen#30(3,GotoWander) | +0 | 8/0 | recovered | 2670 | - | 
+Harlan#24 | 34.54270 | 3.90 | 0.02 | 15114 | 14 | 21 | 17 | +4500 | +4500 | Aaron#36(4,AttackStatic) | +4980 | 15/2 | recovered | 5970 | - | 
+Rosalind#66 | 34.54510 | 2.31 | 0.00 | 25894 | 14 | 20 | 17 | +4260 | +4260 | Alden#84(2,AttackStatic) | +0 | 14/2 | recovered | 8400 | - | 
+Giselle#6 | 34.55710 | 0.11 | 0.02 | 533394 | 8 | 19 | 17 | +3060 | +3270 | Fira#18(2,AttackStatic) | +0 | 10/2 | recovered | 6120 | - | 
+Aaron#108 | 34.55860 | 1.28 | 0.01 | 46196 | 8 | 19 | 17 | +2910 | +2910 | Rosalind#102(2,AttackStatic) | +0 | 9/1 | recovered | 8340 | - | 
+Oren#12 | 34.56100 | 1.98 | 0.01 | 30137 | 7 | 18 | 17 | +2670 | +2670 | Idris#144(1,AttackStatic) | +0 | 9/1 | recovered | 59490 | - | 
+Tobin#0 | 34.56190 | 1.76 | 0.00 | 34036 | 7 | 17 | 17 | +2580 | +2580 | Yorick#132(3,AttackStatic) | +0 | 8/1 | recovered | 47070 | - | 
+Oren#12 | 45.16680 | 0.00 | 0.00 | - | 0 | 22 | 22 | +0 | +3150 | Yorick#132(3,GotoWander) | +0 | 0/0 | recovered | 9330 | - | 
+Niall#38548 | 60.00000 | 0.00 | 0.00 | - | 0 | 24 | 24 | +0 | - | - | - | 0/0 | still down | - | - | 
+
+TIME TO FIRST TEND JOB (ticks), n=26 of 27 downings: min 0 p25 0 median 1410 p75 2670 p90 3270 max 4500
+  sorted: 0 0 0 0 0 0 0 0 30 60 120 210 1350 1410 1830 2070 2160 2310 2580 2670 2880 2910 3150 3270 4260 4500
+  bleeding at downing: 23, never tended: 0
+TIME FROM MAP CLEAR (or downing, if later) TO FIRST TEND JOB, n=23: min 0 p25 0 median 0 p75 0 p90 1410 max 3150
+  sorted: 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 30 210 1410 2310 3150
+DEATHS among downed: 
+  of which never had a tend job: 0; never tended: 0
+
+WHAT ABLE CITIZENS DID while a citizen lay bleeding and untended (one count per able citizen per 300-tick sample)
+  hostile standing on map (35 samples): AttackStatic=514, LayDown(asleep)=48, TendPatient=47, Hunt=16, Harvest=15, HaulToCell=14, GotoWander=10, GoForWalk=2, Ingest=2, SocialRelax=1
+  map clear (12 samples): Sow=61, TendPatient=57, LayDown(asleep)=44, GotoWander=28, SocialRelax=12, Harvest=12, Ingest=11, Tame=6, Hunt=5, FeedPatient=4, GoForWalk=3, AttackStatic=1
+  mean rest level of the asleep, map clear: 0.60

@@ -81,19 +81,44 @@ namespace SimWorld.AI
 
     /// <summary>
     /// Scans by work priority, then natural priority, then priority within type — <see cref="Pawn_WorkSettings"/>
-    /// already orders <see cref="WorkGiverDef"/>s exactly that way; this just walks the two lists it exposes,
-    /// emergency first (RimWorld: <c>RimWorld.JobGiver_Work</c>). The actual nearest-candidate scan is shared
-    /// with <see cref="JobGiver_Edicts"/> via <see cref="WorkGiverScanUtility"/> rather than duplicated here.
+    /// already orders <see cref="WorkGiverDef"/>s exactly that way; this walks one of the two lists it exposes
+    /// (RimWorld: <c>RimWorld.JobGiver_Work</c>). The actual nearest-candidate scan is shared with
+    /// <see cref="JobGiver_Edicts"/> via <see cref="WorkGiverScanUtility"/> rather than duplicated here.
+    /// <para/>
+    /// <b>Two instances, two tiers, RimWorld's shape.</b> <see cref="emergency"/> picks the list, as it does in
+    /// RimWorld, and the humanlike tree carries this node twice: once with <c>emergency</c> set, above every
+    /// need but starvation ("Emergency work" in RimWorld's own <c>Humanlike</c> tree), and once without it, in
+    /// the routine-work slot. Until this port had the upper instance, the one node scanned the emergency list
+    /// first and then the routine one, both below hunger, sleep and recreation — so a tired doctor went to bed
+    /// beside a colonist bleeding to death and slept until rested. See <c>ThinkTrees_Humanlike.xml</c>.
     /// </summary>
     public sealed class JobGiver_Work : ThinkNode_JobGiver
     {
-        protected override Job? TryGiveJob(Pawn pawn)
-        {
-            if (!pawn.RaceProps.Humanlike || !pawn.workSettings.EverWork || pawn.Map == null) return null;
+        /// <summary>Scan the emergency work givers (firefighting, urgent tending) instead of the routine ones
+        /// (RimWorld: <c>JobGiver_Work.emergency</c>). Set from content.</summary>
+        public bool emergency;
 
-            Job? job = WorkGiverScanUtility.TryGiveJobInGivers(pawn, pawn.workSettings.WorkGiversInOrderEmergency);
-            return job ?? WorkGiverScanUtility.TryGiveJobInGivers(pawn, pawn.workSettings.WorkGiversInOrderNormal);
+        protected override Job? TryGiveJob(Pawn pawn) =>
+            emergency ? TryGiveEmergencyJob(pawn) : TryGiveRoutineJob(pawn);
+
+        /// <summary>
+        /// The emergency work givers alone. Public because it is also the question a sleeping pawn asks every
+        /// <see cref="JobDriver_LayDown.LookForOtherJobsIntervalTicks"/> — see that driver.
+        /// </summary>
+        public static Job? TryGiveEmergencyJob(Pawn pawn)
+        {
+            if (!CanWork(pawn)) return null;
+            return WorkGiverScanUtility.TryGiveJobInGivers(pawn, pawn.workSettings.WorkGiversInOrderEmergency);
         }
+
+        private static Job? TryGiveRoutineJob(Pawn pawn)
+        {
+            if (!CanWork(pawn)) return null;
+            return WorkGiverScanUtility.TryGiveJobInGivers(pawn, pawn.workSettings.WorkGiversInOrderNormal);
+        }
+
+        private static bool CanWork(Pawn pawn) =>
+            pawn.RaceProps.Humanlike && pawn.workSettings != null && pawn.workSettings.EverWork && pawn.Map != null;
     }
 
     /// <summary>
