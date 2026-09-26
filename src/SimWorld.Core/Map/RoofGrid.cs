@@ -35,7 +35,13 @@ namespace SimWorld.Map
             // all, so it has to dirty the tracker itself: without this a room that WorkGiver_BuildRoof/
             // JobDriver_BuildRoof just finished roofing would report TouchesOutside forever, until some
             // unrelated wall happened to spawn or despawn elsewhere on the map (system 95: Roofs).
-            if (wasRoofed != (roof != null)) map.roomTracker.Notify_Dirty();
+            //
+            // roomTracker may still be null here: Map.ExposeData calls Map.DecodeRoofInto (which replays
+            // every saved cell through this same SetRoof) before InitializeAIManagers constructs roomTracker
+            // during a load — RoofGrid itself exists earlier, in InitializeGridsExceptPath, for exactly the
+            // same reason mapView (used above) does. A freshly loaded map has dirty=true by construction
+            // regardless, so there is nothing to notify yet, and nothing lost by skipping it.
+            if (wasRoofed != (roof != null)) map.roomTracker?.Notify_Dirty();
         }
     }
 }

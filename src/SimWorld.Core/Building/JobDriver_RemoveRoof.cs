@@ -9,10 +9,16 @@ namespace SimWorld.Building
     /// Strips the roof off one cell of <see cref="AreaManager.NoRoof"/> (RimWorld:
     /// <c>RimWorld.JobDriver_RemoveRoof</c>). See <see cref="JobDriver_AffectRoof"/>'s own doc for the shape
     /// every roof job shares. Simpler than <see cref="JobDriver_BuildRoof"/> in two ways RimWorld's own class
-    /// already is: target A and B are the same cell (nothing ever substitutes an adjacent building — a roofed
-    /// cell to be un-roofed is, by definition, standable ground, not a wall), and there is no support check —
-    /// removing a roof cannot itself collapse anything (removing the <i>edifice</i> that held one up is what
-    /// does that, and <see cref="RoofCollapseUtility.Notify_RoofHolderDespawned"/> already covers it).
+    /// already is: target A and B are always the same cell — RimWorld's own <c>WorkGiver_RemoveRoof.JobOnCell</c>
+    /// never substitutes an adjacent building the way <c>WorkGiver_BuildRoof</c>'s does, even though a NoRoof
+    /// cell can equally well be a wall (this port's own <see cref="RoofWorkTests"/> covers roofing a wall cell
+    /// through <see cref="WorkGiver_BuildRoof"/>, and nothing stops the same wall cell from being painted
+    /// <see cref="AreaManager.NoRoof"/> too) — <see cref="PathEndMode.ClosestTouch"/> already reaches a
+    /// non-standable cell by walking adjacent to it, the same way <see cref="PathEndMode.Touch"/> does for any
+    /// impassable target, so RimWorld never needed a second name for what to touch here. And there is no
+    /// support check — removing a roof cannot itself collapse anything (removing the <i>edifice</i> that held
+    /// one up is what does that, and <see cref="RoofCollapseUtility.Notify_RoofHolderDespawned"/> already
+    /// covers it).
     /// </summary>
     public sealed class JobDriver_RemoveRoof : JobDriver_AffectRoof
     {
