@@ -64,10 +64,11 @@ namespace SimWorld.AI
     /// something it cannot path around — the raid is over for that raider and it walks off the edge it came
     /// in by.
     ///
-    /// <para/><b>Why "no target" and not "we have taken enough casualties".</b> The second is the question a
-    /// RimWorld <c>Trigger_FractionPawnsLost</c> answers for a whole Lord at once, and this port has no Lord
-    /// to hold the roster it needs — see <see cref="DutyDef"/> for the full accounting of what that split
-    /// costs. A raid here therefore fights to a finish and the survivors leave; it does not break and run.
+    /// <para/><b>Why "no target" and not "we have taken enough casualties".</b> The second is the question
+    /// <see cref="Group.Trigger_FractionPawnsLost"/> answers for a whole <see cref="Group.Lord"/> at once, and
+    /// the lord answers it by taking the squad out of this duty altogether (<see cref="Group.LordToil_PanicFlee"/>),
+    /// as it does when the raid has run out of time (<see cref="Group.LordToil_ExitMap"/>). This tier is what is
+    /// left for the raid that wins: nobody left to fight, so it goes home.
     /// </summary>
     public class JobGiver_ExitMap : ThinkNode_JobGiver
     {

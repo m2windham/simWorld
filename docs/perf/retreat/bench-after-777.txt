@@ -1,0 +1,176 @@
+# SimWorld.Bench
+
+suite=storyteller pawns=1000 days=60 seed=777 warmup=1 runs=3 guard=120s
+
+## Storyteller probe — the threat curve over 60 in-game days at founding scale, populated world (`--solo false`)
+
+
+> One arm: **watched and played**. The founding settlement is opened, so its citizens run at Full tier and a threat arrives on a real map. **World: populated** — rival civilizations are generated at time zero, as a player's world has them. Table 0 lists who they are and where they stand with the player. Founding band 25 (spec §5b.3 allows 20-40), seed 777, storyteller and difficulty as `Game.NewGame` defaults them. **This suite changes no tuning constant and is not a target** — see its class doc, and `CLAUDE.md` on what happens to a game tuned against its own instruments.
+
+### 0. the world this run was taken in: populated world (`--solo false`)
+
+| civilization | def | tech | day 0 | day 60 | raids from day |
+| --- | --- | --- | --- | --- | --- |
+| Ash kin | TribalCivilization | Neolithic | neutral (10) | neutral (20) | 3 |
+| Ash clan | TribalCivilization | Neolithic | neutral (-26) | neutral (3) | 3 |
+| Bone band | TribalCivilization | Neolithic | neutral (3) | neutral (20) | 3 |
+| Ash horde | TribalCivilization | Neolithic | neutral (16) | neutral (20) | 3 |
+| Bone folk | TribalCivilization | Neolithic | neutral (-25) | neutral (4) | 3 |
+| Stone horde | TribalCivilization | Neolithic | neutral (25) | neutral (20) | 3 |
+| Grand federation | OutlanderCivilization | Industrial | neutral (-17) | neutral (12) | 5 |
+| North state | OutlanderCivilization | Industrial | neutral (-14) | neutral (15) | 5 |
+| Port league | OutlanderCivilization | Industrial | neutral (-20) | neutral (9) | 5 |
+| New union | OutlanderCivilization | Industrial | neutral (32) | neutral (20) | 5 |
+| East federation | OutlanderCivilization | Industrial | neutral (9) | neutral (20) | 5 |
+| Steel vale | RoughOutlanders | Medieval | hostile (-100) | hostile (-100) | 0 (permanent enemy) |
+| Grey march | RoughOutlanders | Medieval | hostile (-100) | hostile (-100) | 0 (permanent enemy) |
+| Wolf keep | RoughOutlanders | Medieval | hostile (-100) | hostile (-100) | 0 (permanent enemy) |
+
+> Relations are to the player, as `goodwill` and the kind it reads as. `raids from day` is the def's `earliestRaidDays`, which `FactionRaidRules.CanRaidYet` holds a raider to. Hostile and undefeated: 3 at day 0, 3 at day 60. `RaidEnemy` can pick a raider only from those, and only once its `raids from day` has passed.
+
+### 1. the threat curve, sampled daily
+
+| day | pop | wealth | base from wealth | per-colonist | colonist sum | x difficulty | x adaptation | x era | x daysPassed | points | clamped? |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 25 | 60 | 0.0 | 15.0 | 375.0 | 1.00 | 0.700 | 1.00 | 1.00 | 262.5 | - |
+| 1 | 25 | 1,490 | 0.0 | 15.0 | 375.0 | 1.00 | 0.720 | 1.00 | 1.05 | 283.5 | - |
+| 2 | 25 | 1,745 | 0.0 | 15.0 | 375.0 | 1.00 | 0.740 | 1.00 | 1.10 | 305.2 | - |
+| 3 | 25 | 1,612 | 0.0 | 15.0 | 375.0 | 1.00 | 0.760 | 1.00 | 1.15 | 327.7 | - |
+| 4 | 25 | 1,470 | 0.0 | 15.0 | 371.8 | 1.00 | 0.780 | 1.00 | 1.20 | 348.0 | - |
+| 5 | 25 | 1,409 | 0.0 | 15.0 | 374.3 | 1.00 | 0.800 | 1.00 | 1.25 | 374.3 | - |
+| 6 | 25 | 1,389 | 0.0 | 15.0 | 374.6 | 1.00 | 0.820 | 1.00 | 1.30 | 399.3 | - |
+| 7 | 25 | 1,941 | 0.0 | 15.0 | 375.0 | 1.00 | 0.840 | 1.00 | 1.35 | 425.3 | - |
+| 8 | 25 | 2,769 | 0.0 | 15.0 | 375.0 | 1.00 | 0.860 | 1.00 | 1.40 | 451.5 | - |
+| 9 | 25 | 3,721 | 0.0 | 15.0 | 375.0 | 1.00 | 0.880 | 1.00 | 1.45 | 478.5 | - |
+| 10 | 25 | 4,397 | 0.0 | 15.0 | 375.0 | 1.00 | 0.900 | 1.00 | 1.50 | 506.3 | - |
+| 11 | 25 | 5,792 | 0.0 | 15.0 | 373.7 | 1.00 | 0.905 | 1.00 | 1.55 | 524.2 | - |
+| 12 | 25 | 7,273 | 0.0 | 15.0 | 374.3 | 1.00 | 0.910 | 1.00 | 1.60 | 545.0 | - |
+| 13 | 25 | 7,538 | 0.0 | 15.0 | 372.8 | 1.00 | 0.915 | 1.00 | 1.65 | 562.8 | - |
+| 14 | 24 | 7,883 | 0.0 | 15.0 | 348.9 | 1.00 | 0.870 | 1.00 | 1.70 | 516.0 | - |
+| 15 | 25 | 7,976 | 0.0 | 15.0 | 368.2 | 1.00 | 0.880 | 1.00 | 1.75 | 567.0 | - |
+| 16 | 25 | 7,976 | 0.0 | 15.0 | 369.7 | 1.00 | 0.900 | 1.00 | 1.80 | 598.9 | - |
+| 17 | 25 | 7,899 | 0.0 | 15.0 | 373.4 | 1.00 | 0.905 | 1.00 | 1.85 | 625.1 | - |
+| 18 | 25 | 8,088 | 0.0 | 15.0 | 372.1 | 1.00 | 0.910 | 1.00 | 1.90 | 643.3 | - |
+| 19 | 25 | 9,296 | 0.0 | 15.0 | 373.1 | 1.00 | 0.915 | 1.00 | 1.95 | 665.8 | - |
+| 20 | 25 | 10,830 | 0.0 | 15.3 | 381.2 | 1.00 | 0.920 | 1.00 | 2.00 | 701.3 | - |
+| 21 | 25 | 12,183 | 0.0 | 15.7 | 392.4 | 1.00 | 0.925 | 1.00 | 2.03 | 735.0 | - |
+| 22 | 25 | 12,508 | 0.0 | 15.8 | 395.0 | 1.00 | 0.930 | 1.00 | 2.05 | 753.1 | - |
+| 23 | 25 | 12,471 | 0.0 | 15.8 | 394.3 | 1.00 | 0.935 | 1.00 | 2.08 | 764.9 | - |
+| 24 | 25 | 12,305 | 0.0 | 15.7 | 393.4 | 1.00 | 0.940 | 1.00 | 2.10 | 776.6 | - |
+| 25 | 25 | 12,114 | 0.0 | 15.7 | 391.9 | 1.00 | 0.945 | 1.00 | 2.12 | 786.9 | - |
+| 26 | 25 | 12,107 | 0.0 | 15.7 | 391.8 | 1.00 | 0.950 | 1.00 | 2.15 | 800.3 | - |
+| 27 | 25 | 12,096 | 0.0 | 15.7 | 391.5 | 1.00 | 0.955 | 1.00 | 2.17 | 813.2 | - |
+| 28 | 25 | 12,046 | 0.0 | 15.7 | 391.3 | 1.00 | 0.960 | 1.00 | 2.20 | 826.4 | - |
+| 29 | 25 | 11,876 | 0.0 | 15.6 | 389.5 | 1.00 | 0.965 | 1.00 | 2.22 | 836.4 | - |
+| 30 | 25 | 11,990 | 0.0 | 15.6 | 390.8 | 1.00 | 0.970 | 1.00 | 2.25 | 852.8 | - |
+| 31 | 25 | 12,257 | 0.0 | 15.7 | 392.8 | 1.00 | 0.975 | 1.00 | 2.28 | 871.2 | - |
+| 32 | 25 | 13,853 | 0.0 | 16.2 | 405.8 | 1.00 | 0.980 | 1.00 | 2.30 | 914.6 | - |
+| 33 | 25 | 15,121 | 7.0 | 16.6 | 414.0 | 1.00 | 0.982 | 1.00 | 2.33 | 961.7 | - |
+| 34 | 25 | 15,397 | 8.7 | 16.7 | 417.7 | 1.00 | 0.982 | 1.00 | 2.35 | 984.4 | - |
+| 35 | 25 | 15,348 | 8.4 | 16.7 | 417.6 | 1.00 | 0.987 | 1.00 | 2.38 | 999.1 | - |
+| 36 | 25 | 15,372 | 8.5 | 16.7 | 415.0 | 1.00 | 0.990 | 1.00 | 2.40 | 1,006.2 | - |
+| 37 | 25 | 15,262 | 7.8 | 16.7 | 414.9 | 1.00 | 0.992 | 1.00 | 2.42 | 1,017.5 | - |
+| 38 | 25 | 15,216 | 7.6 | 16.7 | 415.4 | 1.00 | 0.995 | 1.00 | 2.45 | 1,031.1 | - |
+| 39 | 25 | 15,041 | 6.5 | 16.6 | 414.6 | 1.00 | 1.000 | 1.00 | 2.47 | 1,042.1 | - |
+| 40 | 25 | 15,387 | 8.6 | 16.7 | 416.0 | 1.00 | 1.007 | 1.00 | 2.50 | 1,068.6 | - |
+| 41 | 25 | 17,413 | 21.2 | 17.4 | 433.3 | 1.00 | 1.013 | 1.00 | 2.53 | 1,163.1 | - |
+| 42 | 25 | 17,893 | 24.2 | 17.5 | 438.0 | 1.00 | 1.020 | 1.15 | 2.55 | 1,382.5 | - |
+| 43 | 25 | 17,630 | 22.6 | 17.4 | 431.8 | 1.00 | 1.027 | 1.15 | 2.58 | 1,381.4 | - |
+| 44 | 25 | 17,598 | 22.4 | 17.4 | 434.9 | 1.00 | 1.033 | 1.15 | 2.60 | 1,412.7 | - |
+| 45 | 26 | 17,297 | 20.5 | 17.3 | 450.6 | 1.00 | 1.040 | 1.15 | 2.62 | 1,478.9 | - |
+| 46 | 26 | 17,234 | 20.1 | 17.3 | 449.7 | 1.00 | 1.047 | 1.15 | 2.65 | 1,498.4 | - |
+| 47 | 26 | 17,098 | 19.3 | 17.3 | 448.9 | 1.00 | 1.053 | 1.15 | 2.67 | 1,517.0 | - |
+| 48 | 22 | 17,056 | 19.0 | 17.3 | 323.3 | 1.00 | 0.920 | 1.15 | 2.70 | 977.8 | - |
+| 49 | 22 | 17,417 | 21.2 | 17.4 | 338.6 | 1.00 | 0.920 | 1.15 | 2.72 | 1,037.5 | - |
+| 50 | 22 | 17,512 | 21.8 | 17.4 | 353.1 | 1.00 | 0.922 | 1.15 | 2.75 | 1,093.8 | - |
+| 51 | 22 | 17,417 | 21.2 | 17.4 | 368.4 | 1.00 | 0.927 | 1.15 | 2.78 | 1,153.2 | - |
+| 52 | 22 | 17,724 | 23.2 | 17.5 | 377.2 | 1.00 | 0.932 | 1.15 | 2.80 | 1,202.0 | - |
+| 53 | 22 | 19,427 | 33.7 | 18.0 | 390.8 | 1.00 | 0.937 | 1.15 | 2.83 | 1,292.9 | - |
+| 54 | 22 | 20,510 | 40.5 | 18.4 | 396.0 | 1.00 | 0.937 | 1.15 | 2.85 | 1,341.2 | - |
+| 55 | 22 | 20,916 | 43.0 | 18.5 | 393.1 | 1.00 | 0.942 | 1.15 | 2.88 | 1,359.0 | - |
+| 56 | 22 | 20,816 | 42.4 | 18.5 | 398.0 | 1.00 | 0.947 | 1.15 | 2.90 | 1,391.6 | - |
+| 57 | 22 | 20,706 | 41.7 | 18.4 | 398.9 | 1.00 | 0.952 | 1.15 | 2.92 | 1,411.6 | - |
+| 58 | 22 | 20,612 | 41.1 | 18.4 | 400.3 | 1.00 | 0.957 | 1.15 | 2.95 | 1,433.8 | - |
+| 59 | 22 | 20,500 | 40.4 | 18.4 | 400.2 | 1.00 | 0.962 | 1.15 | 2.97 | 1,450.8 | - |
+| 60 | 21 | 20,563 | 40.8 | 18.4 | 381.7 | 1.00 | 0.937 | 1.15 | 3.00 | 1,366.4 | - |
+
+> `wealth` is `IIncidentTarget.PlayerWealthForStoryteller` — what the storyteller reads, not a figure computed here. `pop` is the roster the curve itself sums over (`PlayerPawnsForStoryteller`), which is the attended slice, not the head count; table 3 carries `GodRollup.TotalPopulation` beside it. `clamped?` is `min` or `max` when `GenMath.Clamp` actually bound the result at 35 or 10,000 — **a run sitting on a clamp is a run in which the whole curve above it is doing nothing**. reconstruction: 61/61 days where these columns multiply back to `DefaultThreatPointsNow`'s own answer.
+
+### 2. what actually fired
+
+| day | defName | category | points at fire | fired? | what it did |
+| --- | --- | --- | --- | --- | --- |
+| 1 | TraderCaravanArrival | FactionArrival | 0.0 | yes | a caravan landed |
+| 1 | TraderCaravanArrival | FactionArrival | 0.0 | yes | a trader was generated but landed nowhere |
+| 4 | Earthquake | Misc | 0.0 | yes | razed 166 structures |
+| 4 | ManhunterPack | ThreatBig | 347.8 | yes | a pack of 4 turned manhunter |
+| 12 | ManhunterPack | ThreatBig | 525.3 | yes | a pack of 7 turned manhunter |
+| 14 | RaidEnemy | ThreatBig | 563.4 | yes | killed 1; 14 raiders arrived; from Grey march; landed on the watched map, outcome not yet decided |
+| 15 | WandererJoin | Misc | 0.0 | yes | no observable effect |
+| 19 | ManhunterPack | ThreatBig | 643.9 | yes | a pack of 10 turned manhunter |
+| 22 | ColdSnap | Misc | 0.0 | yes | began ColdSnap |
+| 26 | HeatWave | Misc | 0.0 | yes | began HeatWave |
+| 29 | TraderCaravanArrival | FactionArrival | 0.0 | yes | a caravan landed |
+| 30 | TraderCaravanArrival | FactionArrival | 0.0 | yes | a caravan landed |
+| 33 | TraderCaravanArrival | FactionArrival | 0.0 | yes | a caravan landed |
+| 42 | ColdSnap | Misc | 0.0 | yes | began ColdSnap |
+| 43 | Earthquake | Misc | 0.0 | yes | no observable effect |
+| 45 | WandererJoin | Misc | 0.0 | yes | no observable effect |
+| 48 | RaidEnemy | ThreatBig | 1,516.1 | yes | killed 4; 38 raiders arrived; from Steel vale; landed on the watched map, outcome not yet decided |
+| 52 | Flashstorm | Misc | 0.0 | yes | began Flashstorm |
+| 53 | HeatWave | Misc | 0.0 | yes | began HeatWave |
+
+> `points at fire` is the `IncidentParms.points` the worker was actually handed, which is **not** table 1's daily sample and is not meant to be. `StorytellerUtility.DefaultParmsNow` gives points only to the two threat categories, so every other category reads 0.0 and that means "this incident does not spend threat points", not "the storyteller had none". A threat incident marked `pointsScaleable` is additionally jittered by its comp's `randomPointsFactorRange` (`StorytellerComp_RandomMain`), so it lands beside the curve rather than on it.
+
+> `fired?` is the worker's own return value, read off the chronicle tail by object identity — see the class doc. **`nothing (stub worker)` is not a formatting choice**: 0 of 19 firings ran a worker whose effect method is a bare `return true`, detected from its IL rather than from a list of names. 0 firings were refused by their worker (`fired? = no`), and 3 fired a real worker that moved nothing this instrument can see (`no observable effect`), which is a weaker claim than "it did nothing" — the class doc lists exactly what the column can and cannot see, and pawns downed is not on it.
+
+> **Orphaned attribution:** a source-keyed ledger grew for a defName with no open firing (killed 0, razed 30, denied 0.0). That harm happened and this table does not show which firing owns it. It is a defect in this instrument, not in the game.
+
+### 3. the shape of the run
+
+| reading | value |
+| --- | --- |
+| threat points min / median / max | 262.5 / 852.8 / 1,517.0 |
+| mean absolute day-on-day change in points | 40.78 |
+| effective incidents (fired, not a stub) | 19 |
+| effective incidents per 10 days | 3.17 |
+| days with any effective incident | 17/60 |
+| longest quiet stretch, effective (days) | 8 |
+| attempted firings (all, incl. stubs and refusals) | 19 |
+| attempted firings per 10 days | 3.17 |
+| days with any attempted firing | 17/60 |
+| longest quiet stretch, attempted (days) | 8 |
+
+> **The gap between the `effective` and `attempted` rows is the reading this suite exists for.** A stub worker returns true, spends its refire timer and records a chronicle line, so it counts as an incident everywhere except in what the player experiences. `longest quiet stretch` counts consecutive days with nothing at all, measured over days 1..60.
+
+### was it interesting
+
+| moments | eventful days | food swing | mood swing | pop swing | deaths | peak downed | end pop (all tiers) | era |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 15 | 10/60 | 0.39 | 0.53 | 5 | 9 | 7 | 21 | Agrarian |
+
+> Carried over from `--suite probe` so a storyteller reading and an outcome reading sit in the same run. `moments` is `MomentCurator`'s own judgement of what was worth remembering and is the better reading of the two — see `CLAUDE.md`. Flat is the failure mode; none of these is a score. `peak downed` is the most citizens on the roster down on any one sampled day — a run-level reading, because this port attributes a downing to no incident (class doc).
+
+### 4. is it deterministic
+
+| series | days compared | identical |
+| --- | --- | --- |
+| threat points (the `points` column) | 8 | yes |
+| curve inputs (wealth, per-colonist, the four factors) | 8 | yes |
+| world beside it (pop, mood, food, deaths, moments) | 8 | yes |
+| firing log | 8 | yes |
+
+> A **prefix** comparison over 8 days: two runs of one seed either agree from the first sample or they do not. The run is split into four series because they can fail apart, and which one failed is the whole of the information. The threat points are a pure function of the roster, the stores and the clock; the curve inputs are where those are read; the world beside them is what the settlement actually did; and the firing log is where the seeded draws land. **Points can replay exactly while the world under them does not** — below the wealth curve's 14,000 floor the points do not read stores at all, so a settlement that hauled one fewer meal moves the world rows and cannot move the points row.
+
+### throughput
+
+| days | ticks | seconds | ticks/s | seconds/day |
+| --- | --- | --- | --- | --- |
+| 60 | 3,600,000 | 4,530.3 | 795 | 75.50 |
+
+> Watched and played is the expensive arm — a generated interior and citizens at Full tier — so this is what decides the affordable window. The determinism re-run above is not counted here.
+
+real	81m39.301s
+user	81m5.106s
+sys	0m45.280s
+exit 0

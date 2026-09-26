@@ -1,0 +1,29 @@
+[M1-strict-inequality] mutated src/SimWorld.Core/AI/Group/Trigger.cs
+[M1-strict-inequality/mutated] Failed!  - Failed:     2, Passed:    10, Skipped:     0, Total:    12, Duration: 290 ms - SimWorld.Core.Tests.dll (net8.0)
+      Failed SimWorld.Tests.AI.RaidRetreatTests.A_raid_that_loses_half_its_number_breaks_and_runs [3 ms]
+      Failed SimWorld.Tests.AI.RaidRetreatTests.A_raid_saved_mid_flee_loads_still_fleeing_and_still_leaves [1 ms]
+[M1-strict-inequality] restored byte-identical and touched
+[M1-strict-inequality/restored] Passed!  - Failed:     0, Passed:    12, Skipped:     0, Total:    12, Duration: 300 ms - SimWorld.Core.Tests.dll (net8.0)
+[M1-strict-inequality] rebuilt assembly is newer than the restored source
+[M2-flee-unreachable] mutated src/SimWorld.Core/AI/Group/Lord.cs
+[M2-flee-unreachable/mutated] Failed!  - Failed:     3, Passed:     9, Skipped:     0, Total:    12, Duration: 251 ms - SimWorld.Core.Tests.dll (net8.0)
+      Failed SimWorld.Tests.AI.RaidRetreatTests.A_raid_that_loses_half_its_number_breaks_and_runs [3 ms]
+      Failed SimWorld.Tests.AI.RaidRetreatTests.Fleeing_raiders_leave_the_map_and_are_not_counted_dead [100 ms]
+      Failed SimWorld.Tests.AI.RaidRetreatTests.A_raid_saved_mid_flee_loads_still_fleeing_and_still_leaves [1 ms]
+[M2-flee-unreachable] restored byte-identical and touched
+[M2-flee-unreachable/restored] Passed!  - Failed:     0, Passed:    12, Skipped:     0, Total:    12, Duration: 254 ms - SimWorld.Core.Tests.dll (net8.0)
+[M2-flee-unreachable] rebuilt assembly is newer than the restored source
+[M1b-strict-inequality] mutated src/SimWorld.Core/AI/Group/Trigger.cs
+[M1b-strict-inequality/mutated] Failed!  - Failed:     3, Passed:     9, Skipped:     0, Total:    12, Duration: 230 ms - SimWorld.Core.Tests.dll (net8.0)
+      Failed SimWorld.Tests.AI.RaidRetreatTests.A_raid_that_loses_half_its_number_breaks_and_runs [3 ms]
+      Failed SimWorld.Tests.AI.RaidRetreatTests.Fleeing_raiders_leave_the_map_and_are_not_counted_dead [87 ms]
+      Failed SimWorld.Tests.AI.RaidRetreatTests.A_raid_saved_mid_flee_loads_still_fleeing_and_still_leaves [1 ms]
+[M1b-strict-inequality] restored byte-identical and touched
+[M1b-strict-inequality/restored] Passed!  - Failed:     0, Passed:    12, Skipped:     0, Total:    12, Duration: 248 ms - SimWorld.Core.Tests.dll (net8.0)
+[M1b-strict-inequality] rebuilt assembly is newer than the restored source
+[M3-timeout-early] mutated src/SimWorld.Core/AI/Group/Trigger.cs
+[M3-timeout-early/mutated] Failed!  - Failed:     1, Passed:    11, Skipped:     0, Total:    12, Duration: 274 ms - SimWorld.Core.Tests.dll (net8.0)
+      Failed SimWorld.Tests.AI.RaidRetreatTests.A_raid_that_has_been_at_it_long_enough_gives_up_and_leaves [12 ms]
+[M3-timeout-early] restored byte-identical and touched
+[M3-timeout-early/restored] Passed!  - Failed:     0, Passed:    12, Skipped:     0, Total:    12, Duration: 280 ms - SimWorld.Core.Tests.dll (net8.0)
+[M3-timeout-early] rebuilt assembly is newer than the restored source

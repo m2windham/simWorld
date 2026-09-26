@@ -25,13 +25,13 @@ namespace SimWorld.AI
     /// <see cref="ThinkNode_Priority"/> whose tiers are the phases of the job in order — close on the enemy,
     /// then, when there is no enemy left, leave. The tree is re-evaluated every time the pawn needs a job, so
     /// each tier's own "do I apply?" answers continuously what a <c>Trigger</c> would have answered once.</item>
-    /// <item><b>What is genuinely lost is group feedback</b>, and it is worth naming precisely: no phase
-    /// change can depend on a fact about the <i>squad</i> rather than about the map — "we have lost half our
-    /// number, break off" is the canonical one, since nothing here remembers how many arrived. Every pawn
-    /// decides alone, from what it can see, and reaches the same answer at slightly different moments rather
-    /// than all at once. A morale/retreat model would need the Lord back (or a roster object that is one in
-    /// all but name); it is recorded as absent here rather than improvised, the same way
-    /// <see cref="CombatPostureUtility"/> records that nobody flees.</item>
+    /// <item><b>Group feedback came back with the Lord.</b> A phase change that depends on a fact about the
+    /// <i>squad</i> rather than the map — "we have lost half our number, break off", or "we have been at this
+    /// long enough" — needs something that remembers how many arrived and when. That is
+    /// <see cref="Group.Lord"/>, a minimal port of RimWorld's: it owns the raid's roster, runs
+    /// <see cref="Group.LordJob_AssaultColony"/>'s triggers, and on a transition hands every member the next
+    /// toil's duty through this same field. The duty is still the whole of what a pawn does; the lord only
+    /// decides which one.</item>
     /// </list>
     ///
     /// <para/><b>Why a Def carrying a think node rather than a hard-coded tier per arrival kind.</b> The bug

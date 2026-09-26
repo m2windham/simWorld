@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Lane-private (lane/retreat). References the after tree's Core, exported to the lane scratch, so a later edit
+       to the worktree cannot change a binary that is measuring. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AssemblyName>RetreatDiag</AssemblyName>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="/tmp/claude-0/-home-user-simWorld/6fdaa363-1092-5a74-9175-8c28a59788fa/scratchpad/lane-retreat/after/src/SimWorld.Core/SimWorld.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -88,8 +88,7 @@ code-deaf SimWorld.Defs.ThingDef.selectable | Host-facing: whether a UI may sele
 code-deaf SimWorld.Director.StorytellerDef.persona | Host-facing flavour: the narrator's in-fiction name, for the host to speak. Its own doc records that the naming is still open.
 code-deaf SimWorld.Economy.TraderKindDef.orbital | Blocked on orbital trade, which needs caravans going up rather than traders arriving; the field's own doc calls it a gating flag only.
 code-deaf SimWorld.Factions.FactionDef.leaderTitle | Host-facing flavour text; the snapshot does not carry a leader title for the host to show.
-code-deaf SimWorld.Factions.FactionDef.pawnSingular | Host-facing text ("a tribesperson"); nothing in the core composes a sentence.
-code-deaf SimWorld.Factions.FactionDef.pawnsPlural | As pawnSingular, for the plural form.
+code-deaf SimWorld.Factions.FactionDef.pawnSingular | Host-facing text ("a tribesperson"); no sentence the core composes names one pawn of a faction. The plural form is read by a raid's lord ("Tribespeople from … are fleeing").
 code-deaf SimWorld.Health.BodyPartDef.beautyRelated | Blocked on appearance-driven social thoughts: nothing weighs a scar on a beauty-related part.
 code-deaf SimWorld.Health.BodyPartDef.canSuggestAmputation | Blocked on surgery bills: no code offers an amputation, so nothing asks which parts may be suggested.
 code-deaf SimWorld.Health.DamageDef.hasForcefulImpact | Blocked on knockback/stagger, unported, so nothing asks whether a damage type shoves.

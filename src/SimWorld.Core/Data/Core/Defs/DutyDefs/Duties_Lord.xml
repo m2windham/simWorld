@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The duties a raid's Lord hands out once the assault is over (system 9: AI — SimWorld.AI.Group). Its own
+    file rather than entries in Duties_Assault.xml: DefLoader.AddDirectory reads every XML file under a Def
+    folder, so an additive Def needs no edit to a shared file (CLAUDE.md). Bound by
+    SimWorld.AI.Group.LordDutyDefOf.
+
+    Neither duty has a fight tier, and neither needs one to stop fighting: the fight tier sits above every
+    duty in both think trees, and CombatPostureUtility gives a pawn carrying either of these the acquire
+    radius of the unarmed — it fights back only at arm's length. That is RimWorld's shape read the other way
+    up. There, fighting lives inside the AssaultColony duty, so a raider handed ExitMapBest simply stops
+    having a fight tier.
+  -->
+
+  <!-- RimWorld: Duties_Misc.xml ExitMapBest, whose whole think node is JobGiver_ExitMapBest. -->
+  <DutyDef>
+    <defName>ExitMapBest</defName>
+    <thinkNode Class="SimWorld.AI.Group.JobGiver_ExitMapBest" />
+  </DutyDef>
+
+  <!--
+    RimWorld: the PanicFlee mental state's subtree in SubTrees_Misc.xml — JobGiver_ExitMapPanic, then
+    JobGiver_WanderAnywhere, "can happen if there is no way to exit the map". Carried as a duty because this
+    port's mental states have no per-state subtree; see SimWorld.AI.Group.LordToil_PanicFlee.
+  -->
+  <DutyDef>
+    <defName>PanicFlee</defName>
+    <thinkNode Class="SimWorld.AI.ThinkNode_Priority">
+      <subNodes>
+        <li Class="SimWorld.AI.Group.JobGiver_ExitMapPanic" />
+        <li Class="SimWorld.AI.JobGiver_WanderAnywhere" />
+      </subNodes>
+    </thinkNode>
+  </DutyDef>
+
+</Defs>

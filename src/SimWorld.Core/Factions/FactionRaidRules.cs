@@ -53,12 +53,14 @@ namespace SimWorld.Factions
         /// Share of a war band that can be killed before the rest of it breaks off, for a faction whose def
         /// sets <see cref="FactionDef.autoFlee"/>.
         ///
-        /// <para/><b>RimWorld's number, recalled and not sourced</b> (no RimWorld source in this sandbox): its
-        /// <c>LordJob_AssaultColony</c> builds an assault graph with a transition out to <c>ExitMap</c> fired
-        /// by <c>Trigger_FractionPawnsLost(0.5f)</c>, and that transition is added <i>only</i> when the
-        /// assaulting faction's def sets <c>autoFlee</c>. Half is therefore what this stands on, and
-        /// <c>FactionRaidRulesTests</c> pins the <i>ordering</i> it produces (a band that flees always loses
-        /// strictly fewer than one that does not, and never all of itself) rather than the literal.
+        /// <para/><b>RimWorld's number, now sourced.</b> RimWorld 1.0's <c>Lord.SetJob</c> (josh-m/RW-Decompile)
+        /// gives every toil of a lord whose faction sets <c>autoFlee</c> a transition to
+        /// <c>LordToil_PanicFlee</c> on <c>Trigger_FractionPawnsLost(0.5f)</c> — in <c>Lord</c>, not in
+        /// <c>LordJob_AssaultColony</c> as this doc once recalled. 1.6 rolls the fraction per lord from
+        /// <c>FactionDef.attackersDownPercentageRangeForAutoFlee</c> (0.4~0.7). The map path reads this same
+        /// constant (<c>AI.Group.Lord.SetJob</c>), so a watched raid and an unwatched one break at the same
+        /// point. <c>FactionRaidRulesTests</c> pins the <i>ordering</i> it produces here (a band that flees
+        /// always loses strictly fewer than one that does not, and never all of itself) rather than the literal.
         /// </summary>
         public const float WithdrawAfterLosingFraction = 0.5f;
 
@@ -68,9 +70,8 @@ namespace SimWorld.Factions
         ///
         /// <para/><b>Why this is where <see cref="FactionDef.autoFlee"/> lands, and what it deliberately is
         /// not.</b> RimWorld expresses the flag as a transition in a <c>Lord</c> graph: an assault squad that
-        /// has lost half its members walks off the map. This port has no <c>Lord</c>, no squad-level AI and —
-        /// as <c>AI.CombatPostureUtility</c> records in as many words — no flight behaviour for anyone, so
-        /// there is nothing on the *map* path for the flag to switch. There is on the other path:
+        /// has lost half its members breaks and runs off the map. On the map path this port does the same
+        /// (<c>AI.Group.Lord</c>). On the other path there is no squad to run:
         /// <c>Director.SettlementRaidResolver</c> resolves a raid on an unwatched settlement as one
         /// engagement, and the only thing it needs to know about a war band beyond its strength is how much
         /// of itself it will spend. A band that withdraws at half losses cannot lose more than half; a band
@@ -79,8 +80,7 @@ namespace SimWorld.Factions
         ///
         /// <para/>This is SimWorld's own translation of a RimWorld mechanism into the abstract-resolution path
         /// RimWorld does not have — the same relationship <c>RaidResolutionTuning</c>'s whole doc describes —
-        /// and it is recorded as such. The map path still has no flight: a raid the god is watching fights to
-        /// the last pawn whatever its def says, and that gap is <c>CombatPostureUtility</c>'s to close.
+        /// and it is recorded as such.
         /// </summary>
         /// <param name="attacker">The raiding faction; null (a squad posed by hand) reads as "does not flee".</param>
         /// <param name="bandSize">How many raiders are still alive to be killed.</param>
