@@ -12,7 +12,8 @@
     <gerund>building roof</gerund>
     <workType>Construction</workType>
     <priorityInType>75</priorityInType>
-    <!-- Below Repair (80) and the three Construct* givers above it: a settlement finishes what it already
+    <!-- RimWorld's own priorityInType could not be sourced: the decompile carries no Defs. The order is
+         reasoned, not ported. Below Repair (80) and the three Construct* givers above it: a settlement finishes what it already
          started and patches what it already has before it closes a room over its own head. Wired to a real
          scanner (system 95: Roofs): builds a constructed roof over every still-unroofed cell of
          AreaManager.BuildRoof — AutoBuildRoofAreaSetter's own additions and anything the player paints with
