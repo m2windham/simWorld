@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Roof work (system 95: Roofs). Its own file rather than an addition to WorkGivers.xml: the loader reads
+       every file under this directory, so a new file cannot collide with another lane mid-edit on the shared
+       one (CLAUDE.md). -->
+
+  <WorkGiverDef>
+    <defName>BuildRoof</defName>
+    <label>build roof</label>
+    <verb>Build roof</verb>
+    <gerund>building roof</gerund>
+    <workType>Construction</workType>
+    <priorityInType>75</priorityInType>
+    <!-- Below Repair (80) and the three Construct* givers above it: a settlement finishes what it already
+         started and patches what it already has before it closes a room over its own head. Wired to a real
+         scanner (system 95: Roofs): builds a constructed roof over every still-unroofed cell of
+         AreaManager.BuildRoof — AutoBuildRoofAreaSetter's own additions and anything the player paints with
+         MapCommands.SetBuildRoofArea alike. -->
+    <giverClass>SimWorld.Building.WorkGiver_BuildRoof</giverClass>
+    <scanCells>true</scanCells>
+    <scanThings>false</scanThings>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>RemoveRoof</defName>
+    <label>remove roof</label>
+    <verb>Remove roof</verb>
+    <gerund>removing roof</gerund>
+    <workType>Construction</workType>
+    <priorityInType>70</priorityInType>
+    <!-- Wired to a real scanner (system 95: Roofs): strips the roof off every still-roofed cell of
+         AreaManager.NoRoof, the player's own override — see WorkGiver_RemoveRoof's own doc for what RimWorld's
+         own priority ordering this drops. -->
+    <giverClass>SimWorld.Building.WorkGiver_RemoveRoof</giverClass>
+    <scanCells>true</scanCells>
+    <scanThings>false</scanThings>
+  </WorkGiverDef>
+
+</Defs>

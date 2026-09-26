@@ -45,6 +45,12 @@ namespace SimWorld.Defs
         /// <see cref="Building.WorkGiver_ConstructChopWood"/>, never foraged by
         /// <see cref="Building.WorkGiver_GrowerHarvest"/> outside a growing zone.</summary>
         public bool IsTree => harvestTag == "Wood";
+
+        /// <summary>Whether a live plant of this def blocks a roof from being built over its cell (RimWorld:
+        /// <c>PlantProperties.interferesWithRoof</c>, default <c>false</c> there too). Read by
+        /// <see cref="Building.RoofUtility.FirstBlockingThing"/>; no shipped Def sets this <c>true</c> yet, so
+        /// it is inert in content today but the mechanism is real — see that class's own doc.</summary>
+        public bool interferesWithRoof;
     }
 
     /// <summary>

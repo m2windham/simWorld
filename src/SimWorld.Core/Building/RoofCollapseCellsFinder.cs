@@ -67,6 +67,28 @@ namespace SimWorld.Building
         }
 
         /// <summary>
+        /// A roof was just manually stripped from <paramref name="c"/> (RimWorld:
+        /// <c>JobDriver_RemoveRoof.DoEffect</c>'s own call into <c>CheckCollapseFlyingRoofs</c>, immediately
+        /// after its own <c>roofGrid.SetRoof(cell, null)</c>). Runs only the flying-roof half of a collapse —
+        /// a neighbouring patch of roof that reached a support only <i>through</i> the cell just stripped now
+        /// hangs with nothing under it at all — not the "too far from any support" radial half
+        /// <see cref="ProcessRoofHolderDespawned"/> also runs, which only applies when a Fillage-Full edifice
+        /// (a wall, a door, unmined rock) leaves the map; stripping a bare roof cell removes no edifice, so
+        /// nothing newly falls outside its own radius.
+        /// </summary>
+        public static void ProcessRoofRemoved(IntVec3 c, Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+
+            var marked = new MarkedCells();
+            var visited = new HashSet<IntVec3>();
+            CheckCollapseFlyingRoofs(new[] { c }, map, marked, visited);
+
+            if (marked.Count == 0) return;
+            RoofCollapserImmediate.DropRoofInCells(marked.Cells, map);
+        }
+
+        /// <summary>
         /// Marks every roofed area around <paramref name="nearCells"/> that no longer connects along the roof
         /// to any holder (RimWorld: <c>CheckCollapseFlyingRoofs</c> →
         /// <c>CheckCollapseFlyingRoofAtAndAdjInternal</c>). <paramref name="visited"/> is shared across the
