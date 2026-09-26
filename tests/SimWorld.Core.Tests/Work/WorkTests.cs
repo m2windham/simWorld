@@ -39,13 +39,14 @@ namespace SimWorld.Tests.Work
             Assert.Empty(Content.Result.Errors);
             Assert.Equal(12, DefDatabase<SkillDef>.DefCount);
             Assert.Equal(20, DefDatabase<WorkTypeDef>.DefCount);
-            // 30: the beds lane (system 16: Building) added ConstructChopWood in its own
+            // 32: the roofs lane (system 16: Building) added BuildRoof and RemoveRoof in its own
+            // WorkGiverDefs/WorkGivers_Roof.xml. Before that, 30 — the beds lane added ConstructChopWood in its own
             // WorkGiverDefs/WorkGivers_ChopWood.xml. Before that, 29 — the corpse module (system: corpses)
             // added ButcherCorpses in its own WorkGiverDefs/WorkGivers_Butchery.xml and wired HaulCorpses,
             // which had been a WorkGiver_Pending placeholder since there was no Corpse class for it to find.
             // Before that, 28 — the capture loop (system 12: Factions) adding WardenAttemptRecruit and wiring
             // WardenFeed. Work/** owns none of that content; only this literal count moves.
-            Assert.Equal(30, DefDatabase<WorkGiverDef>.DefCount);
+            Assert.Equal(32, DefDatabase<WorkGiverDef>.DefCount);
         }
 
         [Fact]

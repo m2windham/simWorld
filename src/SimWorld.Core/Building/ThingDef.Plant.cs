@@ -45,6 +45,12 @@ namespace SimWorld.Defs
         /// <see cref="Building.WorkGiver_ConstructChopWood"/>, never foraged by
         /// <see cref="Building.WorkGiver_GrowerHarvest"/> outside a growing zone.</summary>
         public bool IsTree => harvestTag == "Wood";
+
+        /// <summary>Whether a live plant of this def blocks a roof from being built over its cell (RimWorld:
+        /// <c>PlantProperties.interferesWithRoof</c>, default <c>false</c> there too). Read by
+        /// <see cref="Building.RoofUtility.FirstBlockingThing"/>. Trees set it, as RimWorld's <c>TreeBase</c>
+        /// does (<c>Plants_Trees.xml</c>), so a builder fells a tree before roofing over it.</summary>
+        public bool interferesWithRoof;
     }
 
     /// <summary>
