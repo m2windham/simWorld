@@ -258,6 +258,47 @@ namespace SimWorld.Tests.AI
             Assert.True(doctor.Asleep);
         }
 
+        // ---- asleep: firefighting is bounded by the home area ----
+
+        /// <summary>
+        /// The concern this test exists to close off: <c>FightFires</c> carries <c>emergency=true</c>, so
+        /// once it can target a fire at all, a sleeping citizen wakes for it via the same
+        /// <c>JobGiver_Work.TryGiveEmergencyJob</c> path <see cref="A_sleeping_doctor_gets_up_and_tends_a_colonist_bleeding_to_death"/>
+        /// exercises for tending. Unbounded, that is a grass fire on the far side of the map getting the whole
+        /// settlement out of bed. <see cref="AI.WorkGiver_FightFires"/>'s own home-area gate is what keeps this
+        /// one asleep and the other one not.
+        /// </summary>
+        [Fact]
+        public void A_sleeping_citizen_does_not_wake_for_a_fire_outside_the_home_area_but_wakes_for_one_inside()
+        {
+            CoreMap map = NewMap(20);
+            Faction f = NewFaction("Colony");
+            Pawn sleeper = SpawnHuman(map, new IntVec3(2, 0, 2), f, "Sleeper");
+            foreach (IntVec3 c in new CellRect(0, 0, 5, 5).ClipInsideMap(map).Cells) map.areaManager.Home[c] = true;
+            PutToSleep(sleeper);
+
+            var farCell = new IntVec3(18, 0, 18);
+            GenSpawn.Spawn(ThingMaker.MakeThing(DefDatabase<ThingDef>.GetNamed("Wall")), farCell, map);
+            Assert.True(SimWorld.Things.FireUtility.TryStartFireIn(farCell, map, 1f));
+
+            RunTicks(2 * JobDriver_LayDown.LookForOtherJobsIntervalTicks, sleeper);
+            Assert.True(sleeper.Asleep, "a fire outside the painted home area should not have woken the sleeper");
+            Assert.Equal(JobDefOf.LayDown, sleeper.jobs.curJob?.def);
+
+            var nearCell = new IntVec3(3, 0, 3);
+            GenSpawn.Spawn(ThingMaker.MakeThing(DefDatabase<ThingDef>.GetNamed("Wall")), nearCell, map);
+            Assert.True(SimWorld.Things.FireUtility.TryStartFireIn(nearCell, map, 1f));
+
+            int woke = -1;
+            for (int t = 0; t < 2 * JobDriver_LayDown.LookForOtherJobsIntervalTicks && woke < 0; t++)
+            {
+                RunTicks(1, sleeper);
+                if (!sleeper.Asleep) woke = t;
+            }
+            Assert.True(woke >= 0, "a fire inside the painted home area should have woken the sleeper");
+            Assert.Equal(FireJobDefOf.BeatFire, sleeper.jobs.curJob?.def);
+        }
+
         // ---- saved and loaded ----
 
         [Fact]

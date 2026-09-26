@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SimWorld.Building;
 using SimWorld.Pawns;
 using SimWorld.Things;
 using SimWorld.Work;
@@ -17,18 +18,29 @@ namespace SimWorld.AI
     /// <c>naturalPriority</c> of any work type in content (1400), which orders it first <i>within</i> the
     /// emergency list, ahead of emergency doctoring.
     /// <para/>
-    /// <b>Translation — no home-area gate.</b> RimWorld refuses fires outside <c>Map.areaManager.Home</c>,
-    /// so colonists do not run across the map into a forest fire. This port has the Home area
-    /// (<c>Building.AreaManager.Home</c>) but <i>nothing populates it</i> — it is empty on every map, by that
-    /// module's own admission ("nothing yet reads it"). Porting the gate 1:1 would mean no fire is ever
-    /// firefighting work, which is precisely the dormant-feature trap this codebase has been bitten by
-    /// before. The gate is therefore left out until something fills the home area, and every fire on the map
-    /// is work. The line to restore is one <c>if</c> in <see cref="HasJobOnThing"/>.
+    /// <b>The home-area gate, now ported.</b> RimWorld's <c>WorkGiver_FightFires.HasJobOnThing</c> (1.0
+    /// decompile, <c>josh-m/RW-Decompile</c>) refuses a fire outside <c>Map.areaManager.Home</c> — except a
+    /// fire riding a pawn, which it lets a bit further off the leash — so colonists do not run across the map
+    /// into a forest fire. This class's own doc used to record that gate as deliberately left out: the Home
+    /// area existed but nothing in <c>src/</c> ever wrote to it, so porting the gate 1:1 would have meant no
+    /// fire was ever firefighting work — the dormant-feature trap this codebase has been bitten by before.
+    /// <see cref="Map.View.MapCommands.SetHomeArea"/> is now that first writer (the construction-placement
+    /// lane's own addition), so the same move <see cref="Filth.CleaningBounds"/> already made applies here:
+    /// <b>the home area gates a fire only once the player has painted one</b> (<c>Home.TrueCount &gt; 0</c>);
+    /// with nothing painted, every fire is still work, exactly as before. See <see cref="IsFireToFight"/> for
+    /// the exact rule, restated from the decompile rather than RimWorld's own auto-expanding home area (which
+    /// this port has no equivalent hook for).
     /// <para/>
     /// <b>Kept:</b> RimWorld's rule that a fire riding a <i>hostile</i> pawn is not your problem.
     /// </summary>
     public sealed class WorkGiver_FightFires : WorkGiver_Scanner
     {
+        /// <summary>RimWorld's own name and value for how close (Manhattan, flat) the acting pawn must stand
+        /// to a burning ally before the home area stops mattering (1.0 decompile:
+        /// <c>WorkGiver_FightFires.NearbyPawnRadius</c>). A colonist on fire two steps outside the painted area
+        /// still gets put out.</summary>
+        public const int NearbyPawnRadius = 15;
+
         public override PathEndMode PathEndMode => PathEndMode.Touch;
 
         public override bool ShouldSkip(Pawn pawn, bool forced = false) =>
@@ -41,25 +53,57 @@ namespace SimWorld.AI
             return FireUtility.AllFires(map);
         }
 
-        /// <summary>Whether <paramref name="pawn"/> should put <paramref name="thing"/> out. Public and
-        /// static so the predicate is testable without driving a whole think tree, the shape
-        /// <c>WorkGiver_Repair.IsRepairable</c> already uses.</summary>
+        /// <summary>
+        /// Whether <paramref name="pawn"/> should put <paramref name="thing"/> out. Public and static so the
+        /// predicate is testable without driving a whole think tree, the shape
+        /// <c>WorkGiver_Repair.IsRepairable</c> already uses.
+        /// <para/>
+        /// <b>The home-area rule, restated from the 1.0 decompile.</b> A fire riding a pawn is judged
+        /// differently from one on the ground: a burning ally is only held to the home area when they are
+        /// standing more than <see cref="NearbyPawnRadius"/> tiles (Manhattan, flat) from the acting pawn — a
+        /// colonist on fire right next to you is beaten out wherever they stand, painted area or not. A fire on
+        /// anything else (a wall, a plant, the grass) is simply inside the home area or it is not, no distance
+        /// exception. Both halves apply only once <c>Home.TrueCount &gt; 0</c> — see this class's own doc for
+        /// why an unpainted home area gates nothing, here as in <see cref="Filth.CleaningBounds"/>.
+        /// </summary>
         public static bool IsFireToFight(Pawn pawn, Thing thing)
         {
             if (!(thing is Fire fire)) return false;
             if (fire.Destroyed || !fire.Spawned) return false;
             if (fire.Map != pawn.Map) return false;
 
-            // A fire on someone else's fighter is their problem. Own-faction pawns (and animals), and fires
-            // on cells or buildings, are all fair game.
-            if (fire.parent is Pawn burning
-                && !ReferenceEquals(burning, pawn)
-                && pawn.faction != null
-                && burning.faction != null
-                && pawn.faction.HostileTo(burning.faction))
+            Area home = pawn.Map!.areaManager.Home;
+            bool homeAreaIsSet = home.TrueCount > 0;
+
+            if (fire.parent is Pawn burning && !ReferenceEquals(burning, pawn))
+            {
+                // A fire on someone else's fighter is their problem. Own-faction pawns (and animals), and
+                // fires on cells or buildings, are all fair game.
+                if (pawn.faction != null && burning.faction != null && pawn.faction.HostileTo(burning.faction))
+                {
+                    return false;
+                }
+
+                // RimWorld only lets the home area judge a fire on a pawn "on our side" — same faction, or a
+                // prisoner either one of them holds (1.0 decompile: pawn2.Faction == pawn.Faction ||
+                // pawn2.HostFaction == pawn.Faction || pawn2.HostFaction == pawn.HostFaction). A fire on a
+                // wild animal or an unrelated third party is never held to it at all, home area or not.
+                bool sameSide = ReferenceEquals(burning.faction, pawn.faction)
+                    || ReferenceEquals(PawnUtility.HostFactionOf(burning), pawn.faction)
+                    || (pawn.faction != null
+                        && ReferenceEquals(PawnUtility.HostFactionOf(burning), PawnUtility.HostFactionOf(pawn)));
+
+                if (sameSide && homeAreaIsSet && !home[fire.Position]
+                    && (pawn.Position - burning.Position).LengthManhattan > NearbyPawnRadius)
+                {
+                    return false;
+                }
+            }
+            else if (homeAreaIsSet && !home[fire.Position])
             {
                 return false;
             }
+
             return true;
         }
 

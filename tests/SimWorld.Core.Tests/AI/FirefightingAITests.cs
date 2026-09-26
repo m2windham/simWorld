@@ -96,6 +96,75 @@ namespace SimWorld.Tests.AI
             Assert.True(WorkGiver_FightFires.IsFireToFight(citizen, onRaider));
         }
 
+        // ---- the home-area gate ----
+
+        /// <summary>
+        /// RimWorld: <c>WorkGiver_FightFires.HasJobOnThing</c> (1.0 decompile) refuses a fire on the ground
+        /// outside <c>Map.areaManager.Home</c>. This port only enforces that once a home area has actually been
+        /// painted (<c>Home.TrueCount &gt; 0</c>) — see the class doc, and <see cref="Filth.CleaningBounds"/>
+        /// for the same move made once before. Every other test in this file paints no home area at all, so
+        /// this is the one place that behaviour is exercised.
+        /// </summary>
+        [Fact]
+        public void A_fire_outside_a_painted_home_area_is_not_firefighting_work_and_one_inside_is()
+        {
+            CoreMap map = NewMap(20, 20);
+            Pawn citizen = SpawnHuman(map, new IntVec3(1, 0, 1));
+            foreach (IntVec3 c in new CellRect(0, 0, 5, 5).ClipInsideMap(map).Cells) map.areaManager.Home[c] = true;
+
+            Fire outside = LightAWallOnFire(map, new IntVec3(18, 0, 18));
+            Assert.False(WorkGiver_FightFires.IsFireToFight(citizen, outside), "outside the painted home area");
+
+            Fire inside = LightAWallOnFire(map, new IntVec3(3, 0, 3));
+            Assert.True(WorkGiver_FightFires.IsFireToFight(citizen, inside), "inside the painted home area");
+        }
+
+        /// <summary>
+        /// With nothing painted at all, the gate does not apply and every fire is still work — the dormant-
+        /// feature trap this class's own doc names, avoided the same way <c>CleaningBounds</c> avoids it.
+        /// </summary>
+        [Fact]
+        public void With_no_home_area_painted_a_distant_fire_is_still_firefighting_work()
+        {
+            CoreMap map = NewMap(20, 20);
+            Pawn citizen = SpawnHuman(map, new IntVec3(0, 0, 0));
+            Assert.Equal(0, map.areaManager.Home.TrueCount);
+
+            Fire farFire = LightAWallOnFire(map, new IntVec3(19, 0, 19));
+            Assert.True(WorkGiver_FightFires.IsFireToFight(citizen, farFire));
+        }
+
+        /// <summary>
+        /// RimWorld's one exception to the home-area gate: a fire riding an ally within
+        /// <see cref="WorkGiver_FightFires.NearbyPawnRadius"/> tiles (Manhattan, flat) of the acting pawn is
+        /// fought wherever it stands. Past that radius, an ally's fire is judged exactly like a terrain fire.
+        /// </summary>
+        [Fact]
+        public void A_fire_on_a_nearby_ally_overrides_the_home_area_but_a_distant_one_does_not()
+        {
+            CoreMap map = NewMap(40, 40);
+            FactionDef anyFaction = DefDatabase<FactionDef>.AllDefsListForReading.First();
+            var ours = new Faction(anyFaction, "Ours", "Faction_Ours_HomeAreaTest");
+
+            Pawn citizen = SpawnHuman(map, new IntVec3(0, 0, 0));
+            citizen.faction = ours;
+            foreach (IntVec3 c in new CellRect(0, 0, 3, 3).ClipInsideMap(map).Cells) map.areaManager.Home[c] = true;
+
+            Pawn nearAlly = SpawnHuman(map, new IntVec3(5, 0, 5), "NearAlly");
+            nearAlly.faction = ours;
+            nearAlly.TryAttachFire(Fire.MinFireSize);
+            var onNearAlly = (Fire)FireUtility.AllFires(map).Single(f => ((Fire)f).parent == nearAlly);
+            Assert.True(WorkGiver_FightFires.IsFireToFight(citizen, onNearAlly),
+                "within NearbyPawnRadius of the acting pawn, the home area does not matter");
+
+            Pawn farAlly = SpawnHuman(map, new IntVec3(35, 0, 35), "FarAlly");
+            farAlly.faction = ours;
+            farAlly.TryAttachFire(Fire.MinFireSize);
+            var onFarAlly = (Fire)FireUtility.AllFires(map).Single(f => ((Fire)f).parent == farAlly);
+            Assert.False(WorkGiver_FightFires.IsFireToFight(citizen, onFarAlly),
+                "far from the acting pawn and outside the painted home area: not fought");
+        }
+
         // ---- end to end ----
 
         [Fact]

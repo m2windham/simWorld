@@ -16,6 +16,33 @@ namespace SimWorld.AI
     /// </summary>
     public static class RestUtility
     {
+        /// <summary>
+        /// Whether <paramref name="pawn"/> is currently resting in a bed (RimWorld: <c>RestUtility.InBed</c>,
+        /// which reads <c>Pawn.CurrentBed()</c> — spawned, has a job, <c>GetPosture() == LayingInBed</c>, and a
+        /// <c>Building_Bed</c> stands at the pawn's own cell with that pawn in one of its sleeping slots; 1.0
+        /// decompile, <c>RimWorld.RestUtility.CurrentBed</c>/<c>InBed</c>).
+        /// <para/>
+        /// <b>Trimmed the same way <see cref="FindBedFor"/> already is.</b> This port has no posture system and
+        /// no per-slot bed-occupant tracking (every <see cref="ConstructionThingDefOf.Bed"/> is unowned and
+        /// open, per <see cref="FindBedFor"/>'s own doc), and a downed patient carried here is not given a job
+        /// at all — <see cref="JobDriver_TakeToBed"/> only ever moves <c>patient.Position</c> to the bed's
+        /// <see cref="BedUtility.GetSleepingSlotPos(Things.Thing, int)"/> and stops. So "in bed" here means
+        /// exactly the fact that placement leaves behind: a Bed Thing standing on the pawn's own cell. That is
+        /// the one honest reading available without inventing occupant state this module does not own, and it
+        /// is enough to answer the question every caller actually asks with it — has this patient already been
+        /// carried to a bed.
+        /// </summary>
+        public static bool InBed(this Pawn pawn)
+        {
+            if (!pawn.Spawned || pawn.Map == null) return false;
+            IReadOnlyList<Thing> here = pawn.Map.thingGrid.ThingsListAt(pawn.Position);
+            for (int i = 0; i < here.Count; i++)
+            {
+                if (here[i].def == ConstructionThingDefOf.Bed) return true;
+            }
+            return false;
+        }
+
         /// <summary>Nearest reachable, unclaimed spawned <see cref="ConstructionThingDefOf.Bed"/> on
         /// <paramref name="pawn"/>'s own map, or null when it has no map or no bed qualifies — the caller
         /// falls back to sleeping on the ground exactly as before this method existed.</summary>

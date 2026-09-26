@@ -317,6 +317,43 @@ namespace SimWorld.Tests.Health
             Assert.Equal(bedCell, downed.Position);
         }
 
+        /// <summary>
+        /// RimWorld: <c>WorkGiver_RescueDowned.HasJobOnThing</c> (1.0 decompile) checks <c>!pawn2.InBed()</c>
+        /// right alongside <c>Downed</c> — a patient already carried to a bed is not picked as a target again.
+        /// This port's own giver never checked it, so once a rescue finished, the same still-downed patient
+        /// kept coming back as a live target for the next doctor's scan: a no-op job that reserved the patient
+        /// and a bed to carry them nowhere. See <see cref="WorkGiver_RescueDowned"/>'s own doc for why emergency
+        /// work now waking sleepers makes that more than cosmetic.
+        /// </summary>
+        [Fact]
+        public void A_patient_already_in_bed_is_not_rescued_again()
+        {
+            CoreMap map = NewMap(8, 8);
+            Faction f = NewFaction("Colony");
+            Pawn rescuer = SpawnHuman(map, new IntVec3(0, 0, 0), "Rescuer");
+            rescuer.faction = f;
+            Pawn downed = SpawnHuman(map, new IntVec3(5, 0, 5), "Downed");
+            downed.faction = f;
+            downed.health.ForceDowned = true;
+            var bedCell = new IntVec3(1, 0, 1);
+            Thing bed = SpawnBed(map, bedCell);
+
+            // Drive a real rescue to completion, exactly as the test above does.
+            rescuer.jobs.StartJob(new Job(JobDefOf.Rescue, downed, bed));
+            RunTicks(2000, rescuer);
+            Assert.Equal(bedCell, downed.Position);
+            Assert.True(downed.InBed(), "Sanity: the patient really did land in the bed.");
+            Assert.True(downed.Downed, "Sanity: still downed — being in bed is the only thing that changed.");
+
+            var giver = new WorkGiver_RescueDowned();
+            Assert.False(giver.HasJobOnThing(rescuer, downed), "already in bed: nothing left to rescue them into");
+
+            // End to end: nothing in the job system re-picks them either.
+            rescuer.jobs.EndCurrentJob(JobCondition.InterruptForced, startNewJob: false);
+            RunTicks(50, rescuer, downed);
+            Assert.NotEqual(JobDefOf.Rescue, rescuer.jobs.curJob?.def);
+        }
+
         // ---- WorkGiver_FeedPatient ----
 
         [Fact]
