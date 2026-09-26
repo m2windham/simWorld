@@ -125,7 +125,7 @@ namespace SimWorld.Director
             Map.Map? map = ArrivalMapFor(civ, LastRaidSettlement);
             if (map != null)
             {
-                Arrive(pawns, map, Rand.Current);
+                Arrive(pawns, faction, map, Rand.Current);
             }
             else if (LastRaidSettlement != null)
             {
@@ -202,7 +202,7 @@ namespace SimWorld.Director
         /// computed the edge cell once and spawned the whole squad on that single cell — a bug, not a
         /// simplification: a raid arrived as one stack of pawns standing inside each other.
         /// </summary>
-        private static void Arrive(IReadOnlyList<Pawn> pawns, Map.Map map, RandomStream rand)
+        private static void Arrive(IReadOnlyList<Pawn> pawns, Faction faction, Map.Map map, RandomStream rand)
         {
             IntVec3 entry = RandomEdgeCell(map, rand);
             for (int i = 0; i < pawns.Count; i++)
@@ -213,10 +213,13 @@ namespace SimWorld.Director
             // The line this class's own doc used to describe as somebody else's problem ("walking the squad
             // from there to the colony is AI's, not this module's") — and for two batches nobody owned it, so
             // a raid landed on the edge of a 200x200 interior 103 cells from the nearest citizen, outside
-            // every acquire radius on either side, and stood there. Handing the squad a duty is this port's
-            // whole replacement for RimWorld's LordMaker.MakeNewLord(faction, new LordJob_AssaultColony(),
-            // map, pawns) at exactly this call site; what that trades away is written out on SimWorld.AI.DutyDef.
-            SimWorld.AI.DutyUtility.AssignToAll(pawns, SimWorld.AI.DutyDefOf.AssaultSettlement);
+            // every acquire radius on either side, and stood there. RimWorld's own call at this site
+            // (RaidStrategyWorker.MakeLords): the squad becomes one Lord running LordJob_AssaultColony, whose
+            // first toil hands every member the assault duty — and which, unlike the bare duty this used to
+            // hand out, remembers how many it came with, so it can break and run (SimWorld.AI.Group.Lord).
+            // Every strategy gets the assault job: RimWorld's siege has a lord job of its own, and this port's
+            // Siege strategy has never behaved as anything but an assault.
+            SimWorld.AI.Group.LordMaker.MakeNewLord(faction, new SimWorld.AI.Group.LordJob_AssaultColony(faction), map, pawns);
         }
 
         /// <summary>

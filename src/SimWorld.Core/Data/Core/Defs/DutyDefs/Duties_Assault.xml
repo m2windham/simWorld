@@ -3,14 +3,14 @@
 
   <!--
     Duties (system 9: AI). A duty is a standing goal a pawn carries while it is on somebody else's map, and
-    its thinkNode is the whole of it — see SimWorld.AI.DutyDef for what this replaces (RimWorld's
-    Lord/LordToil/Trigger graph) and exactly what that translation costs.
+    its thinkNode is the whole of it — see SimWorld.AI.DutyDef. A raid's Lord (SimWorld.AI.Group.Lord) hands
+    this one out while the raid is assaulting, and swaps it for a duty in Duties_Lord.xml when the raid breaks
+    or gives up.
 
-    The tiers below are read in order and are the phases of an assault, which in RimWorld are separate
-    LordToils with Triggers between them. Here the tree is re-evaluated every time the pawn needs a job, so
-    each tier's own "do I apply?" is asked continuously and the phase change falls out of the ordering:
-    while there is an enemy anywhere on this map, close on it; when there is not — everyone down, or the
-    town sealed off behind something the squad cannot path around — leave.
+    The tiers below are read in order and are the phases of the assault itself. The tree is re-evaluated
+    every time the pawn needs a job, so each tier's own "do I apply?" is asked continuously: while there is
+    an enemy anywhere on this map, close on it; when there is not — everyone down, or the town sealed off
+    behind something the squad cannot path around — leave.
 
     The fight tier is NOT in here. It sits above this whole node, in ThinkTrees_Humanlike.xml, because
     fighting back is not something a pawn needs a duty to do: a raider and a citizen at arm's length both

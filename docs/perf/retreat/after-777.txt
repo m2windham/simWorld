@@ -1,0 +1,73 @@
+EVENTS
+  [0.26000] fired TraderCaravanArrival
+  [0.59000] fired TraderCaravanArrival
+  [3.18000] fired Earthquake
+  [4.00000] fired ManhunterPack
+  [11.15000] fired ManhunterPack
+  [13.05000] RAID 1 fired: 14 raiders from Grey march (RoughOutlanders), points 563, autoFlee False
+  [13.08254] DEATH Elowen has been cut to death.
+  [13.10770] RAID 1 CLEAR after 5770 ticks: raiders dead 0, down 14, left map 0
+  [13.12360] raid 1: Xander got back up
+  [13.21030] raid 1: Vesper got back up
+  [14.57000] fired WandererJoin
+  [18.07000] fired ManhunterPack
+  [21.43000] fired ColdSnap
+  [25.26000] fired HeatWave
+  [28.06000] fired TraderCaravanArrival
+  [29.34000] fired TraderCaravanArrival
+  [32.42000] fired TraderCaravanArrival
+  [41.36000] fired ColdSnap
+  [42.36000] DEATH muffalo17 has been crushed to death.
+  [42.36000] DEATH muffalo15 has been crushed to death.
+  [42.36000] fired Earthquake
+  [44.32000] fired WandererJoin
+  [47.12000] RAID 2 fired: 38 raiders from Steel vale (RoughOutlanders), points 1516, autoFlee False
+  [47.13607] DEATH husky7 has been cut to death.
+  [47.13870] DEATH chicken4 has been cut to death.
+  [47.14167] DEATH chicken16 has been beaten to death.
+  [47.14501] DEATH chicken11 has been beaten to death.
+  [47.14546] DEATH chicken6 has been cut to death.
+  [47.14851] DEATH Yara has been beaten to death.
+  [47.14922] DEATH Rosalind has been beaten to death.
+  [47.15750] raid 2: Gareth got back up
+  [47.16839] DEATH Ursa has been beaten to death.
+  [47.18674] DEATH chicken12 has been beaten to death.
+  [47.25740] raid 2: Calla got back up
+  [47.26100] RAID 2 CLEAR after 14100 ticks: raiders dead 2, down 11, left map 25
+  [47.32042] DEATH Oren has died of blood loss (severe).
+  [49.03618] DEATH muffalo19 has died of infection (extreme).
+  [51.36000] fired Flashstorm
+  [52.22000] fired HeatWave
+  [60.00000] DEATH Tobin has died.
+  [60.00000] DEATH Vance has died.
+  [60.00000] DEATH Vance has died.
+  [60.00000] DEATH Aaron has died.
+
+RAIDS ON THE WATCHED MAP (hold = ticks from arrival until no raider stands on the map)
+raid | fired | faction | autoFlee | squad | peak standing | letter (+ticks, kind, lost/standing then) | hold | raiders dead/down/left at clear | got up | at end dead/down/left/standing | citizen downings (while held / window) | killed by raid (window) | citizen deaths all (window)
+1 | 13.05000 | Grey march (RoughOutlanders) | False | 14 | 14 | - | 5770 | 0/14/0 | 2 | 13/0/1/0 | 7 / 15 | 1 | 3
+2 | 47.12000 | Steel vale (RoughOutlanders) | False | 38 | 38 | - | 14100 | 2/11/25 | 2 | 13/0/25/0 | 36 / 46 | 4 | 15
+
+TOTALS: raids 2, citizen downings 61, killed by RaidEnemy 5, deaths deaths 9 (Age 4, Injury 5) [RaidEnemy 5], citizens alive 21
+
+MOMENTS (MomentCurator)
+  [0.00000] Founding: Stonespan founded by 25 settlers.
+  [0.02000] Accession: Tobin takes the eldership of East state.
+  [0.26000] TraderCaravanArrival | the civilization
+  [3.18000] Earthquake | the civilization
+  [4.00000] ManhunterPack | the civilization
+  [10.35000] Divorce: Calla and Oren divorced.
+  [13.05000] RaidEnemy | the civilization
+  [14.57000] Wanderer: Marek joins Stonespan.
+  [14.57000] WandererJoin | the civilization
+  [21.43000] ColdSnap | the civilization
+  [25.26000] HeatWave | the civilization
+  [51.36000] Flashstorm | the civilization
+  [60.00000] Death | Tobin (hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d))
+  [60.00000] Death | Vance (hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d))
+  [60.00000] Birth: Delphine joins family 3.
+
+real	74m27.573s
+user	74m18.231s
+sys	0m26.032s
+exit 0

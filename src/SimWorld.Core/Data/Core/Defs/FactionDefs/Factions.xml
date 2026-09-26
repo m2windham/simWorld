@@ -112,7 +112,6 @@
     <settlementGenerationWeight>0.6</settlementGenerationWeight>
     <humanlikeFaction>true</humanlikeFaction>
     <hostileToFactionlessHumanlikes>true</hostileToFactionlessHumanlikes>
-    <autoFlee>false</autoFlee>
     <raidCommonality>1.5</raidCommonality>
     <leaderTitle>warlord</leaderTitle>
     <pawnSingular>raider</pawnSingular>

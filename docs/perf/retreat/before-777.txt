@@ -1,0 +1,77 @@
+EVENTS
+  [0.26000] fired TraderCaravanArrival
+  [0.59000] fired TraderCaravanArrival
+  [3.18000] fired Earthquake
+  [4.00000] fired ManhunterPack
+  [11.15000] fired ManhunterPack
+  [13.05000] RAID 1 fired: 14 raiders from Grey march (RoughOutlanders), points 563, autoFlee False
+  [13.08254] DEATH Elowen has been cut to death.
+  [13.10770] RAID 1 CLEAR after 5770 ticks: raiders dead 0, down 14, left map 0
+  [13.12360] raid 1: Xander got back up
+  [13.21030] raid 1: Vesper got back up
+  [15.36000] fired Eclipse
+  [19.50000] fired ColdSnap
+  [22.47000] fired ManhunterPack
+  [26.50000] RAID 2 fired: 18 raiders from Steel vale (RoughOutlanders), points 767, autoFlee False
+  [26.51652] DEATH husky9 has been cut to death.
+  [26.52541] DEATH Yorick has been cut to death.
+  [26.57870] RAID 2 CLEAR after 7870 ticks: raiders dead 0, down 18, left map 0
+  [27.01770] raid 2: Calla got back up
+  [27.58000] fired HeatWave
+  [30.52000] fired Drought
+  [35.10000] fired GiveQuest_Random
+  [36.39000] fired TraderCaravanArrival
+  [38.00000] DEATH Jasper has been crushed to death.
+  [38.00000] DEATH muffalo16 has been crushed to death.
+  [38.00000] DEATH Rosalind has been crushed to death.
+  [38.00000] DEATH Giselle has been crushed to death.
+  [38.00000] DEATH Kaia has been crushed to death.
+  [38.00000] DEATH Harlan has been crushed to death.
+  [38.00000] fired Earthquake
+  [46.38000] fired WandererJoin
+  [51.00000] fired TraderCaravanArrival
+  [52.30000] RAID 3 fired: 30 raiders from Steel vale (RoughOutlanders), points 1234, autoFlee False
+  [52.34239] DEATH Yorick has been cut to death.
+  [52.34281] DEATH husky7 has been cut to death.
+  [52.36367] DEATH chicken4 has been beaten to death.
+  [52.37590] RAID 3 CLEAR after 7590 ticks: raiders dead 3, down 2, left map 25
+  [53.58000] fired GiveQuest_Random
+  [60.00000] DEATH Tobin has died.
+  [60.00000] DEATH Senna has died.
+  [60.00000] DEATH Idris has died.
+
+RAIDS ON THE WATCHED MAP (hold = ticks from arrival until no raider stands on the map)
+raid | fired | faction | autoFlee | squad | peak standing | letter (+ticks, kind, lost/standing then) | hold | raiders dead/down/left at clear | got up | at end dead/down/left/standing | citizen downings (while held / window) | killed by raid (window) | citizen deaths all (window)
+1 | 13.05000 | Grey march (RoughOutlanders) | False | 14 | 14 | - | 5770 | 0/14/0 | 2 | 14/0/0/0 | 7 / 8 | 1 | 1
+2 | 26.50000 | Steel vale (RoughOutlanders) | False | 18 | 18 | - | 7870 | 0/18/0 | 1 | 18/0/0/0 | 9 / 10 | 1 | 8
+3 | 52.30000 | Steel vale (RoughOutlanders) | False | 30 | 30 | - | 7590 | 3/2/25 | 0 | 5/0/25/0 | 19 / 24 | 1 | 6
+
+TOTALS: raids 3, citizen downings 42, killed by RaidEnemy 3, deaths deaths 11 (Age 3, Injury 8) [RaidEnemy 3, Earthquake 5], citizens alive 16
+
+MOMENTS (MomentCurator)
+  [0.00000] Founding: Stonespan founded by 25 settlers.
+  [0.02000] Accession: Tobin takes the eldership of East state.
+  [0.26000] TraderCaravanArrival | the civilization
+  [3.18000] Earthquake | the civilization
+  [4.00000] ManhunterPack | the civilization
+  [10.35000] Divorce: Calla and Oren divorced.
+  [13.05000] RaidEnemy | the civilization
+  [14.40000] Romance: Oren and Aaron became lovers.
+  [15.36000] Eclipse | the civilization
+  [19.50000] ColdSnap | the civilization
+  [27.58000] HeatWave | the civilization
+  [30.52000] Drought | the civilization
+  [35.10000] Quest offered: Lost caravan
+  [35.10000] GiveQuest_Random | the civilization
+  [46.38000] Wanderer: Yorick joins Stonespan.
+  [46.38000] WandererJoin | the civilization
+  [60.00000] Death | Tobin (hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d))
+  [60.00000] Death | Senna (hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d))
+  [60.00000] Death | Idris (hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d))
+  [60.00000] Longevity: Vance has outlived every life the civilization has known, at 40 years.
+  [60.00000] Birth: Bryn joins family 15.
+
+real	61m17.262s
+user	60m24.232s
+sys	0m19.762s
+exit 0

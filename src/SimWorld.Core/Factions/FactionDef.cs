@@ -99,8 +99,9 @@ namespace SimWorld.Factions
         /// Whether this faction's war bands break off once they have lost enough of themselves, rather than
         /// fighting to the last raider. Read by <see cref="FactionRaidRules.MaxRaidersLost"/>, which is where
         /// the translation of RimWorld's Lord-graph transition into this port's abstract raid resolution is
-        /// written down. A raid the god is <i>watching</i> still has no flight behaviour on either side — see
-        /// <c>AI.CombatPostureUtility</c>, which records that gap as its own.
+        /// written down, and by <c>AI.Group.Lord.SetJob</c>, which gives a raid the god is <i>watching</i>
+        /// RimWorld's own panic-flee transition. False only for content that means it (RimWorld's are
+        /// mechanoids and insects); a faction without it still gives up when its raid runs out of time.
         /// </summary>
         public bool autoFlee = true;
 

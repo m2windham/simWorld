@@ -83,6 +83,10 @@ namespace SimWorld.Map
         /// outdoor temperature is recomputed from it.</summary>
         public Conditions.GameConditionManager gameConditionManager = null!;
 
+        /// <summary>Every lord on this map — a raid, today (RimWorld: <c>Map.lordManager</c>; see
+        /// <see cref="AI.Group.Lord"/>). Ticked from <see cref="MapTick"/>, saved by <see cref="ExposeData"/>.</summary>
+        public AI.Group.LordManager lordManager = null!;
+
         /// <summary>Outdoor temperature every unroofed/unenclosed cell tracks directly, and every enclosed
         /// room equalises toward (system 16: Building). Still a plain settable value — but on a map that
         /// knows its world tile, <see cref="weatherManager"/> now sets it every tick from that tile's annual
@@ -186,6 +190,9 @@ namespace SimWorld.Map
             // are a no-op on a map no settlement owns, and this is the tick every map already gets.
             Building.FarmingInitiative.TickMap(this);
             Crafting.CookingInitiative.TickMap(this);
+
+            // Raids: each lord notices who it has lost and whether that, or the clock, ends the assault.
+            lordManager.LordManagerTick();
         }
 
         private void InitializeGridsExceptPath(int sizeX, int sizeZ, TerrainDef fill)
@@ -222,6 +229,7 @@ namespace SimWorld.Map
             areaManager = new Building.AreaManager(this);
             gameConditionManager = new Conditions.GameConditionManager(this);
             weatherManager = new Weather.WeatherManager(this);
+            lordManager = new AI.Group.LordManager(this);
         }
 
         // ---- Scribe ----
@@ -277,6 +285,12 @@ namespace SimWorld.Map
             areaManager.ExposeData();
             gameConditionManager.ExposeData();
             weatherManager.ExposeData();
+
+            // After the things, so every member a lord points at is already in the document. A save written
+            // before lords existed has no node and loads with none.
+            AI.Group.LordManager? lm = lordManager;
+            Scribe_Deep.Look(ref lm, "lordManager", this);
+            lordManager = lm ?? new AI.Group.LordManager(this);
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {

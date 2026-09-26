@@ -1,0 +1,93 @@
+EVENTS
+  [0.26000] fired TraderCaravanArrival
+  [0.59000] fired TraderCaravanArrival
+  [3.18000] fired Earthquake
+  [4.00000] fired ManhunterPack
+  [11.15000] fired ManhunterPack
+  [13.05000] RAID 1 fired: 14 raiders from Grey march (RoughOutlanders), points 563, autoFlee True
+  [13.08241] LETTER Raiders fleeing: Raiders from Grey march are fleeing.
+  [13.09090] RAID 1 CLEAR after 4090 ticks: raiders dead 0, down 8, left map 6
+  [13.18030] raid 1: Vesper got back up
+  [13.46000] fired WandererJoin
+  [13.57000] RAID 2 fired: 13 raiders from Steel vale (RoughOutlanders), points 547, autoFlee True
+  [13.58637] DEATH Alden has been beaten to death.
+  [14.00365] LETTER Raiders fleeing: Raiders from Steel vale are fleeing.
+  [14.01260] RAID 2 CLEAR after 4260 ticks: raiders dead 0, down 7, left map 6
+  [14.54000] fired VisitorGroup
+  [15.01314] DEATH Tamsin has died of infection (extreme).
+  [16.51000] fired HeatWave
+  [23.04000] fired Flashstorm
+  [23.12000] fired Eclipse
+  [24.25000] fired ColdSnap
+  [28.45000] RAID 3 fired: 19 raiders from Steel vale (RoughOutlanders), points 765, autoFlee True
+  [28.45972] DEATH Kade has been beaten to death.
+  [28.48931] LETTER Raiders fleeing: Raiders from Steel vale are fleeing.
+  [28.49500] RAID 3 CLEAR after 4500 ticks: raiders dead 1, down 11, left map 7
+  [28.50640] raid 3: Ines got back up
+  [28.51570] raid 3: Alden got back up
+  [29.04000] fired WandererJoin
+  [30.28766] DEATH muffalo14 has died of infection (extreme).
+  [33.23000] RAID 4 fired: 21 raiders from Grey march (RoughOutlanders), points 848, autoFlee True
+  [33.24062] DEATH husky8 has been cut to death.
+  [33.24583] DEATH Kaia has been cut to death.
+  [33.25620] DEATH chicken4 has been beaten to death.
+  [33.26645] DEATH chicken13 has been cut to death.
+  [33.27680] DEATH muffalo17 has been beaten to death.
+  [33.30704] DEATH chicken14 has been cut to death.
+  [33.32397] LETTER Raiders fleeing: Raiders from Grey march are fleeing.
+  [33.32880] RAID 4 CLEAR after 9880 ticks: raiders dead 2, down 9, left map 10
+  [33.33257] DEATH Oren has died of blood loss (moderate).
+  [33.33450] raid 4: Vance got back up
+  [34.27000] fired Disease_Flu
+  [35.28637] DEATH muffalo19 has died of infection (extreme).
+  [37.06000] RAID 5 fired: 16 raiders from Wolf keep (RoughOutlanders), points 670, autoFlee True
+  [37.09417] LETTER Raiders fleeing: Raiders from Wolf keep are fleeing.
+  [37.10080] RAID 5 CLEAR after 4080 ticks: raiders dead 0, down 8, left map 8
+  [37.12120] raid 5: Kade got back up
+  [42.38000] fired WandererJoin
+  [44.05000] fired ColdSnap
+  [44.11000] fired Drought
+  [48.41000] fired Eclipse
+  [58.58000] fired WandererJoin
+  [59.23000] fired TraderCaravanArrival
+  [60.00000] DEATH Tobin has died.
+  [60.00000] DEATH Harlan has died.
+  [60.00000] DEATH Aaron has died.
+
+RAIDS ON THE WATCHED MAP (hold = ticks from arrival until no raider stands on the map)
+raid | fired | faction | autoFlee | squad | peak standing | letter (+ticks, kind, lost/standing then) | hold | raiders dead/down/left at clear | got up | at end dead/down/left/standing | citizen downings (while held / window) | killed by raid (window) | citizen deaths all (window)
+1 | 13.05000 | Grey march (RoughOutlanders) | True | 14 | 14 | +3241 Raiders fleeing 7/7 | 4090 | 0/8/6 | 1 | 7/0/7/0 | 8 / 10 | 0 | 0
+2 | 13.57000 | Steel vale (RoughOutlanders) | True | 13 | 13 | +3365 Raiders fleeing 7/6 | 4260 | 0/7/6 | 0 | 7/0/6/0 | 9 / 12 | 2 | 2
+3 | 28.45000 | Steel vale (RoughOutlanders) | True | 19 | 19 | +3931 Raiders fleeing 10/9 | 4500 | 1/11/7 | 2 | 10/0/9/0 | 10 / 14 | 1 | 2
+4 | 33.23000 | Grey march (RoughOutlanders) | True | 21 | 21 | +9397 Raiders fleeing 11/10 | 9880 | 2/9/10 | 1 | 10/0/11/0 | 23 / 28 | 2 | 8
+5 | 37.06000 | Wolf keep (RoughOutlanders) | True | 16 | 16 | +3417 Raiders fleeing 8/8 | 4080 | 0/8/8 | 1 | 8/0/8/0 | 6 / 10 | 0 | 3
+
+TOTALS: raids 5, citizen downings 74, killed by RaidEnemy 5, deaths deaths 8 (Age 3, Disease 1, Injury 4) [RaidEnemy 5], citizens alive 21
+
+MOMENTS (MomentCurator)
+  [0.00000] Founding: Stonespan founded by 25 settlers.
+  [0.02000] Accession: Tobin takes the eldership of East state.
+  [0.26000] TraderCaravanArrival | the civilization
+  [3.18000] Earthquake | the civilization
+  [4.00000] ManhunterPack | the civilization
+  [10.35000] Divorce: Calla and Oren divorced.
+  [13.05000] RaidEnemy | the civilization
+  [13.08241] Raiders fleeing: Raiders from Grey march are fleeing.
+  [13.46000] Wanderer: Zane joins Stonespan.
+  [13.46000] WandererJoin | the civilization
+  [14.54000] VisitorGroup | the civilization
+  [16.51000] HeatWave | the civilization
+  [23.04000] Flashstorm | the civilization
+  [23.12000] Eclipse | the civilization
+  [23.50000] Romance: Harlan and Calla became lovers.
+  [24.25000] ColdSnap | the civilization
+  [34.27000] Disease_Flu | the civilization
+  [44.11000] Drought | the civilization
+  [60.00000] Death | Tobin (hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d))
+  [60.00000] Death | Harlan (hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d); hunger (-4d))
+  [60.00000] Longevity: Vance has outlived every life the civilization has known, at 40 years.
+
+real	71m23.013s
+user	71m9.178s
+sys	0m24.586s
+exit 0

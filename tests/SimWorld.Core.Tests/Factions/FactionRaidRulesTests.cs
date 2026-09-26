@@ -149,7 +149,10 @@ namespace SimWorld.Tests.Factions
         public void A_band_that_flees_cannot_lose_as_much_of_itself_as_one_that_does_not()
         {
             Faction flees = NewFaction("TribalCivilization", "Tribal");     // autoFlee true
-            Faction stays = NewFaction("RoughOutlanders", "Rough");          // autoFlee false
+            // No shipped faction fights to the last any more: RoughOutlanders' autoFlee=false was never
+            // RimWorld's, where only mechanoids and insects set it. So the non-fleeing side is declared here,
+            // the way such a faction's content would declare it.
+            Faction stays = new Faction(new FactionDef { defName = "Test_FightsToTheLast", autoFlee = false }, "Stays", "F_Stays");
             Assert.True(flees.def.autoFlee);
             Assert.False(stays.def.autoFlee);
 
@@ -187,8 +190,12 @@ namespace SimWorld.Tests.Factions
             // The integration: the resolver's raider casualties respect the cap, whichever way the roll goes,
             // and a faction that does not flee is the only one that can be wiped out. Asserted over many
             // resolutions rather than one, because whether the settlement holds is a roll.
+            // The non-withdrawing side is declared here: no shipped faction fights to the last since
+            // RoughOutlanders' autoFlee=false was removed (never RimWorld's, where only mechanoids and insects
+            // set it). The resolver reads nothing of the attacker but that cap and its name.
+            var fightsToTheLast = new FactionDef { defName = "Test_FightsToTheLast", autoFlee = false };
             var seen = new Dictionary<string, int>();
-            foreach (string defName in new[] { "TribalCivilization", "RoughOutlanders" })
+            foreach (string defName in new[] { "TribalCivilization", fightsToTheLast.defName })
             {
                 int worst = 0;
                 for (int trial = 0; trial < 60; trial++)
@@ -200,7 +207,9 @@ namespace SimWorld.Tests.Factions
                         DefDatabase<StorytellerDef>.GetNamed("Cassandra_Classic"),
                         DefDatabase<DifficultyDef>.GetNamed("Medium"));
 
-                    Faction attacker = NewFaction(defName, defName + trial);
+                    Faction attacker = defName == fightsToTheLast.defName
+                        ? new Faction(fightsToTheLast, defName + trial, "F_" + defName + trial)
+                        : NewFaction(defName, defName + trial);
                     var town = new Settlement(WorldObjectDefOf.Settlement, 4, null, "Holdfast", 0);
                     for (int i = 0; i < 20; i++) town.AddCitizen(NewHuman("C" + trial + "_" + i));
                     town.AddStatisticalPeople(4000); // heavily outmatches the band, so the raiders usually lose
@@ -218,9 +227,9 @@ namespace SimWorld.Tests.Factions
                 seen[defName] = worst;
             }
 
-            Assert.True(seen["RoughOutlanders"] > seen["TribalCivilization"],
+            Assert.True(seen[fightsToTheLast.defName] > seen["TribalCivilization"],
                 "a faction that never withdraws should be able to lose more of its band than one that does "
-                + "(rough=" + seen["RoughOutlanders"] + ", tribal=" + seen["TribalCivilization"] + ")");
+                + "(stays=" + seen[fightsToTheLast.defName] + ", tribal=" + seen["TribalCivilization"] + ")");
         }
 
         // ---- canMakeRandomly ----

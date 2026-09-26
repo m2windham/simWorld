@@ -1,0 +1,16 @@
+Paired continuations, seed 777, lane/retreat binary (26c77fd). One save per raid, taken on the tick it lands;
+ten continuation seeds, 60,000 ticks each. nolord = the raid's lord dropped on load (the behaviour before
+this lane); lord = as shipped; lord+autoFlee = as shipped, loaded with RoughOutlanders' <autoFlee>false</autoFlee>
+removed from content (RimWorld's default; diagnostic only, not shipped).
+
+RAID 1 (day 13.05, 14 raiders, Grey march)
+arm | n | hold median (min-max) | letter median | citizen downings held / all (sum) | citizen deaths (sum) | raiders dead/left at end (sum) | raider re-standing after clear, ticks (sum)
+nolord | 10 | 5485 (4420-6160) | - | 73 / 77 | 4 | 131 / 0 | 10050
+lord | 10 | 5485 (4420-6250) | - | 74 / 76 | 3 | 128 / 9 | 6450
+lord+autoFlee | 10 | 3265 (2830-3910) | 2470 | 43 / 46 | 3 | 63 / 74 | 3690
+
+RAID 2 (day 47.12 of the lane timeline, 38 raiders, Steel vale)
+arm | n | hold median (min-max) | letter median | citizen downings held / all (sum) | citizen deaths (sum) | raiders dead/left at end (sum) | raider re-standing after clear, ticks (sum)
+nolord | 10 | 12360 (8280-16050) | - | 297 / 327 | 31 | 141 / 233 | 9990
+lord | 10 | 12345 (8280-15900) | - | 297 / 325 | 27 | 136 / 241 | 8550
+lord+autoFlee | 10 | 10875 (6120-15510) | 5223 | 266 / 292 | 23 | 129 / 246 | 1920

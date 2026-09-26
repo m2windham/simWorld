@@ -28,12 +28,13 @@ namespace SimWorld.AI
     /// enemy at full acquire radius instead of waiting to be cornered. That is the decision the god actually
     /// gets to make, and it costs public mood like every other edict.</item>
     /// </list>
-    /// <b>What this deliberately does not do: nobody flees.</b> There is no humanlike counterpart to
+    /// <b>What this deliberately does not do: no citizen flees.</b> There is no humanlike counterpart to
     /// <see cref="JobGiver_AnimalFlee"/> here, and none of the twelve shipped <c>MentalStateDef</c>s is a
     /// panic-flight. A citizen who will not fight simply keeps working — which is, as it happens, exactly
     /// what an undrafted RimWorld colonist does during a raid, so the visible behaviour is right even though
     /// the reason is a gap. Adding "and the rest run" means a flee job giver, a fear model and somewhere to
-    /// run to; it is recorded here as absent rather than improvised.
+    /// run to; it is recorded here as absent rather than improvised. A <i>raid</i> does break and run: that
+    /// is the group's decision, not a pawn's, and it lives in <see cref="Group.Lord"/>.
     /// <para/>
     /// <b>Consequence worth knowing.</b> No <see cref="PawnKindDef"/> this port ships gives
     /// <c>Colonist</c>/<c>Villager</c> any weapon tags (<see cref="HuntUtility.HasHuntingWeapon"/> records
@@ -61,10 +62,19 @@ namespace SimWorld.AI
         /// How far this pawn will go looking for an enemy, in cells — the numeric form of the three rules in
         /// this class's own doc. An animal always uses the full radius: a tamed one defends its faction's
         /// settlement and a manhunter chases its grudge, and neither has a weapon to be judged on.
+        /// <para/>
+        /// <b>A pawn whose orders are to leave the map looks no further than arm's length</b>, armed or not
+        /// (<see cref="Group.LordUtility.IsLeaving"/>: a raid that has given up or broken, or a raider its lord
+        /// lost). In RimWorld the fight tier lives inside the assault duty, so a raider handed an exit duty
+        /// has no fight tier at all and walks out past the colonists; here the fight tier sits above every
+        /// duty, so the same outcome is this radius. Arm's length rather than nothing is rule 2 above —
+        /// cornered is cornered — and is the one place a fleeing raider here differs from RimWorld's, whose
+        /// panic does not swing back (see <see cref="Group.LordToil_PanicFlee"/>).
         /// </summary>
         public static float TargetAcquireRadiusFor(Pawn pawn)
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+            if (Group.LordUtility.IsLeaving(pawn)) return CombatAITuning.MeleeReachCells;
             if (!pawn.RaceProps.Humanlike) return CombatAITuning.TargetAcquireRadius;
             if (AttackVerbUtility.HasEquippedWeapon(pawn) || IsMustered(pawn)) return CombatAITuning.TargetAcquireRadius;
             return CombatAITuning.MeleeReachCells;
