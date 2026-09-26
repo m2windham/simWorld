@@ -472,10 +472,18 @@ namespace SimWorld.Tests.Research
             Assert.Equal(manager.EndlessSeed, loaded.EndlessSeed);
             Assert.Equal(manager.CurrentEndlessAgeLabel, loaded.CurrentEndlessAgeLabel);
 
-            ResearchProjectDef reloaded = Named(Ages, track, 2, 1, manager.EndlessSeed);
-            Assert.Same(midAge, reloaded);
+            // A loaded game re-mints its own tail into its own private register (research.endless's fix for
+            // #88) — a fresh object with the same shape, not the saving game's own instance — so what is
+            // checked against it is looked up fresh, through the loaded manager itself, exactly as a reader
+            // would after a real load rather than by reusing a reference the saving game happened to hold.
+            ResearchProjectDef? reloaded = loaded.GetProject(midAge.defName);
+            Assert.NotNull(reloaded);
+            Assert.Equal(midAge.label, reloaded!.label);
             Assert.Equal(EndlessResearch.CostFor(Ages, track, 2, 1), reloaded.baseCost, 3);
-            Assert.True(loaded.IsFinished(firstFoundation));
+
+            ResearchProjectDef? reloadedFoundation = loaded.GetProject(firstFoundation.defName);
+            Assert.NotNull(reloadedFoundation);
+            Assert.True(loaded.IsFinished(reloadedFoundation!));
             Assert.Equal(manager.GetProgress(manager.CurrentProj!), loaded.GetProgress(loaded.CurrentProj!));
         }
 
