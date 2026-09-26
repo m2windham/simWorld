@@ -51,6 +51,15 @@ namespace SimWorld.Building
         /// cannot be stood on (RimWorld: <c>WorkGiver_BuildRoof.BuildingToTouchToBeAbleToBuildRoof</c>) — a
         /// roof cell that is itself a wall or door cell rather than open floor. Null (no substitute needed)
         /// whenever <paramref name="c"/> is standable at all, or carries no edifice to touch instead.
+        /// <para/><b>Ported for call-shape fidelity; observed to never change the outcome in this port
+        /// today.</b> This substitute only matters when <paramref name="c"/> itself cannot be reached by
+        /// <see cref="PathEndMode.Touch"/> but the edifice sitting on it can — and in this port,
+        /// <see cref="Reachability.CanReachTarget"/> answers a bare-cell <c>Touch</c> query and a 1x1-Thing
+        /// <c>Touch</c> query at the same cell through the identical ring-of-neighbours check (its footprint
+        /// branch reduces to the same eight cells for a 1x1 footprint), so the two can never disagree for any
+        /// wall or door this port ships — see <c>RoofWorkTests.JobOnCell_still_produces_a_job_when_the_roof_cell_itself_is_not_standable</c>'s
+        /// own doc. Kept because RimWorld's own shape is one line to keep and would start mattering the moment
+        /// a multi-cell roof holder existed.
         /// </summary>
         private static Thing? BuildingToTouchToBeAbleToBuildRoof(IntVec3 c, Pawn pawn)
         {
