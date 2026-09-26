@@ -392,7 +392,7 @@ namespace SimWorld.Building
         /// cell counts as open when it is walkable now and no impassable blueprint or frame is already planned
         /// on it, since that will be built too.
         /// </summary>
-        private static bool WouldCutOffGround(Map.Map map, ThingDef entityDef, IntVec3 cell)
+        internal static bool WouldCutOffGround(Map.Map map, ThingDef entityDef, IntVec3 cell)
         {
             CellRect rect = GenAdj.OccupiedRect(cell, default, entityDef.size);
             int minX = rect.minX - 1, maxX = rect.maxX + 1, minZ = rect.minZ - 1, maxZ = rect.maxZ + 1;

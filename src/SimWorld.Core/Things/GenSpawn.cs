@@ -15,8 +15,7 @@ namespace SimWorld.Things
         /// cell of its <see cref="Thing.OccupiedRect"/>, and both of those silently skip cells that fall off
         /// the map. Checking only the centre would therefore let a 1x2 bed spawn half outside, register in one
         /// cell, and then deregister from one cell while its <c>OccupiedRect</c> still claims two — a Thing
-        /// the grids half-remember. With shipped content all 1x1 this changes nothing today; it is here so the
-        /// first def that sets a footprint does not have to discover it.
+        /// the grids half-remember. <c>Bed</c> is the first shipped def with a footprint (1x2).
         /// </summary>
         public static Thing Spawn(Thing thing, IntVec3 loc, Map.Map map, Rot4 rot = default)
         {

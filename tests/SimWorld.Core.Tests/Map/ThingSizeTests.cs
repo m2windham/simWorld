@@ -33,8 +33,8 @@ namespace SimWorld.Tests.Map
     /// defs still declare no size and still cannot drift from their parent; and
     /// <c>GenConstruct.CanPlaceBlueprintAt</c> validates the whole rect, which the settlement construction
     /// initiative inherits for free because <c>TryFindPlacementCell</c> delegates to it.
-    /// <c>Building.FootprintPlacementTests</c> holds that story. Shipped content still sets no size — that is
-    /// now a content decision per building, not a mechanism that would fail to honour it.
+    /// <c>Building.FootprintPlacementTests</c> holds that story, and <c>Building.MultiCellBedTests</c> the
+    /// first shipped def to use it: <c>Bed</c>, 1x2 as in RimWorld.
     /// </summary>
     [Collection("GlobalDefs")]
     public class ThingSizeTests : ContentTestBase

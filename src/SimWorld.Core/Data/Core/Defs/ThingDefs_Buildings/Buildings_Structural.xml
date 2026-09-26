@@ -62,6 +62,12 @@
     (Need_Rest.BedRestEffectiveness) rather than always sleeping in place. This system still only decides
     whether the settlement *has* enough beds — placing one per citizen — not who sleeps in which; there is no
     ownership/assignment concept here, matching what RimWorld actually needs for an unowned, first-come bed.
+
+    Bed is 1x2, RimWorld's own <size>(1,2)</size> for a single bed (a double bed is 2x2 there; none ships
+    here). Blueprint_Bed and Frame_Bed declare no size: they derive it from entityToBuild (Thing.Size), so
+    they cannot disagree with this. Position is the head end, the bed's one sleeping slot
+    (AI.BedUtility.GetSleepingSlotPos), and the footprint runs from there the way the bed faces
+    (Map.GenAdj.OccupiedRect).
   -->
 
   <ThingDef>
@@ -70,6 +76,7 @@
     <description>A simple sleeping pallet. Every settler wants one of their own.</description>
     <category>Building</category>
     <thingClass>SimWorld.Building.Building</thingClass>
+    <size>(1,2)</size>
     <passability>Standable</passability>
     <fillPercent>0</fillPercent>
     <statBases>

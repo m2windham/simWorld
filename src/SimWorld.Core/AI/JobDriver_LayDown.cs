@@ -29,9 +29,12 @@ namespace SimWorld.AI
 
         public override IEnumerable<Toil> MakeNewToils()
         {
-            if (job.GetTarget(TargetIndex.A).HasThing) yield return Toils_Reserve.Reserve(TargetIndex.A);
+            bool inBed = job.GetTarget(TargetIndex.A).HasThing;
+            if (inBed) yield return Toils_Reserve.Reserve(TargetIndex.A);
 
-            yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
+            // A bed is walked onto at its sleeping slot, not wherever its footprint happens to be nearest
+            // (RimWorld: Toils_Bed.GotoBed). The ground case walks to the cell it was given, as it always did.
+            yield return inBed ? Toils_Bed.GotoBed(TargetIndex.A) : Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
 
             var sleep = new Toil { defaultCompleteMode = ToilCompleteMode.Never };
             sleep.initAction = () =>

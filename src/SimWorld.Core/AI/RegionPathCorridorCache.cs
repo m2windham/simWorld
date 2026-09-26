@@ -120,7 +120,12 @@ namespace SimWorld.AI
         /// <summary>Fills <see cref="goalRegionScratch"/> with the distinct (by reference), non-null regions
         /// among the first <paramref name="goalCount"/> goal cells and returns how many there are. A cell with
         /// no region (unwalkable — the common case for e.g. the impassable rock a Touch-mode path is aimed
-        /// at) contributes nothing; its walkable neighbours, also present among the goal cells, do.</summary>
+        /// at) contributes nothing; its walkable neighbours, also present among the goal cells, do.
+        /// <para/>
+        /// A multi-cell target's ring can hold more goal cells than <see cref="PathFinder.MaxGoals"/>, and so,
+        /// in principle, more distinct regions than the scratch and the key hold. Then this returns 0 — no
+        /// corridor — and the caller runs the unconstrained search, which is always correct; truncating the set
+        /// instead would key two different destinations alike.</summary>
         private int CollectDistinctGoalRegions(IntVec3[] goalCells, int goalCount)
         {
             int distinct = 0;
@@ -136,6 +141,7 @@ namespace SimWorld.AI
                 }
                 if (already) continue;
 
+                if (distinct == goalRegionScratch.Length) return 0;
                 goalRegionScratch[distinct] = r;
                 distinct++;
             }

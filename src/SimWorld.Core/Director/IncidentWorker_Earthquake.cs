@@ -184,7 +184,9 @@ namespace SimWorld.Director
                     standing.RemoveAt(index);
                     if (target.Destroyed) continue;
 
-                    IntVec3 cell = target.Position; // captured before TakeDamage can invalidate it (DeSpawn)
+                    // Captured before TakeDamage can invalidate it (DeSpawn resets Position). The whole
+                    // footprint, not Position: a 1x2 bed falls on its foot cell as well as its head.
+                    CellRect footprint = target.OccupiedRect();
                     target.TakeDamage(new DamageInfo(RoofCollapseDefOf.Crush, target.MaxHitPoints));
 
                     // Credited from whether the Thing is actually gone, never assumed from the hit alone: a
@@ -193,14 +195,17 @@ namespace SimWorld.Director
                     if (!target.Destroyed) continue;
                     destroyedTotal++;
 
-                    killedTotal += CrushOccupants(map, cell, source, rand);
+                    foreach (IntVec3 cell in footprint.Cells)
+                    {
+                        if (GenGrid.InBounds(cell, map)) killedTotal += CrushOccupants(map, cell, source, rand);
+                    }
                 }
             }
             return (destroyedTotal, killedTotal);
         }
 
-        /// <summary>Crushes every living pawn standing on <paramref name="cell"/> — a destroyed structure's own
-        /// footprint, so this only ever finds someone in a <c>Bed</c> (a wall and a <c>StorageHut</c> are both
+        /// <summary>Crushes every living pawn standing on <paramref name="cell"/> — one cell of a destroyed
+        /// structure's own footprint, so this only ever finds someone in a <c>Bed</c> (a wall and a <c>StorageHut</c> are both
         /// <c>Impassable</c>, never standable). Credits a death exactly when <see cref="DeathLedger.Total"/>
         /// actually grew from it, never from this method's own count of who it hit — see the class doc for why.</summary>
         private static int CrushOccupants(Map.Map map, IntVec3 cell, string? source, RandomStream rand)

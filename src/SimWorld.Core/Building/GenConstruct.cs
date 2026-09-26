@@ -7,7 +7,11 @@ using SimWorld.Things;
 namespace SimWorld.Building
 {
     /// <summary>Placement validity for a would-be Blueprint (RimWorld: <c>Verse.GenConstruct</c>, trimmed to
-    /// the checks this pass's single-cell content actually needs).</summary>
+    /// the checks this port's content actually needs). Not ported: RimWorld's interaction-spot rules
+    /// (<c>InteractionSpotBlocked</c>/<c>WouldBlockInteractionSpot</c>), because this port has no interaction
+    /// cells to protect. From memory of RimWorld's source rather than a copy of it: the second rule refuses
+    /// only an impassable building, or one of the same def, over a neighbour's interaction cell, and a bed is
+    /// neither.</summary>
     public static class GenConstruct
     {
         /// <summary>
@@ -25,8 +29,8 @@ namespace SimWorld.Building
         ///
         /// <para/>Until this validated the whole rect, a footprint was a field some systems honoured and
         /// others ignored — <c>ThingGrid</c> and <c>EdificeGrid</c> registered all of it while this accepted a
-        /// placement based on one cell — which is why shipped content set no size at all and
-        /// <c>Map.ThingSizeTests</c> carried a tripwire saying so.
+        /// placement based on one cell — which is why shipped content set no size at all until <c>Bed</c>
+        /// became 1x2, and <c>Map.ThingSizeTests</c> carried a tripwire saying so.
         /// </summary>
         public static bool CanPlaceBlueprintAt(ThingDef entityToBuild, IntVec3 cell, Map.Map map, out string? failReason, Rot4 rot = default)
         {

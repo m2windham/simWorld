@@ -159,11 +159,25 @@ namespace SimWorld.Tests.Map
             Assert.Equal(10, north.minX);
             Assert.Equal(9, north.minZ);
 
+            // RimWorld's AdjustForRotation: facing East, an even depth moves down one. This used to pin
+            // minZ = 10, which was the port's rule (no adjustment), not RimWorld's.
             CellRect east = GenAdj.OccupiedRect(center, Rot4.East, size);
             Assert.Equal(3, east.Width);
             Assert.Equal(2, east.Height);
             Assert.Equal(9, east.minX);
-            Assert.Equal(10, east.minZ);
+            Assert.Equal(9, east.minZ);
+
+            CellRect south = GenAdj.OccupiedRect(center, Rot4.South, size);
+            Assert.Equal(2, south.Width);
+            Assert.Equal(3, south.Height);
+            Assert.Equal(9, south.minX);
+            Assert.Equal(9, south.minZ);
+
+            CellRect west = GenAdj.OccupiedRect(center, Rot4.West, size);
+            Assert.Equal(3, west.Width);
+            Assert.Equal(2, west.Height);
+            Assert.Equal(9, west.minX);
+            Assert.Equal(10, west.minZ);
         }
 
         // ---- GenRadial ----

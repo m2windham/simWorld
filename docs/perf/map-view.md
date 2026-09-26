@@ -208,3 +208,12 @@ nothing honours yet**, so shipped content sets no size and
 first sets a real footprint lands on that test, and its message names the three
 things to fix. A bed is 1×2 in RimWorld and that value is knowable; what is not
 yet true is that this port could honour it.
+
+**Since then: `Bed` is 1×2.** The three above were fixed first (placement checks
+the whole rect, blueprints and frames derive their size from what they build).
+Shipping the first sized def found two more that "already correct" was not:
+`GenAdj.OccupiedRect` lacked RimWorld's `AdjustForRotation`, so a South bed
+covered the same two cells as a North one; and a `Touch` path aimed at the
+neighbours of a Thing's `Position`, so a builder could stand on the foot of the
+bed it was building. Both are fixed, and `ThingView.OccupiedMin` / `OccupiedSize`
+now report a rect that turns about the bed's own cell at each facing.
