@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 2730,
+  "testsTotal": 2748,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -406,7 +406,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things · src/SimWorld.Core/Map/View",
       "status": "ported",
-      "tests": 114,
+      "tests": 120,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -784,7 +784,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 168,
+      "tests": 180,
       "items": [
         {
           "id": "health.body",
@@ -879,6 +879,11 @@
         {
           "id": "health.consciousness",
           "label": "Consciousness is RimWorld's formula (PawnCapacityWorker_Consciousness, read in the decompile): pain is subtracted, Clamp(LerpDouble(0.1, 1, 0, 0.4, pain), 0, 0.4), and BloodPumping / Breathing / BloodFiltration are blended in with Lerp weights 0.2 / 0.2 / 0.1. The port multiplied all four outright, so after a raid the compounding collapsed most bleeding citizens to a lethal consciousness around 45% blood loss instead of 100%. BloodLoss's Consciousness capMods follow RimWorld's wiki table (-0.10 / -0.20 / -0.40); its Moving offsets could not be sourced and say so (ConsciousnessTests, HealthCacheTests).",
+          "done": true
+        },
+        {
+          "id": "health.bedrestmedicine",
+          "label": "Beds and medicine change who survives. ImmunityGainSpeed carries RimWorld's StatPart_Resting (x1.10 in bed or lying down, not when downed on open ground) and StatPart_BedStat (a bed's BedRestEffectiveness, 1.07 for a Bed), so WoundInfection's raw 0.6441/day is 0.644 up and about or downed on the ground, 0.709 resting and 0.759 in bed. Tend quality is RimWorld's: doctor skill x medicine potency (none 0.3, herbal 0.6, industrial 1.0) plus the bed's offset, capped at the medicine's own maximum; the tend job fetches and consumes one medicine. The player's lever is RimWorld's MedicalCareCategory as a settlement standing rule (MapCommands.SetMedicalCare, default Best). Recorded deviations: one settlement-wide care level, not per pawn; tend batching is not gated on medicine; herbal medicine comes only from the scenario's starting stock (Lost Tribe 20, Crashlanded 30 industrial) because nothing grows healroot yet (ImmunityGainSpeedTests, MedicineTests, MedicalCareCommandTests).",
           "done": true
         }
       ]
