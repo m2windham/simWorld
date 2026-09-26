@@ -17,4 +17,16 @@
     <label>basics (pawns)</label>
   </StatCategoryDef>
 
+  <!-- Added with task #104 (system: Health — medicine): BedRestEffectiveness/MedicalTendQualityOffset are
+       building stats, MedicalPotency/MedicalQualityMax are item stats, and neither existing category fits. -->
+  <StatCategoryDef>
+    <defName>Building</defName>
+    <label>building</label>
+  </StatCategoryDef>
+
+  <StatCategoryDef>
+    <defName>Item</defName>
+    <label>item</label>
+  </StatCategoryDef>
+
 </Defs>

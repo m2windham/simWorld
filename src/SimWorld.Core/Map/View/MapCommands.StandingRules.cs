@@ -276,6 +276,30 @@ namespace SimWorld.Map.View
                 + (included ? "to" : "from") + " the home area.");
         }
 
+        /// <summary>
+        /// Sets the settlement's own default <see cref="Health.MedicalCareCategory"/> — "tend like this, from
+        /// now on" (task #104's own lever; RimWorld's real one is a per-pawn dropdown,
+        /// <c>Pawn_PlayerSettings.medCare</c>, that this god-game has no pawn-level UI to expose, so the whole
+        /// settlement carries one value instead, read by <see cref="AI.WorkGiver_Tend"/> and
+        /// <see cref="Health.MedicineUtility.FindBestMedicine"/> the moment either next runs — no other wiring
+        /// needed, the same "write the field, the simulation notices on its own" shape <see cref="SetHomeArea"/>
+        /// and <see cref="SetStockpileFilter"/> already use).
+        ///
+        /// <para/>Refuses only: no map open (<see cref="MapCommandOutcome.NoMap"/>). <b>Never</b> refuses
+        /// <see cref="Health.MedicalCareCategory.NoCare"/> — a settlement that stops tending its own wounded is
+        /// exactly the unwise-but-legal decision this class's whole doc names, not something to protect the
+        /// player from; nor <see cref="Health.MedicalCareCategory.Best"/> with no medicine anywhere on the map
+        /// — a wish this settlement cannot yet grant is not the same as an impossible one.
+        /// </summary>
+        public static MapCommandResult SetMedicalCare(Health.MedicalCareCategory category)
+        {
+            SimWorld.Map.Map? map = ResolveMap(out string? mapReason);
+            if (map == null) return MapCommandResult.NoMap(mapReason!);
+
+            map.medicalCare = category;
+            return MapCommandResult.Done("Medical care set to " + category + ".");
+        }
+
         // -----------------------------------------------------------------------------------------------
         // Resolution — additions for this file only. ResolveMap/ResolveThingDef/ValidateCells already live
         // in MapCommands.cs and are shared across the partial class without repeating them here.

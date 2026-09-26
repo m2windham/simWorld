@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Task #104's own stats (system: Health — medicine). Its own file per CLAUDE.md: DefLoader.AddDirectory
+    reads every XML file under a Def folder, so this needs no edit to the shared StatDefs_Pawns.xml/
+    StatDefs_Work.xml beyond ImmunityGainSpeed's own <parts> addition (which had to touch that def directly —
+    a StatDef's own field list is not additive the way a JobDef or a building is).
+
+    BedRestEffectiveness and MedicalTendQualityOffset are read off a live Building_Bed (RimWorld:
+    Toils_LayDown/TendUtility both read them straight off whatever bed a pawn happens to be in); MedicalPotency
+    and MedicalQualityMax are read off a medicine ThingDef abstractly (RimWorld: TendUtility.CalculateBaseTendQuality's
+    ThingDef overload). None of the four is read for a pawn, so none needs capacityFactors/skillNeed terms —
+    they are plain per-Thing/per-Def numbers, exactly like MarketValue.
+  -->
+
+  <StatDef>
+    <defName>BedRestEffectiveness</defName>
+    <label>bed rest effectiveness</label>
+    <description>How much a bed speeds up a resting pawn's immunity gain.</description>
+    <category>Building</category>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0</minValue>
+    <showIfUndefined>false</showIfUndefined>
+  </StatDef>
+
+  <StatDef>
+    <defName>MedicalTendQualityOffset</defName>
+    <label>medical tend quality offset</label>
+    <description>A flat addition to tend quality for a patient lying in this bed.</description>
+    <category>Building</category>
+    <defaultBaseValue>0</defaultBaseValue>
+    <showIfUndefined>false</showIfUndefined>
+  </StatDef>
+
+  <StatDef>
+    <defName>MedicalPotency</defName>
+    <label>medical potency</label>
+    <description>How effective this medicine is at treating wounds and disease.</description>
+    <category>Item</category>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0</minValue>
+    <showIfUndefined>false</showIfUndefined>
+  </StatDef>
+
+  <StatDef>
+    <defName>MedicalQualityMax</defName>
+    <label>max medical tend quality</label>
+    <description>The maximum tend quality achievable using this medicine, however skilled the doctor.</description>
+    <category>Item</category>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0</minValue>
+    <showIfUndefined>false</showIfUndefined>
+  </StatDef>
+
+</Defs>

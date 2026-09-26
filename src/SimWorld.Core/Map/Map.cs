@@ -71,6 +71,17 @@ namespace SimWorld.Map
         /// <summary>Every Area on this map — today, only the home area (system 16: Building — zones).</summary>
         public Building.AreaManager areaManager = null!;
 
+        /// <summary>
+        /// The settlement's own standing rule for how aggressively to tend its people (RimWorld:
+        /// <c>Pawn_PlayerSettings.medCare</c>, one dropdown per colonist; this port has one settlement-wide
+        /// value instead of a per-pawn one — see <see cref="Health.MedicalCareCategory"/>'s own doc for why).
+        /// <see cref="AI.WorkGiver_Tend"/> and <see cref="Health.MedicineUtility.FindBestMedicine"/> both read
+        /// it fresh every time, so <c>Map.View.MapCommands.SetMedicalCare</c> changes what the very next tend
+        /// decision does with no other wiring needed. Defaults to RimWorld's own default for a colonist
+        /// (<c>PlaySettings.defaultCareForColonyHumanlike</c>).
+        /// </summary>
+        public Health.MedicalCareCategory medicalCare = Health.MedicalCareCategory.Best;
+
         /// <summary>The weather over this map, its transition to the next, and everything weather does here
         /// (system: weather — <see cref="SimWorld.Weather.WeatherManager"/>). Constructed with this map's
         /// other managers, ticked from <see cref="MapTick"/>, saved by <see cref="ExposeData"/>.</summary>
@@ -285,6 +296,7 @@ namespace SimWorld.Map
             areaManager.ExposeData();
             gameConditionManager.ExposeData();
             weatherManager.ExposeData();
+            Scribe_Values.Look(ref medicalCare, "medicalCare", Health.MedicalCareCategory.Best);
 
             // After the things, so every member a lord points at is already in the document. A save written
             // before lords existed has no node and loads with none.

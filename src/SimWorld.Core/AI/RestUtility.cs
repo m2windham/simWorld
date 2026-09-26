@@ -32,15 +32,25 @@ namespace SimWorld.AI
         /// is enough to answer the question every caller actually asks with it — has this patient already been
         /// carried to a bed.
         /// </summary>
-        public static bool InBed(this Pawn pawn)
+        public static bool InBed(this Pawn pawn) => pawn.CurrentBed() != null;
+
+        /// <summary>
+        /// The actual <see cref="ConstructionThingDefOf.Bed"/> standing on <paramref name="pawn"/>'s own cell,
+        /// or null (RimWorld: <c>Pawn.CurrentBed()</c>, 1.0 decompile — trimmed the same way <see cref="InBed"/>
+        /// already is; see that method's own doc for what "in bed" means with no posture or per-slot occupant
+        /// tracking). The Thing itself, not just the fact of it, is what <see cref="Stats.StatPart_BedStat"/>
+        /// and <see cref="Health.TendUtility.CalculateBaseTendQuality"/> need — each bed carries its own
+        /// stat values, so which bed answers "how much" as well as "yes".
+        /// </summary>
+        public static Thing? CurrentBed(this Pawn pawn)
         {
-            if (!pawn.Spawned || pawn.Map == null) return false;
+            if (!pawn.Spawned || pawn.Map == null) return null;
             IReadOnlyList<Thing> here = pawn.Map.thingGrid.ThingsListAt(pawn.Position);
             for (int i = 0; i < here.Count; i++)
             {
-                if (here[i].def == ConstructionThingDefOf.Bed) return true;
+                if (here[i].def == ConstructionThingDefOf.Bed) return here[i];
             }
-            return false;
+            return null;
         }
 
         /// <summary>Nearest reachable, unclaimed spawned <see cref="ConstructionThingDefOf.Bed"/> on

@@ -5,6 +5,12 @@
     Three built-in scenarios (RimWorld: ScenarioDef). Each <parts><li Class="..."><def>...</def>...</li></parts>
     entry's Class picks the ScenPart implementation; its <def> cross-references the matching ScenPartDef
     above by defName.
+
+    Starting medicine (task #104, system: Health — medicine) matches RimWorld's own two scenarios this port's
+    Landfall/TribalStart most resemble (rimworldwiki.com/wiki/Scenario): Crashlanded starts with 30 industrial
+    medicine, Lost Tribe with 20 herbal — both literal RimWorld figures, not this port's own guess.
+    AgrarianVillage has no RimWorld scenario to match (Agrarian era does not exist there); its 20 herbal medicine
+    is this port's own figure, picked level with Lost Tribe's rather than trusted as a RimWorld literal.
   -->
 
   <ScenarioDef>
@@ -41,6 +47,11 @@
           <def>StartingThing_Defined</def>
           <thingDef>Gun_Revolver</thingDef>
           <count>1</count>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingThing_Defined">
+          <def>StartingThing_Defined</def>
+          <thingDef>MedicineIndustrial</thingDef>
+          <count>30</count>
         </li>
         <li Class="SimWorld.Scenario.ScenPart_RivalCivilizations">
           <def>RivalCivilizations</def>
@@ -91,6 +102,11 @@
           <def>StartingThing_Defined</def>
           <thingDef>MeleeWeapon_Knife</thingDef>
           <count>2</count>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingThing_Defined">
+          <def>StartingThing_Defined</def>
+          <thingDef>MedicineHerbal</thingDef>
+          <count>20</count>
         </li>
         <li Class="SimWorld.Scenario.ScenPart_ForcedTrait">
           <def>ForcedTrait</def>
@@ -147,6 +163,11 @@
           <def>StartingThing_Defined</def>
           <thingDef>Bow_Short</thingDef>
           <count>2</count>
+        </li>
+        <li Class="SimWorld.Scenario.ScenPart_StartingThing_Defined">
+          <def>StartingThing_Defined</def>
+          <thingDef>MedicineHerbal</thingDef>
+          <count>20</count>
         </li>
         <li Class="SimWorld.Scenario.ScenPart_RivalCivilizations">
           <def>RivalCivilizations</def>
