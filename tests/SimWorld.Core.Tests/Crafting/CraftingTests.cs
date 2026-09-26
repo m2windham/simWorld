@@ -35,10 +35,11 @@ namespace SimWorld.Tests.Crafting
         public void Core_crafting_content_loads_with_expected_counts()
         {
             Assert.Empty(Content.Result.Errors);
-            // 17: the corpse module (system: corpses) added Corpses/CorpsesAnimal/CorpsesHumanlike in its own
+            // 18: the corpse module (system: corpses) added Corpses/CorpsesAnimal/CorpsesHumanlike in its own
             // ThingCategoryDefs/ThingCategories_Corpses.xml — the handle content and a stockpile filter get on
-            // corpse ThingDefs, which are generated per race at runtime rather than authored here.
-            Assert.Equal(17, DefDatabase<ThingCategoryDef>.DefCount);
+            // corpse ThingDefs, which are generated per race at runtime rather than authored here — and task
+            // #104 (system: Health — medicine) added one more, Medicine, for MedicineHerbal/MedicineIndustrial.
+            Assert.Equal(18, DefDatabase<ThingCategoryDef>.DefCount);
             Assert.Equal(5, DefDatabase<StuffCategoryDef>.DefCount);
             Assert.True(DefDatabase<ThingDef>.AllDefsListForReading.Count(d => d.category == ThingCategory.Item) >= 10);
             Assert.True(DefDatabase<RecipeDef>.DefCount >= 5);

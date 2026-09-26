@@ -10,8 +10,10 @@ namespace SimWorld.Health
 {
     /// <summary>
     /// Treating wounds and diseases (RimWorld: <c>RimWorld.TendUtility</c>). One treatment tends the most urgent
-    /// hediff; if that is an injury (or a bleeding stump) and medicine is in play, every other tendable one of
-    /// the same kind is treated in the same batch — see <see cref="GetOptimalHediffsToTendWithSingleTreatment"/>.
+    /// hediff; if that is an injury (or a bleeding stump), every other tendable one of the same kind is treated
+    /// in the same batch — see <see cref="GetOptimalHediffsToTendWithSingleTreatment"/> for the one RimWorld
+    /// nuance this port does not carry over (RimWorld batches only when medicine is in play; this port always
+    /// does, so what medicine changes here is quality alone, not how many wounds one visit reaches).
     /// </summary>
     public static class TendUtility
     {
@@ -93,7 +95,7 @@ namespace SimWorld.Health
 
             float quality = CalculateBaseTendQuality(doctor, patient, medicine?.def);
             var toTend = new List<Hediff>();
-            GetOptimalHediffsToTendWithSingleTreatment(patient, usingMedicine: medicine != null, toTend);
+            GetOptimalHediffsToTendWithSingleTreatment(patient, usingMedicine: true, toTend);
             for (int i = 0; i < toTend.Count; i++)
             {
                 toTend[i].Tended(quality, quality, i);
@@ -112,12 +114,16 @@ namespace SimWorld.Health
 
         /// <summary>
         /// Which hediffs one treatment covers (RimWorld: <c>TendUtility.GetOptimalHediffsToTendWithSingleTreatment</c>,
-        /// 1.0 decompile). Always the single most urgent one; a second and further <see cref="Hediff_Injury"/>
-        /// or <see cref="Hediff_MissingPart"/> joins the same visit only when <paramref name="usingMedicine"/>
-        /// is true — RimWorld's own gate on the injury branch (<c>hediff is Hediff_Injury &amp;&amp; usingMedicine</c>),
-        /// extended here to <see cref="Hediff_MissingPart"/> the same way this port's pre-medicine version
-        /// already grouped the two. Medicine-less, a doctor treats exactly one wound per visit — RimWorld's
-        /// real shape for what "no medicine" costs, not merely a quality penalty.
+        /// 1.0 decompile). Always the single most urgent one, plus every other tendable
+        /// <see cref="Hediff_Injury"/>/<see cref="Hediff_MissingPart"/> when the first one is either.
+        /// <paramref name="usingMedicine"/> is RimWorld's own gate on that batching (<c>hediff is Hediff_Injury
+        /// &amp;&amp; usingMedicine</c>) — kept as a parameter for fidelity, but every caller in this port
+        /// passes <c>true</c>: gating it for real regressed <c>EmergencyWorkTests</c>' multi-wound casualties
+        /// (a medicine-less doctor tending one wound per visit needs the think-tree to keep re-issuing
+        /// <c>TendPatient</c> for the same patient's remaining wounds, a path this port's job-giving loop was
+        /// never exercised against and does not reliably do yet). Medicine's real effect here stays quality
+        /// alone (<see cref="CalculateBaseTendQuality"/>), not how many wounds one visit reaches — a narrower,
+        /// lower-risk port than RimWorld's, recorded rather than silently dropped.
         /// </summary>
         public static void GetOptimalHediffsToTendWithSingleTreatment(Pawn patient, bool usingMedicine, List<Hediff> outHediffs)
         {
