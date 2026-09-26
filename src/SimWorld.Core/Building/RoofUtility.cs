@@ -41,10 +41,8 @@ namespace SimWorld.Building
 
         /// <summary>
         /// The live plant at <paramref name="pos"/> that a roof cannot be built through, or null (RimWorld:
-        /// <c>Verse.RoofUtility.FirstBlockingThing</c>). No shipped <see cref="PlantProperties"/> sets
-        /// <see cref="PlantProperties.interferesWithRoof"/> yet — see that field's own doc — so this returns
-        /// null for every plant in content today; the check still runs, because a future species (a real
-        /// RimWorld tree canopy, say) should not need this class touched again to be respected.
+        /// <c>Verse.RoofUtility.FirstBlockingThing</c>): a plant whose def sets
+        /// <see cref="PlantProperties.interferesWithRoof"/>, which every tree in content does.
         /// </summary>
         public static Thing? FirstBlockingThing(IntVec3 pos, Map.Map map)
         {

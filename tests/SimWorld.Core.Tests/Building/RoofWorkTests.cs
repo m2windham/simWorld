@@ -123,6 +123,45 @@ namespace SimWorld.Tests.Building
                 "every BuildRoof cell should have been roofed by now");
         }
 
+        /// <summary>
+        /// A tree standing inside a room the settlement walled in (RimWorld: <c>TreeBase</c> sets
+        /// <c>interferesWithRoof</c>). The roof work over its cell is a cut job first, and the room is only
+        /// roofed once the tree is gone.
+        /// </summary>
+        [Fact]
+        public void A_tree_inside_a_walled_room_is_felled_before_the_roof_goes_over_it()
+        {
+            CoreMap map = NewMap(20, 20);
+            var interior = new CellRect(8, 8, 2, 2);
+            var doorAt = new IntVec3(8, 0, 7);
+            BuildWallRing(map, interior, doorAt);
+            MarkHome(map, interior.ExpandedBy(1));
+
+            var treeCell = new IntVec3(9, 0, 9);
+            var tree = (Plant)ThingMaker.MakeThing(TreeDefOf.Plant_TreePoplar);
+            tree.Growth = 1f;
+            GenSpawn.Spawn(tree, treeCell, map);
+            map.MapTick();
+            Assert.True(map.areaManager.BuildRoof[treeCell], "test setup: the tree's cell should be queued for a roof");
+
+            Pawn builder = SpawnBuilder(map, doorAt);
+            CoreJob? first = new WorkGiver_BuildRoof().JobOnCell(builder, treeCell);
+            Assert.NotNull(first);
+            Assert.Same(SimWorld.AI.PlantCuttingJobDefOf.CutPlant, first!.def);
+            Assert.Same(tree, first.targetA.Thing);
+
+            const int maxTicks = 30000;
+            bool fullyRoofed = false;
+            for (int t = 0; t < maxTicks && !fullyRoofed; t += 50)
+            {
+                RunTicksWithMap(map, 50, builder);
+                fullyRoofed = interior.ExpandedBy(1).Cells.All(c => map.roofGrid.Roofed(c));
+            }
+
+            Assert.True(tree.Destroyed, "the tree should have been felled");
+            Assert.True(fullyRoofed, "the builder never finished roofing the room within " + maxTicks + " ticks");
+        }
+
         // ---- WorkGiver_BuildRoof: unit-level accept/reject ----
 
         [Fact]

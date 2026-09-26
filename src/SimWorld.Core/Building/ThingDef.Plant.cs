@@ -48,8 +48,8 @@ namespace SimWorld.Defs
 
         /// <summary>Whether a live plant of this def blocks a roof from being built over its cell (RimWorld:
         /// <c>PlantProperties.interferesWithRoof</c>, default <c>false</c> there too). Read by
-        /// <see cref="Building.RoofUtility.FirstBlockingThing"/>; no shipped Def sets this <c>true</c> yet, so
-        /// it is inert in content today but the mechanism is real — see that class's own doc.</summary>
+        /// <see cref="Building.RoofUtility.FirstBlockingThing"/>. Trees set it, as RimWorld's <c>TreeBase</c>
+        /// does (<c>Plants_Trees.xml</c>), so a builder fells a tree before roofing over it.</summary>
         public bool interferesWithRoof;
     }
 
