@@ -91,4 +91,11 @@
     <parent>ResourcesRaw</parent>
   </ThingCategoryDef>
 
+  <!-- Medicine (task #104, system: Health — medicine). -->
+  <ThingCategoryDef>
+    <defName>Medicine</defName>
+    <label>medicine</label>
+    <parent>Root</parent>
+  </ThingCategoryDef>
+
 </Defs>

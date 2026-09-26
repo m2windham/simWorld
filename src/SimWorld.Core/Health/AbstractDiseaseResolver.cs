@@ -82,8 +82,12 @@ namespace SimWorld.Health
 
             // Tending applies throughout, in both phases — exactly as HediffComp_TendDuration.CompPostTick
             // stacks its own severityAdjustment onto HediffComp_Immunizable's unconditionally, whatever the
-            // immune state. Capped the same way JobDriver_TendPatient caps a real tend: this port ships no
-            // medicine item yet, so no tend anywhere in it can exceed TendUtility.MaxQualityNoMedicine.
+            // immune state. Still capped at TendUtility.MaxQualityNoMedicine even though real medicine exists
+            // now (task #104): this coarse per-settlement abstraction has no notion of a stockpile to spend
+            // from — SettlementMedicalCapacity asks only "how good is the best doctor here", never "is there
+            // any medicine left" — so an unwatched citizen's tend deliberately stays at the medicine-less
+            // ceiling rather than promise a stockpile check this abstraction does not make. A watched
+            // citizen's real JobDriver_TendPatient has no such limit.
             float tendQuality = tendProps != null
                 ? Math.Min(SettlementMedicalCapacity(pawn), TendUtility.MaxQualityNoMedicine)
                 : 0f;

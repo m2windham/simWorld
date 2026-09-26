@@ -32,6 +32,14 @@
     </capacityFactors>
   </StatDef>
 
+  <!--
+    Resting and bed factors (task #104), both sourced from the RimWorld wiki's Immunity_gain_speed page and
+    the 1.0 decompile's StatPart_Resting/StatPart_BedStat (see those classes' own doc comments for the exact
+    reading, including the "a downed pawn on open ground does not count as resting" rule the wiki states in
+    words: "Not resting (or downed): x100%"). Not ported: the wiki's further Rest-need-category (tired/very
+    tired/exhausted) and hunger-category factors — this port's StatPart_Rest/StatPart_Food equivalents do not
+    exist yet, so those two multipliers are left at their RimWorld default of x100% rather than guessed.
+  -->
   <StatDef>
     <defName>ImmunityGainSpeed</defName>
     <label>immunity gain speed</label>
@@ -39,6 +47,14 @@
     <category>BasicsPawn</category>
     <defaultBaseValue>1</defaultBaseValue>
     <minValue>0</minValue>
+    <parts>
+      <li Class="SimWorld.Stats.StatPart_Resting">
+        <factor>1.10</factor>
+      </li>
+      <li Class="SimWorld.Stats.StatPart_BedStat">
+        <stat>BedRestEffectiveness</stat>
+      </li>
+    </parts>
   </StatDef>
 
   <StatDef>

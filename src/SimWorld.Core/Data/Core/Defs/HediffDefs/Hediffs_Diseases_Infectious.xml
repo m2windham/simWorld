@@ -30,13 +30,13 @@
     Ported with it, and harsher: RimWorld tends an infection for 12 hours, not 24, and immunity decays at -0.4
     a day once the infection is gone, not -0.3.
 
-    NOT ported, on purpose - immunityPerDaySick. RimWorld's def says 0.6441, but it is multiplied by the
-    ImmunityGainSpeed stat, which RimWorld raises x1.10 for a resting pawn and x1.07 more in a standard bed
-    (wiki: Immunity_gain_speed). This port has neither stat part, and 0.7 is already 0.6441 x 1.10, RimWorld's
-    figure for a resting patient, to within a percent. Porting the number without its multiplier would make
-    every resting patient here fight infection more slowly than RimWorld's does; porting the multiplier needs a
-    rule for whether a downed pawn on the ground counts as resting, which could not be sourced from here.
-    Recorded rather than guessed.
+    immunityPerDaySick is RimWorld's own raw def value, 0.6441 (wiki's generated def dump), ported unmultiplied
+    — task #104 gave ImmunityGainSpeed its own StatPart_Resting/StatPart_BedStat (StatDefs_Pawns.xml), so the
+    x1.10 resting bonus and x1.07 standard-bed bonus (wiki: Immunity_gain_speed) now apply through
+    Pawn.ImmunityGainSpeed itself, exactly where ImmunityRecord.ImmunityChangePerTick already multiplies by it,
+    rather than being pre-baked into this number. See StatPart_Resting's own doc for the rule those two stat
+    parts settle: a downed pawn on open ground does not count as resting (RimWorld's own wiki: "Not resting
+    (or downed): x100%") — only actually being in a bed does.
   -->
   <HediffDef ParentName="DiseaseBase">
     <defName>WoundInfection</defName>
@@ -48,7 +48,7 @@
         <severityPerDayTended>-0.53</severityPerDayTended>
       </li>
       <li Class="SimWorld.Health.HediffCompProperties_Immunizable">
-        <immunityPerDaySick>0.7</immunityPerDaySick>
+        <immunityPerDaySick>0.6441</immunityPerDaySick>
         <severityPerDayNotImmune>0.84</severityPerDayNotImmune>
         <immunityPerDayNotSick>-0.4</immunityPerDayNotSick>
         <severityPerDayImmune>-0.7</severityPerDayImmune>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Medicine (task #104, system: Health — medicine). Own file per CLAUDE.md: additive content, no shared
+    file edited to add it.
+
+    MedicalPotency/MedicalQualityMax/MarketValue are RimWorld's own values, herbal medicine's page
+    (rimworldwiki.com/wiki/Herbal_medicine — potency 60%, max tend quality 70%, market value 10) and industrial
+    medicine's (rimworldwiki.com/wiki/Medicine — potency 100%, max tend quality 100%, market value 18). Mass is
+    left out — this port has no Mass stat/encumbrance system yet (nothing else it ships carries one either).
+
+    Herbal medicine is this port's one real source: RimWorld grows it from Healroot, a farmable crop
+    (rimworldwiki.com/wiki/Healroot — sown/harvested the same way this port's Building module already grows
+    Plant_Potato/Plant_Rice, see ThingDefs_Plants/Plants_Cultivated.xml). This pass does not add Healroot
+    itself: FarmingInitiative (Building/FarmingInitiative.cs), the only thing that ever plants a
+    Zone_Growing without a player at the wheel, picks its crop by "whichever sowable plant feeds people
+    best per cell per day" — a medicine crop has no nutrition and would never be chosen, so planting it
+    would need its own initiative, out of scope here. Instead this port starts a founding band with real
+    RimWorld starting-stock medicine (ScenarioDefs/Scenarios.xml) — RimWorld's own Lost Tribe scenario starts
+    with 20 herbal medicine, Crashlanded with 30 industrial (rimworldwiki.com/wiki/Scenario), numbers this
+    port's own TribalStart/Landfall scenarios now match. A player who builds a Zone_Growing over Plant_Potato
+    today could do the same for Healroot once it ships; recorded here as a gap, not a silent omission.
+
+    MedicineIndustrial ships as content — its MedicalPotency/MedicalQualityMax back
+    MedicalCareCategory.NormalOrWorse's threshold and Landfall's starting stock — but nothing crafts it yet:
+    RimWorld's own recipe needs a drug lab and Neutroamine, neither of which this port has.
+  -->
+
+  <ThingDef>
+    <defName>MedicineHerbal</defName>
+    <label>herbal medicine</label>
+    <description>Bandages, ointments and salves made from healroot and other medicinal plants.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <thingCategories><li>Medicine</li></thingCategories>
+    <stackLimit>25</stackLimit>
+    <statBases>
+      <MarketValue>10</MarketValue>
+      <MedicalPotency>0.6</MedicalPotency>
+      <MedicalQualityMax>0.7</MedicalQualityMax>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>MedicineIndustrial</defName>
+    <label>medicine</label>
+    <description>A broad-spectrum medical treatment kit — bandages, syringes and lab-made drugs.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.Thing</thingClass>
+    <thingCategories><li>Medicine</li></thingCategories>
+    <stackLimit>25</stackLimit>
+    <statBases>
+      <MarketValue>18</MarketValue>
+      <MedicalPotency>1.0</MedicalPotency>
+      <MedicalQualityMax>1.0</MedicalQualityMax>
+    </statBases>
+  </ThingDef>
+
+</Defs>

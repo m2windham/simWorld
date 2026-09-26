@@ -46,6 +46,10 @@ namespace SimWorld.AI
         {
             if (!(thing is Pawn patient) || ReferenceEquals(patient, pawn)) return false;
             if (patient.Dead || !patient.Spawned || patient.Map != pawn.Map) return false;
+            // The settlement's own standing rule (RimWorld: HealthAIUtility.ShouldEverReceiveMedicalCareFromPlayer
+            // refusing outright at NoCare) — this port's one lever, per-settlement rather than per-pawn; see
+            // MedicalCareCategory's own doc.
+            if (patient.Map!.medicalCare == MedicalCareCategory.NoCare) return false;
             if (!DoctorUtility.IsCaredForBy(pawn, patient)) return false;
             if (!TendUtility.HasAnythingToTend(patient)) return false;
             if (TendUtility.NeedsEmergencyTend(patient) != def.emergency) return false;
@@ -53,7 +57,13 @@ namespace SimWorld.AI
             return pawn.Map!.reservationManager.CanReserve(pawn, patient);
         }
 
-        public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false) =>
-            new Job(JobDefOf.TendPatient, thing);
+        /// <summary>Whichever medicine <see cref="MedicineUtility.FindBestMedicine"/> finds travels along as
+        /// target B (RimWorld: <c>WorkGiver_Tend.JobOnThing</c> does the same); null means none qualified, or
+        /// the settlement's care level forbids it, and the tend still goes ahead without it.</summary>
+        public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false)
+        {
+            Thing? medicine = MedicineUtility.FindBestMedicine(pawn, (Pawn)thing);
+            return medicine != null ? new Job(JobDefOf.TendPatient, thing, medicine) : new Job(JobDefOf.TendPatient, thing);
+        }
     }
 }

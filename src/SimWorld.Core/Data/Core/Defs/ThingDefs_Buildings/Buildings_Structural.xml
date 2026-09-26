@@ -63,6 +63,11 @@
     whether the settlement *has* enough beds — placing one per citizen — not who sleeps in which; there is no
     ownership/assignment concept here, matching what RimWorld actually needs for an unowned, first-come bed.
 
+    Its statBases' own <BedRestEffectiveness> (task #104) is a different stat under the same RimWorld name —
+    Need_Rest's constant above governs the rest *need*'s gain rate and was never wired to content; this one is
+    read by Stats.StatPart_BedStat off the live bed and feeds ImmunityGainSpeed/TendUtility instead. See
+    Health.HealthStatDefOf's own doc comment for why the two coexist rather than being unified.
+
     Bed is 1x2, RimWorld's own <size>(1,2)</size> for a single bed (a double bed is 2x2 there; none ships
     here). Blueprint_Bed and Frame_Bed declare no size: they derive it from entityToBuild (Thing.Size), so
     they cannot disagree with this. Position is the head end, the bed's one sleeping slot
@@ -82,6 +87,12 @@
     <statBases>
       <MaxHitPoints>80</MaxHitPoints>
       <WorkToBuild>180</WorkToBuild>
+      <!-- Task #104 (system: Health — medicine): x1.07, RimWorld's own "regular bed" value
+           (rimworldwiki.com/wiki/Immunity_gain_speed and rimworldwiki.com/wiki/Bed both give it), read by
+           Stats.StatPart_BedStat off whichever bed a pawn is actually lying in. MedicalTendQualityOffset is
+           left unset — RimWorld's regular bed carries none either; only a hospital bed (not shipped here)
+           is ever above zero. -->
+      <BedRestEffectiveness>1.07</BedRestEffectiveness>
     </statBases>
     <costList>
       <WoodLog>8</WoodLog>
