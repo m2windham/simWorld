@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using SimWorld.Defs;
 using SimWorld.Pawns;
 using SimWorld.Sim;
@@ -205,19 +206,20 @@ namespace SimWorld.Research
         }
 
         /// <summary>
-        /// Debug/testing: instantly finishes every loaded project. Endless extension is suppressed while it
-        /// runs — otherwise finishing the last authored project would open an age, which this loop would then
-        /// finish, which would open another, forever. The civilization is left exactly where the authored tree
-        /// ends, with nothing to research, which is the state endless tech is the answer to.
+        /// Debug/testing: instantly finishes every project this civilization can see. Endless extension is
+        /// suppressed while it runs — otherwise finishing the last authored project would open an age, which
+        /// this loop would then finish, which would open another, forever. The civilization is left exactly
+        /// where the authored tree ends, with nothing to research, which is the state endless tech is the
+        /// answer to.
         /// <para/>
-        /// Note that "every loaded project" includes another civilization's generated tail if one is in the
-        /// same process, which is why a test that wants a clean start on the tail seeds the authored tree with
-        /// <see cref="SetProjectFinishedForSetup"/> instead.
+        /// "Every project this civilization can see" (<see cref="AllProjects"/>) never includes another
+        /// civilization's generated tail any more — each game's endless projects live in its own register —
+        /// so calling this no longer risks finishing a tail this civilization never lived.
         /// </summary>
         public void DebugSetAllProjectsFinished()
         {
-            // A snapshot, because FinishProject can now add projects to the database.
-            var all = new List<ResearchProjectDef>(DefDatabase<ResearchProjectDef>.AllDefsListForReading);
+            // A snapshot, because FinishProject can now add projects to the register.
+            var all = new List<ResearchProjectDef>(AllProjects);
             suppressEndlessExtension = true;
             try
             {
@@ -283,20 +285,91 @@ namespace SimWorld.Research
 
         public void ExposeData()
         {
-            // First, and deliberately: a generated project is a real Def in the database, so every reference
-            // below — the current project, every key of the progress dictionary — can only resolve once the
-            // seed and the age count are known and the tail has been re-minted. Read those two, rebuild, then
-            // read the references that point into it.
+            // First, and deliberately: a generated project is a real Def, but one that lives in this game's
+            // own endlessDatabase rather than DefDatabase.Global, so every reference below — the current
+            // project, every key of the progress dictionary — can only resolve once the seed and the age
+            // count are known and the tail has been re-minted into it. Read those two, rebuild, then read the
+            // references that point into it.
             Scribe_Values.Look(ref endlessSeed, "endlessSeed");
             Scribe_Values.Look(ref endlessSeedCaptured, "endlessSeedCaptured", false);
             Scribe_Values.Look(ref endlessAges, "endlessAges");
             if (Scribe.mode == LoadSaveMode.LoadingVars) RemintEndlessTree();
 
-            Scribe_Defs.Look(ref currentProj, "currentProj");
-            Dictionary<ResearchProjectDef, float>? dict = progress;
-            Scribe_Collections.Look(ref dict, "progress", LookMode.Def, LookMode.Value);
-            progress = dict ?? new Dictionary<ResearchProjectDef, float>();
+            // Not Scribe_Defs / Scribe_Collections(LookMode.Def): those resolve a saved defName against
+            // ScribeLoader.Defs alone (the session's static content database), which never holds an endless
+            // project — see EndlessResearch's own doc on why one must never be written into it. The XML shape
+            // is identical either way (a defName string), so this is a change to how a loaded name resolves,
+            // not to what a save contains.
+            ExposeProjectRef(ref currentProj, "currentProj");
+
+            Dictionary<string, float>? progressByName = Scribe.mode == LoadSaveMode.Saving ? ToNameKeyed(progress) : null;
+            Scribe_Collections.Look(ref progressByName, "progress", LookMode.Value, LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.LoadingVars) progress = FromNameKeyed(progressByName);
+
             Scribe_Values.Look(ref researcherTechLevel, "researcherTechLevel", TechLevel.Neolithic);
+        }
+
+        /// <summary>Saves/loads a single research project reference by defName, resolving against
+        /// <see cref="GetProject"/> — authored or this game's own endless one — rather than against
+        /// <see cref="ScribeLoader.Defs"/>, which only ever knows about authored content.</summary>
+        private void ExposeProjectRef(ref ResearchProjectDef? project, string label)
+        {
+            switch (Scribe.mode)
+            {
+                case LoadSaveMode.Saving:
+                    Scribe.saver.WriteElement(label, project == null ? "null" : project.defName);
+                    break;
+
+                case LoadSaveMode.LoadingVars:
+                {
+                    XElement? node = Scribe.loader.CurParent?.Element(label);
+                    string name = node?.Value?.Trim() ?? "";
+                    if (node == null || name.Length == 0 || name == "null" || ScribeExtractor.IsNull(node))
+                    {
+                        project = null;
+                    }
+                    else
+                    {
+                        project = GetProject(name);
+                        if (project == null)
+                        {
+                            Scribe.loader.Error("Could not load reference to ResearchProjectDef named '" + name + "' for '" + label + "'.");
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        private static Dictionary<string, float> ToNameKeyed(Dictionary<ResearchProjectDef, float> source)
+        {
+            var byName = new Dictionary<string, float>(source.Count, StringComparer.Ordinal);
+            foreach (KeyValuePair<ResearchProjectDef, float> entry in source)
+            {
+                byName[entry.Key.defName] = entry.Value;
+            }
+            return byName;
+        }
+
+        /// <summary>The inverse of <see cref="ToNameKeyed"/>: resolves each saved name against
+        /// <see cref="GetProject"/>. A name neither the authored tree nor this game's own tail recognizes is
+        /// reported and dropped, rather than silently discarded the way the generic Def-lookMode collection
+        /// helper would (it casts an unresolved reference to null and <c>BuildDictionary</c> skips a null key).</summary>
+        private Dictionary<ResearchProjectDef, float> FromNameKeyed(Dictionary<string, float>? byName)
+        {
+            var result = new Dictionary<ResearchProjectDef, float>();
+            if (byName == null) return result;
+            foreach (KeyValuePair<string, float> entry in byName)
+            {
+                ResearchProjectDef? def = GetProject(entry.Key);
+                if (def == null)
+                {
+                    Scribe.loader.Error("Could not load reference to ResearchProjectDef named '" + entry.Key + "' in 'progress'.");
+                    continue;
+                }
+                result[def] = entry.Value;
+            }
+            return result;
         }
 
         // ---- Endless tech (research.endless) ----
@@ -312,6 +385,53 @@ namespace SimWorld.Research
         /// <summary>Set while a bulk finish is in progress; see <see cref="DebugSetAllProjectsFinished"/>.
         /// Not saved: it is only ever true inside one call.</summary>
         private bool suppressEndlessExtension;
+
+        /// <summary>
+        /// Where this game's own endless projects live — never <see cref="DefDatabase.Global"/>. A generated
+        /// project is a real <see cref="ResearchProjectDef"/>, so every consumer that already handles an
+        /// authored one keeps working unchanged; it is just registered here instead of in the process-wide
+        /// database. <see cref="DefDatabase.Global"/> is written only when content loads, and is shared by
+        /// every game in the process, so a second game sharing it must never be handed the first one's
+        /// invented tail (the defect <c>EndlessResearch</c>'s own doc used to accept and paper over with
+        /// <see cref="EndlessResearch.BelongsTo"/>). Not saved: <see cref="RemintEndlessTree"/> rebuilds it
+        /// from <see cref="endlessSeed"/> and <see cref="endlessAges"/> on load, before anything below tries
+        /// to resolve a reference into it.
+        /// </summary>
+        private readonly DefDatabase endlessDatabase = new DefDatabase();
+
+        /// <summary>
+        /// Every research project this civilization can see: the authored tree — shared process-wide,
+        /// loaded once into <see cref="DefDatabase.Global"/> at content load — plus every project this game
+        /// itself has minted past its end (research.endless, in <see cref="endlessDatabase"/>). The one place
+        /// a reader asks for "every project" instead of <see cref="DefDatabase{T}"/> directly: since nothing
+        /// ever mints an endless project into the shared database any more, this is also the reason a second
+        /// game in the same process can no longer see this one's tail through any reader.
+        /// </summary>
+        public IReadOnlyList<ResearchProjectDef> AllProjects
+        {
+            get
+            {
+                IReadOnlyList<ResearchProjectDef> authored = DefDatabase<ResearchProjectDef>.AllDefsListForReading;
+                IReadOnlyList<ResearchProjectDef> mine = endlessDatabase.For<ResearchProjectDef>().AllDefsListForReading;
+                if (mine.Count == 0) return authored;
+
+                var all = new List<ResearchProjectDef>(authored.Count + mine.Count);
+                all.AddRange(authored);
+                all.AddRange(mine);
+                return all;
+            }
+        }
+
+        /// <summary>The project named <paramref name="defName"/> — authored or this game's own endless one —
+        /// or null when neither register has it. What a save resolves a research project reference against
+        /// (see <see cref="ExposeProjectRef"/>/<see cref="FromNameKeyed"/>) and what a player picks a project
+        /// by name through (<c>GodCommands.SetResearchProject</c>).</summary>
+        public ResearchProjectDef? GetProject(string defName)
+        {
+            if (defName == null) throw new ArgumentNullException(nameof(defName));
+            return DefDatabase<ResearchProjectDef>.GetNamedSilentFail(defName)
+                ?? endlessDatabase.For<ResearchProjectDef>().GetNamedSilentFail(defName);
+        }
 
         /// <summary>
         /// Raised when the civilization opens an age past the end of the authored ladder: the age's index and
@@ -381,22 +501,18 @@ namespace SimWorld.Research
         /// <i>reachability</i> rather than about completion — a project whose prerequisites can never be met
         /// is not something a civilization is still able to work on.
         ///
-        /// <para/>Generated projects belonging to <i>another</i> civilization are skipped. The
-        /// <see cref="DefDatabase"/> is process-wide and outlives a game, so without that a second game in the
-        /// same process reads the first one's unfinished tail as its own remaining work and never extends past
-        /// the authored tree at all.
+        /// <para/><see cref="AllProjects"/> already excludes another civilization's generated tail — each
+        /// game's endless projects live in its own register, never the process-wide <see cref="DefDatabase"/>
+        /// — so this no longer has to filter one out by seed the way it once did.
         /// </summary>
         public bool NothingLeftToResearch
         {
             get
             {
-                int seed = EndlessSeed;
-                IReadOnlyList<ResearchProjectDef> all = DefDatabase<ResearchProjectDef>.AllDefsListForReading;
+                IReadOnlyList<ResearchProjectDef> all = AllProjects;
                 for (int i = 0; i < all.Count; i++)
                 {
-                    ResearchProjectDef project = all[i];
-                    if (EndlessResearch.IsGenerated(project) && !EndlessResearch.BelongsTo(project, seed)) continue;
-                    if (project.CanStartNow) return false;
+                    if (all[i].CanStartNow) return false;
                 }
                 return true;
             }
@@ -421,7 +537,7 @@ namespace SimWorld.Research
                 for (int i = 0; i < tracks.Count; i++)
                 {
                     ResearchProjectDef? foundation =
-                        EndlessResearch.Existing(ages, tracks[i], endlessAges - 1, 0, EndlessSeed, DefDatabase.Global);
+                        EndlessResearch.Existing(ages, tracks[i], endlessAges - 1, 0, EndlessSeed, endlessDatabase);
                     if (foundation == null || !IsFinished(foundation)) return false;
                 }
                 return true;
@@ -441,7 +557,7 @@ namespace SimWorld.Research
 
             int opened = endlessAges;
             endlessAges++;
-            EndlessResearch.MintAge(ages, tracks, opened, EndlessSeed, DefDatabase.Global);
+            EndlessResearch.MintAge(ages, tracks, opened, EndlessSeed, endlessDatabase);
             Notify_EndlessAgeOpened(ages, opened);
             EndlessAgeOpened?.Invoke(opened, ages.LabelFor(opened, EndlessSeed));
         }
@@ -493,8 +609,8 @@ namespace SimWorld.Research
         /// letters for history the player watched happen. The same rule
         /// <see cref="SetProjectFinishedForSetup"/> follows for a seeded era.
         /// <para/>
-        /// Idempotent: an age already in the database is returned rather than duplicated, so loading twice
-        /// into one process is harmless.
+        /// Idempotent: an age already in <see cref="endlessDatabase"/> is returned rather than duplicated, so
+        /// loading twice into one process is harmless.
         /// </summary>
         private void RemintEndlessTree()
         {
@@ -505,7 +621,7 @@ namespace SimWorld.Research
 
             for (int ageIndex = 0; ageIndex < endlessAges; ageIndex++)
             {
-                EndlessResearch.MintAge(ages, tracks, ageIndex, EndlessSeed, DefDatabase.Global);
+                EndlessResearch.MintAge(ages, tracks, ageIndex, EndlessSeed, endlessDatabase);
             }
         }
     }

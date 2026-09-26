@@ -73,7 +73,7 @@ namespace SimWorld.Tests.Research
         }
 
         private IEnumerable<ResearchProjectDef> Startable() =>
-            DefDatabase<ResearchProjectDef>.AllDefsListForReading
+            manager.AllProjects
                 .Where(p => EndlessResearch.BelongsTo(p, manager.EndlessSeed) && p.CanStartNow);
 
         private void ReachTheTail(int seed) => ReachTheTail(manager, seed);
@@ -114,7 +114,7 @@ namespace SimWorld.Tests.Research
             ReachTheTail(730_002);
             RunCivilization(DeepAges * Tracks.Count * Ages.projectsPerTrack);
 
-            List<ResearchProjectDef> generated = DefDatabase<ResearchProjectDef>.AllDefsListForReading
+            List<ResearchProjectDef> generated = manager.AllProjects
                 .Where(p => EndlessResearch.BelongsTo(p, manager.EndlessSeed)).ToList();
             Assert.True(generated.Count >= 600, $"only {generated.Count} projects were generated.");
 
@@ -188,7 +188,7 @@ namespace SimWorld.Tests.Research
             ReachTheTail(730_004);
             RunCivilization(DeepAges * Tracks.Count * Ages.projectsPerTrack);
 
-            foreach (ResearchProjectDef project in DefDatabase<ResearchProjectDef>.AllDefsListForReading
+            foreach (ResearchProjectDef project in manager.AllProjects
                 .Where(p => EndlessResearch.BelongsTo(p, manager.EndlessSeed)))
             {
                 Assert.Null(project.era);
@@ -213,7 +213,7 @@ namespace SimWorld.Tests.Research
 
             foreach (EndlessResearchDef track in Tracks)
             {
-                var byDepth = DefDatabase<ResearchProjectDef>.AllDefsListForReading
+                var byDepth = manager.AllProjects
                     .Where(p => EndlessResearch.BelongsTo(p, manager.EndlessSeed) && p.tags!.Contains(track.trackTag))
                     .OrderBy(DepthOf)
                     .Select(p => p.baseCost)
@@ -258,7 +258,7 @@ namespace SimWorld.Tests.Research
             ReachTheTail(second, seed);
             for (int i = 0; i < budget; i++)
             {
-                ResearchProjectDef next = DefDatabase<ResearchProjectDef>.AllDefsListForReading
+                ResearchProjectDef next = second.AllProjects
                     .Where(p => EndlessResearch.BelongsTo(p, seed) && p.CanStartNow)
                     .OrderBy(p => p.baseCost).ThenBy(p => p.defName, StringComparer.Ordinal).First();
                 second.FinishProject(next);
@@ -273,7 +273,7 @@ namespace SimWorld.Tests.Research
         }
 
         private static HashSet<ResearchProjectDef> Finished(ResearchManager target, int seed) =>
-            new HashSet<ResearchProjectDef>(DefDatabase<ResearchProjectDef>.AllDefsListForReading
+            new HashSet<ResearchProjectDef>(target.AllProjects
                 .Where(p => EndlessResearch.BelongsTo(p, seed) && target.IsFinished(p)));
 
         private static int DepthOf(ResearchProjectDef project)

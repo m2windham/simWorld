@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 
-using SimWorld.Defs;
 using SimWorld.Research;
 using SimWorld.Sim;
 
@@ -121,7 +120,7 @@ namespace SimWorld.God.View
             ResearchManager manager = Find.ResearchManager;
             ResearchProjectDef? current = manager.CurrentProj;
 
-            IReadOnlyList<ResearchProjectDef> all = DefDatabase<ResearchProjectDef>.AllDefsListForReading;
+            IReadOnlyList<ResearchProjectDef> all = manager.AllProjects;
             var projects = new List<ResearchProjectOption>(all.Count);
             for (int i = 0; i < all.Count; i++)
             {

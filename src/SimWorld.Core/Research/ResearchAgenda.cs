@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 
-using SimWorld.Defs;
 using SimWorld.Sim;
 
 namespace SimWorld.Research
@@ -72,13 +71,13 @@ namespace SimWorld.Research
         /// <summary>
         /// The cheapest project the civilization could start right now (<see cref="ResearchProjectDef.CanStartNow"/>
         /// — not finished, every visible and hidden prerequisite finished), ties broken by <c>defName</c>.
-        /// Null when nothing at all is startable. Reads the database live and caches nothing: projects are
-        /// minted into it while a game runs (research.endless), so a cache here would go stale the first time
-        /// an age opened.
+        /// Null when nothing at all is startable. Reads <see cref="ResearchManager.AllProjects"/> live and
+        /// caches nothing: projects are minted into it while a game runs (research.endless), so a cache here
+        /// would go stale the first time an age opened.
         /// </summary>
         public static ResearchProjectDef? NextProject()
         {
-            IReadOnlyList<ResearchProjectDef> all = DefDatabase<ResearchProjectDef>.AllDefsListForReading;
+            IReadOnlyList<ResearchProjectDef> all = Find.ResearchManager.AllProjects;
             ResearchProjectDef? best = null;
             for (int i = 0; i < all.Count; i++)
             {

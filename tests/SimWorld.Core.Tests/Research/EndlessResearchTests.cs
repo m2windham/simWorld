@@ -38,8 +38,14 @@ namespace SimWorld.Tests.Research
         internal static IEnumerable<ResearchProjectDef> Authored =>
             DefDatabase<ResearchProjectDef>.AllDefsListForReading.Where(p => !EndlessResearch.IsGenerated(p));
 
+        /// <summary>This civilization's own generated projects for <paramref name="seed"/> — read through
+        /// <see cref="Find.ResearchManager"/>'s own <c>AllProjects</c> accessor rather than
+        /// <see cref="DefDatabase{T}"/> directly, since an endless project no longer lives in the shared
+        /// database at all (research.endless): it is registered against whichever <c>ResearchManager</c>
+        /// minted it, and every test in this file sets <see cref="Find.ResearchManager"/> to the manager it
+        /// means before asking.</summary>
         internal static IEnumerable<ResearchProjectDef> GeneratedFor(int seed) =>
-            DefDatabase<ResearchProjectDef>.AllDefsListForReading.Where(p => EndlessResearch.BelongsTo(p, seed));
+            Find.ResearchManager.AllProjects.Where(p => EndlessResearch.BelongsTo(p, seed));
 
         // ---- content ----
 
@@ -337,7 +343,7 @@ namespace SimWorld.Tests.Research
 
             for (int round = 0; round < 20; round++)
             {
-                ResearchProjectDef next = DefDatabase<ResearchProjectDef>.AllDefsListForReading
+                ResearchProjectDef next = manager.AllProjects
                     .First(p => EndlessResearch.BelongsTo(p, manager.EndlessSeed) && p.CanStartNow);
                 manager.FinishProject(next);
                 Assert.False(manager.NothingLeftToResearch, "the tail ran out after round " + round);
@@ -347,14 +353,16 @@ namespace SimWorld.Tests.Research
         [Fact]
         public void One_civilizations_tail_is_not_another_civilizations_remaining_work()
         {
-            // The DefDatabase outlives a game. Before generated defNames carried the seed they were derived
-            // from, a second civilization in the same process saw the first one's unfinished tail as its own
-            // remaining work and so never extended past the authored tree at all.
+            // Each game's endless projects live in their own register now (#88's fix for the leak this test
+            // used to be the regression guard for), not the process-wide DefDatabase, so a second civilization
+            // in the same process never sees the first one's unfinished tail as its own remaining work.
             var first = new ResearchManager { EndlessSeed = 910_009 };
             Find.ResearchManager = first;
             first.DebugSetAllProjectsFinished();
             first.EnsureSomethingToResearch();
             Assert.True(first.EndlessAges >= 1);
+            var firstGenerated = new HashSet<ResearchProjectDef>(
+                first.AllProjects.Where(p => EndlessResearch.BelongsTo(p, 910_009)));
 
             var second = new ResearchManager { EndlessSeed = 910_010 };
             Find.ResearchManager = second;
@@ -362,7 +370,15 @@ namespace SimWorld.Tests.Research
             Assert.True(second.NothingLeftToResearch, "the second civilization inherited the first one's unfinished tail");
             second.EnsureSomethingToResearch();
             Assert.True(second.EndlessAges >= 1);
-            Assert.Empty(GeneratedFor(910_009).Intersect(GeneratedFor(910_010)));
+            var secondGenerated = new HashSet<ResearchProjectDef>(
+                second.AllProjects.Where(p => EndlessResearch.BelongsTo(p, 910_010)));
+
+            Assert.Empty(firstGenerated.Intersect(secondGenerated));
+
+            // The isolation is structural, not merely a by-name coincidence: neither civilization's own tail
+            // is visible through the other's accessor at all.
+            Assert.DoesNotContain(second.AllProjects, p => EndlessResearch.BelongsTo(p, 910_009));
+            Assert.DoesNotContain(first.AllProjects, p => EndlessResearch.BelongsTo(p, 910_010));
         }
 
         // ---- determinism ----
@@ -492,7 +508,13 @@ namespace SimWorld.Tests.Research
             Assert.Equal(lettersAfterSave, Find.LetterStack.LettersListForReading.Count);
         }
 
-        internal static ResearchProjectDef Named(EndlessAgeDef ages, EndlessResearchDef track, int age, int slot, int seed) =>
-            DefDatabase<ResearchProjectDef>.GetNamed(EndlessResearch.DefNameFor(ages, track, age, slot, seed));
+        /// <summary>By name, through <see cref="Find.ResearchManager"/> — see <see cref="GeneratedFor"/> on
+        /// why an endless project can no longer be found through <see cref="DefDatabase{T}"/> alone.</summary>
+        internal static ResearchProjectDef Named(EndlessAgeDef ages, EndlessResearchDef track, int age, int slot, int seed)
+        {
+            string defName = EndlessResearch.DefNameFor(ages, track, age, slot, seed);
+            return Find.ResearchManager.GetProject(defName)
+                ?? throw new KeyNotFoundException("No ResearchProjectDef named '" + defName + "' is loaded.");
+        }
     }
 }
