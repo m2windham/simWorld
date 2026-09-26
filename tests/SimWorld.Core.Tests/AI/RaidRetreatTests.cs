@@ -41,9 +41,12 @@ namespace SimWorld.Tests.AI
         private static CoreMap NewMap(int size) => new CoreMap(size, size, SimWorld.Map.TerrainDefOf.Soil);
 
         private static (Faction ours, Faction theirs) HostilePair(string theirDef = "TribalCivilization")
+            => HostilePair(DefDatabase<FactionDef>.GetNamed(theirDef));
+
+        private static (Faction ours, Faction theirs) HostilePair(FactionDef theirDef)
         {
             var ours = new Faction(DefDatabase<FactionDef>.GetNamed("PlayerCivilization"), "Ours", "F_Ours");
-            var theirs = new Faction(DefDatabase<FactionDef>.GetNamed(theirDef), "Theirs", "F_Theirs");
+            var theirs = new Faction(theirDef, "Theirs", "F_Theirs");
             Find.FactionManager.Add(ours);
             Find.FactionManager.Add(theirs);
             ours.SetRelationDirect(theirs, FactionRelationKind.Hostile, -100);
@@ -133,10 +136,15 @@ namespace SimWorld.Tests.AI
         [Fact]
         public void A_faction_whose_def_says_it_does_not_flee_fights_on()
         {
-            // RoughOutlanders ship autoFlee=false. RimWorld adds the flee toil only for a faction that sets it
-            // (Lord.SetJob), so losing half changes nothing; the timeout is still there.
+            // RimWorld adds the flee toil only for a faction that sets autoFlee (Lord.SetJob), so losing half
+            // changes nothing; the timeout is still there. No shipped faction declares autoFlee=false any more
+            // (in RimWorld only mechanoids and insects do), so this one is declared here as content would.
             CoreMap map = NewMap(60);
-            (_, Faction raiders) = HostilePair("RoughOutlanders");
+            (_, Faction raiders) = HostilePair(new FactionDef
+            {
+                defName = "Test_FightsToTheLast", autoFlee = false, humanlikeFaction = true,
+                pawnSingular = "raider", pawnsPlural = "raiders",
+            });
             Assert.False(raiders.def.autoFlee);
             (Lord lord, List<Pawn> squad) = Raid(map, raiders, 4, new IntVec3(28, 30));
 
