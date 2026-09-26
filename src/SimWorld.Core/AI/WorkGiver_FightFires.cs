@@ -26,10 +26,15 @@ namespace SimWorld.AI
     /// fire was ever firefighting work — the dormant-feature trap this codebase has been bitten by before.
     /// <see cref="Map.View.MapCommands.SetHomeArea"/> is now that first writer (the construction-placement
     /// lane's own addition), so the same move <see cref="Filth.CleaningBounds"/> already made applies here:
-    /// <b>the home area gates a fire only once the player has painted one</b> (<c>Home.TrueCount &gt; 0</c>);
-    /// with nothing painted, every fire is still work, exactly as before. See <see cref="IsFireToFight"/> for
-    /// the exact rule, restated from the decompile rather than RimWorld's own auto-expanding home area (which
-    /// this port has no equivalent hook for).
+    /// <b>the home area gates a fire only once something has set one</b> (<c>Home.TrueCount &gt; 0</c>);
+    /// with nothing set, every fire is still work, exactly as before. See <see cref="IsFireToFight"/> for the
+    /// exact rule, restated from the decompile.
+    /// <para/><b>Updated:</b> <see cref="Building.AutoHomeAreaMaker"/> (<c>homearea</c> lane) now writes to
+    /// <c>Home</c> too, every time a settlement finishes a building — this port's equivalent hook, once missing
+    /// (this doc used to say so), now exists. Nothing below changes for it: <c>Home.TrueCount &gt; 0</c> already
+    /// treats an auto-marked cell exactly like a painted one, so a fire on a wall the settlement itself just
+    /// finished is fought from the moment that wall completes, before the player ever paints anything —
+    /// matching a real RimWorld settlement, which never plays with an empty home area for long either.
     /// <para/>
     /// <b>Kept:</b> RimWorld's rule that a fire riding a <i>hostile</i> pawn is not your problem.
     /// </summary>

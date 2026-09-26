@@ -16,6 +16,11 @@ namespace SimWorld.Defs
     {
         /// <summary>Occupies the edifice slot of its cells (one per cell; walls, rock, most buildings).</summary>
         public bool isEdifice = true;
+
+        /// <summary>Whether completing this building auto-expands <c>Building.AreaManager.Home</c> around it
+        /// (RimWorld: <c>Verse.BuildingProperties.expandHomeArea</c>, default <c>true</c> there too). See
+        /// <see cref="SimWorld.Building.AutoHomeAreaMaker"/>.</summary>
+        public bool expandHomeArea = true;
     }
 
     /// <summary>
