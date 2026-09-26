@@ -31,7 +31,7 @@ namespace SimWorld.AI
             gotoPatient.FailOn(() => job.GetTarget(TargetIndex.A).Thing is Pawn p && p.Dead);
             yield return gotoPatient;
 
-            Toil gotoBed = Toils_Goto.GotoCell(TargetIndex.B, PathEndMode.OnCell);
+            Toil gotoBed = Toils_Bed.GotoBed(TargetIndex.B);
             gotoBed.FailOnDespawnedOrNull(TargetIndex.A);
             gotoBed.FailOn(() => job.GetTarget(TargetIndex.A).Thing is Pawn p && p.Dead);
             yield return gotoBed;
@@ -41,7 +41,9 @@ namespace SimWorld.AI
                 if (!(job.GetTarget(TargetIndex.A).Thing is Pawn patient) || patient.Destroyed || !patient.Spawned || patient.Dead) return;
                 Thing? bed = job.GetTarget(TargetIndex.B).Thing;
                 if (bed == null || bed.Destroyed || !bed.Spawned) return;
-                patient.Position = bed.Position;
+                // Laid in the bed, not on whichever of its cells: RimWorld's TuckIntoBed drops the patient at
+                // the bed's sleeping slot.
+                patient.Position = bed.GetSleepingSlotPos();
             });
         }
     }

@@ -171,8 +171,12 @@ namespace SimWorld.Map.View
         /// out of bounds, terrain that cannot take the building, or a Blueprint/Frame/building already there
         /// — reported as <see cref="MapCommandOutcome.OffMap"/> or <see cref="MapCommandOutcome.Occupied"/> in
         /// its own words. Never refuses because the spot is a bad one; see the class doc.
+        ///
+        /// <para/><paramref name="rot"/> is which way it faces, North by default. It matters for anything
+        /// bigger than one cell: a 1x2 bed covers <paramref name="cell"/> and the cell beyond it in that
+        /// direction, and every cell it would cover is checked (<see cref="GenAdj.OccupiedRect"/>).
         /// </summary>
-        public static MapCommandResult PlaceBlueprint(string defName, IntVec3 cell)
+        public static MapCommandResult PlaceBlueprint(string defName, IntVec3 cell, Rot4 rot = default)
         {
             SimWorld.Map.Map? map = ResolveMap(out string? mapReason);
             if (map == null) return MapCommandResult.NoMap(mapReason!);
@@ -182,7 +186,7 @@ namespace SimWorld.Map.View
 
             if (!GenGrid.InBounds(cell, map)) return MapCommandResult.OffMap(cell);
 
-            if (!GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out string? failReason))
+            if (!GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out string? failReason, rot))
             {
                 return MapCommandResult.Occupied(failReason ?? "That cell cannot take " + entityDef.LabelCap + ".");
             }
@@ -197,7 +201,7 @@ namespace SimWorld.Map.View
             }
 
             Thing blueprint = ThingMaker.MakeThing(blueprintDef);
-            GenSpawn.Spawn(blueprint, cell, map);
+            GenSpawn.Spawn(blueprint, cell, map, rot);
             return MapCommandResult.Done("Blueprint for " + entityDef.LabelCap + " placed at " + cell + ".");
         }
 

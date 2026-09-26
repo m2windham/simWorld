@@ -31,9 +31,12 @@ namespace SimWorld.AI
     /// </summary>
     public sealed class PathFinder
     {
-        /// <summary>Capacity of the fixed-size goal arrays below (a job's <see cref="PathEndMode.Touch"/> et
-        /// al. target at most its 8 neighbours plus itself). Also <see cref="RegionPathCorridorCache"/>'s own
-        /// scratch-array size, so the two stay in lockstep without a second magic number.</summary>
+        /// <summary>How many goal cells a single-cell target contributes at most (a job's
+        /// <see cref="PathEndMode.Touch"/> et al. target at most its 8 neighbours plus itself, and the ninth — the
+        /// target's own cell, added last — is dropped when all eight neighbours are open; kept as it was, since
+        /// every path on every map runs through it). Also <see cref="RegionPathCorridorCache"/>'s own
+        /// region-set capacity. A multi-cell target's ring is longer than this and is not capped by it — see
+        /// <see cref="BuildGoals"/>.</summary>
         internal const int MaxGoals = 8;
 
         private struct NodeInfo
@@ -61,8 +64,10 @@ namespace SimWorld.AI
         private int[] heapPriority;
         private int heapCount;
 
-        private readonly int[] goalIndices = new int[MaxGoals];
-        private readonly IntVec3[] goalCells = new IntVec3[MaxGoals];
+        // Grown (never shrunk) when a multi-cell target's ring needs more than MaxGoals; a single-cell target
+        // never grows them, so steady-state pathing still allocates nothing.
+        private int[] goalIndices = new int[MaxGoals];
+        private IntVec3[] goalCells = new IntVec3[MaxGoals];
         private int goalCount;
 
         private readonly List<int> retraceBuffer = new List<int>();
@@ -179,6 +184,24 @@ namespace SimWorld.AI
         private void BuildGoals(LocalTargetInfo dest, PathEndMode mode)
         {
             goalCount = 0;
+
+            if (TryGetFootprint(dest, mode, out CellRect footprint))
+            {
+                // The ring of cells touching the footprint, row by row from the top: fixed order, so the
+                // corridor cache's goal-region set is built the same way every time.
+                CellRect ring = footprint.ExpandedBy(1);
+                for (int z = ring.maxZ; z >= ring.minZ; z--)
+                {
+                    for (int x = ring.minX; x <= ring.maxX; x++)
+                    {
+                        var c = new IntVec3(x, 0, z);
+                        if (footprint.Contains(c)) continue;
+                        if (GenGrid.InBounds(c, map) && map.pathGrid.Walkable(c)) AddRingGoal(c);
+                    }
+                }
+                return;
+            }
+
             IntVec3 destCell = dest.Cell;
             bool destWalkable = GenGrid.InBounds(destCell, map) && map.pathGrid.Walkable(destCell);
 
@@ -196,9 +219,52 @@ namespace SimWorld.AI
             if (destWalkable) AddGoal(destCell);
         }
 
+        /// <summary>
+        /// The footprint a <see cref="PathEndMode.Touch"/>-family path to <paramref name="dest"/> must end
+        /// beside, when that is more than the one cell <c>dest.Cell</c> names (RimWorld:
+        /// <c>PathFinder.CalculateDestinationRect</c> — a Thing target's <c>OccupiedRect</c> rather than its
+        /// <c>Position</c>, whenever the mode is not <see cref="PathEndMode.OnCell"/>).
+        ///
+        /// <para/><b>Why.</b> Goals used to be the eight neighbours of <c>dest.Cell</c>, which for a Thing is its
+        /// <c>Position</c>. For a 1x2 bed that set includes the bed's own foot cell — the builder walked onto
+        /// the bed it was building whenever it came from that end — and leaves out the three cells touching only
+        /// the foot. A multi-cell target's goals are instead every walkable cell touching its footprint.
+        ///
+        /// <para/><b>Deviation, recorded:</b> RimWorld's destination rect for Touch is the footprint expanded by
+        /// one, inside included, so a pawn already standing inside a walkable footprint counts as arrived. A
+        /// pawn arriving from outside meets the ring first either way (every step costs something), so the two
+        /// differ only for a pawn that starts inside: here it steps out onto the ring. That keeps the builder
+        /// beside what it builds, as the host's construction art assumes (host repo REQ-001 §4). RimWorld's
+        /// disallowed-corner check is not ported, for multi-cell targets as for single-cell ones. A single-cell
+        /// target is unchanged, so no path to anything else moved.
+        /// </summary>
+        internal static bool TryGetFootprint(LocalTargetInfo dest, PathEndMode mode, out CellRect footprint)
+        {
+            footprint = default;
+            if (mode == PathEndMode.OnCell || mode == PathEndMode.None) return false;
+            Things.Thing? thing = dest.Thing;
+            if (thing == null || !thing.Spawned) return false;
+            IntVec2 size = thing.Size;
+            if (size.x == 1 && size.z == 1) return false;
+            footprint = thing.OccupiedRect();
+            return true;
+        }
+
         private void AddGoal(IntVec3 c)
         {
-            if (goalCount >= goalIndices.Length) return;
+            if (goalCount >= MaxGoals) return;
+            goalIndices[goalCount] = map.cellIndices.CellToIndex(c);
+            goalCells[goalCount] = c;
+            goalCount++;
+        }
+
+        private void AddRingGoal(IntVec3 c)
+        {
+            if (goalCount >= goalIndices.Length)
+            {
+                Array.Resize(ref goalIndices, goalIndices.Length * 2);
+                Array.Resize(ref goalCells, goalCells.Length * 2);
+            }
             goalIndices[goalCount] = map.cellIndices.CellToIndex(c);
             goalCells[goalCount] = c;
             goalCount++;

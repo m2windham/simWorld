@@ -42,6 +42,24 @@ namespace SimWorld.AI
                 return to != null && RegionTraverser.WithinRegions(from, to);
             }
 
+            // A multi-cell Thing is reached from the ring touching its footprint — the same cells
+            // PathFinder.BuildGoals aims a Touch path at, so "reachable" and "a path exists" cannot disagree.
+            if (PathFinder.TryGetFootprint(target, mode, out CellRect footprint))
+            {
+                CellRect ring = footprint.ExpandedBy(1);
+                for (int z = ring.minZ; z <= ring.maxZ; z++)
+                {
+                    for (int x = ring.minX; x <= ring.maxX; x++)
+                    {
+                        var c = new IntVec3(x, 0, z);
+                        if (footprint.Contains(c) || !GenGrid.InBounds(c, map)) continue;
+                        Region? r = map.regionGrid.RegionAt(c);
+                        if (r != null && RegionTraverser.WithinRegions(from, r)) return true;
+                    }
+                }
+                return false;
+            }
+
             // Touch / ClosestTouch / InteractionCell: reachable if any walkable neighbour of the target
             // shares the pawn's region, or the target cell itself is walkable and shares it.
             for (int d = 0; d < GenAdj.AdjacentCells.Length; d++)

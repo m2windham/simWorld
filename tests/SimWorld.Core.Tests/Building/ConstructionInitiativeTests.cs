@@ -176,12 +176,15 @@ namespace SimWorld.Tests.Building
             AddCitizens(settlement, 1); // bed target 1
             CoreMap map = NewMap(3, 3);
 
-            // Fill every cell but one with an edifice, so GenConstruct.CanPlaceBlueprintAt refuses everywhere
-            // except the single free cell.
+            // Fill every cell but a 1x2 slot with an edifice, so GenConstruct.CanPlaceBlueprintAt refuses
+            // everywhere except the one place a bed fits. (A bed is 1x2, as in RimWorld; this test used to
+            // leave one free cell for a 1x1 bed. The walls already meet the wall need, so the bed is the only
+            // thing wanted.)
             var free = new IntVec3(1, 0, 1);
+            IntVec3 foot = free + Rot4.North.FacingCell;
             foreach (IntVec3 c in map.AllCells)
             {
-                if (c == free) continue;
+                if (c == free || c == foot) continue;
                 SpawnBuilding(map, c, "Wall");
             }
 
@@ -190,6 +193,24 @@ namespace SimWorld.Tests.Building
             IReadOnlyList<Thing> blueprints = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
             Assert.Single(blueprints);
             Assert.Equal(free, blueprints[0].Position);
+            Assert.Contains(foot, blueprints[0].OccupiedRect().Cells);
+        }
+
+        [Fact]
+        public void A_bed_is_not_squeezed_into_one_free_cell()
+        {
+            Settlement settlement = PlainSettlement();
+            AddCitizens(settlement, 1);
+            CoreMap map = NewMap(3, 3);
+            var free = new IntVec3(1, 0, 1);
+            foreach (IntVec3 c in map.AllCells)
+            {
+                if (c != free) SpawnBuilding(map, c, "Wall");
+            }
+
+            SettlementConstructionInitiative.TickSettlement(settlement, map);
+
+            Assert.Empty(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint));
         }
 
         // ---- determinism ----

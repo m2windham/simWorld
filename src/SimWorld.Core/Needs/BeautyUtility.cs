@@ -72,8 +72,8 @@ namespace SimWorld.Needs
                 Thing thing = things[i];
 
                 // RimWorld keeps a tempCountedThings list so a multi-cell Thing is counted once however many
-                // of the sampled cells it covers. Nothing in this port's content sets ThingDef.size, so that
-                // list would never fire; the same rule is enforced here by anchor cell instead, which costs
+                // of the sampled cells it covers. Only Bed (1x2) sets ThingDef.size in this port's content, so
+                // that list would rarely fire; the same rule is enforced here by anchor cell instead, which costs
                 // one comparison and no allocation. A multi-cell Thing therefore counts once, at its own
                 // Position — and is missed entirely when only its other cells are in the sample, the one way
                 // this differs from RimWorld's list.

@@ -163,21 +163,23 @@ namespace SimWorld.Tests.Building
             CoreMap map = NewMap(40, 40);
             Paint(map, new CellRect(2, 2, 2, 2)); // 4 cells, in a corner far from the hub
 
-            // 3 citizens: 3 beds, 6 walls. Nine things wanted, room for four.
+            // 3 citizens: 3 beds, 6 walls. Nine things wanted; a bed is 1x2 (as in RimWorld — this used to
+            // count four 1x1 places), so four cells hold two beds side by side and nothing else.
             Settlement settlement = PlainSettlement(citizens: 3);
             Assert.Null(SettlementConstructionInitiative.HomeAreaFullExplanation(settlement, map)); // room, so nothing to say yet
 
             RunPasses(settlement, map, passes: 6); // far more passes than it takes to fill four cells
 
             List<global::SimWorld.Building.Blueprint> placed = Blueprints(map);
-            Assert.Equal(4, placed.Count);
-            Assert.All(placed, bp => Assert.True(map.areaManager.Home[bp.Position]));
-            Assert.Equal(3, placed.Count(bp => bp.EntityToBuild == ConstructionThingDefOf.Bed)); // beds first
+            Assert.Equal(2, placed.Count);
+            Assert.All(placed, bp => Assert.All(bp.OccupiedRect().Cells, c => Assert.True(map.areaManager.Home[c])));
+            Assert.Equal(2, placed.Count(bp => bp.EntityToBuild == ConstructionThingDefOf.Bed)); // beds first
 
             // Not silent: the simulation names what is waiting, and that it is the home area it is waiting on.
             string? why = SettlementConstructionInitiative.HomeAreaFullExplanation(settlement, map);
             Assert.NotNull(why);
-            Assert.Contains("5 walls", why);
+            Assert.Contains("1 bed", why);
+            Assert.Contains("6 walls", why);
             Assert.Contains("home area", why);
 
             // The player widens it: the very next pass uses the new room, inside the new paint and only there.
@@ -186,8 +188,8 @@ namespace SimWorld.Tests.Building
             SettlementConstructionInitiative.TickSettlement(settlement, map);
 
             List<global::SimWorld.Building.Blueprint> after = Blueprints(map);
-            Assert.Equal(4 + ConstructionInitiativeTuning.MaxBlueprintsPerTick, after.Count);
-            Assert.All(after, bp => Assert.True(map.areaManager.Home[bp.Position]));
+            Assert.Equal(2 + ConstructionInitiativeTuning.MaxBlueprintsPerTick, after.Count);
+            Assert.All(after, bp => Assert.All(bp.OccupiedRect().Cells, c => Assert.True(map.areaManager.Home[c])));
             Assert.Contains(after, bp => widened.Contains(bp.Position));
             Assert.Null(SettlementConstructionInitiative.HomeAreaFullExplanation(settlement, map)); // room again
         }

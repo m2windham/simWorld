@@ -193,9 +193,9 @@ namespace SimWorld.Map.View
         public IntVec3 OccupiedMin { get; }
 
         /// <summary>Footprint size in cells, rotation already applied — so an east-facing 1x2 bed reports
-        /// (2, 1) here and the host never reimplements <c>GenAdj.OccupiedRect</c>. See the note on
-        /// <c>ThingDef.size</c> in <c>docs/perf/map-view.md</c>: shipped content sets no footprint but the
-        /// parse and the geometry are in, so this is (1, 1) today and correct the day a def says otherwise.</summary>
+        /// (2, 1) here and the host never reimplements <c>GenAdj.OccupiedRect</c>. <c>Bed</c> is 1x2, as in
+        /// RimWorld; everything else shipped is (1, 1). See the note on <c>ThingDef.size</c> in
+        /// <c>docs/perf/map-view.md</c>.</summary>
         public IntVec2 OccupiedSize { get; }
 
         /// <summary>How many identical items this stack holds; 1 for buildings and anything unstackable.</summary>
