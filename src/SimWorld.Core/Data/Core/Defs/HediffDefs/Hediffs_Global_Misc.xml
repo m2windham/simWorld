@@ -21,7 +21,12 @@
     </injuryProps>
   </HediffDef>
 
-  <!-- Accumulates from bleeding at 0.001 per bleed unit per 60 ticks; recovers 0.4/day; lethal at 1. -->
+  <!-- Accumulates from bleeding at 0.001 per bleed unit per 60 ticks; recovers 0.4/day; lethal at 1.
+       Consciousness capMods (-0.10 / -0.20 / -0.40, then capped at 0.1 max) are RimWorld's own, read off
+       the wiki's Blood loss stage table (rimworldwiki.com/wiki/Blood_loss: minor >=15% -10% Consciousness,
+       moderate >=30% -20%, severe >=45% -40%, extreme >=60% Consciousness 10% max). Moving's offsets were
+       not found in a decompile or on the wiki and are this port's own estimate, pinned by test rather than
+       sourced (CLAUDE.md: "say so in a comment and pin the behaviour with a test"). -->
   <HediffDef>
     <defName>BloodLoss</defName>
     <label>blood loss</label>
@@ -43,7 +48,7 @@
         <capMods>
           <li>
             <capacity>Consciousness</capacity>
-            <offset>-0.05</offset>
+            <offset>-0.1</offset>
           </li>
         </capMods>
       </li>
@@ -53,7 +58,7 @@
         <capMods>
           <li>
             <capacity>Consciousness</capacity>
-            <offset>-0.1</offset>
+            <offset>-0.2</offset>
           </li>
           <li>
             <capacity>Moving</capacity>
@@ -67,7 +72,7 @@
         <capMods>
           <li>
             <capacity>Consciousness</capacity>
-            <offset>-0.3</offset>
+            <offset>-0.4</offset>
           </li>
           <li>
             <capacity>Moving</capacity>

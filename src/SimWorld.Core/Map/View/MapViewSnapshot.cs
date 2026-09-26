@@ -418,6 +418,12 @@ namespace SimWorld.Map.View
                 ? 1f
                 : Clamp01(t.HitPoints / (float)maxHp);
             float growth = t is Building.Plant plant ? plant.Growth : -1f;
+            // Blueprint = 0 (no materials delivered yet), Frame = its own PercentComplete clamped to the
+            // seam's [0, 1] contract, anything else (including a finished building) = 1 — see
+            // ThingView.BuildProgress.
+            float buildProgress = t is Building.Frame frame
+                ? Clamp01(frame.PercentComplete)
+                : t is Building.Blueprint ? 0f : 1f;
 
             return new ThingView(
                 t.thingIDNumber,
@@ -431,7 +437,8 @@ namespace SimWorld.Map.View
                 t.def.category,
                 t.def.altitudeLayer,
                 health,
-                growth);
+                growth,
+                buildProgress);
         }
 
         private static List<PawnView> BuildPawns(SimWorld.Map.Map map)

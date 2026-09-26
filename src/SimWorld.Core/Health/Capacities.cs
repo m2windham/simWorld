@@ -59,15 +59,23 @@ namespace SimWorld.Health
 
     public class PawnCapacityWorker_Consciousness : PawnCapacityWorker
     {
+        /// <summary>
+        /// RimWorld: <c>RimWorld.PawnCapacityWorker_Consciousness.CalculateCapacityLevel</c> (decompiled source,
+        /// <c>josh-m/RW-Decompile</c>, <c>RimWorld/PawnCapacityWorker_Consciousness.cs</c>). Pain is subtracted,
+        /// not multiplied, and capped at a 0.4 loss; blood pumping, breathing and blood filtration are blended
+        /// in rather than multiplied straight through, so a badly damaged one of the three cannot by itself wipe
+        /// consciousness out. The previous version here multiplied all four factors outright — far harsher than
+        /// this — which was the reason most bleeding-out citizens collapsed to a lethal consciousness around 45%
+        /// blood loss instead of RimWorld's 100% (docs/perf/tend/README.md, "Not fixed here").
+        /// </summary>
         public override float CalculateCapacityLevel(HediffSet diffSet)
         {
             float level = PawnCapacityUtility.CalculateTagEfficiency(diffSet, BodyPartTagDefOf.ConsciousnessSource);
-            if (level <= 0f) return 0f;
-            level *= Math.Min(CalculateCapacityAndRecord(diffSet, PawnCapacityDefOf.BloodPumping), 1f);
-            level *= Math.Min(CalculateCapacityAndRecord(diffSet, PawnCapacityDefOf.BloodFiltration), 1f);
-            level *= Math.Min(CalculateCapacityAndRecord(diffSet, PawnCapacityDefOf.Breathing), 1f);
-            level *= 1f - diffSet.PainTotal * HealthTuning.PainConsciousnessFactor;
-            return level;
+            float painPenalty = GenMath.Clamp(GenMath.LerpDouble(0.1f, 1f, 0f, 0.4f, diffSet.PainTotal), 0f, 0.4f);
+            if (painPenalty >= 0.01f) level -= painPenalty;
+            level = GenMath.Lerp(level, level * Math.Min(CalculateCapacityAndRecord(diffSet, PawnCapacityDefOf.BloodPumping), 1f), 0.2f);
+            level = GenMath.Lerp(level, level * Math.Min(CalculateCapacityAndRecord(diffSet, PawnCapacityDefOf.Breathing), 1f), 0.2f);
+            return GenMath.Lerp(level, level * Math.Min(CalculateCapacityAndRecord(diffSet, PawnCapacityDefOf.BloodFiltration), 1f), 0.1f);
         }
 
         public override bool CanHaveCapacity(BodyDef body) => body.HasPartWithTag(BodyPartTagDefOf.ConsciousnessSource);

@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 2638,
+  "testsTotal": 2646,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -406,7 +406,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things · src/SimWorld.Core/Map/View",
       "status": "ported",
-      "tests": 110,
+      "tests": 114,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -461,6 +461,11 @@
         {
           "id": "mapcore.commands",
           "label": "Map/View/MapCommands: the settlement-scale command surface, God/View's GodCommands one scale down. Before it, Map/View was read-only and every Blueprint, Zone_Growing and Zone_Stockpile in the game came from a settlement's own initiative (SettlementConstructionInitiative, FarmingInitiative, SettlementStockInitiative) - at settlement scale the player was a spectator, with nothing to lay out and so nothing for the citizens to push against. PlaceBlueprint/CancelDesignation/MarkGrowingZone/MarkStockpile take a defName and cell coordinates, never a Def or a live object, and resolve against whichever settlement currently has the god's attention exactly as MapViewSnapshot.Capture() does - no tile or map handle crosses the seam either. Nothing new was built underneath: a player Blueprint becomes a Frame becomes a building through the exact same hauling and JobDriver_ConstructFinishFrame pipeline the initiative already drives, and a player's Zone_Growing is sown and harvested by the same WorkGiver_GrowerSow/WorkGiver_GrowerHarvest - this only gives the player the door the initiatives already use. THE RULE THE CLASS DOC IS BUILT AROUND: a bad decision must be allowed to be bad. Every command refuses only the physically impossible - off the map, a cell already occupied or already zoned, no such def, no map open, a 'crop' def with no PlantProperties at all - and never because a placement is unwise; a field sown on ground that clears the crop's own sowMinFertility but reads far poorer than ordinary soil is accepted and grows slower for it, pinned by a test that forces Sand under a rice zone and asserts Done. Player and initiative are left to share ground rather than fight over it, each already doing so unmodified: SettlementConstructionInitiative.CountBuiltOrPlanned counts a player Blueprint exactly like its own, so a bed the player places reduces its shortfall by one; FarmingInitiative keeps growing its own separately-labelled field around whatever a player has zoned, never through it, because ZoneManager's one-zone-per-cell rule already stops the two from ever claiming one cell; SettlementStockInitiative's granary and a player's stockpile are both plain Zone_Stockpiles AI.HaulAIUtility already scans without regard to label, so a player stockpile is real storage the instant it is marked. The headline test places a Blueprint through the command alone and then drives the real per-tick job loop (no worker called directly) until a citizen has hauled materials and finished the wall - it fails to compile against the code this item starts from, because the command does not exist yet, and passes once it does.",
+          "done": true
+        },
+        {
+          "id": "mapcore.buildprogress",
+          "label": "ThingView.BuildProgress, asked for by the host (REQ-001): a Frame reads Frame.PercentComplete clamped to [0, 1], a Blueprint 0, anything else 1, and the delta stream carries it. Map/View does not bump a chunk for an in-place field write, so the construction driver notifies the chunk at each 5% step: at most ~20 redraws per build, and any stage threshold the host picks is seen within five points (MapViewTests).",
           "done": true
         }
       ]
@@ -779,7 +784,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 163,
+      "tests": 167,
       "items": [
         {
           "id": "health.body",
@@ -869,6 +874,11 @@
         {
           "id": "health.disease-unwatched",
           "label": "A citizen at PawnTier.Interval who caught a disease used to be frozen: Pawn_TierTracker.ApplyElapsed ran age and needs forward but never touched a hediff, so an unwatched plague victim could neither die nor recover and stayed sick at their exact starting severity for as long as nobody looked — backwards from the game's own premise, where looking away made a sick citizen safer than looking at them. AbstractDiseaseResolver closes it with a closed-form race over the whole elapsed span (severityPerDayNotImmune/Immune against immunityPerDaySick × Pawn.ImmunityGainSpeed, at most two linear phases, no tick loop), reading the same HediffDef numbers the Full-tier path already ticks through — nothing here is a new literal. The attention lever is medical capacity, not the camera: an unwatched settlement's own roster is read for the best StatDefOf.MedicalTendQuality any other living citizen could offer (capped at TendUtility.MaxQualityNoMedicine, the same ceiling a real tend already has with no medicine ThingDef shipped), so a settlement with a doctor on hand is genuinely fine unwatched and a lone citizen with nobody to spare is not. Hediff.sourceIncident (mirrors Pawn.spawnedByIncident one level down) carries provenance through a death resolved with no DamageInfo to ask. Tests: tests/SimWorld.Core.Tests/Health/AbstractDiseaseResolverTests.cs.",
+          "done": true
+        },
+        {
+          "id": "health.consciousness",
+          "label": "Consciousness is RimWorld's formula (PawnCapacityWorker_Consciousness, read in the decompile): pain is subtracted, Clamp(LerpDouble(0.1, 1, 0, 0.4, pain), 0, 0.4), and BloodPumping / Breathing / BloodFiltration are blended in with Lerp weights 0.2 / 0.2 / 0.1. The port multiplied all four outright, so after a raid the compounding collapsed most bleeding citizens to a lethal consciousness around 45% blood loss instead of 100%. BloodLoss's Consciousness capMods follow RimWorld's wiki table (-0.10 / -0.20 / -0.40); its Moving offsets could not be sourced and say so (ConsciousnessTests, HealthCacheTests).",
           "done": true
         }
       ]

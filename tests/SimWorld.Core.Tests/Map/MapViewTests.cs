@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using SimWorld.AI;
+using SimWorld.Building;
 using SimWorld.Defs;
 using SimWorld.Map;
 using SimWorld.Map.View;
@@ -11,6 +13,7 @@ using SimWorld.Pawns;
 using SimWorld.Sim;
 using SimWorld.Tests.Content;
 using SimWorld.Things;
+using SimWorld.Work;
 
 using Xunit;
 
@@ -477,6 +480,204 @@ namespace SimWorld.Tests.Map
             ThingView rotated = Assert.Single(
                 MapViewSnapshot.Capture(map).AllThings(), t => t.ThingId == sideways.thingIDNumber);
             Assert.Equal(new IntVec2(2, 1), rotated.OccupiedSize);
+        }
+
+        // ---- construction progress (host repo REQ-001 ask 1) ----
+
+        private static Pawn SpawnBuilder(CoreMap map, IntVec3 at, string name = "Builder")
+        {
+            Pawn p = NewHuman(name);
+            p.skills!.GetSkill(SkillDefOf.Construction)!.Level = 20;
+            GenSpawn.Spawn(p, at, map);
+            return p;
+        }
+
+        private static Blueprint SpawnBedBlueprint(CoreMap map, IntVec3 at)
+        {
+            var bp = (Blueprint)ThingMaker.MakeThing(Def("Blueprint_Bed"));
+            GenSpawn.Spawn(bp, at, map);
+            return bp;
+        }
+
+        /// <summary>Delivers exactly what a Bed's <c>costList</c> asks for, bypassing hauling — the tests in
+        /// this section care about <see cref="Frame.workDone"/> advancing, not about wood logistics, which
+        /// <see cref="Building.WoodSupplyTests"/> and <see cref="Building.BlockedBlueprintTests"/> already
+        /// cover.</summary>
+        private static void FullyMaterial(Frame frame)
+        {
+            frame.AddMaterial(Def("WoodLog"), Def("Bed").CostListCountFor(Def("WoodLog")));
+            Assert.True(frame.MaterialsFullySatisfied());
+        }
+
+        [Fact]
+        public void A_blueprint_reads_zero_build_progress()
+        {
+            CoreMap map = NewMap();
+            Blueprint bp = SpawnBedBlueprint(map, new IntVec3(5, 0, 5));
+
+            ThingView view = Assert.Single(MapViewSnapshot.Capture(map).AllThings(), t => t.ThingId == bp.thingIDNumber);
+
+            Assert.Equal(ThingCategory.Blueprint, view.Category);
+            Assert.Equal(0f, view.BuildProgress);
+        }
+
+        /// <summary>
+        /// The whole life of one site: a Frame reports <see cref="Frame.PercentComplete"/> (clamped) while it
+        /// is under construction, that value rises as a real builder spends real ticks on it — driven through
+        /// <c>JobDriver_ConstructFinishFrame</c>, not by poking <c>workDone</c> — and the finished Building
+        /// reads 1 once the Frame is gone.
+        /// </summary>
+        [Fact]
+        public void A_frame_reads_its_rising_fraction_and_the_finished_building_reads_one()
+        {
+            CoreMap map = NewMap(20, 20);
+            var cell = new IntVec3(10, 0, 10);
+            Blueprint bp = SpawnBedBlueprint(map, cell);
+            Frame frame = bp.ReplaceWithFrame();
+            FullyMaterial(frame);
+
+            ThingView justStarted = Assert.Single(MapViewSnapshot.Capture(map).AllThings(), t => t.ThingId == frame.thingIDNumber);
+            Assert.Equal(ThingCategory.Frame, justStarted.Category);
+            Assert.Equal(0f, justStarted.BuildProgress);
+
+            Pawn builder = SpawnBuilder(map, new IntVec3(9, 0, 10));
+            builder.jobs.StartJob(new Job(JobDefOf.ConstructFinishFrame, frame));
+
+            // Read the frame's progress every so many ticks while it is still standing; it must never go
+            // down and must genuinely move, not just sit at 0 until it pops to 1.
+            float last = 0f;
+            bool sawPartialProgress = false;
+            int tick = 0;
+            while (frame.Spawned && tick < 500)
+            {
+                RunTicks(1, builder);
+                tick++;
+                if (tick % 5 != 0) continue;
+
+                ThingView? mid = MapViewSnapshot.Capture(map).AllThings()
+                    .Where(t => t.ThingId == frame.thingIDNumber)
+                    .Select(t => (ThingView?)t)
+                    .FirstOrDefault();
+                if (mid == null) break; // finished between the tick above and this read
+
+                Assert.True(mid.Value.BuildProgress >= last, "build progress went backwards: " + last + " -> " + mid.Value.BuildProgress);
+                if (mid.Value.BuildProgress > 0f && mid.Value.BuildProgress < 1f) sawPartialProgress = true;
+                last = mid.Value.BuildProgress;
+            }
+
+            Assert.True(sawPartialProgress, "never observed a partial BuildProgress between 0 and 1 while the frame stood");
+            Assert.False(frame.Spawned, "the frame did not finish within the tick budget");
+
+            Thing built = map.thingGrid.ThingsListAt(cell).Single(t => t.def == ConstructionThingDefOf.Bed);
+            ThingView finished = Assert.Single(MapViewSnapshot.Capture(map).AllThings(), t => t.ThingId == built.thingIDNumber);
+            Assert.Equal(ThingCategory.Building, finished.Category);
+            Assert.Equal(1f, finished.BuildProgress);
+        }
+
+        /// <summary>
+        /// The delta half of the same story: a frame's progress must reach the host through
+        /// <see cref="MapViewDelta.ChangedChunks"/> as work is done, but bucketed
+        /// (<c>JobDriver_ConstructFinishFrame.BuildProgressNotifyBuckets</c>) rather than re-sent every tick —
+        /// matching this seam's own rule that a chunk version moves for what changed <i>where</i>, not for
+        /// every in-place field write (<c>MapViewTracker</c>'s class doc; <c>docs/perf/map-view.md</c>, "What
+        /// this model does not track"). Most ticks of a real build must therefore report nothing, the same
+        /// property <c>MapViewIntegrationTests.A_ticking_settlement_re_sends_a_small_fraction_of_its_chunks</c>
+        /// pins for a whole settlement.
+        /// </summary>
+        [Fact]
+        public void The_delta_stream_reports_frame_progress_without_resending_it_every_tick()
+        {
+            CoreMap map = NewMap(20, 20);
+            var cell = new IntVec3(10, 0, 10);
+            Blueprint bp = SpawnBedBlueprint(map, cell);
+            Frame frame = bp.ReplaceWithFrame();
+            FullyMaterial(frame);
+            Pawn builder = SpawnBuilder(map, new IntVec3(9, 0, 10));
+
+            // Held only after setup, so the initial blueprint/frame swap's own chunk dirty is already baked
+            // in — everything counted from here on is caused by workDone advancing (or by the frame finally
+            // completing), nothing else.
+            MapViewVersions held = MapViewSnapshot.Capture(map).Versions;
+
+            builder.jobs.StartJob(new Job(JobDefOf.ConstructFinishFrame, frame));
+
+            var progressReadings = new List<float>();
+            int nonEmptyDeltas = 0;
+            int tick = 0;
+            while (frame.Spawned && tick < 500)
+            {
+                RunTicks(1, builder);
+                tick++;
+
+                MapViewDelta delta = MapViewSnapshot.CaptureChanges(map, held);
+                if (delta.ChangedChunks.Count == 0) continue;
+
+                nonEmptyDeltas++;
+                held = delta.Versions;
+                MapViewChunk chunk = Assert.Single(delta.ChangedChunks);
+                ThingView? frameView = chunk.Things
+                    .Where(t => t.ThingId == frame.thingIDNumber)
+                    .Select(t => (ThingView?)t)
+                    .FirstOrDefault();
+                if (frameView != null) progressReadings.Add(frameView.Value.BuildProgress);
+            }
+
+            Assert.False(frame.Spawned, "the frame did not finish within the tick budget");
+            Assert.True(tick > 40, "the build finished suspiciously fast to be a meaningful sample: " + tick + " ticks");
+
+            // The load-bearing claim: change is real (several distinct deltas fired, and the frame's own
+            // progress reading rose across them) but it is not sent every tick. The upper bound is tied to
+            // BuildProgressNotifyBuckets itself rather than a ratio of tick — a fast build (few ticks, many
+            // bucket crossings per tick) and a slow one (many ticks, one crossing every few of them) both
+            // satisfy "at most ~20 notifies plus the finish", where a fixed fraction of tick would not.
+            Assert.True(nonEmptyDeltas >= 2, "expected at least one mid-build notify plus the finishing one, saw " + nonEmptyDeltas);
+            Assert.True(nonEmptyDeltas <= JobDriver_ConstructFinishFrame.BuildProgressNotifyBuckets + 1,
+                nonEmptyDeltas + " non-empty deltas — more than the " + JobDriver_ConstructFinishFrame.BuildProgressNotifyBuckets
+                + " progress buckets plus the finish should ever produce; a frame under construction is flooding the delta stream");
+            Assert.True(nonEmptyDeltas < tick,
+                "fewer non-empty deltas than ticks worked is the whole point: saw " + nonEmptyDeltas + " over " + tick + " ticks");
+            Assert.True(progressReadings.Count >= 2, "expected more than one mid-build progress reading");
+            for (int i = 1; i < progressReadings.Count; i++)
+            {
+                Assert.True(progressReadings[i] > progressReadings[i - 1],
+                    "progress reading did not rise: " + progressReadings[i - 1] + " -> " + progressReadings[i]);
+            }
+
+            // And the finished building shows up in the same delta stream, reading 1.
+            Thing built = map.thingGrid.ThingsListAt(cell).Single(t => t.def == ConstructionThingDefOf.Bed);
+            MapViewDelta finalDelta = MapViewSnapshot.CaptureChanges(map, held);
+            ThingView? builtView = finalDelta.ChangedChunks
+                .SelectMany(c => c.Things)
+                .Concat(MapViewSnapshot.Capture(map).AllThings()) // belt and suspenders: it must be somewhere
+                .Where(t => t.ThingId == built.thingIDNumber)
+                .Select(t => (ThingView?)t)
+                .FirstOrDefault();
+            Assert.NotNull(builtView);
+            Assert.Equal(1f, builtView!.Value.BuildProgress);
+        }
+
+        [Fact]
+        public void A_frames_build_progress_survives_a_scribe_round_trip()
+        {
+            CoreMap map = NewMap(20, 20);
+            var cell = new IntVec3(5, 0, 5);
+            Blueprint bp = SpawnBedBlueprint(map, cell);
+            Frame frame = bp.ReplaceWithFrame();
+            frame.workDone = frame.WorkToBuild / 2f; // an arbitrary, exact midpoint
+
+            MapViewSnapshot before = MapViewSnapshot.Capture(map);
+            ThingView beforeView = Assert.Single(before.AllThings(), t => t.ThingId == frame.thingIDNumber);
+            Assert.Equal(0.5f, beforeView.BuildProgress, 5);
+
+            string xml = Scribe.SaveToString(map, "map");
+            CoreMap loaded = Scribe.Load<CoreMap>(xml, "map", out IReadOnlyList<string> errors);
+            Assert.Empty(errors);
+
+            MapViewSnapshot after = MapViewSnapshot.Capture(loaded);
+            ThingView afterView = Assert.Single(
+                after.AllThings(), t => t.DefName == frame.def.defName && t.Position == cell);
+
+            Assert.Equal(beforeView.BuildProgress, afterView.BuildProgress, 5);
         }
     }
 }

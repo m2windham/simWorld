@@ -9,9 +9,6 @@ namespace SimWorld.Health
         /// <summary>A capacity at or below this counts as absent.</summary>
         public const float MinCapableLevel = 0.0001f;
 
-        /// <summary>Fraction of pain that is subtracted from consciousness (100% pain = −50%).</summary>
-        public const float PainConsciousnessFactor = 0.5f;
-
         public const int HealInterval = 600;
         /// <summary>60,000 ticks / <see cref="HealInterval"/>.</summary>
         public const int HealIntervalsPerDay = 100;
