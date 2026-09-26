@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 2704,
+  "testsTotal": 2709,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -784,7 +784,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 167,
+      "tests": 168,
       "items": [
         {
           "id": "health.body",
@@ -968,7 +968,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 186,
+      "tests": 190,
       "items": [
         {
           "id": "ai.thinktree",
@@ -1088,6 +1088,11 @@
         {
           "id": "ai.emergencywork",
           "label": "Emergency work outranks sleep and hunger, as in RimWorld's colonist think tree: 'starving -> eat', then JobGiver_Work with emergency set, above every other need, order and edict; a sleeper looks for emergency work every 211 ticks (Toils_LayDown). Urgent tending is RimWorld's rule, bleeding to death inside 45,000 ticks. After a raid, bleed-outs fell 70 -> 1 and 63 -> 20 over ten paired seeds (docs/perf/tend/, EmergencyWorkTests). Recorded deviations: a sleeper asks only the emergency tier rather than re-running the whole tree, so this port's fight tier does not wake every sleeper for a raider in sight; and a humanlike patient is tended where they lie, where RimWorld 1.0 tends one only in bed.",
+          "done": true
+        },
+        {
+          "id": "ai.emergencybounds",
+          "label": "Emergency work knows when to stop, now that it wakes sleepers. WorkGiver_RescueDowned skips a patient already in bed (RimWorld's !InBed(), 1.0 decompile; RestUtility.InBed reads a Bed on the patient's cell, as this port has no posture slots), so a rescuer no longer re-picks one patient forever. WorkGiver_FightFires takes a ground fire only inside the home area, and a fire on a same-side pawn within NearbyPawnRadius 15 (RimWorld's rule) - applied once a home area is painted, as Filth.CleaningBounds does. Not yet RimWorld's: nothing paints the home area but the player (no AutoHomeAreaMaker), so an unpainted settlement still fights fires map-wide.",
           "done": true
         }
       ]
