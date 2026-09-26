@@ -26,10 +26,11 @@ namespace SimWorld.Building
     /// handful of walls once there is anyone to shelter, and storage sized to what the settlement's own
     /// <see cref="World.Settlement.Stores"/> ledger actually holds. See <see cref="ComputeNeeds"/>.
     /// <para/>
-    /// <b>Where it builds.</b> Inside the player's home area when one is painted, and never outside it,
-    /// even when the area is full. With no home area painted, it builds around the road hub. See
-    /// <see cref="TryFindPlacementCell"/>, and <see cref="HomeAreaFullExplanation"/> for what a full home
-    /// area does and how that is reported.
+    /// <b>Where it builds.</b> Inside the home area once one exists — painted by the player
+    /// (<see cref="Map.View.MapCommands.SetHomeArea"/>) or grown by <see cref="AutoHomeAreaMaker"/> around the
+    /// settlement's own finished buildings — and never outside it, even when the area is full. Before either
+    /// has ever put a cell in it, it builds around the road hub. See <see cref="TryFindPlacementCell"/>, and
+    /// <see cref="HomeAreaFullExplanation"/> for what a full home area does and how that is reported.
     /// <para/>
     /// <b>Only <see cref="World.Settlement.Citizens"/> count toward a need, never
     /// <see cref="World.Settlement.StatisticalPopulation"/>.</b> A Statistical citizen has no individual
@@ -268,13 +269,15 @@ namespace SimWorld.Building
         /// (<c>docs/design/the-loop.md</c> §5 item 2): that scattered a settlement's beds and lone wall tiles
         /// across tens of thousands of cells, so the settlement never looked like one place.
         /// <list type="number">
-        /// <item><b>The player's home area, when one is painted.</b> The same switch
-        /// <see cref="Filth.CleaningBounds.IsCleanable(Map.Map, IntVec3)"/> already uses: any painted cell at all
-        /// makes the home area the authority. <see cref="Map.View.MapCommands.SetHomeArea"/> is how the player
-        /// writes it, and this class already shares the <i>what</i> with the player
-        /// (<see cref="CountBuiltOrPlanned"/> counts their blueprint the same as its own). Reading the home
-        /// area makes it share the <i>where</i> as well. <b>It binds:</b> when the area has no room left for a
-        /// need, that need waits, and nothing goes outside it. See
+        /// <item><b>The home area, once one exists.</b> The same switch
+        /// <see cref="Filth.CleaningBounds.IsCleanable(Map.Map, IntVec3)"/> already uses: any true cell at all
+        /// makes the home area the authority, painted or not (<c>Area.TrueCount &gt; 0</c>).
+        /// <see cref="Map.View.MapCommands.SetHomeArea"/> is how the player paints it, and
+        /// <see cref="AutoHomeAreaMaker"/> is how it now also grows on its own around every building the
+        /// settlement itself finishes — see that class's own doc. This class already shares the <i>what</i>
+        /// with the player (<see cref="CountBuiltOrPlanned"/> counts their blueprint the same as its own).
+        /// Reading the home area makes it share the <i>where</i> as well. <b>It binds:</b> when the area has no
+        /// room left for a need, that need waits, and nothing goes outside it. See
         /// <see cref="HomeAreaFullExplanation"/> for why, and for how the wait is reported.</item>
         /// <item><b>Otherwise, the road hub.</b> <see cref="RoadHub"/> is the cell every street
         /// <c>MapGen.GenStep_Roads</c> carves runs to. Placement first uses the square
@@ -283,6 +286,19 @@ namespace SimWorld.Building
         /// with no home area grows out from its middle and never stalls while the map has room. Nobody said
         /// where to build, so no expressed intent is overridden.</item>
         /// </list>
+        /// <b>The switch between the two can happen mid-settlement, and that is intended, not a defect this
+        /// class needs to guard against.</b> A brand-new settlement with nothing painted starts on the road
+        /// hub; the moment its very first blueprint completes into a real building,
+        /// <see cref="AutoHomeAreaMaker"/> marks a border around it, <c>Area.TrueCount</c> goes from zero to
+        /// positive, and every placement decision from then on reads this method's first branch instead — near
+        /// the hub already, since that is where the road-hub branch itself tends to place things, and growing
+        /// outward exactly as fast as the settlement keeps completing buildings near its own edge. Nothing here
+        /// special-cases that transition: it falls out of reading <c>Area.TrueCount</c> fresh on every call,
+        /// the same live read <see cref="Filth.CleaningBounds"/>/<see cref="AI.WorkGiver_FightFires"/> already
+        /// make. <c>ConstructionPlacementTests</c>/<c>WoodSupplyTests</c>/<c>MultiCellBedTests</c> drive this
+        /// exact path (a founding band, ticked for real, sleeping in the beds it built itself) and pin that it
+        /// still places one bed per citizen with nobody walled off from anybody.
+        /// <para/>
         /// Inside whichever domain applies, the cell is one seeded draw from the ambient <see cref="Rand"/>
         /// stream over every cell that fits. The draw is exact rather than sampled, so "no cell" means
         /// "no room", not "unlucky". The cells are chosen at random, not laid out. This deliberately designs no
@@ -429,8 +445,9 @@ namespace SimWorld.Building
         /// <summary>
         /// What the settlement is waiting on the player for, in the simulation's own words. It is one
         /// sentence naming every need that still has a shortfall and has no room left for another inside the
-        /// painted home area. It is null when no home area is painted, and null when everything the
-        /// settlement still lacks has somewhere inside the area to go.
+        /// home area. It is null when the home area is still empty — nothing painted and
+        /// <see cref="AutoHomeAreaMaker"/> has not yet had a building to mark around — and null when everything
+        /// the settlement still lacks has somewhere inside the area to go.
         /// <para/>
         /// <b>Why a full home area waits instead of spilling over.</b> The home area is a standing rule the
         /// player set. Building outside it once it fills would be the defect this class used to have, just

@@ -112,6 +112,12 @@ namespace SimWorld.Building
             Things.Thing building = ThingMaker.MakeThing(built);
             GenSpawn.Spawn(building, pos, map, rot);
             worker.skills?.GetSkill(SkillDefOf.Construction)?.Learn(CompletionXp);
+            // This port's stand-in for RimWorld's Building.SpawnSetup -> AutoHomeAreaMaker.Notify_BuildingSpawned,
+            // gated there on Faction.OfPlayer: only a citizen with a construction job ever reaches this call, so
+            // completing here is this port's own "a building of the settlement's own faction spawned" — see
+            // AutoHomeAreaMaker's own doc for the full reasoning, including why a ruin's or a raider's building
+            // (neither of which ever reaches this method) is never marked.
+            AutoHomeAreaMaker.Notify_BuildingSpawned(building);
             return building;
         }
 

@@ -33,6 +33,15 @@ namespace SimWorld.Filth
     /// above is no longer hypothetical — a player who paints a home area gets exactly the behaviour this
     /// class's doc always described for it, with no change needed here.
     /// <para/>
+    /// <b>Updated again:</b> <see cref="Building.AutoHomeAreaMaker"/> now writes to
+    /// <see cref="AreaManager.Home"/> too, every time a settlement finishes a building, so in an ordinary game
+    /// the home area stops being empty within the first few completed buildings rather than staying empty
+    /// until a player paints. Still no change needed here: this method already reads
+    /// <c>Home.TrueCount &gt; 0</c> live, so it starts honouring the auto-marked area the moment the first
+    /// building completes, exactly as it would a player's own paint — the room-based fallback stays exactly
+    /// what it always was, the rule for the gap before any building or any paint exists yet, not a permanent
+    /// alternate mode.
+    /// <para/>
     /// <b>Rooms are lazy.</b> <see cref="RoomTracker.RoomAt"/> answers null for every cell until
     /// <see cref="RoomTracker.RoomTrackerTick"/> has flooded the map once, which <c>Map.MapTick</c> does (and
     /// a real game runs every tick via <c>Game</c>'s post-tickers). A caller driving a map by hand — a test —

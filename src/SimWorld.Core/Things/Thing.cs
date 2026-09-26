@@ -144,6 +144,14 @@ namespace SimWorld.Things
         /// </summary>
         public virtual IntVec2 Size => def.size;
 
+        /// <summary><see cref="Size"/> with width and depth swapped for an East/West facing (RimWorld:
+        /// <c>Verse.Thing.RotatedSize</c>). Unlike <see cref="OccupiedRect"/>/<see cref="GenAdj.OccupiedRect"/>,
+        /// this does not also shift an even span onto the side the Thing faces
+        /// (<see cref="GenAdj.AdjustForRotation"/>) — RimWorld's own <c>RotatedSize</c> does not either, and
+        /// <see cref="Building.AutoHomeAreaMaker"/> is the one caller this port has that needs that exact,
+        /// unshifted value (see its own remarks).</summary>
+        public IntVec2 RotatedSize => rotation.IsHorizontal ? new IntVec2(Size.z, Size.x) : Size;
+
         /// <summary>Cells this Thing's footprint covers at its current position and rotation.</summary>
         public CellRect OccupiedRect() => GenAdj.OccupiedRect(position, rotation, Size);
 
