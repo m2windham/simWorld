@@ -27,13 +27,19 @@ namespace SimWorld.Research
     /// than a growing list of invented defs. The seed is what makes two civilizations' tails <i>differ</i>:
     /// before it, every game past the authored tree researched the same things in the same order.
     ///
-    /// <para/><b>Registered in the global <see cref="DefDatabase"/>,</b> so every consumer works unchanged: a
-    /// generated project is finished, gated, costed and displayed by exactly the code that handles an
-    /// authored one, and nothing else in the codebase has to learn that endless tech exists. The cost of that
-    /// is a runtime write into a database otherwise built once from content — deliberate, and the reason
-    /// <see cref="ResearchManager"/> re-mints on load before reading its own progress dictionary, and the
-    /// reason a <c>defName</c> carries the seed it was generated from: the database outlives a game, and two
-    /// civilizations in one process must not be handed each other's inventions.
+    /// <para/><b>Registered as a real <see cref="ResearchProjectDef"/>, but never in the global
+    /// <see cref="DefDatabase"/>.</b> Every method here takes the <see cref="DefDatabase"/> to mint into as a
+    /// parameter rather than assuming <see cref="DefDatabase.Global"/>, and <see cref="ResearchManager"/> is
+    /// the only caller, passing its own private, per-game database instead: <see cref="DefDatabase.Global"/>
+    /// is written only when content loads and is shared by the whole process, so two civilizations in one
+    /// process must not be handed each other's inventions, and one game's play must never mutate the database
+    /// another game (or a later load into the same process) reads as authored content. A generated project is
+    /// still finished, gated, costed and displayed by exactly the code that handles an authored one — nothing
+    /// else in the codebase has to learn that endless tech exists — because it is a real Def either way; only
+    /// where it is registered differs. <see cref="ResearchManager.AllProjects"/> is the one place a reader
+    /// asks for "every project this game can see" instead of <c>DefDatabase&lt;ResearchProjectDef&gt;</c>
+    /// directly, and the reason a <c>defName</c> still carries the seed it was generated from is that two
+    /// civilizations on the same seed must still generate identical, distinguishable projects.
     ///
     /// <para/><b>No era.</b> Generated projects carry no <see cref="ResearchProjectDef.era"/> and never name
     /// an authored project as a prerequisite, so they are invisible to both <see cref="EraDef.Projects"/> and
@@ -62,12 +68,13 @@ namespace SimWorld.Research
         public static string SeedToken(int seed) => unchecked((uint)seed).ToString("X8", CultureInfo.InvariantCulture);
 
         /// <summary>
-        /// True when <paramref name="def"/> is endless tech this game generated, rather than another
-        /// civilization's left behind in the same process.
+        /// True when <paramref name="def"/> is endless tech generated for <paramref name="seed"/>.
         /// <para/>
-        /// This distinction is load-bearing, not hygiene: <see cref="ResearchManager.NothingLeftToResearch"/>
-        /// scans the whole database, and without it another game's unfinished tail reads as something this
-        /// civilization could still be working on, so this one would never extend its own.
+        /// No longer load-bearing against another civilization's tail — each game mints into its own private
+        /// database now (see this class's own doc), so <see cref="ResearchManager.NothingLeftToResearch"/>
+        /// and friends can never see another game's unfinished projects to begin with. What is left is
+        /// content-test and diagnostic use: telling a generated project apart by which seed produced it,
+        /// e.g. when a test deliberately holds two civilizations' tails side by side.
         /// </summary>
         public static bool BelongsTo(ResearchProjectDef? def, int seed) =>
             IsGenerated(def) && def!.defName.StartsWith(DefNamePrefix + SeedToken(seed) + "_", StringComparison.Ordinal);
@@ -179,7 +186,7 @@ namespace SimWorld.Research
                 description = DescriptionFor(ages, track, ageIndex, slot, seed, label),
                 baseCost = CostFor(ages, track, ageIndex, slot),
                 techLevel = track.techLevel,
-                tab = FirstTab(database),
+                tab = FirstTab(),
                 tags = new List<string> { track.trackTag, EndlessTag, ages.ThemeFor(ageIndex, seed) },
                 prerequisites = Prerequisites(ages, tracks, trackIndex, ageIndex, slot, seed, database),
                 researchViewX = AuthoredTreeWidth + DepthOf(ages, ageIndex, slot),
@@ -295,10 +302,12 @@ namespace SimWorld.Research
 
         /// <summary>The tab the tail shares with the authored tree — whichever the content registered first,
         /// rather than one named in code, so a content set that calls its tab something else still works.
-        /// Null only when a content set ships no tab at all.</summary>
-        private static ResearchTabDef? FirstTab(DefDatabase database)
+        /// Always <see cref="DefDatabase.Global"/>, regardless of which database a project is minted into:
+        /// tabs are authored content, loaded once for the whole process at content load, never generated per
+        /// game the way a project itself is. Null only when a content set ships no tab at all.</summary>
+        private static ResearchTabDef? FirstTab()
         {
-            IReadOnlyList<ResearchTabDef> tabs = database.For<ResearchTabDef>().AllDefsListForReading;
+            IReadOnlyList<ResearchTabDef> tabs = DefDatabase<ResearchTabDef>.AllDefsListForReading;
             return tabs.Count > 0 ? tabs[0] : null;
         }
 

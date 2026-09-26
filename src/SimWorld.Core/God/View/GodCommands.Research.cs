@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 
-using SimWorld.Defs;
 using SimWorld.Research;
 using SimWorld.Sim;
 
@@ -49,13 +48,13 @@ namespace SimWorld.God.View
                 return GodCommandResult.Refused("No research project id given.");
             }
 
-            ResearchProjectDef? project = DefDatabase<ResearchProjectDef>.GetNamedSilentFail(defName);
+            ResearchManager manager = Find.ResearchManager;
+            ResearchProjectDef? project = manager.GetProject(defName);
             if (project == null)
             {
                 return GodCommandResult.Refused("No research project named '" + defName + "'.");
             }
 
-            ResearchManager manager = Find.ResearchManager;
             if (manager.CurrentProj == project)
             {
                 return GodCommandResult.NoChange(project.LabelCap + " is already the current research project.");
