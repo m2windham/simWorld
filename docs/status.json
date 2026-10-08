@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 2864,
+  "testsTotal": 2924,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -406,7 +406,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things · src/SimWorld.Core/Map/View",
       "status": "ported",
-      "tests": 147,
+      "tests": 160,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -457,6 +457,11 @@
           "id": "mapcore.designations.view",
           "label": "Mine designations reach the host's map view, so the player sees what is marked (lands with a Map/View pass)",
           "done": false
+        },
+        {
+          "id": "mapcore.setzoneplant",
+          "label": "MapCommands.SetZonePlant retargets any growing zone (RimWorld: Command_SetPlantToGrow); with nobody able to sow the crop it applies and warns, as RimWorld does, and a settlement-owned zone passes to the player",
+          "done": true
         },
         {
           "id": "mapcore.readmodel",
@@ -1518,7 +1523,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 270,
+      "tests": 285,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1589,6 +1594,11 @@
           "id": "economy.ledgertomap",
           "label": "SettlementStockInitiative.IssueFromStores — the crossing that was missing. The class states that a unit is either a Thing on a map or a count in Stores and never both, and its own doc said “all that was missing was the rule for crossing”; only map-to-ledger had been written. So WouldEatFromStores correctly refused a Spawned citizen while ProvisionFoundingBand sized rations counting them, and no map-gen step places food: watching a settlement locked its people out of rations stocked for them. Issuing tops the map up to the same NutritionWanted line banking keeps, bounded by the shortfall rather than the ledger, debiting as it spawns. Probe, 25-strong TribalStart: watched-minus-unwatched food went -0.44/-0.24/-0.12 to +0.10/+0.30, watched sustaining itself while unwatched declines between abstract refills.",
           "done": true
+        },
+        {
+          "id": "economy.medicinereserve",
+          "label": "Medicine stays where a tender can reach it: the map keeps a reserve per citizen, banking takes only the excess, and the shortfall is issued back from the ledger. Before, starting medicine sat in the ledger and never reached a tender, and a stockpiled harvest would have been banked off the map",
+          "done": true
         }
       ]
     },
@@ -1596,11 +1606,11 @@
       "id": "building",
       "n": 16,
       "rimworld": "Colony Building & Environment",
-      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative. Where it places them: inside the player's painted home area when there is one, by the same on/off rule CleaningBounds reads, and otherwise around the hub GenStep_Roads carves — never the whole map. A home area too full to hold the need makes the settlement wait rather than spill outside it, so painting small stays a decision with a cost. Stockpile defaults follow RimWorld's ordinary preset in refusing corpses (StorageSettingsPreset excludes the Corpses category rather than copying RimWorld's eight-category allow-list, because this content has no Weapons, Apparel or Buildings category and an allow-list would silently refuse weapons). One deliberate deviation: Chunks stay allowed, where RimWorld's ordinary stockpile refuses them, because the masons' guild needs them banked. What the settlement builds on its own never walls off its own ground: autonomous placement refuses a site that would cut a region of the settlement off from the rest (PlacementConnectivityTests). RimWorld has no placement AI to port, so the rule is this port's, in the spirit of WorkGiver_Miner's roof-support judgment. Tree density (one per ~20 cells at full Timber) is this port's own figure, pinned as a trend, not a literal.",
+      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative. Where it places them: inside the player's painted home area when there is one, by the same on/off rule CleaningBounds reads, and otherwise around the hub GenStep_Roads carves — never the whole map. A home area too full to hold the need makes the settlement wait rather than spill outside it, so painting small stays a decision with a cost. Stockpile defaults follow RimWorld's ordinary preset in refusing corpses (StorageSettingsPreset excludes the Corpses category rather than copying RimWorld's eight-category allow-list, because this content has no Weapons, Apparel or Buildings category and an allow-list would silently refuse weapons). One deliberate deviation: Chunks stay allowed, where RimWorld's ordinary stockpile refuses them, because the masons' guild needs them banked. What the settlement builds on its own never walls off its own ground: autonomous placement refuses a site that would cut a region of the settlement off from the rest (PlacementConnectivityTests). RimWorld has no placement AI to port, so the rule is this port's, in the spirit of WorkGiver_Miner's roof-support judgment. Tree density (one per ~20 cells at full Timber) is this port's own figure, pinned as a trend, not a literal. Medicine crop: RimWorld's player drags out a growing zone and picks healroot for it, knowing medicine is low and who can sow. Here the settlement does it: once its food field is as big as it will get and it holds the larder it wants, a settlement holding under 2 medicine per citizen (map plus ledger) that has a living citizen with Growing on and the Plants skill the crop asks for paints a small separate herb garden of the plant whose harvest is medicine. It is sized from content (stock wanted / yield per cell per day over 30 days, times the food margin), grows only while the settlement is short, is never shrunk, and pauses sowing while food is short, so food always wins. The player can still lay out or retarget any zone.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
       "status": "translated",
-      "tests": 217,
+      "tests": 248,
       "items": [
         {
           "id": "building.zones",
@@ -1686,6 +1696,21 @@
           "id": "building.roofconstruction",
           "label": "The settlement roofs what it encloses: AutoBuildRoofAreaSetter adds a room walled in inside the home area to the build-roof area, and WorkGiver_BuildRoof / WorkGiver_RemoveRoof carry out the build-roof and no-roof areas at the ConstructionSpeed stat, felling a tree that stands under one first (trees set interferesWithRoof, as RimWorld's TreeBase does). The player paints both areas (MapCommands.SetBuildRoofArea / SetNoRoofArea). RoofGrid dirties the room tracker when a roof goes up, so a walled, roofed room stops touching outside. RimWorld's faction gate becomes 'not bare rock and inside the home area', recorded in the setter",
           "done": true
+        },
+        {
+          "id": "building.healroot",
+          "label": "Plant_Healroot (harvests herbal medicine; numbers from the wiki infobox, a version-history conflict flagged in the XML) and PlantProperties.sowMinSkill, which WorkGiver_GrowerSow now enforces as RimWorld does (healroot asks Plants 8)",
+          "done": true
+        },
+        {
+          "id": "building.herbgarden",
+          "label": "The settlement grows its own medicine: once its food field is full and food is not short, a settlement under 2 medicine per citizen with a capable sower paints a small herb garden of healroot; food always wins",
+          "done": true
+        },
+        {
+          "id": "building.wildhealroot",
+          "label": "Wild healroot (lands with a per-biome wild plant table; the spawner supports one food plant today)",
+          "done": false
         }
       ]
     },
