@@ -1,0 +1,91 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>body{margin:0;background:#1e2226;font:14px system-ui,sans-serif;color:#eee}#cap{position:absolute;left:14px;top:10px;text-shadow:0 1px 3px #000;line-height:1.35}#cap b{font-size:18px}</style>
+<script type="importmap">{"imports":{"three":"./vendor/build/three.module.js"}}</script></head><body><div id="cap"></div>
+<script type="module">
+import * as THREE from 'three';
+import { FBXLoader } from './vendor/examples/jsm/loaders/FBXLoader.js';
+const P=new URLSearchParams(location.search);
+const W=+(P.get('w')||1800), H=+(P.get('h')||1200);
+const d=await (await fetch(P.get('f'))).json();
+const avail=new Set((await (await fetch('/list.json')).json()).map(n=>n.replace('.fbx','')));
+const SX=d.sizeX, SZ=d.sizeZ;
+// ---- terrain texture from palette.json terrain map
+const TC={Soil:'#8C8655',SoilRich:'#73804A',Sand:'#D5C08E',Gravel:'#A39B88',Mud:'#6E5A3F',Marsh:'#5F7A55',MarshyTerrain:'#5F7A55',Ice:'#D9E2E6',WaterShallow:'#5F8FA0',WaterDeep:'#3E6B80',WaterMovingShallow:'#5F8FA0',WaterMovingChestDeep:'#3E6B80',StreetDirtPath:'#A08860',StreetDirtRoad:'#A08860',StreetStoneRoad:'#8F8A80',StreetAncientAsphalt:'#4A4A4C'};
+const cv=document.createElement('canvas'); cv.width=SX; cv.height=SZ; const cx=cv.getContext('2d'); const img=cx.createImageData(SX,SZ);
+const pal=d.terrainPalette.map(n=>new THREE.Color(TC[n]||'#ff00ff'));
+for(let z=0;z<SZ;z++)for(let x=0;x<SX;x++){const c=pal[d.terrain[z*SX+x]];const i=((SZ-1-z)*SX+x)*4;img.data[i]=c.r*255;img.data[i+1]=c.g*255;img.data[i+2]=c.b*255;img.data[i+3]=255;}
+cx.putImageData(img,0,0);
+const ttex=new THREE.CanvasTexture(cv); ttex.magFilter=THREE.NearestFilter; ttex.colorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene(); scene.background=new THREE.Color('#1e2226');
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(SX,SZ),new THREE.MeshStandardMaterial({map:ttex,roughness:1}));
+ground.rotation.x=-Math.PI/2; ground.position.set(SX/2,0,-SZ/2); scene.add(ground);
+// constructed roofs as translucent overlay
+const rcv=document.createElement('canvas'); rcv.width=SX; rcv.height=SZ; const rcx=rcv.getContext('2d'); const rimg=rcx.createImageData(SX,SZ); let roofed=0;
+for(let z=0;z<SZ;z++)for(let x=0;x<SX;x++){const r=d.roofs[z*SX+x]; if(r>0 && !d.roofPalette[r-1].natural){roofed++;const i=((SZ-1-z)*SX+x)*4;rimg.data[i]=170;rimg.data[i+1]=60;rimg.data[i+2]=40;rimg.data[i+3]=110;}}
+rcx.putImageData(rimg,0,0); const rtex=new THREE.CanvasTexture(rcv); rtex.magFilter=THREE.NearestFilter;
+const roofPlane=new THREE.Mesh(new THREE.PlaneGeometry(SX,SZ),new THREE.MeshBasicMaterial({map:rtex,transparent:true,depthWrite:false}));
+roofPlane.rotation.x=-Math.PI/2; roofPlane.position.set(SX/2,1.05,-SZ/2); scene.add(roofPlane);
+// ---- palette material
+const ptex=await new THREE.TextureLoader().loadAsync('/palette.png'); ptex.magFilter=ptex.minFilter=THREE.NearestFilter; ptex.colorSpace=THREE.SRGBColorSpace; ptex.generateMipmaps=false;
+const pmat=new THREE.MeshStandardMaterial({map:ptex,roughness:0.9});
+const loader=new FBXLoader(); const geoCache=new Map();
+async function geo(name){ if(geoCache.has(name)) return geoCache.get(name);
+  let g=null; try{ const o=await loader.loadAsync('/models/'+name+'.fbx'); const parts=[]; o.updateMatrixWorld(true);
+    o.traverse(m=>{ if(m.isMesh && !/^(UCX|UBX|USP|UCP)_/.test(m.name)){ const gg=m.geometry.clone(); gg.applyMatrix4(m.matrixWorld); for(const k of Object.keys(gg.attributes)) if(!['position','normal','uv'].includes(k)) gg.deleteAttribute(k); parts.push(gg.index?gg.toNonIndexed():gg);} });
+    if(parts.length==1) g=parts[0]; else { const {mergeGeometries}=await import('./vendor/examples/jsm/utils/BufferGeometryUtils.js'); g=mergeGeometries(parts); } }catch(e){ console.log('load fail',name,e); }
+  geoCache.set(name,g); return g; }
+const hash=(x,z)=>{let h=(x*73856093)^(z*19349663); h=(h^(h>>>13))>>>0; return h;};
+function modelFor(t){ const n=t.def;
+  if(n==='Wall'){ const s=t.stuff||''; if(/Granite/.test(s)) return 'WallGranite'; if(/Limestone/.test(s)) return 'WallLimestone'; if(/Sandstone/.test(s)) return 'WallSandstone'; return 'Wall'; }
+  const variants=['_a','_b','_c','_d'].map(v=>n+v).filter(v=>avail.has(v));
+  // The host's rule (VisualRegistry.Resolve): the variant comes from the thing id, never a roll.
+  if(variants.length) return variants[((t.id ?? hash(t.x,t.z)) & 0x7fffffff)%variants.length];
+  if(avail.has(n)) return n;
+  if(n.startsWith('Blueprint_')&&avail.has(n+'_a')) return n+'_a';
+  return null; }
+const FALLBACK={Item:['#c8b07a',0.3],Building:['#9a8f80',1],Plant:['#7f9a45',0.5],Blueprint:['#5A8FB5',0.12],Frame:['#a07850',0.4]};
+const groups=new Map(); const missing=new Map();
+const tmp=new THREE.Object3D();
+function add(key,mat){ if(!groups.has(key)) groups.set(key,[]); groups.get(key).push(mat); }
+for(const t of d.things){
+  if(t.cat==='Filth'||t.cat==='Mote'||t.cat==='Ethereal') continue;
+  const m=modelFor(t); const w=Math.max(1,t.w), h=Math.max(1,t.h);
+  const cxp=t.minX+w/2, czp=t.minZ+h/2;
+  tmp.position.set(cxp,0,-czp); tmp.rotation.set(0,-t.rot*Math.PI/2,0);
+  let s=1; if(t.cat==='Plant') s=0.35+0.65*Math.min(1,Math.max(0,t.growth)); tmp.scale.set(s,s,s);
+  if(m){ tmp.updateMatrix(); add('m:'+m,tmp.matrix.clone()); }
+  else { missing.set(t.def,(missing.get(t.def)||0)+1); const f=FALLBACK[t.cat]||['#c040c0',0.3]; const hgt=f[1]; tmp.position.y=hgt/2; tmp.rotation.set(0,0,0); tmp.scale.set(w*0.8,hgt,h*0.8); tmp.updateMatrix(); add('box:'+t.cat,tmp.matrix.clone()); }
+}
+for(const p of d.pawns){ if(p.dead) continue; tmp.position.set(p.x+0.5,0,-(p.z+0.5)); tmp.rotation.set(p.downed?Math.PI/2:0,-p.rot*Math.PI/2,0);
+  if(p.def==='Human'){ tmp.scale.set(1,1,1); tmp.updateMatrix(); add('m:Human_'+'abcd'[((p.id ?? hash(p.x+7,p.z)) & 0x7fffffff)%4],tmp.matrix.clone()); }
+  else { const s=Math.max(0.35,p.size*0.6); tmp.position.y=s/2; tmp.scale.set(s,s,s*1.4); tmp.updateMatrix(); add('animal',tmp.matrix.clone()); missing.set(p.def+' (animal)',(missing.get(p.def+' (animal)')||0)+1); } }
+const boxGeo=new THREE.BoxGeometry(1,1,1);
+let tris=0, inst=0;
+for(const [key,mats] of groups){
+  let g, mat;
+  if(key.startsWith('m:')){ g=await geo(key.slice(2)); mat=pmat; if(!g) continue; }
+  else if(key==='animal'){ g=boxGeo; mat=new THREE.MeshStandardMaterial({color:'#b07a4a',roughness:1}); }
+  else { const cat=key.slice(4); g=boxGeo; mat=new THREE.MeshStandardMaterial({color:(FALLBACK[cat]||['#c040c0'])[0],roughness:1}); }
+  const im=new THREE.InstancedMesh(g,mat,mats.length); mats.forEach((m,i)=>im.setMatrixAt(i,m)); im.castShadow=true; im.receiveShadow=true; scene.add(im);
+  inst+=mats.length; tris+=mats.length*(g.attributes.position.count/3);
+}
+// ---- lights and camera
+scene.add(new THREE.HemisphereLight(0xfff3df,0x40382c,1.3));
+const sun=new THREE.DirectionalLight(0xffffff,2.0);
+const view=P.get('view')||'full'; let ccx=SX/2, ccz=SZ/2, rad=Math.max(SX,SZ)*0.5;
+if(view==='zoom'){ ccx=+P.get('cx'); ccz=+P.get('cz'); rad=+(P.get('r')||20); }
+const target=new THREE.Vector3(ccx,0,-ccz);
+sun.position.copy(target).add(new THREE.Vector3(-rad*0.6,rad*1.2,rad*0.5)); sun.target.position.copy(target); scene.add(sun); scene.add(sun.target);
+sun.castShadow=true; sun.shadow.mapSize.set(4096,4096); const sc=sun.shadow.camera; sc.left=-rad*1.5; sc.right=rad*1.5; sc.top=rad*1.5; sc.bottom=-rad*1.5; sc.near=0.1; sc.far=rad*6; sun.shadow.bias=-0.0005;
+ground.receiveShadow=true;
+const aspect=W/H; const half=rad*1.02;
+const cam=new THREE.OrthographicCamera(-half*0.84*aspect,half*0.84*aspect,half*0.84,-half*0.84,0.1,rad*20);
+const pitch=THREE.MathUtils.degToRad(+(P.get('pitch')||40)), yaw=THREE.MathUtils.degToRad(+(P.get('yaw')||35));
+cam.position.copy(target).add(new THREE.Vector3(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch)).multiplyScalar(rad*5)); cam.lookAt(target);
+const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true}); r.setSize(W,H); r.outputColorSpace=THREE.SRGBColorSpace; r.shadowMap.enabled=true; r.shadowMap.type=THREE.PCFSoftShadowMap;
+document.body.appendChild(r.domElement); r.render(scene,cam);
+const pc=d.pawns.filter(p=>p.def==='Human'&&!p.dead).length;
+document.getElementById('cap').innerHTML='<b>'+(d.settlement||'')+' — seed '+(P.get('seed')||'')+', day '+d.day+'</b><br>'+SX+'×'+SZ+' map · '+pc+' people · '+d.things.length+' things · '+roofed+' cells under built roof'+(P.get('note')?'<br>'+P.get('note'):'');
+window.__info={inst,tris:Math.round(tris),missing:[...missing.entries()].sort((a,b)=>b[1]-a[1])};
+window.__done=true;
+</script></body></html>

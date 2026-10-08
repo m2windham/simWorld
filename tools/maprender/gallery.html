@@ -1,0 +1,57 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>body{margin:0;background:#2b2f33;font:13px/1.2 system-ui,sans-serif;color:#e8e4dc}
+#wrap{position:relative} canvas{display:block} .lab{position:absolute;width:200px;text-align:center;color:#e8e4dc;font-size:12px;text-shadow:0 1px 2px #000}
+h1{margin:0;padding:14px 16px 4px;font-size:18px;font-weight:600} p{margin:0;padding:0 16px 10px;color:#b9b2a6}</style>
+<script type="importmap">{"imports":{"three":"./vendor/build/three.module.js"}}</script></head>
+<body><h1 id="t"></h1><p id="s"></p><div id="wrap"></div>
+<script type="module">
+import * as THREE from 'three';
+import { FBXLoader } from './vendor/examples/jsm/loaders/FBXLoader.js';
+const params=new URLSearchParams(location.search);
+const all=await (await fetch('/list.json')).json();
+const filter=params.get('only'); const names=filter?all.filter(n=>new RegExp(filter).test(n)):all;
+const COLS=+(params.get('cols')||10), TILE=200, LABEL=22;
+const rows=Math.ceil(names.length/COLS), W=COLS*TILE, H=rows*(TILE+LABEL);
+document.getElementById('t').textContent=params.get('title')||'SimWorld host models';
+document.getElementById('s').textContent=names.length+' FBX models from simWorld.Host Assets/Resources/Models, drawn with the shared Palette.png (point-filtered), collision hulls hidden';
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(1); renderer.setSize(W,H); renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.setClearColor(0x2b2f33); renderer.setScissorTest(true);
+const wrap=document.getElementById('wrap'); wrap.appendChild(renderer.domElement);
+const tex=await new THREE.TextureLoader().loadAsync('/palette.png');
+tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.NearestFilter; tex.colorSpace=THREE.SRGBColorSpace; tex.generateMipmaps=false;
+const mat=new THREE.MeshStandardMaterial({map:tex,roughness:0.9,metalness:0});
+const loader=new FBXLoader(); const hull=/^(UCX|UBX|USP|UCP)_/;
+const results=[];
+for(const n of names){
+  try{
+    const obj=await loader.loadAsync('/models/'+n);
+    const kill=[]; obj.traverse(o=>{ if(o.isMesh){ if(hull.test(o.name)) kill.push(o); else { o.material=Array.isArray(o.material)?o.material.map(()=>mat):mat; } } });
+    kill.forEach(o=>o.parent.remove(o));
+    obj.updateMatrixWorld(true);
+    const box=new THREE.Box3().setFromObject(obj); const size=box.getSize(new THREE.Vector3()); const c=box.getCenter(new THREE.Vector3());
+    let tris=0; obj.traverse(o=>{ if(o.isMesh){ const g=o.geometry; tris+=(g.index?g.index.count:g.attributes.position.count)/3; } });
+    results.push({n,obj,size,c,tris:Math.round(tris)});
+  }catch(e){ results.push({n,err:String(e)}); }
+}
+const scene=new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xfff4e0,0x3a3328,1.4));
+const sun=new THREE.DirectionalLight(0xffffff,2.2); sun.position.set(-3,5,4); scene.add(sun);
+results.forEach((r,i)=>{
+  const col=i%COLS,row=Math.floor(i/COLS); const x=col*TILE,y=row*(TILE+LABEL);
+  const lab=document.createElement('div'); lab.className='lab'; lab.style.left=x+'px'; lab.style.top=(y+TILE+2)+'px';
+  lab.textContent=r.err?(r.n+' (failed)'):(r.n.replace('.fbx','')+' · '+r.tris+' tris'); wrap.appendChild(lab);
+  if(r.err) return;
+  scene.add(r.obj);
+  const rad=Math.max(r.size.x,r.size.y,r.size.z)*0.5*1.05||1;
+  const cam=new THREE.PerspectiveCamera(30,1,rad*0.05,rad*50);
+  const dir=new THREE.Vector3(1,0.85,1.15).normalize(); const dist=rad/Math.sin(THREE.MathUtils.degToRad(15))*0.92;
+  cam.position.copy(r.c).addScaledVector(dir,dist); cam.lookAt(r.c);
+  scene.children.forEach(o=>{ if(o.isObject3D && results.some(q=>q.obj===o)) o.visible=(o===r.obj); });
+  const gy=H-(y+TILE);
+  renderer.setViewport(x,gy,TILE,TILE); renderer.setScissor(x,gy,TILE,TILE);
+  renderer.render(scene,cam);
+});
+window.__failed=results.filter(r=>r.err).map(r=>r.n+': '+r.err);
+window.__done=true;
+</script></body></html>

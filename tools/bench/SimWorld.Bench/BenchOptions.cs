@@ -52,6 +52,12 @@ namespace SimWorld.Bench
         /// which is itself one of that suite's findings, so the size is a knob rather than a constant.</summary>
         public int Band { get; set; } = 25;
 
+        /// <summary>In-game days on which --suite mapdump writes the settlement's map, e.g. 0,6,20.</summary>
+        public int[] CaptureDays { get; set; } = { 0 };
+
+        /// <summary>Directory --suite mapdump writes its JSON into.</summary>
+        public string OutDir { get; set; } = "artifacts/maprender";
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }
