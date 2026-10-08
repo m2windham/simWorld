@@ -90,6 +90,9 @@ namespace SimWorld.Bench
                 case "storyteller":
                     StorytellerSuite.Run(opt);
                     break;
+                case "mapdump":
+                    MapDumpSuite.Run(opt);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -186,6 +189,12 @@ namespace SimWorld.Bench
                     case "--band":
                         opt.Band = ParseInt(Next(args, ref i), "--band");
                         break;
+                    case "--capture-days":
+                        opt.CaptureDays = ParseIntList(Next(args, ref i), "--capture-days");
+                        break;
+                    case "--out":
+                        opt.OutDir = Next(args, ref i);
+                        break;
                     case "--subdivisions":
                         opt.Subdivisions = ParseIntList(Next(args, ref i), "--subdivisions");
                         break;
@@ -215,6 +224,7 @@ namespace SimWorld.Bench
             if (opt.Warmup < 0) throw new ArgumentException("--warmup cannot be negative.");
             if (opt.ConstantTreeTicks <= 0) throw new ArgumentException("--constant-tree-ticks must be positive.");
             if (opt.PhasingCycles <= 0) throw new ArgumentException("--phasing-cycles must be positive.");
+            if (opt.CaptureDays.Length == 0 || opt.CaptureDays.Any(d => d < 0)) throw new ArgumentException("--capture-days must list days of zero or more.");
             return opt;
         }
 
@@ -271,7 +281,7 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | storyteller | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | storyteller | mapdump | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
   --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc, probe, tension, storyteller.
                           For --suite tension the span is read in years: 60 days to the year, which is also
@@ -298,6 +308,8 @@ OPTIONS
                           same band --suite probe founds with). A knob rather than a constant because that
                           band does not survive a long unwatched run — see that suite's own doc. Spec §5b.3
                           fixes the legal range at 20-40; outside it the founder throws.
+  --capture-days <csv>    for --suite mapdump: the in-game days to write the map on (default 0).
+  --out <dir>             for --suite mapdump: where the JSON goes (default artifacts/maprender).
   --help, -h              show this text.
 
 SUITES
@@ -342,6 +354,9 @@ SUITES
                 often anything happened, the longest quiet stretch, and --suite probe's own ""was it
                 interesting"" columns beside them. It changes no tuning constant and is not a target. Not in
                 `all`: slow, and run on purpose.
+  mapdump       A picture, not a measurement: one seeded game (--seed, --solo, --band), the settlement's
+                MapViewSnapshot written as JSON on each of --capture-days into --out. tools/maprender draws
+                the files with the host's models. Not in `all`.
   all           Runs every suite in sequence (scaling first; attribution's N is derived from its result).
 
 EXAMPLES
