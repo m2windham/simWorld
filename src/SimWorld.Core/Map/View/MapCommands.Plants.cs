@@ -28,27 +28,20 @@ namespace SimWorld.Map.View
         /// <para/>Refuses only: no map open (<see cref="MapCommandOutcome.NoMap"/>); the cell off the map
         /// (<see cref="MapCommandOutcome.OffMap"/>); no such def (<see cref="MapCommandOutcome.UnknownDef"/>);
         /// a def with no <see cref="PlantProperties"/>, which cannot be grown at all
-        /// (<see cref="MapCommandOutcome.Refused"/>); no growing zone at the cell
-        /// (<see cref="MapCommandOutcome.Refused"/>); and <b>a crop nobody in the settlement can sow</b>
-        /// (<see cref="MapCommandOutcome.Refused"/>) — see below. Naming the plant the zone already grows is
+        /// (<see cref="MapCommandOutcome.Refused"/>); and no growing zone at the cell
+        /// (<see cref="MapCommandOutcome.Refused"/>). Naming the plant the zone already grows is
         /// <see cref="MapCommandOutcome.NoChange"/>, not a failure.
         ///
-        /// <para/><b>The one refusal that is not "unwise, so allow it", and where it comes from.</b> A plant
-        /// that sets <see cref="PlantProperties.sowMinSkill"/> (healroot asks for Plants 8) is sown by nobody
-        /// below it, so choosing it for a zone no living, standing citizen with Growing work on can sow leaves
-        /// the whole zone unsown for as long as that stays true. RimWorld's
-        /// <c>Command_SetPlantToGrow.WarnAsAppropriate</c> asks exactly this question
-        /// (<c>FreeColonistsSpawned</c>, Plants level at least <c>sowMinSkill</c>, not downed, Growing active)
-        /// — but <b>it applies the choice first and then shows a message box</b> ("NoGrowerCanPlant"). A
-        /// command result has no modal to show after the fact: a <see cref="MapCommandOutcome.Done"/> with a
-        /// warning in its <see cref="MapCommandResult.Reason"/> is a success a host is free to present as one,
-        /// and a field that was feeding people would have been turned into one that feeds nobody. So this
-        /// carries the question to a refusal that says why, and the zone keeps what it had. It asks the same
-        /// question the settlement asks itself before painting a garden
-        /// (<see cref="FarmingInitiative.AnyoneCanSow"/>), so the two can never disagree about who counts. A
-        /// recorded translation of RimWorld's warning, not an expression of the "never second-guess the
-        /// player" rule above it: nothing here judges whether the crop is a good one, only whether anyone
-        /// could ever carry the order out.
+        /// <para/><b>A plant nobody can sow yet is applied, and the result warns.</b> A plant that sets
+        /// <see cref="PlantProperties.sowMinSkill"/> (healroot asks for Plants 8) is sown by nobody below it.
+        /// RimWorld's <c>Command_SetPlantToGrow</c> applies the choice first and then
+        /// <c>WarnAsAppropriate</c> asks whether any colonist could sow it (<c>FreeColonistsSpawned</c>, Plants
+        /// level at least <c>sowMinSkill</c>, not downed, Growing active) and shows "NoGrowerCanPlant" if none
+        /// can. This is that, 1:1: the zone's plant <b>is</b> changed, the result is
+        /// <see cref="MapCommandOutcome.Done"/>, and its <see cref="MapCommandResult.Reason"/> carries the
+        /// warning. A player can plan ahead for a sower who arrives later; until then the zone simply sits
+        /// unsown. It asks the same question the settlement asks itself before painting a garden
+        /// (<see cref="FarmingInitiative.AnyoneCanSow"/>), so the two can never disagree about who counts.
         ///
         /// <para/><b>The settlement's own zones are handed over, not fought over.</b>
         /// <see cref="FarmingInitiative"/> finds its food field and its herb garden by label and puts its own
@@ -83,14 +76,6 @@ namespace SimWorld.Map.View
                 return MapCommandResult.NoChange("The zone at " + anyCellInZone + " already grows " + crop.LabelCap + ".");
             }
 
-            if (crop.plant.sowMinSkill > 0
-                && !FarmingInitiative.AnyoneCanSow(HuntingInitiative.SettlementFor(map), map, crop))
-            {
-                return MapCommandResult.Refused(
-                    "No citizen can sow " + crop.LabelCap + " — it needs Plants skill " + crop.plant.sowMinSkill
-                    + ", and nobody who is up and working at Growing has it.");
-            }
-
             zone.plantDefToGrow = crop;
 
             bool adopted = zone.label == FarmingInitiative.FieldLabel || zone.label == FarmingInitiative.HerbGardenLabel;
@@ -100,9 +85,19 @@ namespace SimWorld.Map.View
                 zone.allowSow = true;
             }
 
+            // RimWorld's WarnAsAppropriate, after the choice is made: only a plant with a skill floor can have
+            // nobody to sow it, and only the question "could anyone" is asked, never "is this wise".
+            bool nobodyCanSow = crop.plant.sowMinSkill > 0
+                && !FarmingInitiative.AnyoneCanSow(HuntingInitiative.SettlementFor(map), map, crop);
+
             return MapCommandResult.Done(
                 "The zone at " + anyCellInZone + " now grows " + crop.LabelCap + " (" + zone.CellCount + " cell(s))."
-                + (adopted ? " It is yours now; the settlement will lay out its own if it still needs one." : ""));
+                + (adopted ? " It is yours now; the settlement will lay out its own if it still needs one." : "")
+                + (nobodyCanSow
+                    ? " Warning: no citizen can sow " + crop.LabelCap + " — it needs Plants skill "
+                      + crop.plant.sowMinSkill + ", and nobody who is up and working at Growing has it. The zone will"
+                      + " stay unsown until somebody does."
+                    : ""));
         }
     }
 }

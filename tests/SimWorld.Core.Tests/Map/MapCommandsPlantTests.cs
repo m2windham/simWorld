@@ -26,9 +26,10 @@ namespace SimWorld.Tests.Map
     /// grow (RimWorld: <c>Command_SetPlantToGrow</c>).
     ///
     /// <para/><b>What is pinned.</b> The plant is set; the question RimWorld's own command asks about a plant
-    /// with a minimum sowing skill (can anyone here sow it?) comes back as a refusal that leaves the zone as it
-    /// was; and a zone the settlement itself paints is handed to the player rather than put back on the next
-    /// pass -- the one way a player's choice of crop could otherwise be silently undone.
+    /// with a minimum sowing skill (can anyone here sow it?) is answered as RimWorld answers it -- the choice
+    /// is applied anyway and the result's <see cref="MapCommandResult.Reason"/> warns; and a zone the
+    /// settlement itself paints is handed to the player rather than put back on the next pass -- the one way a
+    /// player's choice of crop could otherwise be silently undone.
     /// </summary>
     public class MapCommandsPlantTests : ContentTestBase
     {
@@ -106,24 +107,42 @@ namespace SimWorld.Tests.Map
             Assert.Same(Def("Plant_Potato"), zone.plantDefToGrow);
         }
 
-        // ---- it refuses what cannot be done ----
+        // ---- a plant nobody can sow yet is applied, with a warning (RimWorld's WarnAsAppropriate) ----
 
         [Fact]
-        public void Healroot_is_refused_when_nobody_in_the_settlement_can_sow_it_and_the_zone_is_left_alone()
+        public void Healroot_is_applied_with_a_warning_when_nobody_in_the_settlement_can_sow_it_yet()
         {
             var (_, cell, zone, settlement) = PotatoZone("zone-plant-nobody");
             SetEveryonesPlantsSkill(settlement, MinSkill - 1);
 
             MapCommandResult result = MapCommands.SetZonePlant(cell, "Plant_Healroot");
 
-            Assert.Equal(MapCommandOutcome.Refused, result.Outcome);
-            Assert.False(result.Changed);
+            Assert.Equal(MapCommandOutcome.Done, result.Outcome);
+            Assert.True(result.Changed);
+            Assert.Same(Healroot, zone.plantDefToGrow);
+            Assert.Contains("Warning", result.Reason);
             Assert.Contains(MinSkill.ToString(), result.Reason);
-            Assert.Same(Def("Plant_Potato"), zone.plantDefToGrow);
         }
 
         [Fact]
-        public void One_capable_citizen_is_enough_to_set_healroot()
+        public void The_zone_sits_unsown_until_a_capable_sower_arrives_and_then_is_sown()
+        {
+            var (_, cell, zone, settlement) = PotatoZone("zone-plant-later");
+            SetEveryonesPlantsSkill(settlement, MinSkill - 1);
+            Assert.Equal(MapCommandOutcome.Done, MapCommands.SetZonePlant(cell, "Plant_Healroot").Outcome);
+
+            var sow = new WorkGiver_GrowerSow();
+            Pawn citizen = settlement.Citizens[0];
+            Assert.False(sow.HasJobOnCell(citizen, cell), "nobody can sow it yet, so the zone offers no work");
+
+            citizen.skills!.GetSkill(SkillDefOf.Plants)!.Level = MinSkill;
+
+            Assert.True(sow.HasJobOnCell(citizen, cell), "the planned-ahead zone should be worked once somebody can");
+            Assert.Same(Healroot, zone.plantDefToGrow);
+        }
+
+        [Fact]
+        public void One_capable_citizen_is_enough_to_set_healroot_and_nothing_warns()
         {
             var (_, cell, zone, settlement) = PotatoZone("zone-plant-one");
             SetEveryonesPlantsSkill(settlement, MinSkill - 1);
@@ -133,10 +152,11 @@ namespace SimWorld.Tests.Map
 
             Assert.Equal(MapCommandOutcome.Done, result.Outcome);
             Assert.Same(Healroot, zone.plantDefToGrow);
+            Assert.DoesNotContain("Warning", result.Reason);
         }
 
         [Fact]
-        public void A_skilled_citizen_who_is_not_working_the_land_does_not_count()
+        public void A_skilled_citizen_who_is_not_working_the_land_does_not_count_so_the_result_warns()
         {
             var (_, cell, zone, settlement) = PotatoZone("zone-plant-idle");
             SetEveryonesPlantsSkill(settlement, MinSkill);
@@ -144,19 +164,25 @@ namespace SimWorld.Tests.Map
 
             MapCommandResult result = MapCommands.SetZonePlant(cell, "Plant_Healroot");
 
-            Assert.Equal(MapCommandOutcome.Refused, result.Outcome);
-            Assert.Same(Def("Plant_Potato"), zone.plantDefToGrow);
+            Assert.Equal(MapCommandOutcome.Done, result.Outcome);
+            Assert.Same(Healroot, zone.plantDefToGrow);
+            Assert.Contains("Warning", result.Reason);
         }
 
         [Fact]
-        public void A_plant_with_no_skill_floor_is_never_refused_for_want_of_a_sower()
+        public void A_plant_with_no_skill_floor_never_warns_for_want_of_a_sower()
         {
             var (_, cell, zone, settlement) = PotatoZone("zone-plant-floor");
             SetEveryonesPlantsSkill(settlement, 0);
 
-            Assert.Equal(MapCommandOutcome.Done, MapCommands.SetZonePlant(cell, "Plant_Rice").Outcome);
+            MapCommandResult result = MapCommands.SetZonePlant(cell, "Plant_Rice");
+
+            Assert.Equal(MapCommandOutcome.Done, result.Outcome);
             Assert.Same(Def("Plant_Rice"), zone.plantDefToGrow);
+            Assert.DoesNotContain("Warning", result.Reason);
         }
+
+        // ---- it still refuses what cannot be done ----
 
         [Fact]
         public void It_refuses_a_cell_with_no_growing_zone_an_unknown_def_and_a_def_that_is_not_a_plant()
