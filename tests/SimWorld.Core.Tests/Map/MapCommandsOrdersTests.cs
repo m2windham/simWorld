@@ -251,14 +251,21 @@ namespace SimWorld.Tests.Map
                 RunUntil(8000, () => rock.Destroyed, everyone),
                 "the ordered rock was never mined out");
 
-            // 2. She went back to her own standing rule, unprompted.
+            // 2. The standing rule was never rewritten to make any of that possible. Read here, the moment
+            // the order has been carried out, and not at the end of the test: a dig is the rock's hit points
+            // now (JobDriver_Mine swings a pick until they run out), not one flat wait, so the rest of this
+            // test spans an office election that can seat her in a role (Offices.OfficeManager.Seat), and a
+            // role re-derives every priority she had not set herself. That is another system doing its job
+            // and is not what this test is about; the only question here is whether the ORDER needed Mining
+            // switched on to be carried out, and it was carried out with it still off.
+            Assert.Equal(0, worker.workSettings!.GetPriority(WorkTypeDefOf.Mining));
+
+            // 3. She went back to her own standing rule, unprompted.
             Assert.True(
                 RunUntil(8000, () => map.thingGrid.ThingsListAt(field).Any(t => t.def == Def("Plant_Potato")), everyone),
                 "the citizen never returned to the work her own priorities called for");
             Assert.False(worker.jobs.curJob?.playerForced == true);
 
-            // 3. The standing rule was never rewritten to make any of that possible.
-            Assert.Equal(0, worker.workSettings!.GetPriority(WorkTypeDefOf.Mining));
             Assert.True(worker.workSettings!.GetPriority(WorkTypeDefOf.Growing) > 0);
         }
 

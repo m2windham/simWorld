@@ -38,6 +38,14 @@ namespace SimWorld.Tests.AI
             return rock;
         }
 
+        /// <summary>Marks the rock for digging, as the player (or the settlement's own initiative) would —
+        /// <c>WorkGiver_Miner</c> offers only marked cells, so a test that wants a rock dug marks it.</summary>
+        private static Thing MarkForMining(CoreMap map, Thing rock)
+        {
+            Assert.True(map.designationManager.AddDesignation(new Designation(rock.Position, DesignationDefOf.Mine)));
+            return rock;
+        }
+
         private static Thing SpawnFood(CoreMap map, IntVec3 cell, string defName = "RawPotatoes")
         {
             Thing food = ThingMaker.MakeThing(DefDatabase<ThingDef>.GetNamed(defName));
@@ -468,7 +476,7 @@ namespace SimWorld.Tests.AI
         {
             CoreMap map = NewMap(6, 6);
             Pawn pawn = SpawnHuman(map, new IntVec3(0, 0, 0));
-            Thing rock = SpawnRock(map, new IntVec3(2, 0, 0));
+            Thing rock = MarkForMining(map, SpawnRock(map, new IntVec3(2, 0, 0)));
 
             RunTicks(2000, pawn);
 
@@ -535,7 +543,7 @@ namespace SimWorld.Tests.AI
         {
             CoreMap map = NewMap(6, 6);
             Pawn pawn = SpawnHuman(map, new IntVec3(0, 0, 0), "Miner");
-            Thing rock = SpawnRock(map, new IntVec3(2, 0, 0));
+            Thing rock = MarkForMining(map, SpawnRock(map, new IntVec3(2, 0, 0)));
 
             pawn.jobs.StartJob(new Job(JobDefOf.Mine, rock));
             Assert.NotNull(pawn.jobs.curJob);

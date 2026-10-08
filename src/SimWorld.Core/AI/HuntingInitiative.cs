@@ -15,14 +15,17 @@ namespace SimWorld.AI
     /// designate prey.
     /// <para/>
     /// RimWorld's <c>WorkGiver_HunterHunt</c> scans for animals carrying <c>Designation.Hunt</c> — a mark the
-    /// player paints on individual animals. <b>There is no Designation system in this codebase at all</b>, so
-    /// that predicate cannot be ported; something has to answer "which animals should be shot?" in its place.
+    /// player paints on individual animals. <b>This codebase had no Designation system when this was written</b>
+    /// and has one now only for mining (<c>Map/DesignationManager</c>, <c>Mine</c>), so hunting's predicate is
+    /// still not ported; something has to answer "which animals should be shot?" in its place.
     /// Two answers already exist here and neither fits on its own:
     /// <list type="bullet">
     /// <item><see cref="WorkGiver_Miner"/> translated the same problem away by dropping the designation
-    /// entirely — it mines <i>any</i> reachable mineable edifice. That works for rock (a colony genuinely
-    /// wants all of it, and rock does not bleed) and would be catastrophic here: hunters would kill every
-    /// animal on the map forever, including the ones a settlement is trying to tame.</item>
+    /// entirely — it mined <i>any</i> reachable mineable edifice. That was the state of things when this was
+    /// written, and it did not work even for rock: it took a seed-777 mountain from 12,985 cells to 242 in
+    /// six days, and the giver reads <c>Mine</c> marks now (made by <see cref="MiningInitiative"/>). For prey it
+    /// would have been catastrophic: hunters would kill every animal on the map forever, including the ones a
+    /// settlement is trying to tame.</item>
     /// <item><see cref="Building.SettlementConstructionInitiative"/> is the codebase's established shape for
     /// exactly this gap — "no player designation exists, so the settlement decides for itself" — reading real
     /// settlement state (citizen count, the <see cref="Settlement.Stores"/> ledger) to derive what it needs.

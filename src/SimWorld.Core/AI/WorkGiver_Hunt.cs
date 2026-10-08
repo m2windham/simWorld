@@ -14,7 +14,7 @@ namespace SimWorld.AI
     /// produce a job.
     /// <para/>
     /// <b>The one predicate that could not be ported.</b> RimWorld scans animals carrying
-    /// <c>Designation.Hunt</c>. This codebase has no Designation system at all, so what replaces it is
+    /// <c>Designation.Hunt</c>. This codebase has no hunting designation (mining's `Mine` is the only kind), so what replaces it is
     /// <see cref="HuntingInitiative"/>: the settlement hunts while it is short of food and stops when it is
     /// not. See that class for the whole argument, including why copying <see cref="WorkGiver_Miner"/>'s
     /// "just do all of it" translation would have been wrong here.

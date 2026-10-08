@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using SimWorld.Defs;
+using SimWorld.Map;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 using SimWorld.Stats;
@@ -26,37 +27,64 @@ namespace SimWorld.Things
     public static class MineableUtility
     {
         /// <summary>
-        /// How many items mining <paramref name="def"/> yields, or 0 for nothing at all (RimWorld:
-        /// <c>Mineable.TrySpawnYield</c>'s count). Three multipliers, in RimWorld's own order of concerns:
+        /// How many items mining <paramref name="def"/> yields once <paramref name="yieldPct"/> of it has been
+        /// credited to its miners, or 0 for nothing at all (RimWorld: the body of
+        /// <c>Mineable.TrySpawnYield</c>). In RimWorld's own order:
         /// <list type="number">
         /// <item><description><c>mineableDropChance</c> decides whether anything drops. Ore always pays;
         /// plain rock pays a chunk only sometimes.</description></item>
-        /// <item><description>The miner's <c>MiningYield</c> stat wastes part of a wasteable yield, so a
-        /// better miner recovers more of the same vein. Skipped for an unattended destruction
-        /// (<paramref name="miner"/> null) and for anything whose def says its yield is not wasteable.</description></item>
-        /// <item><description><see cref="Director.DifficultyDef.mineYieldFactor"/>, the difficulty preset's
-        /// thumb on the scale. <b>Where RimWorld itself applies this factor could not be checked here</b>, so
-        /// this port applies it to the same amount the final rounding sees — which is the behaviour the
-        /// preset's own description promises ("worse yields").</description></item>
+        /// <item><description>The Def's <c>mineableYield</c>, scaled by the difficulty preset's
+        /// <see cref="Director.DifficultyDef.mineYieldFactor"/> and rounded to a whole number — the preset's
+        /// thumb on the scale ("worse yields").</description></item>
+        /// <item><description>For a wasteable yield only, that amount is scaled by
+        /// <paramref name="yieldPct"/> — what the pick hits credited, i.e. how much of the vein the miners
+        /// recovered rather than wasting in the rubble — and rounded at random, so a half-recovered yield of 5
+        /// pays 2 or 3 and averages 2.5.</description></item>
         /// </list>
         /// The result never rounds below 1 once something has dropped, matching RimWorld: a bad miner on a
         /// hard difficulty recovers less of the vein, never none of it.
         /// </summary>
-        public static int YieldFor(ThingDef def, Pawn? miner, RandomStream rand)
+        public static int YieldFromCredit(ThingDef def, float yieldPct, RandomStream rand)
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
             if (rand == null) throw new ArgumentNullException(nameof(rand));
             if (def.mineableThing == null || def.mineableYield <= 0) return 0;
             if (!rand.Chance(def.mineableDropChance)) return 0;
 
-            float yield = def.mineableYield;
-            if (def.mineableYieldWasteable && miner != null)
+            float factor = Find.Storyteller.difficulty?.mineYieldFactor ?? 1f;
+            int amount = Math.Max(1, (int)Math.Round(def.mineableYield * factor));
+            if (def.mineableYieldWasteable)
             {
-                yield *= miner.GetStatValue(MiningStatDefOf.MiningYield);
+                amount = Math.Max(1, GenMath.RoundRandom(amount * yieldPct, rand));
             }
-            yield *= Find.Storyteller.difficulty?.mineYieldFactor ?? 1f;
+            return amount;
+        }
 
-            return Math.Max(1, GenMath.RoundRandom(yield, rand));
+        /// <summary>
+        /// What <paramref name="miner"/> would recover if they dug the whole of one <paramref name="def"/>
+        /// by themselves: <see cref="YieldFromCredit"/> at the credit a single miner earns for all of it,
+        /// their <c>MiningYield</c> stat (or everything, for no miner). The question "how good is this miner
+        /// at this vein" without spawning a rock or running a job, which is what the tests over a thousand
+        /// samples need.
+        /// </summary>
+        public static int YieldFor(ThingDef def, Pawn? miner, RandomStream rand)
+        {
+            float credit = miner == null ? 1f : miner.GetStatValue(MiningStatDefOf.MiningYield);
+            return YieldFromCredit(def, credit, rand);
+        }
+
+        /// <summary>The first <see cref="Mineable"/> standing in <paramref name="c"/>, or null (RimWorld:
+        /// <c>GridsUtility.GetFirstMineable</c>).</summary>
+        public static Mineable? GetFirstMineable(IntVec3 c, Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (!GenGrid.InBounds(c, map)) return null;
+            IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(c);
+            for (int i = 0; i < here.Count; i++)
+            {
+                if (here[i] is Mineable mineable) return mineable;
+            }
+            return null;
         }
 
         /// <summary>

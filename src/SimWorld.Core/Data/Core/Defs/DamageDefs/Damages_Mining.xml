@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    A pick striking rock (RimWorld: DamageDefOf.Mining, dealt by JobDriver_Mine). Damage to the ROCK, not to a
+    body: harmsHealth is off, so no hediff is needed, and externalViolence is off so nothing that reads "was
+    this violence" (death attribution, social fights) can mistake a miner for an attacker.
+
+    Its one job is to be the tag Mineable.TakeDamage recognises: a hit of this kind from a Pawn adds to the
+    rock's yieldPct, which is how a better miner recovers more of the same vein. Its own file rather than an
+    addition to Damages.xml, per CLAUDE.md. Fields are RimWorld's own minus the ones this port has no reader
+    for (the mining worker class, impact sound).
+  -->
+
+  <DamageDef>
+    <defName>Mining</defName>
+    <label>mining</label>
+    <harmsHealth>false</harmsHealth>
+    <makesBlood>false</makesBlood>
+    <externalViolence>false</externalViolence>
+    <hasForcefulImpact>false</hasForcefulImpact>
+  </DamageDef>
+
+</Defs>

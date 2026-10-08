@@ -40,9 +40,10 @@ namespace SimWorld.Tests.Integration
     /// hundred-point bruise on a torso, or a destroyed heart, brain, liver, ribcage or sternum on a body with
     /// almost nothing else wrong with it. The three deaths that did have a killer were animal bites.
     ///
-    /// <para/><b>The mechanism, and it was two mechanisms.</b> Nothing designates mining in this port — there
-    /// is no designation layer at all — so <c>AI.WorkGiver_Miner</c> mines every reachable mineable edifice on
-    /// the map. On day one of a founded settlement it mines nothing, because every other work type outranks it;
+    /// <para/><b>The mechanism, and it was two mechanisms.</b> Nothing designated mining in this port — there
+    /// was no designation layer at all — so <c>AI.WorkGiver_Miner</c> mined every reachable mineable edifice on
+    /// the map. (It reads <c>Mine</c> marks now, and a settlement marks only what it needs; the roof guard
+    /// below is still asked, because a mark does not make a support safe to dig.) On day one of a founded settlement it mines nothing, because every other work type outranks it;
     /// from day two, with the easy work done, twenty-five citizens mine <b>two thousand rock cells a day</b>,
     /// including the rock holding up their own ceiling. What then fell on them was unfaithful in every detail:
     /// the wrong <c>DamageDef</c>, no body region (so a 50-point hit could destroy a heart), twice RimWorld's

@@ -18,8 +18,8 @@ namespace SimWorld.AI
     /// <b>zero hunts and sixty-six tamings</b>. The population was not hunted flat, it was tamed flat. The
     /// cause is an asymmetry rather than a priority number. In RimWorld <i>both</i> verbs are gated on a
     /// player designation — <c>WorkGiver_HunterHunt</c> and <c>WorkGiver_InteractAnimal</c> both draw their
-    /// work from <c>designationManager.SpawnedDesignationsOfDef(...)</c>. This port has no Designation system
-    /// at all, and when that predicate was translated away hunting got a civilization-scale substitute
+    /// work from <c>designationManager.SpawnedDesignationsOfDef(...)</c>. This port had no Designation system
+    /// when this was written (it has one now, for mining only), and when that predicate was translated away hunting got a civilization-scale substitute
     /// (<see cref="HuntingInitiative"/>) and <b>taming got nothing</b>:
     /// <see cref="WorkGiver_TameAnimals.PotentialWorkThingsGlobal"/> yielded every wild animal on the map
     /// with no gate but reachability and reservation. <c>Handling</c> is naturalPriority 950 against
@@ -40,6 +40,10 @@ namespace SimWorld.AI
     /// through <see cref="Building.FarmingInitiative"/>), so adding the layer now would either leave the port
     /// half designation-driven and half initiative-driven, or mean retrofitting all five. <b>What is missing
     /// is a reason, not a record.</b>
+    ///
+    /// <para/><b>Mining has since taken the middle hop</b> — <c>MiningInitiative</c> issues marks, a
+    /// <c>Designation</c> keeps them, <see cref="WorkGiver_Miner"/> reads them — because a mountain was lost
+    /// to the alternative. The argument above is about what taming needs and still stands for it.
     ///
     /// <para/><b>What a Designation layer would still buy, and why it can wait.</b> Three things, all real
     /// and none of them load-bearing for "does a settlement that needs meat hunt": a durable, save-visible

@@ -13,7 +13,7 @@ namespace SimWorld.AI
     /// <para/>
     /// <b>The predicate that was missing entirely, and what it cost.</b> RimWorld draws this giver's work
     /// from <c>designationManager.SpawnedDesignationsOfDef(DesignationDefOf.Tame)</c> — the player marks one
-    /// animal. This port has no Designation system at all; hunting's copy of that problem was translated into
+    /// animal. This port had no Designation system when this was written (mining has one now); hunting's copy of that problem was translated into
     /// <see cref="HuntingInitiative"/> and <b>this giver's was translated into nothing</b>, so every wild
     /// animal on the map was taming work with no gate but reachability and reservation. <c>Handling</c> is
     /// naturalPriority 950 against <c>Hunting</c>'s 850, so that unconditional work outranked the hunt on

@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 2786,
+  "testsTotal": 2864,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -406,7 +406,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things · src/SimWorld.Core/Map/View",
       "status": "ported",
-      "tests": 120,
+      "tests": 147,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -445,8 +445,18 @@
         },
         {
           "id": "mapcore.mining",
-          "label": "Mining yields what the rock holds — ThingDef.mineableThing/mineableYield were set by content and read by nothing: JobDriver_Mine destroyed the edifice and spawned air. Mineable/MineableUtility now drop the chunk or ore, GenStep_RocksAndMountains places more than one rock type, and DifficultyDef.mineYieldFactor finally has a yield to scale.",
+          "label": "Mining yields what the rock holds — ThingDef.mineableThing/mineableYield were set by content and read by nothing: JobDriver_Mine destroyed the edifice and spawned air. Mineable/MineableUtility now drop the chunk or ore, GenStep_RocksAndMountains places more than one rock type, and DifficultyDef.mineYieldFactor finally has a yield to scale; yield is earned per pick hit (Mineable.yieldPct), as in RimWorld",
           "done": true
+        },
+        {
+          "id": "mapcore.designations",
+          "label": "Designation / DesignationDef / DesignationManager ported with Mine (Designations_Mine.xml), saved with the map; a mined or despawned rock ends its mark",
+          "done": true
+        },
+        {
+          "id": "mapcore.designations.view",
+          "label": "Mine designations reach the host's map view, so the player sees what is marked (lands with a Map/View pass)",
+          "done": false
         },
         {
           "id": "mapcore.readmodel",
@@ -460,7 +470,7 @@
         },
         {
           "id": "mapcore.commands",
-          "label": "Map/View/MapCommands: the settlement-scale command surface, God/View's GodCommands one scale down. Before it, Map/View was read-only and every Blueprint, Zone_Growing and Zone_Stockpile in the game came from a settlement's own initiative (SettlementConstructionInitiative, FarmingInitiative, SettlementStockInitiative) - at settlement scale the player was a spectator, with nothing to lay out and so nothing for the citizens to push against. PlaceBlueprint/CancelDesignation/MarkGrowingZone/MarkStockpile take a defName and cell coordinates, never a Def or a live object, and resolve against whichever settlement currently has the god's attention exactly as MapViewSnapshot.Capture() does - no tile or map handle crosses the seam either. Nothing new was built underneath: a player Blueprint becomes a Frame becomes a building through the exact same hauling and JobDriver_ConstructFinishFrame pipeline the initiative already drives, and a player's Zone_Growing is sown and harvested by the same WorkGiver_GrowerSow/WorkGiver_GrowerHarvest - this only gives the player the door the initiatives already use. THE RULE THE CLASS DOC IS BUILT AROUND: a bad decision must be allowed to be bad. Every command refuses only the physically impossible - off the map, a cell already occupied or already zoned, no such def, no map open, a 'crop' def with no PlantProperties at all - and never because a placement is unwise; a field sown on ground that clears the crop's own sowMinFertility but reads far poorer than ordinary soil is accepted and grows slower for it, pinned by a test that forces Sand under a rice zone and asserts Done. Player and initiative are left to share ground rather than fight over it, each already doing so unmodified: SettlementConstructionInitiative.CountBuiltOrPlanned counts a player Blueprint exactly like its own, so a bed the player places reduces its shortfall by one; FarmingInitiative keeps growing its own separately-labelled field around whatever a player has zoned, never through it, because ZoneManager's one-zone-per-cell rule already stops the two from ever claiming one cell; SettlementStockInitiative's granary and a player's stockpile are both plain Zone_Stockpiles AI.HaulAIUtility already scans without regard to label, so a player stockpile is real storage the instant it is marked. The headline test places a Blueprint through the command alone and then drives the real per-tick job loop (no worker called directly) until a citizen has hauled materials and finished the wall - it fails to compile against the code this item starts from, because the command does not exist yet, and passes once it does.",
+          "label": "Map/View/MapCommands: the settlement-scale command surface, God/View's GodCommands one scale down. Before it, Map/View was read-only and every Blueprint, Zone_Growing and Zone_Stockpile in the game came from a settlement's own initiative (SettlementConstructionInitiative, FarmingInitiative, SettlementStockInitiative) - at settlement scale the player was a spectator, with nothing to lay out and so nothing for the citizens to push against. PlaceBlueprint/CancelDesignation/MarkGrowingZone/MarkStockpile take a defName and cell coordinates, never a Def or a live object, and resolve against whichever settlement currently has the god's attention exactly as MapViewSnapshot.Capture() does - no tile or map handle crosses the seam either. Nothing new was built underneath: a player Blueprint becomes a Frame becomes a building through the exact same hauling and JobDriver_ConstructFinishFrame pipeline the initiative already drives, and a player's Zone_Growing is sown and harvested by the same WorkGiver_GrowerSow/WorkGiver_GrowerHarvest - this only gives the player the door the initiatives already use. THE RULE THE CLASS DOC IS BUILT AROUND: a bad decision must be allowed to be bad. Every command refuses only the physically impossible - off the map, a cell already occupied or already zoned, no such def, no map open, a 'crop' def with no PlantProperties at all - and never because a placement is unwise; a field sown on ground that clears the crop's own sowMinFertility but reads far poorer than ordinary soil is accepted and grows slower for it, pinned by a test that forces Sand under a rice zone and asserts Done. Player and initiative are left to share ground rather than fight over it, each already doing so unmodified: SettlementConstructionInitiative.CountBuiltOrPlanned counts a player Blueprint exactly like its own, so a bed the player places reduces its shortfall by one; FarmingInitiative keeps growing its own separately-labelled field around whatever a player has zoned, never through it, because ZoneManager's one-zone-per-cell rule already stops the two from ever claiming one cell; SettlementStockInitiative's granary and a player's stockpile are both plain Zone_Stockpiles AI.HaulAIUtility already scans without regard to label, so a player stockpile is real storage the instant it is marked. The headline test places a Blueprint through the command alone and then drives the real per-tick job loop (no worker called directly) until a citizen has hauled materials and finished the wall - it fails to compile against the code this item starts from, because the command does not exist yet, and passes once it does; DesignateMine / CancelMineDesignation mark and unmark rock for mining",
           "done": true
         },
         {
@@ -979,11 +989,11 @@
       "id": "ai",
       "n": 10,
       "rimworld": "AI: Think Tree / Job System",
-      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor. Hunting carries two civilization-scale translations of its own. There is no Designation system, so AI.HuntingInitiative decides for the settlement: hunt while short of food, stop when not — the shape SettlementConstructionInitiative already set. And there was no Corpse class when hunting landed, so the hunt's last toil butchers at the kill site through the shipped recipe and HaulGeneral carries the meat home, reaching RimWorld's end state by the only route this port has. Combat AI, which the port had none of: the whole Combat module was complete, tested and unreachable from play, because no JobGiver or JobDriver anywhere ever attacked and the humanlike think tree had no danger tier at all. Who fights is SimWorld's own, since there is no draft to port: anyone armed engages a hostile within acquire radius, anyone at all fights back within melee reach (RimWorld 1:1), and the new TakeUpArms edict raises an unarmed citizen to the first rule. Violence-disabled refuses regardless. A grudge stays personal rather than RimWorld's hostile-to-everyone manhunter, so a provoked animal charges its hunter and walks past everyone else.",
+      "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor. Hunting carries two civilization-scale translations of its own. There is no Designation system, so AI.HuntingInitiative decides for the settlement: hunt while short of food, stop when not — the shape SettlementConstructionInitiative already set. And there was no Corpse class when hunting landed, so the hunt's last toil butchers at the kill site through the shipped recipe and HaulGeneral carries the meat home, reaching RimWorld's end state by the only route this port has. Combat AI, which the port had none of: the whole Combat module was complete, tested and unreachable from play, because no JobGiver or JobDriver anywhere ever attacked and the humanlike think tree had no danger tier at all. Who fights is SimWorld's own, since there is no draft to port: anyone armed engages a hostile within acquire radius, anyone at all fights back within melee reach (RimWorld 1:1), and the new TakeUpArms edict raises an unarmed citizen to the first rule. Violence-disabled refuses regardless. A grudge stays personal rather than RimWorld's hostile-to-everyone manhunter, so a provoked animal charges its hunter and walks past everyone else. Mining: RimWorld's player drags Mine designations over rock and WorkGiver_Miner scans only those; here the settlement is the designator. AI.MiningInitiative (read live, no state, rare tick from Map.MapTick) marks cells only to fill a want it can name: the unmet material cost of its Blueprints and Frames (ore directly; stone as the chunks the missing blocks are cut from) and a standing reserve (MiningTuning.OreReserve, a design number) of every ore some building in content is made of plus the trade currency. It digs nearest-first from the home area (else the road hub); an ore vein is marked with the shortest four-connected dig to it from ground citizens can reach; plain rock is quarried from a face only; a cell the roof guard refuses is never marked. At most MiningTuning.MaxOutstandingDesignations (24, a design number) marks stand at once, the player's counted with the settlement's. Player and settlement marks are one ledger: MapCommands.DesignateMine / CancelMineDesignation act on both.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 217,
+      "tests": 268,
       "items": [
         {
           "id": "ai.thinktree",
@@ -1113,6 +1123,16 @@
         {
           "id": "ai.lord",
           "label": "Raids break and run. A raid is a Lord running LordJob_AssaultColony (RimWorld 1.0 and 1.6 decompiles): it flees on Trigger_FractionPawnsLost(0.5) when its faction sets autoFlee, gives up after 26,000-38,000 ticks, and drops its downed members where they fall; leaving raiders walk to the nearest edge and are despawned, not killed, so the death ledger and raid credit are unchanged. RoughOutlanders' autoFlee=false, unsourced since the first factions port and never RimWorld's (only mechanoids and insects set it), is removed, so the raids the populated world actually sends can break: raid 1's median hold fell 5,485 -> 3,265 ticks and citizen downings 77 -> 46 over ten paired seeds, and 'Raiders fleeing' is a recorded moment (docs/perf/retreat). Recorded deviations, in the code: the lord polls its members, panic flee is a duty not a mental state, the flee fraction is 1.0's flat 0.5; not ported: kidnap, steal, sappers, the satisfied-with-damage trigger (RaidRetreatTests).",
+          "done": true
+        },
+        {
+          "id": "ai.mining",
+          "label": "Citizens mine marked rock only: WorkGiver_Miner reads Mine designations, and JobDriver_Mine is RimWorld's pick-hit loop (a hit every 100/MiningSpeed ticks, 80 damage to natural rock, 40 otherwise, continuous XP, the roof guard asked at every hit). Before, every rock on the map was fair game at a flat 300 ticks and seed 777 lost its mountains in four days",
+          "done": true
+        },
+        {
+          "id": "ai.mininginitiative",
+          "label": "MiningInitiative: the settlement marks only what it can name (its build sites' unmet ore and stone, a standing ore reserve), nearest-first from the home area, at most 24 marks; a mountain is never mined out because nothing ever wants one",
           "done": true
         },
         {

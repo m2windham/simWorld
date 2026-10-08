@@ -156,9 +156,9 @@ goes through this pipeline instead.
   `MeleeDodgeChance`. None of RimWorld's own curve numbers were sourceable in this sandbox — every curve is
   this port's own invention (see `Stats_Work.xml`'s own remarks), so only the trend (higher skill, higher
   value; level 0, the plain base) is asserted, never a literal. Nothing outside the Stats/Work modules reads
-  these new stats yet — Building's `JobDriver_ConstructFinishFrame` and AI's `JobDriver_Mine` still read a
-  skill level directly and apply their own pre-existing hand-rolled curve (each says so in its own doc
-  comment) rather than through `ConstructionSpeed`/`MiningSpeed`; likewise Combat's `CombatStats` for
+  these new stats yet — Building's `JobDriver_ConstructFinishFrame` still reads a
+  skill level directly and applies its own pre-existing hand-rolled curve (it says so in its own doc
+  comment) rather than through `ConstructionSpeed` (AI's `JobDriver_Mine` has since moved onto `MiningSpeed`); likewise Combat's `CombatStats` for
   `ShootingAccuracyPawn`/`MeleeHitChance`/`MeleeDodgeChance` and Health's `SurgeryTuning` for
   `MedicalSurgerySuccessChance` (§7.2). Migrating those call sites onto the stats belongs to the modules that
   own them.

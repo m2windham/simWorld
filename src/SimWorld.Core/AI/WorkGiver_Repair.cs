@@ -25,8 +25,8 @@ namespace SimWorld.AI
     /// something somebody built, and it lands in the same place as RimWorld's <c>building.repairable</c>
     /// (false on mineable rock, true on constructed buildings) — so the predicate becomes
     /// <see cref="IsRepairable"/>: an artificial building that uses hit points and is missing some.
-    /// The same shape <see cref="WorkGiver_Miner"/> used when it translated mining's <c>Designation.Mine</c>
-    /// away and mined any reachable mineable edifice instead.
+    /// The same shape <see cref="WorkGiver_Miner"/> used, before mining got designations, when it translated
+    /// mining's <c>Designation.Mine</c> away and mined any reachable mineable edifice instead.
     /// <para/>
     /// <b>What actually damages a building here</b> (nothing did for a while, so this is worth naming):
     /// <see cref="Combat.GenExplosion.DoExplosion"/>, reached from <see cref="Building.CompExplosive"/> — a

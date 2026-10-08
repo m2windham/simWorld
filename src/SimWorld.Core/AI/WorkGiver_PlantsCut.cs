@@ -15,8 +15,8 @@ namespace SimWorld.AI
     /// list and could never produce a job.
     /// <para/>
     /// <b>Translation — designations become derived reasons.</b> RimWorld's giver scans
-    /// <c>Designation.CutPlant</c>/<c>HarvestPlant</c>: a player drew a box over some plants. There is no
-    /// Designation system in this codebase at all (nothing anywhere declares one), and spec §10's whole
+    /// <c>Designation.CutPlant</c>/<c>HarvestPlant</c>: a player drew a box over some plants. There was no
+    /// Designation system in this codebase when this was written (mining has one now, and plants still do not), and spec §10's whole
     /// premise is that nobody is drawing boxes — so the port keeps the giver and replaces its input with the
     /// two reasons the settlement can work out for itself, in <see cref="ShouldBeCut"/>. Both are cases
     /// RimWorld really does cut plants for; it just reaches them from somewhere other than this class, and in

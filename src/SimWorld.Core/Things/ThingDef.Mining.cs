@@ -42,5 +42,17 @@ namespace SimWorld.Defs
         /// be content nothing reads — exactly the kind of seam the wiring audit exists to catch.
         /// </summary>
         public float mineableScatterCommonality;
+
+        /// <summary>
+        /// Whether this is plain rock rather than ore (RimWorld: <c>BuildingProperties.isNaturalRock</c>).
+        /// <c>JobDriver_Mine</c> reads it for the one thing it decides: a pick hit does 80 damage to natural
+        /// rock and 40 to anything else (<see cref="AI.JobDriver_Mine.BaseDamagePerPickHit_NaturalRock"/>), so
+        /// rock gives way twice as fast per hit point as a vein of the same toughness. True on the rock types
+        /// and off — the default — on every ore vein.
+        /// <para/>RimWorld's own <c>CollapsedRocks</c> flag could not be checked here (the decompile is code
+        /// only); this port leaves it unset, so a collapsed cell is dug out at the slower rate — which matches
+        /// that def's own comment that clearing it "is meant to cost work".
+        /// </summary>
+        public bool isNaturalRock;
     }
 }

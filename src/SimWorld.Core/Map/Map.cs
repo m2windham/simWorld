@@ -71,6 +71,11 @@ namespace SimWorld.Map
         /// <summary>Every Area on this map — today, only the home area (system 16: Building — zones).</summary>
         public Building.AreaManager areaManager = null!;
 
+        /// <summary>Every mark somebody has put on this map for citizens to act on (RimWorld:
+        /// <c>Map.designationManager</c>). Mining's <c>Mine</c> is the only kind shipped: <c>AI.WorkGiver_Miner</c>
+        /// offers a cell only if it is marked here. Saved with the map.</summary>
+        public DesignationManager designationManager = null!;
+
         /// <summary>
         /// The settlement's own standing rule for how aggressively to tend its people (RimWorld:
         /// <c>Pawn_PlayerSettings.medCare</c>, one dropdown per colonist; this port has one settlement-wide
@@ -202,6 +207,11 @@ namespace SimWorld.Map
             Building.FarmingInitiative.TickMap(this);
             Crafting.CookingInitiative.TickMap(this);
 
+            // And the rock it digs for the things those want: ore for the reserve and the sites waiting on it,
+            // never more than a handful of cells marked at once (AI.MiningInitiative). Acts on a map and
+            // nothing else, like the two above, and self-gated on the rare bucket.
+            AI.MiningInitiative.TickMap(this);
+
             // Raids: each lord notices who it has lost and whether that, or the clock, ends the assault.
             lordManager.LordManagerTick();
         }
@@ -238,6 +248,7 @@ namespace SimWorld.Map
             roomTracker = new Building.RoomTracker(this);
             zoneManager = new Building.ZoneManager(this);
             areaManager = new Building.AreaManager(this);
+            designationManager = new DesignationManager(this);
             gameConditionManager = new Conditions.GameConditionManager(this);
             weatherManager = new Weather.WeatherManager(this);
             lordManager = new AI.Group.LordManager(this);
@@ -294,6 +305,7 @@ namespace SimWorld.Map
             roomTracker.ExposeTemperatures();
             zoneManager.ExposeData();
             areaManager.ExposeData();
+            designationManager.ExposeData();
             gameConditionManager.ExposeData();
             weatherManager.ExposeData();
             Scribe_Values.Look(ref medicalCare, "medicalCare", Health.MedicalCareCategory.Best);

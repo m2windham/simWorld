@@ -22,7 +22,7 @@ namespace SimWorld.Building
     /// <para/>
     /// <b>What RimWorld does, and what this translates.</b> Wood comes from trees
     /// (<c>MapGen.GenStep_Trees</c> now places them), felled by a <c>PlantCutting</c> worker through the
-    /// player's Chop Wood designation. There is no designation layer here and no player placing blueprints
+    /// player's Chop Wood designation. There is no Chop Wood designation here and no player placing blueprints
     /// either: <see cref="SettlementConstructionInitiative"/> is the settlement deciding what to build, and
     /// this is the same settlement deciding which trees to fell for it. The designation is replaced by the
     /// reason a player would have had for it, the one <see cref="WorkGiver_PlantsCut"/> already takes for the
@@ -31,9 +31,11 @@ namespace SimWorld.Building
     /// nothing to build leaves its forest standing.
     /// <para/>
     /// <b>Why under Construction and not PlantCutting.</b> RimWorld's chop is <c>PlantCutting</c> work
-    /// (natural priority 650), below <c>Mining</c> (700). This port's <see cref="AI.WorkGiver_Miner"/> has no
-    /// designations either and so mines every reachable rock on the map; with the same default priorities a
-    /// citizen who can mine never runs out of mining and never reaches a <c>PlantCutting</c> giver. The fell
+    /// (natural priority 650), below <c>Mining</c> (700). When this was written this port's
+    /// <see cref="AI.WorkGiver_Miner"/> had no designations and so mined every reachable rock on the map; with
+    /// the same default priorities a citizen who could mine never ran out of mining and never reached a
+    /// <c>PlantCutting</c> giver. (It reads <c>Mine</c> marks now and runs out of work all the time; the
+    /// reasoning that follows stands regardless.) The fell
     /// is therefore the builder's, just below delivering materials, which is also where RimWorld itself cuts
     /// a plant for construction: <c>GenConstruct.HandleBlockingThingJob</c> hands a builder a <c>CutPlant</c>
     /// job for a plant blocking a site, and refuses a pawn who cannot do plant cutting, as
