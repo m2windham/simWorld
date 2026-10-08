@@ -50,7 +50,8 @@ namespace SimWorld.Building
         /// <summary>
         /// Claims <paramref name="cell"/> for <paramref name="zone"/>. Fails (returns false, nothing changed)
         /// if another zone already holds the cell — RimWorld's own "one zone per cell" invariant; a caller
-        /// wanting to move a cell between zones removes it from the old one first.
+        /// wanting to move a cell between zones removes it from the old one first. A newly claimed cell marks
+        /// home area around itself (<see cref="AutoHomeAreaMaker.Notify_ZoneCellAdded"/>).
         /// </summary>
         public bool AddCell(Zone zone, IntVec3 cell)
         {
@@ -62,6 +63,9 @@ namespace SimWorld.Building
 
             zoneGrid[i] = zone;
             zone.AddCellRaw(cell);
+            // RimWorld: Zone.AddCell's last line. Only for a cell that was not already this zone's — RimWorld
+            // returns before it on that case too (with an error log this port does not need).
+            AutoHomeAreaMaker.Notify_ZoneCellAdded(cell, zone);
             return true;
         }
 

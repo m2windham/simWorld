@@ -272,5 +272,68 @@ namespace SimWorld.Tests.Building
             Assert.True(woke >= 0, "a fire inside the auto-marked home area should have woken the sleeper");
             Assert.Equal(FireJobDefOf.BeatFire, sleeper.jobs.curJob?.def);
         }
+
+        // ---- a zone marks home around every cell it is laid out on (Notify_ZoneCellAdded) ----
+
+        /// <summary>
+        /// The change that ended the Flashstorm collapse (task #111): on the populated world a settlement's
+        /// fields lay outside every building's home patch, so a crop fire was never firefighting work and grew
+        /// unfought. RimWorld's <c>Zone.AddCell</c> marks a 9×9 of home around every cell it adds
+        /// (<c>AutoHomeAreaMaker.Notify_ZoneCellAdded</c>, <c>CellRect.CenteredOn(c, 4)</c>); this port's one
+        /// way a cell joins a zone is <see cref="ZoneManager.AddCell"/>, and it does the same.
+        /// </summary>
+        [Fact]
+        public void Laying_out_a_zone_marks_a_nine_by_nine_square_of_home_around_each_of_its_cells()
+        {
+            CoreMap map = NewMap(40, 40);
+            var field = new Zone_Growing();
+            map.zoneManager.RegisterZone(field);
+            Assert.Equal(0, map.areaManager.Home.TrueCount);
+
+            var first = new IntVec3(10, 0, 10);
+            Assert.True(map.zoneManager.AddCell(field, first));
+            var square = CellRect.CenteredOn(first, AutoHomeAreaMaker.BorderWidth);
+            Assert.Equal(9, square.Width);
+            Assert.All(square.Cells, c => Assert.True(map.areaManager.Home[c], c + " should be inside the 9x9 around " + first));
+            Assert.Equal(81, map.areaManager.Home.TrueCount);
+            Assert.False(map.areaManager.Home[new IntVec3(15, 0, 10)]);
+            Assert.False(map.areaManager.Home[new IntVec3(10, 0, 5)]);
+
+            // A second cell, far off: its own square, and the union of the two — nothing between them.
+            var second = new IntVec3(30, 0, 30);
+            Assert.True(map.zoneManager.AddCell(field, second));
+            Assert.All(CellRect.CenteredOn(second, AutoHomeAreaMaker.BorderWidth).Cells, c => Assert.True(map.areaManager.Home[c]));
+            Assert.Equal(2 * 81, map.areaManager.Home.TrueCount);
+            Assert.False(map.areaManager.Home[new IntVec3(20, 0, 20)]);
+
+            // A cell another zone already holds is refused and marks nothing (RimWorld returns before it too).
+            var other = new Zone_Stockpile();
+            map.zoneManager.RegisterZone(other);
+            map.areaManager.Home[first] = false;
+            Assert.False(map.zoneManager.AddCell(other, first));
+            Assert.False(map.areaManager.Home[first], "a refused cell re-marked home around itself");
+            Assert.Equal(2 * 81 - 1, map.areaManager.Home.TrueCount);
+        }
+
+        [Fact]
+        public void A_zone_cell_on_the_map_edge_marks_only_what_is_inside_the_map()
+        {
+            CoreMap map = NewMap(20, 20);
+            var zone = new Zone_Stockpile();
+            map.zoneManager.RegisterZone(zone);
+
+            var corner = new IntVec3(0, 0, 0);
+            Assert.True(map.zoneManager.AddCell(zone, corner));
+            // Clipped to (0..4, 0..4): five by five, and no exception from the four cells' worth that fall off.
+            Assert.Equal(25, map.areaManager.Home.TrueCount);
+            Assert.True(map.areaManager.Home[new IntVec3(4, 0, 4)]);
+            Assert.False(map.areaManager.Home[new IntVec3(5, 0, 0)]);
+
+            var farCorner = new IntVec3(19, 0, 19);
+            Assert.True(map.zoneManager.AddCell(zone, farCorner));
+            Assert.Equal(50, map.areaManager.Home.TrueCount);
+            Assert.True(map.areaManager.Home[new IntVec3(15, 0, 15)]);
+            Assert.False(map.areaManager.Home[new IntVec3(14, 0, 19)]);
+        }
     }
 }

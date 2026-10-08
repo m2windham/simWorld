@@ -12,8 +12,12 @@ namespace SimWorld.Things
     /// that list. Declaring it here would mean editing every race and building Def that can ever catch
     /// fire — shared content files, several lanes deep (CLAUDE.md). The link is one-way instead: the
     /// attachment knows its parent, and <see cref="FireUtility.GetAttachedFire"/> finds it by looking in the
-    /// parent's own cell, which is exactly where <see cref="Tick"/> keeps it. At most one fire ever occupies
-    /// a cell (<see cref="FireUtility.TryStartFireIn"/> enforces it), so that search is O(things in one cell).
+    /// parent's own cell, which is where <see cref="Tick"/> keeps it — and, for a pawn, in the ring of cells
+    /// around it, because <see cref="Tick"/> only catches the attachment up on the attachment's <i>own</i>
+    /// tick. RimWorld moves its attachments from the parent's side (<c>CompAttachBase.CompTick</c>) and reads
+    /// the parent's list, so it never has to look; here, between a pawn's step and its fire's next tick, the
+    /// fire is still one cell behind, and a pawn that thinks in that window must still find it. The search is
+    /// O(things in one cell) for a pawn that is burning and nine cells for one that is not.
     /// </summary>
     public abstract class AttachableThing : Thing
     {
@@ -33,7 +37,9 @@ namespace SimWorld.Things
 
         /// <summary>
         /// Keeps an attached Thing on its parent's cell and kills it with its parent. Free-standing
-        /// attachments (no <see cref="parent"/>) pay nothing beyond the null check.
+        /// attachments (no <see cref="parent"/>) pay nothing beyond the null check. A parent that moved since
+        /// this last ran is caught up here, so until then the attachment is one cell behind it — see the class
+        /// doc for who has to allow for that.
         /// </summary>
         public override void Tick()
         {

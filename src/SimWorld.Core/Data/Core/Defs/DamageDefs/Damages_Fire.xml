@@ -9,6 +9,14 @@
     Distinct from the pre-existing Burn DamageDef, exactly as RimWorld ships both: Burn is plain heat damage
     with no ignition and stays untouched; Flame is fire's own, and adds DamageWorker_Flame on top. Both leave
     the same Burn injury and roll against the same Heat armor.
+
+    canInterruptJobs false: a fire's damage never makes its victim re-ask the think tree mid-job
+    (SimWorld.AI.Pawn_JobTracker.Notify_DamageTaken). A burning pawn is hit by the fire on its own back every
+    complex-calc pass; if each hit re-decided, every run leg of the burning tier would be cut short and the
+    self-extinguish roll re-rolled while it was being carried out. Being set alight still ends whatever the
+    pawn was doing, through its own path (FireUtility.TryAttachFire). The field is RimWorld's
+    (Verse.DamageDef.canInterruptJobs); RimWorld's value for Flame is in its Def XML, which the decompile does
+    not carry, so it is pinned by BurningResponseTests rather than claimed as sourced.
   -->
 
   <DamageDef>
@@ -20,6 +28,7 @@
     <hasForcefulImpact>false</hasForcefulImpact>
     <armorCategory>Heat</armorCategory>
     <deathMessage>{0} has burned to death.</deathMessage>
+    <canInterruptJobs>false</canInterruptJobs>
   </DamageDef>
 
 </Defs>

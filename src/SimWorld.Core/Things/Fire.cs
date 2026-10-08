@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SimWorld.Defs;
 using SimWorld.Health;
 using SimWorld.Map;
 using SimWorld.Pawns;
@@ -108,10 +109,29 @@ namespace SimWorld.Things
             }
         }
 
+        /// <summary>A free-standing fire smaller than this neither burns nor sets alight a pawn standing in it
+        /// (RimWorld: <c>Fire.MinSizeForIgniteMovables</c>). A pawn still counts as the fire's fuel below it, as
+        /// in RimWorld, so a small fire under someone's feet keeps going and grows toward this.</summary>
+        public const float MinSizeForIgniteMovables = 0.4f;
+
+        /// <summary>A pawn caught in a fire past <see cref="MinSizeForIgniteMovables"/> is set alight at this
+        /// fraction of the fire's size (RimWorld: <c>list[i].TryAttachFire(this.fireSize * 0.2f)</c> in
+        /// <c>Fire.DoComplexCalcs</c>).</summary>
+        public const float IgniteMovablesSizeFactor = 0.2f;
+
         /// <summary>
-        /// The growth/damage/spread pass (RimWorld: <c>Fire.DoComplexCalcs</c>). Gathers what this fire is
-        /// burning, burns it, grows, and maybe throws a spark. A fire with nothing flammable left under it
-        /// goes out here — which is what stops fire crossing bare ground.
+        /// The growth/damage/spread pass (RimWorld: <c>Fire.DoComplexCalcs</c>, restated from the 1.0
+        /// decompile, <c>RimWorld/Fire.cs</c>). Gathers what this fire could burn, burns <b>one</b> of those
+        /// things, grows, and maybe throws a spark. A fire with nothing flammable left under it goes out here —
+        /// which is what stops fire crossing bare ground.
+        /// <para/>
+        /// <b>What changed, and why it mattered.</b> This pass used to burn <i>every</i> flammable thing in the
+        /// cell each time, pawns included, whatever the fire's size — so a fresh spark in a field set alight
+        /// the farmer standing in it on its first pass, through <see cref="DamageWorker_Flame"/>. RimWorld burns
+        /// one thing chosen at random (or the parent, for a riding fire), and never burns or ignites a pawn
+        /// until the fire is past <see cref="MinSizeForIgniteMovables"/>; a pawn has that long to walk out.
+        /// Water now puts out a riding fire as well as a standing one — RimWorld's terrain check comes before
+        /// its parent branch — which is what <see cref="AI.JobGiver_JumpInWater"/> runs for.
         /// </summary>
         private void DoComplexCalcs()
         {
@@ -119,30 +139,35 @@ namespace SimWorld.Things
             fuel.Clear();
             flammabilityMax = 0f;
 
-            if (parent != null)
+            // RimWorld: TerrainDef.extinguishesFire. This port has no such flag; water terrain is the whole of
+            // what carries it here, and TerrainDef.IsWater already names that set. Ahead of the parent branch,
+            // as RimWorld's is: a burning pawn who reaches water is put out on the fire's next pass.
+            if (!GenGrid.GetTerrain(Position, map).IsWater)
             {
-                // An attached fire burns exactly one thing: whatever it is riding.
-                fuel.Add(parent);
-                flammabilityMax = FireUtility.FlammabilityOf(parent);
-            }
-            else
-            {
-                if (GenGrid.GetTerrain(Position, map).IsWater)
+                if (parent == null)
                 {
-                    // RimWorld: TerrainDef.extinguishesFire. This port has no such flag; water terrain is the
-                    // whole of what carries it here, and TerrainDef.IsWater already names that set.
-                    Destroy();
-                    return;
+                    IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(Position);
+                    // Live count, as RimWorld's loop is: setting a pawn alight below spawns a fire into this
+                    // very cell, which is appended and skipped.
+                    for (int i = 0; i < here.Count; i++)
+                    {
+                        Thing t = here[i];
+                        if (ReferenceEquals(t, this) || t is Fire) continue;
+                        float flammability = FireUtility.FlammabilityOf(t);
+                        if (flammability < FireUtility.MinFlammability) continue;
+                        fuel.Add(t);
+                        if (flammability > flammabilityMax) flammabilityMax = flammability;
+                        if (fireSize > MinSizeForIgniteMovables && t.def.category == ThingCategory.Pawn)
+                        {
+                            t.TryAttachFire(fireSize * IgniteMovablesSizeFactor);
+                        }
+                    }
                 }
-                IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(Position);
-                for (int i = 0; i < here.Count; i++)
+                else
                 {
-                    Thing t = here[i];
-                    if (ReferenceEquals(t, this) || t is Fire) continue;
-                    float flammability = FireUtility.FlammabilityOf(t);
-                    if (flammability < FireUtility.MinFlammability) continue;
-                    fuel.Add(t);
-                    if (flammability > flammabilityMax) flammabilityMax = flammability;
+                    // An attached fire burns exactly one thing: whatever it is riding.
+                    fuel.Add(parent);
+                    flammabilityMax = FireUtility.FlammabilityOf(parent);
                 }
             }
 
@@ -152,9 +177,11 @@ namespace SimWorld.Things
                 return;
             }
 
-            for (int i = 0; i < fuel.Count; i++)
+            Thing? target = parent ?? (fuel.Count > 0 ? fuel[Rand.Range(0, fuel.Count)] : null);
+            if (target != null
+                && (fireSize >= MinSizeForIgniteMovables || ReferenceEquals(target, parent) || target.def.category != ThingCategory.Pawn))
             {
-                DoFireDamage(fuel[i]);
+                DoFireDamage(target);
                 // Killing the parent takes this fire with it (AttachableThing.Tick), and a fire whose own
                 // cell has been emptied has nothing more to do this pass either.
                 if (!Spawned || Destroyed) return;

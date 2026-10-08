@@ -38,6 +38,11 @@ namespace SimWorld.Health
         public bool consideredHelpful;
         public string? deathMessage;
 
+        /// <summary>Whether being hit by this makes the victim re-ask its think tree mid-job (RimWorld:
+        /// <c>DamageDef.canInterruptJobs</c>, default <c>true</c>; read by
+        /// <see cref="AI.Pawn_JobTracker.Notify_DamageTaken"/>). <c>Flame</c> sets it false.</summary>
+        public bool canInterruptJobs = true;
+
         /// <summary>Armor stat this damage rolls against, via <see cref="ArmorUtility"/>; null skips armor entirely.</summary>
         public DamageArmorCategoryDef? armorCategory;
 

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The jobs of the burning tier (SimWorld.AI.BurningResponse.cs; RimWorld's BurningResponse think tree). Its
+    own file rather than entries appended to JobDefs_Core.xml: DefLoader.AddDirectory reads every XML file
+    under a Def folder, so an additive JobDef needs no edit to a shared file (CLAUDE.md). Bound by
+    SimWorld.AI.BurningJobDefOf.
+
+    RimWorld's own JobDef XML is not in the decompile this port reads from. The defNames ExtinguishSelf and
+    Wait_Wander are RimWorld's (RimWorld.JobDefOf); the two goto defs are this port's, and why each exists is
+    on SimWorld.AI.JobDriver_GotoOnCell.
+  -->
+
+  <!--
+    casualInterruptible="false": a pawn rolling out a fire on themselves does not get up because the constant
+    think tree noticed something. While the pawn burns the constant tree's gate refuses anyway
+    (ThinkNode_ConditionalCanDoConstantThinkTreeJobNow, RimWorld's own !pawn.IsBurning() clause); this flag is
+    what still holds once the fire has gone out by some other hand mid-roll - rain, or a neighbour beating it -
+    and the 150 ticks have not run out. RimWorld's value for this field could not be read from the decompile;
+    it is pinned by BurningResponseTests, never by the literal.
+  -->
+  <JobDef>
+    <defName>ExtinguishSelf</defName>
+    <driverClass>SimWorld.AI.JobDriver_ExtinguishSelf</driverClass>
+    <reportString>extinguishing self.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+  </JobDef>
+
+  <JobDef>
+    <defName>Wait_Wander</defName>
+    <driverClass>SimWorld.AI.JobDriver_Wait</driverClass>
+    <reportString>standing.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>GotoWander_Run</defName>
+    <driverClass>SimWorld.AI.JobDriver_GotoOnCell</driverClass>
+    <reportString>running around.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>Goto_OnCell</defName>
+    <driverClass>SimWorld.AI.JobDriver_GotoOnCell</driverClass>
+    <reportString>going somewhere.</reportString>
+  </JobDef>
+
+</Defs>

@@ -22,10 +22,14 @@ namespace SimWorld.Building
     /// engine-free core to hold one in, and this lane does not invent one. So this class always behaves as the
     /// default: always on. If a settings surface is ever added, gating this class behind it is a one-line
     /// change here, not a redesign.</item>
-    /// <item><c>Notify_ZoneCellAdded</c> (a player's stockpile/growing zone also expands the home area, radius
-    /// 4, around each cell added to it) is not ported. The task this class was written for scopes to
-    /// buildings; nothing here reads a zone.</item>
     /// </list>
+    /// <para/><b><see cref="Notify_ZoneCellAdded"/> is now ported</b> (it was the third item above, recorded as
+    /// left out because the task that wrote this class scoped to buildings). It is what ended the Flashstorm
+    /// collapse: on the populated world a settlement's fields lay outside every building's 9×9 patch, so a
+    /// fire in the crops was never firefighting work (<see cref="AI.WorkGiver_FightFires"/>'s home-area gate,
+    /// RimWorld's and kept), grew unfought, and one storm killed everyone — seed 12345 lost 25 of 25 to Flame
+    /// by day 6. RimWorld never has that gap, because every zone cell a colony lays out marks home around
+    /// itself. With it, both measured seeds lost nobody to the same storm.
     ///
     /// <para/><b>"The player's faction", translated.</b> RimWorld gates
     /// <see cref="Notify_BuildingSpawned"/>/<c>Notify_BuildingClaimed</c> on <c>b.Faction == Faction.OfPlayer</c>
@@ -120,6 +124,29 @@ namespace SimWorld.Building
             rect = rect.ClipInsideMap(map);
 
             foreach (IntVec3 c in rect.Cells) map.areaManager.Home[c] = true;
+        }
+
+        /// <summary>
+        /// Marks home area in a square of <see cref="BorderWidth"/> on every side of a cell just added to a zone
+        /// — a 9×9 patch centred on it, clipped inside the map (RimWorld:
+        /// <c>RimWorld.AutoHomeAreaMaker.Notify_ZoneCellAdded</c>, <c>CellRect.CenteredOn(c, 4)</c>; called from
+        /// <c>Zone.AddCell</c> there and from <see cref="ZoneManager.AddCell"/> here, which is this port's one
+        /// way a cell joins a zone). Unconditional for the same reason <see cref="MarkHomeAroundThing"/> is.
+        /// <para/>
+        /// <b>Every zone, whoever lays it out.</b> RimWorld's only gate is <c>ShouldAdd()</c> — the auto-home
+        /// play setting and <c>ProgramState.Playing</c> — and neither exists here (see this class's doc). Every
+        /// zone in this port is a settlement's own: the player's (<see cref="Map.View.MapCommands"/>) or one its
+        /// own initiatives lay out (<see cref="FarmingInitiative"/>'s fields,
+        /// <see cref="Economy.SettlementStockInitiative"/>'s granary). A loaded game never re-derives home from
+        /// its zones either: <see cref="ZoneManager.ExposeData"/> rebuilds its grid directly and never calls
+        /// <see cref="ZoneManager.AddCell"/>, the same guarantee RimWorld gets from its <c>Playing</c> check.
+        /// </summary>
+        public static void Notify_ZoneCellAdded(IntVec3 c, Zone zone)
+        {
+            Map.Map? map = zone.Map;
+            if (map == null) return;
+            CellRect rect = CellRect.CenteredOn(c, BorderWidth).ClipInsideMap(map);
+            foreach (IntVec3 cell in rect.Cells) map.areaManager.Home[cell] = true;
         }
     }
 }

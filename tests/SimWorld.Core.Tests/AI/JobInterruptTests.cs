@@ -145,14 +145,19 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
-        public void Only_sleep_refuses_a_casual_interrupt_and_every_job_reconsiders_itself_when_hurt()
+        public void Only_sleep_and_putting_yourself_out_refuse_a_casual_interrupt_and_every_job_reconsiders_itself_when_hurt()
         {
             List<JobDef> jobs = DefDatabase<JobDef>.AllDefsListForReading.ToList();
             Assert.True(jobs.Count > 10);
 
-            // Content, not code, decides which jobs survive seeing a threat — and exactly one does.
+            // Content, not code, decides which jobs survive seeing a threat — and exactly two do. The second is
+            // ExtinguishSelf (task #111, JobDefs_Burning.xml): a pawn rolling out a fire on themselves does not
+            // get up for something the constant tree noticed — see Tests.AI.BurningResponseTests.
             Assert.False(JobDefOf.LayDown.casualInterruptible);
-            Assert.Equal(new[] { JobDefOf.LayDown }, jobs.Where(j => !j.casualInterruptible).ToArray());
+            Assert.False(BurningJobDefOf.ExtinguishSelf.casualInterruptible);
+            Assert.Equal(
+                new[] { JobDefOf.LayDown, BurningJobDefOf.ExtinguishSelf }.OrderBy(j => j.defName).ToArray(),
+                jobs.Where(j => !j.casualInterruptible).OrderBy(j => j.defName).ToArray());
 
             // The damage path is the one every job is on, including the sleep that refuses the other path.
             Assert.All(jobs, j => Assert.Equal(CheckJobOverrideOnDamageMode.OnlyIfInstigatorNotJobTarget, j.checkOverrideOnDamage));

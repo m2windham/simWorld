@@ -19,10 +19,9 @@
     WHAT IS IN HERE, AND WHAT DELIBERATELY IS NOT. Only the combat tier. That is not a stub: it is the answer
     to "a pawn should not abandon surgery because someone walked past". A tier that contributes no job
     interrupts nothing, so every non-threat is handled by simply not being in this tree — no priority
-    numbers, no per-job exception lists. RimWorld's own humanlike constant tree also carries a self-
-    extinguish tier for a burning pawn; this port has fire (Things/Fire.cs) but no pawn-attached fire hediff
-    for one to extinguish, so there is nothing here to route to and it is recorded as absent rather than
-    invented.
+    numbers, no per-job exception lists. A burning pawn is not this tree's business either: what a pawn does
+    about being on fire is the first node of its main tree (ThinkNode_ConditionalBurning, RimWorld's
+    BurningResponse), and the gate below refuses outright while the pawn burns, as RimWorld's does.
   -->
 
   <ThinkTreeDef>
