@@ -20,7 +20,7 @@ namespace SimWorld.AI
     /// </summary>
     public readonly struct MiningWant
     {
-        public MiningWant(ThingDef item, int deficit, bool fromBuildSites)
+        public MiningWant(ThingDef item, float deficit, bool fromBuildSites)
         {
             Item = item;
             Deficit = deficit;
@@ -30,8 +30,10 @@ namespace SimWorld.AI
         /// <summary>The item wanted: an ore (<c>Steel</c>) or a stone chunk (<c>ChunkGranite</c>).</summary>
         public ThingDef Item { get; }
 
-        /// <summary>How many more of it, after everything on hand and everything already marked.</summary>
-        public int Deficit { get; }
+        /// <summary>How many more of it, after everything on hand and everything already marked. A fraction
+        /// is meaningful: nine cells marked for a chunk that ten cells are expected to drop leave a tenth of a
+        /// chunk wanted, which is one more cell and not ten.</summary>
+        public float Deficit { get; }
 
         /// <summary>True when a Blueprint or Frame on the map is waiting for it (or for blocks cut from
         /// it); false when it is only the standing reserve.</summary>
@@ -98,6 +100,10 @@ namespace SimWorld.AI
     /// </summary>
     public static class MiningInitiative
     {
+        /// <summary>Below this a want is rounding noise, not a want: ten cells of a tenth-of-a-chunk each
+        /// come to a hair over or under one chunk in floating point.</summary>
+        private const double Epsilon = 1e-4;
+
         // ---------------------------------------------------------------------------------------------
         // Entry points. Same shape as FarmingInitiative/StonecutterInitiative: a tick the map drives, a
         // gated per-map pass, and the ungated logic public so a test can drive one pass.
@@ -178,9 +184,11 @@ namespace SimWorld.AI
 
                 int onGround = OnTheGround(map, item);
                 int inBooks = settlement?.StoreCountOf(item) ?? 0;
-                int deficit = Math.Max(siteNeed - onGround, siteNeed + reserve - onGround - inBooks);
-                deficit -= (int)Math.Floor(marked.TryGetValue(item, out float expected) ? expected : 0f);
-                if (deficit > 0) wants.Add(new MiningWant(item, deficit, fromBuildSites: siteNeed > onGround));
+                float deficit = Math.Max(siteNeed - onGround, siteNeed + reserve - onGround - inBooks);
+                // Net of what the marks already standing will give — as a fraction, not floored: floor it and
+                // nine of ten cells marked for one chunk reads as "no progress", and the next pass marks ten more.
+                deficit -= marked.TryGetValue(item, out float expected) ? expected : 0f;
+                if (deficit > Epsilon) wants.Add(new MiningWant(item, deficit, fromBuildSites: siteNeed > onGround));
             }
 
             wants.Sort((a, b) =>
@@ -301,7 +309,8 @@ namespace SimWorld.AI
         /// What the cells already marked for digging are expected to give, by item: each marked
         /// <see cref="Mineable"/>'s <c>mineableYield × mineableDropChance</c>, nominal (a full recovery — a
         /// poor miner under-delivers, the shortfall reappears as a want on the next pass and is marked then).
-        /// The marks counted are everyone's, the player's included: they will yield all the same.
+        /// The marks counted are everyone's, the player's included: they will yield all the same — except one the
+        /// roof guard now refuses, which will not.
         /// </summary>
         private static Dictionary<ThingDef, float> ExpectedFromMarks(Map.Map map)
         {
@@ -311,6 +320,8 @@ namespace SimWorld.AI
                 Mineable? rock = MineableUtility.GetFirstMineable(mark.target.Cell, map);
                 ThingDef? gives = rock?.def.mineableThing;
                 if (rock == null || gives == null) continue;
+                // A mark nobody may dig gives nothing, and counting it would hide the want it was meant to meet.
+                if (RoofCollapseUtility.WouldCollapseRoofIfRemoved(rock)) continue;
                 expected[gives] = (expected.TryGetValue(gives, out float so) ? so : 0f)
                     + rock.def.mineableYield * rock.def.mineableDropChance;
             }
@@ -435,8 +446,8 @@ namespace SimWorld.AI
             });
 
             int placed = 0;
-            float remaining = want.Deficit;
-            for (int i = 0; i < candidates.Count && headroom - placed > 0 && remaining > 0f; i++)
+            double remaining = want.Deficit;
+            for (int i = 0; i < candidates.Count && headroom - placed > 0 && remaining > Epsilon; i++)
             {
                 Mineable rock = candidates[i].rock;
                 if (RoofCollapseUtility.WouldCollapseRoofIfRemoved(rock)) continue;
