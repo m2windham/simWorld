@@ -61,16 +61,41 @@ namespace SimWorld.Things
             return null;
         }
 
-        /// <summary>The fire riding <paramref name="thing"/>, if it is alight (RimWorld:
+        /// <summary>
+        /// The fire riding <paramref name="thing"/>, if it is alight (RimWorld:
         /// <c>Thing.GetAttachment(ThingDefOf.Fire)</c> via <c>CompAttachBase</c>; see
-        /// <see cref="AttachableThing"/> for why this searches the cell instead).</summary>
+        /// <see cref="AttachableThing"/> for why this searches the map instead).
+        /// <para/>
+        /// <b>Its own cell, then one cell behind it.</b> A riding fire catches its parent up on the fire's own
+        /// tick (<see cref="AttachableThing.Tick"/>), and a pawn that has just stepped has not been caught up
+        /// with yet: between the step and the fire's tick, the fire is still standing on the cell the pawn
+        /// left, which is one of the eight around it. Looking only under the pawn's feet, a burning pawn whose
+        /// run leg ended on the tick it stepped — so it thinks that same tick — found no fire, fell past the
+        /// burning tier and went back to work alight. Only a pawn moves, so only a pawn pays for the ring.
+        /// </summary>
         public static Fire? GetAttachedFire(this Thing thing)
         {
             if (thing == null || !thing.Spawned) return null;
-            IReadOnlyList<Thing> here = thing.Map!.thingGrid.ThingsListAt(thing.Position);
+            Map.Map map = thing.Map!;
+            Fire? fire = AttachedFireIn(thing.Position, map, thing);
+            if (fire != null || !(thing is Pawn)) return fire;
+
+            for (int i = 0; i < GenAdj.AdjacentCells.Length; i++)
+            {
+                IntVec3 c = thing.Position + GenAdj.AdjacentCells[i];
+                if (!GenGrid.InBounds(c, map)) continue;
+                fire = AttachedFireIn(c, map, thing);
+                if (fire != null) return fire;
+            }
+            return null;
+        }
+
+        private static Fire? AttachedFireIn(IntVec3 c, Map.Map map, Thing parent)
+        {
+            IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(c);
             for (int i = 0; i < here.Count; i++)
             {
-                if (here[i] is Fire fire && ReferenceEquals(fire.parent, thing)) return fire;
+                if (here[i] is Fire fire && ReferenceEquals(fire.parent, parent)) return fire;
             }
             return null;
         }
@@ -100,6 +125,11 @@ namespace SimWorld.Things
         /// <c>FireUtility.ChanceToStartFireIn</c>): the flammability of the most flammable thing standing
         /// there, 0 on water and 0 where a fire already burns. Bare ground holds nothing flammable and so
         /// returns 0 — that, not a special case, is what stops fire crossing an empty field.
+        /// <para/>
+        /// <b>A pawn is not fuel for a spark</b> — RimWorld's own <c>thing.def.category != ThingCategory.Pawn</c>
+        /// clause. A spark cannot start a fire on bare ground because somebody is standing on it; a pawn
+        /// catches fire from a fire that is already burning under them, and only once it is big enough
+        /// (<see cref="Fire.MinSizeForIgniteMovables"/>).
         /// </summary>
         public static float ChanceToStartFireIn(IntVec3 c, Map.Map map)
         {
@@ -112,6 +142,7 @@ namespace SimWorld.Things
             for (int i = 0; i < here.Count; i++)
             {
                 if (here[i] is Fire) return 0f;
+                if (here[i].def.category == ThingCategory.Pawn) continue;
                 float flammability = FlammabilityOf(here[i]);
                 if (flammability > chance) chance = flammability;
             }

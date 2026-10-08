@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 2767,
+  "testsTotal": 2786,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -784,7 +784,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 180,
+      "tests": 182,
       "items": [
         {
           "id": "health.body",
@@ -855,6 +855,16 @@
           "id": "health.fire.rain",
           "label": "Rain extinguishment is live: the weather module drives it through FireUtility.ExtinguishFiresFromRain, the path the fire lane ported in full and left waiting on a rain rate",
           "done": true
+        },
+        {
+          "id": "health.fire.pawns",
+          "label": "Fire.DoComplexCalcs as RimWorld: one random thing burned per pass, a pawn only once the fire is past 0.4 (which also sets it alight at size x 0.2); sparks ignore pawns; water puts out a fire riding a pawn; GetAttachedFire finds a riding fire one cell behind its pawn",
+          "done": true
+        },
+        {
+          "id": "health.fire.pathcost",
+          "label": "PathGrid's fire cost (+1000 on a burning cell, +150 beside one) (lands with a pathing pass)",
+          "done": false
         },
         {
           "id": "health.corpse",
@@ -973,7 +983,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 202,
+      "tests": 217,
       "items": [
         {
           "id": "ai.thinktree",
@@ -1104,6 +1114,21 @@
           "id": "ai.lord",
           "label": "Raids break and run. A raid is a Lord running LordJob_AssaultColony (RimWorld 1.0 and 1.6 decompiles): it flees on Trigger_FractionPawnsLost(0.5) when its faction sets autoFlee, gives up after 26,000-38,000 ticks, and drops its downed members where they fall; leaving raiders walk to the nearest edge and are despawned, not killed, so the death ledger and raid credit are unchanged. RoughOutlanders' autoFlee=false, unsourced since the first factions port and never RimWorld's (only mechanoids and insects set it), is removed, so the raids the populated world actually sends can break: raid 1's median hold fell 5,485 -> 3,265 ticks and citizen downings 77 -> 46 over ten paired seeds, and 'Raiders fleeing' is a recorded moment (docs/perf/retreat). Recorded deviations, in the code: the lord polls its members, panic flee is a duty not a mental state, the flee fraction is 1.0's flat 0.5; not ported: kidnap, steal, sappers, the satisfied-with-damage trigger (RaidRetreatTests).",
           "done": true
+        },
+        {
+          "id": "ai.burningresponse",
+          "label": "A burning pawn responds first, as in RimWorld: the BurningResponse tier heads the humanlike tree (ConditionalBurning -> JumpInWater / ExtinguishSelf at 10% per think, 150 ticks / RunRandom radius 7 with Wait_Wander between legs). FightFires never takes the pawn's own fire, the constant tree is gated while burning, and DamageDef.canInterruptJobs (Flame false) keeps a burn from interrupting the response",
+          "done": true
+        },
+        {
+          "id": "ai.burningresponse.animals",
+          "label": "Burning tier in the animal think tree (lands with the animal tree's own pass)",
+          "done": false
+        },
+        {
+          "id": "ai.beatfire.onpath",
+          "label": "JobDriver_BeatFire / Wait beating fires on their own path (RimWorld does; this port's pawns only beat fires a giver hands them)",
+          "done": false
         }
       ]
     },
@@ -1555,7 +1580,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
       "status": "translated",
-      "tests": 215,
+      "tests": 217,
       "items": [
         {
           "id": "building.zones",
@@ -1630,6 +1655,11 @@
         {
           "id": "building.autohomearea",
           "label": "The home area grows on its own around what the settlement builds: RimWorld's AutoHomeAreaMaker (BorderWidth 4, MarkHomeAroundThing's rect from Position and RotatedSize), so cleaning, firefighting and construction placement are bounded in play without the player painting. Translation: Things here carry no Faction, so the hook is Frame.CompleteConstruction, the one way a settlement's building comes into being; a ruin's or raider's building never marks. A player-erased cell comes back when a later building's range reaches it, as in RimWorld. Not ported: the autoHomeArea play setting (always on, RimWorld's default) and Notify_ZoneCellAdded (AutoHomeAreaMakerTests).",
+          "done": true
+        },
+        {
+          "id": "building.zonehome",
+          "label": "A field is home the moment it is laid out: AutoHomeAreaMaker.Notify_ZoneCellAdded from ZoneManager.AddCell marks a 9x9 home square around every zone cell, so firefighting's home-area gate covers the crops. This is what ended the Flashstorm collapse (forced same storm: 25/26 and 31/31 burned on the old code, 0 burn deaths on both seeds after)",
           "done": true
         },
         {

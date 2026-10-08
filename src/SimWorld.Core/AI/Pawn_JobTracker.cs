@@ -184,7 +184,10 @@ namespace SimWorld.AI
         /// tree's problem; ending the sleep is not negotiable, and it is the case this whole module exists
         /// for. <see cref="JobDriver_LayDown"/> notices the flag and ends itself.</item>
         /// <item><b>Being hurt re-asks the think tree</b>, if this job's <see cref="JobDef.checkOverrideOnDamage"/>
-        /// says so and the throttle allows it.</item>
+        /// says so and the throttle allows it — and only for a damage that can interrupt jobs at all
+        /// (<see cref="DamageDef.canInterruptJobs"/>, RimWorld's own gate in this same method). <c>Flame</c> cannot:
+        /// a pawn being burned by the fire on their own back is hit every pass, and each hit re-asking the tree
+        /// would cut every run leg short and re-roll the self-extinguish in mid-roll.</item>
         /// </list>
         /// Nothing here runs for an Interval or Statistical citizen, and the tier check is the first thing
         /// past the death check for that reason. Damage is the one path into this class that does <i>not</i>
@@ -202,6 +205,7 @@ namespace SimWorld.AI
             pawn.Asleep = false;
 
             if (curJob == null) return;
+            if (!dinfo.Def.canInterruptJobs) return;
             CheckJobOverrideOnDamageMode mode = curJob.def.checkOverrideOnDamage;
             if (mode == CheckJobOverrideOnDamageMode.Never) return;
             if (mode == CheckJobOverrideOnDamageMode.OnlyIfInstigatorNotJobTarget && AnyTargetIs(curJob, dinfo.Instigator)) return;

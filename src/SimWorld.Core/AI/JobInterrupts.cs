@@ -1,5 +1,6 @@
 using SimWorld.Defs;
 using SimWorld.Pawns;
+using SimWorld.Things;
 
 namespace SimWorld.AI
 {
@@ -98,11 +99,18 @@ namespace SimWorld.AI
     /// </list>
     /// The second and third are what <see cref="Satisfied"/> tests. Note what is <i>not</i> here: no priority
     /// number, no per-job-def combat exception list. A job that must survive a raid says so once, in content.
+    /// <para/><b>And never while the pawn is on fire</b> — RimWorld's own <c>!pawn.IsBurning()</c> clause in
+    /// this node, ported with the burning tier (<c>BurningResponse.cs</c>). A burning pawn's whole response is
+    /// the first node of its main tree; without this, the constant tree's combat tier could hand a pawn whose
+    /// job the fire has just ended (<see cref="Things.FireUtility.TryAttachFire"/>) a fight before that tier
+    /// ever ran, or pull it out of its run to shoot at someone. The other clauses of RimWorld's node (downed,
+    /// mental state, drafted, asleep) are not ported here; this port's reasons are the three above.
     /// </summary>
     public sealed class ThinkNode_ConditionalCanDoConstantThinkTreeJobNow : ThinkNode_Conditional
     {
         protected override bool Satisfied(Pawn pawn)
         {
+            if (pawn.IsBurning()) return false;
             Job? current = pawn.jobs?.curJob;
             if (current == null) return true;
             if (!current.def.casualInterruptible) return false;

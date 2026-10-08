@@ -410,6 +410,12 @@ namespace SimWorld.MindState
         /// </summary>
         public AI.DutyDef? duty;
 
+        /// <summary>Whether this pawn's next wander-style order is a pause rather than a move (RimWorld:
+        /// <c>Pawn_MindState.nextMoveOrderIsWait</c>, default and reset value <c>true</c>). Flipped by
+        /// <see cref="AI.JobGiver_RunRandom"/> each time it is asked, which is what alternates a burning pawn
+        /// between a short wait and a run leg.</summary>
+        public bool nextMoveOrderIsWait = true;
+
         public Pawn_MindState(Pawn pawn)
         {
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
@@ -444,6 +450,8 @@ namespace SimWorld.MindState
             AI.DutyDef? d = duty;
             Scribe_Defs.Look(ref d, "duty");
             duty = d;
+
+            Scribe_Values.Look(ref nextMoveOrderIsWait, "nextMoveOrderIsWait", true);
         }
     }
 }

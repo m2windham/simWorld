@@ -18,6 +18,26 @@
       <subNodes>
 
         <!--
+          On fire: first of all. RimWorld's humanlike tree opens Downed, then BurningResponse, then everything
+          else - mental states included - and this port has no Downed node because a downed pawn never thinks
+          here (Pawn_JobTracker.TryFindAndStartJob). The three givers are RimWorld's BurningResponse subtree in
+          its own order: make for water if any is in reach, else one chance in ten to stop and put it out, else
+          run about and try again when the leg ends. See SimWorld.AI.BurningResponse.cs.
+
+          Without this a citizen who caught fire had nothing to do about it but the firefighting work giver,
+          which only ever took a fire inside the home area - and RimWorld's never takes the pawn's own fire at
+          all. On the populated world one Flashstorm killed the whole settlement: citizens alight in the fields
+          kept working in the fire until they burned to death.
+        -->
+        <li Class="SimWorld.AI.ThinkNode_ConditionalBurning">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_JumpInWater" />
+            <li Class="SimWorld.AI.JobGiver_ExtinguishSelf" />
+            <li Class="SimWorld.AI.JobGiver_RunRandom" />
+          </subNodes>
+        </li>
+
+        <!--
           A mental state pre-empts everything below it entirely, rather than contributing (or not) a job of
           its own and letting the tree fall through — see ThinkNode_ConditionalInMentalState's own comment.
           Wandering still stands in for most per-mental-state behaviour: combat AI beyond fleeing is out of

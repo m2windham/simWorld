@@ -310,22 +310,32 @@ namespace SimWorld.Tests.Things
         }
 
         /// <summary>
-        /// Emergent, and worth pinning because it falls out of the parts rather than being written anywhere:
-        /// the fire riding a citizen is a fire on their own cell, firefighting is emergency work, so the very
-        /// next thing they do is beat it out. RimWorld reaches the same place by a dedicated
-        /// <c>JobGiver_ExtinguishSelf</c>; here the ordinary work giver already covers it.
+        /// A citizen who catches fire puts it out themselves — through RimWorld's own route now, the burning
+        /// tier's <c>JobGiver_ExtinguishSelf</c>, not the firefighting work giver. This test used to pin the
+        /// opposite as emergent: the fire riding a citizen was a fire on their own cell, so they beat it out as
+        /// ordinary emergency work in well under 600 ticks. That only ever held inside the home area, and
+        /// RimWorld's <c>WorkGiver_FightFires</c> refuses the pawn's own fire outright; outside it, a burning
+        /// citizen had no response at all (task #111). The roll is one think in ten, so the budget is wider
+        /// than it was, and the route is asserted, not just the outcome.
         /// </summary>
         [Fact]
-        public void A_citizen_who_catches_fire_beats_it_out_themselves()
+        public void A_citizen_who_catches_fire_puts_it_out_themselves()
         {
-            CoreMap map = NewMap(10, 10);
+            CoreMap map = NewMap(16, 16);
             Pawn citizen = NewHuman("Kindling");
-            GenSpawn.Spawn(citizen, new IntVec3(5, 0, 5), map);
+            GenSpawn.Spawn(citizen, new IntVec3(8, 0, 8), map);
             citizen.TryAttachFire(Fire.MinFireSize);
 
-            RunTicks(600, citizen);
+            bool rolled = false;
+            for (int t = 0; t < 6000 && citizen.IsBurning(); t++)
+            {
+                RunTicks(1, citizen);
+                if (citizen.jobs.curJob?.def == global::SimWorld.AI.BurningJobDefOf.ExtinguishSelf) rolled = true;
+                Assert.NotEqual(global::SimWorld.AI.FireJobDefOf.BeatFire, citizen.jobs.curJob?.def);
+            }
 
             Assert.False(citizen.IsBurning());
+            Assert.True(rolled);
             Assert.Empty(FiresOn(map));
         }
 

@@ -31,7 +31,9 @@ namespace SimWorld.AI
     /// exact rule, restated from the decompile.
     /// <para/><b>Updated:</b> <see cref="Building.AutoHomeAreaMaker"/> (<c>homearea</c> lane) now writes to
     /// <c>Home</c> too, every time a settlement finishes a building — this port's equivalent hook, once missing
-    /// (this doc used to say so), now exists. Nothing below changes for it: <c>Home.TrueCount &gt; 0</c> already
+    /// (this doc used to say so), now exists — and, since, every time a zone cell is laid out
+    /// (<see cref="Building.AutoHomeAreaMaker.Notify_ZoneCellAdded"/>), so a fire in the fields is firefighting
+    /// work the way it is in RimWorld. Nothing below changes for it: <c>Home.TrueCount &gt; 0</c> already
     /// treats an auto-marked cell exactly like a painted one, so a fire on a wall the settlement itself just
     /// finished is fought from the moment that wall completes, before the player ever paints anything —
     /// matching a real RimWorld settlement, which never plays with an empty home area for long either.
@@ -70,17 +72,24 @@ namespace SimWorld.AI
         /// anything else (a wall, a plant, the grass) is simply inside the home area or it is not, no distance
         /// exception. Both halves apply only once <c>Home.TrueCount &gt; 0</c> — see this class's own doc for
         /// why an unpainted home area gates nothing, here as in <see cref="Filth.CleaningBounds"/>.
+        /// <para/>
+        /// <b>Never the pawn's own fire</b> — RimWorld's first check on a fire riding a pawn
+        /// (<c>if (pawn2 == pawn) return false;</c>). This port used to let that case fall through to the
+        /// ground-fire branch, so a citizen alight inside the home area beat out their own fire as ordinary
+        /// emergency work and one alight outside it had no response at all. Putting yourself out is the burning
+        /// tier's job (<c>BurningResponse.cs</c>), first in the think tree and home area or not.
         /// </summary>
         public static bool IsFireToFight(Pawn pawn, Thing thing)
         {
             if (!(thing is Fire fire)) return false;
             if (fire.Destroyed || !fire.Spawned) return false;
             if (fire.Map != pawn.Map) return false;
+            if (ReferenceEquals(fire.parent, pawn)) return false;
 
             Area home = pawn.Map!.areaManager.Home;
             bool homeAreaIsSet = home.TrueCount > 0;
 
-            if (fire.parent is Pawn burning && !ReferenceEquals(burning, pawn))
+            if (fire.parent is Pawn burning)
             {
                 // A fire on someone else's fighter is their problem. Own-faction pawns (and animals), and
                 // fires on cells or buildings, are all fair game.
