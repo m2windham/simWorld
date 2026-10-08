@@ -45,16 +45,18 @@ namespace SimWorld.Tests.Integration
 
         private static ThingDef Def(string defName) => DefDatabase<ThingDef>.GetNamed(defName);
 
-        private static int CountMineable(CoreMap map)
+        private static HashSet<IntVec3> MineableCells(CoreMap map)
         {
-            int n = 0;
+            var cells = new HashSet<IntVec3>();
             foreach (IntVec3 c in map.AllCells)
             {
                 Thing? edifice = map.edificeGrid[c];
-                if (edifice != null && edifice.def.mineable) n++;
+                if (edifice != null && edifice.def.mineable) cells.Add(c);
             }
-            return n;
+            return cells;
         }
+
+        private static int CountMineable(CoreMap map) => MineableCells(map).Count;
 
         private static int CountOf(CoreMap map, string defName) => map.listerThings.ThingsOfDef(Def(defName)).Count;
 
@@ -130,30 +132,45 @@ namespace SimWorld.Tests.Integration
             GodCommands.OpenSettlement(settlement.tile);
             CoreMap map = settlement.InteriorMap!;
 
-            int before = CountMineable(map);
+            HashSet<IntVec3> before = MineableCells(map);
             int limestoneBefore = CountOf(map, "Limestone");
             Assert.True(limestoneBefore > 1000, "Setup: this seed's tile should carry a real mountain (" + limestoneBefore + " limestone cells).");
+            var everMarked = new HashSet<IntVec3>();
             int mostMarkedAtOnce = 0;
-            bool markedSomething = false;
 
             for (int tick = 0; tick < 3 * GenDate.TicksPerDay; tick++)
             {
                 game.TickManager.DoSingleTick();
-                if (tick % MiningTuning.IntervalTicks != 0) continue;
-                int marks = map.designationManager.AllDesignations.Count;
+                // Often enough that no mark can be made and dug between two looks: a dig is hundreds of ticks.
+                if (tick % 50 != 0) continue;
+                int marks = 0;
+                foreach (Designation mark in map.designationManager.SpawnedDesignationsOfDef(DesignationDefOf.Mine))
+                {
+                    everMarked.Add(mark.target.Cell);
+                    marks++;
+                }
                 mostMarkedAtOnce = System.Math.Max(mostMarkedAtOnce, marks);
-                markedSomething |= marks > 0;
             }
 
-            int after = CountMineable(map);
+            HashSet<IntVec3> after = MineableCells(map);
             int limestoneAfter = CountOf(map, "Limestone");
-            Assert.True(after * 10 >= before * 9,
-                "The mountains went from " + before + " cells to " + after + " in three days: a settlement with nothing to dig for must leave them standing.");
+
+            // The measurement: 12,985 limestone cells to 242 in six days. A band, as the brief for this lane
+            // asked - nearly all of the rock is still there...
+            Assert.True(after.Count * 10 >= before.Count * 9,
+                "The mountains went from " + before.Count + " cells to " + after.Count + " in three days: a settlement with nothing to dig for must leave them standing.");
             Assert.True(limestoneAfter * 10 >= limestoneBefore * 9, "Limestone: " + limestoneBefore + " -> " + limestoneAfter + ".");
+
+            // ...and the invariant that the band is a proxy for: nothing was dug that nobody had marked. Three
+            // days is long enough to see this and, with the defect put back, not long enough to lose a tenth of
+            // the rock (the pick-hit loop is several times slower than the flat wait the defect was measured
+            // against), so the band alone cannot be what proves this test.
+            List<IntVec3> unmarked = before.Where(c => !after.Contains(c) && !everMarked.Contains(c)).ToList();
+            Assert.True(unmarked.Count == 0, unmarked.Count + " rock cells were dug out without ever being marked, e.g. " + unmarked.FirstOrDefault() + ".");
 
             // And the initiative is what is working here: it ran through the real map tick, marked something,
             // and never held more than its cap.
-            Assert.True(markedSomething, "In three days the settlement marked nothing: the initiative is not being driven by the map tick.");
+            Assert.NotEmpty(everMarked);
             Assert.True(mostMarkedAtOnce <= MiningTuning.MaxOutstandingDesignations,
                 "At one point " + mostMarkedAtOnce + " cells were marked at once; the cap is " + MiningTuning.MaxOutstandingDesignations + ".");
         }
