@@ -1,4 +1,3 @@
-using SimWorld.Building;
 using SimWorld.Sim;
 
 namespace SimWorld.Economy
@@ -35,14 +34,18 @@ namespace SimWorld.Economy
         /// decider here applies to itself (<c>ConstructionInitiativeTuning.MaxBlueprintsPerTick</c>,
         /// <c>Settlement.GrowStatisticalCohort</c>).
         /// <para/>
-        /// Derived from <see cref="ConstructionInitiativeTuning.GoodsPerStorageHut"/>, this codebase's
-        /// existing unit of "how much a settlement keeps in one place" — one pass may paint at most one
-        /// storage hut's worth. Reading that figure as <i>cells</i> rather than as units is the deliberately
-        /// conservative half of the derivation: a cell holds a whole stack (up to
-        /// <c>ThingDef.stackLimit</c> units), so this over-provisions a pass rather than under-provisioning
-        /// it, and the backlog rule bounds the total either way.
+        /// SimWorld's own figure, 50. It began as a derived one: one pass could paint at most one storage hut's
+        /// worth of cells, where "a storage hut's worth" was the 50 stored goods a hut used to be sized for
+        /// (<c>ConstructionInitiativeTuning.GoodsPerStorageHut</c>). Storage huts are now sized by people, so
+        /// that figure is gone and this one stands alone with the value it always had. <b>Granary behaviour is
+        /// unchanged on purpose</b>: re-deriving a granary's pace from anything else is its own decision, not a
+        /// side effect of resizing huts. Reading 50 as <i>cells</i> rather than units is still the deliberately
+        /// conservative half: a cell holds a whole stack (up to <c>ThingDef.stackLimit</c> units), so this
+        /// over-provisions a pass rather than under-provisioning it, and the backlog rule bounds the total either
+        /// way. Pinned by <c>SettlementStockTests</c> as a ceiling a large backlog meets and does not pass, never
+        /// by this literal.
         /// </summary>
-        public const int MaxGranaryCellsPerPass = ConstructionInitiativeTuning.GoodsPerStorageHut;
+        public const int MaxGranaryCellsPerPass = 50;
 
         /// <summary>
         /// The label the settlement's own stockpile carries, so a later pass extends the granary it already

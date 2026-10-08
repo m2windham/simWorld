@@ -28,13 +28,26 @@ namespace SimWorld.Tests.Building
 
         private static ThingDef Def(string name) => DefDatabase<ThingDef>.GetNamed(name);
 
-        /// <summary>A settlement with no citizens and enough in store to want <paramref name="huts"/> storage
-        /// huts, so every blueprint it places is an impassable one.</summary>
-        private static Settlement HoardingSettlement(int huts)
+        /// <summary>A settlement with no citizens and something in store, so the one thing it wants is a storage
+        /// hut and every blueprint it places is an impassable one.</summary>
+        private static Settlement HoardingSettlement()
         {
             var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Hoard", 0);
-            settlement.AddStore(Def("WoodLog"), huts * ConstructionInitiativeTuning.GoodsPerStorageHut);
+            settlement.AddStore(Def("WoodLog"), 1);
+            Assert.Equal(1, StorageHutTarget.For(settlement)); // test setup: exactly one hut wanted
             return settlement;
+        }
+
+        /// <summary>Plans storage huts up to <paramref name="huts"/>, three to a pass as the initiative does. The
+        /// population-sized target would take hundreds of real citizens (and a bed each) to ask for this many, so
+        /// the test drives the one need directly through the loop body the initiative itself runs.</summary>
+        private static void PlanHuts(CoreMap map, int huts, int passes)
+        {
+            for (int i = 0; i < passes; i++)
+            {
+                SettlementConstructionInitiative.PlaceShortfall(map, ConstructionThingDefOf.StorageHut, huts,
+                    ConstructionInitiativeTuning.MaxBlueprintsPerTick);
+            }
         }
 
         private static void RunPasses(Settlement settlement, CoreMap map, int passes)
@@ -97,9 +110,8 @@ namespace SimWorld.Tests.Building
         public void Hundreds_of_huts_around_the_hub_leave_every_walkable_cell_reachable()
         {
             var map = new CoreMap(40, 40, SimWorld.Map.TerrainDefOf.Soil);
-            Settlement settlement = HoardingSettlement(huts: 400);
 
-            RunPasses(settlement, map, passes: 140);
+            PlanHuts(map, huts: 400, passes: 140);
             int built = BuildEverything(map);
 
             Assert.True(built >= 300, "The settlement should have planned hundreds of huts to test against; it planned " + built + ".");
@@ -118,7 +130,7 @@ namespace SimWorld.Tests.Building
                 GenSpawn.Spawn(ThingMaker.MakeThing(Def("Wall")), new IntVec3(x, 0, 3), map);
                 GenSpawn.Spawn(ThingMaker.MakeThing(Def("Wall")), new IntVec3(x, 0, 5), map);
             }
-            Settlement settlement = HoardingSettlement(huts: 1);
+            Settlement settlement = HoardingSettlement();
 
             // The home area holds only the crossing: the hut waits rather than cut the map in four.
             map.areaManager.Home[new IntVec3(4, 0, 4)] = true;

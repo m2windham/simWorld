@@ -7,9 +7,9 @@ namespace SimWorld.Building
     /// under edicts, <c>docs/status.json</c>'s <c>building.initiative</c>). RimWorld has nothing to port here
     /// — its player places every blueprint by hand, so there is no "how much does a settlement build on its
     /// own" constant to source — every figure below is SimWorld's own, documented at its declaration and
-    /// pinned by <c>ConstructionInitiativeTests</c> as a band or a trend (more citizens → more beds wanted;
-    /// more stored goods → more storage wanted) rather than trusted as a bare literal, per CLAUDE.md's own
-    /// rule for untraceable numbers.
+    /// pinned by <c>ConstructionInitiativeTests</c> as a band or a trend (more citizens → more beds wanted,
+    /// and more storage wanted; more stored goods alone → no more storage) rather than trusted as a bare
+    /// literal, per CLAUDE.md's own rule for untraceable numbers.
     /// </summary>
     public static class ConstructionInitiativeTuning
     {
@@ -77,11 +77,33 @@ namespace SimWorld.Building
         public const int MaxWallShelterCount = 40;
 
         /// <summary>
-        /// Stored-goods units one <c>StorageHut</c> is assumed to hold before the settlement wants another —
-        /// SimWorld's own figure (<c>Settlement.Stores</c> is a bare def→count ledger with no per-item volume
-        /// or quality to size a real hut against). Pinned by <c>ConstructionInitiativeTests</c> as "more
-        /// stores asks for more huts," never by this literal.
+        /// Citizens one <c>StorageHut</c> serves: the settlement wants <c>ceil(citizens / this)</c> huts once it
+        /// keeps anything at all (see <see cref="StorageHutTarget"/>). <b>A design number, not a measurement.</b>
+        /// RimWorld has no storage hut to source it from (it has stockpile zones and shelves), so the hut is this
+        /// port's own translation and so is this figure: five people share a shed, which puts a founding band of
+        /// 26 at six huts.
+        /// <para/>
+        /// <b>Why people, not goods.</b> This used to be a count of stored goods per hut (50), uncapped. A hut
+        /// is a 1x1 building that physically holds nothing, since the ledger it is "for"
+        /// (<see cref="World.Settlement.Stores"/>) is off the map, so sizing it by the ledger only made the
+        /// settlement spend 25 wood per 50 units it had gathered, and the harder it worked the more it built:
+        /// seed 777 of the mapdump bench had 97 huts at day 6 and 453 at day 20, for 26 people, scattered over
+        /// the whole map. A hut is shelter for a household's things, so it grows with households. It does not
+        /// grow with a harvest. Pinned by <c>StorageHutTargetTests</c> as three relations: more people want more
+        /// huts, more goods alone want no more, and a band of the size the game opens with never asks for more
+        /// than a handful. Never by this literal.
         /// </summary>
-        public const int GoodsPerStorageHut = 50;
+        public const int CitizensPerStorageHut = 5;
+
+        /// <summary>
+        /// Half-width, in cells, of the square around the settlement's existing storage that a new
+        /// <c>StorageHut</c> is placed in first (see <see cref="StorageAnchor"/>); the square doubles outward
+        /// only when it has no room left. SimWorld's own figure, like <see cref="HubPlacementRadius"/>: a 9x9
+        /// square is 81 cells, which holds the six huts a founding band wants at about one cell in thirteen,
+        /// and a town of a hundred (twenty huts) at about one in four. Loose enough to read as a few sheds
+        /// beside one another and tight enough to read as one place. Pinned by <c>StorageHutPlacementTests</c>
+        /// as "well nearer one another than uniform placement", never by this literal.
+        /// </summary>
+        public const int StorageClusterRadius = 4;
     }
 }

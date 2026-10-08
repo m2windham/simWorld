@@ -319,7 +319,7 @@ namespace SimWorld.Tests.Economy
         }
 
         [Fact]
-        public void One_pass_never_paints_more_than_a_storage_huts_worth_of_cells()
+        public void One_pass_never_paints_more_than_the_tuned_ceiling()
         {
             Settlement settlement = PeopledSettlement();
             CoreMap map = NewMap(60);
@@ -330,10 +330,11 @@ namespace SimWorld.Tests.Economy
                 for (int z = 0; z < 5; z++) SpawnStack(map, new IntVec3(x, 0, 40 + z), Chunk, 1);
             }
 
+            int backlog = SettlementStockInitiative.HomelessStacks(map).Count;
             int added = SettlementStockInitiative.EnsureGranary(settlement, map);
 
+            Assert.True(added < backlog, "test setup: the backlog is larger than one pass may answer, so the ceiling is what stopped it");
             Assert.Equal(SettlementStockTuning.MaxGranaryCellsPerPass, added);
-            Assert.Equal(ConstructionInitiativeTuning.GoodsPerStorageHut, SettlementStockTuning.MaxGranaryCellsPerPass);
         }
 
         // -------------------------------------------------------------------------------------------

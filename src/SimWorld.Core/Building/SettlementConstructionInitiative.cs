@@ -23,8 +23,10 @@ namespace SimWorld.Building
     /// <b>What "needs something" means here.</b> Deliberately small, concrete and read straight off real
     /// settlement state rather than a speculative economy (the brief's own words): a bed per citizen who could
     /// physically use one (<see cref="World.Settlement.Citizens"/> — see the remark on that choice below), a
-    /// handful of walls once there is anyone to shelter, and storage sized to what the settlement's own
-    /// <see cref="World.Settlement.Stores"/> ledger actually holds. See <see cref="ComputeNeeds"/>.
+    /// handful of walls once there is anyone to shelter, and storage sized to how many people there are to
+    /// keep things (<see cref="StorageHutTarget"/>: a shed per few citizens, once the settlement's own
+    /// <see cref="World.Settlement.Stores"/> ledger holds anything at all, never one per harvest). See
+    /// <see cref="ComputeNeeds"/>.
     /// <para/>
     /// <b>Where it builds.</b> Inside the home area once one exists — painted by the player
     /// (<see cref="Map.View.MapCommands.SetHomeArea"/>) or grown by <see cref="AutoHomeAreaMaker"/> around the
@@ -131,15 +133,30 @@ namespace SimWorld.Building
             int placed = 0;
             for (int i = 0; i < needs.Count && placed < ConstructionInitiativeTuning.MaxBlueprintsPerTick; i++)
             {
-                Need need = needs[i];
-                int shortfall = need.Target - CountBuiltOrPlanned(map, need.EntityDef);
-                for (int u = 0; u < shortfall && placed < ConstructionInitiativeTuning.MaxBlueprintsPerTick; u++)
-                {
-                    if (!TryFindPlacementCell(map, need.EntityDef, out IntVec3 cell)) break;
-                    PlaceBlueprint(map, need.EntityDef, cell);
-                    placed++;
-                }
+                placed += PlaceShortfall(map, needs[i].EntityDef, needs[i].Target,
+                    ConstructionInitiativeTuning.MaxBlueprintsPerTick - placed);
             }
+        }
+
+        /// <summary>
+        /// Places blueprints for what <paramref name="entityDef"/> still lacks against <paramref name="target"/>
+        /// (built or planned already counted), at most <paramref name="budget"/> of them, and returns how many
+        /// it placed. The body of <see cref="TickSettlement(World.Settlement, Map.Map)"/>'s loop, lifted out
+        /// unchanged so one need can be driven at a size no settlement of a test's making could ask for.
+        /// <c>PlacementConnectivityTests</c> uses it to pack hundreds of huts into one cluster, which the
+        /// population-sized target would otherwise take hundreds of real citizens to ask for.
+        /// </summary>
+        internal static int PlaceShortfall(Map.Map map, ThingDef entityDef, int target, int budget)
+        {
+            int shortfall = target - CountBuiltOrPlanned(map, entityDef);
+            int placed = 0;
+            for (int u = 0; u < shortfall && placed < budget; u++)
+            {
+                if (!TryFindPlacementCell(map, entityDef, out IntVec3 cell)) break;
+                PlaceBlueprint(map, entityDef, cell);
+                placed++;
+            }
+            return placed;
         }
 
         /// <summary>
@@ -169,22 +186,10 @@ namespace SimWorld.Building
                 needs.Add(new Need(StoneWallMaterials.PreferredWallDef(map), wallTarget));
             }
 
-            int storageTarget = StorageTarget(settlement);
+            int storageTarget = StorageHutTarget.For(settlement);
             if (storageTarget > 0) needs.Add(new Need(ConstructionThingDefOf.StorageHut, storageTarget));
 
             return needs;
-        }
-
-        /// <summary>One <c>StorageHut</c> per <see cref="ConstructionInitiativeTuning.GoodsPerStorageHut"/>
-        /// units actually held in <see cref="World.Settlement.Stores"/>, at least one once anything is held at
-        /// all, zero when the ledger is empty — a settlement with nothing to keep has nothing to build storage
-        /// for.</summary>
-        private static int StorageTarget(Settlement settlement)
-        {
-            int totalStored = 0;
-            foreach (KeyValuePair<ThingDef, int> kv in settlement.Stores) totalStored += kv.Value;
-            if (totalStored <= 0) return 0;
-            return Math.Max(1, (totalStored + ConstructionInitiativeTuning.GoodsPerStorageHut - 1) / ConstructionInitiativeTuning.GoodsPerStorageHut);
         }
 
         /// <summary>Every buildable Def named by any active edict's <see cref="EdictDef.prioritizedConstruction"/>,
@@ -306,9 +311,15 @@ namespace SimWorld.Building
         /// autonomous layout needs to be smarter is a later decision to take against a measurement. Validity
         /// is still entirely <see cref="GenConstruct.CanPlaceBlueprintAt"/>'s call, so this never overlaps or
         /// blocks a Blueprint, Frame or edifice already there.
+        /// <para/>
+        /// <b>One need is sited differently: storage.</b> A <c>StorageHut</c> goes to
+        /// <see cref="TryFindStorageCell"/>, which gathers it round the settlement's existing storage instead of
+        /// drawing over the whole home area. Beds and walls take the path above, unchanged.
         /// </summary>
         private static bool TryFindPlacementCell(Map.Map map, ThingDef entityDef, out IntVec3 cell)
         {
+            if (ReferenceEquals(entityDef, ConstructionThingDefOf.StorageHut)) return TryFindStorageCell(map, entityDef, out cell);
+
             Area home = map.areaManager.Home;
             if (home.TrueCount > 0) return TryPickCell(map, entityDef, map.AllCells, home, out cell);
 
@@ -322,13 +333,58 @@ namespace SimWorld.Building
         }
 
         /// <summary>
+        /// Where the next <c>StorageHut</c> goes: in a square round <see cref="StorageAnchor"/> (the huts already
+        /// there, else the stockpile, else the home area's middle, else the hub), starting
+        /// <see cref="ConstructionInitiativeTuning.StorageClusterRadius"/> cells either side of it and doubling
+        /// whenever that square has no room, until the square covers the map. The same expanding-square search
+        /// the road-hub branch above uses, aimed at the settlement's storage instead of its hub.
+        /// <para/>
+        /// <b>Why only storage, and why this is not a change to the general placer.</b> Huts are the one need
+        /// that sprawled: the home area grows 4 cells round every building (<see cref="AutoHomeAreaMaker"/>), and
+        /// a hut drawn uniformly over the home area extends it, so the next hut can land further out. Four
+        /// hundred and fifty-three of them crossed the whole map. A hut is a marker, never a place anything
+        /// walks to, so it has no reason to be anywhere but beside the rest of the storage. A bed or a wall has:
+        /// a bed wants to be near its sleeper's work and a wall around a place. Moving them is a decision about
+        /// layout, which this class says in its remarks is still to be taken against a measurement.
+        /// <para/>
+        /// <b>What still binds.</b> The home area, when one exists: the square is searched only over cells
+        /// inside it, exactly as the general path does, so a full home area still waits for the player (see
+        /// <see cref="HomeAreaFullExplanation"/>, which reads the same "any room anywhere in the area" question).
+        /// <see cref="Fits"/> still refuses a cell a hut would wall in. And a hut never goes on a zone cell: a
+        /// storage hut beside a granary is storage, one on top of it is a granary cell nothing can be put on.
+        /// </summary>
+        private static bool TryFindStorageCell(Map.Map map, ThingDef entityDef, out IntVec3 cell)
+        {
+            Area home = map.areaManager.Home;
+            Area? within = home.TrueCount > 0 ? home : null;
+            IntVec3 anchor = StorageAnchor.For(map);
+
+            for (int radius = Math.Max(1, ConstructionInitiativeTuning.StorageClusterRadius); ; radius *= 2)
+            {
+                CellRect square = CellRect.CenteredOn(anchor, radius).ClipInsideMap(map);
+                if (TryPickCell(map, entityDef, Candidates(map, entityDef, square.Cells), within, out cell)) return true;
+                if (square.Width >= map.Size.x && square.Height >= map.Size.z) return false; // nowhere on the map
+            }
+        }
+
+        /// <summary>The cells of <paramref name="cells"/> that <paramref name="entityDef"/> may be sited on at all,
+        /// before <see cref="Fits"/> asks about each: all of them, except that a <c>StorageHut</c> keeps off
+        /// zone cells (see <see cref="TryFindStorageCell"/>). One rule for the search and for
+        /// <see cref="HomeAreaFullExplanation"/>, so the settlement never waits in silence for room the report
+        /// says it has.</summary>
+        private static IEnumerable<IntVec3> Candidates(Map.Map map, ThingDef entityDef, IEnumerable<IntVec3> cells) =>
+            ReferenceEquals(entityDef, ConstructionThingDefOf.StorageHut)
+                ? cells.Where(c => map.zoneManager.ZoneAt(c) == null)
+                : cells;
+
+        /// <summary>
         /// The map's hub: the cell <c>MapGen.GenStep_Roads</c> runs every street to ("a hub", in that class's
         /// own doc). It is also where <see cref="World.Settlement"/> stands a founding band when the map is
         /// first entered, because that class's own anchor falls back to the same cell before anything is
         /// built. On a tile with no roads it is still the middle the founders arrived at. The expression is
         /// restated rather than shared, because <c>GenStep_Roads</c> computes it inline.
         /// </summary>
-        private static IntVec3 RoadHub(Map.Map map) => new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
+        internal static IntVec3 RoadHub(Map.Map map) => new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
 
         /// <summary>
         /// One seeded draw over every candidate that <see cref="Fits"/>. It counts the fitting cells, draws an
@@ -482,7 +538,7 @@ namespace SimWorld.Building
             {
                 int shortfall = need.Target - CountBuiltOrPlanned(map, need.EntityDef);
                 if (shortfall <= 0) continue;
-                if (CountFitting(map, need.EntityDef, map.AllCells, home) > 0) continue;
+                if (CountFitting(map, need.EntityDef, Candidates(map, need.EntityDef, map.AllCells), home) > 0) continue;
                 waiting ??= new List<string>();
                 waiting.Add(shortfall + " " + need.EntityDef.label + (shortfall == 1 ? "" : "s"));
             }
