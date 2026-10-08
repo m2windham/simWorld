@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SimWorld.Health;
 using SimWorld.Pawns;
@@ -9,13 +10,21 @@ namespace SimWorld.AI
     /// Walks to a patient and tends their most urgent hediff, carrying medicine there first when
     /// <see cref="WorkGiver_Tend"/> found any (RimWorld: a trim of <c>RimWorld.JobDriver_TendPatient</c> —
     /// RimWorld's own driver carries medicine through <c>Pawn_InventoryTracker</c> and can loop back for more
-    /// mid-visit; this port has no general inventory, so target B travels the same "abstract carry" way
-    /// <see cref="JobDriver_FoodDeliver"/>'s and <see cref="JobDriver_Warden_Feed"/>'s single-unit deliveries
-    /// already do — despawned off the map the moment it is picked up, respawned at the doctor's feet if the
-    /// job ends before it is spent, one unit consumed per visit rather than RimWorld's variable
+    /// mid-visit; this port has no general inventory, so target B travels in the doctor's hands, through
+    /// <see cref="Pawn_CarryTracker"/> as <see cref="JobDriver_FoodDeliver"/>'s meal does: picked up by
+    /// <see cref="Toils_Haul.StartCarryThing"/>, one unit consumed per visit rather than RimWorld's variable
     /// <c>Medicine.GetMedicineCountToFullyHeal</c> amount). Quality itself comes from
     /// <see cref="TendUtility.CalculateBaseTendQuality"/> — doctor skill, medicine potency and the patient's
     /// own bed, all folded in exactly once, at the moment the tend actually lands.
+    /// <para/>
+    /// <b>Medicine in hand is never lost.</b> Whatever the doctor is still holding when the job ends — cut
+    /// short on the way, or carried to a patient who turned out to have nothing left to tend — is put down at
+    /// the doctor's feet by <see cref="Pawn_JobTracker.EndCurrentJob"/>. This driver used to keep the unit in a
+    /// field of its own, hand it to the tend and forget it, so a tend that found nothing to treat left the
+    /// medicine off the map for good, and a save taken mid-carry lost it.
+    /// <para/>
+    /// A doctor already holding the medicine goes straight to the patient (see
+    /// <see cref="Toils_Haul.IsCarryingTarget"/>): a loaded job rebuilds its driver and starts from the first toil.
     /// </summary>
     public sealed class JobDriver_TendPatient : JobDriver
     {
@@ -26,12 +35,6 @@ namespace SimWorld.AI
         /// call for — this port's own flat simplification (see this class's own doc).</summary>
         public const int MedicinePerTend = 1;
 
-        /// <summary>The medicine in hand, off the map, between pickup and the tend that spends it — null once
-        /// spent, or when this job carries none at all. Mirrors <see cref="JobDriver_FoodDeliver"/>'s own
-        /// <c>carried</c> field for the same reason: something has to remember it long enough to give it back
-        /// if the job is cut short.</summary>
-        private Thing? carriedMedicine;
-
         public override bool TryMakePreToilReservations()
         {
             if (pawn.Map == null) return false;
@@ -39,16 +42,6 @@ namespace SimWorld.AI
             LocalTargetInfo medicineTarget = job.GetTarget(TargetIndex.B);
             if (medicineTarget.HasThing && !pawn.Map.reservationManager.CanReserve(pawn, medicineTarget)) return false;
             return true;
-        }
-
-        public override void Notify_Ending()
-        {
-            base.Notify_Ending();
-            Thing? thing = carriedMedicine;
-            carriedMedicine = null;
-            if (thing == null || thing.Destroyed || thing.Spawned) return;
-            if (pawn.Map == null || !pawn.Spawned) return;
-            GenSpawn.Spawn(thing, pawn.Position, pawn.Map);
         }
 
         public override IEnumerable<Toil> MakeNewToils()
@@ -59,32 +52,8 @@ namespace SimWorld.AI
             if (hasMedicine)
             {
                 yield return Toils_Reserve.Reserve(TargetIndex.B);
-
-                Toil gotoMedicine = Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.ClosestTouch);
-                gotoMedicine.FailOnDespawnedOrNull(TargetIndex.B);
-                yield return gotoMedicine;
-
-                yield return Toils_General.Do(() =>
-                {
-                    Thing? medicine = job.GetTarget(TargetIndex.B).Thing;
-                    if (medicine == null || medicine.Destroyed || !medicine.Spawned)
-                    {
-                        EndJobWith(JobCondition.Incompletable);
-                        return;
-                    }
-                    if (medicine.stackCount <= MedicinePerTend)
-                    {
-                        carriedMedicine = medicine;
-                        medicine.DeSpawn();
-                    }
-                    else
-                    {
-                        medicine.stackCount -= MedicinePerTend;
-                        Thing split = ThingMaker.MakeThing(medicine.def, medicine.Stuff);
-                        split.stackCount = MedicinePerTend;
-                        carriedMedicine = split;
-                    }
-                });
+                yield return Toils_Haul.GotoThingToCarry(TargetIndex.B, PathEndMode.ClosestTouch);
+                yield return Toils_Haul.StartCarryThing(TargetIndex.B, medicine => Math.Min(medicine.stackCount, MedicinePerTend));
             }
 
             Toil gotoPatient = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
@@ -98,8 +67,9 @@ namespace SimWorld.AI
             yield return Toils_General.Do(() =>
             {
                 if (!(job.GetTarget(TargetIndex.A).Thing is Pawn patient) || patient.Destroyed || !patient.Spawned || patient.Dead) return;
-                Thing? medicine = carriedMedicine;
-                carriedMedicine = null;
+                // What is in hand is the medicine this job picked up, and only that: TendUtility spends it when
+                // the tend lands, and anything it does not spend is put down when this job ends.
+                Thing? medicine = Toils_Haul.IsCarryingTarget(pawn, job, TargetIndex.B) ? pawn.carryTracker.CarriedThing : null;
                 TendUtility.DoTendWithMedicine(pawn, patient, medicine);
             });
         }
