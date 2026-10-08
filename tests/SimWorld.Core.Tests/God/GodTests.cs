@@ -263,7 +263,10 @@ namespace SimWorld.Tests.God
             Thing blueprint = ThingMaker.MakeThing(Def("Blueprint_Wall"));
             GenSpawn.Spawn(blueprint, new IntVec3(5, 0, 5), map);
             SpawnStack(map, new IntVec3(1, 0, 1), "WoodLog", 5);
-            SpawnRock(map, new IntVec3(2, 0, 0));
+            // Marked for digging, as the player or the settlement would: WorkGiver_Miner offers only marked
+            // cells, so an unmarked rock is no Mining candidate at all.
+            Thing rock = SpawnRock(map, new IntVec3(2, 0, 0));
+            map.designationManager.AddDesignation(new Designation(rock.Position, DesignationDefOf.Mine));
 
             Job? baseline = ThinkTreeDefOf.Humanlike.thinkRoot.TryIssueJobPackage(pawn).Job;
             Assert.NotNull(baseline);

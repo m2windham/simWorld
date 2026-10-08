@@ -67,10 +67,14 @@ namespace SimWorld.Tests.Things
             return p;
         }
 
+        /// <summary>Spawns a vein and marks it for digging, because that is the only way a citizen digs one:
+        /// <c>WorkGiver_Miner</c> offers marked cells and <c>JobDriver_Mine</c> fails on an unmarked one. The
+        /// mark goes when the vein does, so the same cell can be spawned into again.</summary>
         private static Mineable SpawnVein(CoreMap map, IntVec3 cell, string defName = SteelVein)
         {
             var vein = (Mineable)ThingMaker.MakeThing(Def(defName));
             GenSpawn.Spawn(vein, cell, map);
+            map.designationManager.AddDesignation(new Designation(cell, DesignationDefOf.Mine));
             return vein;
         }
 
