@@ -150,6 +150,10 @@ namespace SimWorld.Economy
             // banking only ever takes what is above the line and issuing only ever adds up to it.
             IssueFromStores(settlement, map);
 
+            // Medicine is the same crossing for the one good the tenders have to be able to reach: see
+            // SettlementMedicine. After food, so a pass that is short of both feeds people first.
+            SettlementMedicine.IssueFromStores(settlement, map);
+
             return banked;
         }
 
@@ -235,7 +239,7 @@ namespace SimWorld.Economy
         /// <summary>Spawns up to <paramref name="count"/> units of <paramref name="def"/> around the granary
         /// (or the map's middle when there is not one yet), one stack per cell and never above the def's own
         /// stack limit. Returns how many units actually landed.</summary>
-        private static int PlaceIssued(ThingDef def, int count, Map.Map map)
+        internal static int PlaceIssued(ThingDef def, int count, Map.Map map)
         {
             IntVec3 anchor = IssueAnchor(map);
             IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
@@ -296,6 +300,10 @@ namespace SimWorld.Economy
             float nutritionSurplus = HuntingInitiative.NutritionAvailable(null, map)
                 - HuntingInitiative.NutritionWanted(settlement, map);
 
+            // The same reserve for medicine, the one non-food good a tender has to be able to walk to: only the
+            // excess over what the settlement wants in reach is bankable (SettlementMedicine).
+            int medicineSurplus = SettlementMedicine.SurplusOnMap(settlement, map);
+
             int banked = 0;
             for (int z = 0; z < zones.Count; z++)
             {
@@ -309,7 +317,9 @@ namespace SimWorld.Economy
                     if (!stockpile.filter.Allows(stack.def)) continue;
                     if (map.reservationManager.IsReserved(stack)) continue;
 
-                    int take = BankableUnits(stack, ref nutritionSurplus);
+                    int take = stack.def.IsMedicine
+                        ? SettlementMedicine.BankableUnits(stack, ref medicineSurplus)
+                        : BankableUnits(stack, ref nutritionSurplus);
                     if (take <= 0) continue;
 
                     // Credit and remove in one step. Nothing between these two lines may observe the unit in
