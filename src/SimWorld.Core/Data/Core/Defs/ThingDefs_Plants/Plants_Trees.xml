@@ -48,6 +48,9 @@
       <harvestYield>27</harvestYield>
       <harvestMinGrowth>0.4</harvestMinGrowth>
       <harvestTag>Wood</harvestTag>
+      <!-- RimWorld's TreeBase sets this: a roof cannot go up over a standing tree, so a builder fells it
+           first (Building.RoofUtility.FirstBlockingThing / HandleBlockingThingJob). -->
+      <interferesWithRoof>true</interferesWithRoof>
     </plant>
   </ThingDef>
 

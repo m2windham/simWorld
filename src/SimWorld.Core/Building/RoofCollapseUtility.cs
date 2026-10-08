@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using SimWorld.Defs;
 using SimWorld.Map;
@@ -90,6 +91,15 @@ namespace SimWorld.Building
             return edifice.def.Fillage == FillCategory.Full;
         }
 
+        /// <summary>Whether <paramref name="c"/> counts as traversable for a support search — physically
+        /// roofed, or (when <paramref name="assumeNonNoRoofCellsAreRoofed"/>) merely not forbidden a roof by
+        /// the player's own <see cref="AreaManager.NoRoof"/> (RimWorld's own
+        /// <c>x.Roofed(map) || (assumeNonNoRoofCellsAreRoofed &amp;&amp; !map.areaManager.NoRoof[x])</c>, minus
+        /// the <c>x == c</c> disjunct — the root cell is already walked unconditionally by both callers below,
+        /// exactly as it was before this parameter existed).</summary>
+        private static bool IsRoofedOrAssumed(IntVec3 c, Map.Map map, bool assumeNonNoRoofCellsAreRoofed) =>
+            map.roofGrid.Roofed(c) || (assumeNonNoRoofCellsAreRoofed && !map.areaManager.NoRoof[c]);
+
         /// <summary>
         /// Would taking <paramref name="edifice"/> off the map bring a roof down somewhere?
         ///
@@ -162,10 +172,15 @@ namespace SimWorld.Building
         /// straight-line of <paramref name="c"/>, asking at each one whether it or one of its four cardinal
         /// neighbours, itself still inside the distance, holds roof.
         ///
-        /// <para/>RimWorld's third parameter (<c>assumeNonNoRoofCellsAreRoofed</c>) is not ported: it exists
-        /// to answer the question against the player's own no-roof <c>Area</c>, and this port has no player
-        /// at that seam to draw one. <paramref name="ignoring"/> is this port's own, for
-        /// <see cref="WouldCollapseRoofIfRemoved"/>; passing null is RimWorld's question exactly.
+        /// <para/><paramref name="assumeNonNoRoofCellsAreRoofed"/> is RimWorld's third parameter, ported now
+        /// that this pass gives the port the player seam it answers against
+        /// (<see cref="AreaManager.NoRoof"/>): true treats every cell the player has not explicitly forbidden
+        /// a roof over as if it already carried one, for <see cref="AutoBuildRoofAreaSetter"/>'s own question
+        /// — "if a roof were built across this whole unroofed room, would it reach a support" — asked before
+        /// any of those cells are actually roofed. Every other caller answers the real, physical question
+        /// (only cells that already carry a roof count) and passes the default <c>false</c>.
+        /// <paramref name="ignoring"/> is this port's own, for <see cref="WouldCollapseRoofIfRemoved"/>;
+        /// passing null is RimWorld's question exactly.
         ///
         /// <para/>The first step of the fill — the root cell and its four cardinal neighbours — is unrolled
         /// ahead of the queue. It is not an optimisation of the algorithm but of its <i>allocation</i>: inside
@@ -173,7 +188,8 @@ namespace SimWorld.Building
         /// the set are never built at all. That case is almost all of them, and it is the one a work scan pays
         /// for on every candidate.
         /// </summary>
-        public static bool WithinRangeOfRoofHolder(IntVec3 c, Map.Map map, Thing? ignoring = null)
+        public static bool WithinRangeOfRoofHolder(
+            IntVec3 c, Map.Map map, Thing? ignoring = null, bool assumeNonNoRoofCellsAreRoofed = false)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (!GenGrid.InBounds(c, map)) return false;
@@ -198,7 +214,10 @@ namespace SimWorld.Building
                 int index = WindowIndex(d.x, d.z);
                 if (stamp[index] == generation) continue;
                 stamp[index] = generation;
-                if (GenGrid.InBounds(neighbour, map) && map.roofGrid.Roofed(neighbour)) queue[tail++] = neighbour;
+                if (GenGrid.InBounds(neighbour, map) && IsRoofedOrAssumed(neighbour, map, assumeNonNoRoofCellsAreRoofed))
+                {
+                    queue[tail++] = neighbour;
+                }
             }
 
             while (head < tail)
@@ -217,11 +236,26 @@ namespace SimWorld.Building
                     int index = WindowIndex(dx, dz);
                     if (stamp[index] == generation) continue;
                     stamp[index] = generation;
-                    if (map.roofGrid.Roofed(neighbour)) queue[tail++] = neighbour;
+                    if (IsRoofedOrAssumed(neighbour, map, assumeNonNoRoofCellsAreRoofed)) queue[tail++] = neighbour;
                 }
             }
             return false;
         }
+
+        /// <summary>
+        /// Would a roof at <paramref name="c"/> connect, along the roof, to anything holding one up at all —
+        /// unbounded by <see cref="RoofMaxSupportDistance"/>, unlike <see cref="WithinRangeOfRoofHolder"/>
+        /// (RimWorld: <c>RoofCollapseUtility.ConnectedToRoofHolder</c>). RimWorld's own two call sites for it —
+        /// <c>WorkGiver_BuildRoof.HasJobOnCell</c> and <c>JobDriver_BuildRoof</c>'s own toil guard — always
+        /// pass <c>assumeRoofAtRoot: true</c>, so that parameter is not exposed here: this always assumes
+        /// <paramref name="c"/> itself already carries a roof, which is exactly what
+        /// <see cref="RoofCollapseCellsFinder.ConnectsToRoofHolder"/> already computes — it tests the root
+        /// cell for a holder unconditionally, before ever asking whether the root is roofed. This is a thin,
+        /// discoverably-named wrapper over that existing walk (RimWorld's own name for the question, kept),
+        /// with a fresh, single-query <c>visited</c> set rather than a second copy of the algorithm.
+        /// </summary>
+        public static bool ConnectedToRoofHolder(IntVec3 c, Map.Map map) =>
+            RoofCollapseCellsFinder.ConnectsToRoofHolder(c, map, new HashSet<IntVec3>());
 
         // ---------------------------------------------------------------------------------------------
         // The fill's scratch space. Every cell it can reach lies inside a fixed window around the cell being

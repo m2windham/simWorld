@@ -21,6 +21,12 @@ namespace SimWorld.Defs
         /// (RimWorld: <c>Verse.BuildingProperties.expandHomeArea</c>, default <c>true</c> there too). See
         /// <see cref="SimWorld.Building.AutoHomeAreaMaker"/>.</summary>
         public bool expandHomeArea = true;
+
+        /// <summary>Whether <c>Building.AutoBuildRoofAreaSetter</c> may count this building as enclosing a
+        /// room at all (RimWorld: <c>Verse.BuildingProperties.allowAutoroof</c>, default <c>true</c> there
+        /// too). A building bordering a room with this <c>false</c> stops that room from being auto-roofed
+        /// on that building's account alone — see <see cref="SimWorld.Building.AutoBuildRoofAreaSetter"/>.</summary>
+        public bool allowAutoroof = true;
     }
 
     /// <summary>

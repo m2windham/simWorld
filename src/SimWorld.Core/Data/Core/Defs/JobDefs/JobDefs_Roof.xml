@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Roof work (system 95: Roofs, the Construction work type's roofing half). Its own file rather than an
+       addition to JobDefs_Core.xml: the loader reads every file under this directory, so a new file cannot
+       collide with another lane mid-edit on the shared one (CLAUDE.md). Bound by SimWorld.Building.RoofJobDefOf. -->
+
+  <JobDef>
+    <defName>BuildRoof</defName>
+    <driverClass>SimWorld.Building.JobDriver_BuildRoof</driverClass>
+    <reportString>building roof.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>RemoveRoof</defName>
+    <driverClass>SimWorld.Building.JobDriver_RemoveRoof</driverClass>
+    <reportString>removing roof.</reportString>
+  </JobDef>
+
+</Defs>

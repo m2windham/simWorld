@@ -152,6 +152,12 @@ namespace SimWorld.Building
             }
 
             BuildRoomGroups();
+
+            // Every Room here just came out of a full re-flood, so each already reflects the map's current,
+            // settled shape — the equivalent of RimWorld's own AutoBuildRoofAreaSetter being handed every
+            // room its incremental updater touched this pass. See that class's own doc for why this runs
+            // synchronously, right here, rather than through a queue resolved on the next tick.
+            AutoBuildRoofAreaSetter.Notify_RoomsRebuilt(rooms, map);
         }
 
         private bool IsFullEdifice(IntVec3 cell)
