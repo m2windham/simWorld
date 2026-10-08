@@ -106,40 +106,44 @@ namespace SimWorld.Building
         /// <para/><b>This is a translation, and it is recorded as one.</b> RimWorld has no such question,
         /// because in RimWorld nobody mines anything a player did not designate: <c>WorkGiver_Miner</c> scans
         /// <c>DesignationDefOf.Mine</c>, and the player choosing where to dig is looking at the overhead-
-        /// mountain overlay while they choose. This port has no designation layer at all
+        /// mountain overlay while they choose. This port had no designation layer when this was written
         /// (<c>docs/WORK-REGISTER.md</c> §10 names that as a missing layer, not an oversight), so
-        /// <c>AI.WorkGiver_Miner</c> substitutes "mine any reachable mineable edifice" — and with it, the
+        /// <c>AI.WorkGiver_Miner</c> substituted "mine any reachable mineable edifice" — and with it, the
         /// judgement the player was making silently went missing along with the player. Measured on a founded
         /// settlement of twenty-five, that substitution mined <b>2,286 rock cells on its second day</b> and
         /// brought <b>724 roof cells</b> down on the people doing it. The rule restored here is the one the
         /// overlay existed to let a player follow: <i>do not dig out what is holding the ceiling up.</i>
         ///
-        /// <para/>It is deliberately the narrowest form of that rule. It does not decide <i>whether</i> a
-        /// settlement should be mining, or how much — that is the designation layer's question and it is still
-        /// open. It only refuses the cells that kill.
+        /// <para/><b>The designation layer exists now, and this survives it.</b> The giver reads
+        /// <c>Mine</c> marks (<c>Map/DesignationManager</c>) and <c>AI.MiningInitiative</c> makes the
+        /// settlement's own, so the question of <i>whether</i> and <i>how much</i> is answered where RimWorld
+        /// answers it. A mark is still not a judgement about the roof: a player can mark a support, and a
+        /// settlement's mark goes stale when a neighbour is taken. So the giver still asks this, and so does the
+        /// initiative before it marks. It is deliberately the narrowest form of the rule: it only refuses the
+        /// cells that kill.
         ///
         /// <para/><b>Asked twice, and the second time is the one that works.</b>
         /// <see cref="AI.WorkGiver_Miner.HasJobOnThing"/> asks it when the job is handed out, and
         /// <see cref="AI.JobDriver_Mine"/> asks it again in the toil that actually removes the rock. A
         /// settlement mines with twenty-five people at once on one seam, so the answer given at hand-out goes
         /// stale while the miner walks: a neighbour taken in the meantime is all it takes to leave this cell
-        /// holding a ceiling up. Measured, three seeds, eight days: with the gate only at hand-out, twelve
-        /// thousand mined cells still brought fifty-two roofs down and crushed nine of twenty-five founders.
-        /// With it in both places, no roof came down at all and nobody was crushed, and the settlements still
-        /// mined out 98% of their mountains — the rule is about <i>which</i> cells, not about mining less.
+        /// holding a ceiling up. Measured when the giver mined everything, three seeds, eight days: with the
+        /// gate only at hand-out, twelve thousand mined cells still brought fifty-two roofs down and crushed
+        /// nine of twenty-five founders. With it in both places, no roof came down at all and nobody was
+        /// crushed — the rule is about <i>which</i> cells, not about mining less. The driver asks it at every
+        /// pick hit now, since a dig is hundreds of ticks and no longer one instant.
         ///
-        /// <para/><b>Cost, measured and not hidden.</b> <c>WorkGiver_Miner.HasJobOnThing</c> asks this on every
-        /// candidate it scans, and this asks <see cref="WithinRangeOfRoofHolder"/> on every roofed cell in
+        /// <para/><b>Cost, measured and not hidden — and measured before the giver scanned marks.</b>
+        /// <c>WorkGiver_Miner.HasJobOnThing</c> asks this on every candidate it scans, and this asks <see cref="WithinRangeOfRoofHolder"/> on every roofed cell in
         /// range, so it is written to give up early in both directions: the radial walk is nearest-first and
         /// stops at the first cell that would be left unsupported, and the support check's own fast path is
         /// five array lookups with nothing allocated. It is still not free. On the one in-game day a
         /// twenty-five-strong settlement does most of its mining, a watched map's tick cost roughly doubled.
-        /// The multiplier is not this check but the scan around it: <c>AI.WorkGiverScanUtility</c> walks every
-        /// mineable edifice on the map — twelve thousand of them — and only lowers its "nearest so far" bound
-        /// when a candidate is <i>accepted</i>, so a predicate that rejects lets more candidates through to
-        /// every predicate in front of it. A nearest-first scan there, or the designation layer that would
-        /// stop a settlement scanning the whole mountain in the first place, removes the cost at its source;
-        /// neither belongs to this module.
+        /// The multiplier was not this check but the scan around it: <c>AI.WorkGiverScanUtility</c> walked
+        /// every mineable edifice on the map — twelve thousand of them — and only lowers its "nearest so far"
+        /// bound when a candidate is <i>accepted</i>, so a predicate that rejects lets more candidates through
+        /// to every predicate in front of it. The designation layer removed the cost at its source: the scan is
+        /// the marked cells now, a few dozen at most.
         /// </summary>
         public static bool WouldCollapseRoofIfRemoved(Thing edifice)
         {

@@ -58,8 +58,8 @@ namespace SimWorld.Stats
         public static StatDef MedicalTendQuality = null!;
 
         /// <summary>How fast this pawn breaks rock while mining, skill-need-scaled off Mining (RimWorld:
-        /// <c>StatDefOf.MiningSpeed</c>). Not read by <see cref="AI.JobGiver_Work"/>'s job drivers yet — see
-        /// the content file's own remarks.</summary>
+        /// <c>StatDefOf.MiningSpeed</c>). Read by <see cref="AI.JobDriver_Mine"/>: a pick hit lands every
+        /// <c>round(100 ÷ MiningSpeed)</c> ticks. The curve in content is this port's own, not RimWorld's.</summary>
         public static StatDef MiningSpeed = null!;
 
         /// <summary>How fast this pawn builds things, skill-need-scaled off Construction (RimWorld:

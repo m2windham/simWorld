@@ -12,10 +12,10 @@
 
     MiningSpeed, ConstructionSpeed, CookSpeed and ResearchSpeed are new here (no prior StatDef existed for
     them) — real RimWorld canon names, added because this module's brief names them explicitly as stats that
-    "obviously want a skill need". Nothing outside the Stats/Work modules reads them yet: Building's
-    JobDriver_ConstructFinishFrame and AI's JobDriver_Mine still read their skill levels directly and apply
-    their own hand-rolled curves (each says so in its own doc comment, predating this module) rather than
-    going through these StatDefs — wiring that up belongs to whichever module owns those job drivers, not
+    "obviously want a skill need". MiningSpeed is read now - AI's JobDriver_Mine turns it into the time
+    between pick hits, as RimWorld's does - but Building's JobDriver_ConstructFinishFrame still reads its
+    skill level directly and applies its own hand-rolled curve (it says so in its own doc comment, predating
+    this module) rather than going through these StatDefs — wiring that up belongs to whichever module owns those job drivers, not
     this one. ConstructionSpeed's own curve (0.4 at level 0, 2.0 at level 20) is deliberately set to the same
     endpoints as JobDriver_ConstructFinishFrame's WorkSpeedFactorFromConstructionLevel for narrative
     consistency, not because the two are wired together.

@@ -215,6 +215,9 @@ namespace SimWorld.Tests.God
             GenSpawn.Spawn(blueprint, new IntVec3(5, 0, 5), map);
             SpawnStack(map, new IntVec3(1, 0, 1), "WoodLog", 5);
             Thing rock = SpawnRock(map, new IntVec3(2, 0, 0));
+            // Marked for digging, as the player or the settlement would have: WorkGiver_Miner offers only
+            // marked cells, so without this there is no Mining candidate for the role to prefer.
+            map.designationManager.AddDesignation(new Designation(rock.Position, DesignationDefOf.Mine));
 
             GodCommandResult result = GodCommands.ApplyRoleToSettlement(settlement.tile, "Miner");
             Assert.Equal(GodCommandOutcome.Done, result.Outcome);
