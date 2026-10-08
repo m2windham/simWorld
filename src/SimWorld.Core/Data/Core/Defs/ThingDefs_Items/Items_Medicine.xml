@@ -10,17 +10,14 @@
     medicine's (rimworldwiki.com/wiki/Medicine — potency 100%, max tend quality 100%, market value 18). Mass is
     left out — this port has no Mass stat/encumbrance system yet (nothing else it ships carries one either).
 
-    Herbal medicine is this port's one real source: RimWorld grows it from Healroot, a farmable crop
-    (rimworldwiki.com/wiki/Healroot — sown/harvested the same way this port's Building module already grows
-    Plant_Potato/Plant_Rice, see ThingDefs_Plants/Plants_Cultivated.xml). This pass does not add Healroot
-    itself: FarmingInitiative (Building/FarmingInitiative.cs), the only thing that ever plants a
-    Zone_Growing without a player at the wheel, picks its crop by "whichever sowable plant feeds people
-    best per cell per day" — a medicine crop has no nutrition and would never be chosen, so planting it
-    would need its own initiative, out of scope here. Instead this port starts a founding band with real
-    RimWorld starting-stock medicine (ScenarioDefs/Scenarios.xml) — RimWorld's own Lost Tribe scenario starts
-    with 20 herbal medicine, Crashlanded with 30 industrial (rimworldwiki.com/wiki/Scenario), numbers this
-    port's own TribalStart/Landfall scenarios now match. A player who builds a Zone_Growing over Plant_Potato
-    today could do the same for Healroot once it ships; recorded here as a gap, not a silent omission.
+    Herbal medicine's source is Healroot (ThingDefs_Plants/Plants_Healroot.xml), the same plant RimWorld grows it
+    from (rimworldwiki.com/wiki/Healroot). A founding band still starts with real RimWorld starting-stock medicine
+    (ScenarioDefs/Scenarios.xml) - RimWorld's own Lost Tribe scenario starts with 20 herbal medicine, Crashlanded
+    with 30 industrial (rimworldwiki.com/wiki/Scenario), numbers this port's own TribalStart/Landfall scenarios
+    match - and once that runs low the settlement grows more: FarmingInitiative.RunHerbGarden paints a herb garden
+    when food is provided for, medicine is short and a citizen can sow healroot (it asks for Plants 8). The player
+    can grow it too, by MapCommands.MarkGrowingZone or SetZonePlant. Economy/SettlementMedicine.cs is what keeps
+    the stock where a tender can reach it.
 
     MedicineIndustrial ships as content — its MedicalPotency/MedicalQualityMax back
     MedicalCareCategory.NormalOrWorse's threshold and Landfall's starting stock — but nothing crafts it yet:

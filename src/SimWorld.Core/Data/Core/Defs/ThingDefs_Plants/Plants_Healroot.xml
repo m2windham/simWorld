@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Healroot (RimWorld: Plant_Healroot)  - the plant herbal medicine comes from. Its own file, additively, for the
+    reason CLAUDE.md gives.
+
+    WHY IT EXISTS. MedicineHerbal had no source: a founding band started with some (Scenarios.xml) and once it was
+    spent nothing on a map could make more, so the medicine lever ran dry and a settlement tended without it.
+    Items_Medicine.xml recorded that as a gap. This closes it.
+
+    THE NUMBERS are RimWorld's, from the wiki's healroot page (rimworldwiki.com/wiki/Healroot, infobox):
+      growDays 7           "Time to grow 7 days (12.92 days with rest time)". Plant.TickLong's light curve gives
+                           this port the same rest time (no growth between ~20:00 and ~07:00), so 7 here comes out
+                           at roughly the wiki's 12.92 in practice  - it is not doubled to compensate.
+      harvestYield 1       "Base harvest yield 1 herbal medicine". One medicine per plant, per cycle: this is a
+                           slow source on purpose, which is why FarmingInitiative sizes a herb garden from it.
+      MaxHitPoints 60      "HP 60".
+      Flammability 1       "Flammability 1" (100%).
+      sowMinSkill 8        "Minimum skill 8 (Plants)". The reason this port gained PlantProperties.sowMinSkill and
+                           the check in WorkGiver_GrowerSow, ported from RimWorld's own.
+      sowMinFertility 0.7  "Minimum fertility 70%". The wiki's version history says Beta 19/1.0 raised this from 50%
+                           to 100% and grow time from 6.5 to 12 days, which contradicts the infobox the same page
+                           carries for the current game (70% and 7 days). The two cannot both be right and the
+                           decompile carries no Defs XML to settle it, so this takes the infobox, and NO test pins
+                           these literals: the tests pin the behaviour (it needs good ground; it needs skill; it
+                           harvests medicine), per CLAUDE.md. Fertility sensitivity "100%" is exactly this port's
+                           growth model (Plant.TickLong multiplies by terrain fertility directly), so it needs no
+                           field.
+      pathCost 14          "Path cost 14".
+
+    NOT PORTED, because PlantProperties (and the port around it) has no field for them: sow work 800 ticks and
+    harvest work 400 ticks (JobDriver_Sow.SowWorkAmount / JobDriver_Harvest are shared, as the poplar's comment in
+    Plants_Trees.xml already records for cutting), minimum light to grow 51%, the 0..58 C growth band (the port's
+    PlantUtility curve is one curve for every plant), sow tags "Ground, Hydroponic" (a Zone_Growing names its plant
+    directly), beauty, and the 0.2 nutrition animals graze it for (the port's plants are not ingestible; see the
+    note in Plants_Food.xml). interferesWithRoof is left at its default false: RimWorld's healroot is not a tree
+    and a roof may go up over it (it is the trees, via TreeBase, that set it).
+
+    WHAT PICKS IT. FarmingInitiative.CropFor chooses the food crop and cannot choose this: MedicineHerbal has no
+    nutrition, so its "nutrition per cell per day" is zero. FarmingInitiative.MedicineCropFor chooses it, for the
+    separate herb garden a settlement paints when it is short of medicine.
+  -->
+
+  <ThingDef>
+    <defName>Plant_Healroot</defName>
+    <label>healroot</label>
+    <description>A bitter-rooted herb that grows in good soil. Ground and dried, it makes herbal medicine. It takes a practised hand to sow.</description>
+    <category>Plant</category>
+    <thingClass>SimWorld.Building.Plant</thingClass>
+    <tickerType>Long</tickerType>
+    <passability>Standable</passability>
+    <pathCost>14</pathCost>
+    <useHitPoints>true</useHitPoints>
+    <destroyable>true</destroyable>
+    <selectable>true</selectable>
+    <statBases>
+      <MaxHitPoints>60</MaxHitPoints>
+      <Flammability>1</Flammability>
+    </statBases>
+    <plant>
+      <growDays>7</growDays>
+      <harvestedThingDef>MedicineHerbal</harvestedThingDef>
+      <harvestYield>1</harvestYield>
+      <sowMinFertility>0.7</sowMinFertility>
+      <sowMinSkill>8</sowMinSkill>
+    </plant>
+  </ThingDef>
+
+</Defs>

@@ -6,7 +6,7 @@ namespace SimWorld.Defs
     /// exposure/visual size, no <c>sowTags</c> (a <see cref="Building.Zone_Growing"/> names a plant def
     /// directly rather than filtering by tag).
     /// </summary>
-    public class PlantProperties
+    public partial class PlantProperties
     {
         /// <summary>Real days (<see cref="Sim.GenDate.TicksPerDay"/> each) to grow from freshly sown to fully
         /// mature at a growth-rate factor of exactly 1 (perfect fertility × light × temperature). RimWorld's

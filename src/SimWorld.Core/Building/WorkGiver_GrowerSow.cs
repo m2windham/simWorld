@@ -40,6 +40,11 @@ namespace SimWorld.Building
             if (toSow?.plant == null) return false;
             if (map.terrainGrid.TerrainAt(cell).fertility < toSow.plant.sowMinFertility) return false;
 
+            // RimWorld's WorkGiver_GrowerSow.JobOnCell: a plant that sets sowMinSkill is sown only by someone
+            // whose Plants level reaches it. Per pawn, so a clumsy sower walks past the cell and a skilled one
+            // does not (healroot, the first plant to set one, is 8).
+            if (!toSow.plant.PawnMeetsSowMinSkill(pawn)) return false;
+
             // Nothing already growing, planned, or built here.
             if (map.thingGrid.CellContains(cell, ThingCategory.Plant)) return false;
             if (map.thingGrid.CellContains(cell, ThingCategory.Blueprint)) return false;

@@ -95,17 +95,32 @@ namespace SimWorld.Tests.Integration
             Assert.True(roofedBefore > 0, "a generated interior carried no roof at all");
             Assert.True(rockBefore > 0, "a generated interior carried no mineable rock at all");
 
-            for (int day = 0; day < Days; day++)
+            // The question here is whether a settlement digs out its own supports, so the one storyteller
+            // incident that also deals Crush is switched off for this run. IncidentWorker_Earthquake destroys a
+            // share of what was built and kills whoever sleeps in a destroyed bed with RoofCollapseDefOf.Crush,
+            // which would otherwise read below as a ceiling falling: on this seed, after the healroot lane
+            // shifted the ambient stream, a quake at day 2.78 killed five sleepers and nothing else was
+            // crushed. The worker composes its own rolls before it checks Ablation, so switching it off leaves
+            // the rest of the run exactly as it was.
+            Ablation.Disable("Earthquake");
+            try
             {
-                for (int i = 0; i < GenDate.TicksPerDay; i++) game.TickManager.DoSingleTick();
+                for (int day = 0; day < Days; day++)
+                {
+                    for (int i = 0; i < GenDate.TicksPerDay; i++) game.TickManager.DoSingleTick();
+                }
+            }
+            finally
+            {
+                Ablation.Clear();
             }
 
             int roofedAfter = CountRoofed(map);
             int thickAfter = CountThickRoofed(map);
             int rockAfter = CountMineable(map);
 
-            // (1) The thing §10 named. Counted by the damage that only a falling roof deals, so it cannot be
-            // confused with any other cause the way the death letters were. A band, not a figure: a settlement
+            // (1) The thing §10 named. Counted by the damage a falling roof deals, so it cannot be confused with
+            // any other cause the way the death letters were (the earthquake, which deals it too, is off above). A band, not a figure: a settlement
             // where more than one citizen in ten is crushed inside a week is being killed by its own ceiling,
             // which is what "the largest killer in this game" meant.
             int crushed = founders.Count(p => p.Dead && p.health.DeathCauseDamage == RoofCollapseDefOf.Crush);

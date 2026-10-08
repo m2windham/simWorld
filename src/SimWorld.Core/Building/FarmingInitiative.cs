@@ -74,10 +74,14 @@ namespace SimWorld.Building
     /// off the content that already says so" rule <c>StonecutterInitiative.IsStonecutting</c> follows. Ship a
     /// third crop and this finds it with no code change.
     ///
+    /// <para/><b>Medicine is a second, separate crop.</b> Herbal medicine has no nutrition, so the rule above
+    /// can never choose healroot; once the food field is as big as it will get, a settlement that is short of
+    /// medicine also paints a small herb garden (<c>FarmingInitiative.Medicine.cs</c>). Food comes first.
+    ///
     /// <para/><b>No state of its own.</b> Everything is re-derived every gated pass from the zone standing on
     /// the map, so there is nothing here to Scribe and a loaded save resumes mid-field with no catch-up step.
     /// </summary>
-    public static class FarmingInitiative
+    public static partial class FarmingInitiative
     {
         /// <summary>The label a settlement's own field carries, so a second pass finds the one it painted
         /// last time rather than starting another.</summary>
@@ -136,8 +140,18 @@ namespace SimWorld.Building
             field.plantDefToGrow = crop;
             field.allowSow = true;
 
-            if (field.CellCount >= wanted) return;
-            GrowField(map, field, crop, Math.Min(wanted - field.CellCount, FarmingTuning.MaxCellsPerPass));
+            int before = field.CellCount;
+            if (before < wanted)
+            {
+                GrowField(map, field, crop, Math.Min(wanted - before, FarmingTuning.MaxCellsPerPass));
+            }
+
+            // The medicine garden (FarmingInitiative.Medicine.cs) is considered only once the food field is
+            // as big as it is going to get: either it has reached its size, or it was asked to grow and could
+            // not (boxed in by water, walls and the edge of the map -- waiting on cells that cannot come
+            // would keep a settlement without medicine for no reason). Food first, always.
+            bool foodFieldDone = field.CellCount >= wanted || (before < wanted && field.CellCount == before);
+            if (foodFieldDone) RunHerbGarden(map, settlement, field);
         }
 
         // -------------------------------------------------------------------------------------------
