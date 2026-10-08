@@ -38,6 +38,7 @@
   <ThingDef ParentName="BaseNaturalRock">
     <defName>Sandstone</defName>
     <label>sandstone</label>
+    <isNaturalRock>true</isNaturalRock>
     <mineableThing>ChunkSandstone</mineableThing>
     <mineableYield>1</mineableYield>
     <mineableDropChance>0.1</mineableDropChance>
@@ -50,6 +51,7 @@
   <ThingDef ParentName="BaseNaturalRock">
     <defName>Granite</defName>
     <label>granite</label>
+    <isNaturalRock>true</isNaturalRock>
     <mineableThing>ChunkGranite</mineableThing>
     <mineableYield>1</mineableYield>
     <mineableDropChance>0.1</mineableDropChance>
@@ -62,6 +64,7 @@
   <ThingDef ParentName="BaseNaturalRock">
     <defName>Limestone</defName>
     <label>limestone</label>
+    <isNaturalRock>true</isNaturalRock>
     <mineableThing>ChunkLimestone</mineableThing>
     <mineableYield>1</mineableYield>
     <mineableDropChance>0.1</mineableDropChance>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The Mine designation (RimWorld: Core/Defs/DesignationDefs, DesignationDefOf.Mine) - "dig this cell out",
+    the mark AI.WorkGiver_Miner reads and the only thing that makes a citizen pick up a pick.
+
+    targetType Cell: the mark sits on the ground, not on the rock, so it is read by cell (the miner asks
+    "is this cell marked") and survives nothing but the rock being mined out.
+
+    removeIfBuildingDespawned is the whole of how a Mine mark ends. RimWorld's Building.DeSpawn calls
+    DesignationManager.Notify_BuildingDespawned, which removes every mark in the footprint whose def sets this;
+    Things/Mineable.DeSpawn does the same here. RimWorld's own XML for this def is not in the code-only
+    decompile this port is checked against, so the flag is set from the mechanism rather than from a file:
+    without it nothing ever ends a Mine mark, because mined-out rock is the only event that should.
+
+    designateCancelable stays at its default (true): a player may always withdraw a mine mark.
+  -->
+
+  <DesignationDef>
+    <defName>Mine</defName>
+    <label>mine</label>
+    <targetType>Cell</targetType>
+    <removeIfBuildingDespawned>true</removeIfBuildingDespawned>
+  </DesignationDef>
+
+</Defs>
