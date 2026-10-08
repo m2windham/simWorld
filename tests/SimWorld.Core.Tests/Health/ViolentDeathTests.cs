@@ -102,15 +102,17 @@ namespace SimWorld.Tests.Health
         }
 
         [Fact]
-        public void Exactly_one_shipped_damage_is_not_violence()
+        public void Only_the_surgeons_knife_and_the_miners_pick_are_not_violence()
         {
-            // The distinction has to exist in content or the reader is decoration. It is a surgeon's knife,
-            // and it is the one the port already used to kill patients with — as plain Cut, which is why a
-            // botched operation would have read as a murder the moment anything consulted this flag.
+            // The distinction has to exist in content or the reader is decoration. A surgeon's knife is the
+            // one the port already used to kill patients with — as plain Cut, which is why a botched
+            // operation would have read as a murder the moment anything consulted this flag. A miner's pick
+            // (Mining, RimWorld's DamageDefOf.Mining) strikes rock and never a body, so it is not violence
+            // either. Anything else that joins this list should have to say why here.
             List<string> nonViolent = DefDatabase<DamageDef>.AllDefsListForReading
-                .Where(d => !d.externalViolence).Select(d => d.defName).ToList();
+                .Where(d => !d.externalViolence).Select(d => d.defName).OrderBy(n => n, System.StringComparer.Ordinal).ToList();
 
-            Assert.Equal(new[] { "SurgicalCut" }, nonViolent);
+            Assert.Equal(new[] { "Mining", "SurgicalCut" }, nonViolent);
         }
 
         // ---- the storyteller ----

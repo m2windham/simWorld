@@ -63,8 +63,9 @@ namespace SimWorld.Tests.Health
             // Cut/Stab/Blunt/Bullet/Bite/Burn, plus Flame (system: fire — Damages_Fire.xml), SurgicalCut
             // (Damages_Surgery.xml — the one shipped damage that is not violence) and Crush
             // (Damages_Crush.xml — what a ceiling does, and the reason a roof collapse no longer reports
-            // itself as a beating; see Building.RoofCollapserImmediate).
-            Assert.Equal(9, DefDatabase<DamageDef>.DefCount);
+            // itself as a beating; see Building.RoofCollapserImmediate), and Mining (Damages_Mining.xml — a
+            // pick striking rock, which never touches a body).
+            Assert.Equal(10, DefDatabase<DamageDef>.DefCount);
             Assert.True(DefDatabase<HediffDef>.DefCount >= 16);
             Assert.NotNull(HediffDefOf.MissingBodyPart);
             Assert.NotNull(PawnCapacityDefOf.Moving);
