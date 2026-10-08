@@ -74,6 +74,10 @@ namespace SimWorld.Building
     /// off the content that already says so" rule <c>StonecutterInitiative.IsStonecutting</c> follows. Ship a
     /// third crop and this finds it with no code change.
     ///
+    /// <para/><b>Medicine is a second, separate crop.</b> Herbal medicine has no nutrition, so the rule above
+    /// can never choose healroot; once the food field is as big as it will get, a settlement that is short of
+    /// medicine also paints a small herb garden (<c>FarmingInitiative.Medicine.cs</c>). Food comes first.
+    ///
     /// <para/><b>No state of its own.</b> Everything is re-derived every gated pass from the zone standing on
     /// the map, so there is nothing here to Scribe and a loaded save resumes mid-field with no catch-up step.
     /// </summary>
