@@ -8,34 +8,36 @@ namespace SimWorld.AI
 {
     /// <summary>
     /// Carries one item stack to a stockpile cell and merges or drops it there (RimWorld:
-    /// <c>RimWorld.JobDriver_HaulToCell</c>). Target A is the item, target B the destination cell.
-    /// <b>Carrying is modelled abstractly</b>, the same way <see cref="JobDriver_Warden_Feed"/> does it: this
-    /// driver predates <see cref="Pawns.Pawn_CarryTracker"/> and has not been moved onto it, so the goods leave
-    /// the source cell the moment the pawn reaches it, with nothing visibly following the pawn to the stockpile
-    /// in between.
+    /// <c>RimWorld.JobDriver_HaulToCell</c>). Target A is the item — and, once it has been picked up, the Thing
+    /// in the pawn's hands — target B the destination cell.
     /// <para/>
-    /// <b>The whole Thing travels, when the whole Thing is what moves.</b> This driver used to destroy the
-    /// source and build a fresh Thing of the same def at the destination. That is lossless only for goods
-    /// with no state of their own beyond def, stuff and count — and this port already has three kinds that
-    /// have more: a <see cref="Things.CompQuality"/> item (a masterwork weapon arrived as an ordinary one), a
-    /// damaged item (hit points reset to full), and now a <see cref="Corpse"/>, which would have arrived as
-    /// an empty body with nobody inside it. So when the carry takes the entire stack, the real object is
-    /// taken off the map and put back down at the destination; only a partial stack — which by definition is
-    /// a stackable good, where one unit really is interchangeable with another — is still split off by count.
+    /// <b>The goods are carried, not deleted and re-created.</b> Pickup moves them off the stack into the pawn's
+    /// <see cref="Pawns.Pawn_CarryTracker"/> (RimWorld: <c>Toils_Haul.StartCarryThing</c>, here
+    /// <see cref="Toils_Haul.StartCarryThing"/>); arrival puts them down on the cell, onto a stack of the same
+    /// def already there if there is one (<c>Toils_Haul.PlaceHauledThingInCell</c>, here
+    /// <see cref="Toils_Haul.TryPlaceCarriedThing"/>). Anything still in hand when the job ends — interrupted
+    /// before arrival, or more than the stack at the destination could take — is put down at the pawn's feet by
+    /// <see cref="Pawn_JobTracker.EndCurrentJob"/>, exactly as RimWorld's job cleanup does.
     /// <para/>
-    /// An interrupted whole-stack carry drops the goods at the pawn's feet (<see cref="Notify_Ending"/>)
-    /// instead of destroying them. <b>A split-off count does not:</b> it exists only as a number on the job, so
-    /// an interrupted partial carry loses it — the defect <see cref="Building.JobDriver_HaulToBuildingSite"/>
-    /// had until it carried through <see cref="Pawns.Pawn_CarryTracker"/>. A save taken mid-carry loses the
-    /// goods either way: no <see cref="JobDriver"/> in this port is Scribed, so nothing re-links a Thing that is
-    /// off the map when the save is written. Moving this driver onto the carry tracker closes both.
+    /// This driver used to hold what it picked up in a field of its own. That was lossless for a whole stack
+    /// (the real Thing was kept and respawned by <c>Notify_Ending</c>) and lost for a partial one: a pile bigger
+    /// than the destination cell could hold was split, the split-off count existed only as a number on the job,
+    /// and a hauler downed on the way took it with them — 80 logs hauled to a 75-log cell became 5. Nothing was
+    /// saved either way: no <see cref="JobDriver"/> in this port is Scribed, so a save taken mid-carry lost the
+    /// goods. They are now the carry tracker's, which is deep-saved with the pawn.
+    /// <para/>
+    /// <b>The whole Thing travels, when the whole Thing is what moves.</b> That is
+    /// <see cref="Pawns.Pawn_CarryTracker.TryStartCarry"/>'s rule: a carry that takes the entire stack moves the
+    /// real object, so a <see cref="Things.CompQuality"/> item, a damaged item or a <see cref="Corpse"/> arrives
+    /// as itself; only a partial stack — which by definition is a stackable good, where one unit really is
+    /// interchangeable with another — is split off by count.
+    /// <para/>
+    /// <b>A hauler already holding the goods goes straight to the cell.</b> A loaded job rebuilds its driver and
+    /// starts again from the first toil (see <see cref="JobDriver"/>), so the fetch and pickup toils skip
+    /// themselves when target A is already what the pawn is carrying (<see cref="Toils_Haul.IsCarryingTarget"/>).
     /// </summary>
     public sealed class JobDriver_HaulToCell : JobDriver
     {
-        /// <summary>The Thing itself while it is off the map, for the whole-stack case; null when this job is
-        /// carrying a split-off count instead (or carrying nothing yet).</summary>
-        private Thing? carried;
-
         public override bool TryMakePreToilReservations()
         {
             if (pawn.Map == null) return false;
@@ -43,81 +45,31 @@ namespace SimWorld.AI
                 && pawn.Map.reservationManager.CanReserve(pawn, job.GetTarget(TargetIndex.B));
         }
 
-        public override void Notify_Ending()
-        {
-            base.Notify_Ending();
-            Thing? thing = carried;
-            carried = null;
-            if (thing == null || thing.Destroyed || thing.Spawned) return;
-            if (pawn.Map == null || !pawn.Spawned) return;
-            GenSpawn.Spawn(thing, pawn.Position, pawn.Map);
-        }
-
         public override IEnumerable<Toil> MakeNewToils()
         {
             yield return Toils_Reserve.Reserve(TargetIndex.A);
             yield return Toils_Reserve.Reserve(TargetIndex.B);
 
-            yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.ClosestTouch);
+            yield return Toils_Haul.GotoThingToCarry(TargetIndex.A, PathEndMode.ClosestTouch);
+
+            // As much as the destination can take right now, which is read at pickup rather than when the job
+            // was given: a stack that has grown since leaves less room, and no room ends the job unpicked-up.
+            yield return Toils_Haul.StartCarryThing(TargetIndex.A, thing =>
+                Math.Min(thing.stackCount, HaulAIUtility.CapacityAt(pawn.Map!, job.GetTarget(TargetIndex.B).Cell, thing.def)));
+
+            Toil carryToCell = Toils_Goto.GotoCell(TargetIndex.B, PathEndMode.OnCell);
+            carryToCell.FailOn(() => !Toils_Haul.IsCarryingTarget(pawn, job, TargetIndex.A));
+            yield return carryToCell;
 
             yield return Toils_General.Do(() =>
             {
-                Thing thing = job.GetTarget(TargetIndex.A).Thing!;
-                Map.Map map = pawn.Map!;
-                IntVec3 cell = job.GetTarget(TargetIndex.B).Cell;
-
-                int room = HaulAIUtility.CapacityAt(map, cell, thing.def);
-                int carriedCount = Math.Min(thing.stackCount, room);
-                if (carriedCount <= 0)
+                if (!Toils_Haul.IsCarryingTarget(pawn, job, TargetIndex.A))
                 {
                     EndJobWith(JobCondition.Incompletable);
                     return;
                 }
 
-                job.count = carriedCount;
-                if (carriedCount >= thing.stackCount)
-                {
-                    carried = thing;
-                    thing.DeSpawn();
-                }
-                else
-                {
-                    thing.stackCount -= carriedCount;
-                }
-            });
-
-            yield return Toils_Goto.GotoCell(TargetIndex.B, PathEndMode.OnCell);
-
-            yield return Toils_General.Do(() =>
-            {
-                Map.Map map = pawn.Map!;
-                IntVec3 cell = job.GetTarget(TargetIndex.B).Cell;
-                Thing sourceThing = job.GetTarget(TargetIndex.A).Thing!; // still referenced whether it moved or was split
-                ThingDef def = sourceThing.def;
-
-                Thing? existing = HaulAIUtility.ExistingStackAt(map, cell);
-                Thing? travelling = carried;
-                carried = null;
-
-                if (existing != null && existing.def == def)
-                {
-                    existing.stackCount += job.count;
-                    // The merged-into stack is the survivor; a whole Thing that travelled here has been
-                    // absorbed into it. (Only reachable for a stackable def: a stackLimit-1 Thing on the
-                    // destination cell leaves CapacityAt at 0, and the pickup toil above refuses the job.)
-                    travelling?.Destroy(DestroyMode.Vanish);
-                    return;
-                }
-
-                if (travelling != null)
-                {
-                    GenSpawn.Spawn(travelling, cell, map);
-                    return;
-                }
-
-                Thing dropped = ThingMaker.MakeThing(def, sourceThing.Stuff);
-                dropped.stackCount = job.count;
-                GenSpawn.Spawn(dropped, cell, map);
+                Toils_Haul.TryPlaceCarriedThing(pawn, job.GetTarget(TargetIndex.B).Cell);
             });
         }
     }
