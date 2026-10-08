@@ -28,10 +28,14 @@ namespace SimWorld.Pawns
     /// cell near the drop point (the Thing lands on the pawn's cell, which is where every abstract carry in
     /// this port already drops), forbidding what a hostile pawn drops, ticking the carried Thing
     /// (<c>CarryHandsTick</c> — nothing carried here yet has a comp that ticks), and copying comp state such
-    /// as rot progress onto a split-off piece (<c>ThingComp.PostSplit</c>). Only
-    /// <see cref="Building.JobDriver_HaulToBuildingSite"/> carries through this tracker today; the other
-    /// abstract carries (<see cref="AI.JobDriver_HaulToCell"/>, <see cref="AI.JobDriver_FoodDeliver"/>,
-    /// <see cref="AI.JobDriver_ButcherCorpse"/>, <see cref="AI.JobDriver_Warden_Feed"/>) still keep their own.
+    /// as rot progress onto a split-off piece (<c>ThingComp.PostSplit</c>). Every driver that takes a Thing
+    /// off the map and puts it down somewhere else carries through this tracker:
+    /// <see cref="Building.JobDriver_HaulToBuildingSite"/>, and the four that share <see cref="AI.Toils_Haul"/> —
+    /// <see cref="AI.JobDriver_HaulToCell"/>, <see cref="AI.JobDriver_FoodDeliver"/>,
+    /// <see cref="AI.JobDriver_ButcherCorpse"/> and <see cref="AI.JobDriver_TendPatient"/>.
+    /// <see cref="AI.JobDriver_Warden_Feed"/> picks nothing up (the food stays on the ground until it is
+    /// eaten) and <see cref="AI.JobDriver_TakeToBed"/> moves a person by changing their position, so neither
+    /// has anything to keep.
     /// </summary>
     public sealed class Pawn_CarryTracker : IExposable
     {

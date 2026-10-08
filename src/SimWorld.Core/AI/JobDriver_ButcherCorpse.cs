@@ -8,16 +8,18 @@ namespace SimWorld.AI
     /// <summary>
     /// Fetches a <see cref="Corpse"/>, carries it to a butcher bench and butchers it there (RimWorld:
     /// <c>JobDriver_DoBill</c> hauling a corpse ingredient to a butcher table and working a
-    /// <c>ButcherCorpseFlesh</c> bill). Target A is the corpse, target B the bench.
+    /// <c>ButcherCorpseFlesh</c> bill). Target A is the corpse — and, once it has been picked up, the Thing in
+    /// the pawn's hands, which is the same corpse — target B the bench.
     /// <para/>
-    /// <b>Carrying, without the carry tracker.</b> This driver predates <see cref="Pawns.Pawn_CarryTracker"/>
-    /// and keeps its own field instead, so the corpse is taken off the map at the pickup toil and put back on
-    /// at the bench — the same abstract carry
-    /// <see cref="JobDriver_HaulToCell"/> and <see cref="JobDriver_Warden_Feed"/> already use. The difference
-    /// that matters is that a corpse is not interchangeable with another of its def (it holds a specific
-    /// person or animal), so the real Thing travels: nothing is destroyed and re-created, and
-    /// <see cref="Notify_Ending"/> puts the body back on the ground where the pawn is standing if anything
-    /// interrupts the job mid-carry, rather than leaving it in limbo.
+    /// <b>The body is carried, not parked in a field.</b> Pickup moves the corpse into the pawn's
+    /// <see cref="Pawns.Pawn_CarryTracker"/> (<see cref="Toils_Haul.StartCarryThing"/>, the toil
+    /// <see cref="JobDriver_HaulToCell"/> uses) and it is put down on the bench's own cell when the work is
+    /// done. A corpse is not interchangeable with another of its def (it holds a specific person or animal), so
+    /// the real Thing travels: nothing is destroyed and re-created, and if anything interrupts the job — on the
+    /// way or at the bench — <see cref="Pawn_JobTracker.EndCurrentJob"/> puts the body down where the pawn is
+    /// standing rather than leaving it in limbo. This driver used to keep the body in a field of its own, which
+    /// did the same for an interruption but lost it to a save taken mid-carry (no <see cref="JobDriver"/> in this
+    /// port is Scribed); the carry tracker is deep-saved with the pawn.
     /// <para/>
     /// <b>Work rate</b> is <see cref="JobDriver_DoBill"/>'s, reused outright rather than copied: the same
     /// per-tick base and the same skill-speed curve a bench recipe is worked at, against the shipped
@@ -27,11 +29,6 @@ namespace SimWorld.AI
     /// </summary>
     public sealed class JobDriver_ButcherCorpse : JobDriver
     {
-        /// <summary>Set while the body is off the map between the pickup toil and the bench; see the class
-        /// remarks. Never Scribed — no <see cref="JobDriver"/> in this port is (see that class's own doc) —
-        /// so a save taken mid-carry loses the body, the same window every other abstract carry here has.</summary>
-        private Corpse? carried;
-
         public override bool TryMakePreToilReservations()
         {
             Map.Map? map = pawn.Map;
@@ -40,31 +37,19 @@ namespace SimWorld.AI
                 && map.reservationManager.CanReserve(pawn, job.GetTarget(TargetIndex.B));
         }
 
-        public override void Notify_Ending()
-        {
-            base.Notify_Ending();
-            DropCarriedCorpse();
-        }
-
         public override IEnumerable<Toil> MakeNewToils()
         {
             yield return Toils_Reserve.Reserve(TargetIndex.A);
             yield return Toils_Reserve.Reserve(TargetIndex.B);
 
-            yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.ClosestTouch);
+            yield return Toils_Haul.GotoThingToCarry(TargetIndex.A, PathEndMode.ClosestTouch);
 
-            yield return Toils_General.Do(() =>
-            {
-                if (!(job.GetTarget(TargetIndex.A).Thing is Corpse corpse) || corpse.Destroyed || !corpse.Spawned)
-                {
-                    EndJobWith(JobCondition.Incompletable);
-                    return;
-                }
-                carried = corpse;
-                corpse.DeSpawn();
-            });
+            // Only a body can be butchered; anything else is refused here, before it leaves the map.
+            yield return Toils_Haul.StartCarryThing(TargetIndex.A, thing => thing is Corpse ? thing.stackCount : 0);
 
-            yield return Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.Touch);
+            Toil gotoBench = Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.Touch);
+            gotoBench.FailOn(() => !Toils_Haul.IsCarryingTarget(pawn, job, TargetIndex.A));
+            yield return gotoBench;
 
             var work = new Toil { defaultCompleteMode = ToilCompleteMode.Never };
             work.FailOnDespawnedOrNull(TargetIndex.B);
@@ -78,7 +63,7 @@ namespace SimWorld.AI
                 workDone += JobDriver_DoBill.BaseWorkPerTick * JobDriver_DoBill.WorkSpeedFactorFromSkillLevel.Evaluate(skillLevel);
                 if (workDone < recipe.WorkAmountTotal()) return;
 
-                Corpse? corpse = carried;
+                Corpse? corpse = pawn.carryTracker.CarriedThing as Corpse;
                 Thing? bench = job.GetTarget(TargetIndex.B).Thing;
                 if (corpse == null || corpse.Destroyed || corpse.InnerPawn == null || bench == null || pawn.Map == null)
                 {
@@ -89,23 +74,15 @@ namespace SimWorld.AI
                 // Put the body down on the bench's own cell before butchering: Recipe_ButcherAnimal drops its
                 // products where the carcass is, and JobDriver_DoBill already drops a bench recipe's products
                 // on the bench cell, so this is the same place a cooked meal would appear.
-                GenSpawn.Spawn(corpse, bench.Position, pawn.Map);
-                carried = null;
+                if (!pawn.carryTracker.TryDropCarriedThing(bench.Position, out _))
+                {
+                    EndJobWith(JobCondition.Incompletable);
+                    return;
+                }
                 ButcherUtility.TryButcher(corpse.InnerPawn, pawn, CorpseWorkDefOf.ButcherAnimal);
                 ReadyForNextToil();
             };
             yield return work;
-        }
-
-        private void DropCarriedCorpse()
-        {
-            Corpse? corpse = carried;
-            carried = null;
-            if (corpse == null || corpse.Destroyed || corpse.Spawned) return;
-
-            Map.Map? map = pawn.Map;
-            if (map == null || !pawn.Spawned) return;
-            GenSpawn.Spawn(corpse, pawn.Position, map);
         }
     }
 }

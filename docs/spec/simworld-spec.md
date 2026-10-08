@@ -860,15 +860,19 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   No stockpile at all (or every matching one already full) is this giver's
   honest "no job" — one storage kind, no priority tiers, so there is nowhere
   else for `StoreUtility`'s job to send it, and this port does not invent a
-  dumping ground. Carrying itself is modelled abstractly, as
-  `JobDriver_Warden_Feed` does it (this driver predates `Pawn_CarryTracker`,
-  which only `JobDriver_HaulToBuildingSite` carries through so far): the source
-  stack leaves its cell the moment the pawn reaches it, nothing visibly follows
-  the pawn to the stockpile in between. When the carry takes the whole stack the Thing itself travels and
-  is put back down at the destination, so anything carrying per-instance state
-  (quality, hit points, a `Corpse`'s inner pawn) survives the trip; only a
+  dumping ground. What the hauler picks up is carried in its hands
+  (`Pawn_CarryTracker`, through `Toils_Haul.StartCarryThing`; RimWorld's
+  `Toils_Haul`), not held in the driver: it is deep-saved with the pawn, and
+  whatever is still in hand when the job ends, whatever ended it, is put down at
+  the pawn's feet by `Pawn_JobTracker.EndCurrentJob`. A hauler that is downed
+  with 75 of an 80-log pile in its arms drops the 75; it does not lose them.
+  `JobDriver_FoodDeliver`, `JobDriver_ButcherCorpse` and `JobDriver_TendPatient`
+  carry the same way. When the carry takes the whole stack the Thing itself
+  travels and is put down at the destination, so anything carrying per-instance
+  state (quality, hit points, a `Corpse`'s inner pawn) survives the trip; only a
   partial stack, where one unit really is interchangeable with another, is
-  split off by count. `HaulCorpses`, the other `WorkGiverDef` in the same
+  split off by count, and merging onto a stack of the same def stops at the
+  def's stack limit. `HaulCorpses`, the other `WorkGiverDef` in the same
   content file, is `WorkGiver_HaulCorpses`: the same destination search and the
   same `HaulToCell` job, scanning corpses only, ranked above `HaulGeneral` so
   bodies are cleared before loose clutter.

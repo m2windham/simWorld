@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SimWorld.Building;
 using SimWorld.Defs;
@@ -9,7 +10,8 @@ namespace SimWorld.AI
 {
     /// <summary>
     /// Carries one meal to a prisoner and puts it down where they are (RimWorld:
-    /// <c>RimWorld.JobDriver_FoodDeliver</c>). Target A is the food, target B the prisoner.
+    /// <c>RimWorld.JobDriver_FoodDeliver</c>). Target A is the food — and, once it has been picked up, the
+    /// Thing in the warden's hands — target B the prisoner.
     /// <para/>
     /// <b>Delivering is not feeding, and the difference is the point.</b>
     /// <see cref="JobDriver_Warden_Feed"/> ends by putting nutrition into a downed prisoner who cannot feed
@@ -18,15 +20,27 @@ namespace SimWorld.AI
     /// the nearest food in the room it is standing in. See <see cref="WorkGiver_Warden_DeliverFood"/>'s doc
     /// for why that is the whole value of this job in a port that confines nobody.
     /// <para/>
-    /// <b>Carrying is modelled abstractly</b>, exactly as <see cref="JobDriver_HaulToCell"/> and
-    /// <see cref="JobDriver_Warden_Feed"/> do it: this driver predates <see cref="Pawns.Pawn_CarryTracker"/> and
-    /// has not been moved onto it, so the meal leaves the source cell when the pawn reaches it and nothing
-    /// visibly follows the pawn in between. The whole-Thing-versus-split distinction is
-    /// <see cref="JobDriver_HaulToCell"/>'s, kept for the same reason: a one-meal stack travels as the real
-    /// object (so a <see cref="Things.CompQuality"/> or a damaged item arrives as itself), and only a
-    /// genuinely stackable split is rebuilt by def at the far end. An interrupted delivery of a whole one-meal
-    /// stack drops the meal at the pawn's feet (<see cref="Notify_Ending"/>) rather than destroying it; a meal
-    /// split off a bigger stack is lost, as <see cref="JobDriver_HaulToCell"/>'s split count is.
+    /// <b>The meal is carried, not deleted and re-created.</b> Pickup moves it off its stack into the warden's
+    /// <see cref="Pawns.Pawn_CarryTracker"/> (RimWorld: <c>Toils_Ingest.PickupIngestible</c>, here
+    /// <see cref="Toils_Haul.StartCarryThing"/>, which re-points target A at what is in hand just as RimWorld's
+    /// does); arrival puts it down beside the prisoner (RimWorld's closing
+    /// <c>carryTracker.TryDropCarriedThing</c>, here <see cref="Toils_Haul.TryPlaceCarriedThing"/>). A delivery
+    /// cut short — the warden downed, ordered away, the prisoner gone — leaves the meal at the warden's feet
+    /// (<see cref="Pawn_JobTracker.EndCurrentJob"/>, RimWorld's <c>CleanupCurrentJob</c>) instead of destroying
+    /// it, which matters most for this job: a meal that vanishes between the larder and the cell leaves a
+    /// prisoner hungry with nothing in the game saying why.
+    /// <para/>
+    /// This driver used to hold what it picked up in a field of its own. That was lossless for a one-meal stack
+    /// (the real Thing was kept and respawned by <c>Notify_Ending</c>) and lost for a meal split off a bigger
+    /// stack — the usual case, since a larder is a pile — and, with no <see cref="JobDriver"/> in this port
+    /// Scribed, for any save taken mid-carry. Both are closed by moving the meal into the carry tracker, which
+    /// is deep-saved with the pawn. The whole-Thing-versus-split distinction is
+    /// <see cref="Pawns.Pawn_CarryTracker.TryStartCarry"/>'s: a one-meal stack travels as the real object (so a
+    /// <see cref="Things.CompQuality"/> or a damaged item arrives as itself), and only a genuinely stackable
+    /// split is a new Thing of the same def and stuff.
+    /// <para/>
+    /// <b>A warden already holding the meal goes straight to the prisoner</b> (see
+    /// <see cref="JobDriver_HaulToCell"/> and <see cref="Toils_Haul.IsCarryingTarget"/> for why).
     /// </summary>
     public sealed class JobDriver_FoodDeliver : JobDriver
     {
@@ -36,11 +50,6 @@ namespace SimWorld.AI
         /// so the two warden jobs move food at the same granularity. Not a RimWorld literal.</summary>
         public const int MealsPerDelivery = 1;
 
-        /// <summary>The Thing itself while it is off the map, for the whole-stack case; null when this job is
-        /// carrying a split-off count instead (or carrying nothing yet). See
-        /// <see cref="JobDriver_HaulToCell.Notify_Ending"/> for the same field doing the same job.</summary>
-        private Thing? carried;
-
         public override bool TryMakePreToilReservations()
         {
             if (pawn.Map == null) return false;
@@ -48,62 +57,27 @@ namespace SimWorld.AI
                 && pawn.Map.reservationManager.CanReserve(pawn, job.GetTarget(TargetIndex.B));
         }
 
-        public override void Notify_Ending()
-        {
-            base.Notify_Ending();
-            Thing? thing = carried;
-            carried = null;
-            if (thing == null || thing.Destroyed || thing.Spawned) return;
-            if (pawn.Map == null || !pawn.Spawned) return;
-            GenSpawn.Spawn(thing, pawn.Position, pawn.Map);
-        }
-
         public override IEnumerable<Toil> MakeNewToils()
         {
             yield return Toils_Reserve.Reserve(TargetIndex.A);
             yield return Toils_Reserve.Reserve(TargetIndex.B);
 
-            Toil gotoFood = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.ClosestTouch);
+            Toil gotoFood = Toils_Haul.GotoThingToCarry(TargetIndex.A, PathEndMode.ClosestTouch);
             gotoFood.FailOnDespawnedOrNull(TargetIndex.B);
             yield return gotoFood;
 
-            yield return Toils_General.Do(() =>
-            {
-                Thing? food = job.GetTarget(TargetIndex.A).Thing;
-                if (food == null || food.Destroyed || !food.Spawned)
-                {
-                    EndJobWith(JobCondition.Incompletable);
-                    return;
-                }
-
-                int taken = food.stackCount < MealsPerDelivery ? food.stackCount : MealsPerDelivery;
-                if (taken <= 0)
-                {
-                    EndJobWith(JobCondition.Incompletable);
-                    return;
-                }
-
-                job.count = taken;
-                if (taken >= food.stackCount)
-                {
-                    carried = food;
-                    food.DeSpawn();
-                }
-                else
-                {
-                    food.stackCount -= taken;
-                }
-            });
+            yield return Toils_Haul.StartCarryThing(TargetIndex.A, food => Math.Min(food.stackCount, MealsPerDelivery));
 
             Toil gotoPrisoner = Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.Touch);
             gotoPrisoner.FailOnDespawnedOrNull(TargetIndex.B);
+            gotoPrisoner.FailOn(() => !Toils_Haul.IsCarryingTarget(pawn, job, TargetIndex.A));
             yield return gotoPrisoner;
 
             yield return Toils_General.Do(() =>
             {
                 Map.Map? map = pawn.Map;
-                Thing? sourceThing = job.GetTarget(TargetIndex.A).Thing;
-                if (map == null || sourceThing == null)
+                Thing? meal = pawn.carryTracker.CarriedThing;
+                if (map == null || meal == null || !Toils_Haul.IsCarryingTarget(pawn, job, TargetIndex.A))
                 {
                     EndJobWith(JobCondition.Incompletable);
                     return;
@@ -114,29 +88,10 @@ namespace SimWorld.AI
                 Pawn? prisoner = job.GetTarget(TargetIndex.B).Thing as Pawn;
                 IntVec3 at = prisoner != null && prisoner.Spawned ? prisoner.Position : pawn.Position;
 
-                IntVec3 cell = DropCellNear(map, at, sourceThing.def);
+                IntVec3 cell = DropCellNear(map, at, meal.def);
                 if (!cell.IsValid) cell = pawn.Position;
 
-                Thing? existing = HaulAIUtility.ExistingStackAt(map, cell);
-                Thing? travelling = carried;
-                carried = null;
-
-                if (existing != null && existing.def == sourceThing.def)
-                {
-                    existing.stackCount += job.count;
-                    travelling?.Destroy(DestroyMode.Vanish);
-                    return;
-                }
-
-                if (travelling != null)
-                {
-                    GenSpawn.Spawn(travelling, cell, map);
-                    return;
-                }
-
-                Thing dropped = ThingMaker.MakeThing(sourceThing.def, sourceThing.Stuff);
-                dropped.stackCount = job.count;
-                GenSpawn.Spawn(dropped, cell, map);
+                Toils_Haul.TryPlaceCarriedThing(pawn, cell);
             });
         }
 
