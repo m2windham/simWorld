@@ -504,7 +504,9 @@ namespace SimWorld.Economy
             IReadOnlyList<Zone> zones = map.zoneManager.AllZones;
             for (int z = 0; z < zones.Count; z++)
             {
-                if (!(zones[z] is Zone_Stockpile pile)) continue;
+                // Not the dump: room for bodies is not room for goods, and counting it would have the granary
+                // stop growing while the dump stood empty.
+                if (!(zones[z] is Zone_Stockpile pile) || GraveyardInitiative.IsDump(pile)) continue;
                 IReadOnlyList<IntVec3> cells = pile.Cells;
                 for (int c = 0; c < cells.Count; c++)
                 {

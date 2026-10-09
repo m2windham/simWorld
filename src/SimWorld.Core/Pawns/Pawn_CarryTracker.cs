@@ -32,7 +32,9 @@ namespace SimWorld.Pawns
     /// off the map and puts it down somewhere else carries through this tracker:
     /// <see cref="Building.JobDriver_HaulToBuildingSite"/>, and the four that share <see cref="AI.Toils_Haul"/> —
     /// <see cref="AI.JobDriver_HaulToCell"/>, <see cref="AI.JobDriver_FoodDeliver"/>,
-    /// <see cref="AI.JobDriver_ButcherCorpse"/> and <see cref="AI.JobDriver_TendPatient"/>.
+    /// <see cref="AI.JobDriver_ButcherCorpse"/> and <see cref="AI.JobDriver_TendPatient"/>. One more carries a body
+    /// into a grave instead of down on a cell: <see cref="AI.JobDriver_HaulToContainer"/>, which ends with
+    /// <see cref="TryTransferCarriedThingTo"/>.
     /// <see cref="AI.JobDriver_Warden_Feed"/> picks nothing up (the food stays on the ground until it is
     /// eaten) and <see cref="AI.JobDriver_TakeToBed"/> moves a person by changing their position, so neither
     /// has anything to keep.

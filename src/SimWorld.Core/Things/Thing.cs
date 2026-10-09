@@ -216,6 +216,7 @@ namespace SimWorld.Things
         {
             if (destroyed) return;
             if (Spawned) DeSpawn(mode);
+            holdingOwner?.Remove(this); // a destroyed Thing is not still inside anything
             destroyed = true;
         }
 

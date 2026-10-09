@@ -65,7 +65,9 @@ namespace SimWorld.Building
             IReadOnlyList<Zone> zones = map.zoneManager.AllZones;
             for (int z = 0; z < zones.Count; z++)
             {
-                if (!(zones[z] is Zone_Stockpile pile)) continue;
+                // The dump is a stockpile, but it stores bodies and is sited away from the settlement on purpose
+                // (GraveyardSiting): a hut gathers round the goods, not round the dead.
+                if (!(zones[z] is Zone_Stockpile pile) || GraveyardInitiative.IsDump(pile)) continue;
                 IReadOnlyList<IntVec3> cells = pile.Cells;
                 for (int c = 0; c < cells.Count; c++) yield return cells[c];
             }
