@@ -114,6 +114,23 @@ namespace SimWorld.Pawns
         }
 
         /// <summary>
+        /// Hands what is in hand to <paramref name="container"/> (RimWorld:
+        /// <c>carryTracker.innerContainer.TryTransferToContainer</c>, which <c>Toils_Haul.DepositHauledThingInContainer</c>
+        /// calls): the whole Thing, as itself, goes inside and the hands are empty. A body put in a grave. False,
+        /// with the Thing still in hand, when there is nothing in hand or the container will not hold it — the
+        /// job's end then puts it down at the pawn's feet, as for any carry that did not arrive.
+        /// </summary>
+        public bool TryTransferCarriedThingTo(ThingOwner container)
+        {
+            if (container == null) throw new ArgumentNullException(nameof(container));
+            Thing? thing = carriedThing;
+            if (thing == null || thing.Destroyed) return false;
+            if (!container.TryAdd(thing)) return false;
+            carriedThing = null;
+            return true;
+        }
+
+        /// <summary>
         /// <paramref name="count"/> of <paramref name="thing"/> as a Thing of its own, off the map (RimWorld:
         /// <c>Thing.SplitOff</c>): the Thing itself when that is the whole stack, otherwise a new Thing of the
         /// same def and stuff with the count moved onto it. Hit points are copied, as RimWorld's does.

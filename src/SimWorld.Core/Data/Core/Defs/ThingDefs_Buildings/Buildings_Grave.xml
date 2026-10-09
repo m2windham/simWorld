@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The grave (Building.Building_Grave) and the Blueprint/Frame pair the construction pipeline builds it
+    through. Its own file rather than entries in Buildings_Structural.xml / Buildings_BlueprintsAndFrames.xml,
+    per CLAUDE.md: DefLoader reads every file under a Def folder, so a new building cannot conflict.
+
+    RimWorld 1.0's building XML is not in the decompile this port reads from. What is RimWorld's, from the
+    decompiled Building_Grave and its storage settings:
+      - the class, a 1x2 footprint (recalled), Standable (recalled);
+      - fixedStorageSettings: corpses (all of them);
+      - defaultStorageSettings: priority Important, humanlike corpses, strangers disallowed. The brief this
+        was built to states those three; the spelling is the port's (see StorageSettings.disallowedSpecialFilters
+        for why "AllowCorpsesStranger" became a field on the settings rather than a special filter on the filter).
+    What is NOT sourced, and is pinned by GraveTests as behaviour (a settlement can build one end to end, it
+    costs something, it takes a body) and never by the literal:
+      - WorkToBuild 240 and costList WoodLog 6: this port's own, set between a bed (180) and a storage hut
+        (320). RimWorld digs a grave from the colony's stuff; this port's settlements build from wood.
+      - MaxHitPoints 100, pathCost 14: recalled as RimWorld's values, unverified.
+      - fillPercent 0: a mound; nothing in this port reads cover from it, and a nonzero value would only make
+        it matter to line-of-fire.
+
+    expandHomeArea=false is a translation, not RimWorld's. RimWorld marks the home area around everything a
+    colony builds; here the settlement chooses where it digs, and a graveyard that widened the home area
+    would pull the settlement's own placement (beds, walls) out to its edge and then past it - the living
+    would end up building beside the dead. Recorded in docs/status.json under the grave's translation.
+  -->
+  <ThingDef>
+    <defName>Grave</defName>
+    <label>grave</label>
+    <description>A place to bury a dead body, so that it is out of sight and out of mind.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building_Grave</thingClass>
+    <size>(1,2)</size>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <pathCost>14</pathCost>
+    <statBases>
+      <MaxHitPoints>100</MaxHitPoints>
+      <WorkToBuild>240</WorkToBuild>
+    </statBases>
+    <costList>
+      <WoodLog>6</WoodLog>
+    </costList>
+    <building>
+      <expandHomeArea>false</expandHomeArea>
+      <fixedStorageSettings>
+        <filter>
+          <categories>
+            <li>Corpses</li>
+          </categories>
+        </filter>
+      </fixedStorageSettings>
+      <defaultStorageSettings>
+        <priority>Important</priority>
+        <filter>
+          <categories>
+            <li>CorpsesHumanlike</li>
+          </categories>
+        </filter>
+        <disallowedSpecialFilters>
+          <li>CorpsesStranger</li>
+        </disallowedSpecialFilters>
+      </defaultStorageSettings>
+    </building>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Grave</defName>
+    <label>grave (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Grave</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Grave</defName>
+    <label>grave (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>Grave</entityToBuild>
+  </ThingDef>
+
+</Defs>

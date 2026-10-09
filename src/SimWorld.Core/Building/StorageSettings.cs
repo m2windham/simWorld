@@ -43,8 +43,10 @@ namespace SimWorld.Building
     public class StorageSettings : IExposable
     {
         /// <summary>Whoever these settings belong to; asked for its parent (fixed) settings when deciding what
-        /// it may take. Not saved — the owner re-attaches itself on load.</summary>
-        public IStoreSettingsParent? owner;
+        /// it may take (RimWorld: the public field <c>owner</c>). Not saved — the owner re-attaches itself on
+        /// load. A property, not a field, so it is not mistaken for something content can author: only
+        /// public fields are read from XML.</summary>
+        public IStoreSettingsParent? Owner { get; set; }
 
         public ThingFilter filter = new ThingFilter();
 
@@ -62,7 +64,7 @@ namespace SimWorld.Building
 
         public StorageSettings(IStoreSettingsParent owner)
         {
-            this.owner = owner;
+            Owner = owner;
             StorageSettings? parent = owner?.GetParentStoreSettings();
             if (parent != null) priority = parent.priority;
         }
@@ -98,7 +100,7 @@ namespace SimWorld.Building
             {
                 if (StorageSettingsUtility.Matches(disallowedSpecialFilters[i], t)) return false;
             }
-            StorageSettings? parent = owner?.GetParentStoreSettings();
+            StorageSettings? parent = Owner?.GetParentStoreSettings();
             return parent == null || parent.AllowedToAccept(t);
         }
 
@@ -106,7 +108,7 @@ namespace SimWorld.Building
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
             if (!filter.Allows(def)) return false;
-            StorageSettings? parent = owner?.GetParentStoreSettings();
+            StorageSettings? parent = Owner?.GetParentStoreSettings();
             return parent == null || parent.AllowedToAccept(def);
         }
 

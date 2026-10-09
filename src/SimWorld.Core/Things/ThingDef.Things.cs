@@ -12,7 +12,7 @@ namespace SimWorld.Defs
     }
 
     /// <summary>Building-only tunables (RimWorld: <c>Verse.BuildingProperties</c>); minimal until Building lands.</summary>
-    public class BuildingProperties
+    public partial class BuildingProperties
     {
         /// <summary>Occupies the edifice slot of its cells (one per cell; walls, rock, most buildings).</summary>
         public bool isEdifice = true;

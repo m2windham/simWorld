@@ -38,5 +38,14 @@ namespace SimWorld.Map
         /// is <c>Building_ResearchBench</c>). <see cref="AI.WorkGiver_Research"/> asks for this instead of every
         /// building.</summary>
         ResearchBench,
+
+        /// <summary>A body (RimWorld: <c>ThingRequestGroup.Corpse</c>, every def whose class is <c>Corpse</c>).
+        /// The hauler of the dead and the settlement's gravedigger ask for this instead of walking every item
+        /// on the map to find the few that are bodies.</summary>
+        Corpse,
+
+        /// <summary>A Thing that is a place to haul to other than a stockpile cell — a grave (RimWorld keeps
+        /// these in <c>HaulDestinationManager</c>; this port asks the lister, which already indexes by group).</summary>
+        HaulDestination,
     }
 }

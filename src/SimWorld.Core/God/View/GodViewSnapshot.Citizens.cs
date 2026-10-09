@@ -187,6 +187,17 @@ namespace SimWorld.God.View
                         return corpse.InnerPawn;
                     }
                 }
+
+                // A buried citizen is no longer a Thing on the map: the grave holds the body. They are no less a
+                // person the player wants to open — the whole point of burying them is that the settlement
+                // remembers where they lie — so the graves are asked too. A short list (graves only), not the
+                // map's things.
+                IReadOnlyList<Thing> graves = map.listerThings.ThingsInGroup(Map.ThingRequestGroup.HaulDestination);
+                for (int g = 0; g < graves.Count; g++)
+                {
+                    Pawn? buried = (graves[g] as Building.Building_Grave)?.Corpse?.InnerPawn;
+                    if (buried != null && buried.thingIDNumber == citizenThingId) return buried;
+                }
             }
             return null;
         }
