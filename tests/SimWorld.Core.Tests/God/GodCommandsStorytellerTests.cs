@@ -310,26 +310,36 @@ namespace SimWorld.Tests.God
         }
 
         [Fact]
-        public void A_new_storyteller_brings_its_own_escalation_curve_to_the_threat_points()
+        public void A_new_storyteller_changes_how_often_threats_come_and_not_how_big_they_are()
         {
             EmptyGame();
             CivilizationTarget target = PosedCivilization();
             GodCommands.SetDifficulty("Medium");
-            // Day 100: far enough along that the two narrators' own pointsFactorFromDaysPassed curves have
-            // visibly parted (Cassandra escalates harder than Phoebe over a long game). At day 0 both are 1
-            // and the change would be invisible, which is the honest reason this test moves the clock.
-            Find.TickManager.DebugSetTicksGame(100 * GenDate.TicksPerDay);
 
-            GodCommands.SetStoryteller("Cassandra_Classic");
-            float underCassandra = StorytellerUtility.DefaultThreatPointsNow(target);
+            // This test used to assert the opposite: that Phoebe "escalates more gently than Cassandra by day
+            // 100", because each narrator carried its own pointsFactorFromDaysPassed growth curve. Those
+            // curves were an approximation with no source — RimWorld's term of that name is the same
+            // early-game discount for all three storytellers, gone by day 40 — and the Phoebe wiki page says
+            // outright that her major threats are "sent at the same raid points as Cassandra". What a
+            // narrator changes is the cadence (the comps, next test), not the size of what arrives.
+            foreach (int day in new[] { 5, 100 })
+            {
+                Find.TickManager.DebugSetTicksGame(day * GenDate.TicksPerDay);
 
-            Assert.Equal(GodCommandOutcome.Done, GodCommands.SetStoryteller("Phoebe_Chillax").Outcome);
-            float underPhoebe = StorytellerUtility.DefaultThreatPointsNow(target);
+                GodCommands.SetStoryteller("Cassandra_Classic");
+                float underCassandra = StorytellerUtility.DefaultThreatPointsNow(target);
 
-            Assert.True(underPhoebe < underCassandra,
-                "Phoebe escalates more gently than Cassandra by day 100: "
-                + underPhoebe.ToString() + " vs " + underCassandra.ToString());
-            Assert.InRange(underPhoebe / underCassandra, 0.3f, 0.9f);
+                Assert.Equal(GodCommandOutcome.Done, GodCommands.SetStoryteller("Phoebe_Chillax").Outcome);
+                float underPhoebe = StorytellerUtility.DefaultThreatPointsNow(target);
+
+                Assert.Equal(GodCommandOutcome.Done, GodCommands.SetStoryteller("Randy_Random").Outcome);
+                float underRandy = StorytellerUtility.DefaultThreatPointsNow(target);
+
+                Assert.Equal(underCassandra, underPhoebe);
+                Assert.Equal(underCassandra, underRandy);
+            }
+
+            Assert.Equal("Randy_Random", Find.Storyteller.def.defName);
         }
 
         [Fact]

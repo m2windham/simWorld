@@ -115,8 +115,13 @@ namespace SimWorld.Tests.Director
 
             float points = StorytellerUtility.DefaultThreatPointsNow(target);
 
-            // wealth curve (2400) + 3 * colonist curve (140) = 2820, * threatScale(1) * adaptation(0.7 at day 0) * pointsFactor(1 at day 0)
-            Assert.Equal(2820f * 0.7f, points, 1);
+            // wealth curve (2400) + 3 * colonist curve (140) = 2820, * threatScale(1) * adaptation * the
+            // storyteller's starting factor at day 0. The last two are read from where they live rather than
+            // written in as literals: the starting factor is a day-0 discount now (0.7), where it used to be
+            // 1 and this test said so, and the adaptation factor is the watcher's to define.
+            float adaptation = Find.Storyteller.adaptation.TotalThreatPointsFactor(Find.Storyteller.difficulty);
+            float startingFactor = Find.Storyteller.def.pointsFactorFromDaysPassed.Evaluate(0f);
+            Assert.Equal(2820f * adaptation * startingFactor, points, 1);
         }
 
         [Fact]
@@ -178,7 +183,11 @@ namespace SimWorld.Tests.Director
 
             DifficultyDef medium = DefDatabase<DifficultyDef>.GetNamed("Medium");
             DifficultyDef rough = DefDatabase<DifficultyDef>.GetNamed("Rough");
-            Assert.Equal(mediumPoints * (rough.threatScale / medium.threatScale), roughPoints, 1);
+            // A proportion, so a proportional tolerance: an absolute one at one decimal place is a coin flip
+            // on whether two float products land either side of a rounding boundary (it failed at 3020.8501
+            // against 3020.84985 the day the starting factor moved every product by the same 0.7).
+            float expected = mediumPoints * (rough.threatScale / medium.threatScale);
+            Assert.InRange(roughPoints, expected * 0.999f, expected * 1.001f);
         }
 
         [Fact]
@@ -187,7 +196,8 @@ namespace SimWorld.Tests.Director
             NewStoryteller("Cassandra_Classic", "Extreme");
             CivilizationTarget target = NewTarget(Find.Storyteller, pawnCount: 5, wealth: 2000000f);
             for (int i = 0; i < 3600; i++) Find.Storyteller.adaptation.AdaptationTick(Find.Storyteller.difficulty); // push adaptation to its ceiling
-            Find.TickManager.DebugSetTicksGame(0);
+            // Day 40: past the starting discount, which on day 0 alone held this sum under the cap.
+            Find.TickManager.DebugSetTicksGame(40 * GenDate.TicksPerDay);
 
             float points = StorytellerUtility.DefaultThreatPointsNow(target);
 

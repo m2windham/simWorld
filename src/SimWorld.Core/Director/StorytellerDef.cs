@@ -28,7 +28,13 @@ namespace SimWorld.Director
         /// </summary>
         public SimpleCurve? populationIntentFactorFromPopAdaptDays;
 
-        /// <summary>Scales threat points by days passed (long games escalate). Default is a flat 1 (no scaling).</summary>
+        /// <summary>
+        /// RimWorld's "starting factor": an early-game discount on threat points that fades to nothing —
+        /// 0.7 through day 10 and 1.0 from day 40 in the shipped content (see the content file for the
+        /// source). It is <b>not</b> a growth curve and no storyteller should read as one: a raid should be
+        /// bigger because the settlement grew, never because the calendar turned. Default is a flat 1 (no
+        /// scaling).
+        /// </summary>
         public SimpleCurve pointsFactorFromDaysPassed = new SimpleCurve { { 0f, 1f } };
 
         /// <summary>

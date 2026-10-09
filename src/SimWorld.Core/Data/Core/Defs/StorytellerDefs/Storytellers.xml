@@ -2,26 +2,45 @@
 <Defs>
 
   <!--
-    The three built-in personalities. Cadence numbers (onDays/offDays/mtbDays/category weights) are chosen
-    close to RimWorld's real Cassandra/Phoebe/Randy tuning rather than copied verbatim from the decompiled
-    source, and are documented as approximations in the Director port's final report. persona is a SimWorld
-    hook for the narrator's in-fiction name; the name itself is still open (Scribe/Historian/The Chronicle),
-    so every storyteller currently uses the same placeholder.
+    The three built-in personalities. Sources are cited per value; anything marked "unsourced" is SimWorld's
+    own and is kept, not invented. persona is a SimWorld hook for the narrator's in-fiction name; the name
+    itself is still open (Scribe/Historian/The Chronicle), so every storyteller currently uses the same
+    placeholder.
+
+    Values the wiki prints are RimWorld's, on pages that name no game version:
+      https://rimworldwiki.com/wiki/Raid_points   (the starting factor and the adaptation numbers)
+      https://rimworldwiki.com/wiki/Cassandra_Classic
+      https://rimworldwiki.com/wiki/Phoebe_Chillax
+      https://rimworldwiki.com/wiki/Randy_Random
   -->
 
-  <StorytellerDef>
+  <!--
+    What every storyteller shares. RimWorld's three storytellers carry one set of these curves, and the wiki
+    prints one, so they live once here rather than three times.
+
+    pointsFactorFromDaysPassed is RimWorld's "starting factor": an EARLY-GAME DISCOUNT, never a multiplier
+    above 1. https://rimworldwiki.com/wiki/Raid_points ("Starting factor") gives 0.7 at day 10 and earlier and
+    1.0 from day 40, and says nothing about the days between; the straight line between the two printed
+    points is the plain reading and is the only thing here the page does not state. This replaces an
+    approximation that read (0,1) (20,2) (100,4) — a growth curve that quadrupled every raid by day 100 on
+    the calendar alone, which RimWorld's formula has no term for.
+  -->
+  <StorytellerDef Name="StorytellerBase" Abstract="True">
+    <pointsFactorFromDaysPassed>
+      <points>
+        <li>(0, 0.7)</li>
+        <li>(10, 0.7)</li>
+        <li>(40, 1)</li>
+      </points>
+    </pointsFactorFromDaysPassed>
+  </StorytellerDef>
+
+  <StorytellerDef ParentName="StorytellerBase">
     <defName>Cassandra_Classic</defName>
     <label>Cassandra Classic</label>
     <description>A balanced storyteller: rising tension with a fair, escalating rhythm.</description>
     <listOrder>0</listOrder>
     <persona>The Chronicle</persona>
-    <pointsFactorFromDaysPassed>
-      <points>
-        <li>(0, 1)</li>
-        <li>(20, 2)</li>
-        <li>(100, 4)</li>
-      </points>
-    </pointsFactorFromDaysPassed>
     <comps>
       <li Class="SimWorld.Director.StorytellerCompProperties_ClassicIntro">
         <incident>ManhunterPack</incident>
@@ -61,19 +80,12 @@
     </comps>
   </StorytellerDef>
 
-  <StorytellerDef>
+  <StorytellerDef ParentName="StorytellerBase">
     <defName>Phoebe_Chillax</defName>
     <label>Phoebe Chillax</label>
     <description>A gentler storyteller: longer quiet stretches and a more relaxed pace.</description>
     <listOrder>1</listOrder>
     <persona>The Chronicle</persona>
-    <pointsFactorFromDaysPassed>
-      <points>
-        <li>(0, 1)</li>
-        <li>(40, 1.5)</li>
-        <li>(150, 2.5)</li>
-      </points>
-    </pointsFactorFromDaysPassed>
     <comps>
       <li Class="SimWorld.Director.StorytellerCompProperties_ClassicIntro">
         <incident>ManhunterPack</incident>
@@ -107,7 +119,7 @@
     </comps>
   </StorytellerDef>
 
-  <StorytellerDef>
+  <StorytellerDef ParentName="StorytellerBase">
     <defName>Randy_Random</defName>
     <label>Randy Random</label>
     <description>An unpredictable storyteller: no pattern, just chance.</description>

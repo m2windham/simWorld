@@ -33,7 +33,8 @@ namespace SimWorld.Director
         /// RimWorld's threat-points formula: wealth curve, plus per-pawn points scaled by each pawn's health
         /// (dead pawns contribute nothing, hurt ones contribute proportionally less down to half), times
         /// difficulty's threat scale, times the civilization's current adaptation factor, times the
-        /// storyteller's own days-passed curve — clamped to [<see cref="MinThreatPoints"/>, <see cref="MaxThreatPoints"/>].
+        /// storyteller's starting factor (<see cref="StorytellerDef.pointsFactorFromDaysPassed"/>, a
+        /// discount that fades out by day 40) — clamped to [<see cref="MinThreatPoints"/>, <see cref="MaxThreatPoints"/>].
         /// <para/>
         /// <b>Addition:</b> one more multiplier, the current era's <see cref="Research.EraDef.threatPointsFactor"/>,
         /// applied the same way difficulty and adaptation already are. That factor is SimWorld's own and
