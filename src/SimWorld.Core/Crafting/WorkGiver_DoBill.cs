@@ -63,13 +63,23 @@ namespace SimWorld.Crafting
 
         public override PathEndMode PathEndMode => PathEndMode.Touch;
 
+        /// <summary>
+        /// Every Thing that could hold a bill stack, asked of <see cref="ThingRequestGroup.PotentialBillGiver"/>
+        /// (RimWorld: <c>WorkGiver_DoBill.PotentialWorkThingRequest</c> =&gt;
+        /// <c>ThingRequest.ForGroup(ThingRequestGroup.PotentialBillGiver)</c>). This walked
+        /// <see cref="ThingRequestGroup.Building"/> and kept the ones with a <see cref="CompBillGiver"/> — on a
+        /// settlement cut into a mountain that is every rock cell of the map (13,000 of them) to find a
+        /// handful of benches, once per think for every idle citizen. The group is the same benches in the same
+        /// order, so which one a scan finds first is unchanged.
+        /// </summary>
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.Building))
+            IReadOnlyList<Thing> candidates = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
+            for (int i = 0; i < candidates.Count; i++)
             {
-                if (BillGiverFor(t) != null) yield return t;
+                if (BillGiverFor(candidates[i]) != null) yield return candidates[i];
             }
         }
 

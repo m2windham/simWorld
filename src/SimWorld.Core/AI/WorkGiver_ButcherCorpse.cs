@@ -108,10 +108,13 @@ namespace SimWorld.AI
 
         public static bool AnyButcherBenchOn(Map.Map map)
         {
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
-            for (int i = 0; i < buildings.Count; i++)
+            // A butcher bench lists a butchery recipe, so it is a potential bill giver: ask that short group,
+            // not every building on the map (RimWorld reaches the bench through WorkGiver_DoBill, which asks
+            // the same group).
+            IReadOnlyList<Thing> benches = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
+            for (int i = 0; i < benches.Count; i++)
             {
-                if (IsButcherBench(buildings[i])) return true;
+                if (IsButcherBench(benches[i])) return true;
             }
             return false;
         }
@@ -125,10 +128,10 @@ namespace SimWorld.AI
             if (map == null) return false;
 
             int bestDistSq = int.MaxValue;
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
-            for (int i = 0; i < buildings.Count; i++)
+            IReadOnlyList<Thing> benches = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
+            for (int i = 0; i < benches.Count; i++)
             {
-                Thing candidate = buildings[i];
+                Thing candidate = benches[i];
                 if (!IsButcherBench(candidate)) continue;
                 if (!Reachability.CanReach(pawn, candidate, PathEndMode.Touch)) continue;
                 if (!map.reservationManager.CanReserve(pawn, candidate)) continue;

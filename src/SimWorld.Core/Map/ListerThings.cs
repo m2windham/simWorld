@@ -5,26 +5,6 @@ using SimWorld.Things;
 
 namespace SimWorld.Map
 {
-    /// <summary>Broad category a caller can ask <see cref="ListerThings.ThingsInGroup"/> for (RimWorld: <c>Verse.ThingRequestGroup</c>).</summary>
-    public enum ThingRequestGroup
-    {
-        Undefined,
-        Everything,
-        Pawn,
-        Building,
-        Item,
-        Plant,
-        HaulableEver,
-        BuildingArtificial,
-        Filth,
-
-        /// <summary>Blueprints awaiting materials (system 16: Building).</summary>
-        Blueprint,
-
-        /// <summary>Frames under construction (system 16: Building).</summary>
-        BuildingFrame,
-    }
-
     /// <summary>Every spawned Thing on the map, indexed by def and by broad category (RimWorld: <c>Verse.ListerThings</c>).</summary>
     public sealed class ListerThings
     {
@@ -68,34 +48,15 @@ namespace SimWorld.Map
             }
         }
 
+        /// <summary>Every stored group a Thing of this def belongs to (RimWorld: the loop in
+        /// <c>ListerThings.Add</c> over <c>ThingListGroupHelper.AllGroups</c> asking <c>group.Includes(def)</c>).</summary>
         private static IEnumerable<ThingRequestGroup> GroupsFor(Thing thing)
         {
-            switch (thing.def.category)
+            ThingRequestGroup[] groups = ThingRequestGroupUtility.StoredGroups;
+            for (int i = 0; i < groups.Length; i++)
             {
-                case ThingCategory.Pawn:
-                    yield return ThingRequestGroup.Pawn;
-                    break;
-                case ThingCategory.Building:
-                    yield return ThingRequestGroup.Building;
-                    if (thing.def.mineable == false) yield return ThingRequestGroup.BuildingArtificial;
-                    break;
-                case ThingCategory.Item:
-                    yield return ThingRequestGroup.Item;
-                    break;
-                case ThingCategory.Plant:
-                    yield return ThingRequestGroup.Plant;
-                    break;
-                case ThingCategory.Filth:
-                    yield return ThingRequestGroup.Filth;
-                    break;
-                case ThingCategory.Blueprint:
-                    yield return ThingRequestGroup.Blueprint;
-                    break;
-                case ThingCategory.Frame:
-                    yield return ThingRequestGroup.BuildingFrame;
-                    break;
+                if (groups[i].Includes(thing.def)) yield return groups[i];
             }
-            if (thing.def.EverHaulable) yield return ThingRequestGroup.HaulableEver;
         }
 
         private List<Thing> DefList(ThingDef def)
