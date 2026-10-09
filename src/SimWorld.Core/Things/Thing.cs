@@ -111,6 +111,15 @@ namespace SimWorld.Things
 
         public Map.Map? Map => map;
 
+        /// <summary>The container this Thing is inside while it is off the map in one, else null (RimWorld:
+        /// <c>Thing.holdingOwner</c>). Written only by <see cref="ThingOwner"/>, and never saved from here:
+        /// the owner deep-saves what it holds and sets this on load.</summary>
+        public ThingOwner? holdingOwner;
+
+        /// <summary>Whatever holds this Thing in a container (RimWorld: <c>Thing.ParentHolder</c>); null when
+        /// it is on a map, in a pawn's hands, or nowhere.</summary>
+        public IThingHolder? ParentHolder => holdingOwner?.Owner;
+
         public bool Spawned => map != null;
 
         public bool Destroyed => destroyed;

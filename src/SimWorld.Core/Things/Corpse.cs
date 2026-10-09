@@ -1,7 +1,9 @@
 using System;
+using SimWorld.Building;
 using SimWorld.Map;
 using SimWorld.Pawns;
 using SimWorld.Sim;
+using SimWorld.Thoughts;
 
 namespace SimWorld.Things
 {
@@ -25,7 +27,7 @@ namespace SimWorld.Things
     /// therefore takes the inner pawn with it, which is also what keeps <c>Pawn.Destroyed</c> meaning what
     /// callers written before corpses existed already assumed it meant.
     /// </summary>
-    public class Corpse : ThingWithComps
+    public class Corpse : ThingWithComps, IThoughtGiver
     {
         private Pawn? innerPawn;
 
@@ -80,6 +82,32 @@ namespace SimWorld.Things
                 if (pawn?.Name != null) return pawn.Name.ToStringShort + "'s corpse";
                 return def?.label ?? base.Label;
             }
+        }
+
+        /// <summary>
+        /// The thought a body gives to whoever sees it (RimWorld: <c>Corpse.GiveObservedThought</c>,
+        /// ported 1:1). Only a humanlike body bothers anyone — an animal's carcass is meat, not a person —
+        /// and only one that is <i>lying about</i>: a body in a grave (<see cref="StoreUtility.StoringThing"/>
+        /// names the grave) is put away and gives nothing. A body already past <see cref="RotStage.Fresh"/> gives
+        /// the worse thought. Fed to the viewer by <see cref="PawnObserver"/>, which gains the memory; the target
+        /// is this body, so one body seen twice is one memory kept fresh and two bodies are two.
+        /// <para/>
+        /// <b>A body on a stockpile cell is still lying about.</b> RimWorld's storing Thing is the building that
+        /// holds it, and a stockpile zone is not a building; so a dumping stockpile is a place to put the dead
+        /// <i>somewhere</i>, not a place that hides them. That is why the settlement puts its dump away from
+        /// where its people live.
+        /// </summary>
+        public Thought_Memory? GiveObservedThought()
+        {
+            if (innerPawn == null || !innerPawn.RaceProps.Humanlike) return null;
+            if (this.StoringThing() != null) return null;
+
+            ThoughtDef def = RotStageNow != RotStage.Fresh
+                ? ObservationThoughtDefOf.ObservedLayingRottingCorpse
+                : ObservationThoughtDefOf.ObservedLayingCorpse;
+            var thought = (Thought_MemoryObservation)ThoughtMaker.MakeMemory(def);
+            thought.Target = this;
+            return thought;
         }
 
         public override void Destroy(DestroyMode mode = DestroyMode.Vanish)

@@ -73,7 +73,6 @@ content-silent SimWorld.Scenario.ScenPart_ForcedTrait.degree | The one shipped f
 content-silent SimWorld.Stats.PawnCapacityFactor.allowedDefect | No shipped stat's capacity factor tolerates a defect, so that arm of PawnCapacityFactor.GetFactor is dead in shipped content.
 content-silent SimWorld.Stats.PawnCapacityFactor.useReciprocal | As allowedDefect: no shipped capacity factor inverts, so the reciprocal arm of GetFactor never runs.
 content-silent SimWorld.Thoughts.ThoughtDef.nullifyingHediffs | No shipped thought is suppressed by a hediff, so the nullifying check in ThoughtHandlers always passes.
-content-silent SimWorld.Thoughts.ThoughtDef.thoughtClass | An optional override: all 50 shipped thoughts let ThoughtDef.ThoughtClass fall back to Thought_Memory or Thought_Situational, which is the intended shape.
 content-silent SimWorld.Weather.WeatherDef.repeatable | No shipped weather may follow itself, so WeatherDecider's repeat check always rejects the incumbent — the flag exists for content that wants the opposite.
 content-silent SimWorld.Weather.WeatherDef.windSpeedOffset | Content-side gap: WeatherManager adds this to base wind speed and all seven shipped weathers leave it at zero, so wind never varies by weather.
 content-silent SimWorld.Work.SkillDef.neverDisabledBasedOnWorkTypes | No shipped skill opts out of work-type-driven disabling, so SkillDef's exemption never applies.
