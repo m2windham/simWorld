@@ -199,11 +199,20 @@ namespace SimWorld.Tests.AI
             Pawn hauler = Hauler(map, new IntVec3(18, 0, 20));
             Assert.True(grave.Accepts(citizen));
 
-            Run(2500, hauler);
+            // Tick by tick, and watch where the body ever lies. A hauler who laid the citizen in the dump and
+            // came back for them later would also end with the body in the grave inside 2500 ticks (a body in
+            // a lower-priority place is moved to a higher one), so the end state alone cannot tell "the grave
+            // wins" from "the dump wins, then the grave"; the body ever touching the dump can.
+            bool everOnDump = false;
+            for (int i = 0; i < 2500 && !grave.HasCorpse; i++)
+            {
+                Run(1, hauler);
+                everOnDump |= OnDump(citizen, dump);
+            }
 
             Assert.True(grave.HasCorpse, "the citizen belongs in the grave, however far");
             Assert.Same(citizen, grave.Corpse);
-            Assert.False(OnDump(citizen, dump));
+            Assert.False(everOnDump, "the citizen was carried to the dump first, because it was nearer");
         }
 
         [Fact]
