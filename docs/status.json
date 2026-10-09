@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 2974,
+  "testsTotal": 2998,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1159,6 +1159,11 @@
           "id": "ai.beatfire.onpath",
           "label": "JobDriver_BeatFire / Wait beating fires on their own path (RimWorld does; this port's pawns only beat fires a giver hands them)",
           "done": false
+        },
+        {
+          "id": "ai.idlescancost",
+          "label": "An idle colony's think-tree scans walk whole lists (WorkGiver_DoBill over every building including 12,983 rock cells, Research, ChopWood, PlantsCut, roof-area cells, Area.TrueCount per filth): once the storage sprawl stopped keeping citizens busy, a game-day went from ~4 s to a stall. Lands with the scan-cost lane",
+          "done": false
         }
       ]
     },
@@ -1611,11 +1616,11 @@
       "id": "building",
       "n": 16,
       "rimworld": "Colony Building & Environment",
-      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative. Where it places them: inside the player's painted home area when there is one, by the same on/off rule CleaningBounds reads, and otherwise around the hub GenStep_Roads carves — never the whole map. A home area too full to hold the need makes the settlement wait rather than spill outside it, so painting small stays a decision with a cost. Stockpile defaults follow RimWorld's ordinary preset in refusing corpses (StorageSettingsPreset excludes the Corpses category rather than copying RimWorld's eight-category allow-list, because this content has no Weapons, Apparel or Buildings category and an allow-list would silently refuse weapons). One deliberate deviation: Chunks stay allowed, where RimWorld's ordinary stockpile refuses them, because the masons' guild needs them banked. What the settlement builds on its own never walls off its own ground: autonomous placement refuses a site that would cut a region of the settlement off from the rest (PlacementConnectivityTests). RimWorld has no placement AI to port, so the rule is this port's, in the spirit of WorkGiver_Miner's roof-support judgment. Tree density (one per ~20 cells at full Timber) is this port's own figure, pinned as a trend, not a literal. Medicine crop: RimWorld's player drags out a growing zone and picks healroot for it, knowing medicine is low and who can sow. Here the settlement does it: once its food field is as big as it will get and it holds the larder it wants, a settlement holding under 2 medicine per citizen (map plus ledger) that has a living citizen with Growing on and the Plants skill the crop asks for paints a small separate herb garden of the plant whose harvest is medicine. It is sized from content (stock wanted / yield per cell per day over 30 days, times the food margin), grows only while the settlement is short, is never shrunk, and pauses sowing while food is short, so food always wins. The player can still lay out or retarget any zone.",
+      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative. Where it places them: inside the player's painted home area when there is one, by the same on/off rule CleaningBounds reads, and otherwise around the hub GenStep_Roads carves — never the whole map. A home area too full to hold the need makes the settlement wait rather than spill outside it, so painting small stays a decision with a cost. Stockpile defaults follow RimWorld's ordinary preset in refusing corpses (StorageSettingsPreset excludes the Corpses category rather than copying RimWorld's eight-category allow-list, because this content has no Weapons, Apparel or Buildings category and an allow-list would silently refuse weapons). One deliberate deviation: Chunks stay allowed, where RimWorld's ordinary stockpile refuses them, because the masons' guild needs them banked. What the settlement builds on its own never walls off its own ground: autonomous placement refuses a site that would cut a region of the settlement off from the rest (PlacementConnectivityTests). RimWorld has no placement AI to port, so the rule is this port's, in the spirit of WorkGiver_Miner's roof-support judgment. Tree density (one per ~20 cells at full Timber) is this port's own figure, pinned as a trend, not a literal. Medicine crop: RimWorld's player drags out a growing zone and picks healroot for it, knowing medicine is low and who can sow. Here the settlement does it: once its food field is as big as it will get and it holds the larder it wants, a settlement holding under 2 medicine per citizen (map plus ledger) that has a living citizen with Growing on and the Plants skill the crop asks for paints a small separate herb garden of the plant whose harvest is medicine. It is sized from content (stock wanted / yield per cell per day over 30 days, times the food margin), grows only while the settlement is short, is never shrunk, and pauses sowing while food is short, so food always wins. The player can still lay out or retarget any zone. Storage hut: RimWorld has no storage hut; a colony keeps goods in stockpile zones and on shelves the player lays out. The hut is this port's stand-in for 'a settlement keeps its goods somewhere', and it holds nothing, because the ledger it is for (Settlement.Stores) is off the map. It was first sized by that ledger (one hut per 50 stored units, uncapped), so the harder a settlement worked the more markers it built. It is now sized by people: ceil(citizens / ConstructionInitiativeTuning.CitizensPerStorageHut) once the ledger holds anything, CitizensPerStorageHut = 5 being a design number, and huts are sited round the settlement's existing storage (its huts, else its stockpile zones, else its home area's middle, else the road hub).",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
       "status": "translated",
-      "tests": 248,
+      "tests": 272,
       "items": [
         {
           "id": "building.zones",
@@ -1716,6 +1721,11 @@
           "id": "building.wildhealroot",
           "label": "Wild healroot (lands with a per-biome wild plant table; the spawner supports one food plant today)",
           "done": false
+        },
+        {
+          "id": "building.storagehuts",
+          "label": "Storage huts scale with people, not goods (StorageHutTarget: one per 5 citizens once anything is stored, the same function for the map and off-map paths) and gather round existing storage (StorageAnchor); surplus huts are left standing. Seed 777 had 453 huts by day 20 for 26 people, about 11,000 wood across the whole map; now 5, in one cluster",
+          "done": true
         }
       ]
     },
