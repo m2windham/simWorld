@@ -138,11 +138,17 @@ namespace SimWorld.Director
         /// <summary>Runs every comp against every registered target for the current interval, and ticks adaptation.</summary>
         public void MakeIncidentsForInterval()
         {
+            // RimWorld asks this of every comp, once per interval, before the comp is consulted at all
+            // (Storyteller.MakeIncidentsForInterval: DaysPassedFloat > comp.props.minDaysPassed). ">=" here
+            // where RimWorld writes ">": at the exact tick a comp's first day arrives, a cycle's plan may
+            // have a hit waiting on interval zero, and a strict test would drop it silently.
+            float daysPassedFloat = Find.TickManager.TicksGame / (float)GenDate.TicksPerDay;
             for (int t = 0; t < allIncidentTargets.Count; t++)
             {
                 IIncidentTarget target = allIncidentTargets[t];
                 for (int c = 0; c < comps.Count; c++)
                 {
+                    if (daysPassedFloat < comps[c].props.minDaysPassed) continue;
                     foreach (FiringIncident fi in comps[c].MakeIntervalIncidents(target))
                     {
                         TryFire(fi);

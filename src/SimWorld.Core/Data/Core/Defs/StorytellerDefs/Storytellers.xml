@@ -35,6 +35,30 @@
     </pointsFactorFromDaysPassed>
   </StorytellerDef>
 
+  <!--
+    Cassandra Classic. https://rimworldwiki.com/wiki/Cassandra_Classic ("Code specifics") prints her major-threat
+    cycle and her Misc comp; the page names no game version. Everything the page prints is below, with the
+    port's old value where it differed:
+
+      ThreatBig OnOffCycle   minDaysPassed 11.0 (was 6)   onDays 4.6 (was 6.8)   offDays 6.0 (was 1.5)
+                             minSpacingDays 1.9 (was 1.5) numIncidentsRange 1~2 (was 1~1)
+      Misc mtbDays 4.8       (was 3.0, but that was one comp pooling six categories; see below)
+
+    The old cycle kept threats "on" 82% of the time from day 6 (6.8 of every 8.3 days). RimWorld's is on for
+    4.6 of every 10.6 days, 43%, from day 11, and the page's own worked table of on-phases (11-15.6, 21.6-26.2,
+    32.2-36.8, 42.8-47.4, ...) is what IncidentCycleUtility reproduces.
+
+    Not on the page, therefore SimWorld's own and kept as they were (UNSOURCED): the ClassicIntro (the page
+    says a mad animal, then a single raider on day 5 hour 15; the port sends one ManhunterPack on day 4), the
+    ThreatSmall cycle (no shipped incident is in that category, so it fires nothing), the weights of the other
+    categories, and the disease interval.
+
+    Splitting the old RandomMain in two is the one structural change. The page's 4.8 is for Misc alone; the old
+    comp rolled once every 3.0 days and then chose among Misc 40, FactionArrival 20 and four categories of 5,
+    so Misc was effectively one event per 6 days and each other category w/240 per day. Misc now has its own
+    comp at the page's 4.8. The rest keep exactly the rate they had: 40 weight units at mtbDays 6.0 gives the
+    same w/240 per day each.
+  -->
   <StorytellerDef ParentName="StorytellerBase">
     <defName>Cassandra_Classic</defName>
     <label>Cassandra Classic</label>
@@ -42,30 +66,41 @@
     <listOrder>0</listOrder>
     <persona>The Chronicle</persona>
     <comps>
+      <!-- UNSOURCED: see above. -->
       <li Class="SimWorld.Director.StorytellerCompProperties_ClassicIntro">
         <incident>ManhunterPack</incident>
         <day>4</day>
       </li>
+      <!-- Sourced: the wiki's Cassandra_Classic "Major Threats" block, every field. -->
       <li Class="SimWorld.Director.StorytellerCompProperties_OnOffCycle">
         <category>ThreatBig</category>
-        <onDays>6.8</onDays>
-        <offDays>1.5</offDays>
-        <minDaysPassed>6</minDaysPassed>
-        <minSpacingDays>1.5</minSpacingDays>
-        <numIncidentsRange>1~1</numIncidentsRange>
+        <minDaysPassed>11</minDaysPassed>
+        <onDays>4.6</onDays>
+        <offDays>6</offDays>
+        <minSpacingDays>1.9</minSpacingDays>
+        <numIncidentsRange>1~2</numIncidentsRange>
       </li>
+      <!-- UNSOURCED: kept. -->
       <li Class="SimWorld.Director.StorytellerCompProperties_OnOffCycle">
         <category>ThreatSmall</category>
         <onDays>4</onDays>
         <offDays>2</offDays>
         <numIncidentsRange>1~1</numIncidentsRange>
       </li>
+      <!-- Sourced: the wiki's "Misc. Events" block, mtbDays 4.8. -->
       <li Class="SimWorld.Director.StorytellerCompProperties_RandomMain">
-        <mtbDays>3.0</mtbDays>
+        <mtbDays>4.8</mtbDays>
+        <maxThreatBigIntervalDays>0</maxThreatBigIntervalDays>
+        <categoryWeights>
+          <li><category>Misc</category><weight>1</weight></li>
+        </categoryWeights>
+      </li>
+      <!-- UNSOURCED: the old pooled comp's other categories, at exactly the rate they had. -->
+      <li Class="SimWorld.Director.StorytellerCompProperties_RandomMain">
+        <mtbDays>6.0</mtbDays>
         <maxThreatBigIntervalDays>0</maxThreatBigIntervalDays>
         <randomPointsFactorRange>0.9~1.1</randomPointsFactorRange>
         <categoryWeights>
-          <li><category>Misc</category><weight>40</weight></li>
           <li><category>FactionArrival</category><weight>20</weight></li>
           <li><category>OrbitalVisitor</category><weight>5</weight></li>
           <li><category>AllyAssistance</category><weight>5</weight></li>
@@ -73,6 +108,7 @@
           <li><category>ShipChunkDrop</category><weight>5</weight></li>
         </categoryWeights>
       </li>
+      <!-- UNSOURCED: kept. -->
       <li Class="SimWorld.Director.StorytellerCompProperties_Disease">
         <category>DiseaseHuman</category>
         <baseMtbDays>10</baseMtbDays>
@@ -80,6 +116,20 @@
     </comps>
   </StorytellerDef>
 
+  <!--
+    Phoebe Chillax. https://rimworldwiki.com/wiki/Phoebe_Chillax prints her cycle and a Misc comp; no game
+    version named.
+
+      ThreatBig OnOffCycle   minDaysPassed 13.0 (was 10)  onDays 8 (was 4)  offDays 8 (was 8)
+                             numIncidentsRange 1~1 (was 1~1)
+      Misc mtbDays 4.8       (was 5.0 for a pooled comp; same split as Cassandra's)
+
+    The page prints no minSpacingDays, which reads as RimWorld's default of 0. The old 2 is kept (UNSOURCED);
+    with one incident per sixteen-day cycle it cannot bind either way, so it moves nothing. Nor does the page
+    mention an intro, the disease interval or the other categories' weights; those are kept (UNSOURCED). The
+    non-Misc comp's mtbDays of 10.0 reproduces the old pooled comp's per-category rate (w/400 per day) over
+    its 40 weight units.
+  -->
   <StorytellerDef ParentName="StorytellerBase">
     <defName>Phoebe_Chillax</defName>
     <label>Phoebe Chillax</label>
@@ -87,24 +137,34 @@
     <listOrder>1</listOrder>
     <persona>The Chronicle</persona>
     <comps>
+      <!-- UNSOURCED: kept. -->
       <li Class="SimWorld.Director.StorytellerCompProperties_ClassicIntro">
         <incident>ManhunterPack</incident>
         <day>8</day>
       </li>
+      <!-- Sourced: every field the wiki prints, except minSpacingDays (UNSOURCED, kept). -->
       <li Class="SimWorld.Director.StorytellerCompProperties_OnOffCycle">
         <category>ThreatBig</category>
-        <onDays>4</onDays>
+        <minDaysPassed>13</minDaysPassed>
+        <onDays>8</onDays>
         <offDays>8</offDays>
-        <minDaysPassed>10</minDaysPassed>
         <minSpacingDays>2</minSpacingDays>
         <numIncidentsRange>1~1</numIncidentsRange>
       </li>
+      <!-- Sourced: the wiki's "Misc. Events" block, mtbDays 4.8. -->
       <li Class="SimWorld.Director.StorytellerCompProperties_RandomMain">
-        <mtbDays>5.0</mtbDays>
+        <mtbDays>4.8</mtbDays>
+        <maxThreatBigIntervalDays>0</maxThreatBigIntervalDays>
+        <categoryWeights>
+          <li><category>Misc</category><weight>1</weight></li>
+        </categoryWeights>
+      </li>
+      <!-- UNSOURCED: the old pooled comp's other categories, at exactly the rate they had. -->
+      <li Class="SimWorld.Director.StorytellerCompProperties_RandomMain">
+        <mtbDays>10.0</mtbDays>
         <maxThreatBigIntervalDays>0</maxThreatBigIntervalDays>
         <randomPointsFactorRange>0.9~1.1</randomPointsFactorRange>
         <categoryWeights>
-          <li><category>Misc</category><weight>40</weight></li>
           <li><category>FactionArrival</category><weight>20</weight></li>
           <li><category>OrbitalVisitor</category><weight>5</weight></li>
           <li><category>AllyAssistance</category><weight>5</weight></li>
@@ -112,6 +172,7 @@
           <li><category>ShipChunkDrop</category><weight>5</weight></li>
         </categoryWeights>
       </li>
+      <!-- UNSOURCED: kept. -->
       <li Class="SimWorld.Director.StorytellerCompProperties_Disease">
         <category>DiseaseHuman</category>
         <baseMtbDays>16</baseMtbDays>
@@ -119,6 +180,23 @@
     </comps>
   </StorytellerDef>
 
+  <!--
+    Randy Random. https://rimworldwiki.com/wiki/Randy_Random prints his one comp; no game version named.
+
+      minDaysPassed 1 (new)   mtbDays 1.35 (same)   maxThreatBigIntervalDays 13 (was 20)
+      randomPointsFactorRange 0.5~1.5 (was 0.5~1.7)
+      categoryWeights   Misc 3.5 (was 33)  ThreatBig 1.4 (was 16)  OrbitalVisitor 1.1 (was 5)
+                        FactionArrival 2.4 (was 16)  ThreatSmall 0.6 (was 11)  ShipChunkDrop 0.22 (was 5)
+
+    The old weights were on a scale of their own and were not proportional to these. The page's six sum to
+    9.22, which puts a ThreatBig at 15.2% of his events (the page works a major threat every 7.14 days out of
+    that share and the cap, reading mtbDays as a mean; Rand.MTBEventOccurs is a half-life, so the interval
+    this port realises is longer, and the three kept categories below dilute the share to 12.9%).
+
+    DiseaseHuman, AllyAssistance and GiveQuest are in his comp in the port because the port gives him no
+    separate comps for them as RimWorld does; the page prints no weight for them (UNSOURCED). They keep their
+    old share relative to ThreatBig (old 9, 5 and 5 against 16), re-expressed on the page's scale: x 1.4 / 16.
+  -->
   <StorytellerDef ParentName="StorytellerBase">
     <defName>Randy_Random</defName>
     <label>Randy Random</label>
@@ -127,18 +205,21 @@
     <persona>The Chronicle</persona>
     <comps>
       <li Class="SimWorld.Director.StorytellerCompProperties_RandomMain">
+        <minDaysPassed>1</minDaysPassed>
         <mtbDays>1.35</mtbDays>
-        <maxThreatBigIntervalDays>20</maxThreatBigIntervalDays>
-        <randomPointsFactorRange>0.5~1.7</randomPointsFactorRange>
+        <maxThreatBigIntervalDays>13</maxThreatBigIntervalDays>
+        <randomPointsFactorRange>0.5~1.5</randomPointsFactorRange>
         <categoryWeights>
-          <li><category>ThreatBig</category><weight>16</weight></li>
-          <li><category>ThreatSmall</category><weight>11</weight></li>
-          <li><category>Misc</category><weight>33</weight></li>
-          <li><category>FactionArrival</category><weight>16</weight></li>
-          <li><category>DiseaseHuman</category><weight>9</weight></li>
-          <li><category>OrbitalVisitor</category><weight>5</weight></li>
-          <li><category>AllyAssistance</category><weight>5</weight></li>
-          <li><category>GiveQuest</category><weight>5</weight></li>
+          <li><category>ThreatBig</category><weight>1.4</weight></li>
+          <li><category>ThreatSmall</category><weight>0.6</weight></li>
+          <li><category>Misc</category><weight>3.5</weight></li>
+          <li><category>FactionArrival</category><weight>2.4</weight></li>
+          <li><category>OrbitalVisitor</category><weight>1.1</weight></li>
+          <li><category>ShipChunkDrop</category><weight>0.22</weight></li>
+          <!-- UNSOURCED, below: kept at their old share of a ThreatBig. -->
+          <li><category>DiseaseHuman</category><weight>0.79</weight></li>
+          <li><category>AllyAssistance</category><weight>0.44</weight></li>
+          <li><category>GiveQuest</category><weight>0.44</weight></li>
         </categoryWeights>
       </li>
     </comps>
