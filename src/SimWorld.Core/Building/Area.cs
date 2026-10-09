@@ -21,6 +21,13 @@ namespace SimWorld.Building
         private readonly Map.Map map;
         private readonly bool[] grid;
 
+        /// <summary>How many cells are set, kept current by the indexer and <see cref="ExposeData"/> so that
+        /// <see cref="TrueCount"/> is a field read (RimWorld: <c>BoolGrid.trueCountInt</c>, which
+        /// <c>Area.TrueCount</c> forwards to). It was a walk of the whole grid; a think-tree scan asked it once
+        /// per piece of filth through <c>CleaningBounds.IsCleanable</c>, so a
+        /// 40,000-cell loop sat inside a per-candidate test.</summary>
+        private int trueCount;
+
         public string label;
 
         public Area(Map.Map map, string label)
@@ -35,33 +42,37 @@ namespace SimWorld.Building
             get => GenGrid.InBounds(c, map) && grid[map.cellIndices.CellToIndex(c)];
             set
             {
-                if (GenGrid.InBounds(c, map)) grid[map.cellIndices.CellToIndex(c)] = value;
+                if (!GenGrid.InBounds(c, map)) return;
+                int index = map.cellIndices.CellToIndex(c);
+                // RimWorld: BoolGrid.Set returns early when the cell already holds the value, and only a real
+                // change moves the count.
+                if (grid[index] == value) return;
+                grid[index] = value;
+                trueCount += value ? 1 : -1;
             }
         }
 
-        public int TrueCount
-        {
-            get
-            {
-                int n = 0;
-                for (int i = 0; i < grid.Length; i++)
-                {
-                    if (grid[i]) n++;
-                }
-                return n;
-            }
-        }
+        /// <summary>How many cells are set. O(1) (RimWorld: <c>Area.TrueCount</c> =&gt; <c>BoolGrid.TrueCount</c>).</summary>
+        public int TrueCount => trueCount;
 
-        /// <summary>Every cell currently set, in cell-index order (RimWorld: <c>Area.ActiveCells</c>). Walked
-        /// by a cell-scanning <see cref="Work.WorkGiver_Scanner.PotentialWorkCellsGlobal"/> — see
-        /// <see cref="WorkGiver_BuildRoof"/>/<see cref="WorkGiver_RemoveRoof"/>.</summary>
+        /// <summary>Every cell currently set, in cell-index order (RimWorld: <c>Area.ActiveCells</c> =&gt;
+        /// <c>BoolGrid.ActiveCells</c>). Walked by a cell-scanning
+        /// <see cref="Work.WorkGiver_Scanner.PotentialWorkCellsGlobal"/> — see
+        /// <see cref="WorkGiver_BuildRoof"/>/<see cref="WorkGiver_RemoveRoof"/>. As RimWorld's does, it yields
+        /// nothing without looking at the grid when no cell is set, and stops walking once it has yielded as
+        /// many cells as are set — an empty roof area costs nothing instead of a 40,000-cell walk per scan.</summary>
         public IEnumerable<IntVec3> ActiveCells
         {
             get
             {
+                if (trueCount == 0) yield break;
+                int yielded = 0;
                 for (int i = 0; i < grid.Length; i++)
                 {
-                    if (grid[i]) yield return map.cellIndices.IndexToCell(i);
+                    if (!grid[i]) continue;
+                    yield return map.cellIndices.IndexToCell(i);
+                    yielded++;
+                    if (yielded >= trueCount) break;
                 }
             }
         }
@@ -81,12 +92,19 @@ namespace SimWorld.Building
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
                 Array.Clear(grid, 0, grid.Length);
+                trueCount = 0;
                 if (trueCells != null)
                 {
                     for (int i = 0; i < trueCells.Count; i++)
                     {
                         int idx = trueCells[i];
-                        if (idx >= 0 && idx < grid.Length) grid[idx] = true;
+                        // Counted as it is set, so a repeated or out-of-range index in a hand-edited save
+                        // cannot leave TrueCount disagreeing with the grid.
+                        if (idx >= 0 && idx < grid.Length && !grid[idx])
+                        {
+                            grid[idx] = true;
+                            trueCount++;
+                        }
                     }
                 }
             }
