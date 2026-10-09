@@ -83,13 +83,22 @@ namespace SimWorld.AI
                 for (int c = 0; c < cells.Count; c++)
                 {
                     IntVec3 candidate = cells[c];
+
+                    // Distance first, as RimWorld's TryFindBestBetterStoreCellForWorker does: a cell that could
+                    // not beat the best one found so far is dropped before the tests that cost something. A
+                    // reservation test reads the map's whole reservation list and a reach test can be a path
+                    // search, and with a hundred freshly harvested stacks looking for a home across a few
+                    // hundred empty cells those two were the whole bill. The answer is the same cell either
+                    // way: a candidate that is not strictly nearer never replaced the best, whether or not it
+                    // passed them, and none of the tests changes anything it is asked about.
+                    int distSq = (candidate - thing.Position).LengthHorizontalSquared;
+                    if (distSq >= bestDistSq) continue;
+
                     if (CapacityAt(map, candidate, thing.def) <= 0) continue;
                     if (!GenGrid.Standable(candidate, map)) continue;
                     if (!map.reservationManager.CanReserve(pawn, candidate)) continue;
                     if (!Reachability.CanReach(pawn, candidate, PathEndMode.OnCell)) continue;
 
-                    int distSq = (candidate - thing.Position).LengthHorizontalSquared;
-                    if (distSq >= bestDistSq) continue;
                     best = candidate;
                     bestDistSq = distSq;
                 }
