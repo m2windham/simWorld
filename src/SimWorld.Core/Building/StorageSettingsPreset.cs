@@ -16,14 +16,19 @@ namespace SimWorld.Building
     /// nothing else. So an ordinary stockpile has never taken a body in RimWorld: the dead go to a dumping
     /// stockpile or a grave, and a player who wants them somewhere else says so on the storage tab.
     ///
-    /// <para/><b>Only the first is ported.</b> <c>DumpingStockpile</c> lands with the work that gives the dead a
-    /// destination (graves, burial), which is where somewhere-to-put-a-body belongs; until then nothing in
-    /// this port would paint one, and a player can still open any stockpile to bodies by naming them
-    /// (<c>Map.View.MapCommands.SetStockpileFilter</c>).
+    /// <para/><b>Both are ported.</b> <see cref="DumpingStockpile"/> landed with the work that gives the dead a
+    /// destination (graves, burial): the settlement lays one for the bodies a grave refuses
+    /// (<see cref="GraveyardInitiative"/>) and a player can still open any stockpile to bodies by naming them
+    /// (<c>Map.View.MapCommands.SetStockpileFilter</c>). RimWorld's dump also allows its <c>Chunks</c> category;
+    /// this port has none (see <see cref="StorageSettingsPresetUtility.SetFromPreset"/>), so here it is
+    /// <c>Corpses</c> and nothing else.
     /// </summary>
     public enum StorageSettingsPreset : byte
     {
         DefaultStockpile,
+
+        /// <summary>Bodies, and nothing else (RimWorld: <c>StorageSettingsPreset.DumpingStockpile</c>).</summary>
+        DumpingStockpile,
     }
 
     /// <summary>Categories <see cref="StorageSettingsPreset"/> reads by name (RimWorld: the same fields on
@@ -70,6 +75,12 @@ namespace SimWorld.Building
                 case StorageSettingsPreset.DefaultStockpile:
                     filter.SetAllowAll(null);
                     filter.SetAllow(StorageThingCategoryDefOf.Corpses, false);
+                    return;
+                case StorageSettingsPreset.DumpingStockpile:
+                    // RimWorld: categories Corpses and Chunks, and nothing else. There is no Chunks category
+                    // here (see above), and a chunk is not a body, so this is the whole of what it can take.
+                    filter.SetDisallowAll();
+                    filter.SetAllow(StorageThingCategoryDefOf.Corpses, true);
                     return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(preset), preset, "Not a ported storage preset.");
