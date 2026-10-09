@@ -1,3 +1,5 @@
+using System.Linq;
+
 using SimWorld.Defs;
 using SimWorld.Director;
 using SimWorld.Factions;
@@ -19,7 +21,9 @@ namespace SimWorld.Tests.Director
     /// A structure the earthquake destroys falls on its whole footprint. <c>Bed</c> is 1x2, and the crush
     /// used to look only at a destroyed structure's <c>Position</c> — its head — so somebody standing on the
     /// foot of a bed that came down walked away. Set up as <see cref="EarthquakeTests"/> sets up its sleeper;
-    /// kept in a file of its own rather than added to that one.
+    /// kept in a file of its own rather than added to that one. Whoever is caught is hurt rather than
+    /// certainly killed (<see cref="EarthquakeInjuryTests"/>), so "caught" is read off the mark they carry,
+    /// which a pawn the collapse missed would not have.
     /// </summary>
     [Collection("GlobalDefs")]
     public class EarthquakeFootprintTests : ContentTestBase
@@ -62,8 +66,12 @@ namespace SimWorld.Tests.Director
 
             Assert.True(fired);
             Assert.True(bed.Destroyed, "the fixture must bring the bed down, or this proves nothing");
-            Assert.True(onFoot.Dead, "standing on the foot of a bed that fell on them");
-            Assert.Equal(1, Find.Storyteller.deaths.AttributedTo("Earthquake"));
+            // Caught is caught whether the roll left a cut, took a small part off or (on a bad roll) killed:
+            // how it fell is EarthquakeInjuryTests' question, and a fixed tick would make this one depend on it.
+            Assert.True(
+                onFoot.Dead || onFoot.health.hediffSet.hediffs.Any(h => h is SimWorld.Health.Hediff_Injury || h is SimWorld.Health.Hediff_MissingPart),
+                "standing on the foot of a bed that fell on them, and not a mark on them");
+            Assert.Equal(onFoot.Dead ? 1 : 0, Find.Storyteller.deaths.AttributedTo("Earthquake"));
         }
     }
 }

@@ -240,17 +240,35 @@ namespace SimWorld.Tests.Director
         }
 
         // ---- deaths: credited from the ledger's own delta, never over-claimed ----
+        //
+        // A falling bed injures rather than kills now (EarthquakeInjuryTests), so whether a given firing kills
+        // its sleeper is the dice's: a roll on the neck that outruns its health. These cases need a firing that
+        // did, so they fire at successive ticks until one does and then read the world that firing left.
+
+        /// <summary>Fires the quake at one sleeper in one bed, on a fresh storyteller, at successive ticks until
+        /// the sleeper dies. What it returns is the last firing's sleeper, and <c>Find.Storyteller</c> is that
+        /// firing's.</summary>
+        private static Pawn FireUntilTheSleeperDies(bool registerWithStoryteller)
+        {
+            Pawn sleeper = EarthquakeInjuryTests.FireUntil(
+                tick =>
+                {
+                    CoreMap map = NewMap();
+                    Settlement settlement = PlainSettlement();
+                    Pawn pawn = SpawnBedWithSleeper(settlement, map, new IntVec3(5, 0, 5));
+                    Find.TickManager.DebugSetTicksGame(tick);
+                    Assert.True(Earthquake.Worker.TryExecute(OntoWatchedMap(settlement, map, registerWithStoryteller)));
+                    return pawn;
+                },
+                pawn => pawn.Dead);
+            return sleeper;
+        }
 
         [Fact]
-        public void A_registered_citizen_crushed_by_the_quake_is_credited_to_it()
+        public void A_registered_citizen_the_quake_kills_is_credited_to_it()
         {
-            CoreMap map = NewMap();
-            Settlement settlement = PlainSettlement();
-            Pawn sleeper = SpawnBedWithSleeper(settlement, map, new IntVec3(5, 0, 5));
+            Pawn sleeper = FireUntilTheSleeperDies(registerWithStoryteller: true);
 
-            bool fired = Earthquake.Worker.TryExecute(OntoWatchedMap(settlement, map, registerWithStoryteller: true));
-
-            Assert.True(fired);
             Assert.True(sleeper.Dead, "the fixture itself must actually kill the sleeper, or this test proves nothing");
             Assert.Equal(1, Find.Storyteller.deaths.Total);
             Assert.Equal(1, Find.Storyteller.deaths.AttributedTo("Earthquake"));
@@ -270,13 +288,8 @@ namespace SimWorld.Tests.Director
         [Fact]
         public void A_death_on_a_settlement_off_the_civilization_roster_is_never_over_claimed()
         {
-            CoreMap map = NewMap();
-            Settlement settlement = PlainSettlement();
-            Pawn sleeper = SpawnBedWithSleeper(settlement, map, new IntVec3(5, 0, 5));
+            Pawn sleeper = FireUntilTheSleeperDies(registerWithStoryteller: false);
 
-            bool fired = Earthquake.Worker.TryExecute(OntoWatchedMap(settlement, map, registerWithStoryteller: false));
-
-            Assert.True(fired);
             Assert.True(sleeper.Dead, "the sleeper must actually die, or this test never exercises the guard at all");
             Assert.True(Find.Storyteller.deaths.Total == 0,
                 "a death nobody's civilization counted must not be counted here either");
