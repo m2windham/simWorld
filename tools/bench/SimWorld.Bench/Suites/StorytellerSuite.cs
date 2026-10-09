@@ -375,14 +375,12 @@ namespace SimWorld.Bench.Suites
 
             float difficultyFactor = storyteller.difficulty != null ? storyteller.difficulty.threatScale : 1f;
             float adaptationFactor = storyteller.adaptation.TotalThreatPointsFactor(storyteller.difficulty);
-            float eraFactor = EraTransitionUtility.CurrentEraThreatPointsFactor();
             float daysPassedFactor = storyteller.def != null
                 ? storyteller.def.pointsFactorFromDaysPassed.Evaluate(GenDate.DaysPassedAt(Find.TickManager.TicksGame))
                 : 1f;
 
             if (storyteller.difficulty != null) points *= difficultyFactor;
             points *= adaptationFactor;
-            points *= eraFactor;
             if (storyteller.def != null) points *= daysPassedFactor;
 
             float preClamp = points;
@@ -398,7 +396,7 @@ namespace SimWorld.Bench.Suites
                 colonistSum: colonistSum,
                 difficultyFactor: difficultyFactor,
                 adaptationFactor: adaptationFactor,
-                eraFactor: eraFactor,
+                adaptDays: storyteller.adaptation.AdaptDays,
                 daysPassedFactor: daysPassedFactor,
                 preClamp: preClamp,
                 points: engine,
@@ -426,8 +424,8 @@ namespace SimWorld.Bench.Suites
                     Report.Num(s.PerColonist, 1),
                     Report.Num(s.ColonistSum, 1),
                     Report.Num(s.DifficultyFactor, 2),
+                    Report.Num(s.AdaptDays, 1),
                     Report.Num(s.AdaptationFactor, 3),
-                    Report.Num(s.EraFactor, 2),
                     Report.Num(s.DaysPassedFactor, 2),
                     Report.Num(s.Points, 1),
                     s.ClampNote,
@@ -438,7 +436,7 @@ namespace SimWorld.Bench.Suites
                 new[]
                 {
                     "day", "pop", "wealth", "base from wealth", "per-colonist", "colonist sum",
-                    "x difficulty", "x adaptation", "x era", "x daysPassed", "points", "clamped?",
+                    "x difficulty", "adapt days", "x adaptation", "x startingFactor", "points", "clamped?",
                 },
                 rows);
 
@@ -878,7 +876,7 @@ namespace SimWorld.Bench.Suites
     {
         public CurveSample(
             int day, int pop, int downed, float wealth, float baseFromWealth, float perColonist, float colonistSum,
-            float difficultyFactor, float adaptationFactor, float eraFactor, float daysPassedFactor,
+            float difficultyFactor, float adaptationFactor, float adaptDays, float daysPassedFactor,
             float preClamp, float points, int totalPopulation, float mood, float foodNeed, int deaths,
             int moments, string era)
         {
@@ -891,7 +889,7 @@ namespace SimWorld.Bench.Suites
             ColonistSum = colonistSum;
             DifficultyFactor = difficultyFactor;
             AdaptationFactor = adaptationFactor;
-            EraFactor = eraFactor;
+            AdaptDays = adaptDays;
             DaysPassedFactor = daysPassedFactor;
             PreClamp = preClamp;
             Points = points;
@@ -923,7 +921,9 @@ namespace SimWorld.Bench.Suites
 
         public float AdaptationFactor { get; }
 
-        public float EraFactor { get; }
+        /// <summary>The adaptation score itself (<see cref="StoryWatcher_Adaptation.AdaptDays"/>), of which
+        /// <see cref="AdaptationFactor"/> is the curve's reading: what the storyteller thinks of how the settlement is doing.</summary>
+        public float AdaptDays { get; }
 
         public float DaysPassedFactor { get; }
 
@@ -984,7 +984,7 @@ namespace SimWorld.Bench.Suites
             ColonistSum.ToString("F3", CultureInfo.InvariantCulture),
             DifficultyFactor.ToString("F3", CultureInfo.InvariantCulture),
             AdaptationFactor.ToString("F4", CultureInfo.InvariantCulture),
-            EraFactor.ToString("F3", CultureInfo.InvariantCulture),
+            AdaptDays.ToString("F3", CultureInfo.InvariantCulture),
             DaysPassedFactor.ToString("F3", CultureInfo.InvariantCulture),
         });
 

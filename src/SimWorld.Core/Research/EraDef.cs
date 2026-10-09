@@ -19,20 +19,23 @@ namespace SimWorld.Research
         public TechLevel techLevel = TechLevel.Undefined;
 
         /// <summary>
-        /// Multiplies the threat points the director spends while a civilization is in this era
-        /// (<see cref="Director.StorytellerUtility.DefaultThreatPointsNow"/>) — the spec's "era completion …
-        /// scales threats" (§10).
+        /// The pressure this era was authored to put on a civilization (spec §10: "era completion … scales
+        /// threats"). <b>The director no longer multiplies by it.</b>
         /// <para/>
-        /// <b>Not sourced from RimWorld.</b> RimWorld scales threats off colony wealth
-        /// (<c>pointsPerWealthCurve</c>): what you have is what comes for it. SimWorld ports that curve but
-        /// nothing yet computes real wealth — <c>IIncidentTarget.PlayerWealthForStoryteller</c> is a settable
-        /// stub — so on its own the wealth term stays flat for a whole game. This factor stands in for it at
-        /// civilization scale: a bronze-age rival threatens with bronze-age force. The ladder of numbers in
-        /// content is SimWorld's own and could not be sourced, so the tests pin the <i>trend</i> (later eras
-        /// never threaten less; reaching an era raises the points spent) rather than any literal.
+        /// It used to: <see cref="Director.StorytellerUtility.DefaultThreatPointsNow"/> took the current era's
+        /// factor as one more term. It was never sourced from RimWorld, which scales threats off colony wealth
+        /// (<c>pointsPerWealthCurve</c>); it was written as an explicit stand-in for a wealth term that nothing
+        /// computed, and this comment promised to be revisited "when real wealth accounting lands, … multiplying
+        /// by both would count the same growth twice". Real wealth landed
+        /// (<see cref="Director.CivilizationTarget.PlayerWealthForStoryteller"/> is the market value of what the
+        /// settlements hold), so the multiplier came out, and a raid grows with what the civilization has and
+        /// the people it has, once.
         /// <para/>
-        /// When real wealth accounting lands, revisit this: wealth and era both grow across a game, and
-        /// multiplying by both would count the same growth twice.
+        /// The field and the ladder of numbers in content stay, deliberately: removing them would also remove
+        /// the authored ladder the spec describes, and what the spec wants from eras (rival tech level, which
+        /// incidents can fire) does not need them multiplying anything. Nothing reads this now except
+        /// <see cref="EraTransitionUtility.CurrentEraThreatPointsFactor"/>; delete both together if the spec's
+        /// line goes.
         /// </summary>
         public float threatPointsFactor = 1f;
 

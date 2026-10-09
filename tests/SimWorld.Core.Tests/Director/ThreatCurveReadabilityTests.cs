@@ -84,7 +84,6 @@ namespace SimWorld.Tests.Director
 
             if (storyteller.difficulty != null) points *= storyteller.difficulty.threatScale;
             points *= storyteller.adaptation.TotalThreatPointsFactor(storyteller.difficulty);
-            points *= global::SimWorld.Research.EraTransitionUtility.CurrentEraThreatPointsFactor();
             if (storyteller.def != null)
             {
                 points *= storyteller.def.pointsFactorFromDaysPassed.Evaluate(GenDate.DaysPassedAt(Find.TickManager.TicksGame));

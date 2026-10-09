@@ -36,9 +36,15 @@ namespace SimWorld.Director
         /// storyteller's starting factor (<see cref="StorytellerDef.pointsFactorFromDaysPassed"/>, a
         /// discount that fades out by day 40) — clamped to [<see cref="MinThreatPoints"/>, <see cref="MaxThreatPoints"/>].
         /// <para/>
-        /// <b>Addition:</b> one more multiplier, the current era's <see cref="Research.EraDef.threatPointsFactor"/>,
-        /// applied the same way difficulty and adaptation already are. That factor is SimWorld's own and
-        /// stands in for the wealth term while nothing computes real wealth — see the field's own comment.
+        /// <b>The formula is RimWorld's and has no more terms.</b> It carried one more for a while: the current
+        /// era's <see cref="Research.EraDef.threatPointsFactor"/>, applied "while nothing computes real wealth"
+        /// (the field's own words) and to be revisited "when real wealth accounting lands". It landed:
+        /// <see cref="CivilizationTarget.PlayerWealthForStoryteller"/> is the market value of what the
+        /// settlements hold, and it rises as they grow. An era that multiplied on top of it counted the same
+        /// growth twice — 15% on the day a civilization reached Agrarian, 2.8x in the last era, whatever it
+        /// owned — so a raid was bigger for the calendar of research as well as for the size of the settlement.
+        /// The wealth term is the one place growth makes a raid larger. The era keeps its ladder
+        /// (<see cref="Research.EraTransitionUtility.CurrentEraThreatPointsFactor"/>) and nothing multiplies by it.
         /// </summary>
         public static float DefaultThreatPointsNow(IIncidentTarget target)
         {
@@ -56,7 +62,6 @@ namespace SimWorld.Director
             Storyteller storyteller = Find.Storyteller;
             if (storyteller.difficulty != null) points *= storyteller.difficulty.threatScale;
             points *= storyteller.adaptation.TotalThreatPointsFactor(storyteller.difficulty);
-            points *= Research.EraTransitionUtility.CurrentEraThreatPointsFactor();
             if (storyteller.def != null) points *= storyteller.def.pointsFactorFromDaysPassed.Evaluate(GenDate.DaysPassedAt(Find.TickManager.TicksGame));
 
             return GenMath.Clamp(points, MinThreatPoints, MaxThreatPoints);

@@ -177,6 +177,9 @@ namespace SimWorld.Tests.Research
         [Fact]
         public void A_later_era_never_threatens_less_than_an_earlier_one()
         {
+            // The authored ladder in content. The director no longer multiplies threat points by it (see
+            // Reaching_a_later_era_does_not_change_the_points_the_director_spends); it is kept in order so that
+            // whatever one day reads it finds a ladder that climbs.
             List<EraDef> ordered = OrderedEras();
             for (int i = 1; i < ordered.Count; i++)
             {
@@ -189,8 +192,14 @@ namespace SimWorld.Tests.Research
         }
 
         [Fact]
-        public void Reaching_a_later_era_raises_the_points_the_director_spends()
+        public void Reaching_a_later_era_does_not_change_the_points_the_director_spends()
         {
+            // This test used to assert the opposite. The era multiplied the threat points as a stand-in for
+            // a wealth term nothing computed, with the standing promise to take it out once real wealth
+            // landed, because wealth and era both grow across a game and "multiplying by both would count the
+            // same growth twice". Real wealth landed (CivilizationTarget.PlayerWealthForStoryteller is the
+            // market value of what the settlements hold), so the same colony on the same day is threatened
+            // the same whichever era its research has reached.
             var target = new CivilizationTarget(Find.Storyteller) { PlayerWealthForStoryteller = 400000f };
             target.pawns.Add(NewHuman("Citizen"));
             Find.TickManager.DebugSetTicksGame(0);
@@ -202,16 +211,14 @@ namespace SimWorld.Tests.Research
 
             float pointsIndustrial = StorytellerUtility.DefaultThreatPointsNow(target);
 
-            Assert.True(pointsIndustrial > pointsAtStart,
-                $"industrial threat points {pointsIndustrial} did not exceed the starting {pointsAtStart}.");
+            Assert.Equal(pointsAtStart, pointsIndustrial);
         }
 
         [Fact]
-        public void The_first_era_leaves_the_ported_threat_formula_untouched()
+        public void The_first_era_still_reads_neutral()
         {
-            // The era factor is an addition to RimWorld's formula, so at the bottom of the ladder — where a
-            // game starts — it must be exactly neutral, or every ported threat number would be off from the
-            // first tick.
+            // The authored ladder stays in content (nothing multiplies by it any more), and its bottom rung is
+            // still neutral, so reviving the field cannot start a game off-formula.
             Assert.Equal(1f, OrderedEras()[0].threatPointsFactor);
             Assert.Equal(1f, EraTransitionUtility.CurrentEraThreatPointsFactor());
         }
