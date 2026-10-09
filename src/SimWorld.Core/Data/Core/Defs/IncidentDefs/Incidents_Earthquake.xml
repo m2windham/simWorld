@@ -20,6 +20,17 @@
     <workerClass>SimWorld.Director.IncidentWorker_Earthquake</workerClass>
     <baseChance>0.4</baseChance>
     <minRefireDays>20</minRefireDays>
+    <!--
+      Not in a settlement's first days. A design number, not RimWorld's (it has no earthquake): a founding
+      band has built little worth losing and has not yet met its first threat, so a quake that arrives with
+      the beds barely dry takes a large share of what exists off people with no buffer and nothing to
+      recover with. 12 clears the first threat of every shipped storyteller - Cassandra's scripted one at day
+      4 and her first big-threat cycle at 6, Phoebe's at 8 and 10 - with two days to spare to be tended and
+      back on their feet. It is pinned as that relation (EarthquakeEarliestDayTests), not as the literal: move a
+      storyteller's first threat past it and the test says the quake now precedes someone's first threat.
+      Seed roof-a, band of 25, solo: before this the quake fired at day 2.78 and killed five sleepers.
+    -->
+    <earliestDay>12</earliestDay>
   </IncidentDef>
 
 </Defs>
