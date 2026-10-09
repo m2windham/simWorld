@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 3051,
+  "testsTotal": 3077,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1191,11 +1191,11 @@
       "id": "director",
       "n": 11,
       "rimworld": "Storyteller / Threat Director",
-      "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth, population and era instead of one colony. Deaths are recorded on two axes rather than one: by cause, as RimWorld does, and by source — the incident that put the killer in the world. The second axis is a SimWorld addition and exists because a civilization-scale game cannot measure a threat by differencing two runs: ablating anything that spawns onto a live map diverges the whole world from that tick, and the noise in total deaths is larger than the cost being measured.",
+      "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth, population and era instead of one colony. Deaths are recorded on two axes rather than one: by cause, as RimWorld does, and by source — the incident that put the killer in the world. The second axis is a SimWorld addition and exists because a civilization-scale game cannot measure a threat by differencing two runs: ablating anything that spawns onto a live map diverges the whole world from that tick, and the noise in total deaths is larger than the cost being measured. Earthquake is SimWorld's own incident: its structure loss is a design number, its casualty rule is RimWorld's thin-roof collapse, not a mountain's.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 234,
+      "tests": 260,
       "items": [
         {
           "id": "director.personality",
@@ -1314,7 +1314,7 @@
         },
         {
           "id": "director.earthquake",
-          "label": "The first of the three defects docs/design/phase-2-pressure.md named as blocked on a settlement having anything to damage — Settlement.Structures unblocks it. IncidentWorker_Earthquake composes its target settlement and severity through NamedRand before the Ablation check, exactly as ManhunterPack does. An unwatched settlement loses a severity-share of each structure type straight out of Settlement.Structures, no map generated to stage it — the important path, and the one that was impossible before this lane. A watched settlement loses the same share of real Things off its own map: RoofCollapserImmediate.DropRoofInCells was the obvious first reach but is a poor fit here — this port's roof grid is painted only over mountain and cave cells at map generation (GenStep_Roofs), never over a settlement's own constructed rooms, so scattering 'currently roofed' cells would almost always miss the very buildings a settlement built. Thing.TakeDamage is used directly instead, reaching exactly the ThingDefs StructureCount already tracks. A pawn standing on a destroyed structure's own footprint (only ever a Bed — a wall and a StorageHut are both Impassable) is crushed for certain, and credited through DeathLedger.RecordAttributed from the ledger's own delta, never from this worker's own count — reproducing and closing the exact 'four kills against a total of zero deaths' failure director.deathattribution's own item records, this time for a settlement off the civilization roster. Structures destroyed are a second quantity on ResourceImpactLedger, never a second number that could disagree with the first. Tests: tests/SimWorld.Core.Tests/Director/EarthquakeTests.cs.",
+          "label": "The first of the three defects docs/design/phase-2-pressure.md named as blocked on a settlement having anything to damage — Settlement.Structures unblocks it. IncidentWorker_Earthquake composes its target settlement and severity through NamedRand before the Ablation check, exactly as ManhunterPack does. An unwatched settlement loses a severity-share of each structure type straight out of Settlement.Structures, no map generated to stage it — the important path, and the one that was impossible before this lane. A watched settlement loses the same share of real Things off its own map: RoofCollapserImmediate.DropRoofInCells was the obvious first reach but is a poor fit here — this port's roof grid is painted only over mountain and cave cells at map generation (GenStep_Roofs), never over a settlement's own constructed rooms, so scattering 'currently roofed' cells would almost always miss the very buildings a settlement built. Thing.TakeDamage is used directly instead, reaching exactly the ThingDefs StructureCount already tracks. A pawn standing on a destroyed structure's own footprint (only ever a Bed — a wall and a StorageHut are both Impassable) is hurt, not executed: RimWorld's thin-roof rule (RoofCollapserImmediate.ThinRoofCrushDamageRange of Crush, Top/Outside), rolled per victim inside the incident's Rand.PushState shield so the same beds fall. The wounds carry the incident (Hediff.sourceIncident), so a later bleed-out or infection is credited to it; a death on the spot is credited through DeathLedger.RecordAttributed from the ledger's own delta, never from this worker's own count — reproducing and closing the exact 'four kills against a total of zero deaths' failure director.deathattribution's own item records, this time for a settlement off the civilization roster. Structures destroyed are a second quantity on ResourceImpactLedger, never a second number that could disagree with the first. earliestDay 12 (the port's own number: after the first threat of every shipped storyteller, pinned as that relation). The letter names what fell by kind and who was hurt, caught but unhurt, or killed (humanlike only). Tests: EarthquakeTests, EarthquakeFootprintTests, EarthquakeInjuryTests, EarthquakeEarliestDayTests.",
           "done": true
         }
       ]
