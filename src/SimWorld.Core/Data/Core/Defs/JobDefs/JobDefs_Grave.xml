@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Putting the dead away (Building.Building_Grave). Its own file rather than another entry in
+       JobDefs_Hauling.xml, per CLAUDE.md: a new file cannot conflict with a lane editing the shared one.
+       HaulToContainer is RimWorld's defName (RimWorld.JobDefOf.HaulToContainer). -->
+
+  <JobDef>
+    <defName>HaulToContainer</defName>
+    <driverClass>SimWorld.AI.JobDriver_HaulToContainer</driverClass>
+    <reportString>hauling.</reportString>
+  </JobDef>
+
+</Defs>

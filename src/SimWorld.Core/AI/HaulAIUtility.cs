@@ -26,7 +26,7 @@ namespace SimWorld.AI
     /// false — no stockpile, or every matching one already full — is a genuine, honest answer: it means
     /// there is nowhere for this item to go, not a bug to work around with an invented dumping cell.
     /// </summary>
-    public static class HaulAIUtility
+    public static partial class HaulAIUtility
     {
         /// <summary>True when <paramref name="thing"/> already sits on a cell of a <see cref="Zone_Stockpile"/>
         /// whose filter allows it — already stored, nothing to haul (RimWorld: <c>StoreUtility.IsInValidBestStorage</c>,

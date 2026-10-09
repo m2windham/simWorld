@@ -20,12 +20,16 @@ namespace SimWorld.AI
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.HaulableEver)) yield return t;
+            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.HaulableEver))
+            {
+                // Bodies belong to WorkGiver_HaulCorpses, which knows about graves; this giver only knows cells.
+                if (!(t is Corpse)) yield return t;
+            }
         }
 
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
-            if (!thing.Spawned || thing.stackCount <= 0) return false;
+            if (!thing.Spawned || thing.stackCount <= 0 || thing is Corpse) return false;
             if (HaulAIUtility.IsInValidStorage(thing)) return false;
             if (!Reachability.CanReach(pawn, thing, PathEndMode)) return false;
             if (!pawn.Map!.reservationManager.CanReserve(pawn, thing)) return false;
@@ -34,7 +38,7 @@ namespace SimWorld.AI
 
         public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
-            if (!HaulAIUtility.TryFindBestStockpileCell(pawn, thing, out IntVec3 cell)) return null;
+            if (thing is Corpse || !HaulAIUtility.TryFindBestStockpileCell(pawn, thing, out IntVec3 cell)) return null;
             return new Job(JobDefOf.HaulToCell, thing, cell) { haulMode = HaulMode.ToCellStorage };
         }
     }
