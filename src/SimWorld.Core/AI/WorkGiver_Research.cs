@@ -41,10 +41,12 @@ namespace SimWorld.AI
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
-            for (int i = 0; i < buildings.Count; i++)
+            // RimWorld: PotentialWorkThingRequest => ThingRequest.ForGroup(ThingRequestGroup.ResearchBench).
+            // The scan used to walk every building on the map and keep the benches.
+            IReadOnlyList<Thing> benches = map.listerThings.ThingsInGroup(ThingRequestGroup.ResearchBench);
+            for (int i = 0; i < benches.Count; i++)
             {
-                if (buildings[i].def == ResearchWorkDefOf.ResearchBench) yield return buildings[i];
+                yield return benches[i];
             }
         }
 

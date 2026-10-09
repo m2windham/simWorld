@@ -150,23 +150,31 @@ namespace SimWorld.Tests.Building
         }
 
         [Fact]
-        public void Storage_target_grows_with_how_much_the_settlement_actually_stores()
+        public void Storage_target_follows_how_many_people_there_are_not_how_much_they_have_gathered()
         {
-            Settlement small = PlainSettlement(1);
-            small.AddStore(Def("WoodLog"), 10); // below one hut's worth
-            CoreMap smallMap = NewMap(20, 20);
+            // Hut blueprints a settlement of this many citizens, holding this much, has planned after enough
+            // gated passes for beds, walls and huts alike (3 blueprints a pass).
+            int HutsPlanned(int citizens, int stored, int tile)
+            {
+                Settlement s = PlainSettlement(tile);
+                AddCitizens(s, citizens);
+                s.AddStore(Def("WoodLog"), stored);
+                CoreMap map = NewMap(80, 80);
+                for (int pass = 0; pass < 60; pass++)
+                {
+                    Find.TickManager.DebugSetTicksGame(pass * ConstructionInitiativeTuning.IntervalTicks);
+                    SettlementConstructionInitiative.TickSettlement(s, map);
+                }
+                return BlueprintCount(map, ConstructionThingDefOf.StorageHut);
+            }
 
-            Settlement large = PlainSettlement(2);
-            large.AddStore(Def("WoodLog"), 200); // several huts' worth
-            CoreMap largeMap = NewMap(20, 20);
+            int fewPeople = HutsPlanned(citizens: 5, stored: 10, tile: 1);
+            int manyPeople = HutsPlanned(citizens: 40, stored: 10, tile: 2);
+            int manyGoods = HutsPlanned(citizens: 5, stored: 100000, tile: 3);
 
-            SettlementConstructionInitiative.TickSettlement(small, smallMap);
-            SettlementConstructionInitiative.TickSettlement(large, largeMap);
-
-            int smallHuts = BlueprintCount(smallMap, ConstructionThingDefOf.StorageHut);
-            int largeHuts = BlueprintCount(largeMap, ConstructionThingDefOf.StorageHut);
-            Assert.True(smallHuts >= 1, "Any stored goods at all should want at least one hut.");
-            Assert.True(largeHuts > smallHuts, "More stored goods should want more storage, not the same amount.");
+            Assert.True(fewPeople >= 1, "Any stored goods at all should want at least one hut.");
+            Assert.True(manyPeople > fewPeople, "More people should want more storage, not the same amount.");
+            Assert.Equal(fewPeople, manyGoods); // a bigger harvest is not a reason to build another shed
         }
 
         [Fact]
@@ -275,7 +283,7 @@ namespace SimWorld.Tests.Building
             {
                 var s = PlainSettlement(tile);
                 AddCitizens(s, 1); // bed target 1, wall target clamps to the 4-minimum
-                s.AddStore(Def("WoodLog"), ConstructionInitiativeTuning.GoodsPerStorageHut); // storage target 1
+                s.AddStore(Def("WoodLog"), 1); // anything stored at all, with one citizen: storage target 1
                 return s;
             }
 

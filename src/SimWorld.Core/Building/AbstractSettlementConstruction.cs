@@ -60,14 +60,17 @@ namespace SimWorld.Building
     /// class writes into and never reads back out of directly.
     ///
     /// <para/><b>The need model is the real class's, not a second one invented here.</b> A bed per citizen, a
-    /// handful of walls once there is anyone to shelter, storage sized to what <see cref="World.Settlement.Stores"/>
-    /// holds — the exact targets <see cref="SettlementConstructionInitiative.ComputeNeeds"/> computes, read off
-    /// the same <see cref="ConstructionInitiativeTuning"/> constants so the two paths can never disagree about
-    /// what a settlement wants, only about how it gets there. The arithmetic itself is restated rather than
-    /// shared (CLAUDE.md: add a file rather than edit a shared one — <see cref="SettlementConstructionInitiative"/>
+    /// handful of walls once there is anyone to shelter, storage sized to how many people there are to keep
+    /// things once <see cref="World.Settlement.Stores"/> holds anything — the exact targets
+    /// <see cref="SettlementConstructionInitiative.ComputeNeeds"/> computes, read off the same <see cref="ConstructionInitiativeTuning"/> constants so the two paths can never disagree about
+    /// what a settlement wants, only about how it gets there. The bed and wall arithmetic is restated rather
+    /// than shared (CLAUDE.md: add a file rather than edit a shared one — <see cref="SettlementConstructionInitiative"/>
     /// computes its targets against a live <c>Map.Map</c> it needs for material choice, so its private method
     /// cannot be called by a settlement that has none) — a handful of lines duplicated against constants that
-    /// cannot drift, not a second model that could.
+    /// cannot drift, not a second model that could. <b>Storage is not restated.</b> It is the one need whose
+    /// arithmetic changed, and the two paths had each carried their own copy of the old one; both now ask
+    /// <see cref="StorageHutTarget"/>, so a watched and an unwatched settlement with the same people and the
+    /// same ledger want the same number of huts, by construction.
     ///
     /// <para/><b>Wall material: always the plain <see cref="ConstructionThingDefOf.Wall"/>.</b> The map path
     /// picks the toughest stone a settlement has a whole wall's worth of cut blocks for
@@ -188,22 +191,10 @@ namespace SimWorld.Building
                 needs.Add((ConstructionThingDefOf.Wall, wallTarget));
             }
 
-            int storageTarget = StorageTarget(settlement);
+            int storageTarget = StorageHutTarget.For(settlement);
             if (storageTarget > 0) needs.Add((ConstructionThingDefOf.StorageHut, storageTarget));
 
             return needs;
-        }
-
-        /// <summary>One <c>StorageHut</c> per <see cref="ConstructionInitiativeTuning.GoodsPerStorageHut"/>
-        /// units held in <see cref="World.Settlement.Stores"/>, at least one once anything is held at all —
-        /// <see cref="SettlementConstructionInitiative"/>'s own arithmetic, restated verbatim against the same
-        /// constant.</summary>
-        private static int StorageTarget(Settlement settlement)
-        {
-            int totalStored = 0;
-            foreach (KeyValuePair<ThingDef, int> kv in settlement.Stores) totalStored += kv.Value;
-            if (totalStored <= 0) return 0;
-            return Math.Max(1, (totalStored + ConstructionInitiativeTuning.GoodsPerStorageHut - 1) / ConstructionInitiativeTuning.GoodsPerStorageHut);
         }
     }
 }

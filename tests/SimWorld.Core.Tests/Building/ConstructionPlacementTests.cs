@@ -109,12 +109,13 @@ namespace SimWorld.Tests.Building
             var home = new CellRect(4, 44, 10, 10);
             Paint(map, home);
 
-            // 5 citizens: 5 beds, 10 walls; 120 wood stored: 3 huts. 18 things, room for 100.
+            // 5 citizens: 5 beds, 10 walls, and with 120 wood stored the huts that many people want (one).
+            // 16 things, room for 100.
             Settlement settlement = PlainSettlement(citizens: 5, storedWood: 120);
             RunPasses(settlement, map, passes: 10);
 
             List<global::SimWorld.Building.Blueprint> placed = Blueprints(map);
-            Assert.Equal(18, placed.Count); // the whole need, placed: a big enough area stalls nothing
+            Assert.Equal(5 + 10 + StorageHutTarget.For(5, 120), placed.Count); // the whole need, placed: a big enough area stalls nothing
             Assert.All(placed, bp => Assert.True(map.areaManager.Home[bp.Position],
                 bp.EntityToBuild.defName + " blueprint at " + bp.Position + " is outside the painted home area " + home));
         }

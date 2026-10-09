@@ -27,6 +27,11 @@ namespace SimWorld.Building
     {
         public override PathEndMode PathEndMode => PathEndMode.ClosestTouch;
 
+        /// <summary>Nothing to strip while no cell is marked, so the scan is not started at all (see
+        /// <see cref="WorkGiver_BuildRoof.ShouldSkip"/>).</summary>
+        public override bool ShouldSkip(Pawn pawn, bool forced = false) =>
+            pawn.Map == null || pawn.Map.areaManager.NoRoof.TrueCount == 0;
+
         public override IEnumerable<IntVec3> PotentialWorkCellsGlobal(Pawn pawn)
         {
             Map.Map? map = pawn.Map;

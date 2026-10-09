@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using SimWorld.AI;
+using SimWorld.Crafting;
 using SimWorld.Defs;
 using SimWorld.Map;
 using SimWorld.Pawns;
@@ -51,21 +53,91 @@ namespace SimWorld.Building
         public override PathEndMode PathEndMode => PathEndMode.Touch;
 
         /// <summary>A pawn who cannot cut plants never fells a tree, the check RimWorld's
-        /// <c>HandleBlockingThingJob</c> makes before handing a builder a cut.</summary>
-        public override bool ShouldSkip(Pawn pawn, bool forced = false) =>
-            pawn.Map == null || pawn.WorkTypeIsDisabled(WorkTypeDefOf.PlantCutting);
+        /// <c>HandleBlockingThingJob</c> makes before handing a builder a cut. Nor is there any scan to run
+        /// while the map has no blueprint or frame (see the body).</summary>
+        public override bool ShouldSkip(Pawn pawn, bool forced = false)
+        {
+            Map.Map? map = pawn.Map;
+            if (map == null || pawn.WorkTypeIsDisabled(WorkTypeDefOf.PlantCutting)) return true;
+
+            // No blueprint and no frame means no tree stands on a site and no wood is short
+            // (WoodShortfall is zero when nothing is needed), so the walk over every plant on the map would
+            // yield nothing. A settlement with nothing to build is exactly the idle colony that asks this
+            // dozens of times a day per citizen.
+            return map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).Count == 0
+                && map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame).Count == 0;
+        }
 
         /// <summary>
         /// Every tree on a building site, and every tree ready to fell whose wood the sites are short of. The
         /// demand is read here, once per scan, rather than per candidate in <see cref="HasJobOnThing"/>: it
         /// walks every site and every stack of the material, and the scan would otherwise pay that for every
         /// tree it considered.
+        /// <para/>
+        /// While no material the sites need is short, which is every settlement that has the wood it is
+        /// building with, the only trees on offer are the ones standing on a site, and those are found where
+        /// they must be, in the cells of the sites (see <see cref="PlantScanUtility"/>), not by walking every
+        /// plant on the map. Once a material is short every tree that yields it is a candidate, and the walk is
+        /// the right tool. Either way the trees arrive in the order the map lists its plants, so a scan picks
+        /// the same tree.
         /// </summary>
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
+            IEnumerable<Thing> trees = AnySiteMaterialShort(map) ? EveryCandidateTree(map) : TreesOnSites(map);
+            foreach (Thing tree in trees) yield return tree;
+        }
 
+        /// <summary>Whether <see cref="WoodShortfall"/> is above zero for any material a blueprint or a frame
+        /// on the map costs. A tree is felled for a shortage only of a material it yields, and a material no
+        /// site costs is never short (<see cref="WoodShortfall"/> is zero when nothing needs it), so when this
+        /// is false no tree is wanted for its wood. Asked of the sites rather than of the tree defs, which
+        /// keeps the answer independent of which defs happen to be registered.</summary>
+        private static bool AnySiteMaterialShort(Map.Map map)
+        {
+            List<ThingDef>? asked = null;
+            foreach (ThingRequestGroup group in SiteGroups)
+            {
+                IReadOnlyList<Thing> sites = map.listerThings.ThingsInGroup(group);
+                for (int i = 0; i < sites.Count; i++)
+                {
+                    List<ThingDefCountClass>? cost = sites[i].def.entityToBuild?.costList;
+                    if (cost == null) continue;
+                    for (int c = 0; c < cost.Count; c++)
+                    {
+                        ThingDef material = cost[c].thingDef;
+                        if (asked != null && asked.Contains(material)) continue;
+                        (asked ??= new List<ThingDef>()).Add(material);
+                        if (WoodShortfall(map, material) > 0) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static readonly ThingRequestGroup[] SiteGroups = { ThingRequestGroup.Blueprint, ThingRequestGroup.BuildingFrame };
+
+        /// <summary>The trees whose cell holds a blueprint or a frame, in the map's own plant order.</summary>
+        private static IEnumerable<Thing> TreesOnSites(Map.Map map)
+        {
+            List<Plant>? found = null;
+            PlantScanUtility.PlantTest test = IsSpawnedTreeOnASite; // once, not per cell
+            foreach (IntVec3 cell in PlantScanUtility.SiteCells(map))
+            {
+                PlantScanUtility.CollectPlantsAt(map, cell, ref found, test);
+            }
+            if (found == null) return Array.Empty<Thing>();
+            return PlantScanUtility.InMapOrder(map, found);
+        }
+
+        private static bool IsSpawnedTreeOnASite(Plant plant) =>
+            plant.Spawned && plant.def.plant != null && plant.def.plant.IsTree && StandsOnASite(plant, plant.Map!);
+
+        /// <summary>Every tree standing on a site, plus every tree ready to fell whose wood is short, by
+        /// walking the map's plants.</summary>
+        private static IEnumerable<Thing> EveryCandidateTree(Map.Map map)
+        {
             Dictionary<ThingDef, int>? shortfall = null;
             IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.Plant);
             for (int i = 0; i < plants.Count; i++)

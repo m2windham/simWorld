@@ -44,12 +44,19 @@ namespace SimWorld.Factions
         /// </summary>
         public void FactionManagerTick()
         {
-            // Snapshot: a tick could in principle mutate the list (a faction defeated mid-tick); never
-            // iterate the live list while that happens.
-            var snapshot = allFactions.Count == 0 ? allFactions : new List<Faction>(allFactions);
-            for (int i = 0; i < snapshot.Count; i++)
+            // Faction.FactionTick does nothing on any tick but a goodwill-check tick, so only those ticks pay
+            // for the snapshot below. It used to copy the whole faction list on every tick of the game to
+            // call a method that returned at once: a fifth of a long run's time, in a world of hundreds of
+            // factions.
+            if (Find.TickManager.TicksGame % Faction.GoodwillCheckInterval == 0)
             {
-                snapshot[i].FactionTick();
+                // Snapshot: a tick could in principle mutate the list (a faction defeated mid-tick); never
+                // iterate the live list while that happens.
+                var snapshot = allFactions.Count == 0 ? allFactions : new List<Faction>(allFactions);
+                for (int i = 0; i < snapshot.Count; i++)
+                {
+                    snapshot[i].FactionTick();
+                }
             }
 
             DiplomacyAI.Tick(this);
