@@ -523,7 +523,7 @@ namespace SimWorld.Tests.God
             GodCommands.SetStoryteller("Cassandra_Classic");
             GodCommands.SetDifficulty("Rough");
             Find.Storyteller.RecordChronicle("Something happened worth remembering.");
-            for (int i = 0; i < 100; i++) Find.Storyteller.adaptation.AdaptationTick(Find.Storyteller.difficulty);
+            Find.Storyteller.adaptation.Debug_OffsetAdaptDays(50f);
 
             int chronicleBefore = Find.Storyteller.Chronicle.Count;
             int momentsBefore = Find.Storyteller.Moments.Count;

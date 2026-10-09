@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 
+using SimWorld.Health;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 
@@ -40,31 +41,55 @@ namespace SimWorld.Director
     public static class StorytellerPawnEvents
     {
         /// <summary>
-        /// Tells the storyteller's adaptation watcher that a citizen went down, if this pawn is one. Returns
-        /// whether the hook was actually raised, so a caller (and a test) can tell "counted" from "an
-        /// attacker fell over".
+        /// Tells the storyteller's adaptation watcher that a citizen was put down by violence, if this pawn is
+        /// one of ours. Returns whether the hook was actually raised, so a caller (and a test) can tell
+        /// "counted" from "an attacker fell over" or "collapsed from bleeding".
+        ///
+        /// <para/><b>RimWorld's rule, in full.</b> <c>StoryWatcher_Adaptation.Notify_PawnEvent</c> charges a
+        /// downing only when there is a <paramref name="dinfo"/> and its damage is
+        /// <see cref="DamageDef.externalViolence"/> for the pawn — somebody hit them, as opposed to blood loss,
+        /// hunger, disease or a life stage taking their legs. And it does not charge at once: the pawn is
+        /// queued until the end of the tick, and a death in that tick withdraws the entry
+        /// (<see cref="StoryWatcher_Adaptation.Notify_ColonistDied"/>), so the person downed and killed by the
+        /// same explosion pays for the death alone. This port used to charge every downing but a life stage's,
+        /// at once — so a citizen who collapsed from hunger moved the curve like one cut down by a raider,
+        /// and one killed outright paid twice.
         ///
         /// <para/><b>Charged once per downing, and never for a death.</b> The caller,
         /// <c>Pawn_HealthTracker.MakeDowned</c>, runs only on the transition from mobile to down (its caller
         /// guards with <c>if (!Downed)</c>), so a pawn who stays down through further damage is charged once;
         /// and <c>Pawn_HealthTracker.Kill</c> sets the dead state directly without ever passing through
-        /// <c>MakeDowned</c>, so dying never raises this. A citizen who is downed and then dies therefore
-        /// moves the curve once here and once on the death side
+        /// <c>MakeDowned</c>, so dying never raises this. A citizen who is downed by a blow and bleeds out
+        /// later moves the curve once here and once on the death side
         /// (<see cref="StorytellerDeathEvents.Notify_PawnDied"/>, which charges every death of ours): two
         /// events at two times, which RimWorld charges separately too.
-        ///
-        /// <para/><b>Not yet RimWorld's rule, and recorded here so it is not mistaken for it.</b> RimWorld
-        /// charges a downing only when <c>dinfo</c> is present and <c>ExternalViolenceFor</c> the pawn, and
-        /// holds it until the end of the tick so that a pawn downed and killed in the same tick is charged
-        /// for the death alone (<c>StoryWatcher_Adaptation.pawnsJustDownedThisTick</c>). This port charges any
-        /// downing except one the life stage imposes, at once. So it charges a collapse from blood loss,
-        /// hunger or disease, which RimWorld does not.
         /// </summary>
-        public static bool Notify_PawnDowned(Pawn pawn)
+        public static bool Notify_PawnDowned(Pawn pawn, DamageInfo? dinfo)
         {
             if (!IsCivilizationMember(pawn)) return false;
-            Find.Storyteller.adaptation.Notify_ColonistDowned();
+            if (dinfo == null || !dinfo.Def.externalViolence) return false;
+            Find.Storyteller.adaptation.Notify_ColonistDowned(pawn);
             return true;
+        }
+
+        /// <summary>
+        /// How many humanlike people of the civilization are alive: the population RimWorld's adaptation
+        /// losses are read against (<c>PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_FreeColonists</c>),
+        /// taken from the same roster the threat curve and <see cref="IsCivilizationMember"/> use. Downed
+        /// people count; the dead do not.
+        /// </summary>
+        public static int CivilizationPopulation()
+        {
+            int population = 0;
+            IReadOnlyList<IIncidentTarget> targets = Find.Storyteller.AllIncidentTargets;
+            for (int i = 0; i < targets.Count; i++)
+            {
+                foreach (Pawn member in targets[i].PlayerPawnsForStoryteller)
+                {
+                    if (!member.Dead && member.RaceProps.Humanlike) population++;
+                }
+            }
+            return population;
         }
 
         /// <summary>

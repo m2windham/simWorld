@@ -353,12 +353,9 @@ namespace SimWorld.Tests.Director
             // charged: the charge happens in the death funnel (StorytellerDeathEvents), which asks the same
             // roster question the death ledger does. It used to be charged here by the resolver, for any
             // settlement at all.
-            DifficultyDef medium = DefDatabase<DifficultyDef>.GetNamed("Medium");
             StoryWatcher_Adaptation adaptation = Find.Storyteller.adaptation;
-            for (int i = 0; i < 4000; i++) adaptation.AdaptationTick(medium);
+            adaptation.Debug_OffsetAdaptDays(90f);
             float quietDays = adaptation.AdaptDays;
-            Assert.True(quietDays > StoryWatcher_Adaptation.DeathAdaptDaysPenalty,
-                "needed a peaceful stretch on the clock before a death could be seen to cut it short");
 
             int killed = 0;
             for (int i = 0; i < 40 && killed == 0; i++)

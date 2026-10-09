@@ -195,7 +195,7 @@ namespace SimWorld.Tests.Director
         {
             NewStoryteller("Cassandra_Classic", "Extreme");
             CivilizationTarget target = NewTarget(Find.Storyteller, pawnCount: 5, wealth: 2000000f);
-            for (int i = 0; i < 3600; i++) Find.Storyteller.adaptation.AdaptationTick(Find.Storyteller.difficulty); // push adaptation to its ceiling
+            Find.Storyteller.adaptation.Debug_OffsetAdaptDays(StoryWatcher_Adaptation.AdaptDaysMax); // adaptation at its ceiling
             // Day 40: past the starting discount, which on day 0 alone held this sum under the cap.
             Find.TickManager.DebugSetTicksGame(40 * GenDate.TicksPerDay);
 
@@ -205,33 +205,11 @@ namespace SimWorld.Tests.Director
         }
 
         // ---- adaptation ----
-
-        [Fact]
-        public void Adaptation_factor_in_expected_range_and_grows_with_quiet_days()
-        {
-            DifficultyDef medium = DefDatabase<DifficultyDef>.GetNamed("Medium");
-            var adaptation = new StoryWatcher_Adaptation();
-
-            float atZero = adaptation.TotalThreatPointsFactor(medium);
-            Assert.Equal(0.7f, atZero, 3);
-
-            for (int i = 0; i < 600; i++) adaptation.AdaptationTick(medium); // 10 days
-            Assert.Equal(10f, adaptation.AdaptDays, 1);
-            float atTenDays = adaptation.TotalThreatPointsFactor(medium);
-            Assert.Equal(0.9f, atTenDays, 2);
-            Assert.True(atTenDays > atZero);
-
-            for (int i = 0; i < 1200; i++) adaptation.AdaptationTick(medium); // + 20 more days = 30 total
-            Assert.Equal(30f, adaptation.AdaptDays, 1);
-            float atThirtyDays = adaptation.TotalThreatPointsFactor(medium);
-            Assert.Equal(1.0f, atThirtyDays, 2);
-            Assert.True(atThirtyDays > atTenDays);
-
-            for (int i = 0; i < 1800; i++) adaptation.AdaptationTick(medium); // + 30 more days = 60 total
-            float atSixtyDays = adaptation.TotalThreatPointsFactor(medium);
-            Assert.Equal(1.2f, atSixtyDays, 2);
-            Assert.True(atSixtyDays > atThirtyDays);
-        }
+        //
+        // The factor's range and its growth with quiet days were pinned here against a 0.7..1.2 curve that
+        // ran over 0..60 quiet days (Adaptation_factor_in_expected_range_and_grows_with_quiet_days). That
+        // curve was an unsourced approximation and RimWorld's replaced it; the same questions are asked of
+        // the real one in AdaptationTests, against the clock rather than a loop of intervals.
 
         // ---- CanFireNow gating ----
 
@@ -487,7 +465,7 @@ namespace SimWorld.Tests.Director
         {
             DifficultyDef medium = DefDatabase<DifficultyDef>.GetNamed("Medium");
             var adaptation = new StoryWatcher_Adaptation();
-            for (int i = 0; i < 600; i++) adaptation.AdaptationTick(medium);
+            adaptation.Debug_OffsetAdaptDays(10f);
 
             string xml = Scribe.SaveToString(adaptation, "adaptation");
             StoryWatcher_Adaptation loaded = Scribe.Load<StoryWatcher_Adaptation>(xml, "adaptation");

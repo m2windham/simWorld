@@ -81,7 +81,7 @@ namespace SimWorld.God.View
     /// <c>Sim.Game.NewGame(..., storytellerDef, difficultyDef)</c>, which a host bound to this seam cannot
     /// reach and which can only be said once. Writing <see cref="Director.Storyteller.difficulty"/> is not the
     /// player overwriting an outcome: nothing caches it. <see cref="StorytellerUtility.DefaultThreatPointsNow"/>,
-    /// <see cref="StoryWatcher_Adaptation.AdaptationTick"/>, <see cref="DifficultyUtility"/> and
+    /// <see cref="StoryWatcher_Adaptation.AdaptationWatcherTick"/>, <see cref="DifficultyUtility"/> and
     /// <see cref="StorytellerComp_Disease"/> each re-read it the next time they compute, so the consequence is
     /// worked out by the machinery afterwards rather than asserted by the command. That is the test in
     /// <c>docs/design/player-first.md</c> §2, and it is why this one passes where "set her age to 40" does not.

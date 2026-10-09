@@ -86,7 +86,7 @@ namespace SimWorld.Director
             // RimWorld's AdaptationEvent.Died: every colonist death, with no question asked about the cause
             // (see the class doc for where that rule is read). A citizen who bleeds out a day after a raid, or
             // dies of the infected wound, is charged here exactly as one shot dead on the spot is.
-            Find.Storyteller.adaptation.Notify_ColonistDied();
+            Find.Storyteller.adaptation.Notify_ColonistDied(pawn);
             return true;
         }
 

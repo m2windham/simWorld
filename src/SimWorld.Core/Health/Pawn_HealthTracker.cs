@@ -360,7 +360,7 @@ namespace SimWorld.Health
             }
             if (!Downed)
             {
-                if (ShouldBeDowned()) MakeDowned();
+                if (ShouldBeDowned()) MakeDowned(dinfo);
             }
             else if (!ShouldBeDowned())
             {
@@ -412,7 +412,7 @@ namespace SimWorld.Health
         /// inside <see cref="ShouldBeDowned"/>'s own evaluation. Without the guard that pawn would be
         /// announced downed twice, and the storyteller charged twice for one event.
         /// </summary>
-        private void MakeDowned()
+        private void MakeDowned(DamageInfo? dinfo)
         {
             if (healthState != PawnHealthState.Mobile) return;
             healthState = PawnHealthState.Down;
@@ -427,8 +427,10 @@ namespace SimWorld.Health
             // this colony being hurt" — and an infant being an infant is not a casualty. Nothing harmed it,
             // nothing can heal it, and it will get up on its third birthday; charging the curve for every
             // baby born would read the arrival of a child as a colonist going down under fire, which is the
-            // same kind of backwards this hook's own doc warns about for downed raiders.
-            if (!LifeStageForcesDowned) SimWorld.Director.StorytellerPawnEvents.Notify_PawnDowned(pawn);
+            // same kind of backwards this hook's own doc warns about for downed raiders. Of the rest, only a
+            // downing that violence caused is charged, which is why this carries the blow that did it: a pawn
+            // who collapses from blood loss, hunger or disease later arrives here with no dinfo at all.
+            if (!LifeStageForcesDowned) SimWorld.Director.StorytellerPawnEvents.Notify_PawnDowned(pawn, dinfo);
         }
 
         private void MakeUndowned()

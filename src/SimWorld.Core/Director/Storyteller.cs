@@ -130,12 +130,17 @@ namespace SimWorld.Director
         /// <summary>Call once per game tick (RimWorld runs this from the map's post-tickers). Only acts every <see cref="IncidentCycleLengthTicks"/> ticks.</summary>
         public void StorytellerTick()
         {
+            // The adaptation watcher is ticked every tick, not every interval (RimWorld: StoryWatcher_Adaptation
+            // runs from the story watcher's own per-tick pass): it settles the downings the tick collected, and
+            // keeps its own 30000-tick clock for growth.
+            adaptation.AdaptationWatcherTick(difficulty);
+
             if (Find.TickManager.TicksGame % IncidentCycleLengthTicks != 0) return;
             MakeIncidentsForInterval();
             incidentQueue.IncidentQueueTick();
         }
 
-        /// <summary>Runs every comp against every registered target for the current interval, and ticks adaptation.</summary>
+        /// <summary>Runs every comp against every registered target for the current interval.</summary>
         public void MakeIncidentsForInterval()
         {
             // RimWorld asks this of every comp, once per interval, before the comp is consulted at all
@@ -155,7 +160,6 @@ namespace SimWorld.Director
                     }
                 }
             }
-            adaptation.AdaptationTick(difficulty);
         }
 
         /// <summary>Executes a firing incident, recording it in the chronicle on success and always raising <see cref="IncidentFired"/>.</summary>
