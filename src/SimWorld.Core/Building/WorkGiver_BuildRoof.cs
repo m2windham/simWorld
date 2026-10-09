@@ -21,6 +21,13 @@ namespace SimWorld.Building
     {
         public override PathEndMode PathEndMode => PathEndMode.Touch;
 
+        /// <summary>Nothing to build while no cell is marked, so the scan is not started at all. RimWorld gets
+        /// the same effect inside <c>BoolGrid.ActiveCells</c> (it yields nothing when <c>TrueCount</c> is 0);
+        /// this also saves the scan from allocating an iterator and walking the empty list for every idle
+        /// citizen's every think.</summary>
+        public override bool ShouldSkip(Pawn pawn, bool forced = false) =>
+            pawn.Map == null || pawn.Map.areaManager.BuildRoof.TrueCount == 0;
+
         public override IEnumerable<IntVec3> PotentialWorkCellsGlobal(Pawn pawn)
         {
             Map.Map? map = pawn.Map;

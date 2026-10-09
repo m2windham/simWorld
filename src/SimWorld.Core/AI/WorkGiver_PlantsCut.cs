@@ -47,11 +47,41 @@ namespace SimWorld.AI
     {
         public override PathEndMode PathEndMode => PathEndMode.Touch;
 
+        /// <summary>
+        /// The plants <see cref="ShouldBeCut"/> would accept, found where they can be rather than by asking
+        /// every plant on the map: a plant is cut only for standing in a growing zone or on a building site, so
+        /// this reads the cells of those and nothing else. RimWorld's giver scans a short list of designations
+        /// (<c>DesignationManager.SpawnedDesignationsOfDef(CutPlant)</c>), not the plants; this is that list,
+        /// derived. Handed over in the order the map lists its plants (see
+        /// <see cref="PlantScanUtility.InMapOrder"/>), so the plant a scan picks is the one the whole-list
+        /// walk picked. On a settlement that has finished building this is nothing at all, where it used to be
+        /// every plant on the map for every idle citizen's every think.
+        /// </summary>
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.Plant)) yield return t;
+
+            List<Plant>? found = null;
+            PlantScanUtility.PlantTest test = ShouldBeCut; // once, not per cell
+            IReadOnlyList<Zone> zones = map.zoneManager.AllZones;
+            for (int z = 0; z < zones.Count; z++)
+            {
+                // BlocksSowing needs an actively sowing zone with a crop chosen; anything else cannot qualify.
+                if (!(zones[z] is Zone_Growing growing) || !growing.allowSow || growing.plantDefToGrow == null) continue;
+                IReadOnlyList<IntVec3> cells = growing.Cells;
+                for (int c = 0; c < cells.Count; c++)
+                {
+                    if (GenGrid.InBounds(cells[c], map)) PlantScanUtility.CollectPlantsAt(map, cells[c], ref found, test);
+                }
+            }
+            foreach (IntVec3 cell in PlantScanUtility.SiteCells(map))
+            {
+                PlantScanUtility.CollectPlantsAt(map, cell, ref found, test);
+            }
+
+            if (found == null) yield break;
+            foreach (Thing t in PlantScanUtility.InMapOrder(map, found)) yield return t;
         }
 
         /// <summary>
