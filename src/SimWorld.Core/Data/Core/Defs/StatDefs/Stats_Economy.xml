@@ -10,6 +10,11 @@
     per-tier multipliers, only shaped the same way — Awful worth a fraction of Normal, Legendary worth
     several times it. Only fires for a Thing that actually carries a CompQuality (apparel, prosthetics);
     everything else's MarketValue is untouched, curve.Evaluate(3)=1 at Normal either way.
+
+    workerClass is RimWorld's own StatWorker_MarketValue: a pawn is worth its race's base times what
+    Economy.PriceUtility says about this individual, and a def that sets no MarketValue (a wall, a bed) is
+    worth what it costs to make. Only a read through the full stat pipeline sees either; the statBases-only
+    lookups trade and the ledger use (TradeUtility.BaseMarketValue) are unchanged.
   -->
 
   <StatDef>
@@ -17,6 +22,7 @@
     <label>market value</label>
     <defaultBaseValue>0</defaultBaseValue>
     <minValue>0</minValue>
+    <workerClass>SimWorld.Stats.StatWorker_MarketValue</workerClass>
     <parts>
       <li Class="SimWorld.Stats.StatPart_Quality">
         <curve>

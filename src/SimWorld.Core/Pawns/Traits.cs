@@ -19,6 +19,15 @@ namespace SimWorld.Pawns
         public float socialFightChanceFactor = 1f;
 
         /// <summary>
+        /// Added (not multiplied) to the pawn's price factor for each trait they hold (RimWorld:
+        /// <c>TraitDegreeData.marketValueFactorOffset</c>, read in <c>PriceUtility.PawnQualityPriceFactor</c>), so
+        /// −0.2 takes a fifth of a person's value off. Zero for almost every degree.
+        /// <para/>Only the degrees the RimWorld wiki lists a market value for carry one here (Abrasive,
+        /// Pyromaniac); the page describes the current game, so a 1.0 value is not claimed.
+        /// </summary>
+        public float marketValueFactorOffset;
+
+        /// <summary>
         /// Flat offset to how every other pawn sees the pawn holding this trait/degree, regardless of who is
         /// looking (RimWorld: e.g. Abrasive's constant "-15 opinion of me"). Read by
         /// <see cref="Social.SocialUtility.OpinionOf"/> from the *other* pawn's traits — distinct from

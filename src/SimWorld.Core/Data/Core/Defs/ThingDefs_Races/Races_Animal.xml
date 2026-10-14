@@ -9,6 +9,12 @@
     share Husky's body (QuadrupedAnimalWithPaws) — the only animal body this port ships; a Chicken built from
     a quadruped body is a deliberate, documented simplification (an avian body is Health's content to add,
     not this lane's), not a claim that it looks right.
+
+    MarketValue is each race's base worth, the number Economy.PriceUtility scales for the individual animal and
+    Director.WealthWatcher charges the storyteller's wealth term for a tame one: Husky 250, Muffalo 300, Chicken
+    50, from the RimWorld wiki's infobox for each (https://rimworldwiki.com/wiki/Husky, /Muffalo, /Chicken).
+    Those pages describe the current game; the bases are not known to differ in 1.0, but that was not checked
+    against a 1.0 source.
   -->
 
   <ThingDef Name="BaseAnimal" ParentName="BasePawn" Abstract="True">
@@ -23,6 +29,9 @@
     <defName>Husky</defName>
     <label>husky</label>
     <description>A large, hardy working dog.</description>
+    <statBases>
+      <MarketValue>250</MarketValue>
+    </statBases>
     <race>
       <baseHealthScale>1</baseHealthScale>
       <baseBodySize>0.86</baseBodySize>
@@ -54,6 +63,9 @@
     <defName>Muffalo</defName>
     <label>muffalo</label>
     <description>A large, shaggy pack animal. Placid enough to milk and shear once tamed, but warier of people than a dog.</description>
+    <statBases>
+      <MarketValue>300</MarketValue>
+    </statBases>
     <race>
       <baseHealthScale>1.5</baseHealthScale>
       <baseBodySize>1.5</baseBodySize>
@@ -98,6 +110,9 @@
     <defName>Chicken</defName>
     <label>chicken</label>
     <description>A small, flighty domestic fowl kept for eggs and meat.</description>
+    <statBases>
+      <MarketValue>50</MarketValue>
+    </statBases>
     <race>
       <baseHealthScale>0.35</baseHealthScale>
       <baseBodySize>0.30</baseBodySize>

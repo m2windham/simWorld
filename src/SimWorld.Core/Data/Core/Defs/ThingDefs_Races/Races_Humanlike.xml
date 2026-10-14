@@ -15,6 +15,12 @@
       <!-- The stats module's own default already matches this; set explicitly so a future non-Human
            statBases override reads as deliberate, not an oversight. -->
       <MentalBreakThreshold>0.35</MentalBreakThreshold>
+      <!-- A race's base market value: what a perfectly healthy adult of it is worth before
+           Economy.PriceUtility.PawnQualityPriceFactor scales it for this pawn's health, capacities, skills,
+           age and traits. 1750 is RimWorld's (https://rimworldwiki.com/wiki/Human, "Market Value 1750"; the
+           page is the current game's, and this base has not been seen to change between versions). It is the
+           number the storyteller's wealth term charges for a person (Director.WealthWatcher.WealthPawns). -->
+      <MarketValue>1750</MarketValue>
     </statBases>
     <race>
       <intelligence>Humanlike</intelligence>

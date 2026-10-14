@@ -102,6 +102,9 @@
              checked against decompiled source in this environment; pinned by a test asserting the sign and
              that it beats a plain compatibility swing, not the literal value. -->
         <opinionOffset>-15</opinionOffset>
+        <!-- -15% market value, from https://rimworldwiki.com/wiki/Traits ("Abrasive ... -15% Market Value").
+             The wiki describes the current game; 1.0's value for this trait was not checked. -->
+        <marketValueFactorOffset>-0.15</marketValueFactorOffset>
       </li>
     </degreeDatas>
   </TraitDef>
