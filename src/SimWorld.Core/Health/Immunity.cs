@@ -61,6 +61,30 @@ namespace SimWorld.Health
 
         public IReadOnlyList<ImmunityRecord> Records => immunityList;
 
+        /// <summary>
+        /// How open this pawn is to catching <paramref name="diseaseDef"/> on <paramref name="part"/> right now
+        /// (RimWorld: <c>ImmunityHandler.DiseaseContractChanceFactor</c>): 0 for a pawn that does not get sick,
+        /// 0 if it already has this disease on this very part, and otherwise falling from 1 to 0 as its immunity
+        /// to it climbs to 0.6. A pawn who is fighting one wound infection, or has just beaten one, has built
+        /// the immunity that keeps the next wound from going septic; the infecter reads this at or below
+        /// 0.001 as "no".
+        /// </summary>
+        public float DiseaseContractChanceFactor(HediffDef diseaseDef, BodyPartRecord? part = null)
+        {
+            if (diseaseDef == null) throw new ArgumentNullException(nameof(diseaseDef));
+            if (!pawn.RaceProps.IsFlesh) return 0f;
+
+            List<Hediff> hediffs = pawn.health.hediffSet.hediffs;
+            for (int i = 0; i < hediffs.Count; i++)
+            {
+                if (hediffs[i].def == diseaseDef && ReferenceEquals(hediffs[i].Part, part)) return 0f;
+            }
+
+            ImmunityRecord? record = GetImmunityRecord(diseaseDef);
+            if (record != null) return GenMath.Lerp(1f, 0f, GenMath.Clamp01(record.immunity / 0.6f));
+            return 1f;
+        }
+
         public float GetImmunity(HediffDef def)
         {
             ImmunityRecord? record = GetImmunityRecord(def);

@@ -452,32 +452,56 @@ namespace SimWorld.Health
     }
 
     /// <summary>
-    /// Untended wounds roll for infection after a delay (RimWorld: <c>HediffComp_Infecter</c>). When the timer
-    /// runs out the wound becomes infected with its def's <see cref="HediffCompProperties_Infecter.infectionChance"/>,
-    /// scaled down if it has been tended by then — by <see cref="TendedChanceFactor"/>, RimWorld's own line from
-    /// 85% at tend quality 0 to 5% at tend quality 1 (wiki: Infection). Until lane/downed the line ran from 100%
-    /// to 10%, with no source recorded.
+    /// Whether a wound goes septic (RimWorld: <c>HediffComp_Infecter</c>, ported from the 1.0 decompile).
     /// <para/>
-    /// <b>Not ported:</b> RimWorld also multiplies by the room the wound was tended in (50% in a clean floored
-    /// room, 32% on sterile tile), by the difficulty's player-pawn infection factor, and by an animal factor.
-    /// This port has no room cleanliness a tend could be read against and no such difficulty field, and the
-    /// animal factor's value disagrees between the wiki's own text and its version history; every tend here is
-    /// read as RimWorld's "outdoors", factor 1, which is the harsh end.
+    /// <b>Two rolls, as RimWorld has it.</b> When the wound is made, the def's
+    /// <see cref="HediffCompProperties_Infecter.infectionChance"/> (x0.1 on an animal) decides whether it
+    /// will ever be a candidate at all; a wound that is not simply never infects. A candidate waits out
+    /// <see cref="HealthTuning.InfectionDelayRange"/> and then rolls again, and <b>that</b> roll is where the
+    /// rest of the rule lives:
+    /// <list type="bullet">
+    /// <item>the infection is refused outright if the pawn is already infected on that part, or has built up
+    /// enough immunity to wound infection (<see cref="ImmunityHandler.DiseaseContractChanceFactor"/> at or
+    /// below 0.001 — a pawn who is fighting one infection, or has just beaten one, is not handed a second on
+    /// the next wound);</item>
+    /// <item>a tended wound's chance is scaled by <see cref="TendQualityFactor"/> (RimWorld: 0.7 at tend
+    /// quality 0 to 0.4 at quality 1);</item>
+    /// <item><b>and by <see cref="SeverityFactor"/> — the wound's own size</b> (RimWorld: 0.1 at severity 1 up
+    /// to 1.0 at severity 12). This was missing. A wound of severity 2, which is most of them, infected at
+    /// the def's full chance here; in RimWorld it is a fifth of that. It is what made nearly every citizen
+    /// who was hurt in a raid a candidate for an infection that a doctor with no medicine could not win the
+    /// immunity race against.</item>
+    /// </list>
+    /// <para/>
+    /// <b>Not ported:</b> RimWorld also multiplies by the room the wound was tended in and by the difficulty's
+    /// <c>playerPawnInfectionChanceFactor</c>. This port has no room cleanliness a tend could be read against
+    /// and no such difficulty field; every tend is read as "no room", factor 1, which is the harsh end.
+    /// <para/>
+    /// The tend-quality line used to be the wiki's 85% at quality 0 to 5% at quality 1. That is the later
+    /// game's; the 1.0 decompile this port reads has 0.7 to 0.4, and has the severity factor above that the
+    /// wiki line was applied without.
     /// </summary>
     public class HediffComp_Infecter : HediffComp
     {
-        /// <summary>RimWorld's tended-wound infection factor at tend quality 0 (wiki: Infection).</summary>
-        public const float TendedChanceFactorAtQualityZero = 0.85f;
+        private const int Uninitialized = -1;
+        private const int WillNotInfect = -2;
+        private const int FailedToMakeInfection = -3;
+        private const int AlreadyMadeInfection = -4;
 
-        /// <summary>RimWorld's tended-wound infection factor at tend quality 1 (wiki: Infection).</summary>
-        public const float TendedChanceFactorAtQualityOne = 0.05f;
+        /// <summary>RimWorld's <c>InfectionChanceFactorFromTendQualityCurve</c>, point for point.</summary>
+        private static readonly SimpleCurve TendQualityCurve = new SimpleCurve { { 0f, 0.7f }, { 1f, 0.4f } };
 
-        /// <summary>How much a tend of <paramref name="tendQuality"/> scales a wound's infection chance: linear
-        /// from <see cref="TendedChanceFactorAtQualityZero"/> to <see cref="TendedChanceFactorAtQualityOne"/>.</summary>
-        public static float TendedChanceFactor(float tendQuality) =>
-            GenMath.Lerp(TendedChanceFactorAtQualityZero, TendedChanceFactorAtQualityOne, GenMath.Clamp01(tendQuality));
+        /// <summary>RimWorld's <c>InfectionChanceFactorFromSeverityCurve</c>, point for point.</summary>
+        private static readonly SimpleCurve SeverityCurve = new SimpleCurve { { 1f, 0.1f }, { 12f, 1f } };
 
-        private int ticksUntilInfect = -1;
+        /// <summary>How much a tend of <paramref name="tendQuality"/> scales a wound's infection chance.</summary>
+        public static float TendQualityFactor(float tendQuality) => TendQualityCurve.Evaluate(tendQuality);
+
+        /// <summary>How much a wound of this <paramref name="severity"/> scales its own infection chance: a
+        /// scratch rarely, a ruinous wound at the def's full chance.</summary>
+        public static float SeverityFactor(float severity) => SeverityCurve.Evaluate(severity);
+
+        private int ticksUntilInfect = Uninitialized;
 
         public HediffCompProperties_Infecter Props => (HediffCompProperties_Infecter)props;
 
@@ -485,8 +509,24 @@ namespace SimWorld.Health
 
         public override void CompPostPostAdd(DamageInfo? dinfo)
         {
-            if (parent.Part != null && parent.Part.def.solid) return;
-            ticksUntilInfect = Rand.Range(HealthTuning.InfectionDelayRange);
+            if (parent.IsPermanent || parent.Part == null || parent.Part.def.solid || PartOrAnyAncestorHasDirectlyAddedParts(parent.Part))
+            {
+                ticksUntilInfect = WillNotInfect;
+                return;
+            }
+
+            float chance = Props.infectionChance;
+            if (Pawn.RaceProps.Animal) chance *= HealthTuning.AnimalsInfectionChanceFactor;
+            ticksUntilInfect = Rand.Value <= chance ? Rand.Range(HealthTuning.InfectionDelayRange) : WillNotInfect;
+        }
+
+        private bool PartOrAnyAncestorHasDirectlyAddedParts(BodyPartRecord part)
+        {
+            for (BodyPartRecord? p = part; p != null; p = p.parent)
+            {
+                if (Pawn.health.hediffSet.HasDirectlyAddedPartFor(p)) return true;
+            }
+            return false;
         }
 
         public override void CompPostTick(ref float severityAdjustment)
@@ -498,26 +538,41 @@ namespace SimWorld.Health
 
         private void CheckMakeInfection()
         {
-            ticksUntilInfect = -1;
-            if (parent.IsPermanent || parent.Severity <= 0f || Pawn.Dead) return;
-            float chance = Props.infectionChance;
-            if (parent.IsTended)
+            if (parent.IsPermanent || parent.Severity <= 0f || Pawn.Dead)
             {
-                chance *= TendedChanceFactor(parent.TendQuality);
+                ticksUntilInfect = FailedToMakeInfection;
+                return;
             }
-            if (Rand.Chance(chance))
+            if (Pawn.health.immunity.DiseaseContractChanceFactor(HediffDefOf.WoundInfection, parent.Part) <= 0.001f)
             {
+                ticksUntilInfect = FailedToMakeInfection;
+                return;
+            }
+
+            float factor = 1f;
+            var tend = parent.TryGetComp<HediffComp_TendDuration>();
+            if (tend != null && tend.IsTended) factor *= TendQualityFactor(tend.tendQuality);
+            factor *= SeverityFactor(parent.Severity);
+
+            if (Rand.Value < factor)
+            {
+                ticksUntilInfect = AlreadyMadeInfection;
+
                 // AddHediff(def, part)'s own two steps, split so the infection can take its wound's provenance
                 // before it is added: a citizen who dies of an infected raid wound was killed by the raid.
                 Hediff infection = HediffMaker.MakeHediff(HediffDefOf.WoundInfection, Pawn, parent.Part);
                 infection.sourceIncident = parent.sourceIncident;
                 Pawn.health.AddHediff(infection, parent.Part);
             }
+            else
+            {
+                ticksUntilInfect = FailedToMakeInfection;
+            }
         }
 
         public override void CompExposeData()
         {
-            Scribe_Values.Look(ref ticksUntilInfect, "ticksUntilInfect", -1);
+            Scribe_Values.Look(ref ticksUntilInfect, "ticksUntilInfect", Uninitialized);
         }
     }
 
