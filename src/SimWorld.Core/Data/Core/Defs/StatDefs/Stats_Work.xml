@@ -48,40 +48,46 @@
     <label>medical tend quality</label>
     <description>How good a job this pawn does when tending wounds and illness.</description>
     <!--
-      Base 1, not 0: skillNeedFactors below is multiplicative (base * factor), so a 0 base would stay 0 at
-      every skill level regardless of the factor table — the table itself already spans the full 0.30..1.00
-      range a base of 1 needs to land exactly on those numbers.
+      RimWorld's definition, from its wiki page for the stat (https://rimworldwiki.com/wiki/Medical_tend_quality):
+      "20% plus 10% per skill level" on the Medicine skill, Manipulation at 100% importance and Sight at 70%
+      (both limited to 140%), and a post-processing curve (0,0) (1,1) (2,1.5) (4,2) that flattens the top: skill 8
+      is 100%, skill 10 110%, skill 20 155%, which is exactly the table the page prints. The page is marked as
+      needing a rewrite and carries no game version, but its table and its curve agree with each other to the
+      digit, which is the check available without the def itself.
+      What stood here was a hand-written table that ran 0.30 at skill 0 to 1.00 at skill 20 in steps of 0.035:
+      a skill-5 doctor was 0.475 where RimWorld's is 0.70, a skill-10 one 0.65 where it is 1.10. Every tend in
+      the game was that much worse, and a tend's quality is what pushes an infection's severity back.
+      Base 1: SkillNeed_BaseBonus is multiplicative here (base x factor), as RimWorld's is.
     -->
     <defaultBaseValue>1</defaultBaseValue>
     <minValue>0</minValue>
     <skillNeedFactors>
-      <li Class="SimWorld.Stats.SkillNeed_Direct">
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
         <skill>Medicine</skill>
-        <valuesPerLevel>
-          <li>0.30</li>
-          <li>0.335</li>
-          <li>0.37</li>
-          <li>0.405</li>
-          <li>0.44</li>
-          <li>0.475</li>
-          <li>0.51</li>
-          <li>0.545</li>
-          <li>0.58</li>
-          <li>0.615</li>
-          <li>0.65</li>
-          <li>0.685</li>
-          <li>0.72</li>
-          <li>0.755</li>
-          <li>0.79</li>
-          <li>0.825</li>
-          <li>0.86</li>
-          <li>0.895</li>
-          <li>0.93</li>
-          <li>0.965</li>
-          <li>1.00</li>
-        </valuesPerLevel>
+        <baseValue>0.2</baseValue>
+        <bonusPerLevel>0.1</bonusPerLevel>
       </li>
     </skillNeedFactors>
+    <capacityFactors>
+      <li>
+        <capacity>Manipulation</capacity>
+        <weight>1</weight>
+        <max>1.4</max>
+      </li>
+      <li>
+        <capacity>Sight</capacity>
+        <weight>0.7</weight>
+        <max>1.4</max>
+      </li>
+    </capacityFactors>
+    <postProcessCurve>
+      <points>
+        <li>(0, 0)</li>
+        <li>(1, 1)</li>
+        <li>(2, 1.5)</li>
+        <li>(4, 2)</li>
+      </points>
+    </postProcessCurve>
   </StatDef>
 
   <StatDef>
