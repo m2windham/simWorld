@@ -32,7 +32,9 @@ namespace SimWorld.Pawns
     /// off the map and puts it down somewhere else carries through this tracker:
     /// <see cref="Building.JobDriver_HaulToBuildingSite"/>, and the four that share <see cref="AI.Toils_Haul"/> —
     /// <see cref="AI.JobDriver_HaulToCell"/>, <see cref="AI.JobDriver_FoodDeliver"/>,
-    /// <see cref="AI.JobDriver_ButcherCorpse"/> and <see cref="AI.JobDriver_TendPatient"/>.
+    /// <see cref="AI.JobDriver_ButcherCorpse"/> and <see cref="AI.JobDriver_TendPatient"/>. One more carries a body
+    /// into a grave instead of down on a cell: <see cref="AI.JobDriver_HaulToContainer"/>, which ends with
+    /// <see cref="TryTransferCarriedThingTo"/>.
     /// <see cref="AI.JobDriver_Warden_Feed"/> picks nothing up (the food stays on the ground until it is
     /// eaten) and <see cref="AI.JobDriver_TakeToBed"/> moves a person by changing their position, so neither
     /// has anything to keep.
@@ -111,6 +113,23 @@ namespace SimWorld.Pawns
             Thing? thing = carriedThing;
             carriedThing = null;
             thing?.Destroy(DestroyMode.Vanish);
+        }
+
+        /// <summary>
+        /// Hands what is in hand to <paramref name="container"/> (RimWorld:
+        /// <c>carryTracker.innerContainer.TryTransferToContainer</c>, which <c>Toils_Haul.DepositHauledThingInContainer</c>
+        /// calls): the whole Thing, as itself, goes inside and the hands are empty. A body put in a grave. False,
+        /// with the Thing still in hand, when there is nothing in hand or the container will not hold it — the
+        /// job's end then puts it down at the pawn's feet, as for any carry that did not arrive.
+        /// </summary>
+        public bool TryTransferCarriedThingTo(ThingOwner container)
+        {
+            if (container == null) throw new ArgumentNullException(nameof(container));
+            Thing? thing = carriedThing;
+            if (thing == null || thing.Destroyed) return false;
+            if (!container.TryAdd(thing)) return false;
+            carriedThing = null;
+            return true;
         }
 
         /// <summary>

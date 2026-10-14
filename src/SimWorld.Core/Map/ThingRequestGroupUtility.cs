@@ -61,6 +61,11 @@ namespace SimWorld.Map
                     // one research bench, an ordinary Building identified by its def (ResearchWorkDefOf), not a
                     // Building subclass, so the def itself is the test.
                     return ReferenceEquals(def, ResearchWorkDefOf.ResearchBench);
+                case ThingRequestGroup.Corpse:
+                    return CorpseDefGenerator.IsCorpseDef(def);
+                case ThingRequestGroup.HaulDestination:
+                    // RimWorld: any def whose Thing is an IHaulDestination (a building with storage of its own).
+                    return def.thingClass != null && typeof(Building.IHaulDestination).IsAssignableFrom(def.thingClass);
                 default:
                     throw new System.ArgumentException("Unknown ThingRequestGroup " + group, nameof(group));
             }

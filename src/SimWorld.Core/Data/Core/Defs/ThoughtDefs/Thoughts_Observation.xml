@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Having seen the dead lying about (Things.Corpse.GiveObservedThought, via Thoughts.PawnObserver). Their own
+    file rather than entries in Thoughts_Memories.xml, per CLAUDE.md: DefLoader reads every file under a Def
+    folder, so additive content never has to edit a shared one.
+
+    Values from the RimWorld wiki's Thoughts table, Misc section (https://rimworldwiki.com/wiki/Thoughts; the
+    page names no game version, and RimWorld 1.0's own Defs are not in the decompile this port reads):
+      - Observed corpse: -4, 0.5 days, stack limit 3, stacking multiplier 0.5; nullified by Psychopath,
+        Bloodlust and Cannibal (this port has no Cannibal trait).
+      - Observed rotting corpse: -6, 0.5 days, stack limit 5, stacking multiplier 0.5; nullified by Bloodlust
+        only, so a psychopath shrugs off a fresh body but not a rotting one.
+    The stack limit is enforced as RimWorld enforces it for every memory, observations included
+    (MemoryThoughtHandler.TryGainMemory: while NumMemoriesOfDef > stackLimit, remove the oldest), so a crowd of
+    bodies costs at most three fresh (or five rotting) memories at diminishing weight: -4 x (1 + 0.5 + 0.25)
+    = -7 fresh, about -11.6 rotting. A body that stays in view keeps renewing its memory
+    (Thought_MemoryObservation merges by target), so what fades after half a day is the memory of a body that
+    has been buried or that the pawn has walked away from.
+  -->
+  <ThoughtDef>
+    <defName>ObservedLayingCorpse</defName>
+    <thoughtClass>SimWorld.Thoughts.Thought_MemoryObservation</thoughtClass>
+    <durationDays>0.5</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.5</stackedEffectMultiplier>
+    <nullifyingTraits>
+      <li>Psychopath</li>
+      <li>Bloodlust</li>
+    </nullifyingTraits>
+    <stages>
+      <li>
+        <label>observed corpse</label>
+        <description>There is a dead body lying around. It is disturbing.</description>
+        <baseMoodEffect>-4</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>ObservedLayingRottingCorpse</defName>
+    <thoughtClass>SimWorld.Thoughts.Thought_MemoryObservation</thoughtClass>
+    <durationDays>0.5</durationDays>
+    <stackLimit>5</stackLimit>
+    <stackedEffectMultiplier>0.5</stackedEffectMultiplier>
+    <nullifyingTraits>
+      <li>Bloodlust</li>
+    </nullifyingTraits>
+    <stages>
+      <li>
+        <label>observed rotting corpse</label>
+        <description>There is a rotting body lying around. It is revolting.</description>
+        <baseMoodEffect>-6</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

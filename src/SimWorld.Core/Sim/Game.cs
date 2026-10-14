@@ -515,6 +515,11 @@ namespace SimWorld.Sim
             // god happened to issue one of the five edicts that name a researchFocus. Self-gated on the same
             // rare tick as the two initiatives above, for the same reason.
             tm.PostTickers.Add(_ => SimWorld.Building.SettlementWorksInitiative.Tick());
+            // building.graveyard: the settlement buries its own dead and lays a dump for the rest. Without this a
+            // body lay where it fell for the whole game (HaulCorpses had no grave to carry it to) and cost every
+            // citizen who saw it a bad moment (Corpse.GiveObservedThought). Self-gated on the same rare tick as
+            // the initiatives above, and it costs one list read on a map with no body on it.
+            tm.PostTickers.Add(_ => SimWorld.Building.GraveyardInitiative.Tick());
             // offices: every settlement's stewardship and the civilization's eldership stay filled, and a
             // dead holder is succeeded. Self-gated on the long tick like the managers above, and stateless —
             // a seat's holder is the citizen carrying that office's RoleDef, which already saves with them,

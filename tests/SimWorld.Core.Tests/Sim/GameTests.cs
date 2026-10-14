@@ -140,7 +140,10 @@ namespace SimWorld.Tests.Sim
             Game game = NewSoloGame();
 
             Assert.Single(game.TickManager.PreTickers);
-            // 20 since abstract construction joined them
+            // 21 since the graveyard joined them
+            // (SimWorld.Building.GraveyardInitiative.Tick, which digs a grave for each of the settlement's own dead
+            // lying on a map and lays the one dump for everyone else's — GraveyardIsWiredTests is what proves the
+            // line is reached). It was 20 since abstract construction joined them
             // (SimWorld.Building.AbstractSettlementConstruction.Tick, which is what raises a bed or a wall
             // for a settlement nobody has opened — its map-path sibling returns at `if (map == null)`, so
             // without this line construction was the one capability of the three that demanded the player
@@ -155,7 +158,7 @@ namespace SimWorld.Tests.Sim
             // (SimWorld.Economy.SettlementStockInitiative.Tick and SimWorld.Crafting.GuildInitiative.Tick),
             // the works initiative (SimWorld.Building.SettlementWorksInitiative.Tick) made it 14 and the
             // stonework initiative (SimWorld.Crafting.StonecutterInitiative.Tick) made it 13.
-            Assert.Equal(20, game.TickManager.PostTickers.Count);
+            Assert.Equal(21, game.TickManager.PostTickers.Count);
         }
 
         [Fact]

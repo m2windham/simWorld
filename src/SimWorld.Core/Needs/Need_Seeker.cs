@@ -58,9 +58,14 @@ namespace SimWorld.Needs
     {
         public ThoughtHandler thoughts;
 
+        /// <summary>What this pawn notices lying about (RimWorld: <c>Need_Mood.observer</c>). Not saved: it holds
+        /// nothing but a countdown, and a loaded pawn simply starts a new one.</summary>
+        public PawnObserver observer;
+
         public Need_Mood(Pawn pawn) : base(pawn)
         {
             thoughts = new ThoughtHandler(pawn);
+            observer = new PawnObserver(pawn);
         }
 
         /// <summary>
@@ -87,6 +92,7 @@ namespace SimWorld.Needs
         {
             base.NeedInterval();
             thoughts.ThoughtInterval();
+            observer.ObserverInterval();
         }
 
         /// <summary>
