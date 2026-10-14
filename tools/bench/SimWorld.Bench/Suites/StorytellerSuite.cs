@@ -674,7 +674,7 @@ namespace SimWorld.Bench.Suites
             var series = new List<(string Name, Func<CurveSample, string> Line)>
             {
                 ("threat points (the `points` column)", s => s.PointsLine()),
-                ("curve inputs (wealth, per-colonist, the four factors)", s => s.InputsLine()),
+                ("curve inputs (wealth, per-colonist, the factors)", s => s.InputsLine()),
                 ("world beside it (pop, mood, food, deaths, moments)", s => s.WorldLine()),
             };
 
