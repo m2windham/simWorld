@@ -151,6 +151,13 @@ namespace SimWorld.Health
         public virtual bool TendableNow(bool ignoreTimer = false)
         {
             if (!def.tendable || Severity <= 0f || IsPermanent) return false;
+
+            // RimWorld's Hediff.TendableNow: a disease the body has already beaten (immunity at 1, severity now
+            // falling on its own) is not tended. Without this a doctor went on spending a unit of medicine and
+            // an hour of work on an infection that was already lost.
+            var immunizable = TryGetComp<HediffComp_Immunizable>();
+            if (immunizable != null && immunizable.FullyImmune) return false;
+
             var comp = TryGetComp<HediffComp_TendDuration>();
             if (comp == null) return false;
             return comp.AllowTend(ignoreTimer);

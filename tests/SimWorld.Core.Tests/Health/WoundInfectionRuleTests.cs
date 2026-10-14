@@ -192,9 +192,10 @@ namespace SimWorld.Tests.Health
         [Fact]
         public void A_medicines_quality_ceiling_is_the_medicines_own_not_the_tends_base()
         {
-            // A top doctor with herbal medicine: base 0.6, ceiling 0.7. The variance may carry it up to the
-            // ceiling and not past it.
-            Pawn doctor = DoctorOfSkill(20);
+            // A skill-8 doctor with herbal medicine: base 0.6, ceiling 0.7. The variance may carry it up to
+            // the ceiling and not past it. (A better doctor's base is clipped to the ceiling before any
+            // variance, which is the other half of the rule and not what this isolates.)
+            Pawn doctor = DoctorOfSkill(8);
             var herbal = Def("MedicineHerbal");
             float ceiling = TendUtility.MaxQualityFor(herbal);
             float baseQuality = TendUtility.CalculateBaseTendQuality(doctor, null, herbal);
@@ -255,6 +256,26 @@ namespace SimWorld.Tests.Health
             int left = comp.tendTicksLeft;
             TendUtility.DoTend(p, 0.5f, 1f);
             Assert.Equal(left + 15 * GenDate.TicksPerHour, comp.tendTicksLeft);
+        }
+
+        [Fact]
+        public void An_infection_the_body_has_already_beaten_is_no_longer_tendable()
+        {
+            // RimWorld's TendableNow refuses a hediff whose immunity is full (FullyImmune): severity is falling
+            // on its own and a tend would spend medicine and a doctor's hour for nothing.
+            Pawn p = NewHuman("P");
+            BodyPartRecord torso = Part(p, "torso");
+            p.health.AddHediff(HediffMaker.MakeHediff(HediffDefOf.WoundInfection, p, torso), torso);
+            Hediff infection = p.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.WoundInfection)!;
+            Assert.True(infection.TendableNow());
+            Assert.True(TendUtility.HasAnythingToTend(p));
+
+            p.health.immunity.EnsureRecord(HediffDefOf.WoundInfection).immunity = 1f;
+            Assert.False(infection.TendableNow());
+            Assert.False(TendUtility.HasAnythingToTend(p), "nothing left that a doctor should come for");
+
+            p.health.immunity.GetImmunityRecord(HediffDefOf.WoundInfection)!.immunity = 0.99f;
+            Assert.True(infection.TendableNow(), "one hair short of immune is still a race to be won");
         }
 
         private static ThingDef Def(string name) => DefDatabase<ThingDef>.GetNamed(name);
