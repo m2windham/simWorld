@@ -1459,10 +1459,17 @@ already tracks durably (a trait, worn apparel, a granted role).
   sync by hand — the roster is their citizens (previously every citizen on the
   planet, rival civilizations included, once `EmergenceManager` started
   founding them), the seat is the oldest settlement with ties broken by tile,
-  and `PlayerWealthForStoryteller` is the market value of what they hold: the
-  wealth term `EraDef.threatPointsFactor` was written as a stand-in for, which
-  stays, because scaling threat by the age a civilization has reached is
-  SimWorld's own idea rather than a substitute. An incident that has to happen
+  and `PlayerWealthForStoryteller` is what they are worth to the storyteller,
+  RimWorld's way: `items + 0.5 × buildings + pawns`, people counted in the
+  wealth term as well as in the per-colonist term, as RimWorld does. A
+  settlement with a map is counted off it by a port of `WealthWatcher` on
+  RimWorld's 5000-tick recount cadence (plus the half that is not on the map:
+  the goods ledger and any citizen the tiering system has taken off it); one
+  nobody has opened is estimated from its ledgers (`Stores`, `Structures`,
+  its citizens priced one by one), and a test opens one to compare the two.
+  This is the wealth term `EraDef.threatPointsFactor` was written as a
+  stand-in for, which stays, because scaling threat by the age a civilization
+  has reached is SimWorld's own idea rather than a substitute. An incident that has to happen
   somewhere picks a settlement weighted by population — never below weight 1,
   so an emptied town cannot become invisible to the narrator. The target stays
   singular: one `StoryState`, one refire memory, one adaptation curve, because
