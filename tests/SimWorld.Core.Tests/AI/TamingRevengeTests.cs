@@ -21,8 +21,9 @@ namespace SimWorld.Tests.AI
     /// turned a third of every failed muffalo attempt into a day-long mauling, let the next citizen try the
     /// same animal an hour later, left a freshly tamed animal angry at the person it had just been tamed by,
     /// and sent handlers up to animals that had already turned on somebody. Measured over 60 days of seed
-    /// 12345: 89 grudges, every one of them set by a <c>Tame</c> job, and about 160 of the settlement's 246
-    /// citizen injuries were bites from animals holding one — none from a hunt. Each test below is written to
+    /// 12345 on the feature branch: 89 grudges, a <c>Tame</c> job behind nearly every one (a hunt behind the
+    /// few the revenge roll on a wounded animal added), and about 160 of the settlement's 246 citizen injuries
+    /// were bites from animals holding one. Each test below is written to
     /// fail on that behaviour; the numbers they assert are RimWorld's (the 12-hour wait is
     /// <c>TameUtility.MinTameInterval</c>; the chance is the race's own <c>manhunterOnTameFailChance</c>) or a
     /// property, never a tuned literal.

@@ -54,9 +54,11 @@ namespace SimWorld.AI
         /// a pawn stat built from Shooting and Animals skill that this port has no StatDef for, and without it
         /// the muffalo's rule runs at its worst case: ~20% per arrow at ordinary range, so nearly every muffalo
         /// hunt would end in a charge. Porting the rule without the term would be a new source of exactly the
-        /// wounds this lane removes, so the wildness-scaled stand-in stays until a stealth stat exists. Measured
-        /// over 60 days of seed 12345 it set no grudge at all: every one of 89 came from a taming. (The taming
-        /// roll that this constant used to be explained against is gone: it is the race's own
+        /// wounds this lane removes, so the wildness-scaled stand-in stays until a stealth stat exists. What it
+        /// costs, measured: with the taming rules fixed, a hunt set the only grudges left, eight in sixty days
+        /// in each of seeds 12345 and 777 (against 133 and 48 before, nearly all from tamings), and six of
+        /// those sixteen were a husky or a chicken, which RimWorld gives no chance at all. (The taming roll
+        /// that this constant used to be explained against is gone: it is the race's own
         /// <c>manhunterOnTameFailChance</c> now, see <see cref="Pawns.TameUtility.TryTame"/>.)
         /// <para/>
         /// Why it is small: a hunt lands many wounds before anything dies (a bow puts five-plus arrows into a
