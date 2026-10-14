@@ -51,7 +51,9 @@ namespace SimWorld.Bench.Suites
     /// <c>reconstruction</c> row under the table reports how many days disagreed, and the answer must be zero.
     /// If it is not, every decomposition column is wrong and the table says so rather than being quietly
     /// believed. "wealth" is <see cref="IIncidentTarget.PlayerWealthForStoryteller"/> — the number the
-    /// storyteller reads, never a wealth figure computed here — and "pop" is the length of
+    /// storyteller reads, never a wealth figure computed here — beside the three terms it is made of
+    /// (<see cref="CivilizationTarget.WealthBreakdown"/>: items, buildings at their half weight, pawns), so a
+    /// reader can see where the points come from, and "pop" is the length of
     /// <see cref="IIncidentTarget.PlayerPawnsForStoryteller"/>, the same roster the curve sums over, which is
     /// the attended slice of the civilization rather than its head count. <c>GodRollup.TotalPopulation</c>
     /// (which includes the Statistical cohort) is reported separately in table 3 so the two are never confused.
@@ -356,6 +358,7 @@ namespace SimWorld.Bench.Suites
             Storyteller storyteller = game.Storyteller;
 
             float wealth = target.PlayerWealthForStoryteller;
+            WealthBreakdown wealthParts = target.WealthBreakdown;
             float baseFromWealth = StorytellerUtility.PointsPerWealthCurve.Evaluate(wealth);
             float perColonist = StorytellerUtility.PointsPerColonistByWealthCurve.Evaluate(wealth);
 
@@ -393,6 +396,9 @@ namespace SimWorld.Bench.Suites
                 pop: pop,
                 downed: downed,
                 wealth: wealth,
+                items: wealthParts.Items,
+                buildings: wealthParts.Buildings * WealthWatcher.BuildingsFactorForStoryteller,
+                pawns: wealthParts.Pawns,
                 baseFromWealth: baseFromWealth,
                 perColonist: perColonist,
                 colonistSum: colonistSum,
@@ -422,6 +428,9 @@ namespace SimWorld.Bench.Suites
                     Report.Int(s.Day),
                     Report.Int(s.Pop),
                     Report.Num(s.Wealth, 0),
+                    Report.Num(s.Items, 0),
+                    Report.Num(s.Buildings, 0),
+                    Report.Num(s.Pawns, 0),
                     Report.Num(s.BaseFromWealth, 1),
                     Report.Num(s.PerColonist, 1),
                     Report.Num(s.ColonistSum, 1),
@@ -437,7 +446,7 @@ namespace SimWorld.Bench.Suites
             Report.Table(
                 new[]
                 {
-                    "day", "pop", "wealth", "base from wealth", "per-colonist", "colonist sum",
+                    "day", "pop", "wealth", "items", "buildings x0.5", "pawns", "base from wealth", "per-colonist", "colonist sum",
                     "x difficulty", "x adaptation", "x era", "x daysPassed", "points", "clamped?",
                 },
                 rows);
@@ -448,9 +457,23 @@ namespace SimWorld.Bench.Suites
                 if (!s.ReconstructionMatches) mismatches++;
             }
 
+            int wealthMismatches = 0;
+            foreach (CurveSample s in arm.Samples)
+            {
+                if (!s.WealthPartsMatch) wealthMismatches++;
+            }
+
             Report.Note(
                 "`wealth` is `IIncidentTarget.PlayerWealthForStoryteller` — what the storyteller reads, not a "
-                + "figure computed here. `pop` is the roster the curve itself sums over "
+                + "figure computed here — and it is the sum of the three columns after it, which are RimWorld's "
+                + "terms: `items` (goods in storage and on the ground, and what people carry and wear), "
+                + "`buildings x0.5` (what the settlement has built, at the half weight the storyteller gives a "
+                + "building) and `pawns` (its people and tame animals, each priced as an individual). People "
+                + "are in `pawns` **and** in the per-colonist term, as in RimWorld. "
+                + "wealth = items + buildings x0.5 + pawns on "
+                + Report.Int(arm.Samples.Count - wealthMismatches) + "/" + Report.Int(arm.Samples.Count) + " days"
+                + (wealthMismatches == 0 ? "" : " (**a mismatch means the columns are not what the storyteller read**)")
+                + ". `pop` is the roster the curve itself sums over "
                 + "(`PlayerPawnsForStoryteller`), which is the attended slice, not the head count; table 3 "
                 + "carries `GodRollup.TotalPopulation` beside it. `clamped?` is `min` or `max` when "
                 + "`GenMath.Clamp` actually bound the result at "
@@ -723,8 +746,9 @@ namespace SimWorld.Bench.Suites
                 + "a pure function of the roster, the stores and the clock; the curve inputs are where those "
                 + "are read; the world beside them is what the settlement actually did; and the firing log is "
                 + "where the seeded draws land. **Points can replay exactly while the world under them does "
-                + "not** — below the wealth curve's 14,000 floor the points do not read stores at all, so a "
-                + "settlement that hauled one fewer meal moves the world rows and cannot move the points row."
+                + "not** — the points read wealth through a curve that is flat below 14,000 and slow above it, "
+                + "and wealth is recounted on a 5000-tick cadence, so a settlement that hauled one fewer meal "
+                + "moves the world rows well before it can move the points row."
                 + (allSame
                     ? ""
                     : " **A `NO` is a determinism failure, not a rounding artifact: the digests are formatted "
@@ -877,7 +901,8 @@ namespace SimWorld.Bench.Suites
     internal readonly struct CurveSample
     {
         public CurveSample(
-            int day, int pop, int downed, float wealth, float baseFromWealth, float perColonist, float colonistSum,
+            int day, int pop, int downed, float wealth, float items, float buildings, float pawns,
+            float baseFromWealth, float perColonist, float colonistSum,
             float difficultyFactor, float adaptationFactor, float eraFactor, float daysPassedFactor,
             float preClamp, float points, int totalPopulation, float mood, float foodNeed, int deaths,
             int moments, string era)
@@ -886,6 +911,9 @@ namespace SimWorld.Bench.Suites
             Pop = pop;
             Downed = downed;
             Wealth = wealth;
+            Items = items;
+            Buildings = buildings;
+            Pawns = pawns;
             BaseFromWealth = baseFromWealth;
             PerColonist = perColonist;
             ColonistSum = colonistSum;
@@ -912,6 +940,18 @@ namespace SimWorld.Bench.Suites
         public int Downed { get; }
 
         public float Wealth { get; }
+
+        /// <summary>The goods term of <see cref="Wealth"/>: <see cref="WealthBreakdown.Items"/>.</summary>
+        public float Items { get; }
+
+        /// <summary>The buildings term of <see cref="Wealth"/>, already at the storyteller's half weight.</summary>
+        public float Buildings { get; }
+
+        /// <summary>The people term of <see cref="Wealth"/>: <see cref="WealthBreakdown.Pawns"/>.</summary>
+        public float Pawns { get; }
+
+        /// <summary>Whether the three terms add back to <see cref="Wealth"/> (a float sum, so within a silver, not exactly).</summary>
+        public bool WealthPartsMatch => System.Math.Abs(Items + Buildings + Pawns - Wealth) < 1f;
 
         public float BaseFromWealth { get; }
 
@@ -979,6 +1019,9 @@ namespace SimWorld.Bench.Suites
             Day.ToString(CultureInfo.InvariantCulture),
             Pop.ToString(CultureInfo.InvariantCulture),
             Wealth.ToString("F3", CultureInfo.InvariantCulture),
+            Items.ToString("F3", CultureInfo.InvariantCulture),
+            Buildings.ToString("F3", CultureInfo.InvariantCulture),
+            Pawns.ToString("F3", CultureInfo.InvariantCulture),
             BaseFromWealth.ToString("F3", CultureInfo.InvariantCulture),
             PerColonist.ToString("F3", CultureInfo.InvariantCulture),
             ColonistSum.ToString("F3", CultureInfo.InvariantCulture),
