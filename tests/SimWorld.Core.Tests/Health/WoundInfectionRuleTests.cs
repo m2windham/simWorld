@@ -225,6 +225,38 @@ namespace SimWorld.Tests.Health
             Assert.True(highest > herbalCeiling, "highest " + highest);
         }
 
+        [Fact]
+        public void A_timed_tend_lasts_its_duration_plus_the_overlap_and_may_be_renewed_in_the_overlap()
+        {
+            // RimWorld: HediffCompProperties_TendDuration.TendTicksFull = (baseTendDurationHours +
+            // tendOverlapHours) x 2500, and AllowTend is TendTicksOverlap > tendTicksLeft. A wound infection
+            // is tended for 12 hours with a 3 hour overlap: the tend covers 15, and the next may land in the
+            // last 3, so a doctor who comes back on time leaves no gap. This port set only the 12.
+            Pawn p = NewHuman("P");
+            BodyPartRecord torso = Part(p, "torso");
+            p.health.AddHediff(HediffMaker.MakeHediff(HediffDefOf.WoundInfection, p, torso), torso);
+            Hediff infection = p.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.WoundInfection)!;
+            var comp = infection.TryGetComp<HediffComp_TendDuration>()!;
+            Assert.True(infection.TendableNow(), "untended: tendable");
+
+            TendUtility.DoTend(p, 0.5f, 1f);
+            Assert.Equal(15 * GenDate.TicksPerHour, comp.tendTicksLeft);
+            Assert.False(infection.TendableNow(), "just tended: covered");
+
+            // Twelve hours on, less a tick: still covered. A tick later the overlap window has opened.
+            for (int t = 0; t < 12 * GenDate.TicksPerHour - 1; t++) infection.Tick();
+            Assert.False(infection.TendableNow());
+            infection.Tick();
+            infection.Tick();
+            Assert.True(comp.IsTended, "still covered while it can be renewed");
+            Assert.True(infection.TendableNow(), "renewable inside the last three hours");
+
+            // Renewing in the window adds the whole duration on top of what was left: no time is lost.
+            int left = comp.tendTicksLeft;
+            TendUtility.DoTend(p, 0.5f, 1f);
+            Assert.Equal(left + 15 * GenDate.TicksPerHour, comp.tendTicksLeft);
+        }
+
         private static ThingDef Def(string name) => DefDatabase<ThingDef>.GetNamed(name);
 
         // ---- save and load ----

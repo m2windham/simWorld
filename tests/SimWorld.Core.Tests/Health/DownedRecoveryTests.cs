@@ -257,15 +257,17 @@ namespace SimWorld.Tests.Health
         [Fact]
         public void An_infection_is_tended_more_often_than_a_day_apart()
         {
-            // RimWorld tends an infection for 12 hours; this port used to give it 24.
+            // RimWorld tends an infection for 12 hours plus the 3 hour overlap, 15 in all (TendTicksFull);
+            // this port used to give it 24. Changed from "lapsed within half a day": that was 12 hours only,
+            // before the overlap was counted (WoundInfectionRuleTests pins the 15 and the renewal window).
             Pawn p = NewHuman();
             Hediff infection = Infect(p, "left leg")[0];
             TendUtility.DoTend(p, 0.5f, TendUtility.MaxQualityNoMedicine);
             Assert.True(infection.IsTended);
 
-            RunHours(GenDate.HoursPerDay / 2 + 1, null, p);
+            RunHours(16, null, p);
 
-            Assert.False(infection.IsTended, "a tend must have lapsed within half a day");
+            Assert.False(infection.IsTended, "a tend must have lapsed within sixteen hours");
             Assert.True(infection.TendableNow());
         }
 

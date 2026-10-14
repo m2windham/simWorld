@@ -193,7 +193,7 @@ namespace SimWorld.Health
     /// <summary>Tending state and effect (RimWorld: <c>HediffCompProperties_TendDuration</c>).</summary>
     public class HediffCompProperties_TendDuration : HediffCompProperties
     {
-        /// <summary>Hours a tend lasts; negative means a single tend is permanent (injuries).</summary>
+        /// <summary>Hours a tend covers before the overlap window opens (the timer a tend sets is this plus <see cref="tendOverlapHours"/>, see <see cref="TendTicksFull"/>); negative means a single tend is permanent (injuries).</summary>
         public float baseTendDurationHours = -1f;
 
         /// <summary>A timed tend may be renewed this many hours before it lapses.</summary>
@@ -204,6 +204,18 @@ namespace SimWorld.Health
         public float disappearsAtTotalTendQuality = -1f;
 
         public bool TendIsPermanent => baseTendDurationHours < 0f;
+
+        /// <summary>What one tend adds to the timer: the duration <i>plus</i> the overlap window (RimWorld:
+        /// <c>HediffCompProperties_TendDuration.TendTicksFull</c> = (baseTendDurationHours + tendOverlapHours) x
+        /// 2500). The wound is covered for the whole of it and the next tend may land in the last
+        /// <see cref="TendTicksOverlap"/> of it, so a doctor who comes back on time leaves no gap. This port
+        /// added only the base hours, which shortened every disease tend by the overlap (12 hours for an
+        /// infection where RimWorld's lasts 15) and had its doctors due three hours earlier than RimWorld's.</summary>
+        public int TendTicksFull => (int)System.Math.Round((baseTendDurationHours + tendOverlapHours) * Sim.GenDate.TicksPerHour);
+
+        /// <summary>How close to lapsing a timed tend must be before it may be renewed (RimWorld:
+        /// <c>TendTicksOverlap</c>).</summary>
+        public int TendTicksOverlap => (int)System.Math.Round(tendOverlapHours * Sim.GenDate.TicksPerHour);
 
         public HediffCompProperties_TendDuration() : base(typeof(HediffComp_TendDuration))
         {

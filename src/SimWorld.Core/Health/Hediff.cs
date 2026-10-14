@@ -327,7 +327,7 @@ namespace SimWorld.Health
             if (!IsTended) return true;
             if (Props.TendIsPermanent) return false;
             if (ignoreTimer) return true;
-            return tendTicksLeft <= Props.tendOverlapHours * GenDate.TicksPerHour;
+            return Props.TendTicksOverlap > tendTicksLeft;
         }
 
         public override void CompPostTick(ref float severityAdjustment)
@@ -349,7 +349,7 @@ namespace SimWorld.Health
             }
             else
             {
-                tendTicksLeft = Math.Max(0, tendTicksLeft) + (int)(Props.baseTendDurationHours * GenDate.TicksPerHour);
+                tendTicksLeft = Math.Max(0, tendTicksLeft) + Props.TendTicksFull;
             }
             Pawn.health.Notify_HediffChanged(parent);
         }
