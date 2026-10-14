@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 3131,
+  "testsTotal": 3199,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -672,7 +672,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
       "status": "ported",
-      "tests": 121,
+      "tests": 139,
       "items": [
         {
           "id": "needs.pawn",
@@ -697,6 +697,11 @@
         {
           "id": "needs.mood",
           "label": "Mood = 50% + grouped thought total with RimWorld's geometric stacking rule; seeker rates",
+          "done": true
+        },
+        {
+          "id": "needs.observedcorpse",
+          "label": "Seeing a body hurts: RimWorld's PawnObserver (100-cell radial sample with line of sight, every 4±1 need intervals from Need_Mood's interval; spawned, sighted, Full-tier pawns only; its two draws seeded per pawn so no other stream moves), IThoughtGiver and Thought_MemoryObservation (merges by target). Corpse.GiveObservedThought: humanlike only, never from a body in storage (a grave). ObservedLayingCorpse -4 / ObservedLayingRottingCorpse -6, 0.5 days, stack limits 3 / 5 at multiplier 0.5, enforced as MemoryThoughtHandler.TryGainMemory does; Psychopath shrugs off a fresh body but not a rotting one (rimworldwiki Thoughts, Misc). Tests: ObservationTests.",
           "done": true
         },
         {
@@ -1008,7 +1013,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 308,
+      "tests": 320,
       "items": [
         {
           "id": "ai.thinktree",
@@ -1088,6 +1093,11 @@
         {
           "id": "ai.corpses",
           "label": "Corpses haul and butcher: WorkGiver_HaulCorpses, and butchery at a bench as a work giver rather than a bill — a bill's products are a fixed def+count list that cannot express a per-individual yield, and nothing in this port ever creates a bill, so bill-gated butchery would be content that can never fire",
+          "done": true
+        },
+        {
+          "id": "ai.burial",
+          "label": "Hauling picks the best destination: StoreUtility.TryFindBestBetterStorageFor chooses between a stockpile cell and an IHaulDestination by storage priority, and HaulAIUtility.HaulToStorageJob turns a destination thing into HaulToContainer (JobDriver_HaulToContainer, carried through pawn.carryTracker and handed over with Pawn_CarryTracker.TryTransferCarriedThingTo, so a body is in exactly one place). A grave (Important) beats a dumping stockpile (Normal) for a citizen; WorkGiver_Haul leaves bodies to WorkGiver_HaulCorpses. Tests: CorpseBurialTests.",
           "done": true
         },
         {
@@ -1646,11 +1656,11 @@
       "id": "building",
       "n": 16,
       "rimworld": "Colony Building & Environment",
-      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative. Where it places them: inside the player's painted home area when there is one, by the same on/off rule CleaningBounds reads, and otherwise around the hub GenStep_Roads carves — never the whole map. A home area too full to hold the need makes the settlement wait rather than spill outside it, so painting small stays a decision with a cost. Stockpile defaults follow RimWorld's ordinary preset in refusing corpses (StorageSettingsPreset excludes the Corpses category rather than copying RimWorld's eight-category allow-list, because this content has no Weapons, Apparel or Buildings category and an allow-list would silently refuse weapons). One deliberate deviation: Chunks stay allowed, where RimWorld's ordinary stockpile refuses them, because the masons' guild needs them banked. What the settlement builds on its own never walls off its own ground: autonomous placement refuses a site that would cut a region of the settlement off from the rest (PlacementConnectivityTests). RimWorld has no placement AI to port, so the rule is this port's, in the spirit of WorkGiver_Miner's roof-support judgment. Tree density (one per ~20 cells at full Timber) is this port's own figure, pinned as a trend, not a literal. Medicine crop: RimWorld's player drags out a growing zone and picks healroot for it, knowing medicine is low and who can sow. Here the settlement does it: once its food field is as big as it will get and it holds the larder it wants, a settlement holding under 2 medicine per citizen (map plus ledger) that has a living citizen with Growing on and the Plants skill the crop asks for paints a small separate herb garden of the plant whose harvest is medicine. It is sized from content (stock wanted / yield per cell per day over 30 days, times the food margin), grows only while the settlement is short, is never shrunk, and pauses sowing while food is short, so food always wins. The player can still lay out or retarget any zone. Storage hut: RimWorld has no storage hut; a colony keeps goods in stockpile zones and on shelves the player lays out. The hut is this port's stand-in for 'a settlement keeps its goods somewhere', and it holds nothing, because the ledger it is for (Settlement.Stores) is off the map. It was first sized by that ledger (one hut per 50 stored units, uncapped), so the harder a settlement worked the more markers it built. It is now sized by people: ceil(citizens / ConstructionInitiativeTuning.CitizensPerStorageHut) once the ledger holds anything, CitizensPerStorageHut = 5 being a design number, and huts are sited round the settlement's existing storage (its huts, else its stockpile zones, else its home area's middle, else the road hub).",
+      "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative. Where it places them: inside the player's painted home area when there is one, by the same on/off rule CleaningBounds reads, and otherwise around the hub GenStep_Roads carves — never the whole map. A home area too full to hold the need makes the settlement wait rather than spill outside it, so painting small stays a decision with a cost. Stockpile defaults follow RimWorld's ordinary preset in refusing corpses (StorageSettingsPreset excludes the Corpses category rather than copying RimWorld's eight-category allow-list, because this content has no Weapons, Apparel or Buildings category and an allow-list would silently refuse weapons). One deliberate deviation: Chunks stay allowed, where RimWorld's ordinary stockpile refuses them, because the masons' guild needs them banked. What the settlement builds on its own never walls off its own ground: autonomous placement refuses a site that would cut a region of the settlement off from the rest (PlacementConnectivityTests). RimWorld has no placement AI to port, so the rule is this port's, in the spirit of WorkGiver_Miner's roof-support judgment. Tree density (one per ~20 cells at full Timber) is this port's own figure, pinned as a trend, not a literal. Medicine crop: RimWorld's player drags out a growing zone and picks healroot for it, knowing medicine is low and who can sow. Here the settlement does it: once its food field is as big as it will get and it holds the larder it wants, a settlement holding under 2 medicine per citizen (map plus ledger) that has a living citizen with Growing on and the Plants skill the crop asks for paints a small separate herb garden of the plant whose harvest is medicine. It is sized from content (stock wanted / yield per cell per day over 30 days, times the food margin), grows only while the settlement is short, is never shrunk, and pauses sowing while food is short, so food always wins. The player can still lay out or retarget any zone. Storage hut: RimWorld has no storage hut; a colony keeps goods in stockpile zones and on shelves the player lays out. The hut is this port's stand-in for 'a settlement keeps its goods somewhere', and it holds nothing, because the ledger it is for (Settlement.Stores) is off the map. It was first sized by that ledger (one hut per 50 stored units, uncapped), so the harder a settlement worked the more markers it built. It is now sized by people: ceil(citizens / ConstructionInitiativeTuning.CitizensPerStorageHut) once the ledger holds anything, CitizensPerStorageHut = 5 being a design number, and huts are sited round the settlement's existing storage (its huts, else its stockpile zones, else its home area's middle, else the road hub). The settlement plays the player for its dead too: GraveyardInitiative digs a grave for each citizen who dies on the map, in rows on a graveyard grid, and lays one dumping stockpile for strangers out of the walking area; a grave does not expand the home area (expandHomeArea false), so the graveyard does not pull the beds toward it.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
       "status": "translated",
-      "tests": 298,
+      "tests": 336,
       "items": [
         {
           "id": "building.zones",
@@ -1756,6 +1766,16 @@
           "id": "building.storagehuts",
           "label": "Storage huts scale with people, not goods (StorageHutTarget: one per 5 citizens once anything is stored, the same function for the map and off-map paths) and gather round existing storage (StorageAnchor); surplus huts are left standing. Seed 777 had 453 huts by day 20 for 26 people, about 11,000 wood across the whole map; now 5, in one cluster",
           "done": true
+        },
+        {
+          "id": "building.graves",
+          "label": "Graves and the dead's place on the map: Building_Casket (ThingOwner, IThingHolder, Thing.holdingOwner) and Building_Grave (one body; fixed storage corpses, default humanlike with strangers disallowed via SpecialThingFilter, priority Important; storage settings Scribed); the DumpingStockpile preset (bodies only — this port has no Chunks category). GraveyardInitiative: the settlement digs a grave for each of its own dead in rows on a graveyard grid kept the way StorageAnchor keeps the hut cluster, never in advance for the living, and lays one dump for strangers out of the walking area (16 cells from beds, 24 from the hub). Grave dimensions recalled from RimWorld 1.0; work and cost the port's own. Tests: GraveTests, DumpingStockpileTests, GraveyardInitiativeTests, GraveyardIsWiredTests.",
+          "done": true
+        },
+        {
+          "id": "building.graves.open",
+          "label": "Open with the graves: ThingView carries no label or filled flag, so the host can draw a grave but not say whose it is; bodies in the dump never rot away (no rot-damage removal or pyre yet); a bed placed after the dump can still land near it; grave assignment to a named pawn, burial tales and records, exhumation, zone priority and rival settlements' burials are not ported.",
+          "done": false
         }
       ]
     },
