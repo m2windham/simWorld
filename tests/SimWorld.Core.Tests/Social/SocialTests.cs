@@ -250,29 +250,108 @@ namespace SimWorld.Tests.Social
         }
 
         [Fact]
-        public void Insult_is_weighted_up_by_low_opinion_and_low_mood()
+        public void Insult_is_weighted_by_RimWorlds_opinion_curve_and_has_no_mood_term()
         {
+            // Changed from "weighted up by low opinion and low mood": that asserted a flat x6 below zero, no
+            // effect at all above it, and a x3 for a bad mood. RimWorld's weight (NegativeInteractionUtility)
+            // has no mood term and its opinion term is a curve: close to nothing between people who like
+            // each other, several times the base between people who do not.
             // Friend + Lover (+32) clears +17 even against the worst-case -15 compatibility swing, so this
             // pair's opinion is guaranteed positive regardless of which two pawn ids it lands on.
             Pawn x = NewHuman("X");
             Pawn y = NewHuman("Y");
             SocialUtility.AddMutualRelation(x, y, PawnRelationDefOf.Friend);
             SocialUtility.AddMutualRelation(x, y, PawnRelationDefOf.Lover);
-            float baseline = InteractionDefOf.Insult.Worker.RandomSelectionWeight(x, y);
-            Assert.Equal(SocialTuning.InsultBaseWeight, baseline);
-
-            // Same pair, only the initiator's mood changes: isolates the mood factor from the opinion factor.
-            x.needs.mood!.CurLevel = 0f;
-            float lowMoodWeight = InteractionDefOf.Insult.Worker.RandomSelectionWeight(x, y);
-            Assert.Equal(SocialTuning.InsultBaseWeight * SocialTuning.InsultLowMoodWeightFactor, lowMoodWeight);
+            Assert.True(x.relations.OpinionOf(y) >= 17);
+            float liked = InteractionDefOf.Insult.Worker.RandomSelectionWeight(x, y);
 
             // Rival alone (-18) stays negative even against the best-case +15 compatibility swing.
             Pawn rivalA = NewHuman("RA");
             Pawn rivalB = NewHuman("RB");
             SocialUtility.AddMutualRelation(rivalA, rivalB, PawnRelationDefOf.Rival);
             Assert.True(rivalA.relations.OpinionOf(rivalB) < 0);
-            float lowOpinionWeight = InteractionDefOf.Insult.Worker.RandomSelectionWeight(rivalA, rivalB);
-            Assert.Equal(SocialTuning.InsultBaseWeight * SocialTuning.InsultLowOpinionWeightFactor, lowOpinionWeight);
+            float disliked = InteractionDefOf.Insult.Worker.RandomSelectionWeight(rivalA, rivalB);
+
+            // A pair that likes each other insults each other far less than the base; a pair that does not,
+            // more than it. (Orderings, not RimWorld's curve points: those are pinned below.)
+            Assert.True(liked < SocialTuning.InsultBaseWeight);
+            Assert.True(disliked > SocialTuning.InsultBaseWeight);
+            Assert.True(disliked > liked);
+
+            // Same pair, only the initiator's mood changes: it changes nothing.
+            x.needs.mood!.CurLevel = 0f;
+            Assert.Equal(liked, InteractionDefOf.Insult.Worker.RandomSelectionWeight(x, y));
+        }
+
+        [Fact]
+        public void Insult_is_a_small_fraction_of_chitchat_as_in_RimWorld()
+        {
+            // RimWorld: Insult 0.007, Chitchat 1 -> the ratio is the sourced thing. For a pair with opinion
+            // near zero the curve's factor is about 1, so insult's weight is about chitchat's x 0.007. The
+            // port's weights were 1 against 10 (x14): about one social fight a day in a settlement of 25.
+            Pawn a = NewHuman("A");
+            Pawn b = NewHuman("B");
+            float chitchat = InteractionDefOf.Chitchat.Worker.RandomSelectionWeight(a, b);
+            float insult = InteractionDefOf.Insult.Worker.RandomSelectionWeight(a, b);
+            float factor = NegativeInteractionUtility.NegativeInteractionChanceFactor(a, b);
+            Assert.Equal(0.007f * factor, insult / chitchat, 4);
+            Assert.Equal(0.02f * factor, InteractionDefOf.Slight.Worker.RandomSelectionWeight(a, b) / chitchat, 4);
+        }
+
+        [Fact]
+        public void An_insult_is_a_rare_pick_among_the_interactions_two_neutral_people_can_have()
+        {
+            // The behaviour the weights exist for, drawn through the real weighted pick: about 0.6% of what
+            // two people with no history say to each other in RimWorld, where the port's share was several
+            // times that. A band around the ratio, not the literal.
+            Pawn a = NewHuman("A");
+            Pawn b = NewHuman("B");
+            const int picks = 20000;
+            int insults = 0;
+            for (int i = 0; i < picks; i++)
+            {
+                SocialInteractionManager.TryRandomInteraction(a, b, out InteractionDef chosen);
+                if (chosen == InteractionDefOf.Insult) insults++;
+            }
+            float share = insults / (float)picks;
+            Assert.InRange(share, 0.001f, 0.02f);
+        }
+
+        [Fact]
+        public void The_negative_interaction_factor_follows_RimWorlds_curve_and_traits()
+        {
+            Pawn a = NewHuman("A");
+            Pawn b = NewHuman("B");
+            // Walk a stack of insults onto A's opinion of B until the curve has moved off its neutral point
+            // in both directions is overkill; check the trait terms exactly and the curve by ordering.
+            float plain = NegativeInteractionUtility.NegativeInteractionChanceFactor(a, b);
+            Assert.True(plain > 0f);
+
+            a.story.traits.GainTrait(new Trait(Trait("Abrasive"), 0, false));
+            Assert.Equal(plain * NegativeInteractionUtility.AbrasiveSelectionChanceFactor,
+                NegativeInteractionUtility.NegativeInteractionChanceFactor(a, b), 4);
+
+            Pawn kind = NewHuman("K");
+            kind.story.traits.GainTrait(new Trait(Trait("Kind"), 0, false));
+            Assert.Equal(0f, NegativeInteractionUtility.NegativeInteractionChanceFactor(kind, b));
+            Assert.Equal(0f, InteractionDefOf.Insult.Worker.RandomSelectionWeight(kind, b));
+        }
+
+        [Fact]
+        public void A_pawn_who_cannot_do_violence_is_not_tipped_into_a_social_fight()
+        {
+            // RimWorld's SocialFightChance returns 0 for a recipient with WorkTags.Violent disabled.
+            SimWorld.Map.Map map = new SimWorld.Map.Map(10, 10, SimWorld.Map.TerrainDefOf.Soil);
+            Pawn a = NewHuman("A");
+            Pawn b = NewHuman("B");
+            GenSpawn.Spawn(a, new IntVec3(2, 0, 2), map);
+            GenSpawn.Spawn(b, new IntVec3(3, 0, 2), map);
+            Assert.True(SocialFightUtility.SocialFightChance(a, b) > 0f);
+
+            // Shipped content disables Violent through a backstory (TribalElder), not a trait.
+            b.story.adulthood = DefDatabase<BackstoryDef>.GetNamed("TribalElder");
+            Assert.True(b.WorkTagIsDisabled(SimWorld.Work.WorkTags.Violent));
+            Assert.Equal(0f, SocialFightUtility.SocialFightChance(a, b));
         }
 
         // ---- interaction effects: the loop closing (opinion moves, and shows up in mood) ----
@@ -485,6 +564,25 @@ namespace SimWorld.Tests.Social
         }
 
         /// <summary>
+        /// RimWorld's JobGiver_SocialFighting gives a humanlike who cannot do violence no fight job even when
+        /// the other side tipped them into the state. The one who can still swings, so the pacifist is hurt and
+        /// the other is not.
+        /// </summary>
+        [Fact]
+        public void A_pawn_who_cannot_do_violence_throws_no_punch_in_a_social_fight()
+        {
+            (_, Pawn fighter, Pawn pacifist) = SpawnPair();
+            pacifist.story.adulthood = DefDatabase<BackstoryDef>.GetNamed("TribalElder");
+            Assert.True(pacifist.WorkTagIsDisabled(SimWorld.Work.WorkTags.Violent));
+            StartFightDirect(fighter, pacifist);
+
+            RunTicks(SocialMentalStateDefOf.SocialFighting.maxTicksBeforeRecovery + 100, fighter, pacifist);
+
+            Assert.Empty(fighter.health.hediffSet.hediffs.OfType<SimWorld.Health.Hediff_Injury>());
+            Assert.NotEmpty(pacifist.health.hediffSet.hediffs.OfType<SimWorld.Health.Hediff_Injury>());
+        }
+
+        /// <summary>
         /// The other half of the same defect: a fight that cannot reach its opponent lands nothing at all.
         /// The old mental state cast its verb at range zero from its own tick, so two pawns on opposite sides
         /// of a map — or, worse, on no map — hurt each other anyway.
@@ -577,8 +675,10 @@ namespace SimWorld.Tests.Social
         [Fact]
         public void Social_fight_fist_power_reads_gentler_than_every_content_melee_weapon()
         {
+            // Weapons only: the shipped animals carry their natural tools on their race defs now (a
+            // chicken's head is power 1), and those are not something a citizen wields.
             float weakestWeaponPower = DefDatabase<ThingDef>.AllDefsListForReading
-                .Where(d => d.tools != null)
+                .Where(d => d.tools != null && d.category == ThingCategory.Item)
                 .SelectMany(d => d.tools!)
                 .Min(t => t.power);
             Assert.True(SocialTuning.SocialFightFistPower < weakestWeaponPower,
