@@ -58,7 +58,7 @@ namespace SimWorld.Director
     /// settlement's, so the people are those on the map plus those who are not. Buildings are the map alone: the
     /// structure ledger is not consulted while a map exists (<see cref="Settlement.StructureCount"/>).
     ///
-    /// <para/><b>A settlement nobody has opened is estimated from its ledgers</b> (<c>Estimate</c>, next), the
+    /// <para/><b>A settlement nobody has opened is estimated from its ledgers</b> (<see cref="Estimate"/>), the
     /// same three terms by the only means it has: <see cref="Settlement.Stores"/> for the goods,
     /// <see cref="Settlement.Structures"/> at each def's market value for the buildings, and its citizens priced
     /// one by one for the people. <b>This is a translation, recorded:</b> RimWorld has one map per colony and
@@ -76,9 +76,7 @@ namespace SimWorld.Director
         {
             if (settlement == null) throw new System.ArgumentNullException(nameof(settlement));
             Map.Map? map = settlement.InteriorMap;
-            // Step 1 of this class: a settlement nobody has opened still reads its goods ledger alone, as it
-            // always did. Its buildings and people are estimated by the next change.
-            return map != null ? Watched(settlement, map) : new WealthBreakdown(StoresValue(settlement), 0f, 0f);
+            return map != null ? Watched(settlement, map) : Estimate(settlement);
         }
 
         /// <summary>A settlement with a map: the map's <see cref="WealthWatcher"/> plus the ledger and the people off the map.</summary>
@@ -98,6 +96,31 @@ namespace SimWorld.Director
             }
 
             return new WealthBreakdown(items, watcher.WealthBuildings, pawns);
+        }
+
+        /// <summary>A settlement with no map: its ledgers and its roster.</summary>
+        public static WealthBreakdown Estimate(Settlement settlement)
+        {
+            if (settlement == null) throw new System.ArgumentNullException(nameof(settlement));
+
+            float items = StoresValue(settlement);
+
+            float buildings = 0f;
+            foreach (KeyValuePair<ThingDef, int> entry in settlement.Structures)
+            {
+                buildings += settlement.StructureCount(entry.Key) * entry.Key.GetStatValue(StatDefOf.MarketValue);
+            }
+
+            float pawns = 0f;
+            IReadOnlyList<Pawn> citizens = settlement.Citizens;
+            for (int i = 0; i < citizens.Count; i++)
+            {
+                if (citizens[i].Dead) continue;
+                pawns += WealthWatcher.MarketValueOf(citizens[i]);
+                items += WealthWatcher.GetEquipmentApparelAndInventoryWealth(citizens[i]);
+            }
+
+            return new WealthBreakdown(items, buildings, pawns);
         }
 
         /// <summary>What the ledger holds, at the statBases-only value trade has always used for a stored good.</summary>
