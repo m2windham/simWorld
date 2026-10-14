@@ -6,31 +6,25 @@
     file rather than entries in Thoughts_Memories.xml, per CLAUDE.md: DefLoader reads every file under a Def
     folder, so additive content never has to edit a shared one.
 
-    RimWorld 1.0's Defs are not in the decompile this port reads from, so every number below is RECALLED, not
-    sourced, and is pinned by ObservationTests as a band and a trend rather than by the literal: a fresh body is
-    a bad moment and a rotting one is a worse one (both negative, rotting stronger); neither is the kind of
-    wound that outlasts the cause (both fade inside a day once the pawn stops seeing the body); and the
-    penalty a settlement carries grows with how many bodies lie in sight but never runs away.
-      - baseMoodEffect -4 (fresh) and -6 (rotting): recalled as RimWorld 1.0's Thoughts_Memory_Misc values.
-      - durationDays 0.25: recalled as the same. A body that stays in view keeps renewing it
-        (Thought_MemoryObservation), so what fades is the memory of a body that has been taken away or that
-        the pawn has walked away from - the recovery the settlement has to wait out.
-      - nullifyingTraits Psychopath + Bloodlust: the pair this port's WitnessedDeathAlly already names for the
-        same reason (people who are not disturbed by death). Recalled for RimWorld's own defs, unverified.
-      - stackLimit 100: UNSOURCED for RimWorld, and chosen to be inert. Thought_MemoryObservation merges by
-        target and RimWorld never enforces the stack limit on it; this port's MemoryThoughtHandler enforces
-        every def's limit after an add, so the limit has to be one the observer can never reach. A look samples
-        PawnObserver.SampleNumCells (100) cells, so at most 100 distinct bodies can be seen at once, and a
-        limit of 100 can never evict a body that is still in view. The mood a crowd of bodies costs is bounded
-        by stackedEffectMultiplier (the mood sum of n alike thoughts approaches 1/(1-m) times one of them),
-        not by this.
-      - stackedEffectMultiplier: left at the default 0.75 (RimWorld's ThoughtDef default).
+    Values from the RimWorld wiki's Thoughts table, Misc section (https://rimworldwiki.com/wiki/Thoughts; the
+    page names no game version, and RimWorld 1.0's own Defs are not in the decompile this port reads):
+      - Observed corpse: -4, 0.5 days, stack limit 3, stacking multiplier 0.5; nullified by Psychopath,
+        Bloodlust and Cannibal (this port has no Cannibal trait).
+      - Observed rotting corpse: -6, 0.5 days, stack limit 5, stacking multiplier 0.5; nullified by Bloodlust
+        only, so a psychopath shrugs off a fresh body but not a rotting one.
+    The stack limit is enforced as RimWorld enforces it for every memory, observations included
+    (MemoryThoughtHandler.TryGainMemory: while NumMemoriesOfDef > stackLimit, remove the oldest), so a crowd of
+    bodies costs at most three fresh (or five rotting) memories at diminishing weight: -4 x (1 + 0.5 + 0.25)
+    = -7 fresh, about -11.6 rotting. A body that stays in view keeps renewing its memory
+    (Thought_MemoryObservation merges by target), so what fades after half a day is the memory of a body that
+    has been buried or that the pawn has walked away from.
   -->
   <ThoughtDef>
     <defName>ObservedLayingCorpse</defName>
     <thoughtClass>SimWorld.Thoughts.Thought_MemoryObservation</thoughtClass>
-    <durationDays>0.25</durationDays>
-    <stackLimit>100</stackLimit>
+    <durationDays>0.5</durationDays>
+    <stackLimit>3</stackLimit>
+    <stackedEffectMultiplier>0.5</stackedEffectMultiplier>
     <nullifyingTraits>
       <li>Psychopath</li>
       <li>Bloodlust</li>
@@ -47,10 +41,10 @@
   <ThoughtDef>
     <defName>ObservedLayingRottingCorpse</defName>
     <thoughtClass>SimWorld.Thoughts.Thought_MemoryObservation</thoughtClass>
-    <durationDays>0.25</durationDays>
-    <stackLimit>100</stackLimit>
+    <durationDays>0.5</durationDays>
+    <stackLimit>5</stackLimit>
+    <stackedEffectMultiplier>0.5</stackedEffectMultiplier>
     <nullifyingTraits>
-      <li>Psychopath</li>
       <li>Bloodlust</li>
     </nullifyingTraits>
     <stages>

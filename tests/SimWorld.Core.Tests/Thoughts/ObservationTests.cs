@@ -180,6 +180,22 @@ namespace SimWorld.Tests.Thoughts
             Assert.Empty(Memories(watcher));
         }
 
+        [Fact]
+        public void A_psychopath_shrugs_off_a_fresh_body_but_not_a_rotting_one()
+        {
+            CoreMap map = NewMap();
+            CorpseThing body = Body(map, new IntVec3(10, 0, 10));
+            Pawn watcher = Spawn(map, new IntVec3(12, 0, 10));
+            watcher.story.traits.GainTrait(new Trait(Trait("Psychopath")));
+
+            Look(watcher);
+            Assert.Empty(Memories(watcher));
+
+            Rot(body);
+            Look(watcher);
+            Assert.Equal(1, Count(watcher, Rotting));
+        }
+
         // ---- stacking, per target ----
 
         [Fact]
@@ -226,9 +242,10 @@ namespace SimWorld.Tests.Thoughts
 
             Look(watcher);
 
-            // The handler's own stack limit would have evicted the oldest of these if the def's were low: the
-            // limit is inert by design (RimWorld never enforces one on an observation).
-            Assert.Equal(12, Count(watcher, Fresh));
+            // RimWorld enforces a memory's stack limit on observations too (MemoryThoughtHandler.TryGainMemory
+            // evicts the oldest past the def's limit), so twelve bodies are remembered as the def's limit.
+            Assert.Equal(Fresh.stackLimit, Count(watcher, Fresh));
+            Assert.True(Fresh.stackLimit < 12);
             float offset = watcher.needs.mood!.thoughts.TotalMoodOffset();
             float single = Fresh.stages[0].baseMoodEffect;
             Assert.True(offset < single);
