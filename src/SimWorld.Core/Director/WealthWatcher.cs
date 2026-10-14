@@ -49,10 +49,13 @@ namespace SimWorld.Director
     /// the items still do (RimWorld counts every haulable thing on a home map whoever dropped it).</item>
     /// <item><b>A building's owner</b> is <see cref="Building.Building.faction"/>, set by the builder, because
     /// <see cref="Thing"/> carries no faction here. A ruin's wall has none and does not count.</item>
-    /// <item><b>Holders.</b> RimWorld walks every <c>IThingHolder</c> under the map. This port has three:
-    /// what a pawn carries, wields and wears, and the pawn inside a corpse. The first two are counted for the
-    /// player's pawns; a corpse's gear is counted only when the dead were the player's, as RimWorld's holder
-    /// filter does (a raider's rifle on a raider's body is not the settlement's wealth).</item>
+    /// <item><b>Holders.</b> RimWorld walks every <c>IThingHolder</c> under the map
+    /// (<c>GetAllThingsRecursively</c>) and so does this, for the holders this port has: what a pawn carries,
+    /// wields and wears; the pawn inside a corpse; and the container of a standing building
+    /// (<see cref="IThingHolder"/>, today a grave). A buried colonist therefore keeps their kit in the count,
+    /// exactly as in RimWorld, and a body in a grave is itself an item worth nothing. A corpse's gear is counted
+    /// only when the dead were the player's, as RimWorld's holder filter does (a raider's rifle on a raider's
+    /// body, buried or not, is not the settlement's wealth).</item>
     /// <item><b>Not counted:</b> the health-percentage a damaged thing is worth (RimWorld's
     /// <c>StatPart_Health</c> on market value), and <c>HealthTotal</c>, which nothing here reads.</item>
     /// </list>
@@ -201,12 +204,28 @@ namespace SimWorld.Director
             for (int i = 0; i < worn.Count; i++) total += HeldValue(worn[i]);
 
             Thing? carried = pawn.carryTracker.CarriedThing;
-            if (carried != null) total += HeldValue(carried);
+            if (carried != null) total += HeldThingWealth(carried, Find.FactionManager.OfPlayer);
 
             return total;
         }
 
         private static float HeldValue(Thing thing) => thing.Spawned ? 0f : MarketValueOf(thing) * thing.stackCount;
+
+        /// <summary>
+        /// One thing, wherever it is: its market value times its stack if it is an item, and, if it is a body of
+        /// <paramref name="player"/>'s own, what the dead still carry and wear — RimWorld's recursion enters a
+        /// corpse only when the pawn inside is the player's, so a raider's rifle on a raider's body is nobody's
+        /// wealth and a colonist's is.
+        /// </summary>
+        private static float HeldThingWealth(Thing thing, Faction? player)
+        {
+            float total = thing.def.EverHaulable ? MarketValueOf(thing) * thing.stackCount : 0f;
+            if (player != null && thing is Corpse corpse && corpse.InnerPawn is Pawn dead && ReferenceEquals(dead.faction, player))
+            {
+                total += GetEquipmentApparelAndInventoryWealth(dead);
+            }
+            return total;
+        }
 
         private float CalculateWealthItems(Faction? player)
         {
@@ -215,14 +234,19 @@ namespace SimWorld.Director
             IReadOnlyList<Thing> items = map.listerThings.ThingsInGroup(ThingRequestGroup.HaulableEver);
             for (int i = 0; i < items.Count; i++)
             {
-                Thing item = items[i];
-                total += MarketValueOf(item) * item.stackCount;
+                total += HeldThingWealth(items[i], player);
+            }
 
-                // A body is a holder: its gear is the settlement's only if the dead were.
-                if (player != null && item is Corpse corpse && corpse.InnerPawn is Pawn dead && ReferenceEquals(dead.faction, player))
-                {
-                    total += GetEquipmentApparelAndInventoryWealth(dead);
-                }
+            // Whatever a standing building holds inside it — a grave and the body in it. RimWorld's walk
+            // enters every holder it meets (GetAllThingsRecursively), so a buried colonist keeps their kit in
+            // the count and a thing put away in a container is still the map's wealth. The building need not be
+            // the player's: the walk is over the map, not over the faction.
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial);
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                if (!(buildings[i] is IThingHolder holder)) continue;
+                IReadOnlyList<Thing> held = holder.GetDirectlyHeldThings().InnerListForReading;
+                for (int k = 0; k < held.Count; k++) total += HeldThingWealth(held[k], player);
             }
 
             if (player != null)

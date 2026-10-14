@@ -275,6 +275,79 @@ namespace SimWorld.Tests.Director
             Assert.Equal(Value(colonistKit), map.wealthWatcher.WealthItems, 3);
         }
 
+        // ---- graves: a building that holds things ----
+
+        private SimWorld.Building.Building_Grave DigGrave(CoreMap map, int x, int z, Faction? owner)
+        {
+            var grave = (SimWorld.Building.Building_Grave)ThingMaker.MakeThing(Def("Grave"));
+            grave.faction = owner;
+            GenSpawn.Spawn(grave, new IntVec3(x, 0, z), map);
+            return grave;
+        }
+
+        [Fact]
+        public void A_grave_the_settlement_dug_is_a_building_like_any_other()
+        {
+            CoreMap map = NewMap();
+            map.wealthWatcher.ForceRecount();
+            float before = map.wealthWatcher.PlayerWealthForStoryteller;
+
+            SimWorld.Building.Building_Grave grave = DigGrave(map, 5, 5, player);
+            map.wealthWatcher.ForceRecount();
+
+            Assert.True(Value(grave) > 0f);
+            Assert.Equal(Value(grave), map.wealthWatcher.WealthBuildings, 3);
+            Assert.Equal(0.5f * Value(grave), map.wealthWatcher.PlayerWealthForStoryteller - before, 3);
+        }
+
+        [Fact]
+        public void Burying_a_colonist_keeps_their_kit_in_the_count_because_the_recount_reaches_into_the_grave()
+        {
+            CoreMap map = NewMap();
+            SimWorld.Building.Building_Grave grave = DigGrave(map, 5, 5, player);
+            Pawn colonist = Settle(map, 8, 8, player);
+            var kit = (ThingWithComps)ThingMaker.MakeThing(Def("Gun_AssaultRifle"));
+            colonist.equipment.AddEquipment(kit);
+            colonist.health.Kill(null, null);
+            Corpse body = colonist.corpse!;
+            map.wealthWatcher.ForceRecount();
+            float lyingThere = map.wealthWatcher.WealthItems;
+            Assert.Equal(Value(kit), lyingThere, 3);
+
+            Assert.True(grave.TryAcceptThing(body));
+            Assert.False(body.Spawned);
+            Assert.Same(body, grave.Corpse);
+            map.wealthWatcher.ForceRecount();
+
+            // Neither more nor less than it was on the ground: the body is worth nothing and the kit is
+            // still the settlement's, now inside the grave.
+            Assert.Equal(lyingThere, map.wealthWatcher.WealthItems, 3);
+        }
+
+        [Fact]
+        public void A_raider_in_the_ground_is_still_nobodys_wealth_and_a_stack_put_away_still_counts()
+        {
+            CoreMap map = NewMap();
+            SimWorld.Building.Building_Grave grave = DigGrave(map, 5, 5, player);
+            Pawn raider = Settle(map, 8, 8, rival);
+            raider.equipment.AddEquipment((ThingWithComps)ThingMaker.MakeThing(Def("Gun_AssaultRifle")));
+            raider.health.Kill(null, null);
+            map.wealthWatcher.ForceRecount();
+            float before = map.wealthWatcher.WealthItems;
+
+            // A grave refuses a stranger by default; the holder walk is about what is inside, however it got there.
+            Assert.True(grave.GetDirectlyHeldThings().TryAdd(raider.corpse!));
+            map.wealthWatcher.ForceRecount();
+            Assert.Equal(before, map.wealthWatcher.WealthItems, 3);
+            Assert.Equal(0f, map.wealthWatcher.WealthItems, 3);
+
+            Thing logs = ThingMaker.MakeThing(Def("WoodLog"));
+            logs.stackCount = 20;
+            DigGrave(map, 9, 9, player).GetDirectlyHeldThings().TryAdd(logs);
+            map.wealthWatcher.ForceRecount();
+            Assert.Equal(Value(logs) * 20f, map.wealthWatcher.WealthItems, 3);
+        }
+
         // ---- floors ----
 
         [Fact]
