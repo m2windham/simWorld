@@ -19,12 +19,15 @@ namespace SimWorld.AI
     /// the map, so that distinction has nothing to bite on yet — every spawned Item is a candidate whenever
     /// it is not already resting somewhere valid (<see cref="IsInValidStorage"/>).
     /// <para/>
-    /// <b>Where things go:</b> only a <see cref="Zone_Stockpile"/> cell whose <see cref="Crafting.ThingFilter"/>
+    /// <b>Where things go:</b> a <see cref="Zone_Stockpile"/> cell whose <see cref="Crafting.ThingFilter"/>
     /// allows the item's def and that has room for at least one unit of it. RimWorld's storage system also
-    /// covers shelves/containers and ranks several candidate stockpiles by priority; neither exists in this
-    /// port (one kind of storage, no priority tiers), so <see cref="TryFindBestStockpileCell"/> returning
-    /// false — no stockpile, or every matching one already full — is a genuine, honest answer: it means
-    /// there is nowhere for this item to go, not a bug to work around with an invented dumping cell.
+    /// covers shelves and ranks several candidate places by priority; of those this port has one non-cell
+    /// destination, a grave, and ranks it against the stockpiles for <b>bodies only</b>
+    /// (<see cref="StoreUtility.TryFindBestBetterStorageFor"/>, reached through <see cref="HaulToStorageJob"/> by
+    /// <see cref="WorkGiver_HaulCorpses"/>). Every other item still goes to the nearest stockpile cell
+    /// (<see cref="TryFindBestStockpileCell"/>), whose returning false — no stockpile, or every matching one
+    /// already full — is a genuine, honest answer: it means there is nowhere for this item to go, not a bug to
+    /// work around with an invented dumping cell.
     /// </summary>
     public static partial class HaulAIUtility
     {
