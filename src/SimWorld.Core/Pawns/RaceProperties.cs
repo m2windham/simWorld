@@ -56,15 +56,6 @@ namespace SimWorld.Pawns
         public float wildness;
 
         /// <summary>
-        /// Chance, per wounding hit from a person, that an untamed individual of this race turns on whoever
-        /// harmed it (RimWorld: <c>RaceProperties.manhunterOnDamageChance</c>, read by
-        /// <c>Pawn_MindState.Notify_DamageTaken</c> through <c>PawnUtility.GetManhunterOnDamageChance</c>).
-        /// Per-race data, default 0, exactly as RimWorld has it: a husky or a chicken never does, a muffalo
-        /// sometimes does. <see cref="AI.HuntUtility.TryProvokeRevenge"/> is the reader.
-        /// </summary>
-        public float manhunterOnDamageChance;
-
-        /// <summary>
         /// Chance, per taming attempt, that an untamed individual of this race turns on the handler
         /// (RimWorld: <c>RaceProperties.manhunterOnTameFailChance</c>, read by
         /// <c>Pawn_MindState.CheckStartMentalStateBecauseRecruitAttempted</c>). Per-race data, default 0.
@@ -100,7 +91,6 @@ namespace SimWorld.Pawns
             if (baseHealthScale <= 0f) yield return "baseHealthScale must be positive.";
             if (foodLevelPercentageWantEat <= 0f || foodLevelPercentageWantEat > 1f) yield return "foodLevelPercentageWantEat must be in (0, 1].";
             if (wildness < 0f || wildness > 1f) yield return "wildness must be in [0, 1].";
-            if (manhunterOnDamageChance < 0f || manhunterOnDamageChance > 1f) yield return "manhunterOnDamageChance must be in [0, 1].";
             if (manhunterOnTameFailChance < 0f || manhunterOnTameFailChance > 1f) yield return "manhunterOnTameFailChance must be in [0, 1].";
         }
     }

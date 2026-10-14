@@ -45,18 +45,26 @@ namespace SimWorld.AI
         /// Per wounding hit, the chance a surviving animal turns on its hunter, scaled by the race's
         /// <see cref="Pawns.RaceProperties.wildness"/>. RimWorld's own trigger is
         /// <c>RaceProperties.manhunterOnDamageChance</c>, a per-species field this port's
-        /// <see cref="Pawns.RaceProperties"/> does not carry; wildness ("how readily an untamed individual
-        /// ... turns on a handler", that field's own words) is the nearest thing it does, and
-        /// <see cref="Pawns.TameUtility.TryTame"/> already reaches for it exactly this way for the failed-tame
-        /// anger roll. Same shape, own constant.
+        /// <see cref="Pawns.RaceProperties"/> does not carry; wildness is the nearest thing it does.
         /// <para/>
-        /// <b>Why it is so much smaller than <see cref="Pawns.AnimalTuning.TameFailAngerChance"/> (0.5), which
-        /// it otherwise mirrors.</b> A taming attempt rolls once per attempt; a hunt lands many wounds before
-        /// anything dies (a bow puts five-plus arrows into a chicken and dozens into a muffalo), so the same
-        /// per-event chance compounds into "practically every hunt is spoiled". The number that matters is the
-        /// per-<i>hunt</i> one, and this is picked so that provoked prey is an occasional setback rather than
-        /// the usual outcome — which is what it cost to find out: the first calibration here was an order of
-        /// magnitude higher and a single arrow routinely ended hunting for the day.
+        /// <b>Left as it was, deliberately, and why.</b> RimWorld's hunt revenge is
+        /// <c>race.manhunterOnDamageChance x LerpDoubleClamped(1, 30, 3, 1, distance) x (1 - HuntingStealth)</c>
+        /// per damaging hit (<c>PawnUtility.GetManhunterOnDamageChance</c>); the species figures are 10% for a
+        /// muffalo and 0 for a husky or a chicken (RimWorld wiki infobox, "Manhunter Chance"). The stealth term is
+        /// a pawn stat built from Shooting and Animals skill that this port has no StatDef for, and without it
+        /// the muffalo's rule runs at its worst case: ~20% per arrow at ordinary range, so nearly every muffalo
+        /// hunt would end in a charge. Porting the rule without the term would be a new source of exactly the
+        /// wounds this lane removes, so the wildness-scaled stand-in stays until a stealth stat exists. Measured
+        /// over 60 days of seed 12345 it set no grudge at all: every one of 89 came from a taming. (The taming
+        /// roll that this constant used to be explained against is gone: it is the race's own
+        /// <c>manhunterOnTameFailChance</c> now, see <see cref="Pawns.TameUtility.TryTame"/>.)
+        /// <para/>
+        /// Why it is small: a hunt lands many wounds before anything dies (a bow puts five-plus arrows into a
+        /// chicken and dozens into a muffalo), so a per-hit chance compounds into "practically every hunt is
+        /// spoiled". The number that matters is the per-<i>hunt</i> one, and this is picked so that provoked
+        /// prey is an occasional setback rather than the usual outcome — which is what it cost to find out:
+        /// the first calibration here was an order of magnitude higher and a single arrow routinely ended
+        /// hunting for the day.
         /// </summary>
         public const float RevengeChancePerWildnessOnWound = 0.02f;
 

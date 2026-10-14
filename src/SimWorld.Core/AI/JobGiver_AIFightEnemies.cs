@@ -42,10 +42,15 @@ namespace SimWorld.AI
             Pawn? target = FindTarget(pawn);
             if (target == null) return null;
 
-            Verb? verb = AttackVerbUtility.TryGetAttackVerb(pawn);
-            if (verb == null) return null;
+            // Ranged or melee is all this tier needs to know, and it must not be learned by building the verb:
+            // a native melee verb is now a weighted random pick among the race's tools (see
+            // AttackVerbUtility.TryGetMeleeVerb), and asking here would spend a draw from the shared random
+            // stream on every think pass of every pawn with an enemy in sight. The driver builds the verb it
+            // swings, once the pawn is in reach.
+            bool ranged = AttackVerbUtility.RangedVerbPropsFor(pawn) != null;
+            if (!ranged && !AttackVerbUtility.CanMeleeAttack(pawn)) return null;
 
-            JobDef def = verb.verbProps.IsMeleeAttack ? CombatAIDefOf.AttackMelee : CombatAIDefOf.AttackStatic;
+            JobDef def = ranged ? CombatAIDefOf.AttackStatic : CombatAIDefOf.AttackMelee;
             return new Job(def, target) { expiryInterval = CombatAITuning.AttackJobExpiryTicks };
         }
 

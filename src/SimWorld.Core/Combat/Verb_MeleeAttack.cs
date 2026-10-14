@@ -67,7 +67,12 @@ namespace SimWorld.Combat
             }
 
             DamageDef damageDef = verbProps.meleeDamageDef ?? DamageDefOf.Blunt;
-            BodyPartRecord? part = target.health.hediffSet.GetRandomNotMissingPart(damageDef, BodyPartHeight.Undefined, BodyPartDepth.Undefined, Rand.Current);
+            // A blow lands on the outside of the body (RimWorld: Verb_MeleeAttackDamage sets the DamageInfo's
+            // region to BodyPartDepth.Outside). Internal organs are reached only by damage that goes on into
+            // them once the part over them is hurt, never by a bite or a punch choosing them directly; with
+            // the depth left open a bite had a few percent chance of landing on a lung, a kidney or the heart
+            // outright.
+            BodyPartRecord? part = target.health.hediffSet.GetRandomNotMissingPart(damageDef, BodyPartHeight.Undefined, BodyPartDepth.Outside, Rand.Current);
             float amount = verbProps.AdjustedMeleeDamageAmount();
             float armorPenetration = verbProps.AdjustedArmorPenetration;
             DamageResult damageResult = damageDef.Worker.Apply(new DamageInfo(damageDef, amount, armorPenetration, caster, part), target);

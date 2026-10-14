@@ -1,6 +1,7 @@
 using System;
 using SimWorld.Combat;
 using SimWorld.Pawns;
+using SimWorld.Sim;
 
 namespace SimWorld.AI
 {
@@ -16,6 +17,10 @@ namespace SimWorld.AI
     /// </summary>
     public static class Toils_Combat
     {
+        /// <summary>How often a pawn re-chooses which melee tool to swing (RimWorld:
+        /// <c>Pawn_MeleeVerbs.BestMeleeVerbUpdateInterval</c> = 60), decompile-sourced.</summary>
+        public const int MeleeVerbReselectTicks = 60;
+
 
         /// <summary>
         /// Close on the target named by <paramref name="ind"/> until <paramref name="verbSource"/>'s verb can
@@ -46,6 +51,7 @@ namespace SimWorld.AI
             // enemy, and a pawn would stand there flickering between the two forever. Approach failure is
             // handled below, after StartPath has had its say.
             Verb? verb = null;
+            int verbChosenTick = 0;
             toil.tickAction = () =>
             {
                 Pawn attacker = toil.Pawn;
@@ -67,7 +73,16 @@ namespace SimWorld.AI
                     return;
                 }
 
-                verb ??= verbSource();
+                // RimWorld chooses a melee verb afresh every 60 ticks (Pawn_MeleeVerbs.TryGetMeleeVerb), so
+                // a pawn with several tools mixes them over a fight instead of swinging the first pick for as
+                // long as the job lasts. Only a melee verb that is Idle is replaced — a ranged verb carries a
+                // warmup and a burst, and a swing in progress is not abandoned.
+                int now = Find.TickManager.TicksGame;
+                if (verb == null || (verb is Verb_MeleeAttack && verb.State == VerbState.Idle && now >= verbChosenTick + MeleeVerbReselectTicks))
+                {
+                    verb = verbSource() ?? verb;
+                    verbChosenTick = now;
+                }
                 if (verb == null)
                 {
                     // Disarmed mid-fight and with no natural weapon to fall back on.
