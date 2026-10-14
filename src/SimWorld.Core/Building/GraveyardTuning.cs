@@ -37,13 +37,20 @@ namespace SimWorld.Building
         /// beds": close enough to be the settlement's, far enough that nobody sleeps beside the dead.</summary>
         public const int BedClearance = 6;
 
-        /// <summary>Nearest the dump may be to any bed. Further than a grave: a body in the dump is a body in
-        /// plain view of anyone who looks (<c>Corpse.GiveObservedThought</c>), and a grave is not.</summary>
-        public const int DumpBedClearance = 10;
+        /// <summary>Nearest the dump may be to any bed. Much further than a grave: a body in the dump is a body in
+        /// plain view of anyone who looks (<c>Corpse.GiveObservedThought</c>), and a grave is not. <b>Measured, not
+        /// guessed:</b> at 10 the dump sat in the gap just outside the beds, ten cells from the road hub, and on a
+        /// 30-person settlement the people who had walked past it were still carrying the memory of a body
+        /// when they were eighty cells away at the far fields, day after day (this lane's evidence run, seed
+        /// <c>graves-777</c>, four to seven holders a day for a week with nobody left to bury). Sixteen puts it
+        /// beyond the lanes between the beds and the places they walk to, which is as far as "away from where
+        /// people live" can be said without a model of where they go.</summary>
+        public const int DumpBedClearance = 16;
 
         /// <summary>Nearest the dump may be to the road hub — where the founders stand and the streets meet, the
-        /// nearest thing a settlement has to a main walking area.</summary>
-        public const int HubClearance = 8;
+        /// nearest thing a settlement has to a main walking area (the granary, the benches and the bed cluster
+        /// all gather round it). See <see cref="DumpBedClearance"/> for why it is as far as it is.</summary>
+        public const int HubClearance = 24;
 
         /// <summary>Nearest the dump may be to the graveyard.</summary>
         public const int DumpGraveClearance = 4;

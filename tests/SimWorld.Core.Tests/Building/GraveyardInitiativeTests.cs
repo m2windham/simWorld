@@ -125,6 +125,31 @@ namespace SimWorld.Tests.Building
             Assert.Null(GraveyardInitiative.DumpOf(map));
         }
 
+        [Fact]
+        public void Ablating_the_initiative_places_nothing_and_clearing_it_brings_it_back()
+        {
+            CoreMap map = NewMap();
+            Dead(map, new IntVec3(30, 0, 30), Ours, "Bob");
+            Dead(map, new IntVec3(32, 0, 30), Theirs, "Raider");
+            Settlement settlement = NewSettlement();
+
+            Ablation.Disable(GraveyardInitiative.AblationName);
+            try
+            {
+                GraveyardInitiative.Run(settlement, map);
+                Assert.Empty(GraveSites(map));
+                Assert.Null(GraveyardInitiative.DumpOf(map));
+            }
+            finally
+            {
+                Ablation.Clear();
+            }
+
+            GraveyardInitiative.Run(settlement, map);
+            Assert.Single(GraveSites(map));
+            Assert.NotNull(GraveyardInitiative.DumpOf(map));
+        }
+
         // ---- its own dead ----
 
         [Fact]

@@ -97,10 +97,15 @@ namespace SimWorld.Things
         /// <i>somewhere</i>, not a place that hides them. That is why the settlement puts its dump away from
         /// where its people live.
         /// </summary>
+        /// <summary>The label <see cref="Ablation"/> switches this effect off by, so a run can be compared with and
+        /// without it (it is checked last: everything else about the look happens identically).</summary>
+        public const string AblationName = "ObservedCorpseThought";
+
         public Thought_Memory? GiveObservedThought()
         {
             if (innerPawn == null || !innerPawn.RaceProps.Humanlike) return null;
             if (this.StoringThing() != null) return null;
+            if (Ablation.IsDisabled(AblationName)) return null; // a measurement control, never read from content
 
             ThoughtDef def = RotStageNow != RotStage.Fresh
                 ? ObservationThoughtDefOf.ObservedLayingRottingCorpse

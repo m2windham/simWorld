@@ -274,6 +274,34 @@ namespace SimWorld.Tests.Thoughts
             Assert.Equal(1, Count(watcher, Fresh));
         }
 
+        // ---- the measurement control ----
+
+        [Fact]
+        public void Ablating_the_effect_switches_the_thought_off_and_nothing_else()
+        {
+            CoreMap map = NewMap();
+            CorpseThing body = Body(map, new IntVec3(10, 0, 10));
+            Pawn watcher = Spawn(map, new IntVec3(12, 0, 10));
+            var counter = new GiverCounter { def = Def("WoodLog") };
+            GenSpawn.Spawn(counter, new IntVec3(11, 0, 10), map);
+
+            Ablation.Disable(CorpseThing.AblationName);
+            try
+            {
+                Assert.Null(body.GiveObservedThought());
+                Look(watcher);
+                Assert.Empty(Memories(watcher));
+                Assert.True(counter.Asked > 0, "the look still happens; only the effect is gone");
+            }
+            finally
+            {
+                Ablation.Clear();
+            }
+
+            Look(watcher);
+            Assert.Equal(1, Count(watcher, Fresh));
+        }
+
         // ---- when it runs ----
 
         [Fact]

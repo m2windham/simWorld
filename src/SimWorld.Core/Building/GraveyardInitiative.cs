@@ -66,6 +66,10 @@ namespace SimWorld.Building
             Run(settlement, map);
         }
 
+        /// <summary>The label <see cref="Ablation"/> switches this initiative off by, so a run can be compared with
+        /// and without a settlement that buries its dead.</summary>
+        public const string AblationName = "Graveyard";
+
         private static bool DueNow => Find.TickManager.TicksGame % GraveyardTuning.IntervalTicks == 0;
 
         /// <summary>Whether <paramref name="zone"/> is the settlement's dump. Matched by label, as the granary
@@ -94,6 +98,7 @@ namespace SimWorld.Building
             if (settlement == null) throw new ArgumentNullException(nameof(settlement));
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (settlement.faction == null || !settlement.faction.def.isPlayer) return;
+            if (Ablation.IsDisabled(AblationName)) return; // a measurement control, never read from content
 
             IReadOnlyList<Thing> bodies = map.listerThings.ThingsInGroup(ThingRequestGroup.Corpse);
             if (bodies.Count == 0) return;
