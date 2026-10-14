@@ -215,33 +215,48 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
-        public void Failed_taming_can_turn_the_animal_against_the_tamer_but_not_always()
+        public void A_race_with_a_tame_fail_revenge_chance_can_turn_on_the_tamer_but_not_always()
         {
-            Pawn tamer = NewHuman("Handler");
-            tamer.skills.GetSkill(SkillDefOf.Animals)!.Level = 0;
-
-            bool everAngry = false;
-            bool everNotAngry = false;
-            for (int seed = 1; seed <= 200 && !(everAngry && everNotAngry); seed++)
+            // The consequence still exists; what changed is who decides. It used to be an invented
+            // 0.5 x wildness for every race, which made the shipped muffalo bite a third of the people who
+            // failed to tame it. RimWorld's number is the race's own (manhunterOnTameFailChance, 0 for the
+            // muffalo, the husky and the chicken), so this test gives the muffalo a chance for its duration
+            // and puts the shared def back; TamingRevengeTests pins that the shipped races have none.
+            RaceProperties race = Muffalo.race!;
+            float original = race.manhunterOnTameFailChance;
+            race.manhunterOnTameFailChance = 0.5f;
+            try
             {
-                Pawn muffalo = new Pawn(Muffalo, "Wild"); // wildness 0.6: chance = 0.5 - 0.54 < 0, always fails.
-                Rand.Current = new RandomStream(seed);
-                bool success = TameUtility.TryTame(muffalo, tamer);
-                Assert.False(success);
-                if (muffalo.mindState.angryAt != null)
-                {
-                    everAngry = true;
-                    Assert.Same(tamer, muffalo.mindState.angryAt);
-                    Assert.True(muffalo.mindState.angryUntilTick > Find.TickManager.TicksGame);
-                }
-                else
-                {
-                    everNotAngry = true;
-                }
-            }
+                Pawn tamer = NewHuman("Handler");
+                tamer.skills.GetSkill(SkillDefOf.Animals)!.Level = 0;
 
-            Assert.True(everAngry, "expected at least one failed attempt, across 200 seeds, to anger the animal");
-            Assert.True(everNotAngry, "expected at least one failed attempt, across 200 seeds, to NOT anger the animal");
+                bool everAngry = false;
+                bool everNotAngry = false;
+                for (int seed = 1; seed <= 200 && !(everAngry && everNotAngry); seed++)
+                {
+                    Pawn muffalo = new Pawn(Muffalo, "Wild"); // wildness 0.6: chance = 0.5 - 0.54 < 0, always fails.
+                    Rand.Current = new RandomStream(seed);
+                    bool success = TameUtility.TryTame(muffalo, tamer);
+                    Assert.False(success);
+                    if (muffalo.mindState.angryAt != null)
+                    {
+                        everAngry = true;
+                        Assert.Same(tamer, muffalo.mindState.angryAt);
+                        Assert.True(muffalo.mindState.angryUntilTick > Find.TickManager.TicksGame);
+                    }
+                    else
+                    {
+                        everNotAngry = true;
+                    }
+                }
+
+                Assert.True(everAngry, "expected at least one failed attempt, across 200 seeds, to anger the animal");
+                Assert.True(everNotAngry, "expected at least one failed attempt, across 200 seeds, to NOT anger the animal");
+            }
+            finally
+            {
+                race.manhunterOnTameFailChance = original;
+            }
         }
 
         [Fact]

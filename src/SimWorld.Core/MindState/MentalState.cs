@@ -395,6 +395,30 @@ namespace SimWorld.MindState
 
         private int manhunterUntilTickInt = -1;
 
+        /// <summary>
+        /// When a handler last made an attempt on this animal (RimWorld:
+        /// <c>Pawn_MindState.lastAssignedInteractTime</c>, default -99999). Written by
+        /// <see cref="Pawns.TameUtility.TryTame"/> on every attempt and read by
+        /// <see cref="Pawns.TameUtility.TriedToTameTooRecently"/>: an animal is not tried again for
+        /// <see cref="Pawns.AnimalTuning.MinTameIntervalTicks"/>. Without it every idle citizen could take
+        /// their turn at the same muffalo within the hour.
+        /// </summary>
+        public int lastAssignedInteractTime = -99999;
+
+        /// <summary>
+        /// Drops every standing hostility this pawn holds — the part of RimWorld's <c>Pawn.ClearMind</c>
+        /// (called from <c>Pawn.SetFaction</c>, so a newly tamed animal is calm the moment it is tamed) that
+        /// this port has state for: the personal grudge <see cref="angryAt"/> and the
+        /// <see cref="manhunterUntilTick"/> deadline. Does not touch the mental-state handler: this port's
+        /// handler is built for humanlike mood breaks, and an animal's anger is these two fields.
+        /// </summary>
+        public void ClearGrudges()
+        {
+            angryAt = null;
+            angryUntilTick = -1;
+            manhunterUntilTick = -1;
+        }
+
         // ---- AI module (system 9: AI — duties) ----
 
         /// <summary>
@@ -444,6 +468,7 @@ namespace SimWorld.MindState
             angryAt = aa;
             Scribe_Values.Look(ref angryUntilTick, "angryUntilTick", -1);
             Scribe_Values.Look(ref manhunterUntilTickInt, "manhunterUntilTick", -1);
+            Scribe_Values.Look(ref lastAssignedInteractTime, "lastAssignedInteractTime", -99999);
 
             // A raid saved mid-approach has to still be a raid when it loads, or reloading would disarm every
             // squad on the map — the duty is the only thing that makes them march.
