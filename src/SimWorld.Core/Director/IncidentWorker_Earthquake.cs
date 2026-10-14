@@ -39,18 +39,51 @@ namespace SimWorld.Director
     /// it reaches exactly the <see cref="ThingDef"/>s <see cref="World.Settlement.StructureCount"/> already
     /// tracks, watched or not, with no dependency on where the map generator happened to paint rock.
     ///
-    /// <para/><b>A pawn standing where a destroyed structure stood is crushed with it.</b> Not every collapse
-    /// finds someone — a <see cref="Building.StoneWallMaterials.AllWallDefs"/> wall and a <c>StorageHut</c> are
-    /// both <c>Impassable</c>, so this only ever finds someone in a destroyed <c>Bed</c> cell, the one known
-    /// structure def a pawn can actually stand on — but when it does, the hit is certain death
-    /// (<see cref="CollapseCrushDamage"/>, aimed at the core body part): a building actually
-    /// falling directly onto somebody is not a coin flip, the same judgement
-    /// <see cref="Building.RoofCollapserImmediate.MakeSure"/> already makes for a mountain roof. Those deaths
-    /// are credited through <see cref="DeathLedger.RecordAttributed"/> from the ledger's own delta, copying
-    /// <see cref="SettlementRaidResolver.Resolve"/>'s own approach — never from this worker's own count of
-    /// who it hit — so attribution can never exceed the deaths the ledger actually counted: a settlement that
-    /// belongs to no registered civilization reaches <c>Pawn_HealthTracker.Kill</c> and is deliberately not
-    /// counted there, and this worker must not claim it anyway.
+    /// <para/><b>A pawn standing where a destroyed structure stood is hurt by it, not executed.</b> Not every
+    /// collapse finds someone — a <see cref="Building.StoneWallMaterials.AllWallDefs"/> wall and a
+    /// <c>StorageHut</c> are both <c>Impassable</c>, so this only ever finds someone in a destroyed <c>Bed</c>
+    /// cell, the one known structure def a pawn can actually stand on, which is to say a sleeper. This used to
+    /// be certain death (500 Crush aimed at the core, no roll, no region), and on seed <c>roof-a</c> it killed
+    /// five of twenty-five founders asleep on day 2.78: a loss with no warning and nothing the player could
+    /// have done, which is not a decision, it is an execution.
+    /// It is RimWorld's own rule for a roof that is <i>not</i> a mountain now
+    /// (<c>Verse.RoofCollapserImmediate.DropRoofInCellPhaseOne</c>'s else branch, the one a constructed or
+    /// thin-rock roof takes): <see cref="RoofCollapserImmediate.ThinRoofCrushDamageRange"/> of Crush, rolled per
+    /// victim, aimed at <see cref="BodyPartHeight.Top"/>/<see cref="BodyPartDepth.Outside"/> — on a human the
+    /// head, neck, eyes, ears, nose and jaw, never an organ. Most people walk away from that, wounded; it is
+    /// not gentle (measured on the shipped body, unarmoured, over four hundred firings: about one in nine died, because the
+    /// neck has 25 health and the roll reaches 30, and about two in three lost an eye, an ear, the nose or the
+    /// jaw, which are 10 to 20 health apiece; the rest were cut or cracked), but it is a roll, and a person
+    /// who lives is somebody the settlement can tend.
+    /// Certain death stays with the one roof that earns it, an overhead mountain
+    /// (<see cref="RoofCollapserImmediate.ThickRoofCrushDamage"/>), and a settlement's own bed is not that.
+    /// The range is reused from <see cref="RoofCollapserImmediate"/>, not copied, so the two cannot drift apart.
+    /// Two things RimWorld's branch carries are left off, both because this port has no field to carry them:
+    /// <c>DamageInfo.SourceCategory.Collapse</c> (the port's <see cref="DamageInfo"/> has no source category;
+    /// <c>RoofCollapseDefOf.Crush</c> and a null instigator already read as a falling building) and
+    /// <c>roofCollapseDamageMultiplier</c> (a building-only scale; a pawn takes the default 1).
+    /// <para/>Being hurt wakes a sleeper: <see cref="DamageWorker.Apply"/> ends in
+    /// <c>Pawn_HealthTracker.PostApplyDamage</c>, which is where <c>Pawn_JobTracker.Notify_DamageTaken</c>
+    /// clears <c>Pawn.Asleep</c> (and a hit that downs them ends the job outright), so nothing here needs to
+    /// wake anyone itself — and a test pins that it does.
+    /// <para/>The wounds are stamped with this incident (<see cref="Hediff.sourceIncident"/>), because the
+    /// person it hurts may now die of it later — bleeding out, or the infection — long after the dice are
+    /// done, and <see cref="Health.WoundProvenance"/> credits that death to whatever stamped the wound. A blow
+    /// that kills on the spot is credited through <see cref="DeathLedger.RecordAttributed"/> from the
+    /// ledger's own delta, copying <see cref="SettlementRaidResolver.Resolve"/>'s own approach — never from
+    /// this worker's own count of who it hit — so attribution can never exceed the deaths the ledger actually
+    /// counted: a settlement that belongs to no registered civilization reaches
+    /// <c>Pawn_HealthTracker.Kill</c> and is deliberately not counted there, and this worker must not claim it
+    /// anyway. (The <i>letter</i>, by contrast, names the player's own people who died, counted by who actually
+    /// died and not by what the ledger counted: being told is not the ledger.)
+    ///
+    /// <para/><b>Not in a settlement's first days</b> (<see cref="IncidentDef.earliestDay"/>, in
+    /// <c>Incidents_Earthquake.xml</c>). A founding band has built little worth losing and has not yet met its
+    /// first threat; a quake in that window takes a share of a handful of beds off people who have no
+    /// buffer. The number is this port's own and the XML says why.
+    ///
+    /// <para/><b>The player is told what fell, who was hurt, who was caught and walked away, and who died</b>
+    /// (<see cref="SendLetter"/>), by name, with a look-target on each.
     ///
     /// <para/><b>Its dice are its own.</b> Every roll comes from <see cref="NamedRand"/>, never the ambient
     /// stream, and the target settlement and the severity are composed <i>before</i> the
@@ -60,7 +93,10 @@ namespace SimWorld.Director
     /// a nonzero armor rating — the bare pawns this port's own tests build never trigger it, which is exactly
     /// why it would be easy to miss), so every such call is shielded with <see cref="Rand.PushState(int)"/> /
     /// <see cref="Rand.PopState"/>, seeded from this incident's own stream, exactly as
-    /// <see cref="IncidentWorker_ManhunterPack.Generate"/> shields <c>PawnGenerator</c>.
+    /// <see cref="IncidentWorker_ManhunterPack.Generate"/> shields <c>PawnGenerator</c>. The amount of each
+    /// hit is rolled inside that shield too, so the quake draws exactly one number per victim from its own
+    /// stream — the same as the certain-death hit did — and the structures it brings down do not depend on
+    /// what happens to the people under them.
     /// </summary>
     public sealed class IncidentWorker_Earthquake : IncidentWorker
     {
@@ -76,16 +112,6 @@ namespace SimWorld.Director
         /// be one) and never 1 (a single quake razing a settlement outright is a wipe this port does not model).
         /// </summary>
         public static readonly FloatRange DestructionFractionRange = new FloatRange(0.15f, 0.45f);
-
-        /// <summary>
-        /// Damage dealt to whoever is standing where a destroyed structure stood, aimed at the core body part
-        /// rather than rolled for coverage — comfortably past <c>Health.HealthTuning.LethalDamageThreshold</c>
-        /// (150) regardless of which non-missing part a coverage roll would otherwise have picked, the same
-        /// margin <c>Health.Tests.DeathAttributionTests.KilledBy</c> uses to guarantee a kill. A structure
-        /// actually falling directly onto somebody is not a near-miss; see
-        /// <see cref="Building.RoofCollapserImmediate.MakeSure"/> for the same judgement about a mountain roof.
-        /// </summary>
-        private const float CollapseCrushDamage = 500f;
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
@@ -117,17 +143,18 @@ namespace SimWorld.Director
             string? source = def?.defName;
             Map.Map? map = ArrivalMapFor(civ, settlement);
 
+            var toll = new Toll(settlement);
             if (map != null)
             {
-                (int destroyed, int killed) = ShakeMap(map, severity, rand, source);
-                CreditStructures(source, destroyed);
-                SendLetter(settlement, destroyed, killed, watched: true);
+                ShakeMap(map, severity, rand, source, toll);
+                CreditStructures(source, toll.StructuresDestroyed);
+                SendLetter(settlement, toll, watched: true);
                 return true;
             }
 
-            int lost = ShakeSettlement(settlement, severity);
-            CreditStructures(source, lost);
-            SendLetter(settlement, lost, 0, watched: false);
+            ShakeSettlement(settlement, severity, toll);
+            CreditStructures(source, toll.StructuresDestroyed);
+            SendLetter(settlement, toll, watched: false);
             return true;
         }
 
@@ -140,9 +167,8 @@ namespace SimWorld.Director
         /// <see cref="Building.SettlementConstructionInitiative"/>. No roll: which structures existed and how
         /// many of each is arithmetic over <see cref="World.Settlement.StructureCount"/>, not a draw.
         /// </summary>
-        private static int ShakeSettlement(SimWorld.World.Settlement settlement, float severity)
+        private static void ShakeSettlement(SimWorld.World.Settlement settlement, float severity, Toll toll)
         {
-            int total = 0;
             IReadOnlyList<ThingDef> defs = KnownStructureDefs();
             for (int i = 0; i < defs.Count; i++)
             {
@@ -152,22 +178,19 @@ namespace SimWorld.Director
 
                 int destroy = DestroyCount(have, severity);
                 settlement.AddStructure(structureDef, -destroy);
-                total += destroy;
+                toll.Fell(structureDef, destroy);
             }
-            return total;
         }
 
         // ---- the watched half: real Things, on a real map ----
 
         /// <summary>
         /// Destroys a <paramref name="severity"/> share of each known structure def actually standing on
-        /// <paramref name="map"/>, and crushes anyone standing where one of them stood. Returns how many
-        /// structures were destroyed and how many people were killed doing it.
+        /// <paramref name="map"/>, and hurts anyone standing where one of them stood. What fell, who was hurt
+        /// and who died are written to <paramref name="toll"/>.
         /// </summary>
-        private static (int Destroyed, int Killed) ShakeMap(Map.Map map, float severity, RandomStream rand, string? source)
+        private static void ShakeMap(Map.Map map, float severity, RandomStream rand, string? source, Toll toll)
         {
-            int destroyedTotal = 0;
-            int killedTotal = 0;
             IReadOnlyList<ThingDef> defs = KnownStructureDefs();
             for (int d = 0; d < defs.Count; d++)
             {
@@ -193,62 +216,103 @@ namespace SimWorld.Director
                     // future ThingDef with destroyable=false would otherwise let this claim a destruction that
                     // never happened — the same "never over-claim" discipline CrushOnePawn applies to a death.
                     if (!target.Destroyed) continue;
-                    destroyedTotal++;
+                    toll.Fell(defs[d], 1);
 
                     foreach (IntVec3 cell in footprint.Cells)
                     {
-                        if (GenGrid.InBounds(cell, map)) killedTotal += CrushOccupants(map, cell, source, rand);
+                        if (GenGrid.InBounds(cell, map)) HurtOccupants(map, cell, source, rand, toll);
                     }
                 }
             }
-            return (destroyedTotal, killedTotal);
         }
 
-        /// <summary>Crushes every living pawn standing on <paramref name="cell"/> — one cell of a destroyed
-        /// structure's own footprint, so this only ever finds someone in a <c>Bed</c> (a wall and a <c>StorageHut</c> are both
-        /// <c>Impassable</c>, never standable). Credits a death exactly when <see cref="DeathLedger.Total"/>
-        /// actually grew from it, never from this method's own count of who it hit — see the class doc for why.</summary>
-        private static int CrushOccupants(Map.Map map, IntVec3 cell, string? source, RandomStream rand)
+        /// <summary>Hurts every living pawn standing on <paramref name="cell"/> — one cell of a destroyed
+        /// structure's own footprint, so this only ever finds someone in a <c>Bed</c> (a wall and a
+        /// <c>StorageHut</c> are both <c>Impassable</c>, never standable). See the class doc for what "hurts"
+        /// means, and for why a death is credited from <see cref="DeathLedger.Total"/>'s growth and never from
+        /// this method's own count of who it hit.</summary>
+        private static void HurtOccupants(Map.Map map, IntVec3 cell, string? source, RandomStream rand, Toll toll)
         {
             var occupants = new List<Thing>(map.thingGrid.ThingsListAt(cell));
-            int killed = 0;
             for (int i = 0; i < occupants.Count; i++)
             {
                 if (!(occupants[i] is Pawn pawn) || pawn.Dead) continue;
-                killed += CrushOnePawn(pawn, source, rand);
+                HurtOnePawn(pawn, source, rand, toll);
             }
-            return killed;
         }
 
-        private static int CrushOnePawn(Pawn pawn, string? source, RandomStream rand)
+        private static void HurtOnePawn(Pawn pawn, string? source, RandomStream rand, Toll toll)
         {
             DeathLedger? ledger = Find.Storyteller?.deaths;
             int before = ledger?.Total ?? 0;
 
+            // Whatever the pawn already carried is not this quake's: only wounds that appear below are stamped.
+            var carried = new HashSet<Hediff>(pawn.health.hediffSet.hediffs);
+
             // Shielded: DamageWorker_AddInjury -> Combat.ArmorUtility.ApplyArmor rolls Rand.Value once per
-            // armor source with a nonzero rating, which a bare test pawn never has and a clothed citizen does.
-            // Seeded from this incident's own stream so the callee stays deterministic and the ambient stream
-            // comes back to exactly where it was — see IncidentWorker_ManhunterPack.Generate.
+            // armor source with a nonzero rating, which a bare test pawn never has and a clothed citizen does,
+            // and a hit that wakes a sleeper re-asks its think tree, which rolls too. Seeded from this
+            // incident's own stream so the callee stays deterministic and the ambient stream comes back to
+            // exactly where it was — see IncidentWorker_ManhunterPack.Generate.
+            //
+            // The amount is rolled inside the same shield, the way RoofCollapserImmediate rolls it off
+            // Rand.Current, and not from <c>rand</c> itself: this method draws exactly one number from the
+            // incident's stream per victim, as the certain-death hit it replaces did, so which structures the
+            // quake brings down — drawn from that same stream, between victims — does not move because the
+            // people under them now live. The same seed and the same settlement lose the same beds as before
+            // this change; only what happens to whoever was in them differs.
+            DamageResult result;
             Rand.PushState(rand.Int);
             try
             {
-                BodyPartRecord? core = pawn.health.hediffSet.GetNotMissingParts().FirstOrDefault(p => p.IsCorePart);
-                var dinfo = new DamageInfo(RoofCollapseDefOf.Crush, CollapseCrushDamage,
-                    RoofCollapserImmediate.ThickRoofArmorPenetration, instigator: null, hitPart: core);
-                RoofCollapseDefOf.Crush.Worker.Apply(dinfo, pawn);
-
-                // Defensive, exactly as RoofCollapserImmediate.MakeSure is for a mountain collapse: certain
-                // death must not quietly become "usually" because coverage found no valid part.
-                if (!pawn.Dead) pawn.health.Kill(dinfo, null);
+                // RimWorld's ordinary-roof hit: a rolled amount of Crush, aimed at the top of the body from
+                // the outside.
+                var dinfo = new DamageInfo(RoofCollapseDefOf.Crush, Rand.Range(RoofCollapserImmediate.ThinRoofCrushDamageRange))
+                {
+                    Height = BodyPartHeight.Top,
+                    Depth = BodyPartDepth.Outside,
+                };
+                result = RoofCollapseDefOf.Crush.Worker.Apply(dinfo, pawn);
             }
             finally
             {
                 Rand.PopState();
             }
 
-            if (ledger == null || ledger.Total <= before) return 0;
+            if (pawn.Dead)
+            {
+                if (toll.IsOurs(pawn)) toll.Killed.Add(pawn);
+            }
+            else if (result.wounded)
+            {
+                // Hurt means wounded; see the branch below for a hit that was not.
+                if (toll.IsOurs(pawn)) toll.Hurt.Add(pawn);
+                StampWounds(pawn, carried, source);
+            }
+            else if (toll.IsOurs(pawn))
+            {
+                // Caught, woken, and the blow turned away or found nothing to strike: the near miss. Told, because
+                // a person who was under a falling bed and is fine is the best thing the letter has to say.
+                toll.Spared.Add(pawn);
+            }
+
+            if (ledger == null || ledger.Total <= before) return;
             ledger.RecordAttributed(source);
-            return 1;
+        }
+
+        /// <summary>Marks every hediff the blow added — the injury, and a missing part it took with it — as
+        /// this incident's, so a death that follows from them (<see cref="Health.WoundProvenance"/>: blood loss
+        /// and infection inherit the stamp of the wound behind them) is credited to it. A wound that already
+        /// had a source keeps it.</summary>
+        private static void StampWounds(Pawn pawn, HashSet<Hediff> carried, string? source)
+        {
+            if (source == null) return;
+            List<Hediff> hediffs = pawn.health.hediffSet.hediffs;
+            for (int i = 0; i < hediffs.Count; i++)
+            {
+                if (carried.Contains(hediffs[i])) continue;
+                if (hediffs[i].sourceIncident == null) hediffs[i].sourceIncident = source;
+            }
         }
 
         // ---- shared arithmetic ----
@@ -301,30 +365,150 @@ namespace SimWorld.Director
         private static bool IsWatched(SimWorld.World.Settlement settlement) =>
             Find.God.Attention.FocusedTile == settlement.tile;
 
-        /// <summary>The player is told either way — an earthquake nobody is told about is indistinguishable
-        /// from nothing happening, and a defect that costs nothing when unwatched teaches the player nothing
-        /// about where to look next time.</summary>
-        private static void SendLetter(SimWorld.World.Settlement settlement, int structuresLost, int killed, bool watched)
+        /// <summary>What an earthquake did, gathered as it goes so the letter can say it and the arms of the
+        /// incident share one shape. Fallen structures are kept in the order they were first lost (which is
+        /// <see cref="KnownStructureDefs"/>'s order, so deterministic); pawns in the order they were found.</summary>
+        private sealed class Toll
+        {
+            private readonly List<KeyValuePair<ThingDef, int>> fallen = new List<KeyValuePair<ThingDef, int>>();
+
+            /// <summary>Who was a citizen of the shaken settlement when the ground began to move — taken
+            /// first, because a citizen who dies is dropped from the roster. A bed cell can hold a muffalo or
+            /// a stranger as well; they are hurt like anyone, and the letter is about the player's people.</summary>
+            private readonly HashSet<Pawn> citizens;
+
+            public Toll(SimWorld.World.Settlement settlement)
+            {
+                citizens = new HashSet<Pawn>(settlement.Citizens);
+            }
+
+            /// <summary>Someone the player would call their people: a citizen of the settlement, or a colonist or
+            /// prisoner of the player's. Not the player's livestock, which <c>PawnUtility.IsColonist</c> also
+            /// answers yes for — a muffalo hurt in a bed cell is hurt, and is not "caught in the collapse and
+            /// hurt" in a sentence about people.</summary>
+            public bool IsOurs(Pawn pawn) =>
+                pawn.RaceProps.Humanlike && (citizens.Contains(pawn) || PawnUtility.ShouldSendNotificationAbout(pawn));
+
+            public int StructuresDestroyed { get; private set; }
+
+            public IReadOnlyList<KeyValuePair<ThingDef, int>> Fallen => fallen;
+
+            /// <summary>Caught in the collapse and alive when it finished, with a wound to show for it — perhaps downed.</summary>
+            public readonly List<Pawn> Hurt = new List<Pawn>();
+
+            /// <summary>Caught in the collapse and dead of the blow itself.</summary>
+            public readonly List<Pawn> Killed = new List<Pawn>();
+
+            /// <summary>Caught in the collapse, woken by it, and not wounded: armour turned the blow away, or
+            /// there was no part left to strike.</summary>
+            public readonly List<Pawn> Spared = new List<Pawn>();
+
+            public void Fell(ThingDef def, int count)
+            {
+                if (count <= 0) return;
+                StructuresDestroyed += count;
+                for (int i = 0; i < fallen.Count; i++)
+                {
+                    if (!ReferenceEquals(fallen[i].Key, def)) continue;
+                    fallen[i] = new KeyValuePair<ThingDef, int>(def, fallen[i].Value + count);
+                    return;
+                }
+                fallen.Add(new KeyValuePair<ThingDef, int>(def, count));
+            }
+        }
+
+        /// <summary>
+        /// The player is told either way — an earthquake nobody is told about is indistinguishable from
+        /// nothing happening, and a defect that costs nothing when unwatched teaches the player nothing about
+        /// where to look next time. And told <i>what</i>: which kinds of structure came down and how many of
+        /// each, who was caught in it and is hurt, who was caught and came away unhurt, and who is dead — by
+        /// name, each a look-target. The
+        /// count of the dead is the pawns that actually died, never the ledger's delta: a settlement on no
+        /// civilization roster loses people the ledger does not count, and the player is owed the truth either
+        /// way.
+        /// </summary>
+        private static void SendLetter(SimWorld.World.Settlement settlement, Toll toll, bool watched)
         {
             string where = string.IsNullOrEmpty(settlement.name) ? "a settlement" : settlement.name;
             string text;
             if (watched)
             {
-                text = killed > 0
-                    ? string.Format(CultureInfo.InvariantCulture,
-                        "An earthquake tears through {0}. {1} structures come down, and {2} of your people are lost in the collapse.",
-                        where, structuresLost, killed)
-                    : string.Format(CultureInfo.InvariantCulture,
-                        "An earthquake tears through {0}. {1} structures come down.", where, structuresLost);
+                var sb = new System.Text.StringBuilder();
+                sb.Append("An earthquake tears through ").Append(where).Append(". ");
+                sb.Append(toll.StructuresDestroyed > 0
+                    ? "It brings down " + DescribeFallen(toll.Fallen) + "."
+                    : "Nothing you had built comes down.");
+                if (toll.Hurt.Count > 0)
+                {
+                    sb.Append(' ').Append(NameList(toll.Hurt))
+                      .Append(toll.Hurt.Count == 1 ? " was caught in the collapse and is hurt." : " were caught in the collapse and are hurt.");
+                }
+                if (toll.Spared.Count > 0)
+                {
+                    sb.Append(' ').Append(NameList(toll.Spared))
+                      .Append(toll.Spared.Count == 1 ? " was caught in the collapse and came away unhurt." : " were caught in the collapse and came away unhurt.");
+                }
+                if (toll.Killed.Count > 0)
+                {
+                    sb.Append(' ').Append(NameList(toll.Killed))
+                      .Append(toll.Killed.Count == 1 ? " was killed in the collapse." : " were killed in the collapse.");
+                }
+                text = sb.ToString();
             }
             else
             {
-                text = string.Format(CultureInfo.InvariantCulture,
-                    "Word reaches you late: an earthquake struck {0} while your attention was elsewhere, destroying {1} structures.",
-                    where, structuresLost);
+                text = toll.StructuresDestroyed > 0
+                    ? string.Format(CultureInfo.InvariantCulture,
+                        "Word reaches you late: an earthquake struck {0} while your attention was elsewhere, destroying {1}.",
+                        where, DescribeFallen(toll.Fallen))
+                    : string.Format(CultureInfo.InvariantCulture,
+                        "Word reaches you late: an earthquake struck {0} while your attention was elsewhere. Nothing you had built came down.",
+                        where);
             }
 
-            Find.LetterStack?.ReceiveLetter("Earthquake: " + where, text, LetterDefOf.NegativeEvent);
+            List<string>? lookTargets = null;
+            if (toll.Hurt.Count + toll.Spared.Count + toll.Killed.Count > 0)
+            {
+                lookTargets = new List<string>();
+                for (int i = 0; i < toll.Hurt.Count; i++) lookTargets.Add(toll.Hurt[i].GetUniqueLoadID());
+                for (int i = 0; i < toll.Spared.Count; i++) lookTargets.Add(toll.Spared[i].GetUniqueLoadID());
+                for (int i = 0; i < toll.Killed.Count; i++) lookTargets.Add(toll.Killed[i].GetUniqueLoadID());
+            }
+
+            Find.LetterStack?.ReceiveLetter("Earthquake: " + where, text, LetterDefOf.NegativeEvent, lookTargets);
+        }
+
+        /// <summary>"9 walls, 2 beds and 1 storage hut" — every def's own label, counted, in the order lost.</summary>
+        private static string DescribeFallen(IReadOnlyList<KeyValuePair<ThingDef, int>> fallen)
+        {
+            var parts = new List<string>(fallen.Count);
+            for (int i = 0; i < fallen.Count; i++)
+            {
+                string label = fallen[i].Key.label ?? fallen[i].Key.defName;
+                parts.Add(fallen[i].Value.ToString(CultureInfo.InvariantCulture) + " " + label + (fallen[i].Value == 1 ? "" : "s"));
+            }
+            return JoinWithAnd(parts);
+        }
+
+        /// <summary>The most names a letter spells out before it says "and N others"; a bed-full of sleepers is
+        /// never more than a handful, but a letter that listed forty names would stop being read.</summary>
+        private const int MaxNamesInLetter = 6;
+
+        internal static string NameList(IReadOnlyList<Pawn> pawns)
+        {
+            var names = new List<string>();
+            int shown = Math.Min(pawns.Count, MaxNamesInLetter);
+            for (int i = 0; i < shown; i++) names.Add(pawns[i].Label);
+            int more = pawns.Count - shown;
+            if (more > 0) names.Add(more.ToString(CultureInfo.InvariantCulture) + (more == 1 ? " other" : " others"));
+            return JoinWithAnd(names);
+        }
+
+        private static string JoinWithAnd(IReadOnlyList<string> parts)
+        {
+            if (parts.Count == 0) return "";
+            if (parts.Count == 1) return parts[0];
+            return string.Join(", ", parts.Take(parts.Count - 1)) + " and " + parts[parts.Count - 1];
         }
     }
 }
