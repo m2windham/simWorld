@@ -179,11 +179,9 @@ namespace SimWorld.Director
         /// <summary>
         /// Market value of everything the civilization's settlements hold. This is the wealth term
         /// <see cref="StorytellerUtility"/> has always wanted and never had — <c>EraDef.threatPointsFactor</c>
-        /// was written as an explicit stand-in for it. An earlier version of this comment kept the stand-in
-        /// "because scaling threat by the age a civilization has reached is SimWorld's own idea"; it counted
-        /// the same growth twice, once here and once as the era, and the multiplier is out of
-        /// <c>DefaultThreatPointsNow</c> (see <c>EraDef.threatPointsFactor</c>). This is the one place growth
-        /// makes a raid larger. Population is deliberately not counted here: RimWorld's threat curve already reads the roster
+        /// was written as an explicit stand-in for it, and stays, because scaling threat by the age a
+        /// civilization has reached is SimWorld's own idea rather than a substitute now that stores are real.
+        /// Population is deliberately not counted here: RimWorld's threat curve already reads the roster
         /// separately, and adding people to wealth would charge for them twice. Falls back to the settable
         /// value when no settlements are attached.
         /// </summary>
