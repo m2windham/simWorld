@@ -23,6 +23,9 @@
         <theOnlyAllowedMentalBreaks>
           <li>FireStartingSpree</li>
         </theOnlyAllowedMentalBreaks>
+        <!-- -20% market value, from https://rimworldwiki.com/wiki/Traits (Pyromaniac: "-20% Market Value").
+             The wiki describes the current game; 1.0's value for this trait was not checked. -->
+        <marketValueFactorOffset>-0.2</marketValueFactorOffset>
       </li>
     </degreeDatas>
   </TraitDef>

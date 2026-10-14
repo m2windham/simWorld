@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using SimWorld.Defs;
-using SimWorld.Economy;
 using SimWorld.Map;
 using SimWorld.Pawns;
 using SimWorld.Sim;
@@ -177,30 +176,48 @@ namespace SimWorld.Director
         public int Tile { get => Seat?.tile ?? tile; set => tile = value; }
 
         /// <summary>
-        /// Market value of everything the civilization's settlements hold. This is the wealth term
-        /// <see cref="StorytellerUtility"/> has always wanted and never had — <c>EraDef.threatPointsFactor</c>
-        /// was written as an explicit stand-in for it, and stays, because scaling threat by the age a
-        /// civilization has reached is SimWorld's own idea rather than a substitute now that stores are real.
-        /// Population is deliberately not counted here: RimWorld's threat curve already reads the roster
-        /// separately, and adding people to wealth would charge for them twice. Falls back to the settable
-        /// value when no settlements are attached.
+        /// What the civilization's settlements are worth to the storyteller: for each, <c>items + 0.5 ×
+        /// buildings + pawns</c> (RimWorld: <c>Verse.Map.PlayerWealthForStoryteller</c> for a player home),
+        /// summed. The wealth term <c>EraDef.threatPointsFactor</c> was written as a stand-in for, which
+        /// stays — scaling threat by the age a civilization has reached is SimWorld's own idea rather than a
+        /// substitute now that wealth is real.
+        /// <para/>
+        /// <b>People are counted here, and are counted again by the roster.</b> RimWorld does exactly that: a
+        /// colonist is part of <c>WealthPawns</c> and also a per-colonist term in the threat-points formula
+        /// (<see cref="StorytellerUtility.DefaultThreatPointsNow"/>), so a settlement that grows in people is
+        /// charged by both. This property used to leave people out on the reasoning that it would charge for
+        /// them twice; that was an improvisation, never RimWorld's and never recorded as a translation, and
+        /// its effect was a band of twenty whose stores sat under the wealth curve's 14,000 floor for most of
+        /// a sixty-day run drawing raids from headcount alone however much it built or bred.
+        /// <para/>
+        /// A settlement whose map exists is counted off the map by RimWorld's own
+        /// <see cref="WealthWatcher"/>; one nobody has opened is estimated from its ledgers. The translation,
+        /// and what each route counts, is <see cref="SettlementWealth"/>'s. Falls back to the settable value
+        /// when no settlements are attached.
         /// </summary>
         public float PlayerWealthForStoryteller
         {
+            get => WealthBreakdown.ForStoryteller;
+            set => wealth = value;
+        }
+
+        /// <summary>
+        /// <see cref="PlayerWealthForStoryteller"/> split into the three terms it is made of, so a reader can
+        /// see where the points come from. With no settlements attached only the settable total is known, and
+        /// it is reported as items.
+        /// </summary>
+        public WealthBreakdown WealthBreakdown
+        {
             get
             {
-                if (settlements.Count == 0) return wealth;
-                float total = 0f;
+                if (settlements.Count == 0) return new WealthBreakdown(wealth, 0f, 0f);
+                WealthBreakdown total = default;
                 for (int i = 0; i < settlements.Count; i++)
                 {
-                    foreach (KeyValuePair<ThingDef, int> entry in settlements[i].Stores)
-                    {
-                        total += TradeUtility.BaseMarketValue(entry.Key) * entry.Value;
-                    }
+                    total += SettlementWealth.Of(settlements[i]);
                 }
                 return total;
             }
-            set => wealth = value;
         }
 
         public IEnumerable<Pawn> PlayerPawnsForStoryteller

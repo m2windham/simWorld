@@ -46,13 +46,15 @@ namespace SimWorld.Economy
     /// The two existing readers that sum both halves — <c>AI.HuntingInitiative.NutritionAvailable</c> and this
     /// class's own nutrition reserve — are correct <i>because</i> the halves are disjoint.
     ///
-    /// <para/><b>Why not RimWorld's <c>WealthWatcher</c> shape.</b> RimWorld recomputes colony wealth on a slow
-    /// cadence and is explicit that the result is an estimate; <c>PlayerWealthForStoryteller</c> here is the
-    /// same kind of question and already answers it from <see cref="Settlement.Stores"/> alone. A survey is the
-    /// right shape for a <i>read</i> and the wrong shape for a <i>ledger</i>: summing every Thing on every map
-    /// into <c>Stores</c> every tick would be O(things) forever and would double-count everything the ledger
-    /// already held the moment trade or a guild touched it. Banking moves instead of summing, so it is O(the
-    /// settlement's own stockpile cells) on a rare tick and cannot double-count at all.
+    /// <para/><b>Why the ledger is not a <c>WealthWatcher</c>-shaped survey.</b> RimWorld recomputes colony wealth
+    /// on a slow cadence and is explicit that the result is an estimate, and <see cref="Director.WealthWatcher"/>
+    /// now does exactly that for a watched map's storyteller wealth. A survey is the right shape for a
+    /// <i>read</i> and the wrong shape for a <i>ledger</i>: summing every Thing on every map into
+    /// <c>Stores</c> every tick would be O(things) forever and would double-count everything the ledger
+    /// already held the moment trade or a guild touched it. Banking moves instead of summing, so it is
+    /// O(the settlement's own stockpile cells) on a rare tick and cannot double-count at all. The two meet in
+    /// <see cref="Director.SettlementWealth"/>, which reads the map by survey and adds the ledger as a
+    /// separate term — safe for the same reason banking is: the halves are disjoint.
     ///
     /// <para/><b>What crosses: goods resting in storage, and nothing else.</b> A unit is banked when it is
     /// sitting in one of the settlement's stockpiles (<c>Building.Zone_Stockpile</c>, which

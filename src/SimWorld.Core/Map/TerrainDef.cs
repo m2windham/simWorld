@@ -33,6 +33,16 @@ namespace SimWorld.Map
         /// <summary>Can serve as another terrain's <see cref="underTerrain"/> (natural ground can; most floors cannot).</summary>
         public bool layerable;
 
+        /// <summary>
+        /// What a cell of this terrain adds to the storyteller's building wealth (RimWorld: the terrain's
+        /// <c>MarketValue</c> stat, summed over every cell by <c>WealthWatcher.CalculateWealthFloors</c> and
+        /// counted with the buildings). Zero for ground that was never made. <b>No terrain in content sets
+        /// one</b>: this port has no constructible floors yet, so the floors term of
+        /// <see cref="Director.WealthWatcher.WealthFloorsOnly"/> is zero in every game, and is wired to this
+        /// field so that the day a floor can be laid it counts without anything else changing.
+        /// </summary>
+        public float marketValue;
+
         public bool IsWater => water;
 
         public override IEnumerable<string> ConfigErrors()

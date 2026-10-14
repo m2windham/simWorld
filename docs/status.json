@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 3199,
+  "testsTotal": 3245,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1199,6 +1199,11 @@
           "id": "ai.designations.plants",
           "label": "Real CutPlant / HarvestPlant designations in place of the derived list the plant scans read (lands with a plant designation pass)",
           "done": false
+        },
+        {
+          "id": "ai.raidstranded",
+          "label": "Raiders stranded on a map edge: a RaidEnemy squad placed on a cell from which it cannot reach the settlement stands there with duty AssaultSettlement and no job, and the think tree runs every tick for days (seed 777 after the wealth term: three raiders at (199,0,49) from day 14, ~37 s of CPU each over four days; 40 days took 476 s against 106 s). Pre-existing; bigger raids expose it. The player sees a raid that never arrives.",
+          "done": false
         }
       ]
     },
@@ -1206,11 +1211,11 @@
       "id": "director",
       "n": 11,
       "rimworld": "Storyteller / Threat Director",
-      "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth, population and era instead of one colony. Deaths are recorded on two axes rather than one: by cause, as RimWorld does, and by source — the incident that put the killer in the world. The second axis is a SimWorld addition and exists because a civilization-scale game cannot measure a threat by differencing two runs: ablating anything that spawns onto a live map diverges the whole world from that tick, and the noise in total deaths is larger than the cost being measured. Earthquake is SimWorld's own incident: its structure loss is a design number, its casualty rule is RimWorld's thin-roof collapse, not a mountain's. Threat points keep one SimWorld term beside RimWorld's formula, EraDef.threatPointsFactor: kept on purpose once real wealth landed, because at founding scale wealth sits under the curve's 14,000 floor and the era is the growth term the player sees announced. Adaptation curves live as static curves on StoryWatcher_Adaptation rather than on StorytellerDef (RimWorld sets identical ones for all three).",
+      "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth, population and era instead of one colony. Deaths are recorded on two axes rather than one: by cause, as RimWorld does, and by source — the incident that put the killer in the world. The second axis is a SimWorld addition and exists because a civilization-scale game cannot measure a threat by differencing two runs: ablating anything that spawns onto a live map diverges the whole world from that tick, and the noise in total deaths is larger than the cost being measured. Earthquake is SimWorld's own incident: its structure loss is a design number, its casualty rule is RimWorld's thin-roof collapse, not a mountain's. Threat points keep one SimWorld term beside RimWorld's formula, EraDef.threatPointsFactor: kept on purpose once real wealth landed, because at founding scale wealth sits under the curve's 14,000 floor and the era is the growth term the player sees announced. Adaptation curves live as static curves on StoryWatcher_Adaptation rather than on StorytellerDef (RimWorld sets identical ones for all three). Wealth translation: a watched settlement is its map counted by WealthWatcher plus two things RimWorld has no counterpart for, its Stores ledger (a unit of goods is a Thing or a count, never both) and any citizen the tiering system took off the map; an unwatched one is estimated from Stores, Structures × market value × 0.5 and its citizens priced one by one.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 314,
+      "tests": 345,
       "items": [
         {
           "id": "director.personality",
@@ -1221,6 +1226,16 @@
           "id": "director.points",
           "label": "Threat points: wealth and per-pawn curves × difficulty × adaptation × era × RimWorld's starting factor, clamped 35–10000. The days-passed curve is RimWorld's (rimworldwiki Raid_points): 0.7 through day 10, 1.0 from day 40, one curve on an abstract StorytellerBase — a discount for a new colony, never a multiplier above 1. It had been an invented (0,1)(20,2)(100,4) growth curve that made a day-45 raid 2.6× what the settlement earned (seed 777: 27 raiders, then 16 the next day). Tests: ThreatPointsTests, DirectorTests.",
           "done": true
+        },
+        {
+          "id": "director.wealth",
+          "label": "The storyteller's wealth is RimWorld's: Verse/Map.PlayerWealthForStoryteller = WealthItems + 0.5 × WealthBuildings + WealthPawns, from a per-map WealthWatcher (RimWorld/WealthWatcher.cs: haulables recursively through holders, a grave included, plus the player's pawns' equipment, apparel and inventory; player-faction buildings plus floors; living player-faction pawns, tame animals included; recount when older than 5000 ticks). An unopened settlement estimates the same three terms from its ledgers (Stores, Structures × market value × 0.5, each citizen priced), and the two routes agree for the same settlement. People are counted as RimWorld counts them, as wealth and as per-colonist points; the port's old 'charged twice' omission is gone. A founding band reads ~33,000 on day 0 (it read 260), so the wealth curve's 14,000 floor is cleared from the start and raids come about 1.7× larger. Tests: WealthWatcherTests, SettlementWealthTests.",
+          "done": true
+        },
+        {
+          "id": "director.wealth.open",
+          "label": "Open with the wealth term: PriceUtility.PawnQualityPriceOffset (no spawnThingOnRemoved here), StatPart_Health on market value, fog, constructible floors (TerrainDef.marketValue is wired, no content sets it), the recipe branch of a calculated value, and LifeStageDef.marketValueFactor still at the port's authored 0.5/0.7/0.9/1 where the wiki's current table is 0.5/0.9/0.95/1. Wealth is nearly flat over 60 days (33k → 40k) because people dominate it and buildings are ~1%.",
+          "done": false
         },
         {
           "id": "director.incidents",
@@ -1573,7 +1588,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "ported",
-      "tests": 287,
+      "tests": 302,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1648,6 +1663,11 @@
         {
           "id": "economy.medicinereserve",
           "label": "Medicine stays where a tender can reach it: the map keeps a reserve per citizen, banking takes only the excess, and the shortfall is issued back from the ledger. Before, starting medicine sat in the ledger and never reached a tender, and a stockpiled harvest would have been banked off the map",
+          "done": true
+        },
+        {
+          "id": "economy.marketvalue",
+          "label": "A person and a building are priced the way RimWorld prices them: RimWorld/StatWorker_MarketValue.cs (race base × PriceUtility.PawnQualityPriceFactor for a pawn; a def with no MarketValue from its cost list, costStuffCount and 0.0036 × work, the work term for buildings only) and PriceUtility's constants (health 0.8, capacity 0.5, missing capacity 0.6, floor 0.1, skill curve (0,0.2)(5.5,1)(20,3), skills for humanlikes only). Race bases from the wiki (Human 1750, Husky 250, Muffalo 300, Chicken 50). Building.faction is set by Frame.CompleteConstruction and Scribed. TradeUtility.BaseMarketValue is unchanged, so trade and the ledger value do not move. Tests: PawnMarketValueTests.",
           "done": true
         }
       ]
