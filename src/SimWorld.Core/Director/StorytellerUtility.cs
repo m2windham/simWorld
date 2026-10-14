@@ -37,8 +37,9 @@ namespace SimWorld.Director
         /// discount that fades out by day 40) — clamped to [<see cref="MinThreatPoints"/>, <see cref="MaxThreatPoints"/>].
         /// <para/>
         /// <b>Addition:</b> one more multiplier, the current era's <see cref="Research.EraDef.threatPointsFactor"/>,
-        /// applied the same way difficulty and adaptation already are. That factor is SimWorld's own and
-        /// stands in for the wealth term while nothing computes real wealth — see the field's own comment.
+        /// applied the same way difficulty and adaptation already are. That factor is SimWorld's own: it began
+        /// as a stand-in for the wealth term and was kept, on purpose, once wealth was real — see the field's
+        /// own comment for why it is not counting the same growth twice.
         /// </summary>
         public static float DefaultThreatPointsNow(IIncidentTarget target)
         {

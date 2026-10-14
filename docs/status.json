@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 3077,
+  "testsTotal": 3131,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -915,6 +915,11 @@
           "id": "health.bedrestmedicine",
           "label": "Beds and medicine change who survives. ImmunityGainSpeed carries RimWorld's StatPart_Resting (x1.10 in bed or lying down, not when downed on open ground) and StatPart_BedStat (a bed's BedRestEffectiveness, 1.07 for a Bed), so WoundInfection's raw 0.6441/day is 0.644 up and about or downed on the ground, 0.709 resting and 0.759 in bed. Tend quality is RimWorld's: doctor skill x medicine potency (none 0.3, herbal 0.6, industrial 1.0) plus the bed's offset, capped at the medicine's own maximum; the tend job fetches and consumes one medicine. The player's lever is RimWorld's MedicalCareCategory as a settlement standing rule (MapCommands.SetMedicalCare, default Best). Recorded deviations: one settlement-wide care level, not per pawn; tend batching is not gated on medicine; herbal medicine comes only from the scenario's starting stock (Lost Tribe 20, Crashlanded 30 industrial) because nothing grows healroot yet (ImmunityGainSpeedTests, MedicineTests, MedicalCareCommandTests).",
           "done": true
+        },
+        {
+          "id": "health.postraidbleed",
+          "label": "A settlement bleeds out after its raids are over (seed 12345: 27 deaths in 60 days, 22 of them disease, nearly all WoundInfection). Citizens fight calm animals (AttackStatic against a non-hostile Muffalo/Husky/Chicken whose grudge points back) and are bitten repeatedly; the colony's 20 medicine are gone by day ~20 and never replenished, so tend quality caps at 0.3 × skill and infections narrowly win the race against immunity. Open: why a citizen engages a calm animal, whether animal bites hit at RimWorld's scale, and medicine supply after the starting stock.",
+          "done": false
         }
       ]
     },
@@ -1191,11 +1196,11 @@
       "id": "director",
       "n": 11,
       "rimworld": "Storyteller / Threat Director",
-      "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth, population and era instead of one colony. Deaths are recorded on two axes rather than one: by cause, as RimWorld does, and by source — the incident that put the killer in the world. The second axis is a SimWorld addition and exists because a civilization-scale game cannot measure a threat by differencing two runs: ablating anything that spawns onto a live map diverges the whole world from that tick, and the noise in total deaths is larger than the cost being measured. Earthquake is SimWorld's own incident: its structure loss is a design number, its casualty rule is RimWorld's thin-roof collapse, not a mountain's.",
+      "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth, population and era instead of one colony. Deaths are recorded on two axes rather than one: by cause, as RimWorld does, and by source — the incident that put the killer in the world. The second axis is a SimWorld addition and exists because a civilization-scale game cannot measure a threat by differencing two runs: ablating anything that spawns onto a live map diverges the whole world from that tick, and the noise in total deaths is larger than the cost being measured. Earthquake is SimWorld's own incident: its structure loss is a design number, its casualty rule is RimWorld's thin-roof collapse, not a mountain's. Threat points keep one SimWorld term beside RimWorld's formula, EraDef.threatPointsFactor: kept on purpose once real wealth landed, because at founding scale wealth sits under the curve's 14,000 floor and the era is the growth term the player sees announced. Adaptation curves live as static curves on StoryWatcher_Adaptation rather than on StorytellerDef (RimWorld sets identical ones for all three).",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 260,
+      "tests": 314,
       "items": [
         {
           "id": "director.personality",
@@ -1204,7 +1209,7 @@
         },
         {
           "id": "director.points",
-          "label": "Threat points: wealth and per-pawn curves × difficulty × adaptation × days-passed, clamped 35–10000",
+          "label": "Threat points: wealth and per-pawn curves × difficulty × adaptation × era × RimWorld's starting factor, clamped 35–10000. The days-passed curve is RimWorld's (rimworldwiki Raid_points): 0.7 through day 10, 1.0 from day 40, one curve on an abstract StorytellerBase — a discount for a new colony, never a multiplier above 1. It had been an invented (0,1)(20,2)(100,4) growth curve that made a day-45 raid 2.6× what the settlement earned (seed 777: 27 raiders, then 16 the next day). Tests: ThreatPointsTests, DirectorTests.",
           "done": true
         },
         {
@@ -1214,7 +1219,12 @@
         },
         {
           "id": "director.adaptation",
-          "label": "Quiet-time adaptation factor rising with peaceful days, dropping on downs and deaths",
+          "label": "Adaptation is RimWorld's (RimWorld/StoryWatcher_Adaptation.cs and rimworldwiki Raid_points): adapt days clamped −60..100, factor curve (−30,0.4)(0,0.8)(30,1)(60,1.2)(120,1.6)(180,2) so 0.4..1.47; growth every 30000 ticks of 0.5 × a rate curve (3/day below 0, 1/day to 60, 0.5/day to 120), none from 0 or above in the first 30 days; a death costs 20–30 days by population, a violently-caused downing 3.5–8, settled at the end of the tick and withdrawn by a death in it; adaptationEffectFactor lerps. A settlement that has just lost people gets a real break, a long quiet presses harder. Tests: AdaptationTests, DownedAdaptationTests, DeathAdaptationTests.",
+          "done": true
+        },
+        {
+          "id": "director.cadence",
+          "label": "Cassandra, Phoebe and Randy keep the cadence the RimWorld wiki prints: Cassandra's ThreatBig cycle minDaysPassed 11, on 4.6 / off 6, minSpacingDays 1.9, 1~2 per on-phase (threats possible 43% of the time, was 82% from day 6); Phoebe 13, on 8 / off 8; Randy minDaysPassed 1, maxThreatBigIntervalDays 13, the wiki's category weights; Misc mtbDays 4.8 split from the pooled RandomMain. IncidentCycleUtility is RimWorld's seeded hit list: per cycle it decides the count, places the hits and pushes them apart to minSpacingDays across cycle boundaries; minDaysPassed is gated in Storyteller.MakeIncidentsForInterval. Values the wiki does not print are marked unsourced in Storytellers.xml. Tests: StorytellerCadenceTests.",
           "done": true
         },
         {
