@@ -24,15 +24,20 @@ namespace SimWorld.Research
         /// scales threats" (§10).
         /// <para/>
         /// <b>Not sourced from RimWorld.</b> RimWorld scales threats off colony wealth
-        /// (<c>pointsPerWealthCurve</c>): what you have is what comes for it. SimWorld ports that curve but
-        /// nothing yet computes real wealth — <c>IIncidentTarget.PlayerWealthForStoryteller</c> is a settable
-        /// stub — so on its own the wealth term stays flat for a whole game. This factor stands in for it at
-        /// civilization scale: a bronze-age rival threatens with bronze-age force. The ladder of numbers in
-        /// content is SimWorld's own and could not be sourced, so the tests pin the <i>trend</i> (later eras
-        /// never threaten less; reaching an era raises the points spent) rather than any literal.
+        /// (<c>pointsPerWealthCurve</c>): what you have is what comes for it. SimWorld ports that curve too.
+        /// This factor was first written as a stand-in for it, while nothing computed real wealth, and was
+        /// kept once <see cref="Director.CivilizationTarget.PlayerWealthForStoryteller"/> became real
+        /// (spec §10): a bronze-age rival threatens with bronze-age force. The ladder of numbers in content is
+        /// SimWorld's own and could not be sourced, so the tests pin the <i>trend</i> (later eras never
+        /// threaten less; reaching an era raises the points spent) rather than any literal.
         /// <para/>
-        /// When real wealth accounting lands, revisit this: wealth and era both grow across a game, and
-        /// multiplying by both would count the same growth twice.
+        /// <b>Why this is not the same growth counted twice.</b> Wealth answers "how much does the settlement
+        /// hold"; the era answers "what age has it reached", and the player sees the second coming: reaching an
+        /// era is announced (<see cref="EraTransitionUtility"/>), so researching onward is a choice with a known
+        /// price. Wealth scaling is RimWorld's least legible rule; this is the legible one. At this port's
+        /// founding scale wealth sits below the curve's 14,000 floor for weeks, so without the era a raid
+        /// would grow with headcount alone. Revisit it if a measured late-game run sits on the
+        /// <c>MaxThreatPoints</c> clamp, which is where the two together would bite.
         /// </summary>
         public float threatPointsFactor = 1f;
 

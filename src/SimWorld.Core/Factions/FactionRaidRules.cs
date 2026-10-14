@@ -30,13 +30,13 @@ namespace SimWorld.Factions
         /// <see cref="FactionManager.RandomEnemyFaction"/> does here once handed this as its validator.
         ///
         /// <para/><b>Why this is not redundant with the storyteller's own early-game pacing.</b> Two of the
-        /// three shipped storytellers do hold the first raid back on their own — Cassandra's <c>ThreatBig</c>
-        /// cycle declares <c>minDaysPassed 6</c> and Phoebe's declares <c>10</c>, both later than any shipped
-        /// <see cref="FactionDef.earliestRaidDays"/>, so under those two this gate never fires. Randy Random
-        /// declares no day floor anywhere: a single <c>StorytellerComp_RandomMain</c> with
-        /// <c>mtbDays 1.35</c> and <c>ThreatBig</c> weighted 16, which can and does pick <c>RaidEnemy</c> on
-        /// day zero. So the protection the field describes existed for two storytellers out of three and the
-        /// field itself was the only thing that would have provided it for the third.
+        /// three shipped storytellers hold the first raid back on their own — Cassandra's <c>ThreatBig</c>
+        /// cycle declares <c>minDaysPassed 11</c> and Phoebe's <c>13</c> (the wiki's figures), both later than
+        /// any shipped <see cref="FactionDef.earliestRaidDays"/>, so under those two this gate never fires.
+        /// Randy Random's single <c>StorytellerComp_RandomMain</c> declares <c>minDaysPassed 1</c> (also the
+        /// wiki's) and weights <c>ThreatBig</c> at 1.4 of 9.22, so a raid can be picked from day one: the gate
+        /// is what holds a faction whose own <see cref="FactionDef.earliestRaidDays"/> is later than that
+        /// (the shipped tribal and outlander civilizations name 3 and 5) from arriving before it.
         ///
         /// <para/>A faction that names day 0 (the shipped <c>RoughOutlanders</c>, who are
         /// <see cref="FactionDef.permanentEnemy"/>) is never held back by this at all, which is the content

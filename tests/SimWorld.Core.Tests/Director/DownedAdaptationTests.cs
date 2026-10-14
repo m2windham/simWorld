@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using SimWorld.Defs;
 using SimWorld.Director;
 using SimWorld.Factions;
+using SimWorld.Health;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 using SimWorld.Tests.Content;
@@ -17,22 +18,20 @@ namespace SimWorld.Tests.Director
     ///
     /// <para/><b>What this suite exists to stop happening again.</b> This is the exact twin of the
     /// <see cref="StoryWatcher_Adaptation.Notify_ColonistDied"/> defect the raid lane fixed:
-    /// <c>Notify_ColonistDowned</c>, its <see cref="StoryWatcher_Adaptation.DownedAdaptDaysPenalty"/> constant
-    /// and its place in the curve all existed, and no line of <c>src/</c> raised it — so adaptation only ever
-    /// eased after a death, and a colony that was mauled without losing anybody looked, to the narrator,
-    /// exactly as untroubled as one that had spent the month farming.
+    /// <c>Notify_ColonistDowned</c> and its place in the curve existed, and no line of <c>src/</c> raised it —
+    /// so adaptation only ever eased after a death, and a colony that was mauled without losing anybody
+    /// looked, to the narrator, exactly as untroubled as one that had spent the month farming.
     ///
-    /// <para/><b>The wiring is deliberately not a copy of the death side.</b> The raid lane raised
-    /// <c>Notify_ColonistDied</c> from <see cref="SettlementRaidResolver"/> specifically, and deliberately not
-    /// from <c>FamilyManager.HandleDeath</c>, so that dying of old age would not ease the storyteller.
-    /// Downing has no comparable non-threat cause to exclude and exactly one funnel —
-    /// <c>Pawn_HealthTracker.MakeDowned</c> — so the hook goes there, which is where RimWorld raises it too.
-    /// <i>The death side has since caught up</i>, and then went further: <see cref="StorytellerDeathEvents"/>
-    /// raises the death hook from the death funnel for every death of ours, whatever the cause, which is
-    /// RimWorld's rule (<c>Tests.Director.DeathAdaptationTests</c>). The raid resolver no longer counts its own.
-    /// What downing does have, and death did not, is that the funnel runs for raiders and animals as well as
-    /// for citizens: the guard those tests pin is the whole reason
-    /// <see cref="StorytellerPawnEvents"/> exists as a class rather than as one more line.
+    /// <para/><b>RimWorld's rule, which this suite now pins in full.</b> A downing is charged only when
+    /// violence put the pawn down (<c>dinfo</c> present and <see cref="DamageDef.externalViolence"/>), and it
+    /// is charged at the end of the tick, so a pawn downed and killed in one tick pays for the death alone.
+    /// This port used to charge any downing but a life stage's, at once; a citizen who collapsed from hunger
+    /// moved the curve like one cut down by a raider, and a citizen killed outright paid twice. The tests
+    /// that used <c>ForceDowned</c> to stand for "a downing" now put the pawn down with a real blow, since a
+    /// forced downing has no blow behind it and is (correctly) not charged.
+    ///
+    /// <para/>What a downing costs is RimWorld's population curve, read where it is charged. The cases here
+    /// compare against that curve and against each other, never a literal.
     /// </summary>
     public class DownedAdaptationTests : ContentTestBase
     {
@@ -48,16 +47,24 @@ namespace SimWorld.Tests.Director
 
         private static DifficultyDef Medium => DefDatabase<DifficultyDef>.GetNamed("Medium");
 
-        /// <summary>A stretch of quiet on the clock, so a penalty has something to cut into and cannot be
-        /// hidden by the zero floor <see cref="StoryWatcher_Adaptation.Notify_ColonistDowned"/> clamps to.</summary>
+        /// <summary>What a violent downing costs at the population alive now.</summary>
+        private static float Downed => StoryWatcher_Adaptation.LossFromColonistViolentlyDownedByPopulation.Evaluate(
+            StorytellerPawnEvents.CivilizationPopulation());
+
+        /// <summary>What a death costs at the population left now (asked after it).</summary>
+        private static float Death => StoryWatcher_Adaptation.LossFromColonistLostByPostPopulation.Evaluate(
+            StorytellerPawnEvents.CivilizationPopulation());
+
+        /// <summary>A stretch of quiet on the clock, so a penalty has something to cut into: 90 days takes
+        /// several casualties before it nears the -60 floor the watcher clamps to.</summary>
         private static float BuildQuietTime()
         {
-            for (int i = 0; i < 4000; i++) Adaptation.AdaptationTick(Medium);
-            Assert.True(Adaptation.AdaptDays > StoryWatcher_Adaptation.DeathAdaptDaysPenalty
-                                               + StoryWatcher_Adaptation.DownedAdaptDaysPenalty,
-                "needed a peaceful stretch on the clock before a downing could be seen to cut it short");
+            Adaptation.Debug_OffsetAdaptDays(90f);
             return Adaptation.AdaptDays;
         }
+
+        /// <summary>The end of the tick: the watcher charges the violent downings the tick collected.</summary>
+        private static void Settle() => Adaptation.AdaptationWatcherTick(Medium);
 
         /// <summary>Registers a civilization with the storyteller holding these pawns — the same roster the
         /// threat curve reads, which is what decides whose downing counts.</summary>
@@ -71,45 +78,97 @@ namespace SimWorld.Tests.Director
         private static Faction Raiders() =>
             new Faction(DefDatabase<FactionDef>.GetNamed("RoughOutlanders"), "Rough", "F_Rough");
 
+        private static DamageInfo Violence(float amount = 35f) =>
+            new DamageInfo(DefDatabase<DamageDef>.GetNamed("Bullet"), amount);
+
+        /// <summary>Both legs shot off through the real damage funnel: down on the spot, by violence, with the
+        /// <see cref="DamageInfo"/> that did it reaching <c>Pawn_HealthTracker.CheckForStateChange</c>.</summary>
+        private static void ShootDown(Pawn pawn)
+        {
+            DamageDef bullet = DefDatabase<DamageDef>.GetNamed("Bullet");
+            foreach (string leg in new[] { "left leg", "right leg" })
+            {
+                BodyPartRecord part = pawn.RaceProps.body!.GetPartByLabel(leg)!;
+                bullet.Worker.Apply(new DamageInfo(bullet, 35f, hitPart: part), pawn);
+            }
+        }
+
         // ---- the headline ----
 
         [Fact]
-        public void A_downed_citizen_moves_the_storytellers_adaptation()
+        public void A_citizen_put_down_by_violence_moves_the_storytellers_adaptation()
         {
             float quiet = BuildQuietTime();
             Pawn citizen = NewHuman("Citizen");
             CivilizationOf(citizen);
 
-            // Through the real funnel — the health tracker's own mobile-to-down transition, not the hook by
-            // hand. Before this lane nothing in the core raised Notify_ColonistDowned at all.
-            citizen.health.ForceDowned = true;
-
+            // Through the real funnel — the health tracker's own mobile-to-down transition with the blow that
+            // caused it, not the hook by hand. Before this lane's predecessor nothing in the core raised
+            // Notify_ColonistDowned at all.
+            ShootDown(citizen);
             Assert.True(citizen.health.Downed);
+
+            // Held to the end of the tick, not charged on the spot.
+            Assert.Equal(quiet, Adaptation.AdaptDays, 4);
+            Settle();
+
             Assert.True(Adaptation.AdaptDays < quiet,
                 "a citizen went down and the storyteller's quiet-time clock did not move");
-            Assert.Equal(quiet - StoryWatcher_Adaptation.DownedAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(quiet - Downed, Adaptation.AdaptDays, 4);
         }
 
         [Fact]
         public void A_downing_costs_the_storyteller_less_than_a_death()
         {
-            // The ordering the two constants encode: losing someone outright is worse news than losing them
-            // for a while. Asserted as an ordering rather than against either literal, both of which are
-            // documented approximations of RimWorld's own.
+            // The ordering the two curves encode: losing someone outright is worse news than losing them
+            // for a while. Asserted as an ordering rather than against either number.
             float quiet = BuildQuietTime();
             Pawn citizen = NewHuman("Citizen");
             CivilizationOf(citizen);
 
-            citizen.health.ForceDowned = true;
+            ShootDown(citizen);
+            Settle();
             float costOfDowning = quiet - Adaptation.AdaptDays;
 
             float beforeDeath = Adaptation.AdaptDays;
-            Adaptation.Notify_ColonistDied();
+            citizen.health.Kill(null, null);
             float costOfDeath = beforeDeath - Adaptation.AdaptDays;
 
             Assert.True(costOfDowning > 0f);
             Assert.True(costOfDeath > costOfDowning,
                 "a downing (" + costOfDowning + " days) did not cost less than a death (" + costOfDeath + ")");
+        }
+
+        [Fact]
+        public void A_downing_that_violence_did_not_cause_is_not_charged()
+        {
+            // RimWorld: no dinfo, or damage that is not external violence, and the downing is not an
+            // adaptation event. ForceDowned stands for every collapse that has no blow behind it — blood
+            // loss, hunger, disease — all of which arrive here with a null DamageInfo.
+            float quiet = BuildQuietTime();
+            Pawn citizen = NewHuman("Citizen");
+            CivilizationOf(citizen);
+
+            citizen.health.ForceDowned = true;
+            Settle();
+
+            Assert.True(citizen.health.Downed);
+            Assert.Equal(quiet, Adaptation.AdaptDays, 4);
+        }
+
+        [Fact]
+        public void A_surgeons_knife_is_not_violence()
+        {
+            // The one damage def in the shipped content (besides the miner's pick) that is not externalViolence.
+            // A downing it causes is a patient on a table, not a casualty.
+            Pawn citizen = NewHuman("Citizen");
+            CivilizationOf(citizen);
+            float quiet = BuildQuietTime();
+
+            Assert.False(StorytellerPawnEvents.Notify_PawnDowned(citizen, new DamageInfo(SurgeryDamageDefOf.SurgicalCut, 35f)));
+            Settle();
+
+            Assert.Equal(quiet, Adaptation.AdaptDays, 4);
         }
 
         // ---- not counted twice ----
@@ -121,9 +180,10 @@ namespace SimWorld.Tests.Director
             Pawn citizen = NewHuman("Citizen");
             CivilizationOf(citizen);
 
-            citizen.health.ForceDowned = true;
+            ShootDown(citizen);
+            Settle();
             float afterDowning = Adaptation.AdaptDays;
-            Assert.Equal(quiet - StoryWatcher_Adaptation.DownedAdaptDaysPenalty, afterDowning, 4);
+            Assert.Equal(quiet - Downed, afterDowning, 4);
 
             // Pawn_HealthTracker.Kill sets the dead state directly and never passes back through MakeDowned,
             // so the downing is not charged again on the way out. The death is charged, once, whatever it was:
@@ -132,7 +192,24 @@ namespace SimWorld.Tests.Director
             citizen.health.Kill(null, null);
 
             Assert.True(citizen.Dead);
-            Assert.Equal(afterDowning - StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(afterDowning - Death, Adaptation.AdaptDays, 4);
+        }
+
+        [Fact]
+        public void A_citizen_downed_and_killed_in_the_same_tick_pays_for_the_death_alone()
+        {
+            // RimWorld holds a downing until the end of the tick, and a death in that tick takes it back
+            // (pawnsJustDownedThisTick). One explosion that fells and kills a citizen is one casualty.
+            float quiet = BuildQuietTime();
+            Pawn citizen = NewHuman("Citizen");
+            CivilizationOf(citizen);
+
+            ShootDown(citizen);
+            citizen.health.Kill(null, null);
+            Settle();
+
+            Assert.True(citizen.Dead);
+            Assert.Equal(quiet - Death, Adaptation.AdaptDays, 4);
         }
 
         [Fact]
@@ -142,16 +219,19 @@ namespace SimWorld.Tests.Director
             Pawn citizen = NewHuman("Citizen");
             CivilizationOf(citizen);
 
-            citizen.health.ForceDowned = true;
+            ShootDown(citizen);
+            Settle();
             float afterDowning = Adaptation.AdaptDays;
 
             // Every later health re-check on an already-downed pawn (a hediff tick, another hit) re-enters
-            // the same state machine; only the mobile-to-down transition may charge.
+            // the same state machine, with and without a blow; only the mobile-to-down transition may charge.
             for (int i = 0; i < 20; i++) citizen.health.CheckForStateChange(null, null);
+            for (int i = 0; i < 5; i++) citizen.health.CheckForStateChange(Violence(), null);
+            Settle();
 
             Assert.True(citizen.health.Downed);
             Assert.Equal(afterDowning, Adaptation.AdaptDays, 4);
-            Assert.Equal(quiet - StoryWatcher_Adaptation.DownedAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(quiet - Downed, Adaptation.AdaptDays, 4);
         }
 
         [Fact]
@@ -163,12 +243,22 @@ namespace SimWorld.Tests.Director
             Pawn citizen = NewHuman("Citizen");
             CivilizationOf(citizen);
 
-            citizen.health.ForceDowned = true;
-            citizen.health.ForceDowned = false;
-            Assert.False(citizen.health.Downed);
-            citizen.health.ForceDowned = true;
+            ShootDown(citizen);
+            Settle();
+            float afterFirst = Adaptation.AdaptDays;
 
-            Assert.Equal(quiet - 2f * StoryWatcher_Adaptation.DownedAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            // Healed in an instant: the wounds go, the state machine is asked, the pawn is up again.
+            citizen.health.hediffSet.Clear();
+            citizen.health.Notify_HediffSetChanged();
+            citizen.health.CheckForStateChange(null, null);
+            Assert.False(citizen.health.Downed);
+
+            ShootDown(citizen);
+            Settle();
+
+            Assert.True(citizen.health.Downed);
+            Assert.True(Adaptation.AdaptDays < afterFirst, "the second downing did not cost anything");
+            Assert.Equal(quiet - 2f * Downed, Adaptation.AdaptDays, 4);
         }
 
         // ---- whose downing counts ----
@@ -184,7 +274,8 @@ namespace SimWorld.Tests.Director
 
             Pawn raider = NewHuman("Raider");
             raider.faction = Raiders();
-            raider.health.ForceDowned = true;
+            ShootDown(raider);
+            Settle();
 
             Assert.True(raider.health.Downed);
             Assert.Equal(quiet, Adaptation.AdaptDays, 4);
@@ -193,15 +284,15 @@ namespace SimWorld.Tests.Director
         [Fact]
         public void Downing_an_animal_does_not_move_it()
         {
-            // Humanlike only, as RimWorld's own filter is — and asserted with the animal *on the roster*, so
-            // it is the species test doing the work and not membership.
+            // Humanlike only, as RimWorld's own filter is — and asserted with the animal *on the roster* and
+            // the blow violent, so it is the species test doing the work and not membership or the damage.
             float quiet = BuildQuietTime();
             var husky = new Pawn(Husky, "Dog");
             CivilizationOf(husky);
 
-            husky.health.ForceDowned = true;
+            Assert.False(StorytellerPawnEvents.Notify_PawnDowned(husky, Violence()));
+            Settle();
 
-            Assert.True(husky.health.Downed);
             Assert.Equal(quiet, Adaptation.AdaptDays, 4);
         }
 
@@ -213,11 +304,12 @@ namespace SimWorld.Tests.Director
             float quiet = BuildQuietTime();
             Pawn stranger = NewHuman("Stranger");
 
-            stranger.health.ForceDowned = true;
+            ShootDown(stranger);
+            Settle();
 
             Assert.True(stranger.health.Downed);
             Assert.Equal(quiet, Adaptation.AdaptDays, 4);
-            Assert.False(StorytellerPawnEvents.Notify_PawnDowned(stranger));
+            Assert.False(StorytellerPawnEvents.Notify_PawnDowned(stranger, Violence()));
         }
 
         // ---- persistence ----
@@ -225,12 +317,14 @@ namespace SimWorld.Tests.Director
         [Fact]
         public void What_a_downing_cost_the_storyteller_survives_a_save_and_a_load()
         {
-            // The hook keeps no state of its own; what it moves is the adaptation clock, which is saved with
-            // the storyteller. A downing the save forgets is a downing that did nothing, one reload later.
+            // The hook keeps no state of its own once the tick has settled; what it moves is the adaptation
+            // clock, which is saved with the storyteller. A downing the save forgets is a downing that did
+            // nothing, one reload later.
             float quiet = BuildQuietTime();
             Pawn citizen = NewHuman("Citizen");
             CivilizationOf(citizen);
-            citizen.health.ForceDowned = true;
+            ShootDown(citizen);
+            Settle();
 
             float afterDowning = Adaptation.AdaptDays;
             Assert.True(afterDowning < quiet);

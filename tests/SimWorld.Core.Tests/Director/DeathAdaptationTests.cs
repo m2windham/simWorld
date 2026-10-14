@@ -38,9 +38,10 @@ namespace SimWorld.Tests.Director
     /// (<see cref="WoundProvenance"/>) is not what decides it. That stamp answers a different question, on the
     /// death ledger's by-source axis.
     ///
-    /// <para/>The assertions compare against the watcher's own named penalties or against each other, never a
-    /// literal. Those constants are documented approximations of RimWorld's population curves, and this suite
-    /// is about which deaths reach adaptation, not how much each one costs.
+    /// <para/>The assertions compare against the watcher's own curves or against each other, never a literal.
+    /// What a death costs is RimWorld's population curve (<see cref="StoryWatcher_Adaptation.LossFromColonistLostByPostPopulation"/>),
+    /// which is read here after the death, at the population it was charged against. This suite is about which
+    /// deaths reach adaptation, not how much each one costs.
     /// </summary>
     [Collection("GlobalDefs")]
     public class DeathAdaptationTests : ContentTestBase
@@ -66,26 +67,34 @@ namespace SimWorld.Tests.Director
 
         private static StoryWatcher_Adaptation Adaptation => Find.Storyteller.adaptation;
 
-        private static float Death => StoryWatcher_Adaptation.DeathAdaptDaysPenalty;
+        /// <summary>What a death costs now, read off the population left after it — asked after the death.</summary>
+        private static float Death => StoryWatcher_Adaptation.LossFromColonistLostByPostPopulation.Evaluate(
+            StorytellerPawnEvents.CivilizationPopulation());
 
-        private static float Downed => StoryWatcher_Adaptation.DownedAdaptDaysPenalty;
+        /// <summary>What a violent downing costs now, read off the population at the moment it settles —
+        /// asked after the downing, while the downed citizen is still alive and counted.</summary>
+        private static float Downed => StoryWatcher_Adaptation.LossFromColonistViolentlyDownedByPopulation.Evaluate(
+            StorytellerPawnEvents.CivilizationPopulation());
 
         private static DifficultyDef Medium => DefDatabase<DifficultyDef>.GetNamed("Medium");
 
         // ---- fixtures ----
 
         /// <summary>
-        /// Quiet time on the clock, so a charge has something to cut into and cannot hide behind the zero floor
-        /// the watcher clamps to. A test ticks pawns through a bare <see cref="TickManager"/>, which never runs
-        /// the storyteller's interval, so nothing else moves adaptation between here and the assertion.
+        /// Quiet time on the clock, so a charge has something to cut into: 90 days takes three deaths (30
+        /// each in a colony this small) before it nears the -60 floor. A test ticks pawns through a bare
+        /// <see cref="TickManager"/>, which never runs the storyteller, so nothing else moves adaptation
+        /// between here and the assertion — including the downings the watcher settles at the end of a tick,
+        /// which a test settles itself with <see cref="Settle"/>.
         /// </summary>
         private static float BuildQuietTime()
         {
-            for (int i = 0; i < 4000; i++) Adaptation.AdaptationTick(Medium);
-            Assert.True(Adaptation.AdaptDays > 10f * (Death + Downed),
-                "needed a peaceful stretch on the clock before a casualty could be seen to cut it short");
+            Adaptation.Debug_OffsetAdaptDays(90f);
             return Adaptation.AdaptDays;
         }
+
+        /// <summary>The end of the tick: the watcher charges the violent downings it collected.</summary>
+        private static void Settle() => Adaptation.AdaptationWatcherTick(Medium);
 
         /// <summary>A civilization registered with the storyteller holding these pawns: the roster that decides
         /// whose death is ours (<see cref="StorytellerPawnEvents.IsCivilizationMember"/>).</summary>
@@ -193,6 +202,7 @@ namespace SimWorld.Tests.Director
             DownWithBleedingStumps(victim, raider);
             Assert.True(victim.Downed, "two legs off should down them on the spot");
             Assert.False(victim.Dead, "the blows themselves must not kill, or this is the other test");
+            Settle();
             float afterDowning = Adaptation.AdaptDays;
             Assert.Equal(quiet - Downed, afterDowning, 4);
 
@@ -345,7 +355,8 @@ namespace SimWorld.Tests.Director
                 Assert.True(worker.TryExecute(new IncidentParms { target = target, points = 800f, faction = Raiders() }));
                 int killed = worker.LastRaidOutcome!.Value.CitizensKilled;
 
-                Assert.Equal(quiet - killed * Death, Adaptation.AdaptDays, 4);
+                // Each is charged on its own, and a bad enough raid reaches the floor the watcher clamps to.
+                Assert.Equal(System.Math.Max(StoryWatcher_Adaptation.AdaptDaysMin, quiet - killed * Death), Adaptation.AdaptDays, 4);
                 if (killed > 0) runsThatKilled++;
             }
 

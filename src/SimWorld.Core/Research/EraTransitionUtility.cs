@@ -24,8 +24,8 @@ namespace SimWorld.Research
 
         /// <summary>
         /// The threat-point multiplier for the era the civilization is in right now, 1 when there is no era
-        /// ladder loaded at all. See <see cref="EraDef.threatPointsFactor"/> for why this exists and what it
-        /// stands in for.
+        /// ladder loaded at all. See <see cref="EraDef.threatPointsFactor"/> for why this exists beside the
+        /// wealth term.
         /// </summary>
         public static float CurrentEraThreatPointsFactor() => Find.ResearchManager.CurrentEra?.threatPointsFactor ?? 1f;
 

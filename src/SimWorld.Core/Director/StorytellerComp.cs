@@ -11,6 +11,14 @@ namespace SimWorld.Director
     {
         public Type compClass = null!;
 
+        /// <summary>
+        /// This comp is not consulted at all until this many days have passed (RimWorld:
+        /// <c>StorytellerCompProperties.minDaysPassed</c>, checked once for every comp in
+        /// <c>Storyteller.MakeIncidentsForInterval</c>). An <see cref="StorytellerCompProperties_OnOffCycle"/> also
+        /// reads it as the day its first on-phase begins.
+        /// </summary>
+        public float minDaysPassed;
+
         protected StorytellerCompProperties(Type compClass)
         {
             this.compClass = compClass;

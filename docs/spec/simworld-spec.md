@@ -1445,9 +1445,13 @@ already tracks durably (a trait, worn apparel, a granted role).
 ## 9. Director Layer
 
 - Threat points from wealth and per-pawn curves × difficulty × adaptation ×
-  days passed, clamped to a band.
+  era × RimWorld's starting factor, clamped to a band. The starting factor is a
+  discount for a new colony (0.7 through day 10, 1.0 from day 40), never growth:
+  raids grow because the settlement grew, not because the calendar turned.
 - Storyteller personas built from comps (on/off cycle, random main, intro,
-  single MTB, disease) choose which incident category fires each interval.
+  single MTB, disease) choose which incident category fires each interval, on
+  the cadence the RimWorld wiki prints for each persona; an on/off cycle plans
+  its hits RimWorld's way (`IncidentCycleUtility`), so `minSpacingDays` binds.
 - Incidents gate on earliest day, population, points and refire days.
 - **A civilization of several settlements, not a colony**
   (`director.multi-settlement`, built): `CivilizationTarget` derives what it

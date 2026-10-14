@@ -217,7 +217,7 @@ namespace SimWorld.Tests.Pawns
         public void An_infant_going_down_does_not_cost_the_storyteller_what_a_felled_adult_does()
         {
             DifficultyDef medium = DefDatabase<DifficultyDef>.GetNamed("Medium");
-            for (int i = 0; i < 4000; i++) Find.Storyteller.adaptation.AdaptationTick(medium);
+            Find.Storyteller.adaptation.Debug_OffsetAdaptDays(66f);
 
             Pawn baby = PawnGenerator.GenerateNewborn(PawnKindDefOf.Colonist);
             Pawn adult = HumanAged(AgeInEachHumanStage[3], "Adult");
@@ -228,9 +228,18 @@ namespace SimWorld.Tests.Pawns
             float quiet = Find.Storyteller.adaptation.AdaptDays;
             RunTicks(1, baby);
             Assert.True(baby.Downed);
+            Find.Storyteller.adaptation.AdaptationWatcherTick(medium);
             float afterTheBaby = Find.Storyteller.adaptation.AdaptDays;
 
-            adult.health.ForceDowned = true;
+            // The adult is put down the way the storyteller counts a downing: by a blow, through the real
+            // damage funnel (a downing with no blow behind it is not charged at all).
+            DamageDef bullet = DefDatabase<DamageDef>.GetNamed("Bullet");
+            foreach (string leg in new[] { "left leg", "right leg" })
+            {
+                bullet.Worker.Apply(new DamageInfo(bullet, 35f, hitPart: adult.RaceProps.body!.GetPartByLabel(leg)), adult);
+            }
+            Assert.True(adult.Downed);
+            Find.Storyteller.adaptation.AdaptationWatcherTick(medium);
             float afterTheAdult = Find.Storyteller.adaptation.AdaptDays;
 
             Assert.Equal(quiet, afterTheBaby, 4);

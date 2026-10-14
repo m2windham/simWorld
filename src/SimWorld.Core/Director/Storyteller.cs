@@ -130,26 +130,36 @@ namespace SimWorld.Director
         /// <summary>Call once per game tick (RimWorld runs this from the map's post-tickers). Only acts every <see cref="IncidentCycleLengthTicks"/> ticks.</summary>
         public void StorytellerTick()
         {
+            // The adaptation watcher is ticked every tick, not every interval (RimWorld: StoryWatcher_Adaptation
+            // runs from the story watcher's own per-tick pass): it settles the downings the tick collected, and
+            // keeps its own 30000-tick clock for growth.
+            adaptation.AdaptationWatcherTick(difficulty);
+
             if (Find.TickManager.TicksGame % IncidentCycleLengthTicks != 0) return;
             MakeIncidentsForInterval();
             incidentQueue.IncidentQueueTick();
         }
 
-        /// <summary>Runs every comp against every registered target for the current interval, and ticks adaptation.</summary>
+        /// <summary>Runs every comp against every registered target for the current interval.</summary>
         public void MakeIncidentsForInterval()
         {
+            // RimWorld asks this of every comp, once per interval, before the comp is consulted at all
+            // (Storyteller.MakeIncidentsForInterval: DaysPassedFloat > comp.props.minDaysPassed). ">=" here
+            // where RimWorld writes ">": at the exact tick a comp's first day arrives, a cycle's plan may
+            // have a hit waiting on interval zero, and a strict test would drop it silently.
+            float daysPassedFloat = Find.TickManager.TicksGame / (float)GenDate.TicksPerDay;
             for (int t = 0; t < allIncidentTargets.Count; t++)
             {
                 IIncidentTarget target = allIncidentTargets[t];
                 for (int c = 0; c < comps.Count; c++)
                 {
+                    if (daysPassedFloat < comps[c].props.minDaysPassed) continue;
                     foreach (FiringIncident fi in comps[c].MakeIntervalIncidents(target))
                     {
                         TryFire(fi);
                     }
                 }
             }
-            adaptation.AdaptationTick(difficulty);
         }
 
         /// <summary>Executes a firing incident, recording it in the chronicle on success and always raising <see cref="IncidentFired"/>.</summary>

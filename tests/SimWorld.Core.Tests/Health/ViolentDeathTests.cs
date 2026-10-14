@@ -59,14 +59,18 @@ namespace SimWorld.Tests.Health
             return f;
         }
 
-        /// <summary>Quiet time on the storyteller's clock, so a penalty has something to cut into and cannot
-        /// hide behind the zero floor <see cref="StoryWatcher_Adaptation.Notify_ColonistDied"/> clamps to.</summary>
+        /// <summary>Quiet time on the storyteller's clock, so a penalty has something to cut into: 90 days
+        /// takes three deaths (30 each in a colony this small) before it nears the -60 floor.</summary>
         private static float BuildQuietTime()
         {
-            for (int i = 0; i < 4000; i++) Adaptation.AdaptationTick(Medium);
-            Assert.True(Adaptation.AdaptDays > StoryWatcher_Adaptation.DeathAdaptDaysPenalty);
+            Adaptation.Debug_OffsetAdaptDays(90f);
             return Adaptation.AdaptDays;
         }
+
+        /// <summary>What one more death costs now: RimWorld reads it off the population left after it, so this
+        /// is asked after the death, when that population is the one that was charged.</summary>
+        private static float Death => StoryWatcher_Adaptation.LossFromColonistLostByPostPopulation.Evaluate(
+            StorytellerPawnEvents.CivilizationPopulation());
 
         /// <summary>Registers a civilization holding these pawns — the roster the threat curve reads, which
         /// is what decides whose death counts (see <see cref="StorytellerPawnEvents"/>).</summary>
@@ -126,7 +130,7 @@ namespace SimWorld.Tests.Health
 
             citizen.health.Kill(Violence(), null);
 
-            Assert.Equal(quiet - StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(quiet - Death, Adaptation.AdaptDays, 4);
         }
 
         [Fact]
@@ -145,7 +149,7 @@ namespace SimWorld.Tests.Health
 
             Assert.False(age.health.DiedViolently);
             Assert.False(surgery.health.DiedViolently);
-            Assert.Equal(quiet - 2 * StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(quiet - 2 * Death, Adaptation.AdaptDays, 4);
         }
 
         [Fact]
@@ -176,7 +180,7 @@ namespace SimWorld.Tests.Health
             citizen.health.Kill(null, null);
             citizen.health.Kill(Violence(), null);
 
-            Assert.Equal(quiet - StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(quiet - Death, Adaptation.AdaptDays, 4);
         }
 
         // ---- the people who watched ----

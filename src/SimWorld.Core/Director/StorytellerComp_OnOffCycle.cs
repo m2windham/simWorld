@@ -10,19 +10,19 @@ namespace SimWorld.Director
         public float onDays = 6f;
         public float offDays = 4.5f;
 
-        /// <summary>Days passed before this cycle starts considering incidents at all.</summary>
-        public float minDaysPassed;
-
-        /// <summary>Floor on the average days between two incidents from this comp within one on-phase.</summary>
+        /// <summary>Floor on the days between two incidents from this comp, within an on-phase and across the
+        /// boundary into the next. <see cref="IncidentCycleUtility"/> enforces it: no two incidents are closer.</summary>
         public float minSpacingDays;
 
+        /// <summary>How many incidents one on-phase holds: <c>RoundRandom</c> of a draw from this range, so
+        /// <c>1~2</c> is a fair coin between one and two.</summary>
         public FloatRange numIncidentsRange = new FloatRange(1f, 1f);
 
-        /// <summary>Scales down the incident rate early on; null means no scaling (RimWorld's early-game ramp-up).</summary>
+        /// <summary>Thins each cycle's plan down to this fraction of its incidents, by day; null means no thinning.</summary>
         public SimpleCurve? acceptFractionByDaysPassedCurve;
 
         /// <summary>
-        /// Reserved: RimWorld additionally scales accept chance down for unusually large threat-point rolls.
+        /// Reserved: RimWorld additionally scales the accepted fraction by the threat points on offer.
         /// Loaded for content fidelity but not applied here (documented deviation).
         /// </summary>
         public SimpleCurve? acceptPercentFactorPerThreatPointsCurve;
@@ -41,6 +41,11 @@ namespace SimWorld.Director
         {
             foreach (string error in base.ConfigErrors(parent)) yield return error;
             if (incident == null && category == null) yield return "OnOffCycle needs either incident or category.";
+            if (onDays <= 0f) yield return "onDays must be above zero.";
+            if (numIncidentsRange.max <= 0f) yield return "numIncidentsRange is not configured.";
+            // RimWorld's own check: a plan whose incidents cannot be kept this far apart inside the on-phase
+            // makes IncidentCycleUtility give up and hand the cycle nothing.
+            if (minSpacingDays * numIncidentsRange.max > onDays * 0.9f) yield return "minSpacingDays is too high for the most incidents one on-phase can hold.";
         }
     }
 
@@ -52,11 +57,30 @@ namespace SimWorld.Director
     {
         protected StorytellerCompProperties_OnOffCycle Props => (StorytellerCompProperties_OnOffCycle)props;
 
+        /// <summary>This comp's place in the running storyteller's comp list, which is what keeps two cycle
+        /// comps on one storyteller from planning the same days. A comp posed by hand in a test, outside any
+        /// storyteller's list, is -1.</summary>
+        private int IndexInStoryteller()
+        {
+            IReadOnlyList<StorytellerComp> all = Find.Storyteller.Comps;
+            for (int i = 0; i < all.Count; i++)
+            {
+                if (ReferenceEquals(all[i], this)) return i;
+            }
+            return -1;
+        }
+
         public override IEnumerable<FiringIncident> MakeIntervalIncidents(IIncidentTarget target)
         {
+            float acceptFraction = 1f;
+            if (Props.acceptFractionByDaysPassedCurve != null)
+            {
+                acceptFraction *= Props.acceptFractionByDaysPassedCurve.Evaluate(Find.TickManager.TicksGame / (float)GenDate.TicksPerDay);
+            }
+
             int count = IncidentCycleUtility.IncidentCountThisInterval(
-                target, Rand.Current, Props.minDaysPassed, Props.onDays, Props.offDays, Props.minSpacingDays,
-                Props.numIncidentsRange.min, Props.numIncidentsRange.max, Props.acceptFractionByDaysPassedCurve);
+                target, IndexInStoryteller(), Props.minDaysPassed, Props.onDays, Props.offDays,
+                Props.minSpacingDays, Props.numIncidentsRange.min, Props.numIncidentsRange.max, acceptFraction);
 
             for (int i = 0; i < count; i++)
             {
