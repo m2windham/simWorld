@@ -37,12 +37,13 @@ namespace SimWorld.Pawns
 
         /// <summary>
         /// Scales what a pawn in this stage is worth (RimWorld: read by the market-value stat when the thing
-        /// being priced is a pawn).
-        /// <para/><b>Nothing reads this yet, and the reason is upstream of this def.</b> No pawn in this port
-        /// has a market value at all: <c>TradeUtility</c> prices a <c>ThingDef</c> rather than a thing, no
-        /// race ThingDef carries a <c>MarketValue</c> statBase, <c>Tradeable</c> holds a def and a count with
-        /// nowhere to put a pawn, and the civilization's wealth term deliberately excludes people. A factor
-        /// has nothing to multiply until a pawn can be priced; see the wiring audit's baseline entry.
+        /// being priced is a pawn). Read by <see cref="Economy.PriceUtility.PawnQualityPriceFactor"/>, which
+        /// is how a baby counts for less than an adult in the storyteller's wealth term.
+        /// <para/>The values below are this port's own and were authored before anything read them; the
+        /// RimWorld wiki's current table for humans (rimworldwiki.com/wiki/Child) reads 0.5 for ages 0-2, 0.9 for
+        /// 3-9, 0.95 for 9-13 and 1 from 13, so Baby agrees and Child and Teenager do not. They are left as
+        /// authored: reading them is not a reason to retune them, and which numbers 1.0 gave these stages (whose
+        /// ages differ from the wiki's) was not checked.
         /// </summary>
         public float marketValueFactor = 1f;
 
