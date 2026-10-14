@@ -231,6 +231,16 @@ namespace SimWorld.Tests.Economy
         }
 
         [Fact]
+        public void Something_nobody_built_that_sets_no_value_is_worth_nothing()
+        {
+            // A body is not worth the work of a building. (It would be, if the default work-to-build leaked
+            // onto every def that has no market value of its own.)
+            ThingDef corpse = DefDatabase<ThingDef>.AllDefsListForReading.First(d => d.defName.StartsWith("Corpse_"));
+            Assert.False(corpse.StatBaseDefined(StatDefOf.MarketValue));
+            Assert.Equal(0f, corpse.GetStatValue(StatDefOf.MarketValue));
+        }
+
+        [Fact]
         public void A_def_that_sets_a_value_reads_it_including_an_explicit_zero()
         {
             ThingDef logs = Def("WoodLog");

@@ -66,7 +66,11 @@ namespace SimWorld.Stats
         public static float CalculatedBaseMarketValue(ThingDef def, ThingDef? stuffDef)
         {
             float value = 0f;
-            float work = def.GetStatValueAbstract(StatDefOf.WorkToBuild);
+
+            // WorkToBuild has a default of its own here (60), meaning "the work an ordinary building takes".
+            // Only a building is built: a corpse, a filth or a plant that sets no market value must come out
+            // at nothing, not at the price of sixty points of work it never took.
+            float work = def.category == ThingCategory.Building ? def.GetStatValueAbstract(StatDefOf.WorkToBuild) : 0f;
 
             if (def.costList != null)
             {

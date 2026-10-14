@@ -193,10 +193,7 @@ namespace SimWorld.Director
                 float total = 0f;
                 for (int i = 0; i < settlements.Count; i++)
                 {
-                    foreach (KeyValuePair<ThingDef, int> entry in settlements[i].Stores)
-                    {
-                        total += TradeUtility.BaseMarketValue(entry.Key) * entry.Value;
-                    }
+                    total += SettlementWealth.Of(settlements[i]).ForStoryteller;
                 }
                 return total;
             }

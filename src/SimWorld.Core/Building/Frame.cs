@@ -110,6 +110,13 @@ namespace SimWorld.Building
             Destroy(DestroyMode.WillReplace);
 
             Things.Thing building = ThingMaker.MakeThing(built);
+
+            // Whose building it is: its builder's. RimWorld hands the Frame's faction on at this point
+            // (Frame.CompleteConstruction -> SetFactionDirect); a Frame here has none of its own, and only a
+            // citizen with a job ever finishes one, so the citizen's faction is the settlement's. Before the
+            // spawn, so anything that reads a building the moment it appears already finds its owner.
+            if (building is Building b) b.faction = worker.faction;
+
             GenSpawn.Spawn(building, pos, map, rot);
             worker.skills?.GetSkill(SkillDefOf.Construction)?.Learn(CompletionXp);
             // This port's stand-in for RimWorld's Building.SpawnSetup -> AutoHomeAreaMaker.Notify_BuildingSpawned,

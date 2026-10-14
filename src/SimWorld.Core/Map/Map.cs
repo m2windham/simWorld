@@ -103,6 +103,11 @@ namespace SimWorld.Map
         /// <see cref="AI.Group.Lord"/>). Ticked from <see cref="MapTick"/>, saved by <see cref="ExposeData"/>.</summary>
         public AI.Group.LordManager lordManager = null!;
 
+        /// <summary>What the player owns here, counted the storyteller's way and recounted on RimWorld's
+        /// cadence (<see cref="Director.WealthWatcher"/>). Nothing about it is saved: a loaded map is counted
+        /// afresh on first read.</summary>
+        [Unsaved] public Director.WealthWatcher wealthWatcher = null!;
+
         /// <summary>Outdoor temperature every unroofed/unenclosed cell tracks directly, and every enclosed
         /// room equalises toward (system 16: Building). Still a plain settable value — but on a map that
         /// knows its world tile, <see cref="weatherManager"/> now sets it every tick from that tile's annual
@@ -252,6 +257,7 @@ namespace SimWorld.Map
             gameConditionManager = new Conditions.GameConditionManager(this);
             weatherManager = new Weather.WeatherManager(this);
             lordManager = new AI.Group.LordManager(this);
+            wealthWatcher = new Director.WealthWatcher(this);
         }
 
         // ---- Scribe ----
