@@ -1,0 +1,84 @@
+[r1-entry-drops-reachability] mutated src/SimWorld.Core/AI/RCellFinder.cs  416146beba33 -> c1d1df60d23c
+[r1-entry-drops-reachability] restored byte-identical 416146beba33
+[r1-entry-drops-reachability] MUTATED RUN: Failed!  - Failed:     1, Passed:    20, Skipped:     0, Total:    21, Duration: 531 ms - SimWorld.Core.Tests.dll (net8.0)
+[r1-entry-drops-reachability]   failed: Director.RaidArrivalReachabilityTests.A_raid_lands_on_the_one_side_of_the_map_that_reaches_the_colony
+[r1-entry-drops-reachability] rebuilt assembly newer than restored source: yes (dll 9.3s after)
+[r1-entry-drops-reachability] RESTORED RUN: Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21, Duration: 715 ms - SimWorld.Core.Tests.dll (net8.0)
+== r1-entry-drops-reachability exit 0
+[r2-closewalk-ignores-area] mutated src/SimWorld.Core/Map/CellFinder.cs  9a2ee81f01a6 -> 8e274f04975d
+[r2-closewalk-ignores-area] restored byte-identical 9a2ee81f01a6
+[r2-closewalk-ignores-area] MUTATED RUN: Failed!  - Failed:     2, Passed:    19, Skipped:     0, Total:    21, Duration: 492 ms - SimWorld.Core.Tests.dll (net8.0)
+[r2-closewalk-ignores-area]   failed: Director.RaidArrivalReachabilityTests.A_closewalk_cell_is_in_the_roots_own_area_not_merely_near_it
+[r2-closewalk-ignores-area]   failed: Director.RaidArrivalReachabilityTests.A_raid_lands_on_the_one_side_of_the_map_that_reaches_the_colony
+[r2-closewalk-ignores-area] rebuilt assembly newer than restored source: yes (dll 11.7s after)
+[r2-closewalk-ignores-area] RESTORED RUN: Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21, Duration: 608 ms - SimWorld.Core.Tests.dll (net8.0)
+== r2-closewalk-ignores-area exit 0
+[r3-colonist-leg-always-true] mutated src/SimWorld.Core/AI/Reachability.Colony.cs  e27d2dfd6a36 -> 977c566230f3
+[r3-colonist-leg-always-true] restored byte-identical e27d2dfd6a36
+[r3-colonist-leg-always-true] MUTATED RUN: Failed!  - Failed:     3, Passed:    18, Skipped:     0, Total:    21, Duration: 566 ms - SimWorld.Core.Tests.dll (net8.0)
+[r3-colonist-leg-always-true]   failed: Director.RaidArrivalReachabilityTests.A_raid_lands_on_the_one_side_of_the_map_that_reaches_the_colony
+[r3-colonist-leg-always-true]   failed: Director.RaidArrivalReachabilityTests.CanReachColony_is_true_where_a_colonist_can_walk_and_false_behind_the_wall_and_in_rock
+[r3-colonist-leg-always-true]   failed: Director.RaidArrivalReachabilityTests.With_no_colonist_able_to_walk_the_biggest_open_area_on_the_edge_still_counts
+[r3-colonist-leg-always-true] rebuilt assembly newer than restored source: yes (dll 8.9s after)
+[r3-colonist-leg-always-true] RESTORED RUN: Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21, Duration: 1 s - SimWorld.Core.Tests.dll (net8.0)
+== r3-colonist-leg-always-true exit 0
+[r4-biggest-area-by-region-count] mutated src/SimWorld.Core/AI/Reachability.Colony.cs  e27d2dfd6a36 -> 2a25f0e79bbc
+[r4-biggest-area-by-region-count] restored byte-identical e27d2dfd6a36
+[r4-biggest-area-by-region-count] MUTATED RUN: Failed!  - Failed:     4, Passed:    17, Skipped:     0, Total:    21, Duration: 1 s - SimWorld.Core.Tests.dll (net8.0)
+[r4-biggest-area-by-region-count]   failed: Director.RaidArrivalReachabilityTests.A_colonist_in_a_pocket_makes_the_pocket_part_of_the_colony
+[r4-biggest-area-by-region-count]   failed: Director.RaidArrivalReachabilityTests.A_raid_lands_on_the_one_side_of_the_map_that_reaches_the_colony
+[r4-biggest-area-by-region-count]   failed: Director.RaidArrivalReachabilityTests.CanReachColony_is_true_where_a_colonist_can_walk_and_false_behind_the_wall_and_in_rock
+[r4-biggest-area-by-region-count]   failed: Director.RaidArrivalReachabilityTests.With_no_colonist_able_to_walk_the_biggest_open_area_on_the_edge_still_counts
+[r4-biggest-area-by-region-count] rebuilt assembly newer than restored source: yes (dll 9.9s after)
+[r4-biggest-area-by-region-count] RESTORED RUN: Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21, Duration: 1 s - SimWorld.Core.Tests.dll (net8.0)
+== r4-biggest-area-by-region-count exit 0
+[r5-biggest-area-leg-always-true] mutated src/SimWorld.Core/AI/Reachability.Colony.cs  e27d2dfd6a36 -> 91fa4a8ded53
+[r5-biggest-area-leg-always-true] restored byte-identical e27d2dfd6a36
+[r5-biggest-area-leg-always-true] MUTATED RUN: Failed!  - Failed:     3, Passed:    18, Skipped:     0, Total:    21, Duration: 510 ms - SimWorld.Core.Tests.dll (net8.0)
+[r5-biggest-area-leg-always-true]   failed: Director.RaidArrivalReachabilityTests.A_raid_lands_on_the_one_side_of_the_map_that_reaches_the_colony
+[r5-biggest-area-leg-always-true]   failed: Director.RaidArrivalReachabilityTests.CanReachColony_is_true_where_a_colonist_can_walk_and_false_behind_the_wall_and_in_rock
+[r5-biggest-area-leg-always-true]   failed: Director.RaidArrivalReachabilityTests.With_no_colonist_able_to_walk_the_biggest_open_area_on_the_edge_still_counts
+[r5-biggest-area-leg-always-true] rebuilt assembly newer than restored source: yes (dll 12.4s after)
+[r5-biggest-area-leg-always-true] RESTORED RUN: Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21, Duration: 1 s - SimWorld.Core.Tests.dll (net8.0)
+== r5-biggest-area-leg-always-true exit 0
+[i1-humanlike-tree-loses-idle-wait] mutated src/SimWorld.Core/Data/Core/Defs/ThinkTreeDefs/ThinkTrees_Humanlike.xml  0992f790bf96 -> 31be33623e95
+[i1-humanlike-tree-loses-idle-wait] restored byte-identical 0992f790bf96
+[i1-humanlike-tree-loses-idle-wait] MUTATED RUN: Failed!  - Failed:     6, Passed:    15, Skipped:     0, Total:    21, Duration: 2 s - SimWorld.Core.Tests.dll (net8.0)
+[i1-humanlike-tree-loses-idle-wait]   failed: AI.IdleErrorTests.A_pawn_in_the_middle_of_a_wait_round_trips_through_Scribe
+[i1-humanlike-tree-loses-idle-wait]   failed: AI.IdleErrorTests.A_pawn_placed_inside_rock_is_not_asked_every_tick_either
+[i1-humanlike-tree-loses-idle-wait]   failed: AI.IdleErrorTests.A_pawn_the_tree_cannot_use_gets_a_wait_not_nothing
+[i1-humanlike-tree-loses-idle-wait]   failed: AI.IdleErrorTests.A_pawn_the_tree_cannot_use_is_not_asked_again_until_its_wait_is_up
+[i1-humanlike-tree-loses-idle-wait]   failed: AI.IdleErrorTests.Both_main_trees_end_in_the_idle_wait
+[i1-humanlike-tree-loses-idle-wait]   failed: AI.StrandedRaidTests.Raiders_that_cannot_move_at_all_cost_a_wait_not_a_think_every_tick
+[i1-humanlike-tree-loses-idle-wait] content copy beside the tests is byte-identical to the restored source: yes
+[i1-humanlike-tree-loses-idle-wait] RESTORED RUN: Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21, Duration: 2 s - SimWorld.Core.Tests.dll (net8.0)
+== i1-humanlike-tree-loses-idle-wait exit 0
+[i1b-animal-tree-loses-idle-wait] mutated src/SimWorld.Core/Data/Core/Defs/ThinkTreeDefs/ThinkTrees_Animal.xml  6eb3c61c1905 -> b46a44640ee6
+[i1b-animal-tree-loses-idle-wait] restored byte-identical 6eb3c61c1905
+[i1b-animal-tree-loses-idle-wait] MUTATED RUN: Failed!  - Failed:     2, Passed:    19, Skipped:     0, Total:    21, Duration: 1 s - SimWorld.Core.Tests.dll (net8.0)
+[i1b-animal-tree-loses-idle-wait]   failed: AI.IdleErrorTests.An_animal_the_tree_cannot_use_waits_the_same_way
+[i1b-animal-tree-loses-idle-wait]   failed: AI.IdleErrorTests.Both_main_trees_end_in_the_idle_wait
+[i1b-animal-tree-loses-idle-wait] content copy beside the tests is byte-identical to the restored source: yes
+[i1b-animal-tree-loses-idle-wait] RESTORED RUN: Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21, Duration: 1 s - SimWorld.Core.Tests.dll (net8.0)
+== i1b-animal-tree-loses-idle-wait exit 0
+[i2-wait-is-five-ticks] mutated src/SimWorld.Core/AI/JobGiver_IdleError.cs  eb289d4e921c -> d7f9e1ff2b9c
+[i2-wait-is-five-ticks] restored byte-identical eb289d4e921c
+[i2-wait-is-five-ticks] MUTATED RUN: Failed!  - Failed:     4, Passed:    17, Skipped:     0, Total:    21, Duration: 796 ms - SimWorld.Core.Tests.dll (net8.0)
+[i2-wait-is-five-ticks]   failed: AI.IdleErrorTests.A_pawn_placed_inside_rock_is_not_asked_every_tick_either
+[i2-wait-is-five-ticks]   failed: AI.IdleErrorTests.A_pawn_the_tree_cannot_use_is_not_asked_again_until_its_wait_is_up
+[i2-wait-is-five-ticks]   failed: AI.IdleErrorTests.An_animal_the_tree_cannot_use_waits_the_same_way
+[i2-wait-is-five-ticks]   failed: AI.StrandedRaidTests.Raiders_that_cannot_move_at_all_cost_a_wait_not_a_think_every_tick
+[i2-wait-is-five-ticks] rebuilt assembly newer than restored source: yes (dll 9.8s after)
+[i2-wait-is-five-ticks] RESTORED RUN: Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21, Duration: 1 s - SimWorld.Core.Tests.dll (net8.0)
+== i2-wait-is-five-ticks exit 0
+[i3-wait-never-expires] mutated src/SimWorld.Core/AI/JobGiver_IdleError.cs  eb289d4e921c -> 961e6e25741a
+[i3-wait-never-expires] restored byte-identical eb289d4e921c
+[i3-wait-never-expires] MUTATED RUN: Failed!  - Failed:     4, Passed:    17, Skipped:     0, Total:    21, Duration: 952 ms - SimWorld.Core.Tests.dll (net8.0)
+[i3-wait-never-expires]   failed: AI.IdleErrorTests.A_pawn_in_the_middle_of_a_wait_round_trips_through_Scribe
+[i3-wait-never-expires]   failed: AI.IdleErrorTests.A_pawn_placed_inside_rock_is_not_asked_every_tick_either
+[i3-wait-never-expires]   failed: AI.IdleErrorTests.A_pawn_the_tree_cannot_use_gets_a_wait_not_nothing
+[i3-wait-never-expires]   failed: AI.IdleErrorTests.A_pawn_the_tree_cannot_use_is_not_asked_again_until_its_wait_is_up
+[i3-wait-never-expires] rebuilt assembly newer than restored source: yes (dll 9.1s after)
+[i3-wait-never-expires] RESTORED RUN: Passed!  - Failed:     0, Passed:    21, Skipped:     0, Total:    21, Duration: 1 s - SimWorld.Core.Tests.dll (net8.0)
+== i3-wait-never-expires exit 0
+finished

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>StrandedProbe</AssemblyName>
+    <RootNamespace>StrandedProbe</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="SimWorld.Core">
+      <HintPath>REPO/artifacts/bin/SimWorld.Core/release/SimWorld.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,31 @@
+# probe seed=12345 days=60 solo=False map=200x200
+day 22.92 RAID#1 Crimson reach x5 arrive@(181, 0, 198) (177, 0, 195) (184, 0, 197) (177, 0, 198) connectedToColony=1
+day 22.92 RAID#1 toil -> LordToil_AssaultColony (5 pawns, ticksInToil 0)
+day 22.99 RAID#1 toil -> LordToil_PanicFlee (2 pawns, ticksInToil 10)
+day 23.00 RAID#1 lord gone (last toil LordToil_PanicFlee)
+day 44.47 RAID#2 Crimson reach x5 arrive@(34, 0, 0) (36, 0, 3) (33, 0, 4) (34, 0, 5) connectedToColony=1
+day 44.47 RAID#2 toil -> LordToil_AssaultColony (5 pawns, ticksInToil 0)
+day 44.54 RAID#2 toil -> LordToil_PanicFlee (2 pawns, ticksInToil 19)
+day 44.55 RAID#2 lord gone (last toil LordToil_PanicFlee)
+day 46.72 RAID#3 Grey reach x4 arrive@(140, 0, 193) (142, 0, 199) (139, 0, 195) (132, 0, 194) connectedToColony=1
+day 46.72 RAID#3 toil -> LordToil_AssaultColony (4 pawns, ticksInToil 0)
+day 46.76 RAID#3 toil -> LordToil_PanicFlee (2 pawns, ticksInToil 8)
+day 46.77 RAID#3 lord gone (last toil LordToil_PanicFlee)
+day 55.35 RAID#4 Crimson reach x4 arrive@(197, 0, 9) (194, 0, 12) (195, 0, 6) (196, 0, 16) connectedToColony=1
+day 55.35 RAID#4 toil -> LordToil_AssaultColony (4 pawns, ticksInToil 0)
+day 55.37 RAID#4 toil -> LordToil_PanicFlee (2 pawns, ticksInToil 15)
+day 55.37 RAID#4 lord gone (last toil LordToil_PanicFlee)
+
+## seed 12345: 3600000 ticks in 128.7s = 27979 ticks/s
+day secs | raider-samples no-job/total (sampled every 25 ticks)
+  day 23:    1.7s  idle 5/725
+  day 45:    2.2s  idle 5/879
+  day 47:    2.1s  idle 4/435
+  day 56:    1.7s  idle 4/171
+
+raid | day | faction | n | arrival cells | connected | everClose | everAttacked | firstClose(day) | end | noJob% 
+1 | 22.92 | Crimson reach | 5 | (181, 0, 198) (177, 0, 195) (184, 0, 197) | 1 | True | True | 22.92 | 23.00 lord dissolved | 1%
+2 | 44.47 | Crimson reach | 5 | (34, 0, 0) (36, 0, 3) (33, 0, 4) | 1 | True | True | 44.47 | 44.55 lord dissolved | 1%
+3 | 46.72 | Grey reach | 4 | (140, 0, 193) (142, 0, 199) (139, 0, 195) | 1 | True | True | 46.72 | 46.77 lord dissolved | 1%
+4 | 55.35 | Crimson reach | 4 | (197, 0, 9) (194, 0, 12) (195, 0, 6) | 1 | True | True | 55.35 | 55.37 lord dissolved | 2%
+end: player humanlikes on map 7; total raider samples idle 18/2210

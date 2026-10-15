@@ -1,0 +1,41 @@
+# probe seed=777 days=16 solo=False map=200x200
+day 13.80 RAID#1 Steel vale x4 arrive@(197, 0, 55) (199, 0, 49) connectedToColony=1
+day 13.80 RAID#1 toil -> LordToil_AssaultColony (4 pawns, ticksInToil 0)
+day 14.30 RAID#1 toil -> LordToil_ExitMap (3 pawns, ticksInToil 19)
+DUMP RAID#1 lord=Lord_0 (LordToil_ExitMap, 3 pawns) toil=LordToil_ExitMap ticksInToil=42019 everGained=4 lostViolently=1 alive=True
+  pawn Thing_Human39872 at (199, 0, 49) spawned=True dead=False downed=False job=NONE duty=ExitMapBest
+    walkable=False standable=False terrain=Soil region=null roofed=True
+    things here: Limestone(Impassable), Human(Standable), Human(Standable), Human(Standable)
+    neighbourhood (W=walkable . = not) rows z+3..z-3, x-3..x+3 :
+      ....###
+      ....###
+      ....###
+      ...p###
+      ....###
+      ....###
+      ....###
+    connected to a colonist: False  (region cells 0)
+  pawn Thing_Human39878 at (199, 0, 49) spawned=True dead=False downed=False job=NONE duty=ExitMapBest
+    walkable=False standable=False terrain=Soil region=null roofed=True
+    things here: Limestone(Impassable), Human(Standable), Human(Standable), Human(Standable)
+    neighbourhood (W=walkable . = not) rows z+3..z-3, x-3..x+3 :
+      ....###
+      ....###
+      ....###
+      ...p###
+      ....###
+      ....###
+      ....###
+    connected to a colonist: False  (region cells 0)
+  pawn Thing_Human39884 at (199, 0, 49) spawned=True dead=False downed=False job=NONE duty=ExitMapBest
+    walkable=False standable=False terrain=Soil region=null roofed=True
+    things here: Limestone(Impassable), Human(Standable), Human(Standable), Human(Standable)
+    neighbourhood (W=walkable . = not) rows z+3..z-3, x-3..x+3 :
+      ....###
+      ....###
+      ....###
+      ...p###
+      ....###
+      ....###
+      ....###
+    connected to a colonist: False  (region cells 0)
