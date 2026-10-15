@@ -26,7 +26,8 @@ namespace SimWorld.Tests.AI
     /// empty. This port's could: <see cref="JobGiver_WanderAnywhere"/> at the bottom gives up after eight random
     /// offsets all land somewhere a pawn can't stand or can't reach. The storyteller bench had three raiders in
     /// that state for four in-game days — each asked every tier of the tree, 60 times a second, to produce
-    /// nothing — and the run took five times as long as the same days without them.
+    /// nothing — and the run cost five times the CPU of the same sixty days without them
+    /// (<c>docs/perf/stranded-raid.md</c>).
     ///
     /// <para/>What is counted here is the number of times the tree's root is asked, over a thousand ticks, for a
     /// pawn nothing can find a job for. The bound is <see cref="JobGiver_IdleError.WaitTime"/> and the thousand,
