@@ -35,6 +35,10 @@ namespace SimWorld.AI
         {
             if (!(pawn.mindState.mentalStateHandler.CurState is MentalState_SocialFighting fight)) return null;
 
+            // RimWorld's JobGiver_SocialFighting: a humanlike who cannot do violence does not throw the punch
+            // even when the other side tipped them into the fight.
+            if (pawn.RaceProps.Humanlike && pawn.WorkTagIsDisabled(Work.WorkTags.Violent)) return null;
+
             Pawn? other = fight.otherPawn;
             if (other == null || other.Dead || other.Downed) return null;
             if (!pawn.Spawned || !other.Spawned || !ReferenceEquals(pawn.Map, other.Map)) return null;

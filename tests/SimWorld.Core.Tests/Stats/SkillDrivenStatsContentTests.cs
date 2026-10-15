@@ -58,7 +58,8 @@ namespace SimWorld.Tests.Stats
         public void MedicalTendQuality_rises_with_Medicine_and_starts_at_its_documented_level_zero_value()
         {
             Pawn p = NewHuman();
-            AssertLevelZeroIsBaseAndTrendIsUpward(p, StatDefOf.MedicalTendQuality, SkillDefOf.Medicine, 0.30f);
+            // 0.20: RimWorld's "20% plus 10% per skill level" (the stat's own XML cites the page); it was a hand-written 0.30.
+            AssertLevelZeroIsBaseAndTrendIsUpward(p, StatDefOf.MedicalTendQuality, SkillDefOf.Medicine, 0.20f);
         }
 
         [Fact]
@@ -111,7 +112,7 @@ namespace SimWorld.Tests.Stats
             // so the skill-need pipeline should land on the table's own level-0 entry (base(1) * 0.30), the
             // same number a freshly generated, never-trained pawn gets — not the skilled value from a moment
             // ago and not some other placeholder.
-            Assert.Equal(0.30f, p.GetStatValue(StatDefOf.MedicalTendQuality), 3);
+            Assert.Equal(0.20f, p.GetStatValue(StatDefOf.MedicalTendQuality), 3);
             Assert.True(p.GetStatValue(StatDefOf.MedicalTendQuality) < skilled);
         }
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using SimWorld.Combat;
 using SimWorld.Pawns;
+using SimWorld.Sim;
 using SimWorld.Social;
 using SimWorld.Things;
 
@@ -79,6 +80,13 @@ namespace SimWorld.AI
         /// The melee half of <see cref="TryGetAttackVerb"/>, on its own (RimWorld:
         /// <c>Pawn_MeleeVerbs.TryGetMeleeVerb</c>) — what <see cref="JobDriver_AttackMelee"/> asks for, since
         /// a pawn ordered into melee swings even while carrying a bow.
+        /// <para/>
+        /// In order: the wielded weapon's first usable tool; then, when the race declares <c>tools</c>, <b>one of
+        /// those, chosen at random by RimWorld's weight</b> (<see cref="NativeToolWeight"/>: a muffalo that
+        /// swings its head, a leg or its teeth, not always its teeth); then, last, the synthesised fallback
+        /// (<see cref="NaturalWeaponFor"/>). Every call that reaches the second step draws from the shared
+        /// random stream, so callers that only want to know <i>whether</i> a pawn can melee must ask
+        /// <see cref="CanMeleeAttack"/> instead.
         /// </summary>
         public static Verb_MeleeAttack? TryGetMeleeVerb(Pawn pawn, bool allowNaturalWeapon = true)
         {
@@ -95,8 +103,71 @@ namespace SimWorld.AI
             }
 
             if (!allowNaturalWeapon) return null;
+
+            Tool? native = PickNativeTool(pawn);
+            if (native != null)
+            {
+                Verb_MeleeAttack? nativeVerb = MeleeVerbUtility.MakeVerb(pawn, native);
+                if (nativeVerb != null) return nativeVerb;
+            }
+
             Tool? natural = NaturalWeaponFor(pawn);
             return natural == null ? null : MeleeVerbUtility.MakeVerb(pawn, natural);
+        }
+
+        /// <summary>
+        /// Whether <see cref="TryGetMeleeVerb"/> would find <i>something</i> to swing, without building a
+        /// <see cref="Verb"/> or drawing a random number — the question the fight tier asks every think pass,
+        /// where a pawn with nothing to fight is the common case.
+        /// </summary>
+        public static bool CanMeleeAttack(Pawn pawn)
+        {
+            if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+
+            List<Tool>? tools = pawn.equipment?.Primary?.def.tools;
+            if (tools != null)
+            {
+                for (int i = 0; i < tools.Count; i++)
+                {
+                    if (ManeuverUtility.FindManeuver(tools[i]) != null) return true;
+                }
+            }
+
+            List<Tool>? native = pawn.def.tools;
+            if (native != null)
+            {
+                for (int i = 0; i < native.Count; i++)
+                {
+                    if (ManeuverUtility.FindManeuver(native[i]) != null) return true;
+                }
+            }
+
+            Tool? natural = NaturalWeaponFor(pawn);
+            return natural != null && ManeuverUtility.FindManeuver(natural) != null;
+        }
+
+        /// <summary>
+        /// RimWorld's weight for choosing among a pawn's native melee tools
+        /// (<c>VerbProperties.AdjustedMeleeSelectionWeight</c>): the tool's damage <b>squared</b>, times its
+        /// <c>chanceFactor</c>, times 0.3 for a verb that comes from the pawn's own body. The 0.3 is the same
+        /// for every native tool of one pawn, so it cancels in a choice among them and is left out. The point of
+        /// squaring is the one RimWorld's comment-free code leaves implicit: a tool that hits twice as hard is
+        /// four times as likely to be picked, so a muffalo mostly swings its head and legs.
+        /// </summary>
+        public static float NativeToolWeight(Tool tool)
+        {
+            if (tool == null) throw new ArgumentNullException(nameof(tool));
+            return tool.power * tool.power * tool.chanceFactor;
+        }
+
+        /// <summary>One of the race's declared tools by <see cref="NativeToolWeight"/>, or null when the race
+        /// declares none usable. Draws from <see cref="Sim.Rand"/> only when there is a real choice to make.</summary>
+        private static Tool? PickNativeTool(Pawn pawn)
+        {
+            List<Tool>? native = pawn.def.tools;
+            if (native == null || native.Count == 0) return null;
+            if (native.Count == 1) return native[0];
+            return GenCollection.RandomElementByWeight(native, NativeToolWeight, Rand.Current);
         }
 
         /// <summary>
@@ -113,8 +184,11 @@ namespace SimWorld.AI
         /// shared content files, and three sets of invented per-species numbers — where one scaling rule
         /// (<see cref="CombatAITuning.NaturalWeaponPowerPerBodySize"/>) gives the same shipped animals the
         /// same ordering. So this follows the precedent rather than the 1:1 port, deliberately: the moment a
-        /// race does declare <c>tools</c>, <see cref="TryGetMeleeVerb"/> already prefers them and this stops
-        /// being reached for that race.
+        /// race does declare <c>tools</c>, <see cref="TryGetMeleeVerb"/> prefers them and this stops being
+        /// reached for that race. <b>The shipped animals declare them now</b> (Muffalo, Husky and Chicken,
+        /// from the RimWorld wiki — see <c>Races_Animal.xml</c>), so for them this is only the answer to
+        /// "can this pawn fight at all" and the scaling rule below is no longer what bites; a humanlike's
+        /// fists are still this.
         /// <para/>
         /// A humanlike's fists reuse <see cref="SocialTuning.SocialFightFistPower"/> outright rather than
         /// introducing a second bare-fist number — one punch is one punch, whether it lands in a scuffle over

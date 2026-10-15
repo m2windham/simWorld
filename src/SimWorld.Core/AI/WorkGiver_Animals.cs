@@ -50,13 +50,21 @@ namespace SimWorld.AI
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
             if (!(thing is Pawn animal) || !IsWildAnimal(animal) || !thing.Spawned) return false;
+
+            // RimWorld's WorkGiver_Tame.JobOnThing and WorkGiver_InteractAnimal.CanInteractWithAnimal, the
+            // half this giver did not have: an animal somebody tried in the last twelve hours is left alone,
+            // and one that is downed, asleep or already turned on someone is not walked up to. Cheapest
+            // first, and all of them before the reachability scan.
+            if (TameUtility.TriedToTameTooRecently(animal)) return false;
+            if (!TameUtility.CanInteractNow(animal)) return false;
+
             if (!Reachability.CanReach(pawn, thing, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, thing);
         }
 
         public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false) => new Job(JobDefOf.Tame, thing);
 
-        private static bool IsWildAnimal(Pawn animal) => animal.RaceProps.Animal && animal.faction == null && !animal.Dead;
+        private static bool IsWildAnimal(Pawn animal) => TameUtility.CanTame(animal);
     }
 
     /// <summary>Finds a tamed animal with an outstanding <see cref="TrainableDef"/> to work on (RimWorld:

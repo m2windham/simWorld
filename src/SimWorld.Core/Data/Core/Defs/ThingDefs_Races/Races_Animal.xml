@@ -15,6 +15,17 @@
     50, from the RimWorld wiki's infobox for each (https://rimworldwiki.com/wiki/Husky, /Muffalo, /Chicken).
     Those pages describe the current game; the bases are not known to differ in 1.0, but that was not checked
     against a 1.0 source.
+
+    manhunterOnTameFailChance (RimWorld: RaceProperties.manhunterOnTameFailChance) is 0 for all three races.
+    Source: the RimWorld wiki infobox "Manhunter Chance (Taming)" line on each species page:
+      https://rimworldwiki.com/wiki/Muffalo   0%
+      https://rimworldwiki.com/wiki/Husky     0%
+      https://rimworldwiki.com/wiki/Chicken   0%
+    (the wiki describes the current game, not the 1.0 decompile this port reads, which carries no XML; the
+    figure is stated here so a future species with a real chance has somewhere to put it). It is the field
+    TameUtility.TryTame rolls on every attempt. Writing it out is the point: before it existed the port
+    rolled an invented 0.5 x wildness on every failed attempt, and a third of failed muffalo tamings ended
+    with the tamer being bitten.
   -->
 
   <ThingDef Name="BaseAnimal" ParentName="BasePawn" Abstract="True">
@@ -39,6 +50,7 @@
       <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>
       <lifeExpectancy>12</lifeExpectancy>
       <wildness>0.3</wildness>
+      <manhunterOnTameFailChance>0</manhunterOnTameFailChance>
       <trainability>Intermediate</trainability>
       <meatDef>Meat_Generic</meatDef>
       <leatherDef>Leather_Plain</leatherDef>
@@ -57,6 +69,46 @@
         </li>
       </lifeStageAges>
     </race>
+    <!--
+      Natural weapons (RimWorld: ThingDef.tools on the race). Source for every figure in this block: the
+      species page on the RimWorld wiki, https://rimworldwiki.com/wiki/Husky, melee table. The wiki describes
+      the current game; the 1.0 decompile this port reads carries no XML, so these are the figures stated
+      there, not re-derived. A tool with two capacities is two attacks in RimWorld, so it is two entries here.
+      Which one is swung is RimWorld's weighted choice (AttackVerbUtility.NativeToolWeight). linkedBodyPartsGroup
+      is left off: a destroyed paw does not disable its claw here.
+    -->
+    <tools>
+      <li>
+        <label>left claw</label>
+        <capacities><li>Scratch</li></capacities>
+        <power>9.7</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.15</armorPenetration>
+      </li>
+      <li>
+        <label>right claw</label>
+        <capacities><li>Scratch</li></capacities>
+        <power>9.7</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.15</armorPenetration>
+      </li>
+      <li>
+        <label>teeth</label>
+        <capacities><li>Bite</li></capacities>
+        <power>14.2</power>
+        <cooldownTime>2.6</cooldownTime>
+        <armorPenetration>0.21</armorPenetration>
+        <chanceFactor>0.7</chanceFactor>
+      </li>
+      <li>
+        <label>head</label>
+        <capacities><li>Blunt</li></capacities>
+        <power>6</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.09</armorPenetration>
+        <chanceFactor>0.2</chanceFactor>
+      </li>
+    </tools>
   </ThingDef>
 
   <ThingDef ParentName="BaseAnimal">
@@ -73,6 +125,7 @@
       <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>
       <lifeExpectancy>16</lifeExpectancy>
       <wildness>0.6</wildness>
+      <manhunterOnTameFailChance>0</manhunterOnTameFailChance>
       <trainability>Intermediate</trainability>
       <meatDef>Meat_Generic</meatDef>
       <leatherDef>Leather_Plain</leatherDef>
@@ -91,6 +144,57 @@
         </li>
       </lifeStageAges>
     </race>
+    <!--
+      Natural weapons: https://rimworldwiki.com/wiki/Muffalo, melee table (see the Husky block for the
+      conventions). Most of what a muffalo does is blunt: head and legs, with the bite a minority
+      (chanceFactor 0.5 on a 10-power tool against 13- and 10-power ones, under the squared weight). That mix
+      is the point of declaring the tools: a muffalo's blows bruise, they do not bite.
+    -->
+    <tools>
+      <li>
+        <label>head</label>
+        <capacities><li>Blunt</li></capacities>
+        <power>13</power>
+        <cooldownTime>2.6</cooldownTime>
+        <armorPenetration>0.19</armorPenetration>
+      </li>
+      <li>
+        <label>front left leg</label>
+        <capacities><li>Blunt</li></capacities>
+        <power>10</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.15</armorPenetration>
+      </li>
+      <li>
+        <label>front left leg</label>
+        <capacities><li>Poke</li></capacities>
+        <power>10</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.15</armorPenetration>
+      </li>
+      <li>
+        <label>front right leg</label>
+        <capacities><li>Blunt</li></capacities>
+        <power>10</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.15</armorPenetration>
+      </li>
+      <li>
+        <label>front right leg</label>
+        <capacities><li>Poke</li></capacities>
+        <power>10</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.15</armorPenetration>
+      </li>
+      <li>
+        <label>teeth</label>
+        <capacities><li>Bite</li></capacities>
+        <power>10</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.15</armorPenetration>
+        <chanceFactor>0.5</chanceFactor>
+      </li>
+    </tools>
     <comps>
       <li Class="SimWorld.Crafting.CompProperties_Milkable">
         <resourceDef>Milk</resourceDef>
@@ -120,6 +224,7 @@
       <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>
       <lifeExpectancy>5</lifeExpectancy>
       <wildness>0.5</wildness>
+      <manhunterOnTameFailChance>0</manhunterOnTameFailChance>
       <trainability>None</trainability>
       <meatDef>Meat_Generic</meatDef>
       <lifeStageAges>
@@ -137,6 +242,35 @@
         </li>
       </lifeStageAges>
     </race>
+    <!--
+      Natural weapons: https://rimworldwiki.com/wiki/Chicken, melee table (see the Husky block for the
+      conventions). The wiki's selection column reads 25% feet / 75% beak where the squared weight with
+      chanceFactor 1 on both gives about 31% / 69%: the feet's factor is not stated, so it is left at 1.
+    -->
+    <tools>
+      <li>
+        <label>feet</label>
+        <capacities><li>Scratch</li></capacities>
+        <power>2</power>
+        <cooldownTime>1.5</cooldownTime>
+        <armorPenetration>0.03</armorPenetration>
+      </li>
+      <li>
+        <label>beak</label>
+        <capacities><li>Bite</li></capacities>
+        <power>3</power>
+        <cooldownTime>2</cooldownTime>
+        <armorPenetration>0.04</armorPenetration>
+      </li>
+      <li>
+        <label>head</label>
+        <capacities><li>Blunt</li></capacities>
+        <power>1</power>
+        <cooldownTime>1.5</cooldownTime>
+        <armorPenetration>0.01</armorPenetration>
+        <chanceFactor>0.2</chanceFactor>
+      </li>
+    </tools>
     <comps>
       <li Class="SimWorld.Crafting.CompProperties_EggLayer">
         <resourceDef>EggAnimalUnfertilized</resourceDef>

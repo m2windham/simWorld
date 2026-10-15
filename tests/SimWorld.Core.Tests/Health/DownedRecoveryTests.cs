@@ -257,63 +257,67 @@ namespace SimWorld.Tests.Health
         [Fact]
         public void An_infection_is_tended_more_often_than_a_day_apart()
         {
-            // RimWorld tends an infection for 12 hours; this port used to give it 24.
+            // RimWorld tends an infection for 12 hours plus the 3 hour overlap, 15 in all (TendTicksFull);
+            // this port used to give it 24. Changed from "lapsed within half a day": that was 12 hours only,
+            // before the overlap was counted (WoundInfectionRuleTests pins the 15 and the renewal window).
             Pawn p = NewHuman();
             Hediff infection = Infect(p, "left leg")[0];
             TendUtility.DoTend(p, 0.5f, TendUtility.MaxQualityNoMedicine);
             Assert.True(infection.IsTended);
 
-            RunHours(GenDate.HoursPerDay / 2 + 1, null, p);
+            RunHours(16, null, p);
 
-            Assert.False(infection.IsTended, "a tend must have lapsed within half a day");
+            Assert.False(infection.IsTended, "a tend must have lapsed within sixteen hours");
             Assert.True(infection.TendableNow());
         }
 
         /// <summary>
-        /// Whether a wound gets infected, sampled rather than pinned: the chance is RimWorld's own (a cut is
-        /// 15%, per the wiki's def dump) and a tend scales it down along RimWorld's line from 85% at quality 0
-        /// to 5% at quality 1. A band around the untended rate, and a direction for the tended one. Before
-        /// lane/downed a cut here was infected 40% of the time.
+        /// Whether a wound gets infected, sampled rather than pinned. Changed from "a cut is infected 15% of the
+        /// time, far less when well tended, along the wiki's 85%-to-5% line": that was true of a wound of any
+        /// size, and RimWorld's is not — the chance at the end of the delay is scaled by the wound's own
+        /// severity (HediffComp_Infecter.SeverityFactor), and a tend scales it by 0.7 down to 0.4, not 0.85
+        /// down to 0.05 (the 1.0 decompile; the wiki line is the later game's). A ruinous cut here is the
+        /// def's full 15%, a well-tended one is much lower, and a small one is far lower than either.
         /// </summary>
         [Fact]
-        public void Cuts_get_infected_at_about_RimWorlds_rate_and_well_tended_ones_far_less_often()
+        public void Large_cuts_get_infected_at_about_RimWorlds_rate_and_well_tended_ones_less_often()
         {
-            int untended = CountInfectedCuts(tendQuality: null);
-            int tended = CountInfectedCuts(tendQuality: 1f);
+            int untended = CountInfectedCuts(tendQuality: null, severity: 12f);
+            int tended = CountInfectedCuts(tendQuality: 1f, severity: 12f);
 
-            // 300 cuts at 15%: 45 expected, a standard deviation of about 6.
+            // 300 cuts at 15% x about 0.95 (a severity-12 cut has healed a little by the time it rolls):
+            // about 43 expected, a standard deviation of about 6.
             Assert.InRange(untended, 25, 70);
-            Assert.True(tended * 3 < untended, "tended " + tended + " vs untended " + untended);
+            // Tended at quality 1 the factor is 0.4 against 1.0: well under the untended count.
+            Assert.True(tended * 10 < untended * 7, "tended " + tended + " vs untended " + untended);
         }
 
         [Fact]
-        public void The_tended_infection_factor_runs_along_RimWorlds_line()
+        public void The_tended_infection_factor_runs_along_RimWorlds_curve()
         {
-            Assert.Equal(HediffComp_Infecter.TendedChanceFactorAtQualityZero, HediffComp_Infecter.TendedChanceFactor(0f), 5);
-            Assert.Equal(HediffComp_Infecter.TendedChanceFactorAtQualityOne, HediffComp_Infecter.TendedChanceFactor(1f), 5);
-            Assert.True(HediffComp_Infecter.TendedChanceFactor(0.3f) > HediffComp_Infecter.TendedChanceFactor(0.7f));
-            Assert.True(HediffComp_Infecter.TendedChanceFactor(0f) < 1f, "even a tend of quality 0 lowers the chance");
+            // 1.0 decompile: InfectionChanceFactorFromTendQualityCurve (0 -> 0.7, 1 -> 0.4).
+            Assert.Equal(0.7f, HediffComp_Infecter.TendQualityFactor(0f), 5);
+            Assert.Equal(0.4f, HediffComp_Infecter.TendQualityFactor(1f), 5);
+            Assert.True(HediffComp_Infecter.TendQualityFactor(0.3f) > HediffComp_Infecter.TendQualityFactor(0.7f));
+            Assert.True(HediffComp_Infecter.TendQualityFactor(0f) < 1f, "even a tend of quality 0 lowers the chance");
         }
 
-        /// <summary>Fifteen pawns, twenty shallow cuts each — shallow so no pawn comes near death and every
-        /// cut's infection roll is actually taken. Only the cuts are ticked: the roll is theirs alone.</summary>
-        private static int CountInfectedCuts(float? tendQuality)
+        /// <summary>One cut per pawn, <paramref name="pawns"/> pawns. Only the cut is ticked: the roll is its
+        /// alone, and a pawn is not near death on a single cut that nobody lets bleed.</summary>
+        private static int CountInfectedCuts(float? tendQuality, float severity, int pawns = 300)
         {
-            string[] parts = { "torso", "left leg", "right leg", "left arm", "right arm" };
             int infected = 0;
-            for (int n = 0; n < 15; n++)
+            for (int n = 0; n < pawns; n++)
             {
                 Pawn p = NewHuman("P" + n);
-                for (int i = 0; i < 20; i++) Cut(p, parts[i % parts.Length], 1f);
-                List<Hediff> cuts = p.health.hediffSet.hediffs.Where(h => h.def.defName == "Cut").ToList();
-                Assert.Equal(20, cuts.Count);
+                Cut(p, "torso", severity);
+                Hediff cut = p.health.hediffSet.hediffs.Single(h => h.def.defName == "Cut");
                 if (tendQuality.HasValue) TendUtility.DoTend(p, tendQuality.Value, 1f);
 
+                // Only while it is still waiting to roll: a wound that will never infect has nothing to wait out.
+                var comp = cut.TryGetComp<HediffComp_Infecter>()!;
                 int maxDelay = HealthTuning.InfectionDelayRange.max + 1;
-                for (int t = 0; t < maxDelay; t++)
-                {
-                    for (int c = 0; c < cuts.Count; c++) cuts[c].Tick();
-                }
+                for (int t = 0; t < maxDelay && comp.TicksUntilInfect > 0; t++) cut.Tick();
                 Assert.False(p.Dead);
                 infected += p.health.hediffSet.hediffs.Count(h => h.def == HediffDefOf.WoundInfection);
             }

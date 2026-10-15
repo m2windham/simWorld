@@ -49,19 +49,23 @@ namespace SimWorld.Social
 
         public const float DeepTalkBaseWeight = 4f;
 
-        public const float InsultBaseWeight = 1f;
+        /// <summary>
+        /// Insult's base selection weight, in this port's units where chitchat is
+        /// <see cref="ChitchatBaseWeight"/>: RimWorld's <c>InteractionWorker_Insult.BaseSelectionWeight</c> is
+        /// 0.007 against <c>InteractionWorker_Chitchat</c>'s 1, so the ratio is what is ported and this is that
+        /// ratio times chitchat's weight. <b>It was 1 against chitchat's 10 — fourteen times RimWorld's
+        /// share</b> — and it was then multiplied by factors RimWorld does not have; a settlement of twenty-five
+        /// had about one social fight a day over sixty days of seed 12345. Scaled by <see cref="NegativeInteractionUtility"/>.
+        /// </summary>
+        public const float InsultBaseWeight = ChitchatBaseWeight * 0.007f;
 
-        /// <summary>Multiplies insult's weight when the initiator already dislikes the recipient (RimWorld: insult is far likelier from someone who already has poor opinion of the target).</summary>
-        public const float InsultLowOpinionWeightFactor = 6f;
-
-        /// <summary>Mood (0-1) below which a pawn is frustrated enough to raise insult's weight further.</summary>
-        public const float InsultLowMoodThreshold = 0.4f;
-
-        public const float InsultLowMoodWeightFactor = 3f;
-
-        public const float SlightBaseWeight = 2f;
-
-        public const float SlightLowOpinionWeightFactor = 2.5f;
+        /// <summary>
+        /// Slight's base weight, by the same ratio: RimWorld's <c>InteractionWorker_Slight.BaseSelectionWeight</c>
+        /// is 0.02 against chitchat's 1. The old low-opinion step factors (×6 insult, ×2.5 slight) and the
+        /// insult's mood threshold and factor are gone: RimWorld's weight has no mood term, and its opinion
+        /// term is a curve (<see cref="NegativeInteractionUtility"/>), not a step.
+        /// </summary>
+        public const float SlightBaseWeight = ChitchatBaseWeight * 0.02f;
 
         /// <summary>
         /// Chance an insult escalates into a mutual <c>SocialFighting</c> mental state <i>before</i>

@@ -27,8 +27,13 @@ namespace SimWorld.Health
 
         public const float BecomePermanentBaseChance = 0.02f;
 
-        /// <summary>Delay before an untended wound rolls for infection.</summary>
+        /// <summary>Delay before a wound that is a candidate for infection rolls for it (RimWorld:
+        /// <c>HealthTuning.InfectionDelayRange</c>).</summary>
         public static readonly IntRange InfectionDelayRange = new IntRange(15000, 45000);
+
+        /// <summary>An animal's wounds are a tenth as likely to be candidates for infection (RimWorld:
+        /// <c>HealthTuning.AnimalsInfectionChanceFactor</c>, decompile-sourced).</summary>
+        public const float AnimalsInfectionChanceFactor = 0.1f;
 
         /// <summary>Malnutrition severity per 150-tick need interval while starving (0.113/day).</summary>
         public const float MalnutritionSeverityPerInterval = 0.113f / 400f;

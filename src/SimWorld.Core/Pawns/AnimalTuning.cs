@@ -26,11 +26,25 @@ namespace SimWorld.Pawns
 
         public const float TameSuccessXp = 40f;
 
-        /// <summary>Chance, scaled further by the animal's own wildness, that a failed attempt turns it
-        /// against the tamer (see <see cref="MindState.Pawn_MindState.angryAt"/>).</summary>
-        public const float TameFailAngerChance = 0.5f;
-
+        /// <summary>
+        /// How long an animal that has turned on a handler stays angry at them. <b>The port's own number</b>:
+        /// RimWorld's revenge is a full <c>Manhunter</c> mental state with its own duration, and this port's
+        /// stand-in for it is the personal grudge <see cref="MindState.Pawn_MindState.angryAt"/>, which needs a
+        /// deadline. <b>Whether</b> an animal turns on a handler is no longer a number here at all: it is the
+        /// race's own <see cref="RaceProperties.manhunterOnTameFailChance"/>, rolled by
+        /// <see cref="TameUtility.TryTame"/> the way RimWorld rolls it. There used to be a
+        /// <c>TameFailAngerChance</c> (0.5, scaled by wildness) in this slot; it was invented, and it turned a
+        /// third of every failed muffalo taming into a day-long mauling that RimWorld does not have.
+        /// </summary>
         public const int TameFailAngerDurationTicks = GenDate.TicksPerDay;
+
+        /// <summary>
+        /// Ticks after a taming attempt before the same animal can be tried again (RimWorld:
+        /// <c>TameUtility.MinTameInterval</c> = 30000, twelve in-game hours, read by
+        /// <c>TameUtility.TriedToTameTooRecently</c> in both <c>WorkGiver_Tame</c> and
+        /// <c>JobDriver_Tame</c>). Sourced from the decompile, not tuned.
+        /// </summary>
+        public const int MinTameIntervalTicks = 30000;
 
         // ---- training (Pawn_TrainingTracker) ----
 

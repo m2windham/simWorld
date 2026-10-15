@@ -46,7 +46,7 @@ namespace SimWorld.Health
         public static float CalculateBaseTendQuality(Pawn? doctor, Pawn? patient, ThingDef? medicineDef)
         {
             float medicinePotency = medicineDef != null ? medicineDef.GetStatValue(HealthStatDefOf.MedicalPotency) : NoMedicinePotency;
-            float medicineQualityMax = medicineDef != null ? medicineDef.GetStatValue(HealthStatDefOf.MedicalQualityMax) : MaxQualityNoMedicine;
+            float medicineQualityMax = MaxQualityFor(medicineDef);
 
             float quality = doctor != null ? doctor.GetStatValue(StatDefOf.MedicalTendQuality) : NoDoctorTendQuality;
             quality *= medicinePotency;
@@ -58,6 +58,11 @@ namespace SimWorld.Health
 
             return GenMath.Clamp(quality, 0f, medicineQualityMax);
         }
+
+        /// <summary>The ceiling a medicine puts on tend quality (RimWorld: <c>StatDefOf.MedicalQualityMax</c> of
+        /// the medicine, <see cref="MaxQualityNoMedicine"/> when there is none).</summary>
+        public static float MaxQualityFor(ThingDef? medicineDef) =>
+            medicineDef != null ? medicineDef.GetStatValue(HealthStatDefOf.MedicalQualityMax) : MaxQualityNoMedicine;
 
         /// <summary>Tends the pawn once at a quality the caller already worked out. Returns the hediffs
         /// treated (empty when nothing needed tending). The mechanical primitive every higher-level tend —
@@ -94,11 +99,21 @@ namespace SimWorld.Health
             if (medicine != null && medicine.Destroyed) medicine = null;
 
             float quality = CalculateBaseTendQuality(doctor, patient, medicine?.def);
+
+            // The ceiling on the quality a wound ends up with is the MEDICINE's (0.7 for herbal or none, 1.0 for
+            // industrial), not this tend's own base quality. Passing the base quality as the ceiling — which is
+            // what this did — clipped the +/-0.25 variance RimWorld rolls on every tend to its downside only:
+            // a tend that came out above its base was cut back to the base, so the mean quality sat 0.06
+            // below the base for a good tend and at about 60% of it for a poor one (a skill-5 doctor with no
+            // medicine: base 0.14, mean 0.09 here against 0.15 in RimWorld). Tend quality scales how far a
+            // tended infection's severity is pushed back, so every tended infection in the game lost ground.
+            float qualityCeiling = MaxQualityFor(medicine?.def);
+
             var toTend = new List<Hediff>();
             GetOptimalHediffsToTendWithSingleTreatment(patient, usingMedicine: true, toTend);
             for (int i = 0; i < toTend.Count; i++)
             {
-                toTend[i].Tended(quality, quality, i);
+                toTend[i].Tended(quality, qualityCeiling, i);
             }
             if (toTend.Count > 0)
             {

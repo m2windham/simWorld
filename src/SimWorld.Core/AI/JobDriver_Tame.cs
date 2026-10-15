@@ -32,6 +32,10 @@ namespace SimWorld.AI
             yield return Toils_General.Do(() =>
             {
                 if (!(job.GetTarget(TargetIndex.A).Thing is Pawn animal) || animal.Destroyed || !animal.Spawned) return;
+
+                // RimWorld's JobDriver_Tame fails the interaction on TriedToTameTooRecently, and an animal can
+                // become unfit to approach (turned on someone, been shot) between the offer and the arrival.
+                if (TameUtility.TriedToTameTooRecently(animal) || !TameUtility.CanInteractNow(animal)) return;
                 TameUtility.TryTame(animal, pawn);
             });
         }

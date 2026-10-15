@@ -34,21 +34,16 @@ namespace SimWorld.Social
     }
 
     /// <summary>
-    /// A deliberate put-down: rare by default, far likelier from an initiator who already dislikes the
-    /// recipient or is in a bad mood (RimWorld's own combination for <c>InteractionWorker_Insult</c>'s
-    /// weighting). Only the recipient gains a memory (<c>Insulted</c>, already shipped with the mood system);
+    /// A deliberate put-down: rare by default (RimWorld's weight is 0.007 against chitchat's 1), far likelier
+    /// from an initiator who already dislikes the recipient, and almost never from one who likes them
+    /// (<see cref="NegativeInteractionUtility"/>; there is no mood term in RimWorld's weighting, and this no
+    /// longer has one). Only the recipient gains a memory (<c>Insulted</c>, already shipped with the mood system);
     /// the insult can escalate into a social fight — see <see cref="SocialFightUtility.TryStartSocialFight"/>.
     /// </summary>
     public sealed class InteractionWorker_Insult : InteractionWorker
     {
-        public override float RandomSelectionWeight(Pawn initiator, Pawn recipient)
-        {
-            float weight = SocialTuning.InsultBaseWeight;
-            if (initiator.relations.OpinionOf(recipient) < 0) weight *= SocialTuning.InsultLowOpinionWeightFactor;
-            float mood = initiator.needs.mood?.CurLevelPercentage ?? 0.5f;
-            if (mood < SocialTuning.InsultLowMoodThreshold) weight *= SocialTuning.InsultLowMoodWeightFactor;
-            return weight;
-        }
+        public override float RandomSelectionWeight(Pawn initiator, Pawn recipient) =>
+            SocialTuning.InsultBaseWeight * NegativeInteractionUtility.NegativeInteractionChanceFactor(initiator, recipient);
 
         public override void Interacted(Pawn initiator, Pawn recipient)
         {
@@ -62,12 +57,8 @@ namespace SimWorld.Social
     /// alongside the full insult.</summary>
     public sealed class InteractionWorker_Slight : InteractionWorker
     {
-        public override float RandomSelectionWeight(Pawn initiator, Pawn recipient)
-        {
-            float weight = SocialTuning.SlightBaseWeight;
-            if (initiator.relations.OpinionOf(recipient) < 0) weight *= SocialTuning.SlightLowOpinionWeightFactor;
-            return weight;
-        }
+        public override float RandomSelectionWeight(Pawn initiator, Pawn recipient) =>
+            SocialTuning.SlightBaseWeight * NegativeInteractionUtility.NegativeInteractionChanceFactor(initiator, recipient);
 
         public override void Interacted(Pawn initiator, Pawn recipient) =>
             recipient.needs.mood?.thoughts.memories.TryGainMemory(SocialThoughtDefOf.WasSlighted, initiator);
@@ -179,6 +170,10 @@ namespace SimWorld.Social
         {
             if (initiator == null || recipient == null) return 0f;
             if (!SocialFightPossible(recipient, initiator)) return 0f;
+
+            // RimWorld: pawn.story.WorkTagIsDisabled(WorkTags.Violent) -> 0. Somebody who cannot do violence
+            // is not tipped into a brawl by an insult.
+            if (recipient.WorkTagIsDisabled(Work.WorkTags.Violent)) return 0f;
 
             float chance = SocialTuning.InsultSocialFightBaseChance;
             chance *= GenMath.InverseLerp(0.3f, 1f, recipient.health.capacities.GetLevel(Health.PawnCapacityDefOf.Manipulation));
