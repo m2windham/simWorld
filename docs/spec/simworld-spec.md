@@ -706,7 +706,12 @@ _Planned_: the mod API surfaces these as sanctioned extension points.
   then queued directed orders, then `JobGiver_Work`'s priority-grid scan, then
   an idle-wander fallback — the first tier to hand back a job wins, so danger
   and mental state override needs, needs override directed orders, and
-  directed orders override routine work.
+  directed orders override routine work. **A tree always ends in a job**: the
+  last node of both the humanlike and the animal tree is RimWorld's
+  `JobGiver_IdleError`, a hundred-tick `Wait`, because the job tracker asks a
+  jobless pawn for a job on every tick and a pawn the wander cannot place
+  (walled in, or stranded on a cell with no region) would otherwise have its
+  whole tree run sixty times a second for as long as it lived.
 - Jobs run as `JobDriver` toil state machines (`Toils_General`/`Goto`/`Reserve`
   plus `FailOn...` conditions so a vanished target ends the job cleanly, not
   with an exception); `ReservationManager` (one per map) stops two pawns
@@ -1488,8 +1493,10 @@ already tracks durably (a trait, worn apparel, a granted role).
   stage set, which is the thing §11's tiering exists to prevent — so most raids
   land on a town nobody has open, and the fix is to make _those_ real:
   - **On the watched settlement's interior**, the squad arrives physically:
-    one entry cell on a random map edge for the group, then each pawn placed on
-    a walkable cell near it (RimWorld's
+    one entry cell on a random map edge for the group — standable, unroofed and
+    joined to the colony (`RCellFinder.TryFindRandomPawnEntryCell`; a map with
+    no such cell gets no raid, as in RimWorld) — then each pawn placed on a
+    walkable cell of that cell's own connected area near it (RimWorld's
     `PawnsArrivalModeWorker_EdgeWalkIn` / `CellFinder.RandomClosewalkCellNear`,
     radius 8). The condition is attention, not merely "a map exists": only a
     `Full`-tier citizen is ever placed on an interior and only attention holds

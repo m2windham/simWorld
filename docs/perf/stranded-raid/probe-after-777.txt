@@ -1,0 +1,37 @@
+# probe seed=777 days=60 solo=False map=200x200
+day 13.80 RAID#1 Steel vale x10 arrive@(132, 0, 4) (130, 0, 2) (131, 0, 5) (134, 0, 4) connectedToColony=1
+day 13.80 RAID#1 toil -> LordToil_AssaultColony (10 pawns, ticksInToil 0)
+day 13.84 RAID#1 toil -> LordToil_PanicFlee (5 pawns, ticksInToil 2)
+day 13.87 RAID#1 lord gone (last toil LordToil_PanicFlee)
+day 23.48 RAID#2 Wolf keep x11 arrive@(69, 0, 0) (68, 0, 1) (66, 0, 0) (68, 0, 2) connectedToColony=1
+day 23.48 RAID#2 toil -> LordToil_AssaultColony (11 pawns, ticksInToil 0)
+day 23.63 RAID#2 toil -> LordToil_PanicFlee (5 pawns, ticksInToil 23)
+day 23.64 RAID#2 lord gone (last toil LordToil_PanicFlee)
+day 25.38 RAID#3 Grey march x5 arrive@(1, 0, 177) (2, 0, 168) (3, 0, 168) (7, 0, 173) connectedToColony=1
+day 25.38 RAID#3 toil -> LordToil_AssaultColony (5 pawns, ticksInToil 0)
+day 25.43 RAID#3 toil -> LordToil_PanicFlee (2 pawns, ticksInToil 17)
+day 25.44 RAID#3 lord gone (last toil LordToil_PanicFlee)
+day 33.87 RAID#4 Grey march x5 arrive@(194, 0, 144) (199, 0, 138) (194, 0, 145) (196, 0, 136) connectedToColony=1
+day 33.87 RAID#4 toil -> LordToil_AssaultColony (5 pawns, ticksInToil 0)
+day 33.95 RAID#4 toil -> LordToil_PanicFlee (2 pawns, ticksInToil 3)
+day 33.96 RAID#4 lord gone (last toil LordToil_PanicFlee)
+day 35.77 RAID#5 Wolf keep x6 arrive@(140, 0, 199) (137, 0, 197) (127, 0, 195) (134, 0, 197) connectedToColony=1
+day 35.77 RAID#5 toil -> LordToil_AssaultColony (6 pawns, ticksInToil 0)
+day 35.80 RAID#5 toil -> LordToil_PanicFlee (3 pawns, ticksInToil 15)
+day 35.81 RAID#5 lord gone (last toil LordToil_PanicFlee)
+
+## seed 777: 3600000 ticks in 149.6s = 24069 ticks/s
+day secs | raider-samples no-job/total (sampled every 25 ticks)
+  day 14:    2.1s  idle 10/1163
+  day 24:    3.2s  idle 11/3073
+  day 26:    3.0s  idle 5/513
+  day 34:    2.4s  idle 5/906
+  day 36:    2.5s  idle 6/569
+
+raid | day | faction | n | arrival cells | connected | everClose | everAttacked | firstClose(day) | end | noJob% 
+1 | 13.80 | Steel vale | 10 | (132, 0, 4) (130, 0, 2) (131, 0, 5) | 1 | True | True | 13.82 | 13.87 lord dissolved | 1%
+2 | 23.48 | Wolf keep | 11 | (69, 0, 0) (68, 0, 1) (66, 0, 0) | 1 | True | True | 23.48 | 23.64 lord dissolved | 0%
+3 | 25.38 | Grey march | 5 | (1, 0, 177) (2, 0, 168) (3, 0, 168) | 1 | True | True | 25.39 | 25.44 lord dissolved | 1%
+4 | 33.87 | Grey march | 5 | (194, 0, 144) (199, 0, 138) (194, 0, 145) | 1 | True | True | 33.87 | 33.96 lord dissolved | 1%
+5 | 35.77 | Wolf keep | 6 | (140, 0, 199) (137, 0, 197) (127, 0, 195) | 1 | True | True | 35.77 | 35.81 lord dissolved | 1%
+end: player humanlikes on map 17; total raider samples idle 37/6224

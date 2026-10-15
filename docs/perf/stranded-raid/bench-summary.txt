@@ -1,0 +1,58 @@
+### before 777  (wall=931.184 user=907.580 sys=1.101)
+== before-777.md
+throughput : ['| 60 | 3,600,000 | 908.4 | 3,963 | 15.14 |']
+interesting: ['| 21 | 19/60 | 0.46 | 0.32 | 8 | 10 | 4 | 17 | Agrarian |']
+determinism: | threat points (the `points` column) | 8 | yes |
+determinism: | curve inputs (wealth, per-colonist, the factors) | 8 | yes |
+determinism: | world beside it (pop, mood, food, deaths, moments) | 8 | yes |
+determinism: | firing log | 8 | yes |
+raid       : | 14 | RaidEnemy | ThreatBig | 191.0 | yes | 4 raiders arrived; from Steel vale; landed on the watched map, outcome not yet decided |
+raid       : | 24 | RaidEnemy | ThreatBig | 221.7 | yes | killed 2; 5 raiders arrived; from Wolf keep; landed on the watched map, outcome not yet decided |
+raid       : | 34 | RaidEnemy | ThreatBig | 235.5 | yes | 5 raiders arrived; from Grey march; landed on the watched map, outcome not yet decided |
+raid       : | 36 | RaidEnemy | ThreatBig | 244.7 | yes | 6 raiders arrived; from Wolf keep; landed on the watched map, outcome not yet decided |
+raid       : | 46 | RaidEnemy | ThreatBig | 541.8 | yes | killed 1; 13 raiders arrived; from Steel vale; landed on the watched map, outcome not yet decided |
+raid       : | 54 | RaidEnemy | ThreatBig | 284.1 | yes | 7 raiders arrived; from Grey march; landed on the watched map, outcome not yet decided |
+
+### before 12345  (wall=993.665 user=862.934 sys=1.386)
+== before-12345.md
+throughput : ['| 60 | 3,600,000 | 962.1 | 3,742 | 16.03 |']
+interesting: ['| 20 | 23/60 | 0.41 | 0.36 | 15 | 19 | 2 | 10 | Agrarian |']
+determinism: | threat points (the `points` column) | 8 | yes |
+determinism: | curve inputs (wealth, per-colonist, the factors) | 8 | yes |
+determinism: | world beside it (pop, mood, food, deaths, moments) | 8 | yes |
+determinism: | firing log | 8 | yes |
+raid       : | 23 | RaidEnemy | ThreatBig | 382.1 | yes | killed 3; 9 raiders arrived; from Grey reach; landed on the watched map, outcome not yet decided |
+raid       : | 26 | RaidEnemy | ThreatBig | 213.7 | yes | 5 raiders arrived; from Grey reach; landed on the watched map, outcome not yet decided |
+raid       : | 35 | RaidEnemy | ThreatBig | 254.7 | yes | 6 raiders arrived; from Crimson reach; landed on the watched map, outcome not yet decided |
+raid       : | 45 | RaidEnemy | ThreatBig | 211.6 | yes | 5 raiders arrived; from Grey reach; landed on the watched map, outcome not yet decided |
+raid       : | 47 | RaidEnemy | ThreatBig | 218.0 | yes | 5 raiders arrived; from Grey reach; landed on the watched map, outcome not yet decided |
+raid       : | 54 | RaidEnemy | ThreatBig | 289.4 | yes | killed 1; 7 raiders arrived; from Wolf watch; landed on the watched map, outcome not yet decided |
+raid       : | 56 | RaidEnemy | ThreatBig | 250.7 | yes | killed 1; 6 raiders arrived; from Grey reach; landed on the watched map, outcome not yet decided |
+
+### after 777  (wall=175.457 user=176.923 sys=0.719)
+== after-777.md
+throughput : ['| 60 | 3,600,000 | 153.1 | 23,520 | 2.55 |']
+interesting: ['| 21 | 18/60 | 0.41 | 0.28 | 8 | 10 | 2 | 17 | Agrarian |']
+determinism: | threat points (the `points` column) | 8 | yes |
+determinism: | curve inputs (wealth, per-colonist, the factors) | 8 | yes |
+determinism: | world beside it (pop, mood, food, deaths, moments) | 8 | yes |
+determinism: | firing log | 8 | yes |
+raid       : | 14 | RaidEnemy | ThreatBig | 405.3 | yes | killed 1; 10 raiders arrived; from Steel vale; landed on the watched map, outcome not yet decided |
+raid       : | 24 | RaidEnemy | ThreatBig | 479.7 | yes | killed 1; 11 raiders arrived; from Wolf keep; landed on the watched map, outcome not yet decided |
+raid       : | 26 | RaidEnemy | ThreatBig | 206.0 | yes | killed 1; 5 raiders arrived; from Grey march; landed on the watched map, outcome not yet decided |
+raid       : | 34 | RaidEnemy | ThreatBig | 231.4 | yes | 5 raiders arrived; from Grey march; landed on the watched map, outcome not yet decided |
+raid       : | 36 | RaidEnemy | ThreatBig | 251.8 | yes | 6 raiders arrived; from Wolf keep; landed on the watched map, outcome not yet decided |
+
+### after 12345  (wall=152.627 user=154.247 sys=1.015)
+== after-12345.md
+throughput : ['| 60 | 3,600,000 | 134.1 | 26,840 | 2.24 |']
+interesting: ['| 18 | 23/60 | 0.40 | 0.31 | 18 | 20 | 3 | 7 | Agrarian |']
+determinism: | threat points (the `points` column) | 8 | yes |
+determinism: | curve inputs (wealth, per-colonist, the factors) | 8 | yes |
+determinism: | world beside it (pop, mood, food, deaths, moments) | 8 | yes |
+determinism: | firing log | 8 | yes |
+raid       : | 23 | RaidEnemy | ThreatBig | 209.6 | yes | 5 raiders arrived; from Crimson reach; landed on the watched map, outcome not yet decided |
+raid       : | 45 | RaidEnemy | ThreatBig | 222.9 | yes | killed 1; 5 raiders arrived; from Crimson reach; landed on the watched map, outcome not yet decided |
+raid       : | 47 | RaidEnemy | ThreatBig | 202.4 | yes | killed 1; 4 raiders arrived; from Grey reach; landed on the watched map, outcome not yet decided |
+raid       : | 56 | RaidEnemy | ThreatBig | 176.4 | yes | 4 raiders arrived; from Crimson reach; landed on the watched map, outcome not yet decided |
+

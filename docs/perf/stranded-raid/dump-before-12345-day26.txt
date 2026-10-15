@@ -1,0 +1,58 @@
+# probe seed=12345 days=30 solo=False map=200x200
+day 22.92 RAID#1 Grey reach x9 arrive@(30, 0, 197) (29, 0, 194) (30, 0, 199) (30, 0, 196) connectedToColony=1
+day 22.92 RAID#1 toil -> LordToil_AssaultColony (9 pawns, ticksInToil 0)
+day 23.04 RAID#1 toil -> LordToil_PanicFlee (4 pawns, ticksInToil 9)
+day 23.06 RAID#1 lord gone (last toil LordToil_PanicFlee)
+day 25.23 RAID#2 Grey reach x5 arrive@(52, 0, 0) (60, 0, 0) connectedToColony=0
+day 25.23 RAID#2 toil -> LordToil_AssaultColony (5 pawns, ticksInToil 0)
+day 25.81 RAID#2 toil -> LordToil_ExitMap (4 pawns, ticksInToil 22)
+DUMP RAID#1 lord=Lord_0 (LordToil_PanicFlee, 0 pawns) toil=LordToil_PanicFlee ticksInToil=880 everGained=9 lostViolently=5 alive=False
+DUMP RAID#2 lord=Lord_1 (LordToil_ExitMap, 4 pawns) toil=LordToil_ExitMap ticksInToil=11172 everGained=5 lostViolently=1 alive=True
+  pawn Thing_Human41530 at (52, 0, 0) spawned=True dead=False downed=False job=LayDown duty=ExitMapBest
+    walkable=False standable=False terrain=Soil region=null roofed=True
+    things here: Limestone(Impassable), Human(Standable), Human(Standable), Human(Standable), Human(Standable)
+    neighbourhood (W=walkable . = not) rows z+3..z-3, x-3..x+3 :
+      .......
+      .......
+      .......
+      ...p...
+      #######
+      #######
+      #######
+    connected to a colonist: False  (region cells 0)
+  pawn Thing_Human41542 at (52, 0, 0) spawned=True dead=False downed=False job=LayDown duty=ExitMapBest
+    walkable=False standable=False terrain=Soil region=null roofed=True
+    things here: Limestone(Impassable), Human(Standable), Human(Standable), Human(Standable), Human(Standable)
+    neighbourhood (W=walkable . = not) rows z+3..z-3, x-3..x+3 :
+      .......
+      .......
+      .......
+      ...p...
+      #######
+      #######
+      #######
+    connected to a colonist: False  (region cells 0)
+  pawn Thing_Human41548 at (52, 0, 0) spawned=True dead=False downed=False job=LayDown duty=ExitMapBest
+    walkable=False standable=False terrain=Soil region=null roofed=True
+    things here: Limestone(Impassable), Human(Standable), Human(Standable), Human(Standable), Human(Standable)
+    neighbourhood (W=walkable . = not) rows z+3..z-3, x-3..x+3 :
+      .......
+      .......
+      .......
+      ...p...
+      #######
+      #######
+      #######
+    connected to a colonist: False  (region cells 0)
+  pawn Thing_Human41560 at (52, 0, 0) spawned=True dead=False downed=False job=LayDown duty=ExitMapBest
+    walkable=False standable=False terrain=Soil region=null roofed=True
+    things here: Limestone(Impassable), Human(Standable), Human(Standable), Human(Standable), Human(Standable)
+    neighbourhood (W=walkable . = not) rows z+3..z-3, x-3..x+3 :
+      .......
+      .......
+      .......
+      ...p...
+      #######
+      #######
+      #######
+    connected to a colonist: False  (region cells 0)

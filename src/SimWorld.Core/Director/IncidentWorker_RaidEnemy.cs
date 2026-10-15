@@ -47,7 +47,10 @@ namespace SimWorld.Director
     /// rather than a running game. A civilization with settlements resolves through them.
     /// <para/>
     /// Arrival is RimWorld's <c>PawnsArrivalModeWorker_EdgeWalkIn</c>: one entry cell on a random map edge for
-    /// the group, then each pawn placed on a walkable cell near it (<see cref="ClosewalkRadius"/>), and then
+    /// the group — a cell a pawn can stand on and the colony can be reached from
+    /// (<see cref="SimWorld.AI.RCellFinder.TryFindRandomPawnEntryCell"/>; a map with no such cell gets no raid,
+    /// as in RimWorld) — then each pawn placed on a walkable cell of that cell's own connected area near it
+    /// (<see cref="ClosewalkRadius"/>, <see cref="CellFinder.RandomClosewalkCellNear"/>), and then
     /// — the part that used to be missing, and that left a generated raid standing on the map edge for as
     /// long as anyone cared to watch — the squad is handed the standing goal that walks it to the town
     /// (<see cref="SimWorld.AI.DutyDefOf.AssaultSettlement"/>, assigned in <see cref="Arrive"/>). The
@@ -79,11 +82,6 @@ namespace SimWorld.Director
         /// <summary>RimWorld's own <c>PawnsArrivalModeWorker_EdgeWalkIn</c> constant: each arriving pawn is
         /// placed on a walkable cell within this radius of the group's entry cell.</summary>
         public const int ClosewalkRadius = 8;
-
-        /// <summary>Tries before <see cref="RandomClosewalkCellNear"/> gives up and uses the entry cell itself
-        /// — RimWorld's <c>CellFinder.RandomClosewalkCellNear</c> bails to the root the same way rather than
-        /// searching exhaustively for a cell a raid does not need to be on.</summary>
-        private const int ClosewalkTries = 30;
 
         protected override bool CanFireNowSub(IncidentParms parms) => parms.points > 0f && ResolveFaction(parms) != null;
 
@@ -125,7 +123,9 @@ namespace SimWorld.Director
             Map.Map? map = ArrivalMapFor(civ, LastRaidSettlement);
             if (map != null)
             {
-                Arrive(pawns, faction, map, Rand.Current);
+                // RimWorld's TryResolveRaidSpawnCenter: no cell to arrive on is no raid, and it is decided before
+                // anything is recorded, so the chronicle never hears of a raid that did not happen.
+                if (!Arrive(pawns, faction, LastRaidSettlement?.faction, map, Rand.Current)) return false;
             }
             else if (LastRaidSettlement != null)
             {
@@ -197,17 +197,22 @@ namespace SimWorld.Director
             Find.God.Attention.FocusedTile == settlement.tile;
 
         /// <summary>
-        /// RimWorld's <c>PawnsArrivalModeWorker_EdgeWalkIn.Arrive</c>: one entry cell for the group, then
-        /// <c>CellFinder.RandomClosewalkCellNear(spawnCenter, map, 8)</c> per pawn. The port previously
-        /// computed the edge cell once and spawned the whole squad on that single cell — a bug, not a
-        /// simplification: a raid arrived as one stack of pawns standing inside each other.
+        /// RimWorld's <c>PawnsArrivalModeWorker_EdgeWalkIn</c>: <c>TryResolveRaidSpawnCenter</c> finds one entry
+        /// cell for the group (<c>RCellFinder.TryFindRandomPawnEntryCell</c>), then <c>Arrive</c> puts each pawn on
+        /// <c>CellFinder.RandomClosewalkCellNear(spawnCenter, map, 8)</c>. False, with nobody spawned, when the
+        /// map has no edge cell a pawn can stand on and walk to the colony from.
+        /// <para/>This used to take any cell of any edge and any standable offset near it, and fall back to the
+        /// edge cell itself after thirty misses. On a map whose east edge is rock that put three raiders on an
+        /// impassable cell: they belonged to no region, no job could be found for them, and they stood there
+        /// for four in-game days (<see cref="CellFinder"/> has the whole story). The port previously computed
+        /// the edge cell once and spawned the whole squad on that single cell before that — also a bug.
         /// </summary>
-        private static void Arrive(IReadOnlyList<Pawn> pawns, Faction faction, Map.Map map, RandomStream rand)
+        private static bool Arrive(IReadOnlyList<Pawn> pawns, Faction faction, Faction? colony, Map.Map map, RandomStream rand)
         {
-            IntVec3 entry = RandomEdgeCell(map, rand);
+            if (!SimWorld.AI.RCellFinder.TryFindRandomPawnEntryCell(out IntVec3 entry, map, colony, rand)) return false;
             for (int i = 0; i < pawns.Count; i++)
             {
-                GenSpawn.Spawn(pawns[i], RandomClosewalkCellNear(entry, map, ClosewalkRadius, rand), map);
+                GenSpawn.Spawn(pawns[i], CellFinder.RandomClosewalkCellNear(entry, map, ClosewalkRadius, rand), map);
             }
 
             // The line this class's own doc used to describe as somebody else's problem ("walking the squad
@@ -220,38 +225,7 @@ namespace SimWorld.Director
             // Every strategy gets the assault job: RimWorld's siege has a lord job of its own, and this port's
             // Siege strategy has never behaved as anything but an assault.
             SimWorld.AI.Group.LordMaker.MakeNewLord(faction, new SimWorld.AI.Group.LordJob_AssaultColony(faction), map, pawns);
-        }
-
-        /// <summary>
-        /// A standable cell within <paramref name="radius"/> of <paramref name="root"/> (RimWorld:
-        /// <c>Verse.CellFinder.RandomClosewalkCellNear</c>), falling back to <paramref name="root"/> after
-        /// <see cref="ClosewalkTries"/> misses. RimWorld additionally requires the cell to be in the same
-        /// region and reachable; that check is not made here, because the entry cell is a map edge and the
-        /// squad's approach to the colony is AI's to own — see the class doc.
-        /// </summary>
-        private static IntVec3 RandomClosewalkCellNear(IntVec3 root, Map.Map map, int radius, RandomStream rand)
-        {
-            IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
-            int inRadius = GenRadial.NumCellsInRadius(radius);
-            for (int i = 0; i < ClosewalkTries; i++)
-            {
-                IntVec3 candidate = root + pattern[rand.Range(0, inRadius)];
-                if (GenGrid.InBounds(candidate, map) && GenGrid.Standable(candidate, map)) return candidate;
-            }
-            return root;
-        }
-
-        /// <summary>A random cell on one of the four map edges (RimWorld's usual raid entry point) — the
-        /// group's entry point, which <see cref="Arrive"/> then scatters around.</summary>
-        private static IntVec3 RandomEdgeCell(Map.Map map, RandomStream rand)
-        {
-            switch (rand.Range(0, 4))
-            {
-                case 0: return new IntVec3(0, rand.Range(0, map.Size.z));
-                case 1: return new IntVec3(map.Size.x - 1, rand.Range(0, map.Size.z));
-                case 2: return new IntVec3(rand.Range(0, map.Size.x), 0);
-                default: return new IntVec3(rand.Range(0, map.Size.x), map.Size.z - 1);
-            }
+            return true;
         }
     }
 }

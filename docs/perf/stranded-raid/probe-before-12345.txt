@@ -1,0 +1,59 @@
+# probe seed=12345 days=60 solo=False map=200x200
+day 22.92 RAID#1 Grey reach x9 arrive@(30, 0, 197) (29, 0, 194) (30, 0, 199) (30, 0, 196) connectedToColony=1
+day 22.92 RAID#1 toil -> LordToil_AssaultColony (9 pawns, ticksInToil 0)
+day 23.04 RAID#1 toil -> LordToil_PanicFlee (4 pawns, ticksInToil 9)
+day 23.06 RAID#1 lord gone (last toil LordToil_PanicFlee)
+day 25.23 RAID#2 Grey reach x5 arrive@(52, 0, 0) (60, 0, 0) connectedToColony=0
+day 25.23 RAID#2 toil -> LordToil_AssaultColony (5 pawns, ticksInToil 0)
+day 25.81 RAID#2 toil -> LordToil_ExitMap (4 pawns, ticksInToil 22)
+day 34.95 RAID#2 toil -> LordToil_PanicFlee (2 pawns, ticksInToil 3)
+day 34.97 RAID#2 lord gone (last toil LordToil_PanicFlee)
+day 34.98 RAID#3 Crimson reach x6 arrive@(92, 0, 2) (94, 0, 4) (98, 0, 2) (89, 0, 5) connectedToColony=1
+day 34.98 RAID#3 toil -> LordToil_AssaultColony (6 pawns, ticksInToil 0)
+day 35.03 RAID#3 toil -> LordToil_PanicFlee (3 pawns, ticksInToil 9)
+day 35.05 RAID#3 lord gone (last toil LordToil_PanicFlee)
+day 44.47 RAID#4 Grey reach x5 arrive@(104, 0, 195) (114, 0, 199) (115, 0, 195) (110, 0, 192) connectedToColony=1
+day 44.47 RAID#4 toil -> LordToil_AssaultColony (5 pawns, ticksInToil 0)
+day 44.50 RAID#4 toil -> LordToil_PanicFlee (2 pawns, ticksInToil 16)
+day 44.52 RAID#4 lord gone (last toil LordToil_PanicFlee)
+day 46.72 RAID#5 Grey reach x5 arrive@(1, 0, 197) (2, 0, 198) (0, 0, 197) (1, 0, 196) connectedToColony=0
+day 46.72 RAID#5 toil -> LordToil_AssaultColony (5 pawns, ticksInToil 0)
+day 46.72 RAID#5 lord gone (last toil LordToil_AssaultColony)
+day 53.45 RAID#6 Wolf watch x7 arrive@(182, 0, 194) (170, 0, 196) (183, 0, 196) (183, 0, 197) connectedToColony=1
+day 53.45 RAID#6 toil -> LordToil_AssaultColony (7 pawns, ticksInToil 0)
+day 53.53 RAID#6 toil -> LordToil_PanicFlee (3 pawns, ticksInToil 11)
+day 53.54 RAID#6 lord gone (last toil LordToil_PanicFlee)
+day 55.35 RAID#7 Grey reach x6 arrive@(6, 0, 64) (5, 0, 59) (0, 0, 64) (3, 0, 65) connectedToColony=1
+day 55.35 RAID#7 toil -> LordToil_AssaultColony (6 pawns, ticksInToil 0)
+day 55.42 RAID#7 toil -> LordToil_PanicFlee (3 pawns, ticksInToil 9)
+day 55.43 RAID#7 lord gone (last toil LordToil_PanicFlee)
+
+## seed 12345: 3600000 ticks in 994.8s = 3619 ticks/s
+day secs | raider-samples no-job/total (sampled every 25 ticks)
+  day 23:    3.2s  idle 9/1783
+  day 24:    3.6s  idle 0/797
+  day 26:   60.2s  idle 6531/7489
+  day 27:  147.4s  idle 7275/9600
+  day 28:  119.4s  idle 6663/9600
+  day 29:  106.8s  idle 6552/9600
+  day 30:   95.0s  idle 6552/9600
+  day 31:   85.9s  idle 6552/9600
+  day 32:   95.3s  idle 6552/9600
+  day 33:   72.8s  idle 6552/9600
+  day 34:   44.7s  idle 6552/9600
+  day 35:   41.9s  idle 6162/9450
+  day 36:    2.1s  idle 0/511
+  day 45:    2.4s  idle 5/412
+  day 47:    2.1s  idle 5/5
+  day 54:    2.1s  idle 7/1247
+  day 56:    1.8s  idle 6/958
+
+raid | day | faction | n | arrival cells | connected | everClose | everAttacked | firstClose(day) | end | noJob% 
+1 | 22.92 | Grey reach | 9 | (30, 0, 197) (29, 0, 194) (30, 0, 199) | 1 | True | True | 22.92 | 23.06 lord dissolved | 0%
+2 | 25.23 | Grey reach | 5 | (52, 0, 0) (60, 0, 0) | 0 | True | True | 25.25 | 34.97 lord dissolved | 71%
+3 | 34.98 | Crimson reach | 6 | (92, 0, 2) (94, 0, 4) (98, 0, 2) | 1 | True | True | 34.99 | 35.05 lord dissolved | 1%
+4 | 44.47 | Grey reach | 5 | (104, 0, 195) (114, 0, 199) (115, 0, 195) | 1 | True | True | 44.48 | 44.52 lord dissolved | 1%
+5 | 46.72 | Grey reach | 5 | (1, 0, 197) (2, 0, 198) (0, 0, 197) | 0 | False | False | - | 46.72 lord dissolved | 100%
+6 | 53.45 | Wolf watch | 7 | (182, 0, 194) (170, 0, 196) (183, 0, 196) | 1 | True | True | 53.46 | 53.54 lord dissolved | 1%
+7 | 55.35 | Grey reach | 6 | (6, 0, 64) (5, 0, 59) (0, 0, 64) | 1 | True | True | 55.36 | 55.43 lord dissolved | 1%
+end: player humanlikes on map 10; total raider samples idle 65975/99452

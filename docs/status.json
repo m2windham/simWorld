@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 3284,
+  "testsTotal": 3305,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1028,7 +1028,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 339,
+      "tests": 350,
       "items": [
         {
           "id": "ai.thinktree",
@@ -1217,7 +1217,12 @@
         },
         {
           "id": "ai.raidstranded",
-          "label": "Raiders stranded on a map edge: a RaidEnemy squad placed on a cell from which it cannot reach the settlement stands there with duty AssaultSettlement and no job, and the think tree runs every tick for days (seed 777 after the wealth term: three raiders at (199,0,49) from day 14, ~37 s of CPU each over four days; 40 days took 476 s against 106 s). Pre-existing; bigger raids expose it. The player sees a raid that never arrives.",
+          "label": "A raid lands where it can reach the colony, and a think tree always ends in a job. Every stuck raider stood on a rock cell (walkable false, no region): Arrive took any edge cell, and its closewalk fell back to the root. Now RCellFinder.TryFindRandomPawnEntryCell (standable, unroofed, Reachability.CanReachColony; no such cell, no raid, as RimWorld) and CellFinder.RandomClosewalkCellNear (only regions joined to the root). Both main think trees end in JobGiver_IdleError (a 100-tick Wait), so a pawn with nothing to do waits instead of re-thinking every tick. An assault with no path leaves by the ExitMap tier inside the give-up window. Seed 777: 3 of 6 raids had arrived in rock and never come; 60 days 908 s → 153 s of CPU (3,963 → 23,520 ticks/s). Translations in code: CanReachColony's colonist-building leg is not ported (buildings have owners only for wealth), CanReachBiggestMapEdgeRoom counts cells, not regions. Evidence: docs/perf/stranded-raid.md. Tests: IdleErrorTests, StrandedRaidTests, RaidArrivalReachabilityTests.",
+          "done": true
+        },
+        {
+          "id": "ai.sappers.open",
+          "label": "Open: an assault with no path in RimWorld digs (LordToil_AssaultColonySappers) or trashes the colony's walls (JobGiver_AITrashColonyClose, JobGiver_AITrashBuildingsDistant); this port has no digging, and trashing needs the colony's buildings to carry their owner in AI (Building.faction exists now, for wealth). Until then a raid that cannot reach leaves.",
           "done": false
         },
         {
@@ -1245,7 +1250,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "ported",
-      "tests": 345,
+      "tests": 355,
       "items": [
         {
           "id": "director.personality",
