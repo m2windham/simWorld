@@ -14,8 +14,9 @@ namespace SimWorld.AI
     /// to end in <see cref="JobGiver_WanderAnywhere"/>, which gives up after eight random offsets all land
     /// on cells it cannot stand on or reach — and a pawn standing in a place with no such cell (three raiders
     /// spawned inside a rock face were the case that found it) was asked the whole tree, every tier, on every
-    /// tick, for as long as it lived: 37 seconds of CPU apiece over four in-game days, and a share of the random
-    /// stream drawn each tick by the wander's offsets, for pawns that were doing nothing at all.
+    /// tick, for as long as it lived: several times the cost of a day without them (<c>docs/perf/stranded-raid.md</c>
+    /// has the days), and eight draws from the random stream a tick for the wander's offsets, for pawns that were
+    /// doing nothing at all.
     ///
     /// <para/><b>RimWorld logs an error here</b> ("The behavior tree should never get here"), because its
     /// wander never fails. This port's can, legitimately, so the node is quiet: a pawn boxed in, or a raider
