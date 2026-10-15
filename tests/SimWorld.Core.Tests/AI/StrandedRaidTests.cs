@@ -135,6 +135,7 @@ namespace SimWorld.Tests.AI
 
             // Three raiders, a thousand-odd ticks each: a wait's worth of asking apiece, not a tick's.
             Assert.True(runs <= squad.Count * (ticks / JobGiver_IdleError.WaitTime + 2), "asked " + runs + " times in " + ticks + " ticks");
+            Assert.True(runs <= squad.Count * ticks / 10, "asked " + runs + " times in " + ticks + " ticks");
             Assert.All(squad, r => Assert.Equal(WaitJobDefOf.Wait, r.jobs.curJob?.def));
             Assert.True(lord.ticksInToil > 0, "the lord should still be ticking");
         }

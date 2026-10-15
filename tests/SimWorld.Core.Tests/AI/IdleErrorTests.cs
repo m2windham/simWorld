@@ -34,6 +34,11 @@ namespace SimWorld.Tests.AI
     /// </summary>
     public class IdleErrorTests : ContentTestBase
     {
+        /// <summary>A pawn with nothing to do must not be asked more often than this, whatever the wait is
+        /// tuned to. A band and not RimWorld's number: <see cref="JobGiver_IdleError.WaitTime"/> is the tuned
+        /// value, and a bound written in terms of it alone would follow it down to one.</summary>
+        private const int AtMostOneThinkPerThisManyTicks = 10;
+
         public IdleErrorTests(CoreContentFixture content) : base(content)
         {
             Find.FactionManager = new FactionManager();
@@ -150,6 +155,7 @@ namespace SimWorld.Tests.AI
             Assert.True(runs >= ticks / JobGiver_IdleError.WaitTime - 1, "it should still look again when the wait is up; asked " + runs + " times");
             Assert.True(runs <= ticks / JobGiver_IdleError.WaitTime + 2,
                 "a pawn with nothing to do was asked the whole tree " + runs + " times in " + ticks + " ticks");
+            Assert.True(runs <= ticks / AtMostOneThinkPerThisManyTicks, "asked " + runs + " times in " + ticks + " ticks");
         }
 
         [Fact]
@@ -169,6 +175,7 @@ namespace SimWorld.Tests.AI
             Assert.True(runs >= 2, "it should look again when the wait is up; asked " + runs + " times");
             Assert.True(runs <= ticks / JobGiver_IdleError.WaitTime + 2,
                 "a pawn inside rock was asked the whole tree " + runs + " times in " + ticks + " ticks");
+            Assert.True(runs <= ticks / AtMostOneThinkPerThisManyTicks, "asked " + runs + " times in " + ticks + " ticks");
             Assert.Equal(WaitJobDefOf.Wait, pawn.jobs.curJob?.def);
         }
 
@@ -182,6 +189,7 @@ namespace SimWorld.Tests.AI
             int runs = CountThinkRuns(ThinkTreeDefOf.Animal, () => RunTicks(ticks, husky));
 
             Assert.True(runs <= ticks / JobGiver_IdleError.WaitTime + 2, "asked " + runs + " times in " + ticks + " ticks");
+            Assert.True(runs <= ticks / AtMostOneThinkPerThisManyTicks, "asked " + runs + " times in " + ticks + " ticks");
             Assert.Equal(WaitJobDefOf.Wait, husky.jobs.curJob?.def);
         }
 
