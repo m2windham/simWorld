@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-09-24",
-  "testsTotal": 3245,
+  "testsTotal": 3284,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -809,7 +809,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "ported",
-      "tests": 195,
+      "tests": 210,
       "items": [
         {
           "id": "health.body",
@@ -923,8 +923,18 @@
         },
         {
           "id": "health.postraidbleed",
-          "label": "A settlement bleeds out after its raids are over (seed 12345: 27 deaths in 60 days, 22 of them disease, nearly all WoundInfection). Citizens fight calm animals (AttackStatic against a non-hostile Muffalo/Husky/Chicken whose grudge points back) and are bitten repeatedly; the colony's 20 medicine are gone by day ~20 and never replenished, so tend quality caps at 0.3 × skill and infections narrowly win the race against immunity. Open: why a citizen engages a calm animal, whether animal bites hit at RimWorld's scale, and medicine supply after the starting stock.",
-          "done": false
+          "label": "A settlement no longer bleeds out after its raids. Diagnosed on seed 12345 (27 deaths, 22 of them disease): taming and brawls produced most non-raid wounds, and infections won the race for four port-side reasons. With the fixes alone, seed 12345 went from extinct (29 deaths) to 26 alive (6 deaths); wound events off raids 594 → 10, grudges 133 → 9, days with no medicine 43 → 0. The medicine chain was faithful (herb garden sown day 3, harvested ~day 14); what drained it was demand from brawl bruises and animal bites. Tests: TamingRevengeTests, AnimalBiteTests, WoundInfectionRuleTests, MedicalTendQualityStatTests, SocialTests.",
+          "done": true
+        },
+        {
+          "id": "health.infection",
+          "label": "Wound infection is RimWorld's: HediffComp_Infecter's chance scales with severity (0.1 at 1 to 1.0 at 12), animals ×0.1, no second infection while immune or already infected, the tended factor 0.7 → 0.4 (decompile); a tend's ±0.25 variance is capped by the medicine's MedicalQualityMax rather than the tend's own base (it could only roll below); a timed tend covers base + overlap (TendTicksFull, 15 h for an infection); an infection the body has beaten is no longer tendable (TendableNow). Tests: WoundInfectionRuleTests.",
+          "done": true
+        },
+        {
+          "id": "health.tendquality",
+          "label": "MedicalTendQuality is RimWorld's stat: 20% + 10% per Medicine level, Manipulation and Sight capacity factors, and its post-process curve (skill 5 → 0.70, 8 → 1.00, 20 → 1.55; rimworldwiki), replacing a hand-written 0.30-to-1.00 table. Tests: MedicalTendQualityStatTests.",
+          "done": true
         }
       ]
     },
@@ -1002,6 +1012,11 @@
           "id": "work.allgivers",
           "label": "Every WorkGiverDef in content now carries a real giverClass — 29 of 29. WardenDeliverFood was the last, and its recorded blocker had expired rather than been wrong: it needed a room concept to ask 'is there food in this prisoner's own room', and RoomTracker landed two batches later",
           "done": true
+        },
+        {
+          "id": "work.defaultpriorities",
+          "label": "Open: everyone does every job, so anyone tends. RimWorld's Pawn_WorkSettings.EnableAndInitialize enables a new pawn's top six work types by skill; a settlement playing the player would also put its best doctors on tending. This is now the main reason an infection kills (mean tend quality on fatal infections 0.07–0.55).",
+          "done": false
         }
       ]
     },
@@ -1013,7 +1028,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
       "status": "ported",
-      "tests": 320,
+      "tests": 339,
       "items": [
         {
           "id": "ai.thinktree",
@@ -1203,6 +1218,21 @@
         {
           "id": "ai.raidstranded",
           "label": "Raiders stranded on a map edge: a RaidEnemy squad placed on a cell from which it cannot reach the settlement stands there with duty AssaultSettlement and no job, and the think tree runs every tick for days (seed 777 after the wealth term: three raiders at (199,0,49) from day 14, ~37 s of CPU each over four days; 40 days took 476 s against 106 s). Pre-existing; bigger raids expose it. The player sees a raid that never arrives.",
+          "done": false
+        },
+        {
+          "id": "ai.animals.tamerevenge",
+          "label": "Taming is RimWorld's: the race's own manhunterOnTameFailChance rolled on every attempt before the success roll (Pawn_MindState.CheckStartMentalStateBecauseRecruitAttempted; 0% for Muffalo, Husky and Chicken per the wiki), TameUtility.TriedToTameTooRecently (30000 ticks), WorkGiver_InteractAnimal.CanInteractWithAnimal (not downed, asleep or angry), and a tamed animal's mind is cleared (Pawn.SetFaction → ClearMind). The invented 0.5 × wildness revenge is gone. Tests: TamingRevengeTests.",
+          "done": true
+        },
+        {
+          "id": "ai.combat.nativetools",
+          "label": "Animals strike with their own tools (wiki values: Muffalo head, legs and a 0.5-chance bite; Husky claws, teeth and head; Chicken feet, beak and head), chosen by AdjustedMeleeSelectionWeight (damage² × chanceFactor) and re-chosen every 60 ticks (Pawn_MeleeVerbs); a melee blow lands on BodyPartDepth.Outside (Verb_MeleeAttackDamage). Was one synthetic bite of power 10 × body size that could reach the heart. Tests: AnimalBiteTests.",
+          "done": true
+        },
+        {
+          "id": "ai.huntrevenge",
+          "label": "Open: hunt revenge is a stand-in. RimWorld's is per-race (Husky and Chicken 0%, Muffalo 10% × distance × (1 − HuntingStealth)); this port has no HuntingStealth stat, so the faithful rule would roll ~20% per arrow. The stand-in still sets 5–10 grudges per 60 days, some on huskies and chickens (HuntingTuning says what it costs).",
           "done": false
         }
       ]
@@ -1807,7 +1837,7 @@
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Social · Social/Ideology",
       "status": "ported",
-      "tests": 75,
+      "tests": 80,
       "items": [
         {
           "id": "social.opinion",
@@ -1838,6 +1868,16 @@
           "id": "social.socialfight",
           "label": "Three porting defects, and the first is structural. (1) MentalState_SocialFighting.MentalStateTick built a Verb_MeleeAttack and cast it at the other pawn AT DISTANCE ZERO - no map, no position, no reach check. RimWorld's mental state throws nothing: it is lifecycle only, and the blows come from a job (JobGiver_SocialFighting -> JobDefOf.SocialFight) that returns null unless both pawns are spawned on the same map and then has to walk across it. That is why citizens of a settlement NOBODY HAD EVER OPENED - with no map in existence - were injuring each other from nowhere, and why three to five of twenty-five founders were gone by day eight in a world none of it could have happened in. (2) The hand-built fists Tool used a 1-second cooldown against Tool's own 2-second default: the same punch at two speeds. Fists now come from AttackVerbUtility.NaturalWeaponFor, which is also RimWorld's reason a colonist with a knife on their belt still brawls bare-handed - the fight verb is drawn from verbTracker.AllVerbs, which holds natural tools and never the equipped weapon. (3) The escalation roll was a flat 15% behind two gates RimWorld does not have (opinion < -20 AND mood < 0.4), and its own doc claimed it was RimWorld's. Pawn_InteractionsTracker.SocialFightChance is 4% base scaled by continuous factors - manipulation and moving capacity, opinion, traits, age gap - now ported; the 4% comes from the wiki rather than a def and is flagged as a secondary source. HadCatharticFight and HadAngeringFight were missing outright, so a fight could only ever cost mood; RimWorld hands both parties one at 50/50 in PostEnd. Consequence, three seeds, eight days: an unwatched settlement went from losing 3-5 of 25 to losing NOBODY, with no injuries and no Pain anywhere. Stated at the site: an unwatched settlement can no longer brawl at all, since a fight now requires both parties spawned on one map.",
           "done": true
+        },
+        {
+          "id": "social.negativeinteraction",
+          "label": "Insults are RimWorld's share of what people say (NegativeInteractionUtility: weight 0.007 against chitchat 1 via the opinion curve, Abrasive ×2.3, Kind never; Slight by the same ratio), not weight 1 against 10 with a flat ×6 opinion step and a ×3 mood term; pawns who cannot do violence neither start nor join a social fight. Brawl wounds 84–148 per 60 days → near none. Tests: SocialTests.",
+          "done": true
+        },
+        {
+          "id": "social.interactionrate.open",
+          "label": "Open: the interaction rate is 0.6 per pawn per hour with no sleep gating (RimWorld ~1 per 6600 ticks), deep talk weighs 0.4 against RimWorld's 0.075, and immunity gain has a per-instance ×0.8–1.2 spread RimWorld does not.",
+          "done": false
         }
       ]
     },
