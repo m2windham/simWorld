@@ -433,7 +433,10 @@ namespace SimWorld.Tests.AI
 
             b.jobs.StartJob(new Job(JobDefOf.Mine, rock));
 
-            Assert.Null(b.jobs.curJob);
+            // The job ended at once. What the pawn does next is the think tree's business, and the tree always
+            // ends in a job now (JobGiver_IdleError), so "no job at all" is not what ending looks like.
+            Assert.True(b.jobs.curJob == null || b.jobs.curJob.def != JobDefOf.Mine,
+                "a job whose target is already claimed must not be the one the pawn is running");
         }
 
         // ---- End-to-end: the point of the whole module ----

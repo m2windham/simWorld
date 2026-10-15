@@ -68,10 +68,12 @@ namespace SimWorld.AI
         /// <summary>
         /// Whether <paramref name="c"/> is joined to the largest connected open area that touches the map's edge
         /// (RimWorld: <c>Reachability.CanReachBiggestMapEdgeRoom</c>). RimWorld measures a <c>Room</c> by its
-        /// regions; this port's regions are not grouped into rooms (<see cref="Region"/> says why), so the unit
-        /// here is the connected area itself — the same set once a doorway is passable, which this port's
-        /// regions already treat it as. The first of equally large areas wins, in region order, as RimWorld's
-        /// first room does.
+        /// region count, which is a measure of area there because its regions are small (twelve cells a side at
+        /// most). This port's regions are as large as the open ground they flood — one region can be the whole
+        /// outdoors — so counting them would call a one-region strip the equal of the map; the area is measured
+        /// in cells. They are not grouped into rooms either (<see cref="Region"/> says why), so the unit is the
+        /// connected area itself, which is the same set once a doorway is passable, as this port's regions treat
+        /// it. The first of equally large areas wins, in region order, as RimWorld's first room does.
         /// </summary>
         public bool CanReachBiggestMapEdgeRoom(IntVec3 c)
         {
@@ -92,20 +94,20 @@ namespace SimWorld.AI
             var seen = new HashSet<Region>();
             var queue = new Queue<Region>();
             Region? best = null;
-            int bestCount = 0;
+            int bestCells = 0;
 
             for (int i = 0; i < all.Count; i++)
             {
                 Region start = all[i];
                 if ((start.type & RegionType.Set_Passable) == 0 || !seen.Add(start)) continue;
 
-                int count = 0;
+                int cells = 0;
                 bool touchesEdge = false;
                 queue.Enqueue(start);
                 while (queue.Count > 0)
                 {
                     Region cur = queue.Dequeue();
-                    count++;
+                    cells += cur.Cells.Count;
                     if (!touchesEdge && TouchesMapEdge(cur)) touchesEdge = true;
                     IReadOnlyList<RegionLink> links = cur.Links;
                     for (int l = 0; l < links.Count; l++)
@@ -116,10 +118,10 @@ namespace SimWorld.AI
                     }
                 }
 
-                if (touchesEdge && count > bestCount)
+                if (touchesEdge && cells > bestCells)
                 {
                     best = start;
-                    bestCount = count;
+                    bestCells = cells;
                 }
             }
             return best;
