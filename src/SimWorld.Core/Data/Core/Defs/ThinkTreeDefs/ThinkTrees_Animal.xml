@@ -56,6 +56,9 @@
 
         <li Class="SimWorld.AI.JobGiver_WanderAnywhere" />
 
+        <!-- The tree ends in a job, as the humanlike one does: see SimWorld.AI.JobGiver_IdleError. -->
+        <li Class="SimWorld.AI.JobGiver_IdleError" />
+
       </subNodes>
     </thinkRoot>
   </ThinkTreeDef>

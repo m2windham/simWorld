@@ -167,6 +167,15 @@
 
         <li Class="SimWorld.AI.JobGiver_WanderAnywhere" />
 
+        <!--
+          The tree always ends in a job (RimWorld: JobGiver_IdleError, the last node of its Humanlike tree). The
+          wander above gives up when no cell near the pawn can be stood on and reached, and a pawn that was
+          then given nothing was asked this whole tree again on the very next tick, and the next, for ever.
+          Waiting a hundred ticks costs the pawn nothing it was getting, and the constant think tree can still
+          interrupt the wait for a fight. See SimWorld.AI.JobGiver_IdleError.
+        -->
+        <li Class="SimWorld.AI.JobGiver_IdleError" />
+
       </subNodes>
     </thinkRoot>
   </ThinkTreeDef>

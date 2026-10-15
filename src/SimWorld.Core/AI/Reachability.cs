@@ -15,7 +15,7 @@ namespace SimWorld.AI
     /// change anywhere, however small (see this repository's <c>ai.regions</c> tracker item for that
     /// history) — that cost now lives, correctly scoped, in the region graph instead.
     /// </summary>
-    public sealed class Reachability
+    public sealed partial class Reachability
     {
         private readonly Map.Map map;
 

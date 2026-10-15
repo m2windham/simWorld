@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The wait a think tree ends in (SimWorld.AI.JobGiver_IdleError; RimWorld's JobDefOf.Wait). Its own file
+    rather than an entry appended to JobDefs_Core.xml: DefLoader.AddDirectory reads every XML file under a Def
+    folder, so an additive JobDef needs no edit to a shared file (CLAUDE.md). Bound by SimWorld.AI.WaitJobDefOf.
+
+    It runs JobDriver_Wait, the driver Wait_Wander already uses, and keeps the default casualInterruptible: a
+    pawn that has nothing to do is exactly the pawn the constant think tree should be free to hand a fight.
+  -->
+  <JobDef>
+    <defName>Wait</defName>
+    <driverClass>SimWorld.AI.JobDriver_Wait</driverClass>
+    <reportString>waiting.</reportString>
+  </JobDef>
+
+</Defs>
