@@ -480,6 +480,28 @@ namespace SimWorld.Tests.Conditions
             Assert.All(FireUtility.AllFires(map), f => Assert.IsType<Fire>(f));
         }
 
+        /// <summary>
+        /// RimWorld's flashstorm is a short event: 0.075 to 0.1 days of a strike every 320 to 800 ticks,
+        /// then no rain for a while (rimworldwiki.com/wiki/Events). This port's ran 0.4 to 1.2 days at a
+        /// similar rhythm — some fifty strikes — and nine in thirteen were followed by the loss of most of a
+        /// threat-free settlement (docs/perf/storyteller-pressure). Bands, not the literals.
+        /// </summary>
+        [Fact]
+        public void A_flashstorm_is_over_within_two_hours_having_thrown_a_handful_of_strikes()
+        {
+            NewWorld();
+            CoreMap map = NewMap(10);
+
+            Assert.True(FireIncident(ConditionIncidentDefOf.Flashstorm, new CivilizationTarget()));
+            var storm = (GameCondition_Flashstorm)Find.World!.gameConditionManager.ActiveConditions[0];
+
+            RunGameTicks(GenDate.TicksPerHour * 3, map);
+
+            Assert.Empty(Find.World!.gameConditionManager.ActiveConditions);
+            Assert.InRange(storm.StrikeCount, 3, 25);
+            Assert.True(map.weatherManager.Decider.RainDisabled, "the storm stays dry for a while after it has passed");
+        }
+
         /// <summary>A roof keeps the lightning out: the same storm over the same fuel, fully roofed, starts
         /// nothing. This is also what stops a storm setting fire to the inside of a building.</summary>
         [Fact]

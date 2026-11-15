@@ -101,7 +101,8 @@
     <targetTags><li>Map_PlayerHome</li></targetTags>
     <workerClass>SimWorld.Conditions.IncidentWorker_MakeGameCondition</workerClass>
     <baseChance>0.3</baseChance>
-    <minRefireDays>10</minRefireDays>
+    <!-- RimWorld's own gap (rimworldwiki.com/wiki/Events). baseChance is still this port's. -->
+    <minRefireDays>15</minRefireDays>
   </IncidentDef>
 
 </Defs>

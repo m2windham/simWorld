@@ -37,9 +37,9 @@
   </GameConditionDef>
 
   <!--
-    Shorter than the two temperature conditions because it is an event rather than a season: a flashstorm
-    that ran for a week would be throwing hundreds of strikes. See GameCondition_Flashstorm for the strike
-    cadence and for what an unwatched storm does (and deliberately does not do).
+    RimWorld's own length, 0.075 to 0.1 days (rimworldwiki.com/wiki/Events): a flashstorm is over in
+    under two in-game hours. See GameCondition_Flashstorm for the strike cadence, for what this was before,
+    and for what an unwatched storm does (and deliberately does not do).
   -->
   <GameConditionDef>
     <defName>Flashstorm</defName>
@@ -47,7 +47,7 @@
     <description>A dry lightning storm. Strikes fall on open ground and set alight whatever they find.</description>
     <conditionClass>SimWorld.Conditions.GameCondition_Flashstorm</conditionClass>
     <incident>Flashstorm</incident>
-    <durationDays>0.4~1.2</durationDays>
+    <durationDays>0.075~0.1</durationDays>
     <letterDef>NegativeEvent</letterDef>
     <endMessage>The flashstorm has blown itself out.</endMessage>
   </GameConditionDef>

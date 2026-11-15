@@ -34,15 +34,25 @@ namespace SimWorld.Conditions
     /// is real, its fires are real wherever there is a map, and a settlement nobody has opened is not
     /// silently burned by numbers nobody can check.
     ///
-    /// <para/><b>Constants.</b> RimWorld's shapes, recalled rather than sourced from a decompile in this
-    /// sandbox. Per CLAUDE.md the tests pin the behaviour they produce — a storm strikes many times over its
-    /// life, a strike only ignites what can burn, a roof keeps the lightning out — never these literals.
+    /// <para/><b>Constants.</b> The strike cadence, the storm's length (content: 0.075 to 0.1 days), the
+    /// 15-day refire gap (content) and the dry spell after it are RimWorld's, from
+    /// rimworldwiki.com/wiki/Events. They were recalled shapes before — a strike every 400 to 1,500 ticks
+    /// for 0.4 to 1.2 days — which made a storm some ten times as long as RimWorld's, about fifty strikes
+    /// where RimWorld throws about nine, with the rain held off for all of it. Measured on a threat-free
+    /// founding band (<c>docs/perf/storyteller-pressure</c>): nine storms in thirteen were followed by the
+    /// loss of four-fifths of the settlement. The strike's fire size and blast are still recalled, not
+    /// sourced, and the tests pin behaviour rather than any of these literals.
     /// </summary>
     public class GameCondition_Flashstorm : GameCondition
     {
         /// <summary>Ticks between strikes. Rolled fresh after every strike, so a storm's rhythm is uneven
         /// rather than metronomic.</summary>
-        public static readonly IntRange TicksBetweenStrikes = new IntRange(400, 1500);
+        public static readonly IntRange TicksBetweenStrikes = new IntRange(320, 800);
+
+        /// <summary>How long the rain is held off once the storm is over (RimWorld: 30,000 ticks after it
+        /// ends). Asked for again at every strike, the last of which falls within one strike gap of the end —
+        /// a condition here has no map in hand when it ends, only when it strikes.</summary>
+        public const int RainDisabledTicksAfterStorm = 30000;
 
         /// <summary>How big a fire a strike starts, before the fuel under it has any say (RimWorld's own
         /// lightning-strike ignition is a small range like this one).</summary>
@@ -108,7 +118,7 @@ namespace SimWorld.Conditions
         /// </summary>
         private void DoStrike(Map.Map map)
         {
-            map.weatherManager.Decider.DisableRainFor(TicksBetweenStrikes.max + 1);
+            map.weatherManager.Decider.DisableRainFor(RainDisabledTicksAfterStorm);
             if (!TryFindStrikeCell(map, out IntVec3 cell)) return;
             strikeCount++;
             FireUtility.TryStartFireIn(cell, map, Rand.Range(StrikeFireSize));
