@@ -94,11 +94,16 @@ namespace SimWorld.Health
             if (medicine != null && medicine.Destroyed) medicine = null;
 
             float quality = CalculateBaseTendQuality(doctor, patient, medicine?.def);
+            // The ceiling is the medicine's, not this tend's own base (RimWorld: TendUtility.DoTend passes
+            // medicine MedicalQualityMax, or NoMedicineQualityMax). Each hediff rolls quality +/- 0.25 and
+            // clamps to this; passing the base as its own ceiling cut off every roll above it, so a tend
+            // could only ever come out worse than the doctor's skill said, never better.
+            float maxQuality = medicine != null ? medicine.def.GetStatValue(HealthStatDefOf.MedicalQualityMax) : MaxQualityNoMedicine;
             var toTend = new List<Hediff>();
             GetOptimalHediffsToTendWithSingleTreatment(patient, usingMedicine: true, toTend);
             for (int i = 0; i < toTend.Count; i++)
             {
-                toTend[i].Tended(quality, quality, i);
+                toTend[i].Tended(quality, maxQuality, i);
             }
             if (toTend.Count > 0)
             {
