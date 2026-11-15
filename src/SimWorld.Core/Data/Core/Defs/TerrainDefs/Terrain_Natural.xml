@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Defs>
 
+  <!--
+    Fertility is RimWorld's, 1:1, from rimworldwiki.com/wiki/Terrain: soil 100%, rich soil 140%,
+    marshy soil 100%, stony soil (RimWorld's defName Gravel) 70%, sand 10%, marsh, mud, ice and all water 0%.
+    These were this port's own scale before (soil 1.4, rich 2.8, gravel 0, sand 0.6, marshy 1.1, marsh 0.9),
+    which put RimWorld's sourced crop gates out of reach: healroot needs 0.7 and could not grow on stony
+    ground at all.
+  -->
+
   <TerrainDef>
     <defName>Soil</defName>
     <label>soil</label>
     <pathCost>0</pathCost>
-    <fertility>1.4</fertility>
+    <fertility>1.0</fertility>
     <layerable>true</layerable>
     <affordances>
       <li>Light</li>
@@ -20,7 +28,7 @@
     <defName>SoilRich</defName>
     <label>rich soil</label>
     <pathCost>0</pathCost>
-    <fertility>2.8</fertility>
+    <fertility>1.4</fertility>
     <layerable>true</layerable>
     <affordances>
       <li>Light</li>
@@ -35,7 +43,7 @@
     <defName>Gravel</defName>
     <label>gravel</label>
     <pathCost>0</pathCost>
-    <fertility>0</fertility>
+    <fertility>0.7</fertility>
     <layerable>true</layerable>
     <affordances>
       <li>Light</li>
@@ -49,7 +57,7 @@
     <defName>Sand</defName>
     <label>sand</label>
     <pathCost>0</pathCost>
-    <fertility>0.6</fertility>
+    <fertility>0.1</fertility>
     <layerable>true</layerable>
     <affordances>
       <li>Light</li>
@@ -64,7 +72,7 @@
     <defName>MarshyTerrain</defName>
     <label>marshy soil</label>
     <pathCost>4</pathCost>
-    <fertility>1.1</fertility>
+    <fertility>1.0</fertility>
     <takeFootprints>true</takeFootprints>
     <affordances>
       <li>Light</li>
@@ -144,7 +152,7 @@
     <defName>Marsh</defName>
     <label>marsh</label>
     <pathCost>6</pathCost>
-    <fertility>0.9</fertility>
+    <fertility>0</fertility>
     <takeFootprints>true</takeFootprints>
     <affordances>
       <li>Light</li>
