@@ -20,22 +20,26 @@ namespace SimWorld.Building
     /// <list type="bullet">
     /// <item>a butcher's table, once an animal carcass lies on the map that could be butchered
     /// (<see cref="Corpse.IsButcherable"/>);</item>
-    /// <item>a tailor's table, once cloth or leather is in stock (a stack of a <c>Fabric</c> or
-    /// <c>Leathery</c> stuff) and a citizen is wearing nothing (<see cref="Pawn_ApparelTracker.WornApparel"/>);</item>
-    /// <item>a smithy, once metal is in stock (a stack of a <c>Metallic</c> stuff).</item>
+    /// <item>a tailor's table or a smithy, once one of its outfitting recipes is available
+    /// (<see cref="RecipeDef.AvailableNow"/>) and a citizen on the map lacks what it makes
+    /// (<see cref="OutfittingInitiative.Lacking"/>), the head count that bench's bill is then set to. A bench
+    /// nobody lacks anything from would hold no bill (<see cref="OutfittingInitiative"/> never queues a zero
+    /// target), and with no tailor's table standing no cotton field is sown either, so this is the gate that
+    /// starts the clothing chain.</item>
     /// </list>
     /// One of each, like the stove (<c>CookingTuning.StovesWanted</c>) and the stonecutter, for the same
     /// reason: the bench is not the bottleneck. Research prerequisites are honoured.
     ///
-    /// <para/><b>Built without the benches' construction content.</b> Their Blueprint and Frame defs land with
-    /// another lane. Every bench is looked up by name, and one with no Blueprint content is skipped, so this
-    /// does nothing until that content exists and needs no change when it does.
+    /// <para/><b>Content looked up by name.</b> Every bench is found by defName and one with no Blueprint
+    /// content is skipped, so a pack without the workshops simply gets none.
     ///
     /// <para/><b>Where.</b> The yard site first, when the material lies within a crafter's reach of it
     /// (<see cref="WorkGiver_DoBill.IngredientSearchRadius"/>, the reach a bill's ingredients are searched
     /// over), and otherwise the first free cell within that reach of the material, never on ground the
     /// compound keeps (<see cref="SettlementCompound.Refuses"/>). A bench out of reach of its material is a
-    /// bench nobody can work.
+    /// bench nobody can work. For the tailor's table and the smithy the material is any stack one of the
+    /// wanted recipes takes and any field growing a crop harvested as one (cotton for cloth); with none on
+    /// the map yet the bench goes in the yard, beside the storage whatever is harvested is hauled to.
     /// </summary>
     public static class SettlementWorkshops
     {
@@ -48,41 +52,99 @@ namespace SimWorld.Building
             if (settlement == null) throw new ArgumentNullException(nameof(settlement));
             if (map == null) throw new ArgumentNullException(nameof(map));
 
-            Ensure(map, ButcherDefName, SettlementCompound.WorkSite.Butcher, IsButcherableCarcass);
-            if (SomeoneWearsNothing(settlement)) Ensure(map, TailorDefName, SettlementCompound.WorkSite.Tailor, IsTailoringStock);
-            Ensure(map, SmithyDefName, SettlementCompound.WorkSite.Smithy, IsMetalStock);
+            EnsureButcher(map);
+            List<Pawn>? citizens = null;
+            EnsureOutfitting(map, TailorDefName, SettlementCompound.WorkSite.Tailor, ref citizens);
+            EnsureOutfitting(map, SmithyDefName, SettlementCompound.WorkSite.Smithy, ref citizens);
         }
 
-        private static void Ensure(Map.Map map, string benchDefName, SettlementCompound.WorkSite site, Func<Thing, bool> wants)
+        private static void EnsureButcher(Map.Map map)
         {
-            ThingDef? bench = DefDatabase<ThingDef>.GetNamedSilentFail(benchDefName);
-            if (bench == null || !bench.IsResearchFinished) return;
-            ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(bench);
-            if (blueprintDef == null) return;
-            if (SettlementWorksInitiative.CountBuiltOrPlanned(map, bench) > 0) return;
-
-            Thing? material = FirstWanted(map, wants);
-            if (material == null) return;
-
-            int reach = WorkGiver_DoBill.IngredientSearchRadius;
-            if (!TryYardSite(map, site, bench, reach, wants, out IntVec3 cell) && !TryNear(map, bench, material.Position, reach, out cell)) return;
-            GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), cell, map);
+            if (!TryBench(map, ButcherDefName, out ThingDef bench, out ThingDef blueprintDef)) return;
+            List<IntVec3> material = MaterialCells(map, t => t is Corpse corpse && corpse.IsButcherable);
+            if (material.Count == 0) return;
+            Place(map, SettlementCompound.WorkSite.Butcher, bench, blueprintDef, material);
         }
 
-        private static bool TryYardSite(Map.Map map, SettlementCompound.WorkSite site, ThingDef bench, int reach, Func<Thing, bool> wants, out IntVec3 cell)
+        /// <summary>The tailor's table or the smithy, once a citizen on the map lacks what one of its
+        /// available recipes makes. <paramref name="citizens"/> is read once a pass, on first need.</summary>
+        private static void EnsureOutfitting(Map.Map map, string benchDefName, SettlementCompound.WorkSite site, ref List<Pawn>? citizens)
         {
-            cell = default;
-            SettlementCompound? compound = map.settlementCompound;
-            if (compound == null || !compound.TryFindWorkSite(map, site, bench, out IntVec3 found)) return false;
-            foreach (IntVec3 c in CellRect.CenteredOn(found, reach).ClipInsideMap(map).Cells)
+            if (!TryBench(map, benchDefName, out ThingDef bench, out ThingDef blueprintDef)) return;
+
+            var wanted = new List<RecipeDef>();
+            IReadOnlyList<RecipeDef> recipes = bench.AllRecipes;
+            for (int r = 0; r < recipes.Count; r++)
             {
-                IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(c);
-                for (int i = 0; i < here.Count; i++)
+                RecipeDef recipe = recipes[r];
+                if (!OutfittingInitiative.IsOutfitting(recipe) || !recipe.AvailableNow) continue;
+                citizens ??= OutfittingInitiative.CitizensOn(map);
+                if (OutfittingInitiative.Lacking(recipe, citizens) > 0) wanted.Add(recipe);
+            }
+            if (wanted.Count == 0) return;
+
+            List<IntVec3> material = MaterialCells(map, t => t.def.category == ThingCategory.Item && TakesAny(wanted, t.def));
+            IReadOnlyList<Zone> zones = map.zoneManager.AllZones;
+            for (int z = 0; z < zones.Count; z++)
+            {
+                // A field growing what a recipe takes is the stock still to come.
+                if (zones[z] is Zone_Growing field && field.plantDefToGrow?.plant?.harvestedThingDef is ThingDef crop && TakesAny(wanted, crop))
                 {
-                    if (!wants(here[i])) continue;
-                    cell = found;
-                    return true;
+                    material.AddRange(field.Cells);
                 }
+            }
+            Place(map, site, bench, blueprintDef, material);
+        }
+
+        private static bool TakesAny(List<RecipeDef> recipes, ThingDef def)
+        {
+            for (int r = 0; r < recipes.Count; r++)
+            {
+                List<IngredientCount>? ingredients = recipes[r].ingredients;
+                if (ingredients == null) continue;
+                for (int i = 0; i < ingredients.Count; i++)
+                {
+                    if (ingredients[i].filter.Allows(def)) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>The bench and its blueprint, when the content exists, its research is done and none is
+        /// built or planned yet.</summary>
+        private static bool TryBench(Map.Map map, string benchDefName, out ThingDef bench, out ThingDef blueprintDef)
+        {
+            bench = null!;
+            blueprintDef = null!;
+            ThingDef? found = DefDatabase<ThingDef>.GetNamedSilentFail(benchDefName);
+            if (found == null || !found.IsResearchFinished) return false;
+            ThingDef? blueprint = GenConstruct.BlueprintDefFor(found);
+            if (blueprint == null) return false;
+            if (SettlementWorksInitiative.CountBuiltOrPlanned(map, found) > 0) return false;
+            bench = found;
+            blueprintDef = blueprint;
+            return true;
+        }
+
+        /// <summary>The yard site, when <paramref name="material"/> is empty or some of it lies within reach
+        /// of the site; else a free cell within reach of the first of it.</summary>
+        private static void Place(Map.Map map, SettlementCompound.WorkSite site, ThingDef bench, ThingDef blueprintDef, List<IntVec3> material)
+        {
+            int reach = WorkGiver_DoBill.IngredientSearchRadius;
+            SettlementCompound? compound = map.settlementCompound;
+            IntVec3 cell = default;
+            bool placed = compound != null && compound.TryFindWorkSite(map, site, bench, out cell)
+                && (material.Count == 0 || WithinReach(cell, material, reach));
+            if (!placed && material.Count > 0) placed = TryNear(map, bench, material[0], reach, out cell);
+            if (placed) GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), cell, map);
+        }
+
+        private static bool WithinReach(IntVec3 site, List<IntVec3> material, int reach)
+        {
+            CellRect around = CellRect.CenteredOn(site, reach);
+            for (int i = 0; i < material.Count; i++)
+            {
+                if (around.Contains(material[i])) return true;
             }
             return false;
         }
@@ -100,43 +162,15 @@ namespace SimWorld.Building
             return false;
         }
 
-        private static Thing? FirstWanted(Map.Map map, Func<Thing, bool> wants)
+        private static List<IntVec3> MaterialCells(Map.Map map, Func<Thing, bool> wants)
         {
+            var cells = new List<IntVec3>();
             IReadOnlyList<Thing> items = map.listerThings.ThingsInGroup(ThingRequestGroup.HaulableEver);
             for (int i = 0; i < items.Count; i++)
             {
-                if (items[i].Spawned && wants(items[i])) return items[i];
+                if (items[i].Spawned && wants(items[i])) cells.Add(items[i].Position);
             }
-            return null;
-        }
-
-        private static bool IsButcherableCarcass(Thing t) => t is Corpse corpse && corpse.IsButcherable;
-
-        private static bool IsTailoringStock(Thing t) => IsStuff(t, "Fabric") || IsStuff(t, "Leathery");
-
-        private static bool IsMetalStock(Thing t) => IsStuff(t, "Metallic");
-
-        private static bool IsStuff(Thing t, string category)
-        {
-            if (t.def.category != ThingCategory.Item || t.stackCount <= 0) return false;
-            List<StuffCategoryDef>? categories = t.def.stuffProps?.categories;
-            if (categories == null) return false;
-            for (int i = 0; i < categories.Count; i++)
-            {
-                if (categories[i].defName == category) return true;
-            }
-            return false;
-        }
-
-        private static bool SomeoneWearsNothing(Settlement settlement)
-        {
-            IReadOnlyList<Pawn> citizens = settlement.Citizens;
-            for (int i = 0; i < citizens.Count; i++)
-            {
-                Pawn p = citizens[i];
-                if (!p.Dead && p.apparel != null && p.apparel.WornApparel.Count == 0) return true;
-            }
-            return false;
+            return cells;
         }
     }
 }

@@ -10,6 +10,7 @@ using SimWorld.Research;
 using SimWorld.Sim;
 using SimWorld.Tests.Content;
 using SimWorld.Things;
+using SimWorld.Work;
 using SimWorld.World;
 
 using Xunit;
@@ -159,44 +160,93 @@ namespace SimWorld.Tests.Building
             }
         }
 
+        /// <summary>A citizen standing inside the ring, wearing and holding nothing, able to do violence: one
+        /// who lacks both a shirt and a knife.</summary>
+        private static Pawn SpawnBareCitizen(CoreMap map, Thing door)
+        {
+            for (int i = 0; ; i++)
+            {
+                Pawn p = NewHuman("Bare" + i);
+                if (p.WorkTagIsDisabled(WorkTags.Violent)) continue;
+                GenSpawn.Spawn(p, door.Position + new IntVec3(-2, 0, 0), map);
+                Assert.Empty(p.apparel!.WornApparel);
+                Assert.Null(p.equipment!.Primary);
+                return p;
+            }
+        }
+
         [Theory]
-        [InlineData(SettlementWorkshops.ButcherDefName)]
         [InlineData(SettlementWorkshops.TailorDefName)]
         [InlineData(SettlementWorkshops.SmithyDefName)]
-        public void A_workshop_goes_up_in_the_yard_only_once_something_wants_it(string benchName)
+        public void An_outfitting_bench_goes_up_in_the_yard_once_a_citizen_on_the_map_lacks_what_it_makes(string benchName)
         {
-            foreach (ResearchProjectDef p in DefDatabase<ResearchProjectDef>.AllDefsListForReading) Find.ResearchManager.FinishProject(p);
+            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("StoneTools"));
             (Settlement settlement, CoreMap map) = BuiltCompound();
             Thing door = TheDoor(map);
-            ThingDef? bench = DefDatabase<ThingDef>.GetNamedSilentFail(benchName);
+            ThingDef bench = Def(benchName);
 
-            // Nothing wanted yet (a band of naked citizens, but no cloth): nothing placed.
+            // The band is on the roster but nobody stands on the map, so nobody there lacks anything.
             SettlementWorkshops.Run(settlement, map);
             Assert.Empty(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint));
 
-            IntVec3 inside = door.Position + new IntVec3(-2, 0, 0);
-            switch (benchName)
-            {
-                case SettlementWorkshops.TailorDefName: SpawnStack(map, inside, "Cloth", 50); break;
-                case SettlementWorkshops.SmithyDefName: SpawnStack(map, inside, "Steel", 50); break;
-                default:
-                    Pawn deer = new Pawn(DefDatabase<ThingDef>.AllDefsListForReading.First(d => d.race != null && d.race.Animal), "Deer");
-                    GenSpawn.Spawn(deer, inside, map);
-                    deer.health.Kill(null, null);
-                    break;
-            }
+            SpawnBareCitizen(map, door);
+            SettlementWorkshops.Run(settlement, map);
+            Blueprint placed = Assert.Single(Planned(map, bench));
+            Assert.True(InTheYard(door, placed.Position), benchName + " at " + placed.Position);
+
+            // One of each: a second pass plans no second bench.
+            SettlementWorkshops.Run(settlement, map);
+            Assert.Single(Planned(map, bench));
+        }
+
+        [Fact]
+        public void A_smithy_waits_for_a_weapon_recipe_to_be_researched()
+        {
+            (Settlement settlement, CoreMap map) = BuiltCompound();
+            SpawnBareCitizen(map, TheDoor(map));
+
+            SettlementWorkshops.Run(settlement, map);
+            Assert.Empty(Planned(map, Def(SettlementWorkshops.SmithyDefName)));
+            Assert.Single(Planned(map, Def(SettlementWorkshops.TailorDefName))); // a shirt needs no research
+
+            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("StoneTools"));
+            SettlementWorkshops.Run(settlement, map);
+            Assert.Single(Planned(map, Def(SettlementWorkshops.SmithyDefName)));
+        }
+
+        [Fact]
+        public void A_tailors_table_goes_within_reach_of_a_cotton_field_the_yard_cannot_reach()
+        {
+            (Settlement settlement, CoreMap map) = BuiltCompound();
+            SpawnBareCitizen(map, TheDoor(map));
+            var field = new Zone_Growing { label = "Cotton field", plantDefToGrow = Def("Plant_Cotton") };
+            map.zoneManager.RegisterZone(field);
+            foreach (IntVec3 c in CellRect.CenteredOn(new IntVec3(8, 0, 8), 2).Cells) map.zoneManager.AddCell(field, c);
+
             SettlementWorkshops.Run(settlement, map);
 
-            List<Blueprint> planned = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>().ToList();
-            if (bench == null || GenConstruct.BlueprintDefFor(bench) == null)
-            {
-                // The bench's construction content is another lane's; until it lands, nothing is placed.
-                Assert.Empty(planned);
-                return;
-            }
-            Blueprint placed = Assert.Single(planned);
-            Assert.Same(bench, placed.EntityToBuild);
-            Assert.True(InTheYard(door, placed.Position), benchName + " at " + placed.Position);
+            Blueprint placed = Assert.Single(Planned(map, Def(SettlementWorkshops.TailorDefName)));
+            Assert.Contains(field.Cells, c => CellRect.CenteredOn(placed.Position, WorkGiver_DoBill.IngredientSearchRadius).Contains(c));
+            Assert.False(map.settlementCompound!.Reserves(placed.OccupiedRect()));
+        }
+
+        [Fact]
+        public void A_butchers_table_goes_up_in_the_yard_once_a_carcass_lies_in_reach()
+        {
+            (Settlement settlement, CoreMap map) = BuiltCompound();
+            Thing door = TheDoor(map);
+
+            SettlementWorkshops.Run(settlement, map);
+            Assert.Empty(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint));
+
+            Pawn deer = new Pawn(DefDatabase<ThingDef>.AllDefsListForReading.First(d => d.race != null && d.race.Animal), "Deer");
+            GenSpawn.Spawn(deer, door.Position + new IntVec3(-2, 0, 0), map);
+            deer.health.Kill(null, null);
+            SettlementWorkshops.Run(settlement, map);
+
+            Blueprint placed = Assert.Single(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>().ToList());
+            Assert.Same(Def(SettlementWorkshops.ButcherDefName), placed.EntityToBuild);
+            Assert.True(InTheYard(door, placed.Position), "butcher's table at " + placed.Position);
         }
     }
 }
