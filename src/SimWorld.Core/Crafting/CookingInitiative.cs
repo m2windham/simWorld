@@ -231,7 +231,8 @@ namespace SimWorld.Crafting
 
             Thing? food = RawFoodOn(map, recipes);
             if (food == null) return;
-            if (!TryFindPlacementCell(map, stoveDef, food.Position, out IntVec3 cell)) return;
+            if (!TryFindKitchenSite(map, stoveDef, recipes, out IntVec3 cell)
+                && !TryFindPlacementCell(map, stoveDef, food.Position, out cell)) return;
 
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(stoveDef);
             if (blueprintDef == null) return; // No Blueprint content authored for this bench — nothing to place.
@@ -278,11 +279,46 @@ namespace SimWorld.Crafting
             return count;
         }
 
+        /// <summary>
+        /// The kitchen site in the settlement's work yard (<see cref="SettlementCompound.WorkSite.Kitchen"/>),
+        /// when it has one free and raw food already lies within <see cref="CookingTuning.StovePlacementRadius"/>
+        /// of it. That radius is the cook's reach (<see cref="WorkGiver_DoBill.IngredientSearchRadius"/>), so a
+        /// kitchen there is one that can be worked. The yard stands against the storage huts the food is
+        /// hauled into, which is where a RimWorld player puts a stove too: by the larder, on the way in. When
+        /// the food is lying somewhere else, the stove goes to it as it always did.
+        /// </summary>
+        private static bool TryFindKitchenSite(Map.Map map, ThingDef stoveDef, List<RecipeDef> recipes, out IntVec3 cell)
+        {
+            cell = default;
+            SettlementCompound? compound = map.settlementCompound;
+            if (compound == null || !compound.TryFindWorkSite(map, SettlementCompound.WorkSite.Kitchen, stoveDef, out IntVec3 site)) return false;
+            if (!SettlementCompound.ItemWithin(map, site, CookingTuning.StovePlacementRadius, def => AnyIngredientAllows(recipes, def))) return false;
+            cell = site;
+            return true;
+        }
+
+        private static bool AnyIngredientAllows(List<RecipeDef> recipes, ThingDef def)
+        {
+            for (int r = 0; r < recipes.Count; r++)
+            {
+                List<IngredientCount>? ingredients = recipes[r].ingredients;
+                if (ingredients == null) continue;
+                for (int i = 0; i < ingredients.Count; i++)
+                {
+                    if (ingredients[i].filter.Allows(def)) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>The first cell near the food that will take a stove, never on ground the settlement's
+        /// compound keeps for itself (<see cref="SettlementCompound.Refuses"/>).</summary>
         private static bool TryFindPlacementCell(Map.Map map, ThingDef entityDef, IntVec3 near, out IntVec3 cell)
         {
             CellRect scan = CellRect.CenteredOn(near, CookingTuning.StovePlacementRadius).ClipInsideMap(map);
             foreach (IntVec3 candidate in scan.Cells)
             {
+                if (SettlementCompound.Refuses(map, entityDef, candidate)) continue;
                 if (GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _))
                 {
                     cell = candidate;
