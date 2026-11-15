@@ -186,6 +186,9 @@ namespace SimWorld.Bench
                     case "--band":
                         opt.Band = ParseInt(Next(args, ref i), "--band");
                         break;
+                    case "--threats":
+                        opt.Threats = ParseBool(Next(args, ref i), "--threats");
+                        break;
                     case "--subdivisions":
                         opt.Subdivisions = ParseIntList(Next(args, ref i), "--subdivisions");
                         break;
@@ -297,7 +300,13 @@ OPTIONS
   --band <N>              for --suite tension and --suite storyteller: founding band size (default 25, the
                           same band --suite probe founds with). A knob rather than a constant because that
                           band does not survive a long unwatched run — see that suite's own doc. Spec §5b.3
-                          fixes the legal range at 20-40; outside it the founder throws.
+                          fixes the legal range at 20-40; outside it the founder throws. --suite
+                          storyteller accepts more than 40: it founds at 40 and seats the rest as further
+                          founder-shaped adults before the first tick, which is a posed settlement and not
+                          a grown one - its heading says so.
+  --threats <true|false>  for --suite storyteller: false runs the same world with big and intro threats
+                          disallowed and everything else as Medium, the baseline a threat reading is read
+                          against (default true).
   --help, -h              show this text.
 
 SUITES
