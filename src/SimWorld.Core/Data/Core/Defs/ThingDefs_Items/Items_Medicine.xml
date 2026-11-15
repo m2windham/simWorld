@@ -12,8 +12,8 @@
 
     Herbal medicine is this port's one real source. RimWorld grows it from Healroot
     (rimworldwiki.com/wiki/Healroot), and so does this port now: Plant_Healroot in
-    ThingDefs_Plants/Plants_Healroot.xml, sown by Building.HealrootInitiative when the settlement's medicine
-    runs low (FarmingInitiative picks food crops by nutrition, so it could never choose a medicine crop). A
+    ThingDefs_Plants/Plants_Healroot.xml, sown by its CropDemandDef (CropDemands_Medicine.xml) when the settlement's
+    medicine runs low (FarmingInitiative picks food crops by nutrition, so it could never choose a medicine crop). A
     founding band also starts with RimWorld starting-stock medicine (ScenarioDefs/Scenarios.xml) — RimWorld's
     own Lost Tribe scenario starts with 20 herbal medicine, Crashlanded with 30 industrial
     (rimworldwiki.com/wiki/Scenario), numbers this port's own TribalStart/Landfall scenarios match.

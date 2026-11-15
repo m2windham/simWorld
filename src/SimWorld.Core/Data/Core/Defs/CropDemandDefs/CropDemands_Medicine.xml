@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    A healroot field sized by the herbal medicine the settlement is short of (Farming.CropDemandWorker_Medicine):
+    one dose in hand per living citizen wanted, one cell per dose short, nothing sown while nobody on the map has
+    the Plants skill healroot needs. This port's own: RimWorld's player draws the zone. Healroot itself is
+    RimWorld's (ThingDefs_Plants/Plants_Healroot.xml).
+  -->
+
+  <CropDemandDef>
+    <defName>HealrootForMedicine</defName>
+    <label>healroot for medicine</label>
+    <crop>Plant_Healroot</crop>
+    <fieldLabel>Healroot field</fieldLabel>
+    <workerClass>SimWorld.Farming.CropDemandWorker_Medicine</workerClass>
+  </CropDemandDef>
+
+</Defs>

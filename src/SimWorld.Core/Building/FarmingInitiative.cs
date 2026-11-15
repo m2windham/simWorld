@@ -113,8 +113,6 @@ namespace SimWorld.Building
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (Find.TickManager.TicksGame % FarmingTuning.IntervalTicks != 0) return;
             Run(map);
-            // The medicine field, on the same cadence (a crop that feeds nobody is never CropFor's answer).
-            HealrootInitiative.Run(map);
         }
 
         /// <summary>The ungated logic. Public so a test can drive one pass without arranging for the tick

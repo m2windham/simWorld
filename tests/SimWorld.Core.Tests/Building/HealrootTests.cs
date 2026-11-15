@@ -1,6 +1,7 @@
 using SimWorld.AI;
 using SimWorld.Building;
 using SimWorld.Defs;
+using SimWorld.Farming;
 using SimWorld.Map;
 using SimWorld.Pawns;
 using SimWorld.Tests.Content;
@@ -16,7 +17,7 @@ namespace SimWorld.Tests.Building
 {
     /// <summary>
     /// Healroot, the crop herbal medicine comes from (RimWorld: <c>Plant_Healroot</c>), and the settlement
-    /// planting it when its medicine runs low (<see cref="HealrootInitiative"/>).
+    /// planting it when its medicine runs low (<c>HealrootForMedicine</c>, <see cref="CropDemandWorker_Medicine"/>).
     /// <para/>
     /// Found on a threat-free founding band (<c>docs/perf/storyteller-pressure</c>): the scenario's herbal
     /// medicine ran down and nothing made more, because the only thing that ever chose a crop chose by
@@ -45,6 +46,10 @@ namespace SimWorld.Tests.Building
             return settlement;
         }
 
+        private static CropDemandDef Healroot => DefDatabase<CropDemandDef>.GetNamed("HealrootForMedicine");
+
+        private static Zone_Growing? Field(CoreMap map) => CropDemandFields.FieldOf(map, Healroot.fieldLabel);
+
         private static void PutMedicine(CoreMap map, int count)
         {
             Thing meds = ThingMaker.MakeThing(Def("MedicineHerbal"));
@@ -64,9 +69,29 @@ namespace SimWorld.Tests.Building
         [Fact]
         public void The_food_field_never_chooses_healroot_and_the_medicine_field_does()
         {
+            Assert.Empty(Content.Result.Errors);
             CoreMap map = NewMap();
             Assert.NotSame(Def("Plant_Healroot"), FarmingInitiative.CropFor(map));
-            Assert.Same(Def("Plant_Healroot"), HealrootInitiative.CropFor(map));
+            Assert.Same(Def("Plant_Healroot"), Healroot.crop);
+            Assert.IsType<CropDemandWorker_Medicine>(Healroot.Worker);
+        }
+
+        [Fact]
+        public void The_field_is_one_cell_per_dose_short_and_shrinks_as_stock_rises()
+        {
+            CoreMap map = NewMap();
+            Settlement town = SettlementWith(map, 5, plantsSkill: 10);
+            PutMedicine(map, 1);
+            Thing stock = map.listerThings.ThingsOfDef(Def("MedicineHerbal"))[0];
+            CropDemandWorker worker = Healroot.Worker;
+
+            int wanted = CropDemandWorker_Medicine.MedicineWanted(town);
+            Assert.Equal(wanted - 1, worker.CellsWanted(map, town));
+            stock.stackCount = 3;
+            Assert.Equal(wanted - 3, worker.CellsWanted(map, town));
+            stock.stackCount = wanted;
+            Assert.Equal(0, worker.CellsWanted(map, town));
+            Assert.Equal(0, worker.CellsWanted(map, null));
         }
 
         [Fact]
@@ -76,9 +101,9 @@ namespace SimWorld.Tests.Building
             Settlement town = SettlementWith(map, 5, plantsSkill: 10);
             PutMedicine(map, 2);
 
-            HealrootInitiative.Run(map, town);
+            CropDemandFields.Run(map, town);
 
-            Zone_Growing? field = HealrootInitiative.FieldOf(map);
+            Zone_Growing? field = Field(map);
             Assert.NotNull(field);
             Assert.Same(Def("Plant_Healroot"), field!.plantDefToGrow);
             Assert.True(field.allowSow);
@@ -92,8 +117,8 @@ namespace SimWorld.Tests.Building
             Settlement town = SettlementWith(map, 5, plantsSkill: 10);
             PutMedicine(map, 20);
 
-            HealrootInitiative.Run(map, town);
-            Assert.Null(HealrootInitiative.FieldOf(map));
+            CropDemandFields.Run(map, town);
+            Assert.Null(Field(map));
         }
 
         [Fact]
@@ -105,12 +130,12 @@ namespace SimWorld.Tests.Building
             Thing stock = map.listerThings.ThingsOfDef(Def("MedicineHerbal"))[0];
 
             stock.stackCount = 1;
-            HealrootInitiative.Run(map, town);
-            Assert.True(HealrootInitiative.FieldOf(map)!.allowSow);
+            CropDemandFields.Run(map, town);
+            Assert.True(Field(map)!.allowSow);
 
             stock.stackCount = 20;
-            HealrootInitiative.Run(map, town);
-            Assert.False(HealrootInitiative.FieldOf(map)!.allowSow);
+            CropDemandFields.Run(map, town);
+            Assert.False(Field(map)!.allowSow);
         }
 
         [Fact]
@@ -120,8 +145,8 @@ namespace SimWorld.Tests.Building
             Settlement town = SettlementWith(map, 5, plantsSkill: 2);
             PutMedicine(map, 1);
 
-            HealrootInitiative.Run(map, town);
-            Assert.Null(HealrootInitiative.FieldOf(map));
+            CropDemandFields.Run(map, town);
+            Assert.Null(Field(map));
 
             Pawn novice = town.Citizens[0];
             Assert.False(WorkGiver_GrowerSow.CanSow(novice, Def("Plant_Healroot")));

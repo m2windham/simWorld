@@ -40,7 +40,7 @@ namespace SimWorld.Health
     public static class MedicineDefOf
     {
         /// <summary>Grown from healroot (<c>Plants_Healroot.xml</c>), which a settlement sows when it runs
-        /// low (<c>Building.HealrootInitiative</c>); a founding band also starts with some — see
+        /// low (<c>Farming.CropDemandWorker_Medicine</c>); a founding band also starts with some — see
         /// <c>Scenarios.xml</c> (system: Health — medicine).</summary>
         public static ThingDef MedicineHerbal = null!;
 
