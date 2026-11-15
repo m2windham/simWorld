@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Cotton (crafting.billcreators): the fibre crop, harvested as Cloth, so a tailoring bench has something
+    other than a passing trader to work from. RimWorld's Plant_Cotton. Its own file rather than an addition to
+    Plants_Cultivated.xml (CLAUDE.md); inherits BasePlantCrop from there. Not food, so
+    Building.FarmingInitiative's nutrition-ranked food field never picks it: its field is
+    Farming.CropDemandFields', sized by CropDemands_Cloth.xml.
+
+    RECALLED, NOT SOURCED: growDays 8 and harvestYield 10 are RimWorld's cotton as remembered;
+    sowMinFertility 0.4 is this port's own, beside rice's. Tests pin that cotton grows into Cloth, not these.
+  -->
+
+  <ThingDef ParentName="BasePlantCrop">
+    <defName>Plant_Cotton</defName>
+    <label>cotton plant</label>
+    <description>A fibre crop. Its bolls are spun and woven into cloth.</description>
+    <plant>
+      <growDays>8</growDays>
+      <harvestedThingDef>Cloth</harvestedThingDef>
+      <harvestYield>10</harvestYield>
+      <sowMinFertility>0.4</sowMinFertility>
+    </plant>
+  </ThingDef>
+
+</Defs>
