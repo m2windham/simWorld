@@ -130,11 +130,14 @@ namespace SimWorld.Tests.Building
             CoreMap map = NewMap();
             Settlement settlement = Band(couples: 10, singles: 1);
 
-            // The first pass plans beds and walls; no dwelling while anyone is still without a built bed.
-            Pass(settlement, map, 0);
+            // Everything else planned and nothing built yet: no dwelling while anyone lacks a built bed.
+            for (int pass = 0; pass < 40; pass++) Pass(settlement, map, pass);
+            Assert.Equal(settlement.Citizens.Count, map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>()
+                .Count(bp => ReferenceEquals(bp.EntityToBuild, ConstructionThingDefOf.Bed)));
             Assert.Equal(0, DwellingBlueprints(map));
 
-            int peak = GrowUntilSettled(settlement, map, from: 1);
+            BuildEverythingPlanned(map);
+            int peak = GrowUntilSettled(settlement, map, from: 40);
 
             List<Dwelling> dwellings = DwellingUtility.DwellingsOn(map);
             Assert.Equal(11, dwellings.Count);
