@@ -233,6 +233,7 @@ namespace SimWorld.Tests.Building
         [Fact]
         public void A_butchers_table_goes_up_in_the_yard_once_a_carcass_lies_in_reach()
         {
+            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("StoneTools"));
             (Settlement settlement, CoreMap map) = BuiltCompound();
             Thing door = TheDoor(map);
 
