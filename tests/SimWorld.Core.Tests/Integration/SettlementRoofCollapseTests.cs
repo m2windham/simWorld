@@ -94,9 +94,25 @@ namespace SimWorld.Tests.Integration
             Assert.True(roofedBefore > 0, "a generated interior carried no roof at all");
             Assert.True(rockBefore > 0, "a generated interior carried no mineable rock at all");
 
-            for (int day = 0; day < Days; day++)
+            // Assertion (1) below counts deaths by RoofCollapseDefOf.Crush, and since
+            // Director.IncidentWorker_Earthquake that is no longer the damage only a falling roof deals: a
+            // quake kills whoever is in a bed it brings down with the same Def, under open sky. Whether one
+            // fires inside the week is the storyteller's stream, which anything that draws from Rand earlier
+            // in the game moves. Measured when settlements began planning a compound: a quake on day 3.82
+            // killed seven sleepers, no roofed cell was lost, and this test read it as seven crushed under a
+            // roof. Ablated, the storyteller still picks the quake and spends its refire timer, so the rest
+            // of the storyteller's schedule is untouched; the quake just costs nothing here.
+            Ablation.Disable("Earthquake");
+            try
             {
-                for (int i = 0; i < GenDate.TicksPerDay; i++) game.TickManager.DoSingleTick();
+                for (int day = 0; day < Days; day++)
+                {
+                    for (int i = 0; i < GenDate.TicksPerDay; i++) game.TickManager.DoSingleTick();
+                }
+            }
+            finally
+            {
+                Ablation.Clear();
             }
 
             int roofedAfter = CountRoofed(map);
