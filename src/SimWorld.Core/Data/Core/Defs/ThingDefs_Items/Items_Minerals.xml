@@ -52,6 +52,7 @@
     <category>Item</category>
     <thingClass>SimWorld.Things.Thing</thingClass>
     <stackLimit>75</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
   </ThingDef>
 
   <ThingDef ParentName="BaseMineral">

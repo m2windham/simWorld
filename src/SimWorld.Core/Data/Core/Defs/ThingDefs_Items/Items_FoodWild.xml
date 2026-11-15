@@ -31,6 +31,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>PlantFoodRaw</li></thingCategories>
     <stackLimit>75</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
     <statBases><MarketValue>0.3</MarketValue></statBases>
     <ingestible>
       <nutrition>0.05</nutrition>

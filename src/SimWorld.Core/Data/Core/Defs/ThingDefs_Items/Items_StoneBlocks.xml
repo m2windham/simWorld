@@ -28,6 +28,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>StoneBlocks</li></thingCategories>
     <stackLimit>75</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
     <statBases>
       <MarketValue>0.9</MarketValue>
       <Flammability>0</Flammability>
@@ -49,6 +50,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>StoneBlocks</li></thingCategories>
     <stackLimit>75</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
     <statBases>
       <MarketValue>0.9</MarketValue>
       <Flammability>0</Flammability>

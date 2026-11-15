@@ -21,6 +21,7 @@
       <li>Foods</li>
     </thingCategories>
     <stackLimit>25</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
     <statBases>
       <MarketValue>3.5</MarketValue>
     </statBases>
@@ -51,6 +52,7 @@
       <li>Foods</li>
     </thingCategories>
     <stackLimit>25</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
     <statBases>
       <MarketValue>9</MarketValue>
     </statBases>

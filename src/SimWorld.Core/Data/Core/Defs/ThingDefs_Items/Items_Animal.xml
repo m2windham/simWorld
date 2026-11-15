@@ -10,6 +10,7 @@
   <ThingDef Name="BaseAnimalProductItem" Abstract="True">
     <thingClass>SimWorld.Things.Thing</thingClass>
     <category>Item</category>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
   </ThingDef>
 
   <ThingDef ParentName="BaseAnimalProductItem">

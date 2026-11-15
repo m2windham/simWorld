@@ -13,6 +13,7 @@
 
   <ThingDef Name="BaseFoodItem" Abstract="True">
     <thingClass>SimWorld.Things.Thing</thingClass>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
   </ThingDef>
 
   <ThingDef ParentName="BaseFoodItem">
