@@ -110,6 +110,10 @@ namespace SimWorld.Defs
             set => global = value ?? throw new ArgumentNullException(nameof(value));
         }
 
+        /// <summary>How many defs one concrete type can hold: every value <see cref="Def.index"/> (a
+        /// <c>ushort</c>) can take.</summary>
+        public const int MaxDefsPerType = ushort.MaxValue + 1;
+
         private readonly Dictionary<Type, IDefRegistry> registries = new Dictionary<Type, IDefRegistry>();
 
         /// <summary>Registry for <typeparamref name="T"/> and its subclasses; created on first use.</summary>
@@ -146,7 +150,8 @@ namespace SimWorld.Defs
 
         /// <summary>
         /// Registers <paramref name="def"/> in the registry of its concrete type and every Def-derived
-        /// base type. Returns false when the Def was not added (a duplicate under Error/FirstWins).
+        /// base type. Returns false when the Def was not added (a duplicate under Error/FirstWins, or a
+        /// concrete registry already holding <see cref="MaxDefsPerType"/>).
         /// </summary>
         public bool Add(Def def, DuplicateDefPolicy policy, out string? error)
         {
@@ -154,6 +159,18 @@ namespace SimWorld.Defs
             error = null;
             Type concrete = def.GetType();
             IDefRegistry concreteRegistry = RegistryFor(concrete);
+
+            // Def.index is a ushort (RimWorld's own width), so a concrete registry holds at most
+            // MaxDefsPerType. Refused here, before anything is registered: the checked narrowing below
+            // used to throw OverflowException only after the def was already in every registry, leaving it
+            // half-added. Nothing authored comes near this; a generator that mints at runtime can
+            // (research.endless, see ResearchManager.MaxEndlessAges).
+            if (concreteRegistry.Count >= MaxDefsPerType && !concreteRegistry.ContainsName(def.defName))
+            {
+                error = concrete.Name + " registry is full: Def.index is a ushort, so at most "
+                    + MaxDefsPerType + " defs of one type fit, and '" + def.defName + "' would be one more.";
+                return false;
+            }
 
             if (concreteRegistry.ContainsName(def.defName))
             {

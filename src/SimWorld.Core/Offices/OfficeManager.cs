@@ -291,6 +291,13 @@ namespace SimWorld.Offices
 
             if (incumbent != null) return;
 
+            // Interregnum: a seat this sweep has just emptied is not refilled until the next one, so it stands
+            // vacant for one OfficeTuning.ReconcileIntervalTicks. Without it a death or an unseating and the
+            // accession that follows land in the same pass, and nothing that depends on the seat
+            // (EdictDef.requiredOffice) could ever see it empty. An empty seat nobody was just removed from is
+            // filled at once, as before.
+            if (vacating != null) return;
+
             Pawn? elected = Elect(office, roster, context);
             if (elected != null) Seat(elected, office, context);
         }

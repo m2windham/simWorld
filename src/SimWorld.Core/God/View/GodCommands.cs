@@ -89,14 +89,16 @@ namespace SimWorld.God.View
 
             GodManager god = Find.God;
             if (god.IsActive(def)) return GodCommandResult.NoChange(def.LabelCap + " is already in force.");
+            if (god.IsSuspended(def))
+            {
+                return GodCommandResult.NoChange(def.LabelCap + " is already issued. " + EdictOption.For(def, god).Reason);
+            }
 
             if (!god.CanActivate(def))
             {
                 // Reuse the read model's own wording rather than composing a second explanation here: two
                 // descriptions of one rule set drift apart, and the view has already shown the player this one.
-                EdictOption option = EdictOption.For(def, isActive: false, Find.ResearchManager.CurrentEra,
-                    slotFree: god.ActiveEdicts.Count < GodTuning.MaxActiveEdicts);
-                return GodCommandResult.Refused(option.Reason);
+                return GodCommandResult.Refused(EdictOption.For(def, god).Reason);
             }
 
             return god.Activate(def)

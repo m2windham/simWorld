@@ -37,6 +37,12 @@ namespace SimWorld.Tests.Crafting
 
         private static ThingDef Def(string name) => DefDatabase<ThingDef>.GetNamed(name);
 
+        /// <summary>Knives made: lying on the map or already taken up. An unarmed crafter arms itself with
+        /// what it just smithed (AI.JobGiver_PickUpOpportunisticWeapon), so the map alone undercounts.</summary>
+        private static int KnivesMade(CoreMap map) =>
+            map.listerThings.AllThings.Count(t => t.def.defName == "MeleeWeapon_Knife")
+            + map.mapPawns.AllPawnsSpawned.Count(p => p.equipment?.Primary?.def.defName == "MeleeWeapon_Knife");
+
         private static global::SimWorld.Crafting.RecipeDef Recipe(string name) =>
             DefDatabase<global::SimWorld.Crafting.RecipeDef>.GetNamed(name);
 
@@ -96,7 +102,7 @@ namespace SimWorld.Tests.Crafting
             RunTicks(2500, pawn);
 
             Assert.True(steel.Destroyed || steel.stackCount < 10, "the steel was never consumed");
-            Assert.Contains(map.listerThings.AllThings, t => t.def.defName == "MeleeWeapon_Knife");
+            Assert.Equal(1, KnivesMade(map));
             Assert.Equal(0, bill.repeatCount);
 
             float xpAfter = pawn.skills.GetSkill(SkillDefOf.Crafting)!.XpTotalEarned;
@@ -149,14 +155,14 @@ namespace SimWorld.Tests.Crafting
 
             Assert.Equal(0, bill.repeatCount);
             Assert.False(bill.ShouldDoNow());
-            int knives = map.listerThings.AllThings.Count(t => t.def.defName == "MeleeWeapon_Knife");
+            int knives = KnivesMade(map);
             Assert.Equal(2, knives);
 
             // Enough steel remained for a third knife (30 - 2*10 = 10 left); nothing should touch it once
             // the bill itself has stopped wanting the work.
             int knivesBefore = knives;
             RunTicks(3000, pawn);
-            Assert.Equal(knivesBefore, map.listerThings.AllThings.Count(t => t.def.defName == "MeleeWeapon_Knife"));
+            Assert.Equal(knivesBefore, KnivesMade(map));
         }
 
         [Fact]

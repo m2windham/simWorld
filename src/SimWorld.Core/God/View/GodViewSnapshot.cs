@@ -248,7 +248,7 @@ namespace SimWorld.God.View
                 focusedTile,
                 BuildEdictOptions(god),
                 GodTuning.MaxActiveEdicts,
-                god.ActiveEdicts.Count,
+                god.IssuedEdicts.Count,
                 ConditionLine.ActiveOn(world?.gameConditionManager),
                 ChronicleLine.TailOf(Find.Storyteller.Chronicle, recentHistoryCount),
                 ChronicleLine.TailOf(Find.Storyteller.Moments, recentHistoryCount),
@@ -258,13 +258,11 @@ namespace SimWorld.God.View
         private static List<EdictOption> BuildEdictOptions(GodManager god)
         {
             IReadOnlyList<EdictDef> all = DefDatabase<EdictDef>.AllDefsListForReading;
-            EraDef? era = Find.ResearchManager.CurrentEra;
-            bool slotFree = god.ActiveEdicts.Count < GodTuning.MaxActiveEdicts;
 
             var options = new List<EdictOption>(all.Count);
             for (int i = 0; i < all.Count; i++)
             {
-                options.Add(EdictOption.For(all[i], god.IsActive(all[i]), era, slotFree));
+                options.Add(EdictOption.For(all[i], god));
             }
             return options;
         }
