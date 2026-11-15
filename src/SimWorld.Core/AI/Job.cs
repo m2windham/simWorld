@@ -42,6 +42,10 @@ namespace SimWorld.AI
         /// <summary>True for a job the player explicitly ordered rather than one the think tree chose.</summary>
         public bool playerForced;
 
+        /// <summary>A lie-down that lasts while the pawn needs medical rest rather than until it is rested
+        /// (RimWorld: <c>Verse.AI.Job.restUntilHealed</c>, set by the patient work givers).</summary>
+        public bool restUntilHealed;
+
         /// <summary>Ticks after which this job auto-expires; -1 = never.</summary>
         public int expiryInterval = -1;
 
@@ -121,6 +125,7 @@ namespace SimWorld.AI
             Scribe_Values.Look(ref count, "count", -1);
             Scribe_Values.Look(ref haulMode, "haulMode", HaulMode.Undefined);
             Scribe_Values.Look(ref playerForced, "playerForced");
+            Scribe_Values.Look(ref restUntilHealed, "restUntilHealed");
             Scribe_Values.Look(ref expiryInterval, "expiryInterval", -1);
             Scribe_Values.Look(ref startTick, "startTick", -1);
         }

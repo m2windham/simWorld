@@ -50,6 +50,13 @@ namespace SimWorld.AI
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
             if (!(thing is Pawn animal) || !IsWildAnimal(animal) || !thing.Spawned) return false;
+
+            // Not one that has turned on somebody. RimWorld's WorkGiver_InteractAnimal refuses an animal that
+            // cannot be casually interacted with, and one in an aggressive mental state cannot be (recalled,
+            // not read from a decompile here — pinned by AnimalGrudgeTests). Without this the handler walked
+            // up to an animal in the middle of attacking a neighbour and offered it food.
+            if (HuntUtility.IsAngry(animal) || AttackTargetsUtility.IsManhunting(animal)) return false;
+
             if (!Reachability.CanReach(pawn, thing, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, thing);
         }

@@ -1,0 +1,19 @@
+runs: 7; incomplete or non-deterministic: []
+
+| band | arm | seeds | day half the band was dead | day roster <= 25% | extinct by day 60 | deaths/run | credited to raid or pack | raids+packs on a live settlement, per run | attackers per defender | killed per such threat | after collapse, per run | points d0 / d10 / d20 | moments |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 20 | off | 5 | 20 [19..60] (1 never) | 33 [31..60] (1 never) | 4/5 | 20 [5..22] | 0 [0..0] | 0 [0..0] | - | - | 0 [0..0] | 210 [210..210] / 378 [296..404] / 215 [209..568] | 13 [9..15] |
+| 40 | off | 2 | 37 (1 never) | 55 (1 never) | 0/2 | 26 [21..32] | 0 [0..0] | 0 [0..0] | - | - | 0 [0..0] | 420 [420..420] / 669 [558..780] / 872 [677..1067] | 14 [13..16] |
+
+| band | seed | arm | pop at day 0/5/10/15/20/30/45/60 | ledger |
+| --- | --- | --- | --- | --- |
+| 20 | 99 | off | 20/20/20/15/10/6/1/0 | deaths 22 (Age 1, Disease 16, Injury 5) |
+| 20 | 777 | off | 20/20/20/20/20/20/18/18 | deaths 5 (Age 1, Disease 1, Injury 3) |
+| 20 | 2024 | off | 20/20/20/20/20/20/19/0 | deaths 20 (Age 17, Disease 3) |
+| 20 | 12345 | off | 20/19/18/16/10/7/3/0 | deaths 22 (Age 1, Disease 15, Injury 6) [Disease_Plague 1] |
+| 20 | 31337 | off | 20/20/20/16/10/6/0/0 | deaths 20 (Disease 13, Injury 7) [Disease_Plague 1] |
+| 40 | 777 | off | 40/40/40/40/38/36/25/21 | deaths 21 (Age 1, Disease 16, Injury 4) |
+| 40 | 12345 | off | 40/37/34/26/25/22/14/9 | deaths 32 (Age 1, Disease 15, Injury 16) [Earthquake 4, Disease_Plague 1] |
+
+| band | seed | raids and packs that found at least half the band alive (day: kind attackers/defenders at points -> killed, peak downed within 2 days) |
+| --- | --- | --- |

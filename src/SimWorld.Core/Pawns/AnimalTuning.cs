@@ -26,10 +26,6 @@ namespace SimWorld.Pawns
 
         public const float TameSuccessXp = 40f;
 
-        /// <summary>Chance, scaled further by the animal's own wildness, that a failed attempt turns it
-        /// against the tamer (see <see cref="MindState.Pawn_MindState.angryAt"/>).</summary>
-        public const float TameFailAngerChance = 0.5f;
-
         public const int TameFailAngerDurationTicks = GenDate.TicksPerDay;
 
         // ---- training (Pawn_TrainingTracker) ----

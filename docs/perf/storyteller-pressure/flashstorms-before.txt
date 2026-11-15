@@ -1,0 +1,15 @@
+| band | seed | arm | incident | day | roster the day before | roster two days after | lost |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 20 | 99 | on | Flashstorm | 18 | 8 | 0 | 8 |
+| 20 | 777 | on | Flashstorm | 16 | 16 | 15 | 1 |
+| 20 | 777 | on | Flashstorm | 32 | 9 | 7 | 2 |
+| 20 | 2024 | on | Flashstorm | 6 | 18 | 1 | 17 |
+| 20 | 12345 | on | Flashstorm | 40 | 2 | 0 | 2 |
+| 20 | 99 | off | Flashstorm | 12 | 14 | 0 | 14 |
+| 40 | 777 | on | Flashstorm | 32 | 14 | 14 | 0 |
+| 40 | 2024 | on | Flashstorm | 19 | 38 | 0 | 38 |
+| 40 | 777 | off | Flashstorm | 45 | 21 | 0 | 21 |
+| 40 | 12345 | off | Flashstorm | 33 | 24 | 4 | 20 |
+| 80 | 2024 | on | Flashstorm | 34 | 4 | 0 | 4 |
+| 80 | 12345 | on | Flashstorm | 38 | 13 | 0 | 13 |
+| 80 | 12345 | off | Flashstorm | 6 | 77 | 0 | 77 |

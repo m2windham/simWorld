@@ -52,6 +52,12 @@ namespace SimWorld.Bench
         /// which is itself one of that suite's findings, so the size is a knob rather than a constant.</summary>
         public int Band { get; set; } = 25;
 
+        /// <summary>Whether --suite storyteller lets the storyteller's threats fire (the default), or runs the
+        /// same world under a difficulty that is Medium in every other respect and allows neither big nor
+        /// intro threats. The second is the baseline a threat reading is read against: what the settlement
+        /// does to itself over the same days with nobody attacking it.</summary>
+        public bool Threats { get; set; } = true;
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }

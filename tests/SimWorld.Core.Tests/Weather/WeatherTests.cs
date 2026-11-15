@@ -142,10 +142,9 @@ namespace SimWorld.Tests.Weather
 
             int extinguished = openCells.Count - openCells.Count(c => FireAt(map, c) != null);
 
-            // 4,000 ticks is ~26 of Fire.ComplexCalcsInterval, and Fire.BaseSkyExtinguishChance is the chance
-            // per interval at full rain — so most of a dozen unroofed fires should be out, not one lucky one.
-            // A band, never the literal count (CLAUDE.md).
-            Assert.InRange(extinguished, 4, openCells.Count);
+            // 4,000 ticks is ~26 of Fire.ComplexCalcsInterval, and rain takes more off a fire each interval
+            // than the fire can grow — so every unroofed fire is out, not a lucky few.
+            Assert.Equal(openCells.Count, extinguished);
             Assert.NotNull(FireAt(map, shelteredCell));
             Assert.All(walls, w => Assert.False(w.Destroyed, "A wall burned away, so 'the fire went out' would not prove the rain did it."));
             Assert.False(shelteredWall.Destroyed);

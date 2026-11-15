@@ -18,6 +18,17 @@
       <subNodes>
 
         <!--
+          On fire: run about, and one stop in ten put it out (RimWorld's BurningResponse subtree, which its
+          trees consult before anything else). Nothing below this is worth doing while burning.
+        -->
+        <li Class="SimWorld.AI.ThinkNode_ConditionalBurning">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_ExtinguishSelf" />
+            <li Class="SimWorld.AI.JobGiver_RunRandom" />
+          </subNodes>
+        </li>
+
+        <!--
           A mental state pre-empts everything below it entirely, rather than contributing (or not) a job of
           its own and letting the tree fall through — see ThinkNode_ConditionalInMentalState's own comment.
           Wandering still stands in for most per-mental-state behaviour: combat AI beyond fleeing is out of

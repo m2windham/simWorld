@@ -139,8 +139,19 @@ namespace SimWorld.Bench.Suites
                     : "populated** — rival civilizations are generated at time zero, as a player's world has "
                     + "them. Table 0 lists who they are and where they stand with the player.")
                 + " Founding band " + Report.Int(opt.Band)
-                + " (spec §5b.3 allows 20-40), seed " + opt.Seed.ToString(CultureInfo.InvariantCulture)
-                + ", storyteller and difficulty as `Game.NewGame` defaults them. **This suite changes no "
+                + " (spec §5b.3 allows 20-40"
+                + (opt.Band > SimWorld.World.SettlementTuning.FoundingBandRange.max
+                    ? "; **this band is posed, not grown** — founded at the maximum and the rest seated as "
+                    + "further founder-shaped adults before the first tick, so it has the head count of a "
+                    + "larger settlement and none of the stores, beds or walls one would have built"
+                    : "")
+                + "), seed " + opt.Seed.ToString(CultureInfo.InvariantCulture)
+                + (opt.Threats
+                    ? ", storyteller and difficulty as `Game.NewGame` defaults them."
+                    : ", storyteller as `Game.NewGame` defaults it, **threats off** (`--threats false`): "
+                    + "Medium in every knob except that big and intro threats may not fire. This is the "
+                    + "baseline arm — what these people do to themselves with nobody attacking them.")
+                + " **This suite changes no "
                 + "tuning constant and is not a target** — see its class doc, and `CLAUDE.md` on what happens "
                 + "to a game tuned against its own instruments.");
 
@@ -166,16 +177,19 @@ namespace SimWorld.Bench.Suites
 
             var sw = Stopwatch.StartNew();
 
+            int founded = Math.Min(opt.Band, SimWorld.World.SettlementTuning.FoundingBandRange.max);
             Game game = Game.NewGame(
                 ScenarioDefOf.TribalStart.scenario,
                 opt.Seed.ToString(CultureInfo.InvariantCulture),
                 subdivisionOverride: 3,
                 soloStart: opt.Solo,
-                bandSize: opt.Band);
+                bandSize: founded,
+                difficultyDef: opt.Threats ? null : MediumWithoutThreats());
 
             SimWorld.World.Settlement? home = PlayerSeat(game);
             if (home == null) throw new InvalidOperationException("storyteller: the new game founded no settlement");
             RequirePlayers(home);
+            SeatBeyondTheFoundingBand(home, opt.Band - founded, opt.Seed);
 
             List<FactionReading> worldAtStart = ReadFactions();
 
@@ -222,7 +236,67 @@ namespace SimWorld.Bench.Suites
             log.SettleAttributed();
             sw.Stop();
 
-            return new ArmResult(samples, log, ticks, sw.Elapsed.TotalSeconds, worldAtStart, ReadFactions());
+            // Read here, not at report time: the determinism re-run resets the game these belong to.
+            var moments = new List<string>();
+            foreach (ChronicleEntry m in storyteller.Moments)
+            {
+                moments.Add(
+                    "day " + Report.Int(GenDate.DaysPassedAt(m.tick)) + ": " + m.incidentDefName
+                    + (m.deathCause.HasValue ? " (" + m.deathCause.Value + ")" : "")
+                    + (string.IsNullOrEmpty(m.targetLabel) ? "" : " — " + m.targetLabel));
+            }
+
+            return new ArmResult(
+                samples, log, ticks, sw.Elapsed.TotalSeconds, worldAtStart, ReadFactions(),
+                moments, storyteller.deaths.ToString());
+        }
+
+        /// <summary>
+        /// Medium with the two threat gates shut and nothing else moved — <c>Peaceful</c> is not this, because
+        /// it also lifts mood, speeds research and halves disease, and a baseline that differs in four ways
+        /// cannot say which one a difference came from. Built here rather than shipped as content: it is an
+        /// arm of an instrument, not a difficulty a player picks.
+        /// </summary>
+        private static DifficultyDef MediumWithoutThreats() => new DifficultyDef
+        {
+            defName = "MediumWithoutThreats",
+            threatScale = DifficultyDefOf.Medium.threatScale,
+            allowBigThreats = false,
+            allowIntroThreats = false,
+        };
+
+        /// <summary>
+        /// Seats <paramref name="extra"/> more adults in <paramref name="home"/>, generated the way
+        /// <c>SettlementFounder</c> generates its founders — same kind, alternating gender, the founders' own
+        /// age range, paired into households — because spec §5b.3 caps a founding band at 40 and the founder
+        /// refuses more. This is how the suite reads the curve at a head count past the band, and it is a
+        /// pose: these people arrive with what founders carry and nothing a settlement of that size would
+        /// have built. Called before the settlement is opened and before the first tick, so the interior is
+        /// sized, and the band provisioned, for everybody.
+        /// </summary>
+        private static void SeatBeyondTheFoundingBand(SimWorld.World.Settlement home, int extra, int seed)
+        {
+            if (extra <= 0) return;
+
+            var rand = new RandomStream(SimWorld.World.GenText.StableStringHash(
+                seed.ToString(CultureInfo.InvariantCulture) + "|beyond-the-band"));
+            var seated = new List<Pawn>(extra);
+            for (int i = 0; i < extra; i++)
+            {
+                var request = new SimWorld.Pawns.Generation.PawnGenerationRequest(
+                    PawnKindDefOf.Tribesperson,
+                    fixedGender: i % 2 == 0 ? Gender.Male : Gender.Female,
+                    fixedBiologicalAge: rand.Range(SimWorld.World.SettlementTuning.FounderAgeRange),
+                    faction: home.faction);
+                seated.Add(SimWorld.Pawns.Generation.PawnGenerator.GeneratePawn(request));
+            }
+
+            int tick = Find.TickManager.TicksGame;
+            for (int i = 0; i < seated.Count; i += 2)
+            {
+                Find.FamilyManager.FoundHousehold(seated[i], i + 1 < seated.Count ? seated[i + 1] : null, tick);
+            }
+            for (int i = 0; i < seated.Count; i++) home.AddCitizen(seated[i]);
         }
 
         /// <summary>
@@ -421,6 +495,7 @@ namespace SimWorld.Bench.Suites
                 {
                     Report.Int(s.Day),
                     Report.Int(s.Pop),
+                    Report.Int(s.Downed),
                     Report.Num(s.Wealth, 0),
                     Report.Num(s.BaseFromWealth, 1),
                     Report.Num(s.PerColonist, 1),
@@ -437,7 +512,7 @@ namespace SimWorld.Bench.Suites
             Report.Table(
                 new[]
                 {
-                    "day", "pop", "wealth", "base from wealth", "per-colonist", "colonist sum",
+                    "day", "pop", "downed", "wealth", "base from wealth", "per-colonist", "colonist sum",
                     "x difficulty", "x adaptation", "x era", "x daysPassed", "points", "clamped?",
                 },
                 rows);
@@ -452,7 +527,9 @@ namespace SimWorld.Bench.Suites
                 "`wealth` is `IIncidentTarget.PlayerWealthForStoryteller` — what the storyteller reads, not a "
                 + "figure computed here. `pop` is the roster the curve itself sums over "
                 + "(`PlayerPawnsForStoryteller`), which is the attended slice, not the head count; table 3 "
-                + "carries `GodRollup.TotalPopulation` beside it. `clamped?` is `min` or `max` when "
+                + "carries `GodRollup.TotalPopulation` beside it. `downed` is how many of that roster were "
+                + "down at the day's sample — a day-boundary reading, so a fight that began and ended inside "
+                + "one day can pass under it. `clamped?` is `min` or `max` when "
                 + "`GenMath.Clamp` actually bound the result at "
                 + Report.Num(StorytellerUtility.MinThreatPoints, 0) + " or "
                 + Report.Num(StorytellerUtility.MaxThreatPoints, 0)
@@ -637,6 +714,12 @@ namespace SimWorld.Bench.Suites
                 + "the better reading of the two — see `CLAUDE.md`. Flat is the failure mode; none of these is "
                 + "a score. `peak downed` is the most citizens on the roster down on any one sampled day — a "
                 + "run-level reading, because this port attributes a downing to no incident (class doc).");
+
+            Report.SubHeading("what was worth remembering");
+            Console.WriteLine("ledger: " + arm.DeathLedger);
+            Console.WriteLine();
+            for (int i = 0; i < arm.Moments.Count; i++) Console.WriteLine("- " + arm.Moments[i]);
+            if (arm.Moments.Count == 0) Console.WriteLine("- (no moments)");
         }
 
         private static int LongestQuiet(HashSet<int> busy, int days)
@@ -806,8 +889,11 @@ namespace SimWorld.Bench.Suites
         {
             public ArmResult(
                 List<CurveSample> samples, FiringLog log, long ticks, double seconds,
-                List<FactionReading> worldAtStart, List<FactionReading> worldAtEnd)
+                List<FactionReading> worldAtStart, List<FactionReading> worldAtEnd,
+                List<string> moments, string deathLedger)
             {
+                Moments = moments;
+                DeathLedger = deathLedger;
                 Samples = samples;
                 Firings = log.Firings;
                 Ticks = ticks;
@@ -820,6 +906,13 @@ namespace SimWorld.Bench.Suites
             }
 
             public List<CurveSample> Samples { get; }
+
+            /// <summary><see cref="Storyteller.Moments"/> as it stood when the arm ended, one line each.</summary>
+            public List<string> Moments { get; }
+
+            /// <summary><see cref="Director.DeathLedger"/>'s own summary when the arm ended: every death by
+            /// cause, and by the incident it was credited to.</summary>
+            public string DeathLedger { get; }
 
             /// <summary>Every civilization but the player's, as it stood at time zero.</summary>
             public List<FactionReading> WorldAtStart { get; }

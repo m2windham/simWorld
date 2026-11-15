@@ -149,6 +149,7 @@ namespace SimWorld.Economy
             // a pass holding what the settlement wants in hand, and neither can undo the other, because
             // banking only ever takes what is above the line and issuing only ever adds up to it.
             IssueFromStores(settlement, map);
+            IssueMedicineFromStores(settlement, map);
 
             return banked;
         }
@@ -229,6 +230,56 @@ namespace SimWorld.Economy
                 if (placed < take) break;
             }
 
+            return issued;
+        }
+
+        /// <summary>
+        /// The same crossing for <b>medicine</b>: everything the ledger holds goes onto the map, and
+        /// <see cref="BankableUnits"/> never takes it back. Returns the units issued.
+        ///
+        /// <para/><b>The broken link.</b> A doctor looks for medicine among the items on the map
+        /// (<c>Health.MedicineUtility.FindBestMedicine</c>, as RimWorld's does), and the founding band's
+        /// herbal medicine was put in the ledger (<c>Sim.Game.NewGame</c>) with nothing to carry it across —
+        /// only food was ever issued. Traced over twenty days of a threat-free band of twenty
+        /// (<c>docs/perf/storyteller-pressure</c>): medicine on the map 0 and in the ledger 20 on every one
+        /// of them, while thirteen people died of infections tended bare-handed. Had a unit been hauled into
+        /// storage it would have been banked straight back.
+        ///
+        /// <para/><b>All of it, not a reserve.</b> Food is issued against a figure the settlement already
+        /// has (<c>NutritionWanted</c>). There is no such figure for medicine and RimWorld offers none — a
+        /// colony's medicine is simply on its map — so this invents no threshold: a settlement with anyone
+        /// alive keeps its medicine where a doctor can reach it. That means a watched settlement's medicine
+        /// stops being visible to the ledger's readers (trade, tribute, raid loot); the count is small and
+        /// the alternative is a number nobody can source.
+        ///
+        /// <para/>Deterministic for the same reason <see cref="IssueFromStores"/> is: defs are taken in
+        /// defName order and cells in <c>GenRadial</c>'s fixed pattern, with no draw.
+        /// </summary>
+        public static int IssueMedicineFromStores(Settlement settlement, Map.Map map)
+        {
+            if (settlement == null) throw new ArgumentNullException(nameof(settlement));
+            if (map == null) throw new ArgumentNullException(nameof(map));
+
+            bool anyoneAlive = false;
+            IReadOnlyList<Pawns.Pawn> citizens = settlement.Citizens;
+            for (int i = 0; i < citizens.Count && !anyoneAlive; i++) anyoneAlive = !citizens[i].Dead;
+            if (!anyoneAlive) return 0;
+
+            var medicines = new List<ThingDef>();
+            foreach (KeyValuePair<ThingDef, int> held in settlement.Stores)
+            {
+                if (held.Value > 0 && held.Key.IsMedicine) medicines.Add(held.Key);
+            }
+            medicines.Sort((a, b) => string.CompareOrdinal(a.defName, b.defName));
+
+            int issued = 0;
+            for (int i = 0; i < medicines.Count; i++)
+            {
+                int placed = PlaceIssued(medicines[i], settlement.StoreCountOf(medicines[i]), map);
+                if (placed <= 0) continue;
+                settlement.AddStore(medicines[i], -placed);
+                issued += placed;
+            }
             return issued;
         }
 
@@ -357,6 +408,8 @@ namespace SimWorld.Economy
         private static int BankableUnits(Thing stack, ref float nutritionSurplus)
         {
             ThingDef def = stack.def;
+            // Medicine stays where a doctor can pick it up; see IssueMedicineFromStores.
+            if (def.IsMedicine) return 0;
             if (!def.IsNutritionGivingIngestible) return stack.stackCount;
 
             float perUnit = def.ingestible!.nutrition;

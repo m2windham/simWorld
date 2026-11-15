@@ -1,0 +1,46 @@
+runs: 19; incomplete or non-deterministic: []
+
+| band | arm | seeds | day half the band was dead | day roster <= 25% | extinct by day 60 | deaths/run | credited to raid or pack | raids+packs on a live settlement, per run | attackers per defender | killed per such threat | after collapse, per run | points d0 / d10 / d20 | moments |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 20 | on | 5 | 13 [7..29] | 20 [7..43] | 5/5 | 21 [21..23] | 1 [0..3] | 3 [1..3] | 0.20 [0.11..0.54] | 0.0 [0.0..2.0] | 5 [3..6] | 210 [210..210] / 220 [35..275] / 82 [35..320] | 17 [15..19] |
+| 20 | off | 4 | 24 [13..60] | 37 [13..60] | 3/4 | 22 [18..23] | 0 [0..0] | 0 [0..0] | - | - | 0 [0..0] | 210 [210..210] / 293 [253..333] / 252 [35..388] | 14 [11..15] |
+| 40 | on | 3 | 23 [19..30] | 28 [19..39] | 2/3 | 41 [39..42] | 15 [2..19] | 3 [2..3] | 0.38 [0.15..0.94] | 0.5 [0.0..15.0] | 6 [3..7] | 420 [420..420] / 719 [704..815] / 558 [35..817] | 15 [15..22] |
+| 40 | off | 2 | 40 [35..46] | 40 [35..46] | 2/2 | 42 [41..43] | 0 [0..0] | 0 [0..0] | - | - | 0 [0..0] | 420 [420..420] / 673 [646..700] / 868 [844..892] | 12 [11..12] |
+| 80 | on | 3 | 30 [22..32] | 33 [23..41] | 2/3 | 81 [78..81] | 44 [4..46] | 6 [2..6] | 0.49 [0.14..0.82] | 2.5 [0.0..15.0] | 2 [2..5] | 840 [840..840] / 1378 [1279..1405] / 1629 [1351..1839] | 15 [15..16] |
+| 80 | off | 2 | 7 (1 never) | 7 (1 never) | 1/2 | 54 [26..82] | 0 [0..0] | 0 [0..0] | - | - | 0 [0..0] | 840 [840..840] / 780 [35..1525] / 1316 [35..2597] | 14 [14..14] |
+
+| band | seed | arm | pop at day 0/5/10/15/20/30/45/60 | ledger |
+| --- | --- | --- | --- | --- |
+| 20 | 99 | on | 20/17/14/9/0/0/0/0 | deaths 22 (Disease 10, Injury 12) [RaidEnemy 2] |
+| 20 | 777 | on | 20/18/18/16/14/9/4/0 | deaths 21 (Age 1, Disease 16, Injury 4) [RaidEnemy 3, Disease_Plague 1] |
+| 20 | 2024 | on | 20/18/0/0/0/0/0/0 | deaths 21 (Disease 3, Injury 18) [Earthquake 1] |
+| 20 | 12345 | on | 20/18/14/8/4/1/0/0 | deaths 23 (Disease 15, Injury 8) [ManhunterPack 1, Earthquake 1] |
+| 20 | 31337 | on | 20/16/15/9/6/3/0/0 | deaths 21 (Age 1, Disease 15, Injury 5) [ManhunterPack 1, Disease_Plague 1] |
+| 20 | 99 | off | 20/17/16/0/0/0/0/0 | deaths 23 (Disease 7, Injury 16) |
+| 20 | 777 | off | 20/18/18/15/15/11/7/4 | deaths 18 (Age 1, Disease 14, Injury 3) [Earthquake 1] |
+| 20 | 2024 | off | 20/18/18/19/15/13/13/0 | deaths 22 (Age 13, Disease 9) |
+| 20 | 12345 | off | 20/18/17/11/6/3/1/0 | deaths 22 (Age 1, Starvation 1, Disease 15, Injury 5) |
+| 40 | 777 | on | 40/38/38/33/32/14/4/2 | deaths 39 (Age 1, Disease 31, Injury 7) [Disease_Plague 1, RaidEnemy 19, Earthquake 2] |
+| 40 | 2024 | on | 40/40/41/40/0/0/0/1 | deaths 42 (Disease 1, Injury 41) [RaidEnemy 2] |
+| 40 | 12345 | on | 40/38/38/28/22/6/1/0 | deaths 41 (Disease 30, Injury 11) [RaidEnemy 14, ManhunterPack 1] |
+| 40 | 777 | off | 40/38/38/34/34/30/21/0 | deaths 41 (Disease 19, Injury 22) |
+| 40 | 12345 | off | 40/38/38/33/30/23/1/0 | deaths 43 (Age 1, Disease 40, Injury 2) |
+| 80 | 777 | on | 80/79/77/72/69/48/14/4 | deaths 78 (Age 1, Disease 67, Injury 10) [RaidEnemy 46] |
+| 80 | 2024 | on | 80/78/77/75/67/5/0/0 | deaths 81 (Starvation 56, Disease 15, Injury 10) [Earthquake 4, RaidEnemy 4] |
+| 80 | 12345 | on | 80/77/78/67/62/32/0/0 | deaths 81 (Disease 61, Injury 20) [RaidEnemy 43, ManhunterPack 1] |
+| 80 | 777 | off | 80/79/79/78/77/71/61/57 | deaths 26 (Age 1, Disease 23, Injury 2) [Disease_Plague 2, Earthquake 1] |
+| 80 | 12345 | off | 80/77/0/0/0/0/0/0 | deaths 82 (Disease 6, Injury 76) |
+
+| band | seed | raids and packs that found at least half the band alive (day: kind attackers/defenders at points -> killed, peak downed within 2 days) |
+| --- | --- | --- |
+| 20 | 99 | d4: pack 4/20 at 242 -> k0, dn2; d7: raid 6/17 at 242 -> k2, dn1; d10: raid 5/14 at 210 -> k0, dn2 |
+| 20 | 777 | d4: pack 3/20 at 242 -> k0, dn1; d10: raid 8/18 at 309 -> k2, dn3; d27: raid 7/13 at 314 -> k1, dn0 |
+| 20 | 2024 | d4: pack 2/19 at 231 -> k0, dn1 |
+| 20 | 12345 | d4: pack 3/20 at 240 -> k0, dn1; d9: pack 2/16 at 220 -> k1, dn1; d14: raid 3/10 at 139 -> k0, dn1 |
+| 20 | 31337 | d4: pack 2/19 at 225 -> k0, dn0; d11: pack 3/15 at 254 -> k1, dn2 |
+| 40 | 777 | d4: pack 7/38 at 492 -> k0, dn0; d18: pack 10/32 at 677 -> k0, dn0; d28: raid 30/32 at 1221 -> k15, dn31 |
+| 40 | 2024 | d4: pack 8/40 at 561 -> k0, dn0; d18: raid 24/40 at 1003 -> k2, dn5 |
+| 40 | 12345 | d4: pack 6/39 at 475 -> k0, dn0; d11: raid 17/38 at 708 -> k4, dn2; d26: raid 13/20 at 581 -> k1, dn8 |
+| 80 | 777 | d4: pack 11/80 at 1120 -> k0, dn0; d22: pack 12/69 at 2012 -> k0, dn1; d27: raid 52/65 at 2091 -> k15, dn11; d30: raid 41/50 at 1686 -> k0, dn18; d30: raid 41/50 at 1614 -> k13, dn18; d31: pack 12/48 at 1447 -> k0, dn6 |
+| 80 | 2024 | d4: pack 11/78 at 1022 -> k0, dn0; d20: raid 33/67 at 1394 -> k4, dn13 |
+| 80 | 12345 | d4: pack 11/79 at 1036 -> k0, dn0; d14: raid 38/77 at 1565 -> k9, dn2; d24: raid 41/59 at 1696 -> k9, dn3; d28: raid 38/47 at 1593 -> k6, dn32; d29: pack 12/46 at 1451 -> k1, dn32; d30: raid 34/44 at 1357 -> k7, dn32 |

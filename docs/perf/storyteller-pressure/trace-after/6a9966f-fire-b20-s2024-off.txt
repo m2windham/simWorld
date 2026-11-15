@@ -1,0 +1,415 @@
+d1 t0 CHRONICLE Founding: Greycrest founded by 20 settlers.
+d1 t2000 CHRONICLE Accession: Ulric takes the eldership of North combine.
+d1 t2000 CHRONICLE Accession: Elian takes the stewardship of Greycrest.
+== end of day 1: citizens 20, beds 1, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 2: citizens 20, beds 1, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 3: citizens 20, beds 1, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 4: citizens 20, beds 1, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 5: citizens 20, beds 1, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d6 t310000 CHRONICLE Divorce: Maren and Zane divorced.
+d6 t330000 CHRONICLE Divorce: Wren and Elian divorced.
+== end of day 6: citizens 20, beds 1, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 7: citizens 20, beds 1, medicine on map 18, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 8: citizens 20, beds 1, medicine on map 17, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 9: citizens 20, beds 1, medicine on map 17, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 10: citizens 20, beds 1, medicine on map 16, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 11: citizens 20, beds 1, medicine on map 16, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 12: citizens 20, beds 1, medicine on map 15, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d13 t757500 CHRONICLE Divorce: Hana and Marek divorced.
+== end of day 13: citizens 20, beds 1, medicine on map 15, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 14: citizens 20, beds 1, medicine on map 15, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 15: citizens 20, beds 1, medicine on map 14, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 16: citizens 20, beds 1, medicine on map 14, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 17: citizens 20, beds 1, medicine on map 13, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 18: citizens 20, beds 1, medicine on map 12, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 19: citizens 20, beds 1, medicine on map 12, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 20: citizens 20, beds 1, medicine on map 12, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 21: citizens 20, beds 1, medicine on map 12, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 22: citizens 20, beds 1, medicine on map 11, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d23 t1359000 CHRONICLE Eclipse
+== end of day 23: citizens 20, beds 1, medicine on map 11, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 24: citizens 20, beds 1, medicine on map 11, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d25 t1441000 CHRONICLE Flashstorm
+d25 t1442400 fires 1 citizens-on-fire 0 raining Clear | HaulToCell 9, LayDown 5, Clean 5, SocialRelax 1
+d25 t1443000 fires 1 citizens-on-fire 0 raining Clear | Clean 7, HaulToCell 7, LayDown 5, SocialRelax 1
+d25 t1443600 fires 1 citizens-on-fire 0 raining Clear | Clean 9, LayDown 5, HaulToCell 5, SocialRelax 1
+d25 t1444200 fires 2 citizens-on-fire 0 raining Clear | Clean 10, LayDown 6, HaulToCell 3, SocialRelax 1
+d25 t1444800 fires 3 citizens-on-fire 0 raining Clear | LayDown 6, SocialRelax 5, Clean 4, Skygaze 3, HaulToCell 2
+d25 t1445400 fires 6 citizens-on-fire 0 raining Clear | SocialRelax 7, LayDown 6, Clean 3, Skygaze 3, HaulToCell 1
+d25 t1446000 fires 9 citizens-on-fire 0 raining Clear | SocialRelax 7, LayDown 5, Skygaze 3, Clean 2, GoForWalk 2, HaulToCell 1
+d25 t1446600 fires 12 citizens-on-fire 0 raining Clear | SocialRelax 9, LayDown 6, Skygaze 4, Clean 1
+d25 t1447200 fires 21 citizens-on-fire 0 raining Clear | SocialRelax 10, LayDown 6, Skygaze 4
+d25 t1447800 fires 31 citizens-on-fire 0 raining Clear | SocialRelax 10, LayDown 6, Skygaze 4
+d25 t1448010 Juniper burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1448160 Juniper burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1448400 fires 38 citizens-on-fire 1 raining Clear | SocialRelax 10, LayDown 6, Skygaze 3, GotoWander 1
+d25 t1449000 fires 46 citizens-on-fire 1 raining Clear | LayDown 6, SocialRelax 6, Sow 5, TendPatient 1, GotoWander 1, BeatFire 1
+d25 t1449060 Esme burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1449060 Juniper burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1449090 Esme burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1449180 Cyrus burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1449240 Cyrus burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1449390 Cyrus burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1449390 Holt burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1449480 Elian burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1449540 Holt burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1449600 fires 61 citizens-on-fire 5 raining Clear | LayDown 7, GotoWander 5, SocialRelax 4, TendPatient 1, Ingest 1, Sow 1, BeatFire 1
+d25 t1449600 Elian burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1449750 Elian burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1449840 Esme burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1450170 Juniper burn #20 job GotoWander fire-in-cell yes attached no
+d25 t1450200 fires 74 citizens-on-fire 4 raining Clear | LayDown 6, GotoWander 5, SocialRelax 3, BeatFire 2, TendPatient 2, Ingest 1, Sow 1
+d25 t1450440 Cyrus burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1450440 Holt burn #10 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1450800 fires 80 citizens-on-fire 2 raining Clear | Sow 6, LayDown 6, TendPatient 4, GotoWander 2, SocialRelax 1, BeatFire 1
+d25 t1451070 Bryn burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1451160 Bryn burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1451220 Elian burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1451340 Bryn burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1451400 fires 90 citizens-on-fire 5 raining Clear | TendPatient 5, BeatFire 4, GotoWander 4, Sow 3, LayDown 3, none(downed) 1
+d25 t1451580 Ulric burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1451640 Ulric burn #2 job ExtinguishSelf fire-in-cell no attached no
+d25 t1451640 Juniper burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1451760 Cyrus burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1451880 Hana burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1451910 Cyrus burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1451970 Hana burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1451970 Briony burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1451970 Holt burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1452000 fires 94 citizens-on-fire 7 raining Clear | BeatFire 6, GotoWander 5, TendPatient 4, none(downed) 3, Ingest 1, LayDown 1
+d25 t1452030 Briony burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1452030 Cyrus burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1452060 Ulric burn #3 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1452120 Hana burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1452120 Briony burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1452120 Bryn burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1452150 Esme burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1452150 Cyrus burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1452240 Esme burn #1 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1452300 Cyrus burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1452300 Esme burn #2 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1452330 Cyrus burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1452390 Esme burn #3 job BeatFire fire-in-cell no attached no
+d25 t1452450 Elian burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1452480 Wren burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1452510 Juniper burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1452600 fires 104 citizens-on-fire 10 raining Clear | BeatFire 8, none(downed) 5, GotoWander 5, TendPatient 2
+d25 t1452630 Wren burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1453020 Briony burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1453200 fires 96 citizens-on-fire 6 raining Clear | none(downed) 5, GotoWander 4, BeatFire 4, Ingest 3, TendPatient 3, LayDown 1
+d25 t1453320 Ulric burn #10 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1453350 Cyrus burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1453440 Cyrus burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1453530 Hana burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1453530 Juniper burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1453620 Bryn burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1453800 fires 97 citizens-on-fire 8 raining Clear | none(downed) 6, GotoWander 6, BeatFire 3, Ingest 3, TendPatient 2
+d25 t1453890 Xiomara burn #1 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1453920 Xiomara burn #2 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1454040 Xiomara burn #3 job BeatFire fire-in-cell yes attached no
+d25 t1454100 Wren burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1454100 Cyrus burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1454310 Juniper burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1454370 Briony burn #20 job none DOWNED fire-in-cell no attached no
+d25 t1454400 fires 103 citizens-on-fire 8 raining Clear | none(downed) 8, GotoWander 5, BeatFire 3, Ingest 3, TendPatient 1
+d25 t1454490 Holt burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1454520 Esme burn #10 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1454550 Hana burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1454700 Xiomara burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1454760 Aveline burn #1 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1454790 Aveline burn #2 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1454910 Aveline burn #3 job BeatFire fire-in-cell no attached no
+d25 t1455000 fires 106 citizens-on-fire 9 raining Clear | none(downed) 9, BeatFire 6, GotoWander 3, TendPatient 2
+d25 t1455000 Cyrus burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1455090 Silas burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1455090 Juniper burn #70 job none DEAD fire-in-cell no attached no
+d25 t1455120 Bryn burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1455150 Cyrus burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1455210 Silas burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1455240 Holt burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1455300 Hana burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1455360 Silas burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1455600 fires 108 citizens-on-fire 10 raining Clear | none(downed) 11, BeatFire 4, TendPatient 2, GotoWander 2
+d25 t1455840 Cyrus burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1455900 Cyrus burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1455990 Holt burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1456020 Esme burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1456050 Hana burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1456050 Xiomara burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1456110 Esme burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1456200 fires 118 citizens-on-fire 10 raining Clear | none(downed) 12, BeatFire 4, TendPatient 2, GotoWander 1
+d25 t1456200 Aveline burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1456230 Maren burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1456380 Maren burn #2 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1456590 Cyrus burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1456590 Silas burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1456620 Bryn burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1456650 Cyrus burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1456740 Holt burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1456800 fires 116 citizens-on-fire 12 raining Clear | none(downed) 12, BeatFire 4, GotoWander 2, ExtinguishSelf 1
+d25 t1456800 Hana burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1456830 Marek burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1456890 Esme burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1456950 Marek burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1457040 Zane burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1457070 Zane burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1457100 Marek burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1457130 Zane burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1457280 Holt burn #67 job none DEAD fire-in-cell no attached no
+d25 t1457340 Cyrus burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1457400 fires 112 citizens-on-fire 9 raining Clear | none(downed) 11, BeatFire 4, GotoWander 2, ExtinguishSelf 1
+d25 t1457400 Cyrus burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1457550 Hana burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1457550 Cyrus burn #63 job none DEAD fire-in-cell no attached no
+d25 t1457550 Xiomara burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1457640 Maren burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1457670 Esme burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1457850 Cyrus burn #66 job none DEAD fire-in-cell no attached no
+d25 t1457940 Silas burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1457940 Emrys burn #1 job GotoWander fire-in-cell yes attached yes
+d25 t1457970 Emrys burn #2 job GotoWander fire-in-cell yes attached yes
+d25 t1458000 fires 104 citizens-on-fire 10 raining Clear | none(downed) 10, GotoWander 4, ExtinguishSelf 1, BeatFire 1
+d25 t1458030 Zane burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1458060 Ulric burn #20 job GotoWander fire-in-cell yes attached yes
+d25 t1458120 Emrys burn #3 job GotoWander fire-in-cell yes attached yes
+d25 t1458150 Hana burn #67 job none DEAD fire-in-cell no attached no
+d25 t1458240 Marek burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1458330 Maren burn #10 job ExtinguishSelf fire-in-cell yes attached yes
+d25 t1458330 Cyrus burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1458420 Esme burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1458600 fires 105 citizens-on-fire 11 raining Clear | none(downed) 10, GotoWander 5
+d25 t1458660 Bryn burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1458780 Cyrus burn #66 job none DEAD fire-in-cell no attached no
+d25 t1458900 Ulric burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1458990 Aveline burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1459020 Emrys burn #10 job GotoWander fire-in-cell yes attached yes
+d25 t1459050 Xiomara burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1459200 fires 114 citizens-on-fire 11 raining Clear | none(downed) 11, GotoWander 3
+d25 t1459230 Zane burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1459410 Bryn burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1459440 Silas burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1459650 Ulric burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1459710 Maren burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1459710 Bryn burn #64 job none DEAD fire-in-cell no attached no
+d25 t1459740 Marek burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1459800 fires 111 citizens-on-fire 9 raining Clear | none(downed) 11, GotoWander 1
+d25 t1460370 Emrys burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1460400 fires 126 citizens-on-fire 9 raining Clear | none(downed) 12
+d25 t1460400 Ulric burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1460490 Aveline burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1460550 Xiomara burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1460730 Zane burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1460820 Elian burn #67 job none DEAD fire-in-cell no attached no
+d25 t1460940 Silas burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1461000 fires 131 citizens-on-fire 8 raining Clear | none(downed) 11
+d25 t1461150 Ulric burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1461210 Maren burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1461240 Marek burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1461360 Ulric burn #63 job none DEAD fire-in-cell no attached no
+d25 t1461600 fires 138 citizens-on-fire 7 raining Clear | none(downed) 10
+d25 t1461750 Xiomara burn #58 job none DEAD fire-in-cell no attached no
+d25 t1461870 Emrys burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1461990 Aveline burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1462000 CHRONICLE Accession: Marek takes the eldership of North combine.
+d25 t1462000 CHRONICLE Accession: Briony takes the stewardship of Greycrest.
+d25 t1462200 fires 149 citizens-on-fire 6 raining Clear | none(downed) 9
+d25 t1462230 Zane burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1462440 Silas burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1462710 Maren burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1462740 Marek burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1462800 fires 155 citizens-on-fire 6 raining Clear | none(downed) 9
+d25 t1463370 Emrys burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1463400 fires 163 citizens-on-fire 6 raining Clear | none(downed) 8, BeatFire 1
+d25 t1463490 Wren burn #20 job none DOWNED fire-in-cell yes attached yes
+d25 t1463490 Aveline burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1463730 Zane burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1463940 Silas burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1464000 fires 165 citizens-on-fire 7 raining Clear | none(downed) 9
+d25 t1464090 Silas burn #61 job none DEAD fire-in-cell no attached no
+d25 t1464210 Maren burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1464240 Marek burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1464240 Wren burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1464600 fires 152 citizens-on-fire 6 raining Clear | none(downed) 8
+d25 t1464780 Zane burn #57 job none DEAD fire-in-cell no attached no
+d25 t1464870 Emrys burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1464990 Wren burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1464990 Aveline burn #60 job none DEAD fire-in-cell no attached no
+d25 t1465200 fires 152 citizens-on-fire 4 raining Clear | none(downed) 6
+d25 t1465710 Maren burn #60 job none DEAD fire-in-cell no attached no
+d25 t1465740 Marek burn #60 job none DEAD fire-in-cell no attached no
+d25 t1465740 Wren burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1465800 fires 141 citizens-on-fire 2 raining Clear | none(downed) 4
+d25 t1466000 CHRONICLE Accession: Wren takes the eldership of North combine.
+d25 t1466220 Emrys burn #59 job none DEAD fire-in-cell no attached no
+d25 t1466400 fires 137 citizens-on-fire 1 raining Clear | none(downed) 3
+d25 t1466490 Wren burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1466760 Wren burn #63 job none DEAD fire-in-cell no attached no
+d25 t1467000 fires 129 citizens-on-fire 0 raining Clear | none(downed) 2
+d25 t1467600 fires 124 citizens-on-fire 0 raining Clear | none(downed) 2
+d25 t1468000 CHRONICLE Accession: Esme takes the eldership of North combine.
+d25 t1468200 fires 119 citizens-on-fire 0 raining Clear | none(downed) 2
+d25 t1468800 fires 127 citizens-on-fire 1 raining Clear | none(downed) 2
+d25 t1468800 Esme burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1469400 fires 129 citizens-on-fire 1 raining Clear | none(downed) 2
+d25 t1469550 Esme burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1470000 fires 128 citizens-on-fire 1 raining Clear | none(downed) 2
+d25 t1470300 Esme burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1470600 fires 130 citizens-on-fire 1 raining Clear | none(downed) 2
+d25 t1471050 Esme burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1471200 fires 130 citizens-on-fire 1 raining Clear | none(downed) 2
+d25 t1471620 Esme burn #67 job none DEAD fire-in-cell no attached no
+d25 t1471800 fires 133 citizens-on-fire 0 raining Clear | none(downed) 1
+d25 t1472400 fires 138 citizens-on-fire 0 raining Clear | none(downed) 1
+d25 t1473000 fires 131 citizens-on-fire 0 raining Clear | BeatFire 1
+d25 t1473600 fires 122 citizens-on-fire 1 raining Clear | none(downed) 1
+d25 t1474140 Briony burn #30 job none DOWNED fire-in-cell yes attached yes
+d25 t1474200 fires 120 citizens-on-fire 1 raining Clear | none(downed) 1
+d25 t1474800 fires 111 citizens-on-fire 1 raining Clear | none(downed) 1
+d25 t1474890 Briony burn #40 job none DOWNED fire-in-cell yes attached yes
+d25 t1475400 fires 102 citizens-on-fire 1 raining Clear | none(downed) 1
+d25 t1475640 Briony burn #50 job none DOWNED fire-in-cell yes attached yes
+d25 t1476000 fires 89 citizens-on-fire 1 raining Clear | none(downed) 1
+d25 t1476390 Briony burn #60 job none DOWNED fire-in-cell yes attached yes
+d25 t1476600 fires 86 citizens-on-fire 1 raining Clear | none(downed) 1
+d25 t1476840 Briony burn #66 job none DEAD fire-in-cell no attached no
+d25 t1477200 fires 82 citizens-on-fire 0 raining Clear | 
+d25 t1477800 fires 77 citizens-on-fire 0 raining Clear | 
+d25 t1478400 fires 76 citizens-on-fire 0 raining Clear | 
+d25 t1479000 fires 75 citizens-on-fire 0 raining Clear | 
+d25 t1479600 fires 72 citizens-on-fire 0 raining Clear | 
+d25 t1480200 fires 73 citizens-on-fire 0 raining Clear | 
+d25 t1480800 fires 76 citizens-on-fire 0 raining Clear | 
+d25 t1481400 fires 79 citizens-on-fire 0 raining Clear | 
+d25 t1482000 fires 80 citizens-on-fire 0 raining Clear | 
+d25 t1482600 fires 72 citizens-on-fire 0 raining Clear | 
+d25 t1483200 fires 78 citizens-on-fire 0 raining Clear | 
+d25 t1483800 fires 77 citizens-on-fire 0 raining Clear | 
+d25 t1484400 fires 77 citizens-on-fire 0 raining Clear | 
+d25 t1485000 fires 74 citizens-on-fire 0 raining Clear | 
+d25 t1485600 fires 76 citizens-on-fire 0 raining Clear | 
+d25 t1486200 fires 74 citizens-on-fire 0 raining Clear | 
+d25 t1486800 fires 76 citizens-on-fire 0 raining Clear | 
+d25 t1487400 fires 72 citizens-on-fire 0 raining Clear | 
+d25 t1488000 fires 73 citizens-on-fire 0 raining Clear | 
+d25 t1488600 fires 75 citizens-on-fire 0 raining Clear | 
+d25 t1489200 fires 74 citizens-on-fire 0 raining Clear | 
+d25 t1489800 fires 79 citizens-on-fire 0 raining Clear | 
+d25 t1490400 fires 80 citizens-on-fire 0 raining Clear | 
+d25 t1491000 fires 75 citizens-on-fire 0 raining Clear | 
+d25 t1491600 fires 72 citizens-on-fire 0 raining Clear | 
+d25 t1492200 fires 73 citizens-on-fire 0 raining Clear | 
+d25 t1492800 fires 72 citizens-on-fire 0 raining Clear | 
+d25 t1493400 fires 70 citizens-on-fire 0 raining Clear | 
+d25 t1494000 fires 72 citizens-on-fire 0 raining Clear | 
+d25 t1494600 fires 71 citizens-on-fire 0 raining Clear | 
+d25 t1495200 fires 73 citizens-on-fire 0 raining Clear | 
+d25 t1495800 fires 69 citizens-on-fire 0 raining Clear | 
+d25 t1496400 fires 74 citizens-on-fire 0 raining Clear | 
+d25 t1497000 fires 82 citizens-on-fire 0 raining Clear | 
+d25 t1497600 fires 79 citizens-on-fire 0 raining Clear | 
+d25 t1498200 fires 79 citizens-on-fire 0 raining Clear | 
+d25 t1498800 fires 76 citizens-on-fire 0 raining Clear | 
+d25 t1499400 fires 81 citizens-on-fire 0 raining Clear | 
+d25 t1500000 fires 75 citizens-on-fire 0 raining Clear | 
+== end of day 25: citizens 0, beds 0, medicine on map 9, medicine in ledger 0, peak fires 171, deaths 20 (Injury 20)
+d26 t1500600 fires 77 citizens-on-fire 0 raining Clear | 
+d26 t1501200 fires 73 citizens-on-fire 0 raining Clear | 
+d26 t1501800 fires 71 citizens-on-fire 0 raining Clear | 
+d26 t1502400 fires 70 citizens-on-fire 0 raining Clear | 
+d26 t1503000 fires 69 citizens-on-fire 0 raining Clear | 
+d26 t1503600 fires 73 citizens-on-fire 0 raining Clear | 
+d26 t1504200 fires 75 citizens-on-fire 0 raining Clear | 
+d26 t1504800 fires 78 citizens-on-fire 0 raining Clear | 
+d26 t1505400 fires 71 citizens-on-fire 0 raining Clear | 
+d26 t1506000 fires 72 citizens-on-fire 0 raining Clear | 
+d26 t1506600 fires 70 citizens-on-fire 0 raining Clear | 
+d26 t1507200 fires 75 citizens-on-fire 0 raining Clear | 
+d26 t1507800 fires 76 citizens-on-fire 0 raining Clear | 
+d26 t1508400 fires 76 citizens-on-fire 0 raining Clear | 
+d26 t1509000 fires 70 citizens-on-fire 0 raining Clear | 
+d26 t1509600 fires 70 citizens-on-fire 0 raining Clear | 
+d26 t1510200 fires 66 citizens-on-fire 0 raining Clear | 
+d26 t1510800 fires 70 citizens-on-fire 0 raining Clear | 
+d26 t1511400 fires 71 citizens-on-fire 0 raining Clear | 
+d26 t1512000 fires 72 citizens-on-fire 0 raining Clear | 
+d26 t1512600 fires 74 citizens-on-fire 0 raining Clear | 
+d26 t1513200 fires 67 citizens-on-fire 0 raining Clear | 
+d26 t1513800 fires 71 citizens-on-fire 0 raining Clear | 
+d26 t1514400 fires 72 citizens-on-fire 0 raining Clear | 
+d26 t1515000 fires 75 citizens-on-fire 0 raining Clear | 
+d26 t1515600 fires 72 citizens-on-fire 0 raining Clear | 
+d26 t1516200 fires 71 citizens-on-fire 0 raining Clear | 
+d26 t1516800 fires 69 citizens-on-fire 0 raining Clear | 
+d26 t1517400 fires 72 citizens-on-fire 0 raining Clear | 
+d26 t1518000 fires 69 citizens-on-fire 0 raining Clear | 
+d26 t1518600 fires 72 citizens-on-fire 0 raining Clear | 
+d26 t1519200 fires 73 citizens-on-fire 0 raining Clear | 
+d26 t1519800 fires 73 citizens-on-fire 0 raining Clear | 
+d26 t1520400 fires 67 citizens-on-fire 0 raining Clear | 
+d26 t1521000 fires 68 citizens-on-fire 0 raining Clear | 
+d26 t1521600 fires 72 citizens-on-fire 0 raining Clear | 
+d26 t1522200 fires 70 citizens-on-fire 0 raining Clear | 
+d26 t1522800 fires 71 citizens-on-fire 0 raining Clear | 
+d26 t1523400 fires 69 citizens-on-fire 0 raining Clear | 
+d26 t1524000 fires 73 citizens-on-fire 0 raining Clear | 
+d26 t1524600 fires 72 citizens-on-fire 0 raining Clear | 
+d26 t1525200 fires 72 citizens-on-fire 0 raining Clear | 
+d26 t1525800 fires 69 citizens-on-fire 0 raining Clear | 
+d26 t1526400 fires 70 citizens-on-fire 0 raining Clear | 
+d26 t1527000 fires 73 citizens-on-fire 0 raining Clear | 
+d26 t1527600 fires 72 citizens-on-fire 0 raining Clear | 
+d26 t1528200 fires 77 citizens-on-fire 0 raining Fog | 
+d26 t1528800 fires 75 citizens-on-fire 0 raining Fog | 
+d26 t1529400 fires 74 citizens-on-fire 0 raining Fog | 
+d26 t1530000 fires 72 citizens-on-fire 0 raining Fog | 
+d26 t1530600 fires 73 citizens-on-fire 0 raining Fog | 
+d26 t1531200 fires 77 citizens-on-fire 0 raining Fog | 
+d26 t1531800 fires 75 citizens-on-fire 0 raining Fog | 
+d26 t1532400 fires 79 citizens-on-fire 0 raining Fog | 
+d26 t1533000 fires 77 citizens-on-fire 0 raining Fog | 
+d26 t1533600 fires 74 citizens-on-fire 0 raining Fog | 
+d26 t1534200 fires 75 citizens-on-fire 0 raining Fog | 
+d26 t1534800 fires 76 citizens-on-fire 0 raining Fog | 
+d26 t1535400 fires 74 citizens-on-fire 0 raining Fog | 
+d26 t1536000 fires 74 citizens-on-fire 0 raining Fog | 
+d26 t1536600 fires 79 citizens-on-fire 0 raining Fog | 
+d26 t1537200 fires 75 citizens-on-fire 0 raining Fog | 
+d26 t1537800 fires 81 citizens-on-fire 0 raining Fog | 
+d26 t1538400 fires 79 citizens-on-fire 0 raining Fog | 
+d26 t1539000 fires 75 citizens-on-fire 0 raining Fog | 
+d26 t1539600 fires 77 citizens-on-fire 0 raining Fog | 
+d26 t1540200 fires 75 citizens-on-fire 0 raining Fog | 
+d26 t1540800 fires 78 citizens-on-fire 0 raining Fog | 
+d26 t1541400 fires 74 citizens-on-fire 0 raining Fog | 
+d26 t1542000 fires 75 citizens-on-fire 0 raining Fog | 
+d26 t1542600 fires 69 citizens-on-fire 0 raining Fog | 
+d26 t1543200 fires 73 citizens-on-fire 0 raining Fog | 
+d26 t1543800 fires 69 citizens-on-fire 0 raining Fog | 
+d26 t1544400 fires 73 citizens-on-fire 0 raining Fog | 
+d26 t1545000 fires 75 citizens-on-fire 0 raining Fog | 
+d26 t1545600 fires 73 citizens-on-fire 0 raining Fog | 
+d26 t1546200 fires 72 citizens-on-fire 0 raining Fog | 
+d26 t1546800 fires 74 citizens-on-fire 0 raining Fog | 
+d26 t1547400 fires 78 citizens-on-fire 0 raining Fog | 
+d26 t1548000 fires 76 citizens-on-fire 0 raining Fog | 
+d26 t1548600 fires 75 citizens-on-fire 0 raining Fog | 
+d26 t1549200 fires 77 citizens-on-fire 0 raining Fog | 
+d26 t1549800 fires 77 citizens-on-fire 0 raining Fog | 
+d26 t1550400 fires 75 citizens-on-fire 0 raining Fog | 
+d26 t1551000 fires 78 citizens-on-fire 0 raining Fog | 
+d26 t1551600 fires 77 citizens-on-fire 0 raining Fog | 
+d26 t1552200 fires 76 citizens-on-fire 0 raining Fog | 
+d26 t1552800 fires 71 citizens-on-fire 0 raining Fog | 
+d26 t1553400 fires 70 citizens-on-fire 0 raining Fog | 
+d26 t1554000 fires 69 citizens-on-fire 0 raining Fog | 
+d26 t1554600 fires 69 citizens-on-fire 0 raining Fog | 
+d26 t1555200 fires 70 citizens-on-fire 0 raining Fog | 
+d26 t1555800 fires 69 citizens-on-fire 0 raining Fog | 
+d26 t1556400 fires 72 citizens-on-fire 0 raining Fog | 
+d26 t1557000 fires 70 citizens-on-fire 0 raining Fog | 
+d26 t1557600 fires 72 citizens-on-fire 0 raining Fog | 
+d26 t1558200 fires 73 citizens-on-fire 0 raining Fog | 
+d26 t1558800 fires 77 citizens-on-fire 0 raining Fog | 
+d26 t1559400 fires 79 citizens-on-fire 0 raining Fog | 
+d26 t1560000 fires 78 citizens-on-fire 0 raining Fog | 
+== end of day 26: citizens 0, beds 0, medicine on map 9, medicine in ledger 0, peak fires 171, deaths 20 (Injury 20)

@@ -48,40 +48,33 @@
     <label>medical tend quality</label>
     <description>How good a job this pawn does when tending wounds and illness.</description>
     <!--
-      Base 1, not 0: skillNeedFactors below is multiplicative (base * factor), so a 0 base would stay 0 at
-      every skill level regardless of the factor table — the table itself already spans the full 0.30..1.00
-      range a base of 1 needs to land exactly on those numbers.
+      RimWorld's own curve, unlike the rest of this file: 20% at Medicine 0 plus 10% a level, then a
+      post-process curve that flattens it past 100% - (1,1) (2,1.5) (4,2) - so level 8 is 1.00, level 20 is
+      1.55 (rimworldwiki.com/wiki/Medical_Tend_Quality, full table). This port's earlier table ran 0.30 to
+      1.00 across all twenty levels, which made a competent doctor (level 8) worth 0.58 where RimWorld's is
+      worth 1.00 - and a tend's quality is this number times the medicine's potency, so every infection was
+      being fought at a little over half strength. Not ported: RimWorld also scales this by the doctor's
+      Manipulation (weight 1) and Sight (weight 0.7), each capped at 140%.
+
+      Base 1, not 0: skillNeedFactors is multiplicative (base * factor), so a 0 base would stay 0.
     -->
     <defaultBaseValue>1</defaultBaseValue>
     <minValue>0</minValue>
     <skillNeedFactors>
-      <li Class="SimWorld.Stats.SkillNeed_Direct">
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
         <skill>Medicine</skill>
-        <valuesPerLevel>
-          <li>0.30</li>
-          <li>0.335</li>
-          <li>0.37</li>
-          <li>0.405</li>
-          <li>0.44</li>
-          <li>0.475</li>
-          <li>0.51</li>
-          <li>0.545</li>
-          <li>0.58</li>
-          <li>0.615</li>
-          <li>0.65</li>
-          <li>0.685</li>
-          <li>0.72</li>
-          <li>0.755</li>
-          <li>0.79</li>
-          <li>0.825</li>
-          <li>0.86</li>
-          <li>0.895</li>
-          <li>0.93</li>
-          <li>0.965</li>
-          <li>1.00</li>
-        </valuesPerLevel>
+        <baseValue>0.2</baseValue>
+        <bonusPerLevel>0.1</bonusPerLevel>
       </li>
     </skillNeedFactors>
+    <postProcessCurve>
+      <points>
+        <li>(0, 0)</li>
+        <li>(1, 1)</li>
+        <li>(2, 1.5)</li>
+        <li>(4, 2)</li>
+      </points>
+    </postProcessCurve>
   </StatDef>
 
   <StatDef>

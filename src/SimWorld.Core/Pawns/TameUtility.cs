@@ -42,16 +42,45 @@ namespace SimWorld.Pawns
             {
                 animal.faction = tamer.faction;
                 animal.mindState.tameness = 1f;
+                ClearMind(animal);
                 tamer.skills?.Learn(SkillDefOf.Animals, AnimalTuning.TameSuccessXp);
                 return true;
             }
 
-            if (Rand.Chance(AnimalTuning.TameFailAngerChance * animal.RaceProps.wildness))
+            // The race's own chance, not a function of wildness (RimWorld: manhunterOnTameFailChance). It
+            // was half the wildness, which made a failed tame of a chicken turn it on the handler one time
+            // in four; in RimWorld a chicken, a husky or a muffalo never does. Those fights were the largest
+            // single source of wounds in a threat-free settlement (docs/perf/storyteller-pressure).
+            if (Rand.Chance(animal.RaceProps.manhunterOnTameFailChance))
             {
                 animal.mindState.angryAt = tamer;
                 animal.mindState.angryUntilTick = Find.TickManager.TicksGame + AnimalTuning.TameFailAngerDurationTicks;
             }
             return false;
+        }
+
+        /// <summary>
+        /// An animal that has just changed sides stops what it was doing and forgets who it was angry at
+        /// (RimWorld: <c>Pawn.SetFaction</c> ends in <c>ClearMind</c>, which resets the mind state — the
+        /// manhunter state with it — and stops every job).
+        ///
+        /// <para/><b>What its absence did.</b> A failed attempt can leave an animal angry at its handler for
+        /// a day (<see cref="AnimalTuning.TameFailAngerDurationTicks"/>), and wounded prey turns on its
+        /// hunter the same way. The next handler to succeed changed the animal's faction and nothing else, so
+        /// the settlement now owned an animal that was still mid-attack on one of its own people, with the
+        /// grudge that had started it still running. Measured on a founding band of twenty with every
+        /// storyteller threat switched off: 34 of 118 wounds in twelve days came from animals carrying the
+        /// settlement's own faction (<c>docs/perf/storyteller-pressure</c>).
+        /// </summary>
+        private static void ClearMind(Pawn animal)
+        {
+            animal.mindState.angryAt = null;
+            animal.mindState.angryUntilTick = -1;
+            animal.mindState.manhunterUntilTick = -1;
+            if (animal.Spawned && animal.jobs?.curJob != null)
+            {
+                animal.jobs.EndCurrentJob(AI.JobCondition.InterruptForced);
+            }
         }
     }
 }

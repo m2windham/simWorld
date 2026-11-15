@@ -310,23 +310,26 @@ namespace SimWorld.Tests.Things
         }
 
         /// <summary>
-        /// Emergent, and worth pinning because it falls out of the parts rather than being written anywhere:
-        /// the fire riding a citizen is a fire on their own cell, firefighting is emergency work, so the very
-        /// next thing they do is beat it out. RimWorld reaches the same place by a dedicated
-        /// <c>JobGiver_ExtinguishSelf</c>; here the ordinary work giver already covers it.
+        /// A citizen who catches fire gets it out. This used to be pinned as emergent — the fire riding a
+        /// citizen is a fire on their own cell and firefighting is emergency work — but that work is gated to
+        /// the home area, and a citizen set alight in a field outside it went back to harvesting and burned
+        /// (docs/perf/storyteller-pressure). RimWorld's dedicated burning response now sits above everything
+        /// (Tests.AI.BurningResponseTests); it runs about first and stops to put the fire out one time in
+        /// ten, so it takes longer than beating did and is given the time.
         /// </summary>
         [Fact]
-        public void A_citizen_who_catches_fire_beats_it_out_themselves()
+        public void A_citizen_who_catches_fire_puts_it_out_themselves()
         {
             CoreMap map = NewMap(10, 10);
             Pawn citizen = NewHuman("Kindling");
             GenSpawn.Spawn(citizen, new IntVec3(5, 0, 5), map);
             citizen.TryAttachFire(Fire.MinFireSize);
 
-            RunTicks(600, citizen);
+            for (int i = 0; i < 6000 && citizen.IsBurning(); i++) RunTicks(1, citizen);
 
             Assert.False(citizen.IsBurning());
             Assert.Empty(FiresOn(map));
+            Assert.False(citizen.Dead);
         }
 
         [Fact]

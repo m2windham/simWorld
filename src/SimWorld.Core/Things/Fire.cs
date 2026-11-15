@@ -66,10 +66,19 @@ namespace SimWorld.Things
         /// further, into the ring two to three cells out (RimWorld: <c>Fire.TrySpread</c>'s own near/far split).</summary>
         public const float SpreadToAdjacentChance = 0.8f;
 
-        /// <summary>Chance per <see cref="ComplexCalcsInterval"/>, at rain rate 1, that an unroofed fire is
-        /// rained out (RimWorld: <c>Fire.BaseSkyExtinguishChance</c>). Driven by
-        /// <c>Weather.WeatherManager</c>, on this same interval — see <see cref="TryExtinguishFromRain"/>.</summary>
+        /// <summary>RimWorld: <c>Fire.BaseSkyExtinguishChance</c>, a chance <i>per tick</i>. RimWorld rolls
+        /// it once per <see cref="ComplexCalcsInterval"/> as <c>Rand.Value &lt; 0.04 * 150</c>, which is
+        /// always true: every unroofed fire is rained on every interval. See
+        /// <see cref="TryExtinguishFromRain"/>.</summary>
         public const float BaseSkyExtinguishChance = 0.04f;
+
+        /// <summary>What one interval of rain takes off a fire (RimWorld:
+        /// <c>Fire.BaseSkyExtinguishDamage</c>, 10 points of Extinguish damage, and a fire loses a hundredth
+        /// of its size per point).</summary>
+        public const float RainFireSizeReductionPerInterval = 0.1f;
+
+        /// <summary>Rain lighter than this does nothing to a fire (RimWorld's <c>RainRate &gt; 0.01f</c>).</summary>
+        public const float MinRainRateToExtinguish = 0.01f;
 
         /// <summary>How big a fire is, 0.1 to 1.75. Drives its damage, how fast it spreads, and how many
         /// beats it takes to put out.</summary>
@@ -220,24 +229,32 @@ namespace SimWorld.Things
                 TicksBetweenSparksBase);
 
         /// <summary>
-        /// Rolls this fire's chance of being rained out (RimWorld: the rain branch of
-        /// <c>Fire.DoComplexCalcs</c>, which reads <c>Map.weatherManager.RainRate</c> and only ever puts out
-        /// a fire under open sky).
-        /// <para/>
-        /// <b>Wired.</b> It was written before any weather existed and documented here as a gap; the weather
-        /// module now drives it. <c>Weather.WeatherManager.WeatherManagerTick</c> calls
-        /// <see cref="FireUtility.ExtinguishFiresFromRain"/> — the call site this was waiting on — once per
-        /// <see cref="ComplexCalcsInterval"/> while it is raining, so a fire gets exactly one roll per
-        /// interval, the same rate RimWorld gives it by rolling inside each fire's own pass.
+        /// One interval of rain on this fire (RimWorld: the rain branch of <c>Fire.DoComplexCalcs</c>): under
+        /// open sky, in anything more than a drizzle, the fire loses
+        /// <see cref="RainFireSizeReductionPerInterval"/> of its size and goes out below
+        /// <see cref="MinFireSize"/>. Driven map-wide by <c>Weather.WeatherManager.WeatherManagerTick</c> once
+        /// per <see cref="ComplexCalcsInterval"/>.
+        ///
+        /// <para/><b>Certain and gradual, not a coin toss.</b> This was a 4% chance per interval of putting
+        /// the fire out whole, scaled by the rain rate, and nothing otherwise. Against growth of up to 0.0825
+        /// per interval that let a fire in the rain live twenty-five intervals on average, grow to spreading
+        /// size and throw sparks that did the same: traced on a burning settlement
+        /// (<c>docs/perf/storyteller-pressure</c>), fires went from 268 to 341 <i>while it rained</i>.
+        /// RimWorld's rain wins slowly against a big fire and at once against a new one — a spark lands at
+        /// <see cref="MinFireSize"/> and its first interval of rain puts it out — which is why rain stops a
+        /// fire spreading there. The shape is recalled from the 1.x decompile (the always-true
+        /// <c>Rand.Value &lt; 6f</c> is hard to forget) and could not be re-read from here; the wiki says only
+        /// that rain "gradually extinguishes unroofed fires". The tests pin the behaviour.
         /// </summary>
         /// <param name="rainRate">0 (dry) to 1 (downpour).</param>
         /// <returns>True if this call put the fire out.</returns>
         public bool TryExtinguishFromRain(float rainRate)
         {
             if (!Spawned || Destroyed) return false;
-            if (rainRate <= 0f) return false;
+            if (rainRate <= MinRainRateToExtinguish) return false;
             if (GenGrid.Roofed(Position, Map!)) return false;
-            if (!Rand.Chance(BaseSkyExtinguishChance * rainRate)) return false;
+            fireSize -= RainFireSizeReductionPerInterval;
+            if (fireSize >= MinFireSize) return false;
             Destroy();
             return true;
         }

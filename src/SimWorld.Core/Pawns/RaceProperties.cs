@@ -55,6 +55,12 @@ namespace SimWorld.Pawns
         /// Humanlike race, which is why it defaults to 0 rather than being required.</summary>
         public float wildness;
 
+        /// <summary>Chance that a failed taming attempt turns this animal on its handler — RimWorld:
+        /// <c>RaceProperties.manhunterOnTameFailChance</c>, a per-race number and 0 for most. It is 0 for
+        /// all three shipped races, as it is in RimWorld (rimworldwiki.com: Muffalo, Husky, Chicken), so no
+        /// content sets it yet; a predator or a thrumbo would.</summary>
+        public float manhunterOnTameFailChance;
+
         /// <summary>Which <see cref="TrainableDef"/>s this race can ever learn (RimWorld: <c>RaceProperties.trainability</c>);
         /// null (the Humanlike default) means none — nothing here is trainable in the <see cref="Pawn_TrainingTracker"/> sense.</summary>
         public TrainabilityDef? trainability;
