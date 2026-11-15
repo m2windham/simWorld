@@ -37,6 +37,12 @@ namespace SimWorld.Tests.Crafting
 
         private static ThingDef Def(string name) => DefDatabase<ThingDef>.GetNamed(name);
 
+        /// <summary>Knives made: lying on the map or already taken up. An unarmed crafter arms itself with
+        /// what it just smithed (AI.JobGiver_PickUpOpportunisticWeapon), so the map alone undercounts.</summary>
+        private static int KnivesMade(CoreMap map) =>
+            map.listerThings.AllThings.Count(t => t.def.defName == "MeleeWeapon_Knife")
+            + map.mapPawns.AllPawnsSpawned.Count(p => p.equipment?.Primary?.def.defName == "MeleeWeapon_Knife");
+
         private static global::SimWorld.Crafting.RecipeDef Recipe(string name) =>
             DefDatabase<global::SimWorld.Crafting.RecipeDef>.GetNamed(name);
 
@@ -150,7 +156,7 @@ namespace SimWorld.Tests.Crafting
                 if (IsDoingBill(east)) eastBillTicks++;
             }
 
-            Assert.Single(map.listerThings.AllThings, t => t.def.defName == "MeleeWeapon_Knife");
+            Assert.Equal(1, KnivesMade(map));
             Assert.Empty(map.listerThings.ThingsOfDef(Def("Steel")));
 
             // One bill ran its single iteration; the other never started one, so its count is untouched.
@@ -190,7 +196,7 @@ namespace SimWorld.Tests.Crafting
             Assert.True(IsDoingBill(east), "the east crafter was refused a bill it had its own steel for");
 
             RunTicks(4000, west, east);
-            Assert.Equal(2, map.listerThings.AllThings.Count(t => t.def.defName == "MeleeWeapon_Knife"));
+            Assert.Equal(2, KnivesMade(map));
         }
 
         /// <summary>

@@ -264,6 +264,8 @@ namespace SimWorld.Health
 
             immunity.ImmunityHandlerTick();
 
+            HediffStageMtbEvents.HealthTickInterval(pawn, hediffs);
+
             if (pawn.RaceProps.IsFlesh)
             {
                 if (pawn.IsHashIntervalTick(HealthTuning.HealInterval))

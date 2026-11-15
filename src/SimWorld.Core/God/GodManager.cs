@@ -23,11 +23,28 @@ namespace SimWorld.God
     /// </summary>
     public sealed class GodManager : IExposable
     {
+        /// <summary>Every issued edict, in force or suspended: what holds a slot. Saved as "activeEdicts",
+        /// its name from before suspension existed, so older saves load unchanged.</summary>
         private List<EdictDef> activeEdicts = new List<EdictDef>();
+
+        /// <summary>Issued edicts whose <see cref="EdictDef.requiredOffice"/> is vacant (offices.edicts).</summary>
+        private List<EdictDef> suspendedEdicts = new List<EdictDef>();
+
+        /// <summary>Issued and not suspended; derived from the two lists above, never saved.</summary>
+        private readonly List<EdictDef> inForce = new List<EdictDef>();
         private int lastGodTick = int.MinValue;
         private AttentionManager attention = new AttentionManager();
 
-        public IReadOnlyList<EdictDef> ActiveEdicts => activeEdicts;
+        /// <summary>The edicts in force right now: issued and not suspended. What every consumer of an
+        /// edict's effect reads, so a suspended edict stops acting without any of them knowing why.</summary>
+        public IReadOnlyList<EdictDef> ActiveEdicts => inForce;
+
+        /// <summary>Every issued edict, suspended ones included: what counts against
+        /// <see cref="GodTuning.MaxActiveEdicts"/>.</summary>
+        public IReadOnlyList<EdictDef> IssuedEdicts => activeEdicts;
+
+        /// <summary>Issued edicts waiting on a vacant seat.</summary>
+        public IReadOnlyList<EdictDef> SuspendedEdicts => suspendedEdicts;
 
         /// <summary>
         /// Which settlement the god is looking at, and the only thing that drives
@@ -83,11 +100,47 @@ namespace SimWorld.God
             Find.ResearchManager.EraReached += OnEraReached;
         }
 
+        /// <summary>In force: issued and not suspended.</summary>
         public bool IsActive(EdictDef def)
+        {
+            if (def == null) throw new ArgumentNullException(nameof(def));
+            return activeEdicts.Contains(def) && !suspendedEdicts.Contains(def);
+        }
+
+        /// <summary>Issued, whether in force or suspended.</summary>
+        public bool IsIssued(EdictDef def)
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
             return activeEdicts.Contains(def);
         }
+
+        /// <summary>Issued, but waiting on its <see cref="EdictDef.requiredOffice"/>.</summary>
+        public bool IsSuspended(EdictDef def)
+        {
+            if (def == null) throw new ArgumentNullException(nameof(def));
+            return suspendedEdicts.Contains(def);
+        }
+
+        /// <summary>
+        /// Whether some living citizen of the civilization holds <paramref name="office"/> right now. The
+        /// civilization is every settlement in the world, the same set <see cref="View.GodViewSnapshot"/> and
+        /// <see cref="GodRollup"/> report as the god's. No world means no seat.
+        /// </summary>
+        public static bool IsSeated(Offices.OfficeDef office)
+        {
+            if (office == null) throw new ArgumentNullException(nameof(office));
+            World.World? world = Find.World;
+            if (world == null) return false;
+            foreach (World.WorldObject obj in world.worldObjects)
+            {
+                if (obj is World.Settlement settlement && Offices.OfficeManager.HolderIn(office, settlement) != null) return true;
+            }
+            return false;
+        }
+
+        /// <summary>The words a refusal or a suspension uses for a vacant seat: "Needs a seated Steward."</summary>
+        public static string NeedsSeatedReason(Offices.OfficeDef office) =>
+            "Needs a seated " + office.role.LabelCap + ".";
 
         /// <summary>
         /// True when <paramref name="def"/> could be activated right now: not already active, the civilization
@@ -102,7 +155,7 @@ namespace SimWorld.God
         public bool CanActivate(EdictDef def)
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
-            if (IsActive(def)) return false;
+            if (IsIssued(def)) return false;
             if (activeEdicts.Count >= GodTuning.MaxActiveEdicts) return false;
             EraDef? current = Find.ResearchManager.CurrentEra;
             if (def.requiredEra != null)
@@ -113,6 +166,7 @@ namespace SimWorld.God
             {
                 if (current != null && current.order >= def.obsoleteEra.order) return false;
             }
+            if (def.requiredOffice != null && !IsSeated(def.requiredOffice)) return false;
             return true;
         }
 
@@ -131,6 +185,7 @@ namespace SimWorld.God
             if (!CanActivate(def)) return false;
 
             activeEdicts.Add(def);
+            RebuildInForce();
 
             if (def.researchFocus != null && !Find.ResearchManager.IsFinished(def.researchFocus))
             {
@@ -157,8 +212,10 @@ namespace SimWorld.God
         private bool DeactivateInternal(EdictDef def, string chronicleLine)
         {
             if (!activeEdicts.Remove(def)) return false;
-
-            def.Worker.Notify_Deactivated();
+            // A suspended edict already had its worker told it stopped, when it was suspended.
+            bool wasInForce = !suspendedEdicts.Remove(def);
+            RebuildInForce();
+            if (wasInForce) def.Worker.Notify_Deactivated();
             Find.Storyteller.RecordChronicle(chronicleLine);
             return true;
         }
@@ -177,13 +234,59 @@ namespace SimWorld.God
             int now = Find.TickManager.TicksGame;
             if (lastGodTick != int.MinValue && now - lastGodTick < GodTuning.GodTickIntervalTicks) return;
             lastGodTick = now;
-
-            for (int i = 0; i < activeEdicts.Count; i++)
+            ReconcileSuspensions();
+            for (int i = 0; i < inForce.Count; i++)
             {
-                activeEdicts[i].Worker.EdictTick();
+                inForce[i].Worker.EdictTick();
             }
 
             attention.Reconcile();
+        }
+
+        /// <summary>
+        /// Suspends every issued edict whose <see cref="EdictDef.requiredOffice"/> has fallen vacant and
+        /// resumes every suspended one whose seat is filled again, each with its own chronicle line: the
+        /// near-miss and the recovery are both news. Runs on <see cref="GodTick"/>, the same long cadence the
+        /// office sweep (<see cref="Offices.OfficeManager.Tick"/>) refills seats on, and a seat emptied by a
+        /// sweep stays empty until the next one (<see cref="Offices.OfficeManager"/>'s interregnum), so a
+        /// vacancy is seen. Public so a test or a host can settle it without waiting for the cadence.
+        /// </summary>
+        public void ReconcileSuspensions()
+        {
+            bool changed = false;
+            for (int i = 0; i < activeEdicts.Count; i++)
+            {
+                EdictDef def = activeEdicts[i];
+                if (def.requiredOffice == null) continue;
+                bool seated = IsSeated(def.requiredOffice);
+                bool suspended = suspendedEdicts.Contains(def);
+                if (!seated && !suspended)
+                {
+                    suspendedEdicts.Add(def);
+                    changed = true;
+                    def.Worker.Notify_Deactivated();
+                    Find.Storyteller.RecordChronicle(
+                        "Edict suspended: " + def.LabelCap + ". " + NeedsSeatedReason(def.requiredOffice));
+                }
+                else if (seated && suspended)
+                {
+                    suspendedEdicts.Remove(def);
+                    changed = true;
+                    def.Worker.Notify_Activated();
+                    Find.Storyteller.RecordChronicle(
+                        "Edict resumed: " + def.LabelCap + ", now a " + def.requiredOffice.role.label + " is seated.");
+                }
+            }
+            if (changed) RebuildInForce();
+        }
+
+        private void RebuildInForce()
+        {
+            inForce.Clear();
+            for (int i = 0; i < activeEdicts.Count; i++)
+            {
+                if (!suspendedEdicts.Contains(activeEdicts[i])) inForce.Add(activeEdicts[i]);
+            }
         }
 
         /// <summary>
@@ -249,6 +352,10 @@ namespace SimWorld.God
             List<EdictDef>? list = activeEdicts;
             Scribe_Collections.Look(ref list, "activeEdicts", LookMode.Def);
             activeEdicts = list ?? new List<EdictDef>();
+            List<EdictDef>? suspended = suspendedEdicts;
+            Scribe_Collections.Look(ref suspended, "suspendedEdicts", LookMode.Def);
+            suspendedEdicts = suspended ?? new List<EdictDef>();
+            RebuildInForce();
             Scribe_Values.Look(ref lastGodTick, "lastGodTick", int.MinValue);
 
             // One int (the focused world tile). Nothing here has to be re-applied to citizens after a load:

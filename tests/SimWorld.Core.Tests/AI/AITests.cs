@@ -94,10 +94,13 @@ namespace SimWorld.Tests.AI
             Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[7]);
             Assert.IsType<ThinkNode_ConditionalLowJoy>(root.subNodes[8]);
             Assert.IsType<JobGiver_DirectedOrder>(root.subNodes[9]);
-            Assert.IsType<global::SimWorld.AI.JobGiver_Edicts>(root.subNodes[10]);
-            Assert.False(Assert.IsType<JobGiver_Work>(root.subNodes[11]).emergency);
-            Assert.IsType<JobGiver_IdleJoy>(root.subNodes[12]);
-            Assert.IsType<JobGiver_WanderAnywhere>(root.subNodes[13]);
+            // Dressing and arming between the directed order and the edicts (crafting.billcreators).
+            Assert.IsType<JobGiver_OptimizeApparel>(root.subNodes[10]);
+            Assert.IsType<JobGiver_PickUpOpportunisticWeapon>(root.subNodes[11]);
+            Assert.IsType<global::SimWorld.AI.JobGiver_Edicts>(root.subNodes[12]);
+            Assert.False(Assert.IsType<JobGiver_Work>(root.subNodes[13]).emergency);
+            Assert.IsType<JobGiver_IdleJoy>(root.subNodes[14]);
+            Assert.IsType<JobGiver_WanderAnywhere>(root.subNodes[15]);
 
             // And the mental-state tier hands a brawling pawn a job rather than leaving the mental state to
             // swing a verb out of its own tick at range zero — see MentalState_SocialFighting.
@@ -423,7 +426,9 @@ namespace SimWorld.Tests.AI
 
             b.jobs.StartJob(new Job(JobDefOf.Mine, rock));
 
-            Assert.Null(b.jobs.curJob);
+            // The refused job ends at once; whatever the tree hands out next (an idle wander, which turns on
+            // the seeded stream) is not the point.
+            Assert.NotEqual(JobDefOf.Mine, b.jobs.curJob?.def);
         }
 
         // ---- End-to-end: the point of the whole module ----

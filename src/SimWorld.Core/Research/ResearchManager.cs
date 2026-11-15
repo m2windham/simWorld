@@ -547,13 +547,14 @@ namespace SimWorld.Research
         /// <summary>
         /// Opens one more age past the authored tree. Ordinarily called for you — see
         /// <see cref="EnsureSomethingToResearch"/> — but public so a scenario or a test can reach past the
-        /// authored tree deliberately.
+        /// authored tree deliberately. Does nothing once <see cref="MaxEndlessAges"/> ages exist.
         /// </summary>
         public void ExtendEndlessTree()
         {
             EndlessAgeDef? ages = AgeRegister;
             IReadOnlyList<EndlessResearchDef> tracks = DefDatabase<EndlessResearchDef>.AllDefsListForReading;
             if (ages == null || tracks.Count == 0) return;
+            if (endlessAges >= MaxEndlessAges(ages, tracks)) return;
 
             int opened = endlessAges;
             endlessAges++;
@@ -595,8 +596,27 @@ namespace SimWorld.Research
             int guard = 0;
             while ((NothingLeftToResearch || EndlessFrontierReached) && guard++ < MaxEndlessCatchUpAges)
             {
+                int before = endlessAges;
                 ExtendEndlessTree();
+                if (endlessAges == before) break; // at MaxEndlessAges: nothing more will open
             }
+        }
+
+        /// <summary>
+        /// The most ages this civilization's tail can hold: as many whole ages as fit in one
+        /// <see cref="DefDatabase"/> registry, because every generated project is a real
+        /// <see cref="ResearchProjectDef"/> and <see cref="Def.index"/> is a <c>ushort</c>
+        /// (<see cref="DefDatabase.MaxDefsPerType"/>). With the shipped six tracks of four that is 2730 ages —
+        /// over 65,000 generated projects, far past anything a game researches — so "endless" ends here
+        /// rather than in an <see cref="OverflowException"/> halfway through minting an age. An age is
+        /// never half-opened: the bound counts whole ages.
+        /// </summary>
+        public static int MaxEndlessAges(EndlessAgeDef ages, IReadOnlyList<EndlessResearchDef> tracks)
+        {
+            if (ages == null) throw new ArgumentNullException(nameof(ages));
+            if (tracks == null) throw new ArgumentNullException(nameof(tracks));
+            int perAge = tracks.Count * ages.projectsPerTrack;
+            return perAge <= 0 ? 0 : DefDatabase.MaxDefsPerType / perAge;
         }
 
         /// <summary>A bound on the catch-up loop above, so a content set with no workable track cannot spin

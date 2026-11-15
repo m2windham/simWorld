@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    A cotton field sized by the cloth the tailoring benches standing on the map will need for the citizens who
+    lack what they make (Farming.CropDemandWorker_Outfitting). This port's own: RimWorld's player draws the zone.
+    A medicine crop (healroot) ships its own CropDemandDef beside this one with a worker of its own.
+  -->
+
+  <CropDemandDef>
+    <defName>CottonForCloth</defName>
+    <label>cotton for cloth</label>
+    <crop>Plant_Cotton</crop>
+    <fieldLabel>Cotton field</fieldLabel>
+    <workerClass>SimWorld.Farming.CropDemandWorker_Outfitting</workerClass>
+  </CropDemandDef>
+
+</Defs>

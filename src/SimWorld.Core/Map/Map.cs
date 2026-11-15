@@ -206,6 +206,8 @@ namespace SimWorld.Map
             // are a no-op on a map no settlement owns, and this is the tick every map already gets.
             Building.FarmingInitiative.TickMap(this);
             Crafting.CookingInitiative.TickMap(this);
+            // Shirts and knives for the citizens who lack them, at whatever bench stands (same cadence).
+            Crafting.OutfittingInitiative.TickMap(this);
 
             // Raids: each lord notices who it has lost and whether that, or the clock, ends the assault.
             lordManager.LordManagerTick();

@@ -124,6 +124,8 @@ namespace SimWorld.Building
             if (map == null) throw new ArgumentNullException(nameof(map));
 
             Settlement? settlement = HuntingInitiative.SettlementFor(map);
+            // Non-food crops (cotton for cloth, ...) keep fields of their own, each sized by its CropDemandDef.
+            Farming.CropDemandFields.Run(map, settlement);
             int wanted = FieldCellsWantedFor(settlement, map);
             if (wanted <= 0) return;
 

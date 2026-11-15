@@ -198,6 +198,12 @@ namespace SimWorld.God.View
 
         /// <summary>Nothing wrong with the edict — every slot is simply taken.</summary>
         NoSlotFree,
+
+        /// <summary>The seat it needs (<see cref="EdictDef.requiredOffice"/>) is vacant everywhere.</summary>
+        NeedsSeatedOffice,
+
+        /// <summary>Issued, and holding its slot, but out of force until its seat is filled again.</summary>
+        Suspended,
     }
 
     /// <summary>
@@ -254,7 +260,17 @@ namespace SimWorld.God.View
         /// <summary>The era that retires it, or null if nothing does.</summary>
         public string? ObsoleteEraDefName { get; }
 
-        internal static EdictOption For(EdictDef def, bool isActive, EraDef? currentEra, bool slotFree)
+        /// <summary>The option for <paramref name="def"/> as <paramref name="god"/> stands right now: the one
+        /// place both the snapshot and <see cref="GodCommands.IssueEdict"/> build it from, so the two can never
+        /// read the state differently.</summary>
+        internal static EdictOption For(EdictDef def, GodManager god) =>
+            For(def, god.IsActive(def), Sim.Find.ResearchManager.CurrentEra,
+                slotFree: god.IssuedEdicts.Count < GodTuning.MaxActiveEdicts,
+                isSuspended: god.IsSuspended(def),
+                officeSeated: def.requiredOffice == null || GodManager.IsSeated(def.requiredOffice));
+
+        internal static EdictOption For(
+            EdictDef def, bool isActive, EraDef? currentEra, bool slotFree, bool isSuspended, bool officeSeated)
         {
             EdictAvailability availability;
             string reason;
@@ -263,6 +279,12 @@ namespace SimWorld.God.View
             {
                 availability = EdictAvailability.Active;
                 reason = "In force.";
+            }
+            else if (isSuspended)
+            {
+                // Issued, so the host offers to rescind it; the reason says what brings it back.
+                availability = EdictAvailability.Suspended;
+                reason = "Suspended. " + GodManager.NeedsSeatedReason(def.requiredOffice!);
             }
             else if (def.obsoleteEra != null && currentEra != null && currentEra.order >= def.obsoleteEra.order)
             {
@@ -273,6 +295,12 @@ namespace SimWorld.God.View
             {
                 availability = EdictAvailability.RequiresLaterEra;
                 reason = "Needs the " + def.requiredEra.LabelCap + " era.";
+            }
+            else if (!officeSeated)
+            {
+                // Before the slot, for the reason the era comes first: the seat is a fact about this edict.
+                availability = EdictAvailability.NeedsSeatedOffice;
+                reason = GodManager.NeedsSeatedReason(def.requiredOffice!);
             }
             else if (!slotFree)
             {
