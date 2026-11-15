@@ -191,8 +191,17 @@ namespace SimWorld.Things
                 Find.TickManager.DeRegisterAllTickabilityFor(this);
             }
             if (this is SimWorld.Pawns.Pawn pawn) m.mapPawns.DeRegisterPawn(pawn);
-            if (def.IsEdifice) m.edificeGrid.DeRegister(this, mode);
+
+            // Off the thing grid before the edifice grid hears about it, which is RimWorld's order
+            // (Thing.DeSpawn deregisters; Building.DeSpawn asks about the roof afterwards) and is not
+            // cosmetic. EdificeGrid.DeRegister is where a lost roof holder brings its roof down, and the
+            // falling roof hits everything the thing grid lists under it. Deregistered second, the holder was
+            // still listed in its own cell: its own roof landed on it, and a holder already at zero hit
+            // points — one a fire had just finished — was destroyed again from inside its own despawn, which
+            // despawned it again, which dropped the roof again, until the stack ran out and took the process
+            // with it.
             m.thingGrid.Deregister(this);
+            if (def.IsEdifice) m.edificeGrid.DeRegister(this, mode);
             m.listerThings.Remove(this);
             map = null;
             position = IntVec3.Invalid;

@@ -84,6 +84,14 @@ namespace SimWorld.Building
         /// is damaged first, then every cell's roof is resolved. The order matters — phase two can spawn an
         /// edifice (<c>CollapsedRocks</c>) into a cell, and doing that before the neighbouring cells have
         /// dealt their damage would have the new rock absorb a hit meant for what was standing there.
+        ///
+        /// <para/><b><paramref name="cells"/> may grow while this runs, and is walked by index because it
+        /// does</b> (RimWorld's own <c>List</c> overload uses the same two index loops over
+        /// <c>RoofCollapseBuffer.CellsMarkedToCollapse</c>). A hit that destroys a roof holder condemns more
+        /// cells, and <see cref="RoofCollapseCellsFinder"/> appends them to this same list rather than
+        /// dropping them from inside the hit. Cells that arrive during the damage pass are damaged in it; any
+        /// that arrive later get a round of their own, so no cell loses its roof without that roof first
+        /// landing on what was under it.
         /// </summary>
         public static void DropRoofInCells(List<IntVec3> cells, Map.Map map)
         {
@@ -91,13 +99,19 @@ namespace SimWorld.Building
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (cells.Count == 0) return;
 
-            for (int i = 0; i < cells.Count; i++)
+            int dropped = 0;
+            while (dropped < cells.Count)
             {
-                if (GenGrid.InBounds(cells[i], map) && map.roofGrid.Roofed(cells[i])) DropRoofInCellPhaseOne(cells[i], map);
-            }
-            for (int i = 0; i < cells.Count; i++)
-            {
-                if (GenGrid.InBounds(cells[i], map) && map.roofGrid.Roofed(cells[i])) DropRoofInCellPhaseTwo(cells[i], map);
+                for (int i = dropped; i < cells.Count; i++)
+                {
+                    if (GenGrid.InBounds(cells[i], map) && map.roofGrid.Roofed(cells[i])) DropRoofInCellPhaseOne(cells[i], map);
+                }
+                int damaged = cells.Count;
+                for (int i = dropped; i < damaged; i++)
+                {
+                    if (GenGrid.InBounds(cells[i], map) && map.roofGrid.Roofed(cells[i])) DropRoofInCellPhaseTwo(cells[i], map);
+                }
+                dropped = damaged;
             }
 
             // Room's cached anyCellUnroofed/temperature tracking is only invalidated by an edifice spawning or
