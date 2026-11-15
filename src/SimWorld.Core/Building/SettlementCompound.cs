@@ -86,8 +86,8 @@ namespace SimWorld.Building
         public IntVec3 DoorCell => new IntVec3(interior.maxX + 1, 0, interior.minZ + interior.height / 2);
 
         /// <summary>Where each bed goes, as the cell it is placed on, south-west first and row by row. A bed
-        /// is placed unrotated, as everything this settlement builds is: it covers this cell and the one
-        /// north of it, and is slept in on this one.</summary>
+        /// is placed unrotated (<see cref="RotationAt"/> turns only the door and the storage): it covers this
+        /// cell and the one north of it, and is slept in on this one.</summary>
         public IEnumerable<IntVec3> BedCells
         {
             get
@@ -171,6 +171,39 @@ namespace SimWorld.Building
                 if (Free(map, entityDef, c, within)) n++;
             }
             return n;
+        }
+
+        /// <summary>
+        /// Which way what the compound puts on <paramref name="cell"/> is turned. North, the facing everything
+        /// else this settlement builds has, for anything but the door and the storage.
+        /// <para/>
+        /// <b>The door lies in its wall.</b> RimWorld never lets the player turn a door: it reads the wall
+        /// either side (<c>Building_Door.DoorRotationAt</c>, recalled from the decompiled source, which is not
+        /// reachable from here to quote) and answers North for a door in a wall running east-west and East for
+        /// one in a wall running north-south. The compound's door is in the east side, a north-south run, so
+        /// it is East. That is stated from the layout and not read off the neighbours, because the door's
+        /// blueprint can be placed, and built, before the walls either side of it exist. Nothing in the core
+        /// reads a door's facing: a door is one cell and <c>Standable</c> whichever way it is turned.
+        /// <para/>
+        /// <b>Storage turns its back to the ring.</b> A thing faces <see cref="Rot4.FacingCell"/>, and the
+        /// host's models are authored with their front toward -Z at North, which is the opposite way: the
+        /// front of a thing is behind its facing. So a hut is turned to <i>face</i> the wall it stands
+        /// against, and its front then opens onto the ground outside: East on the west side, South on the
+        /// north side, North on the south side and West on the east side.
+        /// </summary>
+        public Rot4 RotationAt(ThingDef entityDef, IntVec3 cell)
+        {
+            if (ReferenceEquals(entityDef, CompoundThingDefOf.Door)) return cell == DoorCell ? Rot4.East : Rot4.North;
+            if (!ReferenceEquals(entityDef, ConstructionThingDefOf.StorageHut)) return Rot4.North;
+
+            CellRect ring = Ring;
+            CellRect footprint = Footprint;
+            bool alongside = cell.z >= ring.minZ && cell.z <= ring.maxZ;
+            bool aboveOrBelow = cell.x >= ring.minX && cell.x <= ring.maxX;
+            if (alongside && cell.x == footprint.minX) return Rot4.East;
+            if (alongside && cell.x == footprint.maxX) return Rot4.West;
+            if (aboveOrBelow && cell.z == footprint.maxZ) return Rot4.South;
+            return Rot4.North; // the south side, and anything that is not one of this compound's sites
         }
 
         /// <summary>

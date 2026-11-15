@@ -141,7 +141,10 @@ namespace SimWorld.Building
                 for (int u = 0; u < shortfall && placed < ConstructionInitiativeTuning.MaxBlueprintsPerTick; u++)
                 {
                     if (!TryFindPlacementCell(map, need.EntityDef, out IntVec3 cell)) break;
-                    PlaceBlueprint(map, need.EntityDef, cell);
+                    // A site of the compound comes with the way it is turned; a drawn cell is never one
+                    // (Fits keeps the draw off the compound's ground) and stays North.
+                    Rot4 rot = map.settlementCompound?.RotationAt(need.EntityDef, cell) ?? Rot4.North;
+                    PlaceBlueprint(map, need.EntityDef, cell, rot);
                     placed++;
                 }
             }
@@ -573,12 +576,12 @@ namespace SimWorld.Building
                 + " waiting for space. It will not build outside the home area; widen it to make room.";
         }
 
-        private static void PlaceBlueprint(Map.Map map, ThingDef entityDef, IntVec3 cell)
+        private static void PlaceBlueprint(Map.Map map, ThingDef entityDef, IntVec3 cell, Rot4 rot)
         {
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(entityDef);
             if (blueprintDef == null) return; // No Blueprint content authored for this Def — nothing to place.
             Thing blueprint = ThingMaker.MakeThing(blueprintDef);
-            GenSpawn.Spawn(blueprint, cell, map);
+            GenSpawn.Spawn(blueprint, cell, map, rot);
         }
     }
 }
