@@ -143,6 +143,20 @@
 
         <li Class="SimWorld.AI.JobGiver_DirectedOrder" />
 
+        <!--
+          Dressing and arming (crafting.billcreators): put on apparel worth the change, take up a weapon when
+          unarmed. RimWorld's colonist block runs JobGiver_OptimizeApparel above its work tier; its exact slot
+          was recalled, not sourced. Below the directed order (the god's word first), above the edict tier, which
+          only ever steals jobs routine work would have offered. Optimizing is gated by its own 6000-9000 tick
+          cooldown, so it costs one look per citizen per few hours.
+          The weapon radius is a recorded translation, see JobGiver_PickUpOpportunisticWeapon: RimWorld's
+          colonists are armed by a player and this civilization has none.
+        -->
+        <li Class="SimWorld.AI.JobGiver_OptimizeApparel" />
+        <li Class="SimWorld.AI.JobGiver_PickUpOpportunisticWeapon">
+          <maxDistance>9999</maxDistance>
+        </li>
+
         <li Class="SimWorld.AI.JobGiver_Edicts" />
 
         <!-- Routine work: the normal work-giver list only. The emergency list has its own tier, above needs. -->

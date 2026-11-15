@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Dressing and arming (crafting.billcreators). Its own file rather than an addition to JobDefs_Core.xml
+       (CLAUDE.md). Bound by SimWorld.AI.ApparelJobDefOf. -->
+
+  <JobDef>
+    <defName>Wear</defName>
+    <driverClass>SimWorld.AI.JobDriver_Wear</driverClass>
+    <reportString>putting on TargetA.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>Equip</defName>
+    <driverClass>SimWorld.AI.JobDriver_Equip</driverClass>
+    <reportString>equipping TargetA.</reportString>
+  </JobDef>
+
+</Defs>
