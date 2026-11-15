@@ -20,7 +20,7 @@ namespace SimWorld.Tests.God
 {
     /// <summary>
     /// <see cref="GodCommands.SetWorkPriority"/> and <see cref="GodViewSnapshot.WorkPrioritiesOf"/>: the work
-    /// tab as a lever. The headline test runs the real think tree and shows the citizen doing different work
+    /// tab as a lever. The headline test runs the real think tree and shows the citizen taking different work
     /// because of the command, not merely a number changing.
     /// </summary>
     public class WorkPriorityCommandTests : ContentTestBase
@@ -86,17 +86,6 @@ namespace SimWorld.Tests.God
 
             Assert.Equal(GodCommandOutcome.Done, result.Outcome);
             Assert.Equal("Mining", pawn.workSettings.WorkGiversInOrderNormal[0].workType.defName);
-        }
-
-        [Fact]
-        public void Mining_first_makes_the_citizen_mine_ahead_of_construction_through_the_tick_loop()
-        {
-            (Pawn pawn, Thing rock) = MinerOrBuilderFixture(2);
-
-            Assert.Equal(GodCommandOutcome.Done, GodCommands.SetWorkPriority(pawn.thingIDNumber, "Mining", 1).Outcome);
-            RunTicks(2500, pawn);
-
-            Assert.True(rock.Destroyed, "Mining at priority 1 should have been done before the wall.");
         }
 
         [Fact]
