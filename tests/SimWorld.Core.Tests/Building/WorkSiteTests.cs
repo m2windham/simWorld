@@ -269,7 +269,7 @@ namespace SimWorld.Tests.Building
             SettlementWorkshops.Run(settlement, map);
             SettlementWorkshops.Run(settlement, map); // a second pass adds nothing
 
-            Zone_Stockpile stock = Assert.Single(map.zoneManager.AllZones.OfType<Zone_Stockpile>().Where(z => !ReferenceEquals(z, granary)));
+            Zone_Stockpile stock = Assert.Single(map.zoneManager.AllZones.OfType<Zone_Stockpile>(), z => !ReferenceEquals(z, granary));
             Assert.InRange(stock.CellCount, 1, SettlementWorkshops.BenchStockCells);
             Assert.All(stock.Cells, c => Assert.True(CellRect.CenteredOn(bench.Position, 2).Contains(c), "stock cell " + c));
             Assert.True(stock.filter.Allows(Def("Cloth")));
