@@ -1,0 +1,202 @@
+using System.Collections.Generic;
+using System.Linq;
+
+using SimWorld.Building;
+using SimWorld.Crafting;
+using SimWorld.Defs;
+using SimWorld.Map;
+using SimWorld.Pawns;
+using SimWorld.Research;
+using SimWorld.Sim;
+using SimWorld.Tests.Content;
+using SimWorld.Things;
+using SimWorld.World;
+
+using Xunit;
+
+using CoreMap = SimWorld.Map.Map;
+
+namespace SimWorld.Tests.Building
+{
+    /// <summary>
+    /// The compound's work yard (<see cref="SettlementCompound.WorkSiteCells"/>): research, art, the kitchen,
+    /// the stonecutter and the workshops try it first, each keeps its old search as the fallback, and no
+    /// fallback ever lands on the compound's own ground.
+    /// </summary>
+    [Collection("GlobalDefs")]
+    public class WorkSiteTests : ContentTestBase
+    {
+        public WorkSiteTests(CoreContentFixture content) : base(content)
+        {
+        }
+
+        private static ThingDef Def(string name) => DefDatabase<ThingDef>.GetNamed(name);
+
+        /// <summary>A built compound for a band of twenty with no households, so no dwellings.</summary>
+        private static (Settlement, CoreMap) BuiltCompound()
+        {
+            var map = new CoreMap(120, 120, TerrainDefOf.Soil);
+            var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Yard", 0);
+            for (int i = 0; i < 20; i++) settlement.AddCitizen(NewHuman("C" + i));
+            Pawn builder = NewHuman("Builder");
+            for (int pass = 0; pass < 60; pass++)
+            {
+                Find.TickManager.DebugSetTicksGame(pass * ConstructionInitiativeTuning.IntervalTicks);
+                SettlementConstructionInitiative.TickSettlement(settlement, map);
+                foreach (Blueprint bp in map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>().ToList())
+                {
+                    bp.ReplaceWithFrame().CompleteConstruction(builder);
+                }
+            }
+            Assert.NotNull(map.settlementCompound);
+            return (settlement, map);
+        }
+
+        private static Thing TheDoor(CoreMap map) => Assert.Single(map.listerThings.ThingsOfDef(CompoundThingDefOf.Door));
+
+        private static List<Blueprint> Planned(CoreMap map, ThingDef def) =>
+            map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>()
+                .Where(bp => ReferenceEquals(bp.EntityToBuild, def)).ToList();
+
+        /// <summary>Just outside the door, beside the street: within a few cells east of it and no more than a
+        /// dwelling's depth either side of its row, and not on the street itself.</summary>
+        private static bool InTheYard(Thing door, IntVec3 c) =>
+            c.x > door.Position.x + 1 && c.x <= door.Position.x + 5
+            && System.Math.Abs(c.z - door.Position.z) >= 2 && System.Math.Abs(c.z - door.Position.z) <= 6;
+
+        private static Thing SpawnStack(CoreMap map, IntVec3 cell, string defName, int count)
+        {
+            Thing t = ThingMaker.MakeThing(Def(defName));
+            t.stackCount = count;
+            GenSpawn.Spawn(t, cell, map);
+            return t;
+        }
+
+        [Fact]
+        public void Research_benches_and_art_go_up_in_the_yard_by_the_door()
+        {
+            (Settlement settlement, CoreMap map) = BuiltCompound();
+            Thing door = TheDoor(map);
+
+            for (int i = 0; i < 4; i++) SettlementWorksInitiative.Run(settlement, map);
+
+            List<Blueprint> benches = Planned(map, ResearchWorkDefOf.ResearchBench);
+            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted, benches.Count);
+            Assert.All(benches, b => Assert.True(InTheYard(door, b.Position), "research bench at " + b.Position + ", door at " + door.Position));
+            List<Blueprint> art = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>()
+                .Where(bp => SculptureMaterials.AllSculptureDefs.Contains(bp.EntityToBuild)).ToList();
+            Assert.NotEmpty(art);
+            Assert.True(InTheYard(door, art[0].Position), "first art at " + art[0].Position);
+
+            // Every bench is worked from the street: a standable cell beside it lies on the street's rows.
+            Assert.All(benches, b => Assert.Contains(GenAdj.CardinalDirections, o =>
+                GenGrid.Standable(b.Position + o, map) && System.Math.Abs((b.Position + o).z - door.Position.z) <= 1));
+        }
+
+        [Fact]
+        public void A_kitchen_goes_in_the_yard_when_the_food_is_in_reach_of_it_and_to_the_food_when_it_is_not()
+        {
+            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("Fire"));
+            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("Cooking"));
+            ThingDef stove = Def("FueledStove");
+
+            (Settlement _, CoreMap near) = BuiltCompound();
+            Thing door = TheDoor(near);
+            SpawnStack(near, door.Position + new IntVec3(-2, 0, 0), "RawBerries", 60); // stored inside the ring
+            CookingInitiative.Run(near);
+            Blueprint inYard = Assert.Single(Planned(near, stove));
+            Assert.True(InTheYard(door, inYard.Position), "kitchen at " + inYard.Position);
+
+            (Settlement _, CoreMap far) = BuiltCompound();
+            var corner = new IntVec3(5, 0, 5);
+            SpawnStack(far, corner, "RawBerries", 60);
+            CookingInitiative.Run(far);
+            Blueprint byFood = Assert.Single(Planned(far, stove));
+            Assert.True(byFood.Position.InHorDistOf(corner, CookingTuning.StovePlacementRadius * 1.5f), "kitchen at " + byFood.Position);
+            Assert.False(far.settlementCompound!.Reserves(byFood.OccupiedRect()));
+        }
+
+        [Fact]
+        public void A_stonecutter_goes_to_the_stone_unless_the_stone_is_already_home()
+        {
+            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("Masonry"));
+            ThingDef table = Def("TableStonecutter");
+
+            (Settlement _, CoreMap home) = BuiltCompound();
+            Thing door = TheDoor(home);
+            SpawnStack(home, door.Position + new IntVec3(2, 0, 0), "ChunkGranite", 1); // hauled home, in the street
+            StonecutterInitiative.Run(home);
+            Blueprint inYard = Assert.Single(Planned(home, table));
+            Assert.True(InTheYard(door, inYard.Position), "table at " + inYard.Position);
+
+            (Settlement _, CoreMap quarry) = BuiltCompound();
+            SpawnStack(quarry, new IntVec3(5, 0, 5), "ChunkGranite", 1);
+            StonecutterInitiative.Run(quarry);
+            Blueprint byStone = Assert.Single(Planned(quarry, table));
+            Assert.False(quarry.settlementCompound!.Reserves(byStone.OccupiedRect()));
+            Assert.True(byStone.Position.InHorDistOf(new IntVec3(5, 0, 5), WorkGiver_DoBill.IngredientSearchRadius));
+        }
+
+        [Fact]
+        public void A_fallback_never_lands_on_the_compounds_ground_even_with_the_material_right_against_the_ring()
+        {
+            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("Masonry"));
+            (Settlement _, CoreMap map) = BuiltCompound();
+            SettlementCompound compound = map.settlementCompound!;
+            Thing door = TheDoor(map);
+
+            // The yard's stonecutter site taken by something else, and the stone beside the door's threshold.
+            IntVec3 site = compound.WorkSiteCells(SettlementCompound.WorkSite.Stonecutter).First();
+            GenSpawn.Spawn(ThingMaker.MakeThing(Def("Wall")), site, map);
+            SpawnStack(map, door.Position + new IntVec3(1, 0, 0), "ChunkGranite", 1);
+
+            StonecutterInitiative.Run(map);
+
+            foreach (Blueprint bp in Planned(map, Def("TableStonecutter")))
+            {
+                Assert.False(compound.Reserves(bp.OccupiedRect()), "table planned on the compound at " + bp.Position);
+                Assert.NotEqual(door.Position + new IntVec3(1, 0, 0), bp.Position);
+            }
+        }
+
+        [Theory]
+        [InlineData(SettlementWorkshops.ButcherDefName)]
+        [InlineData(SettlementWorkshops.TailorDefName)]
+        [InlineData(SettlementWorkshops.SmithyDefName)]
+        public void A_workshop_goes_up_in_the_yard_only_once_something_wants_it(string benchName)
+        {
+            foreach (ResearchProjectDef p in DefDatabase<ResearchProjectDef>.AllDefsListForReading) Find.ResearchManager.FinishProject(p);
+            (Settlement settlement, CoreMap map) = BuiltCompound();
+            Thing door = TheDoor(map);
+            ThingDef? bench = DefDatabase<ThingDef>.GetNamedSilentFail(benchName);
+
+            // Nothing wanted yet (a band of naked citizens, but no cloth): nothing placed.
+            SettlementWorkshops.Run(settlement, map);
+            Assert.Empty(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint));
+
+            IntVec3 inside = door.Position + new IntVec3(-2, 0, 0);
+            switch (benchName)
+            {
+                case SettlementWorkshops.TailorDefName: SpawnStack(map, inside, "Cloth", 50); break;
+                case SettlementWorkshops.SmithyDefName: SpawnStack(map, inside, "Steel", 50); break;
+                default:
+                    Pawn deer = new Pawn(DefDatabase<ThingDef>.AllDefsListForReading.First(d => d.race != null && d.race.Animal), "Deer");
+                    GenSpawn.Spawn(deer, inside, map);
+                    deer.health.Kill(null, null);
+                    break;
+            }
+            SettlementWorkshops.Run(settlement, map);
+
+            List<Blueprint> planned = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>().ToList();
+            if (bench == null || GenConstruct.BlueprintDefFor(bench) == null)
+            {
+                // The bench's construction content is another lane's; until it lands, nothing is placed.
+                Assert.Empty(planned);
+                return;
+            }
+            Blueprint placed = Assert.Single(planned);
+            Assert.Same(bench, placed.EntityToBuild);
+            Assert.True(InTheYard(door, placed.Position), benchName + " at " + placed.Position);
+        }
+    }
+}

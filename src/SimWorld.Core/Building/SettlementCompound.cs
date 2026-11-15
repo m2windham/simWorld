@@ -268,14 +268,19 @@ namespace SimWorld.Building
             Kitchen,
             Stonecutter,
             Research,
+            Butcher,
+            Tailor,
+            Smithy,
             Art,
         }
 
         /// <summary>
         /// Where each kind of work goes in the yard. The benches stand on the row beside the street, a cell
         /// apart, so each is worked from the street and none walls in another: research north of it, the
-        /// kitchen and the stonecutter south. Art fills the rows behind, where everyone going in or out of the
-        /// door passes it (beauty is read over what a citizen sees, <c>Needs.BeautyUtility</c>).
+        /// kitchen and the stonecutter south. The workshops stand in the next row back, worked from the open
+        /// row between: the butcher's table behind the kitchen it feeds, the smithy beside it, the tailor's
+        /// north. Art fills the rest, where everyone going in or out of the door passes it (beauty is read
+        /// over what a citizen sees, <c>Needs.BeautyUtility</c>).
         /// </summary>
         public IEnumerable<IntVec3> WorkSiteCells(WorkSite site)
         {
@@ -293,14 +298,21 @@ namespace SimWorld.Building
                 case WorkSite.Stonecutter:
                     yield return new IntVec3(x + 2, 0, z - 2);
                     break;
+                case WorkSite.Butcher:
+                    yield return new IntVec3(x, 0, z - 4);
+                    break;
+                case WorkSite.Smithy:
+                    yield return new IntVec3(x + 2, 0, z - 4);
+                    break;
+                case WorkSite.Tailor:
+                    yield return new IntVec3(x, 0, z + 4);
+                    break;
                 case WorkSite.Art:
-                    foreach (int dz in new[] { 4, -4 })
-                    {
-                        yield return new IntVec3(x, 0, z + dz);
-                        yield return new IntVec3(x + 2, 0, z + dz);
-                    }
+                    yield return new IntVec3(x + 2, 0, z + 4);
                     yield return new IntVec3(x + 1, 0, z + 6);
                     yield return new IntVec3(x + 1, 0, z - 6);
+                    yield return new IntVec3(x + 3, 0, z + 6);
+                    yield return new IntVec3(x + 3, 0, z - 6);
                     break;
             }
         }
@@ -481,36 +493,33 @@ namespace SimWorld.Building
         /// every site accepts what the layout puts on it. A map edge or an outcrop therefore moves the
         /// compound; it never bends it.
         /// <para/>
-        /// <b>Room for the village first.</b> A position whose whole <see cref="Village"/> (the street, the
-        /// work yard and every planned dwelling plot) is on the map and open ground is preferred over one
-        /// where only the compound fits, searched over the same domains in the same order; only when no
-        /// position anywhere has room for the village is the compound planned where it alone fits, and the
-        /// plots that cannot be had are then skipped (<see cref="TryFindCell"/>). Either way it is one draw.
+        /// <b>Room for the village first.</b> Within each domain, a position whose whole <see cref="Village"/>
+        /// (the street, the work yard and every planned dwelling plot) is on the map and open ground is
+        /// preferred over one where only the compound fits; the square round the hub only grows when neither
+        /// kind fits in it, so the village never moves away from where its founders stand just to be whole.
+        /// Plots that cannot be had are skipped (<see cref="TryFindCell"/>). Either way it is one draw.
         /// </summary>
         public static SettlementCompound? TryPlan(Map.Map map, int citizens, int wallBudget)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (!TrySize(citizens, wallBudget, out int width, out int height)) return null;
 
+            var wholeMap = new CellRect(0, 0, map.Size.x, map.Size.z);
             Area home = map.areaManager.Home;
             var open = new OpenGround(map, home.TrueCount > 0 ? home : null);
-            return TryPlanIn(map, width, height, open, wholeVillage: true)
-                ?? TryPlanIn(map, width, height, open, wholeVillage: false);
-        }
-
-        private static SettlementCompound? TryPlanIn(Map.Map map, int width, int height, OpenGround open, bool wholeVillage)
-        {
-            var wholeMap = new CellRect(0, 0, map.Size.x, map.Size.z);
-            if (map.areaManager.Home.TrueCount > 0) return TryPick(map, wholeMap, width, height, open, wholeVillage);
+            if (home.TrueCount > 0) return TryPickPreferringVillage(map, wholeMap, width, height, open);
 
             var hub = new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
             for (int radius = Math.Max(1, ConstructionInitiativeTuning.HubPlacementRadius); ; radius *= 2)
             {
                 CellRect square = CellRect.CenteredOn(hub, radius).ClipInsideMap(map);
-                SettlementCompound? compound = TryPick(map, square, width, height, open, wholeVillage);
+                SettlementCompound? compound = TryPickPreferringVillage(map, square, width, height, open);
                 if (compound != null || square == wholeMap) return compound;
             }
         }
+
+        private static SettlementCompound? TryPickPreferringVillage(Map.Map map, CellRect domain, int width, int height, OpenGround open) =>
+            TryPick(map, domain, width, height, open, wholeVillage: true) ?? TryPick(map, domain, width, height, open, wholeVillage: false);
 
         /// <summary>
         /// The interior a ring of <paramref name="wallBudget"/> cells closes round, chosen to hold the most

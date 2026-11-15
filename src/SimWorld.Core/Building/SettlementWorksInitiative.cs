@@ -134,6 +134,7 @@ namespace SimWorld.Building
             if (settlement.Citizens.Count == 0) return;
 
             EnsureResearchBenches(map);
+            SettlementWorkshops.Run(settlement, map);
             EnsureArt(map);
         }
 
