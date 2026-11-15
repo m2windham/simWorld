@@ -26,7 +26,10 @@ namespace SimWorld.Building
     /// handful of walls once there is anyone to shelter, and storage sized to what the settlement's own
     /// <see cref="World.Settlement.Stores"/> ledger actually holds. See <see cref="ComputeNeeds"/>.
     /// <para/>
-    /// <b>Where it builds.</b> Inside the home area once one exists — painted by the player
+    /// <b>Where it builds.</b> Into its own <see cref="SettlementCompound"/> first: a block of beds, a ring
+    /// of wall round it with a door in the east side, and storage against the outside. That is what turns the
+    /// counts below into a place. Anything the compound has no site for, and everything a settlement too small
+    /// to have one builds, goes where it always went: inside the home area once one exists — painted by the player
     /// (<see cref="Map.View.MapCommands.SetHomeArea"/>) or grown by <see cref="AutoHomeAreaMaker"/> around the
     /// settlement's own finished buildings — and never outside it, even when the area is full. Before either
     /// has ever put a cell in it, it builds around the road hub. See <see cref="TryFindPlacementCell"/>, and
@@ -116,6 +119,8 @@ namespace SimWorld.Building
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (Find.TickManager.TicksGame % ConstructionInitiativeTuning.IntervalTicks != 0) return;
 
+            EnsureCompound(settlement, map);
+
             List<Need> needs = ComputeNeeds(settlement, map);
             if (needs.Count == 0) return;
 
@@ -132,7 +137,7 @@ namespace SimWorld.Building
             for (int i = 0; i < needs.Count && placed < ConstructionInitiativeTuning.MaxBlueprintsPerTick; i++)
             {
                 Need need = needs[i];
-                int shortfall = need.Target - CountBuiltOrPlanned(map, need.EntityDef);
+                int shortfall = Shortfall(map, need);
                 for (int u = 0; u < shortfall && placed < ConstructionInitiativeTuning.MaxBlueprintsPerTick; u++)
                 {
                     if (!TryFindPlacementCell(map, need.EntityDef, out IntVec3 cell)) break;
@@ -140,6 +145,26 @@ namespace SimWorld.Building
                     placed++;
                 }
             }
+        }
+
+        /// <summary>
+        /// Plans this settlement's <see cref="SettlementCompound"/> on the first gated pass one can be planned,
+        /// and gives it a home area when the map has none (<see cref="SettlementCompound.ClaimHome"/>).
+        /// Planning is the only step here that draws from <see cref="Rand"/> or writes to the map, which is
+        /// why it is its own step and not part of <see cref="ComputeNeeds"/> or
+        /// <see cref="TryFindPlacementCell"/>: <see cref="HomeAreaFullExplanation"/> shares those and has to
+        /// stay a pure read. A settlement that cannot have a compound yet
+        /// (<see cref="SettlementCompound.TryPlan"/>) is asked again every pass, so a band that grows into
+        /// one, or a home area widened until it holds one, gets it then.
+        /// </summary>
+        private static void EnsureCompound(Settlement settlement, Map.Map map)
+        {
+            int citizens = settlement.Citizens.Count;
+            if (map.settlementCompound == null && citizens > 0)
+            {
+                map.settlementCompound = SettlementCompound.TryPlan(map, citizens, WallTarget(citizens));
+            }
+            if (map.settlementCompound != null && map.areaManager.Home.TrueCount == 0) map.settlementCompound.ClaimHome(map);
         }
 
         /// <summary>
@@ -157,22 +182,57 @@ namespace SimWorld.Building
             {
                 needs.Add(new Need(ConstructionThingDefOf.Bed, citizens));
 
-                int wallTarget = Math.Clamp(
-                    (int)Math.Ceiling(citizens * ConstructionInitiativeTuning.WallsPerCitizen),
-                    ConstructionInitiativeTuning.MinWallShelterCount,
-                    ConstructionInitiativeTuning.MaxWallShelterCount);
                 // Which material, not how many: the wall need is computed once, here, and
                 // StoneWallMaterials only answers what to cut it from — the toughest stone the settlement has
                 // a whole wall's worth of blocks for, or wood when it has none. See that class for why a
                 // second decider wanting its own stone walls would be the wrong shape, and why
                 // CountBuiltOrPlanned below has to count every wall kind against this one target.
-                needs.Add(new Need(StoneWallMaterials.PreferredWallDef(map), wallTarget));
+                needs.Add(new Need(StoneWallMaterials.PreferredWallDef(map), WallTarget(citizens)));
+
+                // The doorway of the ring. Only a settlement with a compound wants a door: nothing here would
+                // know where else to put one. See Shortfall for how it and the walls are counted.
+                if (map.settlementCompound != null) needs.Add(new Need(CompoundThingDefOf.Door, 1));
             }
 
             int storageTarget = StorageTarget(settlement);
             if (storageTarget > 0) needs.Add(new Need(ConstructionThingDefOf.StorageHut, storageTarget));
 
             return needs;
+        }
+
+        /// <summary>How many walls a settlement of <paramref name="citizens"/> wants, which is also the length
+        /// of ring <see cref="SettlementCompound.TrySize"/> has to work with.</summary>
+        private static int WallTarget(int citizens) => Math.Clamp(
+            (int)Math.Ceiling(citizens * ConstructionInitiativeTuning.WallsPerCitizen),
+            ConstructionInitiativeTuning.MinWallShelterCount,
+            ConstructionInitiativeTuning.MaxWallShelterCount);
+
+        /// <summary>
+        /// How many more of <paramref name="need"/> to place: its target less what is built or planned
+        /// (<see cref="CountBuiltOrPlanned"/>), except for the two things that only mean anything on the ring.
+        /// A settlement with a <see cref="SettlementCompound"/> wants a wall for each gap in its ring and a
+        /// door for its doorway, counted there and nowhere else. The plain count would take a ruin's wall
+        /// across the map off the target and leave the ring open by that many; and a wall anywhere but the
+        /// ring is the scatter the compound exists to end.
+        /// </summary>
+        private static int Shortfall(Map.Map map, Need need)
+        {
+            SettlementCompound? compound = map.settlementCompound;
+            if (compound != null && OnlyOnTheRing(need.EntityDef))
+            {
+                return compound.CountFree(map, need.EntityDef, HomeIfAny(map));
+            }
+            return need.Target - CountBuiltOrPlanned(map, need.EntityDef);
+        }
+
+        private static bool OnlyOnTheRing(ThingDef entityDef) =>
+            ReferenceEquals(entityDef, CompoundThingDefOf.Door) || StoneWallMaterials.IsWall(entityDef);
+
+        /// <summary>The home area when it has any cell in it, which is when it binds; null before that.</summary>
+        private static Area? HomeIfAny(Map.Map map)
+        {
+            Area home = map.areaManager.Home;
+            return home.TrueCount > 0 ? home : null;
         }
 
         /// <summary>One <c>StorageHut</c> per <see cref="ConstructionInitiativeTuning.GoodsPerStorageHut"/>
@@ -264,7 +324,12 @@ namespace SimWorld.Building
         }
 
         /// <summary>
-        /// Where the next <paramref name="entityDef"/> goes. There are two anchors, taken in order. It is never
+        /// Where the next <paramref name="entityDef"/> goes. A settlement with a
+        /// <see cref="SettlementCompound"/> takes the compound's next free site for it, and for a wall or the
+        /// door that is the only answer there is. The rest of this describes where everything else goes:
+        /// what the compound has no site left for, and all of it for a settlement with no compound.
+        /// <para/>
+        /// There are two anchors, taken in order. It is never
         /// a uniformly random cell anywhere on the map, which is what this used to be
         /// (<c>docs/design/the-loop.md</c> §5 item 2): that scattered a settlement's beds and lone wall tiles
         /// across tens of thousands of cells, so the settlement never looked like one place.
@@ -301,16 +366,23 @@ namespace SimWorld.Building
         /// <para/>
         /// Inside whichever domain applies, the cell is one seeded draw from the ambient <see cref="Rand"/>
         /// stream over every cell that fits. The draw is exact rather than sampled, so "no cell" means
-        /// "no room", not "unlucky". The cells are chosen at random, not laid out. This deliberately designs no
-        /// layout: forty walls at random cells inside a home area still do not make a building, and whether
-        /// autonomous layout needs to be smarter is a later decision to take against a measurement. Validity
-        /// is still entirely <see cref="GenConstruct.CanPlaceBlueprintAt"/>'s call, so this never overlaps or
-        /// blocks a Blueprint, Frame or edifice already there.
+        /// "no room", not "unlucky". These cells are chosen at random, not laid out; the layout is
+        /// <see cref="SettlementCompound"/>'s, and the draw keeps off the ground it keeps for itself
+        /// (<see cref="Fits"/>). Validity is still entirely <see cref="GenConstruct.CanPlaceBlueprintAt"/>'s
+        /// call, so this never overlaps or blocks a Blueprint, Frame or edifice already there.
         /// </summary>
         private static bool TryFindPlacementCell(Map.Map map, ThingDef entityDef, out IntVec3 cell)
         {
-            Area home = map.areaManager.Home;
-            if (home.TrueCount > 0) return TryPickCell(map, entityDef, map.AllCells, home, out cell);
+            Area? home = HomeIfAny(map);
+
+            SettlementCompound? compound = map.settlementCompound;
+            if (compound != null)
+            {
+                if (compound.TryFindCell(map, entityDef, home, out cell)) return true;
+                if (OnlyOnTheRing(entityDef)) return false;
+            }
+
+            if (home != null) return TryPickCell(map, entityDef, map.AllCells, home, out cell);
 
             IntVec3 hub = RoadHub(map);
             for (int radius = Math.Max(1, ConstructionInitiativeTuning.HubPlacementRadius); ; radius *= 2)
@@ -369,7 +441,10 @@ namespace SimWorld.Building
         /// <summary>Whether <paramref name="entityDef"/> could be planned at <paramref name="cell"/>. With an
         /// area to stay inside, its whole footprint must be in that area, not just the cell it is anchored
         /// on. A bed half inside the home area is a bed outside it. Something that cannot be walked through
-        /// must also leave the ground around it connected; see <see cref="WouldCutOffGround"/>.</summary>
+        /// must also leave the ground around it connected; see <see cref="WouldCutOffGround"/>. And nothing
+        /// drawn at random may touch the ground a <see cref="SettlementCompound"/> keeps for itself: its sites
+        /// are handed out in order by <see cref="SettlementCompound.TryFindCell"/>, and an overflow bed on the
+        /// wall line would leave the ring open for good.</summary>
         private static bool Fits(Map.Map map, ThingDef entityDef, IntVec3 cell, Area? within)
         {
             if (within != null)
@@ -383,6 +458,8 @@ namespace SimWorld.Building
                     }
                 }
             }
+            SettlementCompound? compound = map.settlementCompound;
+            if (compound != null && compound.Reserves(GenAdj.OccupiedRect(cell, default, entityDef.size))) return false;
             if (!GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out _)) return false;
             return entityDef.passability != Traversability.Impassable || !WouldCutOffGround(map, entityDef, cell);
         }
@@ -480,8 +557,9 @@ namespace SimWorld.Building
             List<string>? waiting = null;
             foreach (Need need in ComputeNeeds(settlement, map))
             {
-                int shortfall = need.Target - CountBuiltOrPlanned(map, need.EntityDef);
+                int shortfall = Shortfall(map, need);
                 if (shortfall <= 0) continue;
+                if (map.settlementCompound != null && map.settlementCompound.TryFindCell(map, need.EntityDef, home, out _)) continue;
                 if (CountFitting(map, need.EntityDef, map.AllCells, home) > 0) continue;
                 waiting ??= new List<string>();
                 waiting.Add(shortfall + " " + need.EntityDef.label + (shortfall == 1 ? "" : "s"));

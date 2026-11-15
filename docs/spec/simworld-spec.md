@@ -1576,8 +1576,15 @@ the translation and its state per system.
   a bed per citizen, a handful of walls once there is anyone to shelter, a
   storage hut once `Stores` holds enough to want one — never a speculative
   economy. Shortfalls place blueprints through the existing
-  `GenConstruct`/`Blueprint`/`Frame` pipeline (§8.2), sampling cells at random
-  off the ambient `RandomStream` rather than scanning the map, validated
+  `GenConstruct`/`Blueprint`/`Frame` pipeline (§8.2). Where they go is a
+  layout, not a scatter: `SettlementCompound` plans one rectangle per
+  settlement — a block of beds, a ring of wall round it with a door in the
+  east side, storage against the outside — anchored by one seeded draw round
+  the road hub (or inside the home area, which still binds) and saved with the
+  map. The ring is exactly the wall count the need model already wanted, one
+  cell of it the door; a band too small for its walls to enclose its beds, and
+  anything the compound has no site for, falls back to a seeded draw inside
+  the home area or round the hub. Every site is validated
   entirely by `GenConstruct.CanPlaceBlueprintAt` so a blueprint never overlaps
   or blocks what is already there, and throttled per gated tick so a large
   shortfall grows over many ticks instead of flooding the map at once.
