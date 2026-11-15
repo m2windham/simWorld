@@ -36,6 +36,17 @@ namespace SimWorld.Weather
         /// decides when the first transition happens, and the test that matters asserts that one does.</summary>
         public const int InitialWeatherDurationTicks = 10000;
 
+        /// <summary>While a large fire burns, the current weather lasts a quarter as long
+        /// (rimworldwiki.com/wiki/Weather: "shortened by 75%").</summary>
+        public const float LargeFireDurationFactor = 0.25f;
+
+        /// <summary>While a large fire burns, a weather that rains harder than
+        /// <see cref="LargeFireMinRainRate"/> is this many times likelier to be next
+        /// (rimworldwiki.com/wiki/Weather: "any weather with a rain rate above 0.1", "15 times").</summary>
+        public const float LargeFireRainCommonalityFactor = 15f;
+
+        public const float LargeFireMinRainRate = 0.1f;
+
         private readonly WeatherManager manager;
 
         private int curWeatherDuration = InitialWeatherDurationTicks;
@@ -69,7 +80,12 @@ namespace SimWorld.Weather
 
         public void WeatherDeciderTick()
         {
-            if (manager.CurWeatherAge < curWeatherDuration) return;
+            // A large fire hurries the weather along (RimWorld: WeatherDeciderTick quarters the current
+            // weather's duration while map.fireWatcher.LargeFireDangerPresent; rimworldwiki.com/wiki/Weather:
+            // "the duration of any current non-forced weather will be shortened by 75%").
+            int duration = curWeatherDuration;
+            if (manager.FireWatcher.LargeFireDangerPresent) duration = (int)(duration * LargeFireDurationFactor);
+            if (manager.CurWeatherAge < duration) return;
             StartNextWeather();
         }
 
@@ -119,6 +135,13 @@ namespace SimWorld.Weather
             MapClimate? climate = manager.Climate;
             float commonality = weather.CommonalityIn(climate?.biome);
             if (commonality <= 0f) return 0f;
+
+            // ...and leans the next roll toward rain (RimWorld: CurrentWeatherCommonality; the wiki's
+            // "any weather with a rain rate above 0.1 ... 15 times").
+            if (weather.rainRate > LargeFireMinRainRate && manager.FireWatcher.LargeFireDangerPresent)
+            {
+                commonality *= LargeFireRainCommonalityFactor;
+            }
 
             if (weather.commonalityRainfallCurve != null && climate != null)
             {
