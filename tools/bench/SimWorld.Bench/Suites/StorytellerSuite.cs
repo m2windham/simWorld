@@ -235,6 +235,7 @@ namespace SimWorld.Bench.Suites
 
             log.SettleAttributed();
             sw.Stop();
+            Console.WriteLine(DwellingReading.Line(PlayerSeat(game) ?? home));
 
             // Read here, not at report time: the determinism re-run resets the game these belong to.
             var moments = new List<string>();
