@@ -138,6 +138,10 @@ namespace SimWorld.AI
         /// <summary>RimWorld: the <c>PerceivedPathCostAt(c) &gt; 20</c> test in <c>RCellFinder.CanWanderToCell</c>.</summary>
         public const int MaxPerceivedPathCostToWander = 20;
 
+        /// <summary>How many of the <see cref="MaxTries"/> apply that test. Half, so a map with no fire and no
+        /// costly ground draws exactly as it always did.</summary>
+        private const int StrictTries = MaxTries / 2;
+
         protected override Job? TryGiveJob(Pawn pawn)
         {
             Map.Map? map = pawn.Map;
@@ -145,7 +149,7 @@ namespace SimWorld.AI
             int count = GenRadial.NumCellsInRadius(WanderRadius);
             if (count <= 1) return null;
 
-            for (int i = 0; i < MaxTries * 2; i++)
+            for (int i = 0; i < MaxTries; i++)
             {
                 IntVec3 offset = GenRadial.RadialPattern[Rand.Range(1, count)];
                 IntVec3 candidate = pawn.Position + offset;
@@ -155,7 +159,7 @@ namespace SimWorld.AI
                 // Map.PathGrid.CalculatedCostAt). That is what keeps a wanderer, and a burning pawn running
                 // about (JobGiver_RunRandom), out of a fire instead of into it. The later tries drop the
                 // test, as RimWorld's do, so a pawn ringed by fire still moves. Recalled, not sourced.
-                if (i < MaxTries && map.pathGrid.PerceivedPathCostAt(candidate) > MaxPerceivedPathCostToWander) continue;
+                if (i < StrictTries && map.pathGrid.PerceivedPathCostAt(candidate) > MaxPerceivedPathCostToWander) continue;
                 if (!Reachability.CanReach(pawn, candidate, PathEndMode.OnCell)) continue;
                 return new Job(JobDefOf.GotoWander, candidate);
             }

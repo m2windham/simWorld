@@ -39,8 +39,9 @@ namespace SimWorld.Health
     [DefOf]
     public static class MedicineDefOf
     {
-        /// <summary>Grown from Healroot in RimWorld; here, this era's founding band simply starts with some —
-        /// see <c>Scenarios.xml</c>'s own comment for why (system: Health — medicine).</summary>
+        /// <summary>Grown from healroot (<c>Plants_Healroot.xml</c>), which a settlement sows when it runs
+        /// low (<c>Building.HealrootInitiative</c>); a founding band also starts with some — see
+        /// <c>Scenarios.xml</c> (system: Health — medicine).</summary>
         public static ThingDef MedicineHerbal = null!;
 
         /// <summary>Ships as content for <see cref="MedicalCareCategory.NormalOrWorse"/>'s threshold and a
