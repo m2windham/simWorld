@@ -60,6 +60,59 @@ namespace SimWorld.Health
             return TicksUntilDeathDueToBloodLoss(pawn) < UrgentTicksUntilDeathDueToBloodLoss;
         }
 
+        /// <summary>
+        /// Whether this pawn should be lying in a bed for its health (RimWorld:
+        /// <c>HealthAIUtility.ShouldSeekMedicalRest</c>): anything <see cref="ShouldSeekMedicalRestUrgent"/>
+        /// says, or a tended injury still healing, or a disease it is not yet immune to. The last is the one
+        /// that decides an infection: immunity is gained 10% faster resting and 7% faster again in a bed
+        /// (<c>Stats.StatPart_Resting</c>, <c>Stats.StatPart_BedStat</c>), and the race against severity is
+        /// usually closer than that.
+        /// </summary>
+        public static bool ShouldSeekMedicalRest(Pawn pawn)
+        {
+            if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+            return ShouldSeekMedicalRestUrgent(pawn)
+                || pawn.health.hediffSet.HasTendedAndHealingInjury()
+                || HasImmunizableNotImmuneHediff(pawn);
+        }
+
+        /// <summary>RimWorld: <c>HealthAIUtility.ShouldSeekMedicalRestUrgent</c> — downed, or carrying
+        /// something a doctor could tend right now. RimWorld's third arm, surgery waiting to be done, has
+        /// nothing to read in this port.</summary>
+        public static bool ShouldSeekMedicalRestUrgent(Pawn pawn)
+        {
+            if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+            return pawn.Downed || HasHediffsNeedingTend(pawn);
+        }
+
+        /// <summary>RimWorld: <c>Pawn_HealthTracker.HasHediffsNeedingTend</c>.</summary>
+        public static bool HasHediffsNeedingTend(Pawn pawn)
+        {
+            if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+            var hediffs = pawn.health.hediffSet.hediffs;
+            for (int i = 0; i < hediffs.Count; i++)
+            {
+                if (hediffs[i].TendableNow()) return true;
+            }
+            return false;
+        }
+
+        /// <summary>RimWorld: <c>HediffSet.HasImmunizableNotImmuneHediff</c> — a visible disease whose
+        /// immunity race is still being run.</summary>
+        public static bool HasImmunizableNotImmuneHediff(Pawn pawn)
+        {
+            if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+            var hediffs = pawn.health.hediffSet.hediffs;
+            for (int i = 0; i < hediffs.Count; i++)
+            {
+                Hediff hediff = hediffs[i];
+                if (hediff is Hediff_Injury || hediff is Hediff_MissingPart || !hediff.Visible) continue;
+                HediffComp_Immunizable? immunizable = hediff.TryGetComp<HediffComp_Immunizable>();
+                if (immunizable != null && !immunizable.FullyImmune) return true;
+            }
+            return false;
+        }
+
         private static bool HasTendableBleeding(Pawn pawn)
         {
             var hediffs = pawn.health.hediffSet.hediffs;

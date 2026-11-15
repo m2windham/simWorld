@@ -71,13 +71,17 @@ namespace SimWorld.AI
                 // which RimWorld's full re-run can also do, is not asked about either.
                 if (pawn.IsHashIntervalTick(LookForOtherJobsIntervalTicks))
                 {
-                    Job? emergency = JobGiver_Work.TryGiveEmergencyJob(pawn);
-                    if (emergency != null)
+                    Job? other = job.restUntilHealed ? PatientRestUtility.JobWorthGettingUpFor(pawn) : JobGiver_Work.TryGiveEmergencyJob(pawn);
+                    if (other != null)
                     {
-                        pawn.jobs.StartJob(emergency, JobCondition.InterruptOptional);
+                        pawn.jobs.StartJob(other, JobCondition.InterruptOptional);
                         return;
                     }
                 }
+                // A patient stays down while there is a medical reason to (RimWorld: Toils_LayDown ends a
+                // restUntilHealed lie-down when HealthAIUtility.ShouldSeekMedicalRest stops being true), and
+                // after that only as long as any sleeper would.
+                if (job.restUntilHealed && Health.HealthAIUtility.ShouldSeekMedicalRest(pawn)) return;
                 if (pawn.needs.rest != null && pawn.needs.rest.CurLevel >= 0.999f)
                 {
                     EndJobWith(JobCondition.Succeeded);

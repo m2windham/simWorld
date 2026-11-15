@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The givers behind the Patient and PatientBedRest work types, which shipped empty. RimWorld's own pair:
+    PatientGoToBedEmergencyTreatment (Patient, emergency) for a pawn with something a doctor could tend right
+    now, and PatientGoToBedRecuperate (Bed rest) for one with a tended injury still healing or a disease it
+    is not yet immune to. RimWorld has a third, PatientGoToBedTreatment, for the non-emergency half of the
+    Patient type; this port's urgent test already covers what it would.
+    priorityInType values are this port's, not sourced: each type has one giver, so they order nothing.
+  -->
+
+  <WorkGiverDef>
+    <defName>PatientGoToBedEmergencyTreatment</defName>
+    <label>get emergency treatment</label>
+    <verb>Rest</verb>
+    <gerund>resting at</gerund>
+    <workType>Patient</workType>
+    <priorityInType>100</priorityInType>
+    <emergency>true</emergency>
+    <giverClass>SimWorld.AI.WorkGiver_PatientGoToBed</giverClass>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>PatientGoToBedRecuperate</defName>
+    <label>recuperate</label>
+    <verb>Rest</verb>
+    <gerund>resting at</gerund>
+    <workType>PatientBedRest</workType>
+    <priorityInType>100</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_PatientGoToBed</giverClass>
+  </WorkGiverDef>
+
+</Defs>
