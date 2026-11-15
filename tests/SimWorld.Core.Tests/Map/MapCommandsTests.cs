@@ -261,13 +261,13 @@ namespace SimWorld.Tests.Map
             CoreMap map = settlement.InteriorMap!;
             Pawn citizen = AnyCitizenOn(settlement, map);
             IntVec3 cell = FindFreeCellFarFrom(map, citizen.Position);
-            map.terrainGrid.SetTerrain(cell, TerrainDefOf.Sand);
+            map.terrainGrid.SetTerrain(cell, TerrainDefOf.Gravel);
 
             ThingDef rice = Def("Plant_Rice");
-            Assert.True(TerrainDefOf.Sand.fertility >= rice.plant!.sowMinFertility,
-                "test setup assumption broken: Sand should still meet rice's sowMinFertility");
-            Assert.True(TerrainDefOf.Sand.fertility < TerrainDefOf.Soil.fertility,
-                "test setup assumption broken: Sand should read as poorer than ordinary Soil");
+            Assert.True(TerrainDefOf.Gravel.fertility >= rice.plant!.sowMinFertility,
+                "test setup assumption broken: stony soil should still meet rice's sowMinFertility");
+            Assert.True(TerrainDefOf.Gravel.fertility < TerrainDefOf.Soil.fertility,
+                "test setup assumption broken: stony soil should read as poorer than ordinary Soil");
 
             MapCommandResult result = MapCommands.MarkGrowingZone("Plant_Rice", new[] { cell });
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using SimWorld.Building;
 using SimWorld.Defs;
+using SimWorld.Map;
 using SimWorld.Pawns;
 using SimWorld.Things;
 using SimWorld.World;
