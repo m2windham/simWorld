@@ -56,6 +56,77 @@ namespace SimWorld.Building
             List<Pawn>? citizens = null;
             EnsureOutfitting(map, TailorDefName, SettlementCompound.WorkSite.Tailor, ref citizens);
             EnsureOutfitting(map, SmithyDefName, SettlementCompound.WorkSite.Smithy, ref citizens);
+            EnsureBenchStock(map, TailorDefName);
+            EnsureBenchStock(map, SmithyDefName);
+        }
+
+        /// <summary>Cells in the stockpile kept beside a built tailor's table or smithy. Unsourced: four
+        /// stacks, enough for several bills' worth, pinned by a test that the bench's material ends up within
+        /// its reach rather than by this number.</summary>
+        public const int BenchStockCells = 4;
+
+        /// <summary>
+        /// A small stockpile beside a built tailor's table or smithy that takes only what the bench's recipes
+        /// take (food excepted: it has the granary and its own reserve). Haulers carry a thing to the nearest
+        /// stockpile cell that accepts it (<see cref="AI.HaulAIUtility.TryFindBestStockpileCell"/>), so cloth
+        /// cut from a cotton field near the bench comes here instead of to a granary out of the crafter's reach,
+        /// the stockpile a RimWorld player paints beside a workbench. Banking leaves it alone while a bill
+        /// wants it (<see cref="Economy.SettlementStockInitiative.BankStoredGoods"/>).
+        /// </summary>
+        private static void EnsureBenchStock(Map.Map map, string benchDefName)
+        {
+            ThingDef? def = DefDatabase<ThingDef>.GetNamedSilentFail(benchDefName);
+            if (def == null) return;
+            IReadOnlyList<Thing> built = map.listerThings.ThingsOfDef(def);
+            if (built.Count == 0) return;
+            Thing bench = built[0];
+
+            string label = def.label + " stock";
+            Zone_Stockpile? pile = null;
+            IReadOnlyList<Zone> zones = map.zoneManager.AllZones;
+            for (int z = 0; z < zones.Count; z++)
+            {
+                if (zones[z] is Zone_Stockpile s && s.label == label) pile = s;
+            }
+            if (pile == null)
+            {
+                pile = new Zone_Stockpile { label = label };
+                pile.filter.SetDisallowAll();
+                IReadOnlyList<RecipeDef> recipes = def.AllRecipes;
+                for (int r = 0; r < recipes.Count; r++)
+                {
+                    if (recipes[r].ingredients is not List<IngredientCount> ingredients) continue;
+                    foreach (IngredientCount ingredient in ingredients)
+                    {
+                        foreach (ThingDef allowed in ingredient.filter.AllowedThingDefs)
+                        {
+                            if (!allowed.IsNutritionGivingIngestible) pile.filter.SetAllow(allowed, true);
+                        }
+                    }
+                }
+                if (pile.filter.AllowedDefCount == 0) return;
+                map.zoneManager.RegisterZone(pile);
+            }
+
+            CellRect occupied = bench.OccupiedRect();
+            foreach (IntVec3 c in CellRect.CenteredOn(bench.Position, 2).ClipInsideMap(map).Cells)
+            {
+                if (pile.CellCount >= BenchStockCells) return;
+                if (occupied.Contains(c) || !GenGrid.Standable(c, map)) continue;
+                if (map.zoneManager.ZoneAt(c) != null || GenGrid.GetEdifice(c, map) != null) continue;
+                if (HasBlueprintAt(map, c)) continue;
+                map.zoneManager.AddCell(pile, c);
+            }
+        }
+
+        private static bool HasBlueprintAt(Map.Map map, IntVec3 c)
+        {
+            IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(c);
+            for (int i = 0; i < here.Count; i++)
+            {
+                if (here[i] is Blueprint || here[i] is Frame) return true;
+            }
+            return false;
         }
 
         private static void EnsureButcher(Map.Map map)

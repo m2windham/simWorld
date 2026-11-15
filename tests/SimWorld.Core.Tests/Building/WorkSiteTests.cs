@@ -249,5 +249,38 @@ namespace SimWorld.Tests.Building
             Assert.Same(Def(SettlementWorkshops.ButcherDefName), placed.EntityToBuild);
             Assert.True(InTheYard(door, placed.Position), "butcher's table at " + placed.Position);
         }
+
+        [Fact]
+        public void A_built_tailors_table_keeps_a_cloth_stockpile_beside_it_that_cloth_is_hauled_to_first()
+        {
+            (Settlement settlement, CoreMap map) = BuiltCompound();
+            Thing door = TheDoor(map);
+            SpawnBareCitizen(map, door);
+            SettlementWorkshops.Run(settlement, map);
+            Blueprint planned = Assert.Single(Planned(map, Def(SettlementWorkshops.TailorDefName)));
+            Thing bench = planned.ReplaceWithFrame().CompleteConstruction(NewHuman("Builder"));
+
+            // A granary far off, as a settlement paints one, that takes everything.
+            var granary = new Zone_Stockpile();
+            map.zoneManager.RegisterZone(granary);
+            map.zoneManager.AddCell(granary, new IntVec3(5, 0, 5));
+            granary.filter.SetAllowAll(null);
+
+            SettlementWorkshops.Run(settlement, map);
+            SettlementWorkshops.Run(settlement, map); // a second pass adds nothing
+
+            Zone_Stockpile stock = Assert.Single(map.zoneManager.AllZones.OfType<Zone_Stockpile>().Where(z => !ReferenceEquals(z, granary)));
+            Assert.InRange(stock.CellCount, 1, SettlementWorkshops.BenchStockCells);
+            Assert.All(stock.Cells, c => Assert.True(CellRect.CenteredOn(bench.Position, 2).Contains(c), "stock cell " + c));
+            Assert.True(stock.filter.Allows(Def("Cloth")));
+            Assert.False(stock.filter.Allows(Def("RawBerries")));
+
+            // Cloth cut from a field near the bench goes to the bench's stock, not the granary.
+            Thing cloth = SpawnStack(map, bench.Position + new IntVec3(0, 0, 5), "Cloth", 10);
+            Pawn hauler = NewHuman("Hauler");
+            GenSpawn.Spawn(hauler, bench.Position + new IntVec3(0, 0, 6), map);
+            Assert.True(global::SimWorld.AI.HaulAIUtility.TryFindBestStockpileCell(hauler, cloth, out IntVec3 to));
+            Assert.Contains(to, stock.Cells);
+        }
     }
 }
