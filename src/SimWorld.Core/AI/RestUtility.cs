@@ -48,7 +48,7 @@ namespace SimWorld.AI
             IReadOnlyList<Thing> here = pawn.Map.thingGrid.ThingsListAt(pawn.Position);
             for (int i = 0; i < here.Count; i++)
             {
-                if (here[i].def == ConstructionThingDefOf.Bed) return here[i];
+                if (here[i].def == ConstructionThingDefOf.Bed || DwellingUtility.IsSleepingSlotOf(here[i], pawn.Position)) return here[i];
             }
             return null;
         }
