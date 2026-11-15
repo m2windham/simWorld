@@ -224,7 +224,7 @@ namespace SimWorld.Tests.Building
         public void Without_a_home_area_the_settlement_gathers_around_the_road_hub()
         {
             CoreMap map = NewMap(200, 200);
-            Settlement settlement = PlainSettlement(citizens: 20); // 20 beds + 40 walls
+            Settlement settlement = PlainSettlement(citizens: 20); // 20 beds + a ring of 39 walls and its door
             RunPasses(settlement, map, passes: 25);
 
             List<global::SimWorld.Building.Blueprint> placed = Blueprints(map);
@@ -257,9 +257,9 @@ namespace SimWorld.Tests.Building
                 SettlementConstructionInitiative.Tick();
             }
 
-            // At least a bed per founder. Not necessarily any walls: MapGen.GenStep_Ruins leaves ancient walls on
-            // a generated interior, and the initiative counts every wall standing on the map toward its own wall
-            // need, so a map with enough ruins asks for none. That is the need model's call, not placement's.
+            // At least a bed per founder. Walls are not counted here: a band with a SettlementCompound raises its
+            // ring whatever else stands on the map, but one without counts MapGen.GenStep_Ruins' ancient walls
+            // toward its wall need and may ask for none. SettlementCompoundTests owns the ring.
             List<global::SimWorld.Building.Blueprint> placed = Blueprints(map);
             Assert.True(placed.Count >= settlement.Citizens.Count, "test setup: expected at least a bed per founder, got "
                 + string.Join(", ", placed.GroupBy(bp => bp.EntityToBuild.defName).Select(g => g.Count() + " " + g.Key))

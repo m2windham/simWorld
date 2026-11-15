@@ -71,6 +71,11 @@ namespace SimWorld.Map
         /// <summary>Every Area on this map — today, only the home area (system 16: Building — zones).</summary>
         public Building.AreaManager areaManager = null!;
 
+        /// <summary>The layout this map's settlement is building itself into, or null while it has none
+        /// (system 16: Building — see <see cref="Building.SettlementCompound"/>). Planned and read by
+        /// <see cref="Building.SettlementConstructionInitiative"/>; saved by <see cref="ExposeData"/>.</summary>
+        public Building.SettlementCompound? settlementCompound;
+
         /// <summary>
         /// The settlement's own standing rule for how aggressively to tend its people (RimWorld:
         /// <c>Pawn_PlayerSettings.medCare</c>, one dropdown per colonist; this port has one settlement-wide
@@ -294,6 +299,9 @@ namespace SimWorld.Map
             roomTracker.ExposeTemperatures();
             zoneManager.ExposeData();
             areaManager.ExposeData();
+            // A save written before compounds existed has no node and loads with none; the settlement
+            // then plans one on its next pass, as a new one would.
+            Scribe_Deep.Look(ref settlementCompound, "settlementCompound");
             gameConditionManager.ExposeData();
             weatherManager.ExposeData();
             Scribe_Values.Look(ref medicalCare, "medicalCare", Health.MedicalCareCategory.Best);
