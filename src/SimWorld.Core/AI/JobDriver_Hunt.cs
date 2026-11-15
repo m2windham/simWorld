@@ -121,6 +121,17 @@ namespace SimWorld.AI
                 return;
             }
 
+            if (animal.faction != null)
+            {
+                // Somebody tamed it while the hunter was on its way. It was prey when this job was issued
+                // (HuntUtility.IsHuntableAnimal) and is livestock now; RimWorld's hunt fails the same way when
+                // its designation comes off. Without this the hunter went on shooting the settlement's new
+                // muffalo, and the muffalo answered.
+                pawn.pather.StopDead();
+                EndJobWith(JobCondition.Incompletable);
+                return;
+            }
+
             Verb? v = verb ??= HuntUtility.MakeHuntVerb(pawn);
             if (v == null)
             {

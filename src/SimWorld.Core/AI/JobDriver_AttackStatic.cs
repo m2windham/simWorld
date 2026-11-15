@@ -24,7 +24,8 @@ namespace SimWorld.AI
     {
         public override IEnumerable<Toil> MakeNewToils()
         {
-            yield return Toils_Combat.AttackTarget(TargetIndex.A, () => AttackVerbUtility.TryGetAttackVerb(pawn));
+            yield return Toils_Combat.AttackTarget(TargetIndex.A, () => AttackVerbUtility.TryGetAttackVerb(pawn))
+                .FailOn(() => FightEndUtility.FightIsOver(pawn, job));
         }
     }
 }
