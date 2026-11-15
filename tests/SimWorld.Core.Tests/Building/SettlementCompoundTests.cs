@@ -223,7 +223,7 @@ namespace SimWorld.Tests.Building
             foreach (int citizens in new[] { bands.min, (bands.min + bands.max) / 2, bands.max })
             {
                 CoreMap map = NewMap(120, 120);
-                Settlement settlement = Band(citizens, storedWood: 3 * ConstructionInitiativeTuning.GoodsPerStorageHut);
+                Settlement settlement = Band(citizens, storedWood: WoodFor(3));
                 RunUntilSettled(settlement, map);
 
                 // Every citizen's bed is inside the ring, and the storage it wanted is against the ring.
@@ -299,7 +299,7 @@ namespace SimWorld.Tests.Building
         // ---- which way things are turned ----
 
         /// <summary>Stored wood enough for the settlement to want <paramref name="huts"/> storage huts.</summary>
-        private static int WoodFor(int huts) => huts * ConstructionInitiativeTuning.GoodsPerStorageHut;
+        private static int WoodFor(int huts) => huts * StorageHutNeed.StacksPerStorageHut * Def("WoodLog").stackLimit;
 
         [Fact]
         public void The_door_lies_in_the_wall_run_it_closes()

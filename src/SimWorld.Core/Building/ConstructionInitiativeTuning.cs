@@ -77,10 +77,11 @@ namespace SimWorld.Building
         public const int MaxWallShelterCount = 40;
 
         /// <summary>
-        /// Stored-goods units one <c>StorageHut</c> is assumed to hold before the settlement wants another —
-        /// SimWorld's own figure (<c>Settlement.Stores</c> is a bare def→count ledger with no per-item volume
-        /// or quality to size a real hut against). Pinned by <c>ConstructionInitiativeTests</c> as "more
-        /// stores asks for more huts," never by this literal.
+        /// SimWorld's own figure for "how much a settlement keeps in one place". It used to be the units one
+        /// <c>StorageHut</c> was assumed to hold before the settlement wanted another; the hut need is now
+        /// <see cref="StorageHutNeed"/>'s, counted in stacks, and no longer reads this (see that class for
+        /// what counting units cost). Its one remaining reader is
+        /// <c>Economy.SettlementStockTuning.MaxGranaryCellsPerPass</c>, which takes it as a number of cells.
         /// </summary>
         public const int GoodsPerStorageHut = 50;
     }

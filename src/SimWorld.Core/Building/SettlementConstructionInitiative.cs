@@ -197,7 +197,8 @@ namespace SimWorld.Building
                 if (map.settlementCompound != null) needs.Add(new Need(CompoundThingDefOf.Door, 1));
             }
 
-            int storageTarget = StorageTarget(settlement);
+            // Storage for what the ledger holds, counted in stacks: see StorageHutNeed.
+            int storageTarget = StorageHutNeed.Target(settlement);
             if (storageTarget > 0) needs.Add(new Need(ConstructionThingDefOf.StorageHut, storageTarget));
 
             return needs;
@@ -236,18 +237,6 @@ namespace SimWorld.Building
         {
             Area home = map.areaManager.Home;
             return home.TrueCount > 0 ? home : null;
-        }
-
-        /// <summary>One <c>StorageHut</c> per <see cref="ConstructionInitiativeTuning.GoodsPerStorageHut"/>
-        /// units actually held in <see cref="World.Settlement.Stores"/>, at least one once anything is held at
-        /// all, zero when the ledger is empty — a settlement with nothing to keep has nothing to build storage
-        /// for.</summary>
-        private static int StorageTarget(Settlement settlement)
-        {
-            int totalStored = 0;
-            foreach (KeyValuePair<ThingDef, int> kv in settlement.Stores) totalStored += kv.Value;
-            if (totalStored <= 0) return 0;
-            return Math.Max(1, (totalStored + ConstructionInitiativeTuning.GoodsPerStorageHut - 1) / ConstructionInitiativeTuning.GoodsPerStorageHut);
         }
 
         /// <summary>Every buildable Def named by any active edict's <see cref="EdictDef.prioritizedConstruction"/>,
