@@ -80,7 +80,6 @@ content-silent SimWorld.Work.SkillDef.neverDisabledBasedOnWorkTypes | No shipped
 
 # ---- code-deaf: content sets it, nothing in src/ reads it ----
 
-code-deaf SimWorld.AI.JobDef.reportString | Host-facing text with no reader: the field's own doc says it is for an inspect pane once one exists, and God/View does not carry job text.
 code-deaf SimWorld.Combat.ProjectileProperties.stoppingPower | Blocked on stagger, which this port does not model; a hit resolves instantly, so nothing consumes the stagger input.
 code-deaf SimWorld.Crafting.RecipeDef.jobString | Host-facing text ("doing X") for a UI the core does not have and the snapshot does not surface.
 code-deaf SimWorld.Defs.ThingDef.selectable | Host-facing: whether a UI may select the thing. The core has no selection model.
@@ -123,8 +122,6 @@ code-deaf SimWorld.Work.SkillDef.pawnLabel | Host-facing text: what a pawn skill
 code-deaf SimWorld.Work.SkillDef.skillLabel | Host-facing text: the skill's name in a character tab.
 code-deaf SimWorld.Work.WorkGiverDef.gerund | Host-facing text ("hauling"), for an inspect line the core does not compose.
 code-deaf SimWorld.Work.WorkTypeDef.alwaysStartActive | Blocked on work-priority initialisation reading it: Pawn_WorkSettings gives every work type the same starting priority, so the opt-in never applies.
-code-deaf SimWorld.Work.WorkTypeDef.gerundLabel | Host-facing text for a work type ("hauling").
-code-deaf SimWorld.Work.WorkTypeDef.labelShort | Host-facing text: the short column header for a work type.
 code-deaf SimWorld.Work.WorkTypeDef.requireCapableColonist | Blocked on the colony-wide "nobody can do this work" warning, which is a host-side notification.
 code-deaf SimWorld.World.BiomeDef.canAutoChoose | Blocked on site selection: nothing picks a tile by unweighted random pick yet, so the exclusion never applies.
 code-deaf SimWorld.World.RiverDef.degradeThreshold | Deliberate, and documented on the field: a rendering hint this port's generator does not enforce.
@@ -177,7 +174,6 @@ untouched SimWorld.Health.AddedBodyPartProps.betterThanNatural | Prosthetics tha
 untouched SimWorld.Health.BodyPartDef.alive | Separates flesh from a mechanical part for rot, bleeding and corpse checks. Every shipped part is alive and no site branches on it; lands with bionics, alongside betterThanNatural.
 untouched SimWorld.Health.BodyPartDef.frostbiteVulnerability | Temperature exists now but cold injury does not: there is no frostbite hediff or worker for this to weight. Lands with the hypothermia module.
 untouched SimWorld.Health.BodyPartDef.socketed | Marks a part that takes an implant without amputation. Surgery is unbuilt, so nothing asks the question this answers.
-untouched SimWorld.Health.BodyPartGroupDef.labelShort | The abbreviated group name for cramped health and combat text. God/View reports parts by full label and never abbreviates; lands with the view's health panel.
 untouched SimWorld.Health.DamageDef.consideredHelpful | Marks surgical and tending damage so it never reads as an attack. Only hostile damage defs ship, so no site has had to tell the two apart.
 untouched SimWorld.Health.DamageDef.harmAllLayersUntilOutside | Real gap — the declaration's "data only until apparel exists" has expired: Pawn_ApparelTracker and Combat/Armor.cs both ship, so an explosion punching every layer down to the skin is buildable today and armour simply never sees the flag.
 untouched SimWorld.Health.DamageDef.isExplosive | Nothing in src/ raises an explosion, so the flag has no caller to gate. Lands with the explosion module, which is also what would make harmAllLayersUntilOutside worth reading.
