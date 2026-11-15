@@ -18,6 +18,17 @@
       <subNodes>
 
         <!--
+          On fire: run about, and one stop in ten put it out (RimWorld's BurningResponse subtree, which its
+          trees consult before anything else). Nothing below this is worth doing while burning.
+        -->
+        <li Class="SimWorld.AI.ThinkNode_ConditionalBurning">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_ExtinguishSelf" />
+            <li Class="SimWorld.AI.JobGiver_RunRandom" />
+          </subNodes>
+        </li>
+
+        <!--
           The angry tier now has somewhere to route to. It was always meant to be a manhunter: both a failed
           tame and wounded prey set angryAt, and this tier read it — but with no attack job in the codebase
           the only honest thing to route to was a wander (HuntUtility.TryProvokeRevenge says so in as many

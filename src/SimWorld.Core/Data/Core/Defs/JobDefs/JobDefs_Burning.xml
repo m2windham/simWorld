@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- A burning pawn putting itself out (RimWorld: JobDefOf.ExtinguishSelf). Its own file, bound by
+       SimWorld.AI.BurningJobDefOf. -->
+
+  <JobDef>
+    <defName>ExtinguishSelf</defName>
+    <driverClass>SimWorld.AI.JobDriver_ExtinguishSelf</driverClass>
+    <reportString>extinguishing self.</reportString>
+  </JobDef>
+
+</Defs>
