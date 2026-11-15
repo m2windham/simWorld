@@ -97,6 +97,32 @@ namespace SimWorld.Sim
         /// <summary>"13h" appended to the date readout.</summary>
         public static string DateFullStringAt(long absTicks, float longitude) =>
             DateReadoutStringAt(absTicks, longitude) + ", " + HourOfDay(absTicks, longitude).ToString(CultureInfo.InvariantCulture) + "h";
+
+        /// <summary>
+        /// A span of game time in words — "less than an hour", "5 hours", "2.3 days", "1.5 years" — for a
+        /// countdown somebody reads (RimWorld: <c>GenDate.ToStringTicksToPeriod</c>). The largest unit that
+        /// fits, to one decimal place, so the text is never more than a twentieth of a unit away from the
+        /// tick count it was made from.
+        ///
+        /// <para/><b>Not a 1:1 port, and the thresholds are not sourced.</b> RimWorld's version was recalled
+        /// rather than read, so only its shape is kept (hours below a day, days below a year, years above);
+        /// <c>GodViewSeamFieldsTests</c> pins that shape and the round-trip, not a literal. One branch is
+        /// deliberately absent: RimWorld counts anything under an hour in <i>real</i> seconds at 1x speed,
+        /// which means nothing to a host that paces its own ticks, so a span that short just says so.
+        /// </summary>
+        public static string ToStringTicksToPeriod(int numTicks)
+        {
+            if (numTicks < TicksPerHour) return "less than an hour";
+            if (numTicks < TicksPerDay) return PeriodString((float)numTicks / TicksPerHour, "hour");
+            if (numTicks < TicksPerYear) return PeriodString((float)numTicks / TicksPerDay, "day");
+            return PeriodString((float)numTicks / TicksPerYear, "year");
+        }
+
+        private static string PeriodString(float amount, string unit)
+        {
+            string number = amount.ToString("0.#", CultureInfo.InvariantCulture);
+            return number == "1" ? "1 " + unit : number + " " + unit + "s";
+        }
     }
 
     /// <summary>Season lookup by latitude band (RimWorld: <c>RimWorld.SeasonUtility</c>).</summary>

@@ -52,10 +52,14 @@ namespace SimWorld.God.View
             bool contentLoaded,
             int ticksGame,
             string dateLabel,
+            string dateTimeLabel,
+            float hourOfDay,
             CivilizationSummary civilization,
             IReadOnlyList<SettlementSummary> settlements,
             int? focusedSettlementTile,
             IReadOnlyList<EdictOption> edicts,
+            int edictSlotLimit,
+            int edictSlotsUsed,
             IReadOnlyList<ConditionLine> conditions,
             IReadOnlyList<ChronicleLine> recentHistory,
             IReadOnlyList<ChronicleLine> moments,
@@ -64,10 +68,14 @@ namespace SimWorld.God.View
             ContentLoaded = contentLoaded;
             TicksGame = ticksGame;
             DateLabel = dateLabel;
+            DateTimeLabel = dateTimeLabel;
+            HourOfDay = hourOfDay;
             Civilization = civilization;
             Settlements = settlements;
             FocusedSettlementTile = focusedSettlementTile;
             Edicts = edicts;
+            EdictSlotLimit = edictSlotLimit;
+            EdictSlotsUsed = edictSlotsUsed;
             Conditions = conditions;
             RecentHistory = recentHistory;
             Moments = moments;
@@ -100,6 +108,23 @@ namespace SimWorld.God.View
         /// does not reimplement a 60-day-quadrum calendar to print one string.</summary>
         public string DateLabel { get; }
 
+        /// <summary>The date with the hour on the end — "Day 3 of Aprimay, 5500, 13h"
+        /// (<see cref="GenDate.DateFullStringAt"/>) — for a host that shows the clock moving within a day,
+        /// which <see cref="DateLabel"/> alone cannot. Read off <see cref="TickManager.TicksAbs"/>, the
+        /// calendar clock, like <see cref="HourOfDay"/>.</summary>
+        public string DateTimeLabel { get; }
+
+        /// <summary>
+        /// The hour of the day, 0 up to but never reaching 24, with its fraction: 13.5 is half past one in
+        /// the afternoon. Fractional so a host can move a sun smoothly rather than in twenty-four jumps;
+        /// truncate it for the whole hour <see cref="DateTimeLabel"/> prints.
+        ///
+        /// <para/>Read off <see cref="TickManager.TicksAbs"/> at longitude 0, which is the clock the
+        /// simulation's own daylight runs on (<c>Building.PlantUtility.GrowthRateFactor_Light</c>) — so the
+        /// light a host draws and the light the crops are growing in are the same light.
+        /// </summary>
+        public float HourOfDay { get; }
+
         public CivilizationSummary Civilization { get; }
 
         /// <summary>Every settlement of the world, in world-object order.</summary>
@@ -121,6 +146,16 @@ namespace SimWorld.God.View
         /// <summary>Every edict in content — including ones that cannot be issued right now, each carrying why
         /// not. A view that only received the issuable ones could draw a menu but never explain it.</summary>
         public IReadOnlyList<EdictOption> Edicts { get; }
+
+        /// <summary>How many edicts can stand at once (<see cref="GodTuning.MaxActiveEdicts"/>). Carried so
+        /// a view can say "2 of 3" beside the list instead of leaving the player to find the cap by running
+        /// into <see cref="EdictAvailability.NoSlotFree"/>.</summary>
+        public int EdictSlotLimit { get; }
+
+        /// <summary>How many of those are taken — the edicts in force at this tick. A slot is free exactly
+        /// when this is below <see cref="EdictSlotLimit"/>, which is the same comparison that decided every
+        /// <see cref="EdictOption.Availability"/> on this snapshot.</summary>
+        public int EdictSlotsUsed { get; }
 
         /// <summary>Every condition standing over the whole civilization right now — a heat wave, a cold
         /// snap, a flashstorm — empty when nothing is in force. See <see cref="ConditionLine"/> for why this
@@ -150,7 +185,9 @@ namespace SimWorld.God.View
         ///
         /// <para/>Recomputes <see cref="GodManager.Rollup"/> rather than reading whatever it last held: that
         /// class's own doc says to recompute directly "the instant the god view opens", which is exactly here.
-        /// The cost is O(settlements + Full/Interval citizens) and explicitly never O(Statistical population).
+        /// The cost is O(settlements + Full/Interval citizens) and explicitly never O(Statistical population),
+        /// plus, for each settlement whose interior has been generated, one walk of the items lying on it
+        /// (<see cref="SettlementSummary.Stock"/>).
         ///
         /// <para/>Safe before a world exists — a game at the main menu has no settlements and no era, and this
         /// reports that rather than throwing, because "nothing founded yet" is a state the view has to draw.
@@ -173,6 +210,7 @@ namespace SimWorld.God.View
             if (recentHistoryCount < 0) recentHistoryCount = 0;
 
             int ticks = Find.TickManager.TicksGame;
+            int ticksAbs = Find.TickManager.TicksAbs;
             World.World? world = Find.World;
             GodManager god = Find.God;
 
@@ -190,15 +228,7 @@ namespace SimWorld.God.View
             var settlementSummaries = new List<SettlementSummary>(settlements.Count);
             for (int i = 0; i < settlements.Count; i++)
             {
-                World.Settlement s = settlements[i];
-                settlementSummaries.Add(new SettlementSummary(
-                    s.name,
-                    s.tile,
-                    s.foundingTick,
-                    s.TotalPopulation,
-                    s.Citizens.Count,
-                    s.StatisticalPopulation,
-                    s.InteriorMap != null));
+                settlementSummaries.Add(SettlementSummary.From(settlements[i]));
             }
 
             // Reported only when a settlement actually sits on the focused tile: a focus whose settlement has
@@ -211,10 +241,14 @@ namespace SimWorld.God.View
                 DefDatabase.Global.DefCount > 0,
                 ticks,
                 GenDate.DateReadoutStringAt(ticks, 0f),
+                GenDate.DateFullStringAt(ticksAbs, 0f),
+                GenDate.HourFloat(ticksAbs, 0f),
                 CivilizationSummary.From(god.Rollup, settlements.Count),
                 settlementSummaries,
                 focusedTile,
                 BuildEdictOptions(god),
+                GodTuning.MaxActiveEdicts,
+                god.ActiveEdicts.Count,
                 ConditionLine.ActiveOn(world?.gameConditionManager),
                 ChronicleLine.TailOf(Find.Storyteller.Chronicle, recentHistoryCount),
                 ChronicleLine.TailOf(Find.Storyteller.Moments, recentHistoryCount),
