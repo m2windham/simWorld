@@ -264,9 +264,19 @@ namespace SimWorld.God.View
             var options = new List<EdictOption>(all.Count);
             for (int i = 0; i < all.Count; i++)
             {
-                options.Add(EdictOption.For(all[i], god.IsActive(all[i]), era, slotFree));
+                bool active = god.IsActive(all[i]);
+                options.Add(EdictOption.For(all[i], active, era, slotFree, active ? NobodyMayDo(all[i]) : null));
             }
             return options;
+        }
+
+        internal static List<string>? NobodyMayDo(EdictDef edict)
+        {
+            List<Work.WorkTypeDef> blocked = EdictWorkUtility.WorkNobodyMayDo(edict);
+            if (blocked.Count == 0) return null;
+            var labels = new List<string>(blocked.Count);
+            for (int i = 0; i < blocked.Count; i++) labels.Add(blocked[i].gerundLabel ?? blocked[i].label ?? blocked[i].defName);
+            return labels;
         }
     }
 }

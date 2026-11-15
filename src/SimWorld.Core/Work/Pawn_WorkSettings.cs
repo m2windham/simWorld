@@ -174,6 +174,16 @@ namespace SimWorld.Work
 
         public bool WorkIsActive(WorkTypeDef workType) => GetPriority(workType) > 0;
 
+        /// <summary>
+        /// SimWorld: the work is at 0 because it was set there on purpose (<see cref="SetPriority"/>, whose only
+        /// caller is the player's own work-tab command), not because it is disabled or merely unranked. An
+        /// edict yields to this and to nothing weaker: a direct "never" for one person is the more specific
+        /// order, while a 0 that is just the default state is not an order at all.
+        /// </summary>
+        public bool IsExplicitlyNever(WorkTypeDef workType) =>
+            manualPriorities != null && manualPriorities.Contains(workType)
+            && priorities != null && priorities.TryGetValue(workType, out int p) && p == 0;
+
         /// <summary>Re-zeroes any work type the pawn has just become disabled from (a trait was gained, say).</summary>
         public void Notify_DisabledWorkTypesChanged()
         {

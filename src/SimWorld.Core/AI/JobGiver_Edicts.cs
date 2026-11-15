@@ -42,7 +42,7 @@ namespace SimWorld.AI
                 for (int w = 0; w < workTypes.Count; w++)
                 {
                     WorkTypeDef workType = workTypes[w];
-                    if (pawn.WorkTypeIsDisabled(workType)) continue;
+                    if (!EdictWorkUtility.MayDoEdictWork(pawn, workType)) continue;
 
                     IReadOnlyList<WorkGiverDef> givenByType = workType.WorkGivers;
                     for (int g = 0; g < givenByType.Count; g++)

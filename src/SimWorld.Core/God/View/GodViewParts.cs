@@ -254,7 +254,15 @@ namespace SimWorld.God.View
         /// <summary>The era that retires it, or null if nothing does.</summary>
         public string? ObsoleteEraDefName { get; }
 
-        internal static EdictOption For(EdictDef def, bool isActive, EraDef? currentEra, bool slotFree)
+        internal static EdictOption For(EdictDef def, bool isActive, EraDef? currentEra, bool slotFree) =>
+            For(def, isActive, currentEra, slotFree, null);
+
+        /// <param name="workNobodyMayDo">For an edict in force: the gerund labels of its work that no citizen
+        /// it applies to may do (<see cref="EdictWorkUtility.WorkNobodyMayDo"/>). When there are any, the reason
+        /// says so instead of a bare "In force." — an edict nobody can carry out is stalled, and the player
+        /// should hear it from the edict rather than infer it from nothing happening.</param>
+        internal static EdictOption For(
+            EdictDef def, bool isActive, EraDef? currentEra, bool slotFree, IReadOnlyList<string>? workNobodyMayDo)
         {
             EdictAvailability availability;
             string reason;
@@ -262,7 +270,10 @@ namespace SimWorld.God.View
             if (isActive)
             {
                 availability = EdictAvailability.Active;
-                reason = "In force.";
+                reason = workNobodyMayDo == null || workNobodyMayDo.Count == 0
+                    ? "In force."
+                    : "In force, but nobody is allowed to do " + string.Join(" or ", workNobodyMayDo) +
+                      ": everyone it applies to has it set to never or cannot do it.";
             }
             else if (def.obsoleteEra != null && currentEra != null && currentEra.order >= def.obsoleteEra.order)
             {
