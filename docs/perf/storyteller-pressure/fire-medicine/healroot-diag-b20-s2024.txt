@@ -1,0 +1,10 @@
+d1 t0 CHRONICLE Founding: Greycrest founded by 20 settlers.
+d1 t2000 CHRONICLE Accession: Ulric takes the eldership of North combine.
+d1 t2000 CHRONICLE Accession: Elian takes the stewardship of Greycrest.
+   healroot field none plants 0 top Plants skills 9/8/8 crop null settlement ok bestFert 0.6 inHand 20/20 zones Fields:642,Granary:165
+== end of day 1: citizens 20, beds 0, medicine on map 20, medicine in ledger 0, peak fires 0, deaths 0 (none)
+   healroot field none plants 0 top Plants skills 9/8/8 crop null settlement ok bestFert 0.6 inHand 19/20 zones Fields:642,Granary:249
+== end of day 2: citizens 20, beds 0, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+   healroot field none plants 0 top Plants skills 9/8/8 crop null settlement ok bestFert 0.6 inHand 19/20 zones Fields:642,Granary:431
+== end of day 3: citizens 20, beds 0, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+exit=0

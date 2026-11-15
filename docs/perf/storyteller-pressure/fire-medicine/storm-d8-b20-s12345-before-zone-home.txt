@@ -1,0 +1,168 @@
+d1 t0 CHRONICLE Founding: Redfield founded by 20 settlers.
+d1 t2000 CHRONICLE Accession: Dashiell takes the eldership of East haven.
+d1 t2000 CHRONICLE Accession: Quill takes the stewardship of Redfield.
+== end of day 1: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 2: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d3 t157500 CHRONICLE Divorce: Elian and Adara divorced.
+== end of day 3: citizens 20, beds 20, medicine on map 17, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 4: citizens 20, beds 20, medicine on map 17, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 5: citizens 20, beds 20, medicine on map 17, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 6: citizens 20, beds 20, medicine on map 17, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 7: citizens 20, beds 20, medicine on map 17, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d8 t450000 FORCED Flashstorm
+d8 t455400 fires 1 citizens-on-fire 0 raining Clear rainOff True danger 0.84 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 27 | HaulToCell 11, Harvest 4, LayDown 3, Research 1, HaulToBuildingSite 1
+d8 t456000 fires 1 citizens-on-fire 0 raining Clear rainOff True danger 0.98 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | HaulToCell 13, LayDown 3, Harvest 2, Research 1, HaulToBuildingSite 1
+d8 t456600 fires 1 citizens-on-fire 0 raining Clear rainOff True danger 1.17 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 27 | HaulToCell 12, LayDown 3, Harvest 2, Research 1, HaulToBuildingSite 1, CutPlant 1
+d8 t457200 fires 4 citizens-on-fire 0 raining Clear rainOff True danger 2.93 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 24 | HaulToCell 9, Harvest 6, LayDown 3, Research 1, HaulToBuildingSite 1
+d8 t457800 fires 8 citizens-on-fire 0 raining Clear rainOff True danger 5.67 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 18 | HaulToCell 9, Harvest 5, LayDown 3, Research 1, Ingest 1, HaulToBuildingSite 1
+d8 t458400 fires 9 citizens-on-fire 0 raining Clear rainOff True danger 10.34 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 24 | HaulToCell 12, LayDown 3, Harvest 3, Research 1, HaulToBuildingSite 1
+d8 t459000 fires 19 citizens-on-fire 0 raining Clear rainOff True danger 16.32 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 22 | HaulToCell 13, LayDown 3, Harvest 2, Research 1, HaulToBuildingSite 1
+d8 t459600 fires 27 citizens-on-fire 0 raining Clear rainOff True danger 26.01 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 21 | HaulToCell 10, LayDown 3, Harvest 3, Research 1, HaulToBuildingSite 1, SocialRelax 1, Ingest 1
+d8 t460200 fires 31 citizens-on-fire 0 raining Clear rainOff True danger 41.21 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 19 | HaulToCell 10, LayDown 3, Harvest 2, Research 1, CutPlant 1, HaulToBuildingSite 1, SocialRelax 1, Skygaze 1
+d8 t460800 fires 41 citizens-on-fire 0 raining Clear rainOff True danger 48.55 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 21 | HaulToCell 8, LayDown 3, Harvest 2, Research 1, HaulToBuildingSite 1, Sow 1, Ingest 1, SocialRelax 1, Skygaze 1, ConstructFinishFrame 1
+d8 t461400 fires 46 citizens-on-fire 0 raining Clear rainOff True danger 65.09 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 2 | HaulToCell 5, LayDown 3, Harvest 3, Sow 3, Research 1, HaulToBuildingSite 1, SocialRelax 1, Skygaze 1, ConstructFinishFrame 1, Ingest 1
+d8 t461520 Elian burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t461550 Elian burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t461910 Kira burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t462000 fires 53 citizens-on-fire 2 raining Clear rainOff True danger 75.40 homeCells 1546 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 3, HaulToCell 3, Sow 3, ConstructFinishFrame 2, Harvest 2, GotoWander 2, SocialRelax 2, Research 1, Skygaze 1, TendPatient 1
+d8 t462030 Kira burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t462180 Kira burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t462480 Quinley burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t462510 Quinley burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t462600 fires 60 citizens-on-fire 2 raining Clear rainOff True danger 87.47 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | Sow 5, LayDown 3, HaulToCell 3, TendPatient 2, SocialRelax 2, GotoWander 2, Research 1, Harvest 1, Skygaze 1
+d8 t462600 Quinley burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t462810 Halle burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t462930 Quill burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t462960 Quill burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t462960 Halle burn #3 job ExtinguishSelf fire-in-cell yes attached yes
+d8 t463110 Quill burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t463200 fires 56 citizens-on-fire 1 raining Clear rainOff True danger 91.47 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 5, Sow 4, TendPatient 4, SocialRelax 2, Research 1, GotoWander 1, Harvest 1, Skygaze 1, BeatFire 1
+d8 t463560 Halle burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t463650 Halle burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t463800 fires 62 citizens-on-fire 1 raining Clear rainOff True danger 97.91 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 5, TendPatient 4, GotoWander 2, SocialRelax 2, Harvest 2, Research 1, Sow 1, BeatFire 1, Skygaze 1, Ingest 1
+d8 t463800 Halle burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t463890 Lyra burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t463980 Lyra burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t464130 Lyra burn #3 job ExtinguishSelf fire-in-cell yes attached yes
+d8 t464400 fires 65 citizens-on-fire 0 raining Clear rainOff True danger 104.51 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 1 | LayDown 7, Harvest 4, Ingest 3, TendPatient 3, Research 1, Skygaze 1, SocialRelax 1
+d8 t465000 fires 72 citizens-on-fire 0 raining Clear rainOff True danger 106.55 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 1 | LayDown 9, Harvest 4, Ingest 2, Research 1, Skygaze 1, Sow 1, SocialRelax 1, TendPatient 1
+d8 t465600 fires 79 citizens-on-fire 0 raining Fog rainOff True danger 113.17 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 11 | LayDown 9, Harvest 5, Ingest 2, Research 1, Skygaze 1, SocialRelax 1, TendPatient 1
+d8 t466200 fires 79 citizens-on-fire 0 raining Fog rainOff True danger 121.77 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 18 | LayDown 9, Harvest 5, Sow 2, Research 1, SocialRelax 1, Skygaze 1, Ingest 1
+d8 t466800 fires 80 citizens-on-fire 0 raining Fog rainOff True danger 124.13 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 9, Sow 6, Harvest 2, Research 1, SocialRelax 1, Skygaze 1
+d8 t467100 Della burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t467190 Adara burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t467250 Della burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t467340 Adara burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t467400 fires 90 citizens-on-fire 2 raining Fog rainOff True danger 142.77 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 6, Sow 5, GotoWander 2, TendPatient 2, Research 1, Ingest 1, SocialRelax 1, Harvest 1, Skygaze 1
+d8 t467730 Jarrah burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t467850 Jarrah burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t468000 fires 98 citizens-on-fire 3 raining Fog rainOff True danger 155.08 homeCells 1548 firesInHome 0 fightable 1 ffEnabled 19/20 nearestCitizen 0 | LayDown 5, Sow 4, TendPatient 3, GotoWander 3, Ingest 2, Research 1, SocialRelax 1, Harvest 1
+d8 t468000 Jarrah burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t468030 Niall burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t468060 Niall burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t468210 Niall burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t468390 Adara burn #10 job GotoWander fire-in-cell yes attached yes
+d8 t468420 Dorian burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t468510 Dorian burn #2 job ExtinguishSelf fire-in-cell yes attached yes
+d8 t468600 fires 101 citizens-on-fire 4 raining Fog rainOff True danger 163.00 homeCells 1548 firesInHome 1 fightable 1 ffEnabled 19/20 nearestCitizen 0 | TendPatient 5, Sow 3, GotoWander 3, Ingest 2, LayDown 2, BeatFire 2, Research 1, SocialRelax 1, ExtinguishSelf 1
+d8 t468660 Dorian burn #3 job LayDown fire-in-cell no attached no
+d8 t469200 fires 99 citizens-on-fire 1 raining Fog rainOff True danger 164.66 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 7, TendPatient 4, Sow 2, Ingest 2, Research 1, SocialRelax 1, Harvest 1, ExtinguishSelf 1, BeatFire 1
+d8 t469410 Elian burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t469470 Elian burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t469620 Elian burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t469800 fires 106 citizens-on-fire 1 raining Fog rainOff True danger 166.08 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 9, Harvest 3, TendPatient 2, Research 1, Skygaze 1, SocialRelax 1, Sow 1, Ingest 1, GotoWander 1
+d8 t470010 Quill burn #1 job ExtinguishSelf fire-in-cell yes attached yes
+d8 t470040 Quill burn #2 job ExtinguishSelf fire-in-cell yes attached yes
+d8 t470160 Quill burn #3 job LayDown fire-in-cell no attached no
+d8 t470400 fires 109 citizens-on-fire 1 raining Fog rainOff True danger 180.50 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 8, Harvest 4, TendPatient 2, Research 1, Skygaze 1, SocialRelax 1, BeatFire 1, GotoWander 1, Ingest 1
+d8 t470670 Elian burn #10 job GotoWander fire-in-cell yes attached yes
+d8 t471000 fires 110 citizens-on-fire 1 raining Clear rainOff True danger 186.32 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 10, Harvest 4, Research 1, Skygaze 1, BeatFire 1, GotoWander 1, TendPatient 1, GoForWalk 1
+d8 t471600 fires 110 citizens-on-fire 1 raining Clear rainOff True danger 183.38 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 11, Sow 2, Research 1, Skygaze 1, Harvest 1, BeatFire 1, Ingest 1, GotoWander 1, TendPatient 1
+d8 t472050 Delphine burn #1 job none fire-in-cell yes attached yes
+d8 t472200 fires 111 citizens-on-fire 1 raining Clear rainOff True danger 180.23 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 10, TendPatient 2, Sow 2, Research 1, GotoWander 1, Skygaze 1, Harvest 1, SocialRelax 1, none(downed) 1
+d8 t472200 Delphine burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t472350 Delphine burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t472590 Oona burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t472650 Oona burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t472800 fires 116 citizens-on-fire 2 raining Clear rainOff True danger 183.50 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 8, GotoWander 2, Sow 2, TendPatient 2, Research 1, Skygaze 1, BeatFire 1, Ingest 1, SocialRelax 1, none(downed) 1
+d8 t472800 Oona burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t472950 Kestrel burn #1 job none fire-in-cell yes attached yes
+d8 t473070 Kestrel burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t473220 Kestrel burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t473400 fires 112 citizens-on-fire 2 raining Clear rainOff True danger 191.02 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 7, TendPatient 4, Ingest 2, Research 1, Skygaze 1, Sow 1, SocialRelax 1, ExtinguishSelf 1, GotoWander 1, none(downed) 1
+d8 t474000 fires 116 citizens-on-fire 0 raining Clear rainOff True danger 188.66 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 2 | LayDown 11, Ingest 2, SocialRelax 2, Research 1, TendPatient 1, Sow 1, none(downed) 1, Rescue 1
+d8 t474600 fires 123 citizens-on-fire 0 raining Clear rainOff True danger 203.52 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 2 | LayDown 13, SocialRelax 2, Research 1, TendPatient 1, Sow 1, Ingest 1, none(downed) 1
+d8 t474780 Alden burn #1 job GotoWander fire-in-cell yes attached yes
+d8 t474840 Alden burn #2 job GotoWander fire-in-cell yes attached yes
+d8 t474990 Alden burn #3 job GotoWander fire-in-cell yes attached yes
+d8 t475200 fires 131 citizens-on-fire 1 raining Clear rainOff True danger 207.66 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 11, SocialRelax 2, Ingest 2, Research 1, BeatFire 1, GotoWander 1, none(downed) 1, TendPatient 1
+d8 t475800 fires 129 citizens-on-fire 1 raining Clear rainOff True danger 218.23 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 13, SocialRelax 2, Research 1, BeatFire 1, GotoWander 1, none(downed) 1, TendPatient 1
+d8 t476040 Alden burn #10 job GotoWander fire-in-cell yes attached yes
+d8 t476400 fires 127 citizens-on-fire 0 raining Clear rainOff True danger 212.88 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 8 | LayDown 16, Research 1, none(downed) 1, TendPatient 1, SocialRelax 1
+d8 t477000 fires 133 citizens-on-fire 0 raining Clear rainOff True danger 216.59 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 14 | LayDown 16, Research 1, none(downed) 1, TendPatient 1, SocialRelax 1
+d8 t477600 fires 124 citizens-on-fire 0 raining Clear rainOff True danger 208.51 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | LayDown 17, Research 1, Ingest 1, SocialRelax 1
+d8 t478200 fires 129 citizens-on-fire 0 raining Clear rainOff True danger 212.26 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 15 | LayDown 18, Research 1, Ingest 1
+d8 t478800 fires 120 citizens-on-fire 0 raining Clear rainOff True danger 210.32 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 14 | LayDown 18, Research 1, Sow 1
+d8 t479400 fires 126 citizens-on-fire 0 raining Clear rainOff True danger 201.44 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 6 | LayDown 17, Ingest 2, Sow 1
+d8 t480000 fires 123 citizens-on-fire 0 raining Clear rainOff True danger 211.41 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 2 | LayDown 13, Ingest 6, Sow 1
+== end of day 8: citizens 20, beds 20, medicine on map 12, medicine in ledger 0, peak fires 135, deaths 0 (none)
+d9 t480480 Juniper burn #1 job GotoWander fire-in-cell yes attached yes
+d9 t480600 fires 115 citizens-on-fire 1 raining Clear rainOff True danger 199.65 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 0 | LayDown 13, Ingest 5, GotoWander 1, TendPatient 1
+d9 t480600 Juniper burn #2 job GotoWander fire-in-cell yes attached yes
+d9 t480750 Juniper burn #3 job GotoWander fire-in-cell yes attached yes
+d9 t481200 fires 113 citizens-on-fire 0 raining Clear rainOff True danger 193.30 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 2 | LayDown 16, TendPatient 3, Ingest 1
+d9 t481800 fires 113 citizens-on-fire 0 raining Clear rainOff True danger 192.14 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 12 | LayDown 18, TendPatient 2
+d9 t482400 fires 114 citizens-on-fire 0 raining Clear rainOff True danger 183.01 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 12 | LayDown 18, Ingest 1, TendPatient 1
+d9 t483000 fires 107 citizens-on-fire 0 raining Clear rainOff True danger 185.64 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 11 | LayDown 18, Ingest 1, TendPatient 1
+d9 t483600 fires 104 citizens-on-fire 0 raining Clear rainOff True danger 171.14 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 11 | LayDown 19, TendPatient 1
+d9 t484200 fires 109 citizens-on-fire 0 raining Clear rainOff True danger 171.67 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | LayDown 18, Ingest 2
+d9 t484800 fires 110 citizens-on-fire 0 raining Clear rainOff True danger 178.83 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | LayDown 19, Ingest 1
+d9 t485400 fires 109 citizens-on-fire 0 raining Clear rainOff True danger 179.99 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | LayDown 19, Tame 1
+d9 t486000 fires 102 citizens-on-fire 0 raining Clear rainOff False danger 178.69 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | LayDown 18, Ingest 2
+d9 t486600 fires 96 citizens-on-fire 0 raining Clear rainOff False danger 171.50 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | LayDown 19, Ingest 1
+d9 t487200 fires 92 citizens-on-fire 0 raining Clear rainOff False danger 172.77 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | LayDown 20
+d9 t487500 CHRONICLE Divorce: Elian and Oona divorced.
+d9 t487800 fires 82 citizens-on-fire 0 raining Clear rainOff False danger 143.66 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 9 | LayDown 19, Ingest 1
+d9 t488400 fires 64 citizens-on-fire 0 raining Clear rainOff False danger 129.18 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | LayDown 17, Ingest 3
+d9 t489000 fires 61 citizens-on-fire 0 raining Clear rainOff False danger 111.00 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 13 | LayDown 18, Ingest 2
+d9 t489600 fires 45 citizens-on-fire 0 raining Clear rainOff False danger 83.99 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 9 | LayDown 17, TendPatient 2, Ingest 1
+d9 t490200 fires 39 citizens-on-fire 0 raining Clear rainOff False danger 77.38 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 14 | LayDown 17, TendPatient 2, Ingest 1
+d9 t490800 fires 28 citizens-on-fire 0 raining Clear rainOff False danger 55.28 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 3 | LayDown 15, Ingest 3, TendPatient 2
+d9 t491400 fires 19 citizens-on-fire 0 raining Clear rainOff False danger 47.00 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 15 | LayDown 18, Ingest 1, TendPatient 1
+d9 t492000 fires 17 citizens-on-fire 0 raining Clear rainOff False danger 35.71 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 15 | LayDown 17, TendPatient 3
+d9 t492600 fires 14 citizens-on-fire 0 raining Clear rainOff False danger 30.12 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | LayDown 18, TendPatient 1, Ingest 1
+d9 t493200 fires 9 citizens-on-fire 0 raining Clear rainOff False danger 22.76 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 17 | LayDown 19, Ingest 1
+d9 t493800 fires 8 citizens-on-fire 0 raining Clear rainOff False danger 15.11 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 17 | LayDown 18, TendPatient 2
+d9 t494400 fires 8 citizens-on-fire 0 raining Clear rainOff False danger 15.76 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 15 | LayDown 18, TendPatient 1, Train 1
+d9 t495000 fires 9 citizens-on-fire 0 raining Clear rainOff False danger 16.32 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 18 | LayDown 17, TendPatient 1, Ingest 1, Train 1
+d9 t495600 fires 8 citizens-on-fire 0 raining Clear rainOff False danger 16.15 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 21 | LayDown 12, Ingest 5, TendPatient 1, Train 1, Tame 1
+d9 t496200 fires 8 citizens-on-fire 0 raining Clear rainOff False danger 16.66 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 12 | LayDown 12, Ingest 5, Tame 2, TendPatient 1
+d9 t496800 fires 9 citizens-on-fire 0 raining Clear rainOff False danger 18.14 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 9 | LayDown 16, Ingest 1, Sow 1, GoForWalk 1, Tame 1
+d9 t497400 fires 8 citizens-on-fire 0 raining Clear rainOff False danger 16.33 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 10 | LayDown 16, Train 2, Sow 1, TendPatient 1
+d9 t498000 fires 7 citizens-on-fire 0 raining Clear rainOff False danger 14.83 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 16 | LayDown 14, TendPatient 2, Ingest 2, Train 2
+d9 t498600 fires 7 citizens-on-fire 0 raining Clear rainOff False danger 15.02 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 20 | LayDown 13, Ingest 3, Train 2, TendPatient 1, Sow 1
+d9 t499200 fires 5 citizens-on-fire 0 raining Clear rainOff False danger 12.97 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 20 | LayDown 14, Ingest 2, Sow 2, Train 1, TendPatient 1
+d9 t499800 fires 4 citizens-on-fire 0 raining Clear rainOff False danger 8.87 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 28 | LayDown 13, TendPatient 2, Research 1, Train 1, Ingest 1, Harvest 1, Sow 1
+d9 t500400 fires 4 citizens-on-fire 0 raining Clear rainOff False danger 9.00 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 31 | LayDown 15, Harvest 3, Research 1, Ingest 1
+d9 t501000 fires 3 citizens-on-fire 0 raining Clear rainOff False danger 6.75 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 35 | LayDown 15, Harvest 3, Research 1, TendPatient 1
+d9 t501600 fires 3 citizens-on-fire 0 raining Clear rainOff False danger 6.75 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 39 | LayDown 15, Harvest 3, Research 1, TendPatient 1
+d9 t502200 fires 3 citizens-on-fire 0 raining Clear rainOff False danger 6.75 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 35 | LayDown 14, Harvest 3, Research 1, Ingest 1, TendPatient 1
+d9 t502800 fires 3 citizens-on-fire 0 raining Clear rainOff False danger 6.75 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 39 | LayDown 15, Harvest 3, Research 1, TendPatient 1
+d9 t503400 fires 3 citizens-on-fire 0 raining Clear rainOff False danger 6.75 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 39 | LayDown 15, Harvest 2, Research 1, Ingest 1, TendPatient 1
+d9 t504000 fires 2 citizens-on-fire 0 raining Clear rainOff False danger 4.50 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 39 | LayDown 13, Harvest 3, TendPatient 2, Research 1, Ingest 1
+d9 t504600 fires 1 citizens-on-fire 0 raining Clear rainOff False danger 2.25 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 34 | LayDown 12, Harvest 3, Ingest 2, TendPatient 2, Research 1
+d9 t505200 fires 1 citizens-on-fire 0 raining Clear rainOff False danger 2.25 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 39 | LayDown 14, Harvest 3, Research 1, TendPatient 1, Ingest 1
+d9 t505800 fires 1 citizens-on-fire 0 raining Clear rainOff False danger 2.25 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 5 | LayDown 14, Harvest 3, Research 1, TendPatient 1, Ingest 1
+d9 t506400 fires 1 citizens-on-fire 0 raining Clear rainOff False danger 2.25 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 26 | LayDown 11, Ingest 3, TendPatient 2, Harvest 2, Research 1, Skygaze 1
+d9 t507000 fires 1 citizens-on-fire 0 raining Clear rainOff False danger 2.25 homeCells 1548 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 28 | LayDown 13, Harvest 2, Ingest 2, Research 1, TendPatient 1, Skygaze 1
+== end of day 9: citizens 20, beds 20, medicine on map 0, medicine in ledger 0, peak fires 135, deaths 0 (none)
+d10 t570000 CHRONICLE Accession: Elian takes the stewardship of Redfield.
+d10 t576000 CHRONICLE Accession: Halle takes the stewardship of Redfield.
+== end of day 10: citizens 12, beds 20, medicine on map 0, medicine in ledger 0, peak fires 135, deaths 8 (Disease 8)
+d11 t644000 CHRONICLE Disease_Plague
+== end of day 11: citizens 12, beds 20, medicine on map 0, medicine in ledger 0, peak fires 135, deaths 8 (Disease 8)
+d12 t701000 CHRONICLE Wanderer: Gideon joins Redfield.
+d12 t701000 CHRONICLE WandererJoin
+d12 t712000 CHRONICLE Accession: Della takes the stewardship of Redfield.
+== end of day 12: citizens 12, beds 20, medicine on map 0, medicine in ledger 0, peak fires 135, deaths 9 (Disease 9) [Disease_Plague 1]
+exit=0

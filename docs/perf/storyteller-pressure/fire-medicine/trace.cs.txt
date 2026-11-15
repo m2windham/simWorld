@@ -1,0 +1,255 @@
+// Lane-private diagnostic (storyteller-pressure, baseline task). Replays the storyteller world for a seed and
+// follows (a) every wound infection on a citizen from onset to its end and (b) every fire and every burn.
+// Reads only: no Rand draws, no jobs, no reservations.
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+
+using SimWorld.AI;
+using SimWorld.Content;
+using SimWorld.Defs;
+using SimWorld.Director;
+using SimWorld.God.View;
+using SimWorld.Health;
+using SimWorld.Pawns;
+using SimWorld.Scenario;
+using SimWorld.Sim;
+using SimWorld.Things;
+using SimWorld.Work;
+
+internal sealed class Inf
+{
+    public Pawn P = null!;
+    public Hediff H = null!;
+    public int Onset;
+    public string JobAtOnset = "";
+    public int FirstTended = -1;
+    public int Tends;
+    public float LastTotalQ;
+    public float SumQ;
+    public int Samples;
+    public int Tended;
+    public int InBed;
+    public int Asleep;
+    public int Downed;
+    public float MaxSev;
+    public float ImmAtEnd;
+    public float SevAtEnd;
+    public float GainSum;
+    public int End = -1;
+    public string Outcome = "running";
+    public List<string> Timeline = new List<string>();
+}
+
+internal static class Program
+{
+    private static SimWorld.Factions.Faction? home0Faction;
+    private static string F(float v) => v.ToString("0.00", CultureInfo.InvariantCulture);
+
+    private static int Main(string[] args)
+    {
+        int seed = int.Parse(args[0], CultureInfo.InvariantCulture);
+        int days = int.Parse(args[1], CultureInfo.InvariantCulture);
+        int band = int.Parse(args[2], CultureInfo.InvariantCulture);
+        bool threats = bool.Parse(args[3]);
+        string data = args[4];
+        string mode = args.Length > 5 ? args[5] : "infection";
+        int stormDay = args.Length > 6 ? int.Parse(args[6], CultureInfo.InvariantCulture) : -1;
+        int stormHour = args.Length > 7 ? int.Parse(args[7], CultureInfo.InvariantCulture) : 12;
+
+        var database = new DefDatabase();
+        DefLoadResult result = CoreContent.Load(database, new DefTypeResolver(), new DefLoadOptions { BindDefOfs = true }, data);
+        if (!result.Success) throw new InvalidOperationException("content failed to load");
+        DefDatabase.Global = database;
+
+        Find.Reset();
+        Find.TickManager = new TickManager();
+        Rand.Current = new RandomStream(seed);
+        Pawn.ResetThingIdCounter();
+        SimWorld.Map.Map.ResetMapIdCounter();
+        Ablation.Clear();
+
+        DifficultyDef? difficulty = threats ? null : new DifficultyDef
+        {
+            defName = "MediumWithoutThreats",
+            threatScale = DifficultyDefOf.Medium.threatScale,
+            allowBigThreats = false,
+            allowIntroThreats = false,
+        };
+
+        Game game = Game.NewGame(
+            ScenarioDefOf.TribalStart.scenario, seed.ToString(CultureInfo.InvariantCulture),
+            subdivisionOverride: 3, soloStart: false, bandSize: band, difficultyDef: difficulty);
+        SimWorld.World.Settlement home = game.CivilizationTarget.Seat!;
+        GodCommands.OpenSettlement(home.tile);
+        home0Faction = home.faction;
+
+        var infs = new Dictionary<Hediff, Inf>();
+        var burnsSeen = new Dictionary<Pawn, int>();
+        int lastChron = 0;
+        int peakFires = 0;
+
+        for (int day = 1; day <= days; day++)
+        {
+            for (int i = 0; i < GenDate.TicksPerDay; i++)
+            {
+                if (day == stormDay && i == stormHour * 2500)
+                {
+                    Find.World!.gameConditionManager.RegisterCondition(
+                        SimWorld.Conditions.GameConditionMaker.MakeConditionForDays(SimWorld.Conditions.GameConditionDefOf.Flashstorm, 0.1f));
+                    Console.WriteLine("d" + day + " t" + Find.TickManager.TicksGame + " FORCED Flashstorm");
+                }
+                game.TickManager.DoSingleTick();
+                int now = Find.TickManager.TicksGame;
+                if (now % 30 != 0) continue;
+                SimWorld.Map.Map? map = home.InteriorMap;
+
+                if (mode == "infection")
+                {
+                    foreach (Pawn p in home.Citizens.ToList())
+                    {
+                        if (p.Dead) continue;
+                        foreach (Hediff h in p.health.hediffSet.hediffs)
+                        {
+                            if (h.def.defName != "WoundInfection" || infs.ContainsKey(h)) continue;
+                            infs[h] = new Inf { P = p, H = h, Onset = now, JobAtOnset = p.jobs?.curJob?.def?.defName ?? "none" };
+                        }
+                    }
+                    foreach (Inf inf in infs.Values)
+                    {
+                        if (inf.End >= 0) continue;
+                        Pawn p = inf.P;
+                        bool present = !p.Dead && p.health.hediffSet.hediffs.Contains(inf.H);
+                        if (!present)
+                        {
+                            inf.End = now;
+                            inf.Outcome = p.Dead ? "DIED" : "cleared";
+                            continue;
+                        }
+                        HediffComp_TendDuration? tend = inf.H.TryGetComp<HediffComp_TendDuration>();
+                        float imm = p.health.immunity.GetImmunity(inf.H.def);
+                        inf.Samples++;
+                        if (tend != null && tend.IsTended) inf.Tended++;
+                        if (tend != null && tend.totalTendQuality > inf.LastTotalQ + 0.0001f)
+                        {
+                            inf.Tends++;
+                            inf.SumQ += tend.tendQuality;
+                            inf.LastTotalQ = tend.totalTendQuality;
+                            if (inf.FirstTended < 0) inf.FirstTended = now;
+                            inf.Timeline.Add("  +" + ((now - inf.Onset) / 60000f).ToString("0.00", CultureInfo.InvariantCulture) + "d TEND quality " + F(tend.tendQuality)
+                                + " (patient in bed: " + (p.InBed() ? "yes" : "no") + ")");
+                        }
+                        if (p.InBed()) inf.InBed++;
+                        if (p.Asleep) inf.Asleep++;
+                        if (p.Downed) inf.Downed++;
+                        inf.GainSum += p.ImmunityGainSpeed;
+                        if (inf.H.Severity > inf.MaxSev) inf.MaxSev = inf.H.Severity;
+                        inf.SevAtEnd = inf.H.Severity;
+                        inf.ImmAtEnd = imm;
+                        if ((now - inf.Onset) % 6000 == 0)
+                        {
+                            inf.Timeline.Add("  +" + ((now - inf.Onset) / 60000f).ToString("0.00", CultureInfo.InvariantCulture) + "d sev " + F(inf.H.Severity) + " imm " + F(imm)
+                                + " tended " + (tend != null && tend.IsTended ? "yes q" + F(tend.tendQuality) : "no")
+                                + " job " + (p.jobs?.curJob?.def?.defName ?? "none") + (p.InBed() ? " IN BED" : "") + (p.Downed ? " DOWNED" : "") + (p.Asleep ? " asleep" : "")
+                                + " gainSpeed " + F(p.ImmunityGainSpeed));
+                        }
+                    }
+                }
+                else if (map != null)
+                {
+                    int fires = map.listerThings.AllThings.Count(t => t is Fire);
+                    if (fires > peakFires) peakFires = fires;
+                    if (fires > 0 && now % 600 == 0)
+                    {
+                        int burning = map.mapPawns.AllPawnsSpawned.Count(p => p.faction == home.faction && !p.Dead && p.RaceProps.Humanlike && HasAttachedFire(p, map));
+                        var jobs = map.mapPawns.AllPawnsSpawned.Where(p => p.faction == home.faction && !p.Dead && p.RaceProps.Humanlike)
+                            .GroupBy(p => (p.jobs?.curJob?.def?.defName ?? "none") + (p.Downed ? "(downed)" : ""))
+                            .OrderByDescending(g => g.Count()).Select(g => g.Key + " " + g.Count());
+                        var fireList = map.listerThings.AllThings.OfType<Fire>().ToList();
+                        var homeArea = map.areaManager.Home;
+                        int inHome = fireList.Count(f => homeArea[f.Position]);
+                        var cits = map.mapPawns.AllPawnsSpawned.Where(p => p.faction == home0Faction && !p.Dead && p.RaceProps.Humanlike).ToList();
+                        Pawn? anyone = cits.FirstOrDefault(p => !p.Downed);
+                        int fightable = anyone == null ? 0 : fireList.Count(f => WorkGiver_FightFires.IsFireToFight(anyone, f));
+                        int ffActive = cits.Count(p => p.workSettings != null && p.workSettings.EverWork && p.workSettings.WorkIsActive(WorkTypeDefOf.Firefighter));
+                        int minDist = fireList.Count == 0 || cits.Count == 0 ? -1 : fireList.Min(f => cits.Min(p => (p.Position - f.Position).LengthManhattan));
+                        float danger = map.weatherManager.FireWatcher.FireDanger;
+                        Console.WriteLine("d" + day + " t" + now + " fires " + fires + " citizens-on-fire " + burning
+                            + " raining " + (map.weatherManager.CurWeather?.defName ?? "?") + " rainOff " + map.weatherManager.Decider.RainDisabled
+                            + " danger " + F(danger) + " homeCells " + homeArea.TrueCount + " firesInHome " + inHome + " fightable " + fightable
+                            + " ffEnabled " + ffActive + "/" + cits.Count + " nearestCitizen " + minDist + " | " + string.Join(", ", jobs));
+                    }
+                    foreach (Pawn p in home.Citizens.ToList())
+                    {
+                        int burns = p.health.hediffSet.hediffs.Count(h => h.def.defName == "Burn");
+                        burnsSeen.TryGetValue(p, out int before);
+                        if (burns > before)
+                        {
+                            burnsSeen[p] = burns;
+                            if (burns <= 3 || burns % 10 == 0 || p.Dead)
+                            {
+                                Console.WriteLine("d" + day + " t" + now + " " + p.Label + " burn #" + burns + " job " + (p.jobs?.curJob?.def?.defName ?? "none")
+                                    + (p.Downed ? " DOWNED" : "") + (p.Dead ? " DEAD" : "") + " fire-in-cell " + (p.Spawned && map.thingGrid.ThingsListAt(p.Position).Any(t => t is Fire) ? "yes" : "no")
+                                    + " attached " + (HasAttachedFire(p, map) ? "yes" : "no"));
+                            }
+                        }
+                    }
+                }
+
+                IReadOnlyList<ChronicleEntry> chron = game.Storyteller.Chronicle;
+                for (; lastChron < chron.Count; lastChron++)
+                {
+                    ChronicleEntry e = chron[lastChron];
+                    if (e.deathCause.HasValue) Console.WriteLine("d" + day + " t" + e.tick + " DEATH " + e.deathCause.Value + " " + e.targetLabel);
+                    else if (mode != "infection") Console.WriteLine("d" + day + " t" + e.tick + " CHRONICLE " + e.incidentDefName);
+                }
+            }
+
+            SimWorld.Map.Map? m = home.InteriorMap;
+            int beds = m == null ? 0 : m.listerThings.AllThings.Count(t => t.def.defName == "Bed");
+            int medsOnMap = m == null ? 0 : m.listerThings.ThingsInGroup(SimWorld.Map.ThingRequestGroup.Item).Where(t => t.def.IsMedicine).Sum(t => t.stackCount);
+            int medsInStore = home.Stores.Where(s => s.Key.IsMedicine).Sum(s => s.Value);
+            if (m != null)
+            {
+                var hf = SimWorld.Building.HealrootInitiative.FieldOf(m);
+                int healPlants = m.listerThings.AllThings.Count(t => t.def.defName == "Plant_Healroot");
+                var skills = home.Citizens.Where(c => !c.Dead && c.skills != null).Select(c => c.skills!.GetSkill(SimWorld.Work.SkillDefOf.Plants)!.Level).OrderByDescending(x => x).Take(3);
+                Console.WriteLine("   healroot field " + (hf == null ? "none" : hf.CellCount + " cells sow=" + hf.allowSow) + " plants " + healPlants + " top Plants skills " + string.Join("/", skills)
+                    + " crop " + (SimWorld.Building.HealrootInitiative.CropFor(m)?.defName ?? "null")
+                    + " settlement " + (SimWorld.AI.HuntingInitiative.SettlementFor(m) == null ? "null" : "ok")
+                    + " bestFert " + m.AllCells.Max(c => m.terrainGrid.TerrainAt(c).fertility)
+                    + " inHand " + (SimWorld.AI.HuntingInitiative.SettlementFor(m) is SimWorld.World.Settlement st ? SimWorld.Building.HealrootInitiative.MedicineInHand(st, m) + "/" + SimWorld.Building.HealrootInitiative.MedicineWanted(st) : "-")
+                    + " zones " + string.Join(",", m.zoneManager.AllZones.Select(z => z.label + ":" + z.CellCount)));
+            }
+            Console.WriteLine("== end of day " + day + ": citizens " + home.Citizens.Count(c => !c.Dead) + ", beds " + beds + ", medicine on map " + medsOnMap
+                + ", medicine in ledger " + medsInStore + ", peak fires " + peakFires + ", " + game.Storyteller.deaths);
+        }
+
+        if (mode == "infection")
+        {
+            Console.WriteLine();
+            Console.WriteLine("## infections: pawn | onset day | job at onset | first tend after (h) | tends | mean tend quality | share of time tended | in bed | asleep | downed | mean immunity gain speed | max severity | immunity at end | lasted (d) | outcome");
+            foreach (Inf inf in infs.Values.OrderBy(x => x.Onset))
+            {
+                int n = Math.Max(inf.Samples, 1);
+                int end = inf.End >= 0 ? inf.End : Find.TickManager.TicksGame;
+                Console.WriteLine(inf.P.Label + " | " + (inf.Onset / 60000f).ToString("0.0", CultureInfo.InvariantCulture) + " | " + inf.JobAtOnset + " | "
+                    + (inf.FirstTended < 0 ? "never" : ((inf.FirstTended - inf.Onset) / 2500f).ToString("0.0", CultureInfo.InvariantCulture)) + " | " + inf.Tends + " | "
+                    + (inf.Tends == 0 ? "-" : F(inf.SumQ / inf.Tends)) + " | " + F(inf.Tended / (float)n) + " | " + F(inf.InBed / (float)n) + " | " + F(inf.Asleep / (float)n) + " | "
+                    + F(inf.Downed / (float)n) + " | " + F(inf.GainSum / n) + " | " + F(inf.MaxSev) + " | " + F(inf.ImmAtEnd) + " | "
+                    + ((end - inf.Onset) / 60000f).ToString("0.00", CultureInfo.InvariantCulture) + " | " + inf.Outcome);
+            }
+            foreach (Inf inf in infs.Values.OrderBy(x => x.Onset).Where(x => x.Outcome == "DIED").Take(2))
+            {
+                Console.WriteLine();
+                Console.WriteLine("## fatal case: " + inf.P.Label + ", infection from day " + (inf.Onset / 60000f).ToString("0.00", CultureInfo.InvariantCulture));
+                foreach (string line in inf.Timeline) Console.WriteLine(line);
+            }
+        }
+        return 0;
+    }
+
+    private static bool HasAttachedFire(Pawn p, SimWorld.Map.Map map) =>
+        p.Spawned && map.thingGrid.ThingsListAt(p.Position).Any(t => t is Fire f && ReferenceEquals(f.parent, p));
+}
