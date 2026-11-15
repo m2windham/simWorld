@@ -33,6 +33,11 @@ namespace SimWorld.Defs
         /// growing zone will sow this def there at all.</summary>
         public float sowMinFertility;
 
+        /// <summary>Plants skill a pawn needs before it will sow this def (RimWorld:
+        /// <c>PlantProperties.sowMinSkill</c>, checked by <c>WorkGiver_GrowerSow</c>). 0, the default, means
+        /// anyone may sow it.</summary>
+        public int sowMinSkill;
+
         /// <summary>
         /// What kind of harvest this plant gives (RimWorld: <c>PlantProperties.harvestTag</c>). RimWorld's
         /// content uses <c>"Standard"</c> for crops and <c>"Wood"</c> for trees; only the second is read here,

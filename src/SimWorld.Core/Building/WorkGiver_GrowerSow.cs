@@ -40,6 +40,9 @@ namespace SimWorld.Building
             if (toSow?.plant == null) return false;
             if (map.terrainGrid.TerrainAt(cell).fertility < toSow.plant.sowMinFertility) return false;
 
+            // RimWorld: WorkGiver_GrowerSow refuses a grower below the plant's sowMinSkill (healroot needs 8).
+            if (toSow.plant.sowMinSkill > 0 && !CanSow(pawn, toSow)) return false;
+
             // Nothing already growing, planned, or built here.
             if (map.thingGrid.CellContains(cell, ThingCategory.Plant)) return false;
             if (map.thingGrid.CellContains(cell, ThingCategory.Blueprint)) return false;
@@ -49,6 +52,14 @@ namespace SimWorld.Building
 
             if (!Reachability.CanReach(pawn, cell, PathEndMode)) return false;
             return map.reservationManager.CanReserve(pawn, cell);
+        }
+
+        /// <summary>Whether <paramref name="pawn"/> is skilled enough to sow <paramref name="plant"/>.</summary>
+        public static bool CanSow(Pawn pawn, ThingDef plant)
+        {
+            int min = plant.plant?.sowMinSkill ?? 0;
+            if (min <= 0) return true;
+            return (pawn.skills?.GetSkill(SkillDefOf.Plants)?.Level ?? 0) >= min;
         }
 
         public override Job? JobOnCell(Pawn pawn, IntVec3 cell, bool forced = false) =>
