@@ -1,0 +1,147 @@
+// Lane-private diagnostic (storyteller-pressure). Replays the world `--suite storyteller --solo false`
+// builds for a seed and band, and records where every new hediff on a citizen came from and what each
+// death was carrying. Reads only: no Rand draws, no jobs, no reservations.
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+
+using SimWorld.Content;
+using SimWorld.Defs;
+using SimWorld.Director;
+using SimWorld.God.View;
+using SimWorld.Health;
+using SimWorld.Pawns;
+using SimWorld.Scenario;
+using SimWorld.Sim;
+
+internal static class Program
+{
+    private static int Main(string[] args)
+    {
+        int seed = int.Parse(args[0], CultureInfo.InvariantCulture);
+        int days = int.Parse(args[1], CultureInfo.InvariantCulture);
+        int band = int.Parse(args[2], CultureInfo.InvariantCulture);
+        bool threats = bool.Parse(args[3]);
+        string data = args[4];
+
+        var database = new DefDatabase();
+        DefLoadResult result = CoreContent.Load(database, new DefTypeResolver(), new DefLoadOptions { BindDefOfs = true }, data);
+        if (!result.Success) throw new InvalidOperationException("content failed to load");
+        DefDatabase.Global = database;
+
+        Find.Reset();
+        Find.TickManager = new TickManager();
+        Rand.Current = new RandomStream(seed);
+        Pawn.ResetThingIdCounter();
+        SimWorld.Map.Map.ResetMapIdCounter();
+        Ablation.Clear();
+
+        DifficultyDef? difficulty = threats ? null : new DifficultyDef
+        {
+            defName = "MediumWithoutThreats",
+            threatScale = DifficultyDefOf.Medium.threatScale,
+            allowBigThreats = false,
+            allowIntroThreats = false,
+        };
+
+        Game game = Game.NewGame(
+            ScenarioDefOf.TribalStart.scenario, seed.ToString(CultureInfo.InvariantCulture),
+            subdivisionOverride: 3, soloStart: false, bandSize: band, difficultyDef: difficulty);
+        SimWorld.World.Settlement home = game.CivilizationTarget.Seat!;
+        GodCommands.OpenSettlement(home.tile);
+
+        var known = new Dictionary<Pawn, HashSet<Hediff>>();
+        var alive = new HashSet<Pawn>();
+        var newHediffs = new Dictionary<string, int>();
+        int lastChronicle = 0;
+
+        for (int day = 1; day <= days; day++)
+        {
+            for (int i = 0; i < GenDate.TicksPerDay; i++)
+            {
+                game.TickManager.DoSingleTick();
+                if (Find.TickManager.TicksGame % 30 != 0) continue;
+
+                SimWorld.Map.Map? map = home.InteriorMap;
+                foreach (Pawn p in home.Citizens.ToList())
+                {
+                    if (!known.TryGetValue(p, out HashSet<Hediff>? seen))
+                    {
+                        seen = new HashSet<Hediff>(p.health.hediffSet.hediffs);
+                        known[p] = seen;
+                        alive.Add(p);
+                        continue;
+                    }
+                    foreach (Hediff h in p.health.hediffSet.hediffs)
+                    {
+                        if (!seen.Add(h)) continue;
+                        string ctx = Context(p, map);
+                        string key = h.def.defName + " <- " + ctx;
+                        newHediffs.TryGetValue(key, out int n);
+                        newHediffs[key] = n + 1;
+                        Console.WriteLine("d" + day + " t" + Find.TickManager.TicksGame + " " + p.Label + ": +" + h.def.defName
+                            + (h.Part != null ? " on " + h.Part.Label : "") + " sev " + h.Severity.ToString("0.00", CultureInfo.InvariantCulture)
+                            + " src=" + (h.sourceIncident ?? "-") + " | " + ctx);
+                    }
+                }
+
+                foreach (Pawn p in alive.ToList())
+                {
+                    if (!p.Dead) continue;
+                    alive.Remove(p);
+                    string carrying = string.Join(", ", p.health.hediffSet.hediffs
+                        .GroupBy(h => h.def.defName)
+                        .Select(g => g.Key + "x" + g.Count() + "(" + g.Max(h => h.Severity).ToString("0.00", CultureInfo.InvariantCulture) + ")"));
+                    Console.WriteLine("d" + day + " t" + Find.TickManager.TicksGame + " DEATH " + p.Label + " age "
+                        + p.ageTracker.AgeBiologicalYearsFloat.ToString("0", CultureInfo.InvariantCulture) + " carrying: " + carrying);
+                }
+
+                IReadOnlyList<ChronicleEntry> chron = game.Storyteller.Chronicle;
+                for (; lastChronicle < chron.Count; lastChronicle++)
+                {
+                    ChronicleEntry e = chron[lastChronicle];
+                    if (e.deathCause.HasValue)
+                    {
+                        Console.WriteLine("d" + day + " t" + e.tick + " CHRONICLE Death " + e.deathCause.Value + " " + e.targetLabel);
+                    }
+                }
+            }
+            Console.WriteLine("== end of day " + day + ": citizens " + home.Citizens.Count(c => !c.Dead) + ", " + game.Storyteller.deaths);
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("## new hediffs on citizens, by context");
+        foreach (KeyValuePair<string, int> pair in newHediffs.OrderByDescending(p => p.Value)) Console.WriteLine(pair.Value + "\t" + pair.Key);
+        return 0;
+    }
+
+    // What the citizen was doing, and who (if anybody) had a job aimed at them, at the sample the hediff appeared.
+    private static string Context(Pawn p, SimWorld.Map.Map? map)
+    {
+        string job = p.jobs?.curJob?.def?.defName ?? "no job";
+        string mental = p.InMentalState ? " mental=" + p.MentalStateDef?.defName : "";
+        string aimed = "";
+        if (map != null && p.Spawned)
+        {
+            var who = new List<string>();
+            foreach (Pawn other in map.mapPawns.AllPawnsSpawned)
+            {
+                if (ReferenceEquals(other, p) || other.Dead) continue;
+                SimWorld.AI.Job? oj = other.jobs?.curJob;
+                if (oj == null) continue;
+                if (ReferenceEquals(oj.targetA.Thing, p) || ReferenceEquals(oj.targetB.Thing, p))
+                {
+                    who.Add((other.kindDef?.defName ?? other.def.defName) + ":" + oj.def.defName
+                        + (other.InMentalState ? "[" + other.MentalStateDef?.defName + "]" : "")
+                        + (other.faction == p.faction ? "(own)" : other.faction == null ? "(wild)" : "(other faction)"));
+                }
+            }
+            if (who.Count > 0) aimed = " aimedBy=" + string.Join("+", who.Distinct());
+        }
+        string target = "";
+        SimWorld.AI.Job? cj = p.jobs?.curJob;
+        if (cj?.targetA.Thing is Pawn tp) target = " target=" + (tp.kindDef?.defName ?? tp.def.defName);
+        return "job=" + job + target + mental + aimed;
+    }
+}

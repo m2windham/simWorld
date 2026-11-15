@@ -1,0 +1,1136 @@
+d1 t33450 Wren: +Bruise on left leg sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d1 t33450 Cyrus: +Crush on stomach sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d1 t33480 Cyrus: +BloodLoss sev 0.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d1 t33540 Cyrus: +BloodLoss sev 0.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d1 t33570 Wren: +Bruise on torso sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d1 t33600 Cyrus: +BloodLoss sev 0.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d1 t33660 Cyrus: +BloodLoss sev 0.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:TendPatient(own)+Tribesperson:SocialFight[SocialFighting](own)
+d1 t33690 Wren: +Crush on heart sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d1 t33690 Cyrus: +Crack on left tibia sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:TendPatient(own)+Tribesperson:SocialFight[SocialFighting](own)
+d1 t33720 Wren: +BloodLoss sev 0.00 src=- | job=Harvest aimedBy=Tribesperson:TendPatient(own)
+d1 t33720 Cyrus: +BloodLoss sev 0.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d1 t33780 Wren: +BloodLoss sev 0.00 src=- | job=Harvest aimedBy=Tribesperson:TendPatient(own)
+d1 t33780 Cyrus: +BloodLoss sev 0.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d1 t33840 Wren: +BloodLoss sev 0.00 src=- | job=Harvest aimedBy=Tribesperson:TendPatient(own)
+d1 t33840 Cyrus: +BloodLoss sev 0.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d1 t33900 Wren: +BloodLoss sev 0.00 src=- | job=Harvest aimedBy=Tribesperson:TendPatient(own)
+d1 t33900 Cyrus: +BloodLoss sev 0.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+== end of day 1: citizens 20, deaths 0 (none)
+d2 t70320 Ulric: +Bruise on torso sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d2 t70440 Silas: +Crush on liver sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d2 t70470 Silas: +BloodLoss sev 0.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d2 t70530 Silas: +BloodLoss sev 0.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d2 t70590 Silas: +BloodLoss sev 0.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d2 t70650 Silas: +BloodLoss sev 0.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d2 t74220 Cyrus: +WoundInfection on stomach sev 0.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d2 t104310 Cyrus: +Bite on torso sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d2 t104370 Cyrus: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d2 t104460 Cyrus: +Bite on right hand sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d2 t104580 Cyrus: +Bite on torso sev 15.00 src=- | job=Mine aimedBy=Tribesperson:TendPatient(own)
+== end of day 2: citizens 20, deaths 0 (none)
+d3 t129000 Cyrus: +WoundInfection on torso sev 0.00 src=- | job=Mine
+d3 t150780 DEATH Cyrus age 32 carrying: WoundInfectionx1(1.00)
+== end of day 3: citizens 19, deaths 1 (Disease 1)
+d4 t200100 Esme: +Bruise on left hand sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d4 t203670 DEATH Cyrus age 33 carrying: Bitex3(9.28), WoundInfectionx1(1.00)
+== end of day 4: citizens 18, deaths 2 (Disease 2)
+== end of day 5: citizens 18, deaths 2 (Disease 2)
+d6 t304020 Holt: +Cut on torso sev 500.00 src=- | job=no job
+d6 t304020 DEATH Holt age 30 carrying: Cutx1(500.00)
+d6 t357360 Cyrus: +Burn on left leg sev 2.00 src=- | job=Sow
+d6 t357450 Cyrus: +Burn on head sev 2.00 src=- | job=Sow
+d6 t357510 Cyrus: +Burn on head sev 2.00 src=- | job=Sow
+d6 t357600 Cyrus: +Burn on right kidney sev 2.00 src=- | job=Sow
+d6 t357660 Cyrus: +Burn on nose sev 2.00 src=- | job=Sow
+d6 t357750 Cyrus: +Burn on right index finger sev 2.00 src=- | job=Sow
+d6 t357900 Cyrus: +Burn on right arm sev 2.00 src=- | job=Sow
+d6 t358050 Cyrus: +Burn on heart sev 3.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d6 t358200 Cyrus: +Burn on left leg sev 2.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d6 t358350 Cyrus: +Burn on right tibia sev 3.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d6 t358500 Cyrus: +Burn on torso sev 2.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d6 t358650 Cyrus: +Burn on right leg sev 3.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d6 t358800 Cyrus: +Burn on skull sev 3.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d6 t358890 Esme: +Burn on left lung sev 3.00 src=- | job=BeatFire
+d6 t358950 Cyrus: +Burn on right lung sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d6 t359070 Esme: +Burn on torso sev 2.00 src=- | job=BeatFire
+d6 t359100 Cyrus: +Burn on left arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d6 t359220 Esme: +Burn on right shoulder sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d6 t359250 Elian: +Burn on torso sev 2.00 src=- | job=BeatFire
+d6 t359250 Cyrus: +Burn on stomach sev 2.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d6 t359310 Esme: +Burn on sternum sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d6 t359310 Bryn: +Burn on left kidney sev 3.00 src=- | job=TendPatient target=Tribesperson
+d6 t359340 Elian: +Burn on left femur sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d6 t359340 Bryn: +Burn on torso sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d6 t359460 Bryn: +Burn on torso sev 1.92 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d6 t359550 Bryn: +Burn on liver sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d6 t359580 Cyrus: +Burn on left lung sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d6 t359640 Esme: +Burn on torso sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d6 t359670 Esme: +Burn on pelvis sev 2.00 src=- | job=BeatFire
+d6 t359700 Cyrus: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d6 t359910 Esme: +Burn on right humerus sev 2.00 src=- | job=BeatFire
+d6 t359910 Cyrus: +Burn on right tibia sev 2.00 src=- | job=no job
+d6 t359970 Elian: +Burn on nose sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+== end of day 6: citizens 17, deaths 3 (Disease 2, Injury 1) [Earthquake 1]
+d7 t360030 Elian: +Burn on left leg sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t360060 Elian: +Burn on right arm sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t360060 Cyrus: +Burn on right thumb sev 2.00 src=- | job=no job
+d7 t360090 Silas: +Burn on left humerus sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t360090 Cyrus: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t360180 Elian: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360180 Esme: +Burn on right leg sev 3.00 src=- | job=BeatFire
+d7 t360210 Silas: +Burn on left leg sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t360210 Cyrus: +Burn on right lung sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t360210 Emrys: +Burn on right radius sev 2.00 src=- | job=BeatFire
+d7 t360240 Elian: +Burn on spine sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360240 Silas: +Burn on torso sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t360330 Elian: +Burn on right kidney sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t360360 Esme: +Burn on left shoulder sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360360 Cyrus: +Burn on head sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t360360 Cyrus: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t360390 Elian: +Burn on left leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360420 Emrys: +Burn on right shoulder sev 3.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t360450 Esme: +Burn on torso sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360480 Elian: +Burn on right arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360480 Esme: +Burn on right lung sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360510 Silas: +Burn on left leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360510 Cyrus: +Burn on jaw sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t360540 Ulric: +Burn on left clavicle sev 2.00 src=- | job=Sow
+d7 t360570 Esme: +Burn on right kidney sev 2.00 src=- | job=BeatFire
+d7 t360570 Emrys: +Burn on left leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360600 Silas: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360630 Ulric: +Burn on torso sev 2.00 src=- | job=Sow
+d7 t360630 Elian: +Burn on liver sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360630 Esme: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360630 Emrys: +Burn on right leg sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t360660 Elian: +Burn on left foot sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360660 Cyrus: +Burn on left arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t360690 Emrys: +Burn on left foot sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360780 Cyrus: +Burn on heart sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t360780 Emrys: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360810 Esme: +Burn on torso sev 2.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d7 t360810 Esme: +Burn on left lung sev 2.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d7 t360810 Cyrus: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t360810 Emrys: +Burn on left shoulder sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360960 Esme: +Burn on left arm sev 2.00 src=- | job=Sow aimedBy=Tribesperson:SocialRelax(own)+Tribesperson:TendPatient(own)
+d7 t360960 Esme: +Burn on liver sev 2.00 src=- | job=Sow aimedBy=Tribesperson:SocialRelax(own)+Tribesperson:TendPatient(own)
+d7 t360960 Cyrus: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t360960 Emrys: +Burn on right radius sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t360960 Emrys: +Burn on right lung sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361050 Ulric: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361110 Esme: +Burn on left tibia sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:SocialRelax(own)
+d7 t361110 Cyrus: +Burn on left shoulder sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361110 Emrys: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361110 Emrys: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361140 Cyrus: +Burn on left lung sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361170 Ulric: +Burn on brain sev 1.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361170 Esme: +Burn on left kidney sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361170 Esme: +Burn on left leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361230 Ulric: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361260 Wren: +Burn on ribcage sev 3.00 src=- | job=BeatFire
+d7 t361260 Cyrus: +Burn on right radius sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361260 Aveline: +Burn on ribcage sev 3.00 src=- | job=BeatFire
+d7 t361260 Aveline: +Burn on left kidney sev 2.00 src=- | job=BeatFire
+d7 t361260 Emrys: +Burn on pelvis sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361320 Ulric: +Burn on torso sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t361320 Esme: +Burn on right eye sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361320 Esme: +Burn on ribcage sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361320 Emrys: +Burn on left leg sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t361380 Aveline: +Burn on left ear sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361380 Aveline: +Burn on head sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361380 Emrys: +Burn on left lung sev 3.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t361410 Wren: +Burn on torso sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361410 Cyrus: +Burn on right arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361440 Silas: +Burn on pelvis sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361470 Ulric: +Burn on spine sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t361470 Esme: +Burn on heart sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361470 Cyrus: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361470 Emrys: +Burn on torso sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t361530 Wren: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361530 Aveline: +Burn on liver sev 3.00 src=- | job=BeatFire
+d7 t361530 Aveline: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t361530 Emrys: +Burn on torso sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361560 Wren: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t361560 Cyrus: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361590 Juniper: +Burn on left leg sev 2.92 src=- | job=Sow
+d7 t361620 Esme: +Burn on left clavicle sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361620 Cyrus: +Burn on left lung sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361680 Wren: +Burn on right arm sev 1.92 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361680 Aveline: +Burn on skull sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361680 Emrys: +Burn on right arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361710 Esme: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t361710 Cyrus: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361710 Cyrus: +Burn on left arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361740 Juniper: +Burn on right clavicle sev 2.00 src=- | job=Sow
+d7 t361770 Esme: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361830 Hana: +Burn on right leg sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t361830 Aveline: +Burn on right leg sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t361830 Aveline: +Burn on liver sev 3.00 src=- | job=TendPatient target=Tribesperson
+d7 t361860 Cyrus: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361860 Emrys: +Burn on ribcage sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361890 Ulric: +Burn on left arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361890 Elian: +Burn on right femur sev 2.00 src=- | job=BeatFire
+d7 t361890 Silas: +Burn on right arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361920 Ulric: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361920 Esme: +Burn on skull sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361950 Elian: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t361950 Silas: +Burn on left arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361950 Cyrus: +Burn on left leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t361980 Ulric: +Burn on torso sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t361980 Esme: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t362010 Cyrus: +Burn on left lung sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362010 Emrys: +Burn on left arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362010 Emrys: +Burn on right leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362040 Wren: +Burn on left humerus sev 2.00 src=- | job=BeatFire
+d7 t362040 Wren: +Burn on right humerus sev 2.00 src=- | job=BeatFire
+d7 t362040 Juniper: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t362070 Ulric: +Burn on torso sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t362070 Elian: +Burn on right kidney sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362070 Esme: +Burn on right leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362070 Cyrus: +Burn on heart sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362130 Ulric: +Burn on left leg sev 3.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t362130 Elian: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t362130 Silas: +Burn on left arm sev 3.00 src=- | job=TendPatient target=Tribesperson
+d7 t362130 Juniper: +Burn on left hand sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362130 Juniper: +Burn on right tibia sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362160 Cyrus: +Burn on ribcage sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362160 Emrys: +Burn on stomach sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362190 Ulric: +Burn on pelvis sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t362190 Hana: +Burn on neck sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362190 Hana: +Burn on spine sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362190 Wren: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t362190 Emrys: +Burn on right lung sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362220 Elian: +Burn on torso sev 3.00 src=- | job=BeatFire
+d7 t362220 Esme: +Burn on left arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362280 Ulric: +Burn on left lung sev 3.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t362280 Wren: +Burn on heart sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362280 Silas: +Burn on torso sev 3.00 src=- | job=TendPatient target=Tribesperson
+d7 t362280 Silas: +Burn on right arm sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t362280 Juniper: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t362310 Cyrus: +Burn on pelvis sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362310 Juniper: +Burn on right lung sev 2.00 src=- | job=BeatFire
+d7 t362310 Emrys: +Burn on stomach sev 3.00 src=- | job=no job
+d7 t362340 Marek: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t362340 Hana: +Burn on left leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362340 Zane: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t362340 Elian: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t362370 Ulric: +Burn on right leg sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t362370 Hana: +Burn on pelvis sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362370 Esme: +Burn on liver sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362370 Emrys: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t362400 Elian: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t362430 Ulric: +Burn on right arm sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362430 Wren: +Burn on right fourth toe sev 3.00 src=- | job=BeatFire
+d7 t362430 Silas: +Burn on right lung sev 3.00 src=- | job=TendPatient target=Tribesperson
+d7 t362430 Juniper: +Burn on left kidney sev 3.00 src=- | job=BeatFire
+d7 t362460 Wren: +Burn on left lung sev 2.00 src=- | job=BeatFire
+d7 t362460 Cyrus: +Burn on torso sev 3.00 src=- | job=no job
+d7 t362460 Emrys: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t362490 Ulric: +Burn on left foot sev 2.00 src=- | job=BeatFire
+d7 t362490 Marek: +Burn on right leg sev 3.00 src=- | job=BeatFire
+d7 t362490 Hana: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t362490 Zane: +Burn on right leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362490 Zane: +Burn on left tibia sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362520 Hana: +Burn on head sev 3.00 src=- | job=TendPatient target=Tribesperson
+d7 t362520 Esme: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362520 Emrys: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t362550 Marek: +Burn on left tibia sev 2.00 src=- | job=Ingest aimedBy=Tribesperson:TendPatient(own)
+d7 t362550 Esme: +Burn on neck sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362580 Silas: +Burn on left tibia sev 3.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t362580 Silas: +Burn on ribcage sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d7 t362610 Cyrus: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t362610 Cyrus: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t362610 Emrys: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t362640 Zane: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t362640 Elian: +Burn on torso sev 2.00 src=- | job=no job
+d7 t362670 Hana: +Burn on right leg sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362670 Briony: +Burn on ribcage sev 3.00 src=- | job=SocialRelax target=Tribesperson
+d7 t362670 Esme: +Burn on right shoulder sev 3.00 src=- | job=no job
+d7 t362670 Aveline: +Burn on ribcage sev 3.00 src=- | job=BeatFire
+d7 t362670 Emrys: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t362700 Marek: +Burn on right humerus sev 2.00 src=- | job=Ingest
+d7 t362700 Esme: +Burn on right eye sev 2.00 src=- | job=no job
+d7 t362730 Esme: +Burn on stomach sev 3.00 src=- | job=BeatFire
+d7 t362730 Zane: +Burn on left humerus sev 2.00 src=- | job=BeatFire
+d7 t362730 Briony: +Burn on torso sev 2.00 src=- | job=SocialRelax target=Tribesperson
+d7 t362730 Silas: +Burn on liver sev 3.00 src=- | job=BeatFire
+d7 t362730 Silas: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t362730 Aveline: +Burn on liver sev 2.00 src=- | job=BeatFire
+d7 t362760 Zane: +Burn on right arm sev 3.00 src=- | job=BeatFire
+d7 t362760 Cyrus: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t362760 Emrys: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t362790 Hana: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d7 t362790 Elian: +Burn on stomach sev 2.00 src=- | job=no job
+d7 t362820 Esme: +Burn on right arm sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362820 Esme: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t362820 Cyrus: +Burn on right humerus sev 2.00 src=- | job=no job
+d7 t362850 Esme: +Burn on right lung sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362850 Marek: +Burn on torso sev 2.00 src=- | job=Ingest
+d7 t362850 Hana: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t362880 Zane: +Burn on right clavicle sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t362880 Briony: +Burn on stomach sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t362880 Wren: +Burn on brain sev 2.00 src=- | job=BeatFire
+d7 t362880 Xiomara: +Burn on left leg sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t362880 Aveline: +Burn on stomach sev 2.00 src=- | job=BeatFire
+d7 t362910 Zane: +Burn on ribcage sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t362910 Cyrus: +Burn on torso sev 3.00 src=- | job=no job
+d7 t362910 Aveline: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d7 t362910 Emrys: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t362940 Hana: +Burn on right lung sev 3.00 src=- | job=BeatFire
+d7 t362940 Elian: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362940 Wren: +Burn on left shoulder sev 2.00 src=- | job=BeatFire
+d7 t362940 Emrys: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t362970 Hana: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t362970 Elian: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t362970 Esme: +Burn on left arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t363000 Marek: +Burn on torso sev 2.00 src=- | job=Ingest
+d7 t363000 Esme: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t363000 Xiomara: +Burn on left shoulder sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t363030 Ulric: +Burn on left arm sev 2.00 src=- | job=BeatFire
+d7 t363030 Wren: +Burn on right lung sev 2.00 src=- | job=BeatFire
+d7 t363030 Aveline: +Burn on torso sev 3.00 src=- | job=BeatFire
+d7 t363060 Zane: +Burn on left leg sev 3.00 src=- | job=BeatFire
+d7 t363060 Cyrus: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t363060 Cyrus: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t363060 Emrys: +Burn on torso sev 3.00 src=- | job=no job
+d7 t363090 Zane: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d7 t363090 Elian: +Burn on ribcage sev 3.00 src=- | job=no job
+d7 t363120 Ulric: +Burn on left kidney sev 3.00 src=- | job=no job
+d7 t363120 Hana: +Burn on right leg sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t363120 Elian: +Burn on torso sev 2.00 src=- | job=no job
+d7 t363120 Esme: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t363120 Aveline: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d7 t363150 Marek: +Burn on neck sev 2.00 src=- | job=Ingest
+d7 t363150 Emrys: +Burn on right shoulder sev 2.00 src=- | job=no job
+d7 t363180 Wren: +Burn on left leg sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t363180 Esme: +Burn on right hand sev 2.00 src=- | job=no job
+d7 t363180 Aveline: +Burn on right tibia sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d7 t363210 Cyrus: +Burn on left ear sev 3.00 src=- | job=no job
+d7 t363210 Emrys: +Burn on left clavicle sev 3.00 src=- | job=no job
+d7 t363240 Briony: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d7 t363240 Elian: +Burn on left arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t363270 Ulric: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t363270 Zane: +Burn on right hand sev 3.00 src=- | job=BeatFire
+d7 t363270 Zane: +Burn on left clavicle sev 2.00 src=- | job=BeatFire
+d7 t363270 Esme: +Burn on left shoulder sev 3.00 src=- | job=no job
+d7 t363300 Marek: +Burn on torso sev 2.00 src=- | job=Ingest
+d7 t363300 Esme: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t363330 Esme: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t363330 Briony: +Burn on left pinky sev 2.00 src=- | job=BeatFire
+d7 t363330 Wren: +Burn on left leg sev 3.00 src=- | job=BeatFire
+d7 t363330 Silas: +Burn on left leg sev 3.00 src=- | job=BeatFire
+d7 t363330 Aveline: +Burn on neck sev 2.00 src=- | job=BeatFire
+d7 t363330 Emrys: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t363360 Ulric: +Burn on ribcage sev 2.00 src=- | job=no job
+d7 t363360 Wren: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d7 t363360 Cyrus: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t363360 Emrys: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t363390 Zane: +Burn on left eye sev 3.00 src=- | job=BeatFire
+d7 t363390 Briony: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t363390 Elian: +Burn on right leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t363420 Ulric: +Burn on left clavicle sev 3.00 src=- | job=no job
+d7 t363420 Zane: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t363420 Esme: +Burn on right humerus sev 3.00 src=- | job=no job
+d7 t363420 Cyrus: +Burn on right foot sev 2.00 src=- | job=no job
+d7 t363420 Aveline: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t363450 Marek: +Burn on torso sev 2.00 src=- | job=Ingest
+d7 t363480 Esme: +Burn on liver sev 2.00 src=- | job=BeatFire
+d7 t363480 Wren: +Burn on right femur sev 2.00 src=- | job=no job
+d7 t363480 Aveline: +Burn on right eye sev 2.00 src=- | job=no job
+d7 t363510 Cyrus: +Burn on torso sev 3.00 src=- | job=no job
+d7 t363510 Emrys: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t363540 Hana: +Burn on left arm sev 2.00 src=- | job=BeatFire
+d7 t363540 Elian: +Burn on right tibia sev 2.00 src=- | job=no job
+d7 t363540 Silas: +Burn on left shoulder sev 2.00 src=- | job=no job
+d7 t363540 Emrys: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t363570 Ulric: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t363570 Esme: +Burn on right tibia sev 3.00 src=- | job=no job
+d7 t363570 Cyrus: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t363570 Aveline: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t363600 Ulric: +Burn on left kidney sev 2.00 src=- | job=no job
+d7 t363600 Marek: +Burn on right femur sev 3.00 src=- | job=Ingest
+d7 t363600 Hana: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t363600 Elian: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t363600 Silas: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t363630 Wren: +Burn on torso sev 3.00 src=- | job=no job
+d7 t363630 Wren: +Burn on neck sev 2.00 src=- | job=no job
+d7 t363660 Zane: +Burn on nose sev 2.00 src=- | job=BeatFire
+d7 t363660 Briony: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t363660 Cyrus: +Burn on right clavicle sev 3.00 src=- | job=no job
+d7 t363660 Aveline: +Burn on right shoulder sev 2.00 src=- | job=no job
+d7 t363660 Emrys: +Burn on stomach sev 3.00 src=- | job=no job
+d7 t363690 Hana: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t363690 Hana: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d7 t363690 Briony: +Burn on left femur sev 2.00 src=- | job=BeatFire
+d7 t363690 Elian: +Burn on left shoulder sev 2.00 src=- | job=no job
+d7 t363690 Silas: +Burn on ribcage sev 2.00 src=- | job=no job
+d7 t363690 Cyrus: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t363690 Emrys: +Burn on ribcage sev 2.00 src=- | job=no job
+d7 t363720 Ulric: +Burn on torso sev 3.00 src=- | job=no job
+d7 t363720 Zane: +Burn on left arm sev 3.00 src=- | job=BeatFire
+d7 t363720 Zane: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t363720 Esme: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t363720 Esme: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t363720 Aveline: +Burn on left tibia sev 3.00 src=- | job=no job
+d7 t363750 Marek: +Burn on torso sev 2.00 src=- | job=Ingest
+d7 t363750 Xiomara: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t363750 Aveline: +Burn on left pinky sev 2.00 src=- | job=no job
+d7 t363780 Esme: +Burn on left foot sev 2.00 src=- | job=BeatFire
+d7 t363780 Wren: +Burn on torso sev 3.00 src=- | job=no job
+d7 t363780 Wren: +Burn on left radius sev 2.00 src=- | job=no job
+d7 t363780 Silas: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t363810 Hana: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t363810 Briony: +Burn on left arm sev 2.00 src=- | job=BeatFire
+d7 t363810 Xiomara: +Burn on left clavicle sev 2.00 src=- | job=BeatFire
+d7 t363810 Cyrus: +Burn on left shoulder sev 2.00 src=- | job=no job
+d7 t363810 Emrys: +Burn on torso sev 3.00 src=- | job=no job
+d7 t363840 Hana: +Burn on spine sev 2.00 src=- | job=no job
+d7 t363840 Zane: +Burn on left eye sev 3.00 src=- | job=no job
+d7 t363840 Briony: +Burn on left arm sev 2.00 src=- | job=BeatFire
+d7 t363840 Elian: +Burn on left ring finger sev 2.00 src=- | job=no job
+d7 t363840 Elian: +Burn on torso sev 2.00 src=- | job=no job
+d7 t363840 Silas: +Burn on right kidney sev 3.00 src=- | job=no job
+d7 t363840 Cyrus: +Burn on right eye sev 2.00 src=- | job=no job
+d7 t363870 Ulric: +Burn on left ear sev 3.00 src=- | job=no job
+d7 t363870 Zane: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t363870 Esme: +Burn on left foot sev 3.00 src=- | job=no job
+d7 t363870 Aveline: +Burn on torso sev 3.00 src=- | job=no job
+d7 t363900 Ulric: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t363900 Marek: +Burn on right shoulder sev 3.00 src=- | job=Ingest
+d7 t363900 Xiomara: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t363900 Aveline: +Burn on ribcage sev 2.00 src=- | job=no job
+d7 t363900 Emrys: +Burn on right kidney sev 2.00 src=- | job=no job
+d7 t363930 Esme: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t363930 Esme: +Burn on neck sev 2.00 src=- | job=BeatFire
+d7 t363930 Wren: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t363960 Hana: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t363960 Briony: +Burn on right humerus sev 2.00 src=- | job=BeatFire
+d7 t363960 Wren: +Burn on left shoulder sev 2.00 src=- | job=no job
+d7 t363960 Xiomara: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t363960 Cyrus: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t363960 Emrys: +Burn on right hand sev 3.00 src=- | job=no job
+d7 t363990 Hana: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t363990 Zane: +Burn on left foot sev 3.00 src=- | job=no job
+d7 t363990 Briony: +Burn on heart sev 2.00 src=- | job=BeatFire
+d7 t363990 Elian: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t363990 Esme: +Burn on right tibia sev 2.00 src=- | job=no job
+d7 t363990 Silas: +Burn on left tibia sev 2.00 src=- | job=no job
+d7 t364020 Ulric: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t364020 Zane: +Burn on right femur sev 2.00 src=- | job=no job
+d7 t364020 Elian: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364020 Esme: +Burn on left ear sev 2.00 src=- | job=no job
+d7 t364020 Aveline: +Burn on torso sev 3.00 src=- | job=no job
+d7 t364050 Ulric: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364050 Marek: +Burn on right kidney sev 2.00 src=- | job=Ingest
+d7 t364050 Xiomara: +Burn on brain sev 2.00 src=- | job=BeatFire
+d7 t364080 Esme: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d7 t364080 Esme: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t364080 Wren: +Burn on torso sev 3.00 src=- | job=no job
+d7 t364080 Silas: +Burn on skull sev 2.00 src=- | job=no job
+d7 t364080 Cyrus: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t364110 Hana: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t364110 Briony: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t364110 Wren: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t364110 Xiomara: +Burn on heart sev 2.00 src=- | job=BeatFire
+d7 t364110 Cyrus: +Burn on left clavicle sev 2.00 src=- | job=no job
+d7 t364110 Emrys: +Burn on torso sev 3.00 src=- | job=no job
+d7 t364140 Hana: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364140 Zane: +Burn on right radius sev 3.00 src=- | job=no job
+d7 t364140 Briony: +Burn on right clavicle sev 2.00 src=- | job=BeatFire
+d7 t364140 Elian: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t364140 Silas: +Burn on torso sev 3.00 src=- | job=no job
+d7 t364170 Ulric: +Burn on right shoulder sev 2.00 src=- | job=no job
+d7 t364170 Elian: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t364170 Esme: +Burn on left fourth toe sev 3.00 src=- | job=no job
+d7 t364170 Esme: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t364170 Aveline: +Burn on left hand sev 3.00 src=- | job=no job
+d7 t364200 Ulric: +Burn on left kidney sev 2.00 src=- | job=no job
+d7 t364200 Marek: +Burn on right leg sev 3.00 src=- | job=Ingest
+d7 t364200 Xiomara: +Burn on pelvis sev 2.00 src=- | job=BeatFire
+d7 t364200 Emrys: +Burn on spine sev 2.00 src=- | job=no job
+d7 t364230 Esme: +Burn on left eye sev 2.00 src=- | job=BeatFire
+d7 t364230 Esme: +Burn on right ear sev 2.00 src=- | job=BeatFire
+d7 t364230 Wren: +Burn on left tibia sev 3.00 src=- | job=no job
+d7 t364230 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364230 Xiomara: +Burn on right leg sev 1.00 src=- | job=BeatFire
+d7 t364230 Cyrus: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t364260 Hana: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364260 Zane: +Burn on spine sev 2.00 src=- | job=no job
+d7 t364260 Briony: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t364260 Wren: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t364260 Cyrus: +Burn on left ear sev 3.00 src=- | job=no job
+d7 t364260 Aveline: +Burn on right foot sev 2.00 src=- | job=no job
+d7 t364260 Emrys: +Burn on heart sev 3.00 src=- | job=no job
+d7 t364290 Hana: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t364290 Zane: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364290 Briony: +Burn on right foot sev 2.00 src=- | job=BeatFire
+d7 t364290 Elian: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t364290 Silas: +Burn on spine sev 3.00 src=- | job=no job
+d7 t364320 Ulric: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t364320 Elian: +Burn on right clavicle sev 2.00 src=- | job=no job
+d7 t364320 Esme: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t364320 Esme: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t364320 Aveline: +Burn on right kidney sev 3.00 src=- | job=no job
+d7 t364350 Marek: +Burn on liver sev 3.00 src=- | job=Ingest
+d7 t364350 Xiomara: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t364350 Emrys: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t364380 Esme: +Burn on liver sev 2.00 src=- | job=BeatFire
+d7 t364380 Wren: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t364380 Silas: +Burn on left tibia sev 3.00 src=- | job=no job
+d7 t364380 Xiomara: +Burn on pelvis sev 2.00 src=- | job=BeatFire
+d7 t364410 Hana: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t364410 Zane: +Burn on left femur sev 3.00 src=- | job=no job
+d7 t364410 Briony: +Burn on right tibia sev 3.00 src=- | job=BeatFire
+d7 t364410 Cyrus: +Burn on liver sev 3.00 src=- | job=no job
+d7 t364410 Aveline: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t364410 Emrys: +Burn on right femur sev 3.00 src=- | job=no job
+d7 t364410 DEATH Cyrus age 24 carrying: Burnx67(3.00)
+d7 t364440 Ulric: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364440 Hana: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t364440 Zane: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t364440 Briony: +Burn on right radius sev 2.00 src=- | job=BeatFire
+d7 t364440 Elian: +Burn on left femur sev 3.00 src=- | job=no job
+d7 t364440 Silas: +Burn on right eye sev 2.00 src=- | job=no job
+d7 t364470 Ulric: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t364470 Esme: +Burn on jaw sev 2.00 src=- | job=BeatFire
+d7 t364470 Esme: +Burn on ribcage sev 3.00 src=- | job=no job
+d7 t364470 Esme: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364470 Aveline: +Burn on right femur sev 3.00 src=- | job=no job
+d7 t364500 Marek: +Burn on left arm sev 3.00 src=- | job=Ingest
+d7 t364500 Elian: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364500 Wren: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364500 Xiomara: +Burn on right shoulder sev 2.00 src=- | job=BeatFire
+d7 t364530 Esme: +Burn on left clavicle sev 2.00 src=- | job=BeatFire
+d7 t364530 Wren: +Burn on torso sev 3.00 src=- | job=no job
+d7 t364530 Xiomara: +Burn on pelvis sev 2.00 src=- | job=BeatFire
+d7 t364560 Hana: +Burn on stomach sev 2.00 src=- | job=no job
+d7 t364560 Zane: +Burn on left little toe sev 2.00 src=- | job=no job
+d7 t364560 Briony: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d7 t364560 Aveline: +Burn on left foot sev 2.00 src=- | job=no job
+d7 t364560 Emrys: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t364590 Hana: +Burn on left femur sev 2.00 src=- | job=no job
+d7 t364590 Zane: +Burn on nose sev 2.00 src=- | job=no job
+d7 t364590 Briony: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t364590 Elian: +Burn on torso sev 3.00 src=- | job=no job
+d7 t364590 Silas: +Burn on neck sev 2.00 src=- | job=no job
+d7 t364620 Ulric: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t364620 Ulric: +Burn on left kidney sev 2.00 src=- | job=no job
+d7 t364620 Esme: +Burn on right kidney sev 2.00 src=- | job=BeatFire
+d7 t364620 Esme: +Burn on left clavicle sev 3.00 src=- | job=no job
+d7 t364620 Esme: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364620 Aveline: +Burn on left kidney sev 3.00 src=- | job=no job
+d7 t364650 Marek: +Burn on right humerus sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t364650 Elian: +Burn on left radius sev 2.00 src=- | job=no job
+d7 t364650 Xiomara: +Burn on left index finger sev 2.00 src=- | job=BeatFire
+d7 t364650 Aveline: +Burn on right foot sev 2.00 src=- | job=no job
+d7 t364680 Esme: +Burn on right ring finger sev 2.00 src=- | job=BeatFire
+d7 t364680 Wren: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t364680 Wren: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t364680 Emrys: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t364710 Hana: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t364710 Briony: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t364710 Emrys: +Burn on right kidney sev 3.00 src=- | job=no job
+d7 t364740 Hana: +Burn on left humerus sev 2.00 src=- | job=no job
+d7 t364740 Zane: +Burn on spine sev 2.00 src=- | job=no job
+d7 t364740 Briony: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t364740 Elian: +Burn on neck sev 3.00 src=- | job=no job
+d7 t364740 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364740 Silas: +Burn on torso sev 3.00 src=- | job=no job
+d7 t364770 Ulric: +Burn on left lung sev 3.00 src=- | job=no job
+d7 t364770 Ulric: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364770 Zane: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t364770 Esme: +Burn on left radius sev 3.00 src=- | job=no job
+d7 t364770 Esme: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t364770 Aveline: +Burn on torso sev 3.00 src=- | job=no job
+d7 t364800 Marek: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t364800 Elian: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t364800 Xiomara: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d7 t364800 Aveline: +Burn on brain sev 2.00 src=- | job=no job
+d7 t364830 Esme: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d7 t364830 Wren: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t364830 Wren: +Burn on right lung sev 2.00 src=- | job=no job
+d7 t364830 Emrys: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t364860 Hana: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t364860 Briony: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t364860 Emrys: +Burn on left lung sev 2.00 src=- | job=no job
+d7 t364890 Esme: +Burn on spine sev 2.00 src=- | job=BeatFire
+d7 t364890 Hana: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t364890 Zane: +Burn on pelvis sev 3.00 src=- | job=no job
+d7 t364890 Briony: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t364890 Elian: +Burn on left lung sev 3.00 src=- | job=no job
+d7 t364890 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364890 Silas: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t364890 Xiomara: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d7 t364920 Ulric: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t364920 Ulric: +Burn on left tibia sev 2.00 src=- | job=no job
+d7 t364920 Zane: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t364920 Esme: +Burn on ribcage sev 2.00 src=- | job=no job
+d7 t364920 Aveline: +Burn on right radius sev 3.00 src=- | job=no job
+d7 t364950 Marek: +Burn on spine sev 2.00 src=- | job=no job
+d7 t364950 Xiomara: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t364950 Aveline: +Burn on skull sev 2.00 src=- | job=no job
+d7 t364980 Esme: +Burn on right kidney sev 3.00 src=- | job=no job
+d7 t364980 Wren: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t364980 Wren: +Burn on torso sev 2.00 src=- | job=no job
+d7 t364980 Emrys: +Burn on right shoulder sev 2.00 src=- | job=no job
+d7 t365010 Hana: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t365010 Briony: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t365010 Esme: +Burn on left tibia sev 2.00 src=- | job=no job
+d7 t365010 Emrys: +Burn on right clavicle sev 3.00 src=- | job=no job
+d7 t365040 Esme: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t365040 Hana: +Burn on left tibia sev 3.00 src=- | job=no job
+d7 t365040 Zane: +Burn on sternum sev 3.00 src=- | job=no job
+d7 t365040 Briony: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365040 Elian: +Burn on heart sev 2.00 src=- | job=no job
+d7 t365040 Silas: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t365040 Xiomara: +Burn on liver sev 2.00 src=- | job=BeatFire
+d7 t365070 Ulric: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t365070 Zane: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t365070 Esme: +Burn on torso sev 3.00 src=- | job=no job
+d7 t365070 Aveline: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t365100 Ulric: +Burn on left lung sev 2.00 src=- | job=no job
+d7 t365100 Silas: +Burn on left foot sev 2.00 src=- | job=no job
+d7 t365100 Xiomara: +Burn on left kidney sev 2.00 src=- | job=BeatFire
+d7 t365100 Aveline: +Burn on spine sev 2.00 src=- | job=no job
+d7 t365130 Esme: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365130 Elian: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365130 Wren: +Burn on brain sev 3.00 src=- | job=no job
+d7 t365130 Wren: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t365130 Emrys: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t365160 Hana: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365160 Briony: +Burn on brain sev 3.00 src=- | job=no job
+d7 t365160 Esme: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365160 Emrys: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t365190 Esme: +Burn on liver sev 2.00 src=- | job=no job
+d7 t365190 Hana: +Burn on right clavicle sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365190 Zane: +Burn on ribcage sev 3.00 src=- | job=no job
+d7 t365190 Briony: +Burn on right eye sev 3.00 src=- | job=no job
+d7 t365190 Elian: +Burn on right hand sev 3.00 src=- | job=no job
+d7 t365190 Silas: +Burn on heart sev 3.00 src=- | job=no job
+d7 t365190 Xiomara: +Burn on left femur sev 2.00 src=- | job=no job
+d7 t365220 Ulric: +Burn on right shoulder sev 3.00 src=- | job=no job
+d7 t365220 Esme: +Burn on right lung sev 3.00 src=- | job=no job
+d7 t365220 Aveline: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t365220 DEATH Esme age 24 carrying: Burnx64(3.00)
+d7 t365250 Ulric: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t365250 Silas: +Burn on right foot sev 2.00 src=- | job=no job
+d7 t365250 Xiomara: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t365250 Aveline: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t365280 Esme: +Burn on neck sev 3.00 src=- | job=no job
+d7 t365280 Elian: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t365280 Wren: +Burn on right humerus sev 3.00 src=- | job=no job
+d7 t365280 Wren: +Burn on left kidney sev 3.00 src=- | job=no job
+d7 t365280 Emrys: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t365310 Hana: +Burn on left femur sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365310 Briony: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t365310 Emrys: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t365340 Esme: +Burn on left eye sev 3.00 src=- | job=no job
+d7 t365340 Hana: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365340 Zane: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365340 Zane: +Burn on left little toe sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365340 Briony: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365340 Elian: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t365340 Silas: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t365340 Xiomara: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365370 Ulric: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t365370 Aveline: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t365400 Ulric: +Burn on left lung sev 2.00 src=- | job=no job
+d7 t365400 Silas: +Burn on left shoulder sev 2.00 src=- | job=no job
+d7 t365400 Xiomara: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365400 Aveline: +Burn on right radius sev 3.00 src=- | job=no job
+d7 t365430 Esme: +Burn on left clavicle sev 2.00 src=- | job=no job
+d7 t365430 Elian: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t365430 Wren: +Burn on right hand sev 3.00 src=- | job=no job
+d7 t365430 Wren: +Burn on stomach sev 2.00 src=- | job=no job
+d7 t365430 Emrys: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365460 Hana: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365460 Briony: +Burn on left ear sev 3.00 src=- | job=no job
+d7 t365460 Emrys: +Burn on spine sev 3.00 src=- | job=no job
+d7 t365490 Esme: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t365490 Hana: +Burn on left humerus sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365490 Zane: +Burn on right lung sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365490 Zane: +Burn on right hand sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365490 Briony: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t365490 Elian: +Burn on torso sev 3.00 src=- | job=no job
+d7 t365490 Silas: +Burn on right femur sev 3.00 src=- | job=no job
+d7 t365490 Xiomara: +Burn on head sev 2.00 src=- | job=no job
+d7 t365520 Ulric: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t365520 Aveline: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t365550 Ulric: +Burn on left foot sev 2.00 src=- | job=no job
+d7 t365550 Silas: +Burn on left kidney sev 2.00 src=- | job=no job
+d7 t365550 Xiomara: +Burn on sternum sev 2.00 src=- | job=no job
+d7 t365550 Aveline: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365580 Esme: +Burn on ribcage sev 2.00 src=- | job=no job
+d7 t365580 Elian: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365580 Wren: +Burn on nose sev 3.00 src=- | job=no job
+d7 t365580 Wren: +Burn on stomach sev 2.00 src=- | job=no job
+d7 t365580 Emrys: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t365580 DEATH Emrys age 26 carrying: Burnx62(3.00)
+d7 t365610 Hana: +Burn on left leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365610 Briony: +Burn on liver sev 3.00 src=- | job=no job
+d7 t365640 Esme: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t365640 Hana: +Burn on right arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365640 Zane: +Burn on right eye sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365640 Zane: +Burn on brain sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365640 Briony: +Burn on torso sev 3.00 src=- | job=no job
+d7 t365640 Elian: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t365640 Silas: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t365640 Xiomara: +Burn on ribcage sev 3.00 src=- | job=no job
+d7 t365670 Ulric: +Burn on spine sev 2.00 src=- | job=no job
+d7 t365670 Aveline: +Burn on left radius sev 3.00 src=- | job=no job
+d7 t365700 Ulric: +Burn on liver sev 2.00 src=- | job=no job
+d7 t365700 Silas: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t365700 Xiomara: +Burn on left clavicle sev 2.00 src=- | job=no job
+d7 t365700 Aveline: +Burn on neck sev 2.00 src=- | job=no job
+d7 t365730 Esme: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t365730 Elian: +Burn on right big toe sev 2.00 src=- | job=no job
+d7 t365730 Wren: +Burn on ribcage sev 2.00 src=- | job=no job
+d7 t365730 Wren: +Burn on left tibia sev 2.00 src=- | job=no job
+d7 t365760 Hana: +Burn on right leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365760 Briony: +Burn on torso sev 3.00 src=- | job=no job
+d7 t365790 Esme: +Burn on torso sev 2.00 src=- | job=no job
+d7 t365790 Hana: +Burn on ribcage sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365790 Zane: +Burn on left leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365790 Zane: +Burn on left humerus sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365790 Briony: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t365790 Elian: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t365790 Silas: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t365790 Xiomara: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t365820 Ulric: +Burn on sternum sev 3.00 src=- | job=no job
+d7 t365820 Aveline: +Burn on torso sev 3.00 src=- | job=no job
+d7 t365850 Ulric: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t365850 Silas: +Burn on right lung sev 3.00 src=- | job=no job
+d7 t365850 Xiomara: +Burn on right femur sev 3.00 src=- | job=no job
+d7 t365850 Aveline: +Burn on right shoulder sev 3.00 src=- | job=no job
+d7 t365880 Esme: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t365880 Elian: +Burn on right femur sev 2.00 src=- | job=no job
+d7 t365880 Wren: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t365880 Wren: +Burn on liver sev 2.00 src=- | job=no job
+d7 t365910 Hana: +Burn on spine sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365910 Briony: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t365940 Esme: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t365940 Hana: +Burn on spine sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365940 Zane: +Burn on left arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365940 Zane: +Burn on head sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t365940 Briony: +Burn on torso sev 3.00 src=- | job=no job
+d7 t365940 Elian: +Burn on right lung sev 3.00 src=- | job=no job
+d7 t365940 Silas: +Burn on right shoulder sev 3.00 src=- | job=no job
+d7 t365940 Xiomara: +Burn on left foot sev 2.00 src=- | job=no job
+d7 t365970 Ulric: +Burn on left femur sev 3.00 src=- | job=no job
+d7 t365970 Aveline: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t366000 Ulric: +Burn on torso sev 3.00 src=- | job=no job
+d7 t366000 Silas: +Burn on left radius sev 2.00 src=- | job=no job
+d7 t366000 Xiomara: +Burn on jaw sev 3.00 src=- | job=no job
+d7 t366000 Aveline: +Burn on brain sev 3.00 src=- | job=no job
+d7 t366030 Esme: +Burn on left shoulder sev 3.00 src=- | job=no job
+d7 t366030 Elian: +Burn on right eye sev 2.00 src=- | job=no job
+d7 t366030 Wren: +Burn on pelvis sev 3.00 src=- | job=no job
+d7 t366030 Wren: +Burn on left hand sev 2.00 src=- | job=no job
+d7 t366060 Hana: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366060 Briony: +Burn on right shoulder sev 3.00 src=- | job=no job
+d7 t366090 Esme: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t366090 Hana: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366090 Zane: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366090 Zane: +Burn on right shoulder sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366090 Briony: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t366090 Elian: +Burn on right ear sev 2.00 src=- | job=no job
+d7 t366090 Silas: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t366090 Xiomara: +Burn on torso sev 2.00 src=- | job=no job
+d7 t366120 Ulric: +Burn on right clavicle sev 3.00 src=- | job=no job
+d7 t366120 Aveline: +Burn on skull sev 3.00 src=- | job=no job
+d7 t366150 Ulric: +Burn on ribcage sev 2.00 src=- | job=no job
+d7 t366150 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d7 t366150 Xiomara: +Burn on torso sev 3.00 src=- | job=no job
+d7 t366150 Aveline: +Burn on left humerus sev 2.00 src=- | job=no job
+d7 t366180 Esme: +Burn on brain sev 2.00 src=- | job=no job
+d7 t366180 Elian: +Burn on heart sev 2.00 src=- | job=no job
+d7 t366180 Wren: +Burn on ribcage sev 3.00 src=- | job=no job
+d7 t366180 Wren: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t366210 Hana: +Burn on skull sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366210 Briony: +Burn on right tibia sev 3.00 src=- | job=no job
+d7 t366240 Esme: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t366240 Hana: +Burn on left leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366240 Zane: +Burn on right lung sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366240 Zane: +Burn on right leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366240 Briony: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t366240 Elian: +Burn on right foot sev 2.00 src=- | job=no job
+d7 t366240 Silas: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t366240 Xiomara: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t366270 Ulric: +Burn on neck sev 3.00 src=- | job=no job
+d7 t366270 Aveline: +Burn on right eye sev 2.00 src=- | job=no job
+d7 t366300 Ulric: +Burn on spine sev 2.00 src=- | job=no job
+d7 t366300 Silas: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t366300 Xiomara: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t366300 Aveline: +Burn on torso sev 2.00 src=- | job=no job
+d7 t366330 Esme: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t366330 Elian: +Burn on torso sev 2.00 src=- | job=no job
+d7 t366330 Wren: +Burn on liver sev 3.00 src=- | job=no job
+d7 t366330 Wren: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t366360 Hana: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366360 Briony: +Burn on right femur sev 3.00 src=- | job=no job
+d7 t366390 Esme: +Burn on right femur sev 2.00 src=- | job=no job
+d7 t366390 Hana: +Burn on right leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366390 Zane: +Burn on left tibia sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366390 Zane: +Burn on right kidney sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366390 Briony: +Burn on left humerus sev 3.00 src=- | job=no job
+d7 t366390 Elian: +Burn on skull sev 2.00 src=- | job=no job
+d7 t366390 Silas: +Burn on left thumb sev 2.00 src=- | job=no job
+d7 t366390 Xiomara: +Burn on torso sev 2.00 src=- | job=no job
+d7 t366420 Ulric: +Burn on ribcage sev 3.00 src=- | job=no job
+d7 t366420 Aveline: +Burn on ribcage sev 3.00 src=- | job=no job
+d7 t366450 Ulric: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t366450 Silas: +Burn on left lung sev 3.00 src=- | job=no job
+d7 t366450 Xiomara: +Burn on torso sev 3.00 src=- | job=no job
+d7 t366450 Aveline: +Burn on left tibia sev 2.00 src=- | job=no job
+d7 t366480 Esme: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t366480 Elian: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t366480 Wren: +Burn on right shoulder sev 2.00 src=- | job=no job
+d7 t366480 Wren: +Burn on stomach sev 2.00 src=- | job=no job
+d7 t366510 Hana: +Burn on right arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366510 Briony: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t366540 Esme: +Burn on spine sev 2.00 src=- | job=no job
+d7 t366540 Hana: +Burn on left arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366540 Zane: +Burn on right tibia sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366540 Zane: +Burn on stomach sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366540 Briony: +Burn on torso sev 2.00 src=- | job=no job
+d7 t366540 Elian: +Burn on jaw sev 3.00 src=- | job=no job
+d7 t366540 Silas: +Burn on right kidney sev 3.00 src=- | job=no job
+d7 t366540 Xiomara: +Burn on torso sev 2.00 src=- | job=no job
+d7 t366570 Ulric: +Burn on left shoulder sev 3.00 src=- | job=no job
+d7 t366570 Aveline: +Burn on liver sev 3.00 src=- | job=no job
+d7 t366600 Ulric: +Burn on torso sev 3.00 src=- | job=no job
+d7 t366600 Silas: +Burn on left middle toe sev 2.00 src=- | job=no job
+d7 t366600 Xiomara: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t366600 Aveline: +Burn on torso sev 2.00 src=- | job=no job
+d7 t366630 Esme: +Burn on left kidney sev 3.00 src=- | job=no job
+d7 t366630 Elian: +Burn on liver sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366630 Wren: +Burn on left shoulder sev 3.00 src=- | job=no job
+d7 t366630 Wren: +Burn on left radius sev 2.00 src=- | job=no job
+d7 t366660 Hana: +Burn on right arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366660 Briony: +Burn on right leg sev 3.00 src=- | job=no job
+d7 t366690 Esme: +Burn on right tibia sev 3.00 src=- | job=no job
+d7 t366690 Hana: +Burn on left tibia sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366690 Zane: +Burn on right arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366690 Zane: +Burn on left leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366690 Briony: +Burn on right kidney sev 3.00 src=- | job=no job
+d7 t366690 Elian: +Burn on brain sev 3.00 src=- | job=no job
+d7 t366690 Silas: +Burn on ribcage sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366690 Xiomara: +Burn on pelvis sev 3.00 src=- | job=no job
+d7 t366690 DEATH Elian age 32 carrying: Burnx68(3.00)
+d7 t366720 Ulric: +Burn on skull sev 3.00 src=- | job=no job
+d7 t366720 Aveline: +Burn on left kidney sev 3.00 src=- | job=no job
+d7 t366720 DEATH Ulric age 29 carrying: Burnx63(3.00)
+d7 t366720 DEATH Aveline age 24 carrying: Burnx61(3.00)
+d7 t366750 Silas: +Burn on left kidney sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366750 Xiomara: +Burn on left ear sev 3.00 src=- | job=no job
+d7 t366780 Esme: +Burn on left femur sev 3.00 src=- | job=no job
+d7 t366780 Wren: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t366780 Wren: +Burn on torso sev 3.00 src=- | job=no job
+d7 t366810 Hana: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366810 Briony: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t366840 Esme: +Burn on torso sev 2.00 src=- | job=no job
+d7 t366840 Hana: +Burn on right arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366840 Zane: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366840 Zane: +Burn on left tibia sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366840 Briony: +Burn on left lung sev 3.00 src=- | job=no job
+d7 t366840 Silas: +Burn on sternum sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366840 Xiomara: +Burn on liver sev 2.00 src=- | job=no job
+d7 t366900 Silas: +Burn on right little toe sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366900 Xiomara: +Burn on left lung sev 3.00 src=- | job=no job
+d7 t366930 Esme: +Burn on left big toe sev 3.00 src=- | job=no job
+d7 t366930 Wren: +Burn on right ear sev 2.00 src=- | job=no job
+d7 t366930 Wren: +Burn on neck sev 3.00 src=- | job=no job
+d7 t366930 DEATH Wren age 27 carrying: Burnx63(3.00)
+d7 t366960 Hana: +Burn on right ear sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366960 Briony: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t366990 Esme: +Burn on right eye sev 3.00 src=- | job=no job
+d7 t366990 Hana: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366990 Zane: +Burn on brain sev 3.00 src=- | job=no job
+d7 t366990 Briony: +Burn on left shoulder sev 3.00 src=- | job=no job
+d7 t366990 Silas: +Burn on ribcage sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t366990 Xiomara: +Burn on skull sev 3.00 src=- | job=no job
+d7 t366990 DEATH Zane age 39 carrying: Burnx58(3.00)
+d7 t367050 Silas: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t367050 Xiomara: +Burn on pelvis sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367050 DEATH Silas age 28 carrying: Burnx62(3.00)
+d7 t367080 Esme: +Burn on ribcage sev 3.00 src=- | job=no job
+d7 t367110 Hana: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367110 Briony: +Burn on right lung sev 3.00 src=- | job=no job
+d7 t367140 Esme: +Burn on left ear sev 3.00 src=- | job=no job
+d7 t367140 Hana: +Burn on left leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367140 Briony: +Burn on left arm sev 3.00 src=- | job=no job
+d7 t367140 Xiomara: +Burn on left humerus sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367200 Xiomara: +Burn on sternum sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367230 Esme: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t367260 Briony: +Burn on ribcage sev 3.00 src=- | job=no job
+d7 t367260 DEATH Hana age 26 carrying: Burnx64(3.00)
+d7 t367290 Esme: +Burn on torso sev 3.00 src=- | job=no job
+d7 t367290 Briony: +Burn on left shoulder sev 3.00 src=- | job=no job
+d7 t367290 Xiomara: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367350 Xiomara: +Burn on left arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367380 Esme: +Burn on skull sev 3.00 src=- | job=no job
+d7 t367410 Briony: +Burn on right clavicle sev 3.00 src=- | job=no job
+d7 t367440 Esme: +Burn on torso sev 3.00 src=- | job=no job
+d7 t367440 Briony: +Burn on right radius sev 2.00 src=- | job=no job
+d7 t367440 Xiomara: +Burn on left foot sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367500 Xiomara: +Burn on right humerus sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367530 Esme: +Burn on left tibia sev 3.00 src=- | job=no job
+d7 t367560 Briony: +Burn on stomach sev 2.00 src=- | job=no job
+d7 t367590 Esme: +Burn on ribcage sev 3.00 src=- | job=no job
+d7 t367590 Briony: +Burn on torso sev 3.00 src=- | job=no job
+d7 t367590 Xiomara: +Burn on stomach sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367590 DEATH Briony age 37 carrying: Burnx60(3.00)
+d7 t367650 Xiomara: +Burn on right lung sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367680 Esme: +Burn on liver sev 2.00 src=- | job=no job
+d7 t367740 Esme: +Burn on torso sev 3.00 src=- | job=no job
+d7 t367740 Xiomara: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367800 Xiomara: +Burn on right arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367830 Esme: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t367890 Esme: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t367950 Xiomara: +Burn on neck sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t367950 Juniper: +Burn on liver sev 3.00 src=- | job=BeatFire
+d7 t367980 Esme: +Burn on left kidney sev 3.00 src=- | job=no job
+d7 t368040 Esme: +Burn on left femur sev 2.00 src=- | job=no job
+d7 t368040 Juniper: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t368100 Xiomara: +Burn on left arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t368100 Juniper: +Burn on right lung sev 3.00 src=- | job=BeatFire
+d7 t368130 Esme: +Burn on right arm sev 3.00 src=- | job=no job
+d7 t368160 Xiomara: +Burn on right tibia sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t368190 Esme: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t368190 Juniper: +Burn on left lung sev 2.00 src=- | job=BeatFire
+d7 t368190 DEATH Esme age 24 carrying: Burnx63(3.00)
+d7 t368250 Xiomara: +Burn on left leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t368340 Juniper: +Burn on left leg sev 2.00 src=- | job=SocialRelax target=Tribesperson
+d7 t368400 Xiomara: +Burn on left leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t368400 Xiomara: +Burn on nose sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t368460 Bryn: +Burn on heart sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:SocialRelax(own)
+d7 t368490 Juniper: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t368550 Xiomara: +Burn on torso sev 3.00 src=- | job=no job
+d7 t368580 Xiomara: +Burn on torso sev 2.00 src=- | job=no job
+d7 t368580 Bryn: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d7 t368580 DEATH Xiomara age 27 carrying: Burnx64(3.00)
+d7 t368640 Juniper: +Burn on ribcage sev 3.00 src=- | job=BeatFire
+d7 t368730 Bryn: +Burn on torso sev 2.00 src=- | job=BeatFire
+d7 t368790 Juniper: +Burn on ribcage sev 1.88 src=- | job=LayDown
+d7 t378330 Juniper: +WoundInfection on right lung sev 0.00 src=- | job=LayDown
+d7 t385620 Juniper: +WoundInfection on torso sev 0.00 src=- | job=LayDown
+d7 t399600 Juniper: +WoundInfection on right lung sev 0.00 src=- | job=SocialRelax target=Tribesperson
+d7 t402450 Juniper: +WoundInfection on left leg sev 0.00 src=- | job=no job
+d7 t405540 Marek: +Burn on liver sev 1.00 src=- | job=Sow
+d7 t405600 Marek: +Burn on left leg sev 2.00 src=- | job=Sow
+d7 t405750 Marek: +Burn on right hand sev 2.00 src=- | job=no job
+d7 t405810 Maren: +Burn on left lung sev 3.00 src=- | job=BeatFire
+d7 t405810 Maren: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d7 t405900 Marek: +Burn on left lung sev 2.00 src=- | job=no job
+d7 t405960 Maren: +Burn on stomach sev 2.00 src=- | job=Ingest
+d7 t406110 Maren: +Burn on torso sev 2.00 src=- | job=Ingest
+d7 t406260 Maren: +Burn on right fourth toe sev 2.00 src=- | job=Ingest
+d7 t406380 Marek: +Burn on right radius sev 2.00 src=- | job=no job
+d7 t406410 Maren: +Burn on left humerus sev 2.00 src=- | job=Ingest
+d7 t406530 Marek: +Burn on right lung sev 2.00 src=- | job=no job
+d7 t406530 Marek: +Burn on sternum sev 2.00 src=- | job=no job
+d7 t406560 Maren: +Burn on torso sev 2.00 src=- | job=Ingest
+d7 t406680 Marek: +Burn on torso sev 2.00 src=- | job=no job
+d7 t406680 Marek: +Burn on torso sev 2.00 src=- | job=no job
+d7 t406710 Maren: +Burn on ribcage sev 2.00 src=- | job=Ingest
+d7 t406830 Marek: +Burn on left lung sev 2.00 src=- | job=no job
+d7 t406830 Marek: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t406860 Maren: +Burn on left leg sev 2.00 src=- | job=Ingest
+d7 t406980 Marek: +Burn on heart sev 2.00 src=- | job=no job
+d7 t406980 Marek: +Burn on left lung sev 2.00 src=- | job=no job
+d7 t407010 Maren: +Burn on right arm sev 2.00 src=- | job=Ingest
+d7 t407130 Marek: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t407130 Marek: +Burn on torso sev 2.00 src=- | job=no job
+d7 t407160 Maren: +Burn on right arm sev 2.00 src=- | job=Ingest
+d7 t407280 Marek: +Burn on torso sev 2.00 src=- | job=no job
+d7 t407280 Marek: +Burn on pelvis sev 3.00 src=- | job=no job
+d7 t407310 Maren: +Burn on right arm sev 2.00 src=- | job=Ingest
+d7 t407430 Marek: +Burn on neck sev 2.00 src=- | job=no job
+d7 t407430 Marek: +Burn on right eye sev 2.00 src=- | job=no job
+d7 t407460 Maren: +Burn on left tibia sev 3.00 src=- | job=Ingest
+d7 t407580 Marek: +Burn on left kidney sev 3.00 src=- | job=no job
+d7 t407580 Marek: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t407610 Maren: +Burn on neck sev 3.00 src=- | job=Ingest
+d7 t407730 Marek: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t407730 Marek: +Burn on pelvis sev 2.00 src=- | job=no job
+d7 t407760 Maren: +Burn on left lung sev 2.00 src=- | job=Ingest
+d7 t407880 Marek: +Burn on torso sev 2.00 src=- | job=no job
+d7 t407880 Marek: +Burn on left index finger sev 2.00 src=- | job=no job
+d7 t407910 Maren: +Burn on right kidney sev 2.00 src=- | job=Ingest
+d7 t408030 Marek: +Burn on right kidney sev 3.00 src=- | job=no job
+d7 t408030 Marek: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t408060 Maren: +Burn on left arm sev 3.00 src=- | job=Ingest
+d7 t408180 Marek: +Burn on right tibia sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t408180 Marek: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t408210 Maren: +Burn on ribcage sev 2.00 src=- | job=TendPatient target=Tribesperson
+d7 t408330 Marek: +Burn on pelvis sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t408330 Marek: +Burn on head sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d7 t408360 Maren: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t408480 Marek: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t408480 Marek: +Burn on right kidney sev 3.00 src=- | job=no job
+d7 t408510 Maren: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t408630 Marek: +Burn on left arm sev 2.00 src=- | job=no job
+d7 t408630 Marek: +Burn on neck sev 3.00 src=- | job=no job
+d7 t408660 Maren: +Burn on right leg sev 2.00 src=- | job=no job
+d7 t408780 Marek: +Burn on left leg sev 2.00 src=- | job=no job
+d7 t408780 Marek: +Burn on torso sev 3.00 src=- | job=no job
+d7 t408930 Marek: +Burn on left femur sev 2.00 src=- | job=no job
+d7 t408930 Marek: +Burn on head sev 3.00 src=- | job=no job
+d7 t409080 Marek: +Burn on left foot sev 3.00 src=- | job=no job
+d7 t409080 Marek: +Burn on left hand sev 3.00 src=- | job=no job
+d7 t409230 Marek: +Burn on torso sev 3.00 src=- | job=no job
+d7 t409230 Marek: +Burn on left humerus sev 2.00 src=- | job=no job
+d7 t409380 Marek: +Burn on left leg sev 3.00 src=- | job=no job
+d7 t409380 Marek: +Burn on torso sev 2.00 src=- | job=no job
+d7 t409530 Marek: +Burn on stomach sev 3.00 src=- | job=no job
+d7 t409530 Marek: +Burn on torso sev 3.00 src=- | job=no job
+d7 t409680 Marek: +Burn on skull sev 3.00 src=- | job=no job
+d7 t409680 Marek: +Burn on right shoulder sev 2.00 src=- | job=no job
+d7 t409830 Marek: +Burn on right arm sev 2.00 src=- | job=no job
+d7 t409830 DEATH Marek age 27 carrying: Burnx69(3.00)
+d7 t413640 Juniper: +Burn on right arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t413700 Juniper: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t413790 Juniper: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t413850 Juniper: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t413940 Juniper: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414000 Juniper: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414090 Juniper: +Burn on right hand sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414150 Juniper: +Burn on pelvis sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414240 Juniper: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414300 Juniper: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414390 Juniper: +Burn on left eye sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414450 Juniper: +Burn on left radius sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414540 Juniper: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414600 Juniper: +Burn on left arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414690 Juniper: +Burn on pelvis sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414750 Juniper: +Burn on right femur sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414840 Juniper: +Burn on right leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414900 Juniper: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t414990 Juniper: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415050 Juniper: +Burn on right radius sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415140 Juniper: +Burn on right lung sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415200 Juniper: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415290 Juniper: +Burn on right little toe sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415350 Juniper: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415440 Juniper: +Burn on left foot sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415500 Juniper: +Burn on stomach sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415590 Juniper: +Burn on heart sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415650 Juniper: +Burn on left tibia sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415740 Juniper: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415800 Juniper: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415890 Juniper: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t415950 Juniper: +Burn on left arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416040 Juniper: +Burn on ribcage sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416100 Juniper: +Burn on right clavicle sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416190 Juniper: +Burn on right arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416250 Juniper: +Burn on sternum sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416340 Juniper: +Burn on right clavicle sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416400 Juniper: +Burn on left eye sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416490 Juniper: +Burn on stomach sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416550 Juniper: +Burn on sternum sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416640 Juniper: +Burn on right arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416700 Juniper: +Burn on right femur sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416790 Juniper: +Burn on sternum sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416850 Juniper: +Burn on right hand sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t416940 Juniper: +Burn on heart sev 2.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t417000 Juniper: +Burn on right lung sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t417090 Juniper: +Burn on left arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t417150 Juniper: +Burn on right tibia sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t417240 Juniper: +Burn on jaw sev 3.00 src=- | job=no job aimedBy=Tribesperson:FeedPatient(own)
+d7 t417300 Juniper: +Burn on torso sev 3.00 src=- | job=no job
+d7 t417300 DEATH Juniper age 20 carrying: Burnx66(3.00), WoundInfectionx4(0.51)
+== end of day 7: citizens 2, deaths 18 (Disease 2, Injury 16) [Earthquake 1]
+d8 t422190 Bryn: +Burn on torso sev 1.00 src=- | job=Sow
+d8 t422280 Bryn: +Burn on right clavicle sev 2.00 src=- | job=Sow
+d8 t422340 Bryn: +Burn on left arm sev 2.00 src=- | job=Sow
+d8 t422430 Bryn: +Burn on left leg sev 2.00 src=- | job=Sow
+d8 t422490 Bryn: +Burn on skull sev 2.00 src=- | job=Sow
+d8 t422580 Bryn: +Burn on pelvis sev 2.00 src=- | job=Sow
+d8 t422640 Bryn: +Burn on left leg sev 2.00 src=- | job=Sow
+d8 t422730 Bryn: +Burn on left arm sev 3.00 src=- | job=Sow
+d8 t422880 Bryn: +Burn on torso sev 2.00 src=- | job=Sow
+d8 t423030 Bryn: +Burn on right leg sev 2.00 src=- | job=Sow
+d8 t423180 Bryn: +Burn on right leg sev 2.00 src=- | job=Sow
+d8 t423330 Bryn: +Burn on ribcage sev 2.00 src=- | job=Sow
+d8 t423480 Bryn: +Burn on torso sev 3.00 src=- | job=Sow
+d8 t423630 Bryn: +Burn on right shoulder sev 2.00 src=- | job=Sow
+d8 t423780 Bryn: +Burn on left arm sev 2.00 src=- | job=Sow
+d8 t423930 Bryn: +Burn on right arm sev 2.00 src=- | job=Sow
+d8 t424080 Bryn: +Burn on right arm sev 3.00 src=- | job=no job
+d8 t424140 Maren: +WoundInfection on neck sev 0.00 src=- | job=no job
+d8 t424230 Bryn: +Burn on left thumb sev 2.00 src=- | job=no job
+d8 t424380 Bryn: +Burn on left arm sev 3.00 src=- | job=no job
+d8 t424530 Bryn: +Burn on right shoulder sev 3.00 src=- | job=no job
+d8 t424680 Bryn: +Burn on skull sev 2.00 src=- | job=no job
+d8 t424830 Bryn: +Burn on left leg sev 3.00 src=- | job=no job
+d8 t424980 Bryn: +Burn on torso sev 2.00 src=- | job=no job
+d8 t425130 Bryn: +Burn on stomach sev 3.00 src=- | job=no job
+d8 t425280 Bryn: +Burn on ribcage sev 3.00 src=- | job=no job
+d8 t425430 Bryn: +Burn on liver sev 3.00 src=- | job=no job
+d8 t425580 Bryn: +Burn on right arm sev 3.00 src=- | job=no job
+d8 t425730 Bryn: +Burn on right arm sev 3.00 src=- | job=no job
+d8 t425880 Bryn: +Burn on left humerus sev 3.00 src=- | job=no job
+d8 t426030 Bryn: +Burn on torso sev 3.00 src=- | job=no job
+d8 t426180 Bryn: +Burn on right arm sev 3.00 src=- | job=no job
+d8 t426330 Bryn: +Burn on left lung sev 3.00 src=- | job=no job
+d8 t426480 Bryn: +Burn on left tibia sev 3.00 src=- | job=no job
+d8 t426630 Bryn: +Burn on left leg sev 3.00 src=- | job=no job
+d8 t426780 Bryn: +Burn on left kidney sev 3.00 src=- | job=no job
+d8 t426930 Bryn: +Burn on pelvis sev 2.00 src=- | job=no job
+d8 t427080 Bryn: +Burn on left arm sev 3.00 src=- | job=no job
+d8 t427230 Bryn: +Burn on left big toe sev 3.00 src=- | job=no job
+d8 t427380 Bryn: +Burn on left femur sev 3.00 src=- | job=no job
+d8 t427530 Bryn: +Burn on left leg sev 3.00 src=- | job=no job
+d8 t427680 Bryn: +Burn on spine sev 3.00 src=- | job=no job
+d8 t427830 Bryn: +Burn on right foot sev 3.00 src=- | job=no job
+d8 t427980 Bryn: +Burn on torso sev 3.00 src=- | job=no job
+d8 t428130 Bryn: +Burn on left leg sev 3.00 src=- | job=no job
+d8 t428280 Bryn: +Burn on right leg sev 3.00 src=- | job=no job
+d8 t428430 Bryn: +Burn on left lung sev 3.00 src=- | job=no job
+d8 t428580 Bryn: +Burn on left lung sev 3.00 src=- | job=no job
+d8 t428730 Bryn: +Burn on torso sev 3.00 src=- | job=no job
+d8 t428880 Bryn: +Burn on right leg sev 3.00 src=- | job=no job
+d8 t429030 Bryn: +Burn on torso sev 3.00 src=- | job=no job
+d8 t429180 Bryn: +Burn on left humerus sev 2.00 src=- | job=no job
+d8 t429330 Bryn: +Burn on liver sev 3.00 src=- | job=no job
+d8 t429480 Bryn: +Burn on torso sev 3.00 src=- | job=no job
+d8 t429630 Bryn: +Burn on left leg sev 2.00 src=- | job=no job
+d8 t429780 Bryn: +Burn on liver sev 3.00 src=- | job=no job
+d8 t429930 Bryn: +Burn on right arm sev 3.00 src=- | job=no job
+d8 t429930 DEATH Bryn age 29 carrying: Burnx62(3.00)
+== end of day 8: citizens 1, deaths 19 (Disease 2, Injury 17) [Earthquake 1]
+
+## new hediffs on citizens, by context
+552	Burn <- job=no job
+132	Burn <- job=BeatFire
+127	Burn <- job=no job aimedBy=Tribesperson:TendPatient(own)
+61	Burn <- job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+49	Burn <- job=no job aimedBy=Tribesperson:FeedPatient(own)
+29	Burn <- job=Sow
+28	Burn <- job=Ingest
+23	Burn <- job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+18	Burn <- job=TendPatient target=Tribesperson
+9	Burn <- job=Sow aimedBy=Tribesperson:TendPatient(own)
+4	Bruise <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+4	BloodLoss <- job=Harvest aimedBy=Tribesperson:TendPatient(own)
+4	BloodLoss <- job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+4	BloodLoss <- job=Sow aimedBy=Tribesperson:TendPatient(own)
+3	Crush <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+3	BloodLoss <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+3	Burn <- job=SocialRelax target=Tribesperson
+2	Burn <- job=Sow aimedBy=Tribesperson:SocialRelax(own)+Tribesperson:TendPatient(own)
+2	Burn <- job=BeatFire aimedBy=Tribesperson:SocialRelax(own)
+2	WoundInfection <- job=LayDown
+2	WoundInfection <- job=no job
+1	BloodLoss <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:TendPatient(own)+Tribesperson:SocialFight[SocialFighting](own)
+1	Crack <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:TendPatient(own)+Tribesperson:SocialFight[SocialFighting](own)
+1	WoundInfection <- job=Sow aimedBy=Tribesperson:TendPatient(own)
+1	Bite <- job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+1	BloodLoss <- job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+1	Bite <- job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+1	Bite <- job=Mine aimedBy=Tribesperson:TendPatient(own)
+1	WoundInfection <- job=Mine
+1	Cut <- job=no job
+1	Burn <- job=Ingest aimedBy=Tribesperson:TendPatient(own)
+1	Burn <- job=LayDown
+1	WoundInfection <- job=SocialRelax target=Tribesperson
+exit=0

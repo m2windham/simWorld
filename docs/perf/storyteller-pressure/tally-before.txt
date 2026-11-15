@@ -1,0 +1,53 @@
+
+## out/before
+
+| band | arm | n | pts d0 | pts d30 | pts d60 | big threats/run | attackers per defender (all big threats) | killed per big threat | threat class shrug/bit/mauled | deaths/run | of which threat-credited | end pop / band | peak downed / band | moments | verdicts |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 20 | on | 5 | 210 [210..210] | 35 [35..234] | 35 [35..35] | 7 [6..8] | 1.00 [0.11..2.00] | 0.0 [0.0..2.0] | 28/7/0 | 21 [21..23] | 1 [0..3] | 0.00 [0.00..0.00] | 0.10 [0.05..0.15] | 17 [15..19] | WIPE 5 |
+| 20 | off | 4 | 210 [210..210] | 211 [35..404] | 35 [35..281] | 0 [0..0] | - | - | 0/0/0 | 22 [18..23] | 0 [0..0] | 0.00 [0.00..0.20] | 0.15 [0.05..0.20] | 14 [11..15] | - |
+| 40 | on | 3 | 420 [420..420] | 238 [35..453] | 142 [38..234] | 9 [6..9] | 1.00 [0.15..5.00] | 0.0 [0.0..15.0] | 15/2/7 | 41 [39..42] | 15 [2..19] | 0.03 [0.00..0.05] | 0.20 [0.12..0.78] | 15 [15..22] | WIPE 3 |
+| 40 | off | 2 | 420 [420..420] | 1033 [928..1139] | 334 [324..343] | 0 [0..0] | - | - | 0/0/0 | 42 [41..43] | 0 [0..0] | 0.00 [0.00..0.00] | 0.12 [0.05..0.20] | 12 [11..12] | - |
+| 80 | on | 3 | 840 [840..840] | 1064 [122..1423] | 299 [35..505] | 8 [4..11] | 0.80 [0.14..6.00] | 1.0 [0.0..15.0] | 9/4/10 | 81 [78..81] | 44 [4..46] | 0.00 [0.00..0.05] | 0.23 [0.16..0.40] | 15 [15..16] | WIPE 3 |
+| 80 | off | 2 | 840 [840..840] | 1608 [35..3180] | 2990 [35..5944] | 0 [0..0] | - | - | 0/0/0 | 54 [26..82] | 0 [0..0] | 0.36 [0.00..0.71] | 0.04 [0.04..0.04] | 14 [14..14] | - |
+
+| band | seed | arm | pts d0/d15/d30/d45/d60 | big threats (day:kind attackers/pop -> killed, peak downed, class) | deaths (threat-credited) | min pop | end pop | peak downed | moments | verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 20 | 99 | on | 210/169/35/35/35 | d4:pack 4/20 -> k0, dn2, bit; d7:raid 6/17 -> k2, dn1, bit; d10:raid 5/14 -> k0, dn2, bit; d29:raid 1/0 -> k0, dn0, shrug; d32:raid 1/0 -> k0, dn0, shrug; d38:pack 2/0 -> k0, dn0, shrug; d55:pack 2/0 -> k0, dn0, shrug | 22 (2) | 0 | 0 | 2 | 15 | WIPE |
+| 20 | 777 | on | 210/324/234/132/35 | d4:pack 3/20 -> k0, dn1, shrug; d10:raid 8/18 -> k2, dn3, bit; d27:raid 7/13 -> k1, dn0, bit; d34:raid 4/7 -> k0, dn1, shrug; d39:raid 4/6 -> k0, dn1, shrug; d47:raid 3/4 -> k0, dn0, shrug | 21 (3) | 0 | 0 | 3 | 19 | WIPE |
+| 20 | 2024 | on | 210/35/35/35/35 | d4:pack 2/19 -> k0, dn1, shrug; d10:raid 1/0 -> k0, dn0, shrug; d20:raid 1/0 -> k0, dn0, shrug; d26:pack 2/0 -> k0, dn0, shrug; d27:raid 1/0 -> k0, dn0, shrug; d32:raid 1/0 -> k0, dn0, shrug; d55:pack 2/0 -> k0, dn0, shrug | 21 (0) | 0 | 0 | 1 | 16 | WIPE |
+| 20 | 12345 | on | 210/141/35/35/35 | d4:pack 3/20 -> k0, dn1, shrug; d9:pack 2/16 -> k1, dn1, bit; d14:raid 3/10 -> k0, dn1, shrug; d27:pack 2/1 -> k0, dn0, shrug; d32:raid 1/1 -> k0, dn0, shrug; d45:raid 1/0 -> k0, dn0, shrug; d52:raid 1/0 -> k0, dn0, shrug; d53:raid 1/0 -> k0, dn0, shrug | 23 (1) | 0 | 0 | 3 | 17 | WIPE |
+| 20 | 31337 | on | 210/162/77/35/35 | d4:pack 2/19 -> k0, dn0, shrug; d11:pack 3/15 -> k1, dn2, bit; d22:raid 2/5 -> k0, dn1, shrug; d22:raid 2/5 -> k0, dn1, shrug; d34:raid 1/0 -> k0, dn0, shrug; d44:raid 1/0 -> k0, dn0, shrug; d46:pack 2/0 -> k0, dn0, shrug | 21 (1) | 0 | 0 | 2 | 17 | WIPE |
+| 20 | 99 | off | 210/35/35/35/35 | none | 23 (0) | 0 | 0 | 3 | 11 | - |
+| 20 | 777 | off | 210/297/342/337/281 | none | 18 (0) | 4 | 4 | 3 | 15 | - |
+| 20 | 2024 | off | 210/452/404/502/35 | none | 22 (0) | 0 | 0 | 1 | 15 | - |
+| 20 | 12345 | off | 210/192/80/37/35 | none | 22 (0) | 0 | 0 | 4 | 13 | - |
+| 40 | 777 | on | 420/640/453/233/234 | d4:pack 7/38 -> k0, dn0, shrug; d18:pack 10/32 -> k0, dn0, shrug; d28:raid 30/32 -> k15, dn31, mauled; d38:raid 10/13 -> k4, dn9, mauled; d46:raid 6/4 -> k0, dn1, shrug; d56:raid 6/3 -> k0, dn0, shrug | 39 (19) | 2 | 2 | 31 | 22 | WIPE |
+| 40 | 2024 | on | 420/952/35/35/38 | d4:pack 8/40 -> k0, dn0, shrug; d18:raid 24/40 -> k2, dn5, bit; d27:raid 1/0 -> k0, dn0, shrug; d31:raid 1/0 -> k0, dn0, shrug; d32:pack 2/0 -> k0, dn0, shrug; d35:pack 2/0 -> k0, dn0, shrug; d35:pack 2/0 -> k0, dn0, shrug; d36:raid 1/0 -> k0, dn0, shrug; d39:pack 2/0 -> k0, dn0, shrug | 42 (2) | 0 | 1 | 5 | 15 | WIPE |
+| 40 | 12345 | on | 420/548/238/161/142 | d4:pack 6/39 -> k0, dn0, shrug; d11:raid 17/38 -> k4, dn2, bit; d26:raid 13/20 -> k1, dn8, mauled; d27:raid 13/18 -> k7, dn8, mauled; d30:pack 3/8 -> k1, dn2, mauled; d35:raid 3/1 -> k1, dn0, mauled; d51:pack 2/1 -> k0, dn0, shrug; d54:raid 4/1 -> k0, dn0, shrug; d59:raid 5/1 -> k1, dn0, mauled | 41 (15) | 0 | 0 | 8 | 15 | WIPE |
+| 40 | 777 | off | 420/669/1139/1242/343 | none | 41 (0) | 0 | 0 | 2 | 11 | - |
+| 40 | 12345 | off | 420/684/928/272/324 | none | 43 (0) | 0 | 0 | 8 | 12 | - |
+| 80 | 777 | on | 840/1548/1423/821/505 | d4:pack 11/80 -> k0, dn0, shrug; d22:pack 12/69 -> k0, dn1, shrug; d27:raid 52/65 -> k15, dn11, mauled; d30:raid 41/50 -> k0, dn18, mauled; d30:raid 41/50 -> k13, dn18, mauled; d31:pack 12/48 -> k0, dn6, bit; d39:raid 37/31 -> k12, dn12, mauled; d47:raid 21/14 -> k6, dn3, mauled | 78 (46) | 4 | 4 | 18 | 15 | WIPE |
+| 80 | 2024 | on | 840/1533/122/35/35 | d4:pack 11/78 -> k0, dn0, shrug; d20:raid 33/67 -> k4, dn13, bit; d46:raid 1/0 -> k0, dn0, shrug; d55:raid 1/0 -> k0, dn0, shrug | 81 (4) | 0 | 0 | 13 | 16 | WIPE |
+| 80 | 12345 | on | 840/1194/1064/226/299 | d4:pack 11/79 -> k0, dn0, shrug; d14:raid 38/77 -> k9, dn2, bit; d24:raid 41/59 -> k9, dn3, bit; d28:raid 38/47 -> k6, dn32, mauled; d29:pack 12/46 -> k1, dn32, mauled; d30:raid 34/44 -> k7, dn32, mauled; d31:raid 25/32 -> k10, dn18, mauled; d38:raid 14/13 -> k2, dn11, mauled; d42:raid 5/0 -> k0, dn0, shrug; d52:raid 6/0 -> k0, dn0, shrug; d54:pack 4/0 -> k0, dn0, shrug | 81 (44) | 0 | 0 | 32 | 15 | WIPE |
+| 80 | 777 | off | 840/2073/3180/3648/5944 | none | 26 (0) | 56 | 57 | 3 | 14 | - |
+| 80 | 12345 | off | 840/35/35/35/35 | none | 82 (0) | 0 | 0 | 3 | 14 | - |
+
+- b20 s99 on: deaths 22 (Disease 10, Injury 12) [RaidEnemy 2]
+- b20 s777 on: deaths 21 (Age 1, Disease 16, Injury 4) [RaidEnemy 3, Disease_Plague 1]
+- b20 s2024 on: deaths 21 (Disease 3, Injury 18) [Earthquake 1]
+- b20 s12345 on: deaths 23 (Disease 15, Injury 8) [ManhunterPack 1, Earthquake 1]
+- b20 s31337 on: deaths 21 (Age 1, Disease 15, Injury 5) [ManhunterPack 1, Disease_Plague 1]
+- b20 s99 off: deaths 23 (Disease 7, Injury 16)
+- b20 s777 off: deaths 18 (Age 1, Disease 14, Injury 3) [Earthquake 1]
+- b20 s2024 off: deaths 22 (Age 13, Disease 9)
+- b20 s12345 off: deaths 22 (Age 1, Starvation 1, Disease 15, Injury 5)
+- b40 s777 on: deaths 39 (Age 1, Disease 31, Injury 7) [Disease_Plague 1, RaidEnemy 19, Earthquake 2]
+- b40 s2024 on: deaths 42 (Disease 1, Injury 41) [RaidEnemy 2]
+- b40 s12345 on: deaths 41 (Disease 30, Injury 11) [RaidEnemy 14, ManhunterPack 1]
+- b40 s777 off: deaths 41 (Disease 19, Injury 22)
+- b40 s12345 off: deaths 43 (Age 1, Disease 40, Injury 2)
+- b80 s777 on: deaths 78 (Age 1, Disease 67, Injury 10) [RaidEnemy 46]
+- b80 s2024 on: deaths 81 (Starvation 56, Disease 15, Injury 10) [Earthquake 4, RaidEnemy 4]
+- b80 s12345 on: deaths 81 (Disease 61, Injury 20) [RaidEnemy 43, ManhunterPack 1]
+- b80 s777 off: deaths 26 (Age 1, Disease 23, Injury 2) [Disease_Plague 2, Earthquake 1]
+- b80 s12345 off: deaths 82 (Disease 6, Injury 76)

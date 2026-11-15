@@ -1,0 +1,1345 @@
+d1 t33480 Quinley: +Bruise on right arm sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d1 t33480 Rosalind: +Crack on left clavicle sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+== end of day 1: citizens 20, deaths 0 (none)
+d2 t61830 Fable: +Bite on torso sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d2 t61860 Fable: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d2 t61950 Fable: +Crack on right femur sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d2 t62070 Fable: +Crack on left clavicle sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d2 t62190 Fable: +MissingBodyPart on heart sev 15.00 src=- | job=no job
+d2 t62190 DEATH Fable age 18 carrying: Bitex1(15.00), BloodLossx1(0.00), Crackx2(15.00), MissingBodyPartx1(15.00)
+d2 t63720 Ulric: +Crack on spine sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d2 t63750 Ulric: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d2 t63810 Ulric: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d2 t63840 Ulric: +Bite on right leg sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d2 t63870 Ulric: +BloodLoss sev 0.00 src=- | job=Harvest aimedBy=Tribesperson:TendPatient(own)
+d2 t73380 Cyrus: +Bruise on left arm sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d2 t73380 Noor: +Bruise on torso sev 3.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d2 t73500 Noor: +Bruise on right leg sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:TendPatient(own)+Tribesperson:SocialFight[SocialFighting](own)
+d2 t97800 Quinley: +Bruise on left arm sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:TendPatient(own)+Tribesperson:SocialFight[SocialFighting](own)
+d2 t97920 Quinley: +Crack on right clavicle sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:TendPatient(own)+Tribesperson:SocialFight[SocialFighting](own)
+d2 t97920 Rosalind: +Crush on left eye sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+d2 t97950 Rosalind: +BloodLoss sev 0.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+d2 t98010 Rosalind: +BloodLoss sev 0.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+d2 t98040 Rosalind: +Crush on heart sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+d2 t98070 Rosalind: +BloodLoss sev 0.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+d2 t100680 Holt: +MissingBodyPart on right little toe sev 8.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d2 t100740 Holt: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d2 t115740 Giselle: +Bite on torso sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(own)
+d2 t115770 Giselle: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(own)
+== end of day 2: citizens 19, deaths 1 (Injury 1)
+d3 t135240 Cyrus: +Bruise on torso sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d3 t135360 Cyrus: +Crack on pelvis sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+d3 t135480 Ulric: +Crack on left clavicle sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+d3 t135480 Cyrus: +Bruise on left arm sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+d3 t135600 Ulric: +Bruise on right leg sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:TendPatient(own)+Tribesperson:SocialFight[SocialFighting](own)
+== end of day 3: citizens 20, deaths 1 (Injury 1)
+== end of day 4: citizens 20, deaths 1 (Injury 1)
+d5 t298290 Silas: +Bruise on right foot sev 6.00 src=- | job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialRelax(own)+Tribesperson:SocialFight[SocialFighting](own)
+d5 t298410 Silas: +Bruise on torso sev 6.00 src=- | job=Mine aimedBy=Tribesperson:SocialRelax(own)+Tribesperson:TendPatient(own)
+== end of day 5: citizens 20, deaths 1 (Injury 1)
+== end of day 6: citizens 20, deaths 1 (Injury 1)
+== end of day 7: citizens 20, deaths 1 (Injury 1)
+d8 t448140 Giselle: +Bite on torso sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d8 t448170 Giselle: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d8 t448500 Giselle: +Bite on left leg sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d8 t448740 Giselle: +Bite on right hand sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d8 t448860 Giselle: +Bite on left hand sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d8 t448980 Giselle: +Crack on ribcage sev 15.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+== end of day 8: citizens 20, deaths 1 (Injury 1)
+d9 t487530 Cyrus: +Crack on spine sev 8.60 src=- | job=Tame target=Husky aimedBy=Husky:AttackMelee(wild)
+d9 t487650 Cyrus: +Bruise on left leg sev 4.00 src=- | job=Tame target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(wild)
+d9 t487890 Cyrus: +Bite on right foot sev 8.60 src=- | job=Tame target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(wild)
+d9 t487920 Cyrus: +BloodLoss sev 0.00 src=- | job=Tame target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(wild)
+d9 t488010 Cyrus: +MissingBodyPart on right fourth toe sev 8.00 src=- | job=Tame target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(wild)
+d9 t488130 Cyrus: +Bite on right foot sev 8.60 src=- | job=Train target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(own)
+d9 t488250 Cyrus: +Bite on right arm sev 8.60 src=- | job=Train target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(own)
+d9 t488370 Cyrus: +Bite on liver sev 8.60 src=- | job=Train target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(own)
+d9 t488490 Cyrus: +Crack on right tibia sev 8.60 src=- | job=Train target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(own)
+d9 t488760 Cyrus: +Bite on right leg sev 8.60 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d9 t491550 Ulric: +MissingBodyPart on right kidney sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d9 t491610 Ulric: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d9 t491880 Cyrus: +Bite on left lung sev 8.60 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d9 t507150 Rosalind: +Bite on left arm sev 15.00 src=- | job=Tame target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d9 t507150 Rosalind: +BloodLoss sev 0.00 src=- | job=Tame target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d9 t507660 Rosalind: +Bite on torso sev 15.00 src=- | job=Tame target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d9 t507780 Rosalind: +Bite on liver sev 15.00 src=- | job=Tame target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d9 t507900 Rosalind: +Bruise on torso sev 7.00 src=- | job=Tame target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d9 t508020 Rosalind: +Bite on stomach sev 15.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d9 t510510 Esme: +Bite on stomach sev 15.00 src=- | job=Tame target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d9 t510540 Esme: +BloodLoss sev 0.00 src=- | job=Tame target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+d9 t511110 Esme: +Crack on left femur sev 15.00 src=- | job=Tame target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d9 t511380 Esme: +MissingBodyPart on brain sev 10.00 src=- | job=no job
+d9 t511380 DEATH Esme age 38 carrying: Bitex1(14.92), BloodLossx1(0.01), Crackx1(15.00), MissingBodyPartx1(10.00)
+d9 t516300 Cyrus: +Bite on left arm sev 8.60 src=- | job=no job
+d9 t516360 Cyrus: +BloodLoss sev 0.00 src=- | job=no job
+d9 t525180 Rosalind: +WoundInfection on stomach sev 0.00 src=- | job=no job
+d9 t528930 Quinley: +MissingBodyPart on right big toe sev 8.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(own)
+d9 t528960 Quinley: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+== end of day 9: citizens 19, deaths 2 (Injury 2)
+d10 t541080 Rosalind: +WoundInfection on liver sev 0.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d10 t541560 Cyrus: +Bite on torso sev 8.60 src=- | job=no job
+d10 t541620 Cyrus: +BloodLoss sev 0.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d10 t550050 Quinley: +Crack on ribcage sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(own)
+d10 t550080 Quinley: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+d10 t550140 Quinley: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+d10 t550170 Quinley: +Crack on left clavicle sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+d10 t550200 Quinley: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+d10 t550260 Quinley: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+d10 t550290 Quinley: +Bite on left arm sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+d10 t550320 Quinley: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+d10 t550410 Quinley: +Bite on left hand sev 15.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+d10 t575220 Esme: +Bite on right foot sev 10.50 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d10 t575250 Esme: +BloodLoss sev 0.00 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d10 t575580 Esme: +Bite on left leg sev 10.50 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d10 t575700 Esme: +Bite on left leg sev 10.50 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d10 t575820 Esme: +Bite on right lung sev 10.50 src=- | job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+d10 t585360 Cyrus: +WoundInfection on torso sev 0.00 src=- | job=LayDown
+== end of day 10: citizens 19, deaths 2 (Injury 2)
+d11 t602070 Esme: +Burn on spine sev 2.00 src=- | job=Repair
+d11 t602070 Esme: +Burn on right arm sev 2.00 src=- | job=Repair
+d11 t602220 Quinley: +Burn on left tibia sev 3.00 src=- | job=TendPatient target=Muffalo
+d11 t602220 Esme: +Burn on torso sev 2.00 src=- | job=Repair aimedBy=Tribesperson:TendPatient(own)
+d11 t602310 Quinley: +Burn on right arm sev 2.00 src=- | job=TendPatient target=Muffalo aimedBy=Tribesperson:TendPatient(own)
+d11 t602370 Esme: +Burn on right leg sev 2.00 src=- | job=Repair aimedBy=Tribesperson:TendPatient(own)
+d11 t602460 Quinley: +Burn on left shoulder sev 2.00 src=- | job=TendPatient target=Muffalo aimedBy=Tribesperson:TendPatient(own)
+d11 t602520 Esme: +Burn on torso sev 2.00 src=- | job=Repair
+d11 t602520 Holt: +Burn on torso sev 3.00 src=- | job=Harvest
+d11 t602610 Quinley: +Burn on nose sev 2.00 src=- | job=TendPatient target=Tribesperson
+d11 t602640 Holt: +Burn on spine sev 2.00 src=- | job=Harvest aimedBy=Tribesperson:TendPatient(own)
+d11 t602670 Esme: +Burn on skull sev 2.00 src=- | job=Repair aimedBy=Tribesperson:TendPatient(own)
+d11 t602820 Esme: +Burn on left radius sev 2.00 src=- | job=Repair aimedBy=Tribesperson:TendPatient(own)
+d11 t602970 Esme: +Burn on right leg sev 3.00 src=- | job=Repair aimedBy=Tribesperson:TendPatient(own)
+d11 t603120 Esme: +Burn on right humerus sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t603270 Esme: +Burn on right kidney sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t603420 Esme: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t604830 Giselle: +Burn on right tibia sev 2.00 src=- | job=Sow
+d11 t604950 Giselle: +Burn on jaw sev 2.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d11 t604980 Giselle: +Burn on torso sev 2.00 src=- | job=Sow aimedBy=Tribesperson:TendPatient(own)
+d11 t605010 Quinley: +Burn on left leg sev 3.00 src=- | job=TendPatient target=Tribesperson
+d11 t605100 Quinley: +Burn on left leg sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605100 Quinley: +Burn on torso sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605100 Giselle: +Burn on right lung sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t605130 Giselle: +Burn on left leg sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t605220 Giselle: +Burn on left tibia sev 3.00 src=- | job=Rescue target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605250 Quinley: +Burn on left arm sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605250 Giselle: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t605280 Quinley: +Burn on right leg sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605370 Giselle: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t605400 Ivo: +Burn on torso sev 3.00 src=- | job=BeatFire
+d11 t605400 Giselle: +Burn on left shoulder sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t605430 Quinley: +Burn on left foot sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605430 Ivo: +Burn on torso sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t605460 Jasper: +Burn on torso sev 3.00 src=- | job=BeatFire
+d11 t605520 Jarrah: +Burn on right lung sev 2.00 src=- | job=TendPatient target=Tribesperson
+d11 t605520 Ivo: +Burn on left arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t605520 Giselle: +Burn on pelvis sev 2.00 src=- | job=no job
+d11 t605550 Jasper: +Burn on spine sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t605550 Giselle: +Burn on spine sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t605610 Quinley: +Burn on left kidney sev 3.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605670 Jarrah: +Burn on left tibia sev 3.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605670 Giselle: +Burn on ribcage sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t605760 Quinley: +Burn on torso sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605760 Quinley: +Burn on left leg sev 3.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605760 Quinley: +Burn on right ear sev 3.00 src=- | job=BeatFire
+d11 t605760 Quinley: +Burn on left kidney sev 2.00 src=- | job=BeatFire
+d11 t605760 Jarrah: +Burn on torso sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t605760 Della: +Burn on right tibia sev 2.00 src=- | job=BeatFire
+d11 t605760 Rosalind: +Burn on right leg sev 3.00 src=- | job=BeatFire
+d11 t605760 Della: +Burn on torso sev 3.00 src=- | job=BeatFire
+d11 t605790 Giselle: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t605790 Rosalind: +Burn on left clavicle sev 2.00 src=- | job=BeatFire
+d11 t605790 Della: +Burn on left ear sev 2.00 src=- | job=BeatFire
+d11 t605820 Giselle: +Burn on right eye sev 3.00 src=- | job=no job
+d11 t605850 Giselle: +Burn on skull sev 2.00 src=- | job=no job
+d11 t605850 Rosalind: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t605850 Della: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d11 t605880 Della: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t605910 Quinley: +Burn on left lung sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t605910 Quinley: +Burn on left leg sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t605910 Quinley: +Burn on right kidney sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605910 Jarrah: +Burn on torso sev 2.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t605970 Giselle: +Burn on right leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606030 Noor: +Burn on right middle toe sev 3.00 src=- | job=TendPatient target=Tribesperson
+d11 t606060 Quinley: +Burn on pelvis sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606060 Jasper: +Burn on right second toe sev 3.00 src=- | job=BeatFire
+d11 t606060 Jarrah: +Burn on right arm sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606090 Quinley: +Burn on right arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606120 Giselle: +Burn on spine sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606120 Noor: +Burn on left shoulder sev 3.00 src=- | job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+d11 t606120 Rosalind: +Burn on ribcage sev 3.00 src=- | job=BeatFire
+d11 t606150 Giselle: +Burn on right femur sev 2.00 src=- | job=no job
+d11 t606210 Ivo: +Burn on left kidney sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606210 Rosalind: +Burn on left femur sev 3.00 src=- | job=BeatFire
+d11 t606270 Quinley: +Burn on sternum sev 2.00 src=- | job=no job
+d11 t606270 Jarrah: +Burn on left leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606270 Silas: +Burn on left lung sev 3.00 src=- | job=BeatFire
+d11 t606270 Giselle: +Burn on nose sev 2.00 src=- | job=no job
+d11 t606270 Noor: +Burn on left arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606300 Jarrah: +Burn on left radius sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606330 Ivo: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606330 Silas: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d11 t606330 Silas: +Burn on right leg sev 3.00 src=- | job=BeatFire
+d11 t606330 Noor: +Burn on left leg sev 3.00 src=- | job=BeatFire
+d11 t606360 Rosalind: +Burn on right tibia sev 3.00 src=- | job=BeatFire
+d11 t606390 Jasper: +Burn on right kidney sev 2.00 src=- | job=BeatFire
+d11 t606390 Jarrah: +Burn on neck sev 2.00 src=- | job=BeatFire
+d11 t606390 Silas: +Burn on brain sev 3.00 src=- | job=BeatFire
+d11 t606390 Noor: +Burn on right lung sev 2.00 src=- | job=BeatFire
+d11 t606390 Noor: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t606390 Rosalind: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t606420 Quinley: +Burn on left leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606420 Jasper: +Burn on left lung sev 3.00 src=- | job=BeatFire
+d11 t606420 Jarrah: +Burn on left shoulder sev 3.00 src=- | job=BeatFire
+d11 t606420 Giselle: +Burn on right humerus sev 3.00 src=- | job=no job
+d11 t606450 Jasper: +Burn on spine sev 2.00 src=- | job=BeatFire
+d11 t606450 Jarrah: +Burn on jaw sev 3.00 src=- | job=BeatFire
+d11 t606450 Silas: +Burn on torso sev 3.00 src=- | job=BeatFire
+d11 t606450 Giselle: +Burn on brain sev 2.00 src=- | job=no job
+d11 t606450 Noor: +Burn on right hand sev 2.00 src=- | job=BeatFire
+d11 t606450 Rosalind: +Burn on left leg sev 3.00 src=- | job=BeatFire
+d11 t606480 Quinley: +Burn on left leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606480 Ivo: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606480 Silas: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t606480 Noor: +Burn on right lung sev 2.00 src=- | job=BeatFire
+d11 t606540 Jasper: +Burn on left leg sev 2.00 src=- | job=Sow
+d11 t606540 Della: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t606570 Quinley: +Burn on right arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606570 Della: +Burn on right clavicle sev 3.00 src=- | job=BeatFire
+d11 t606570 Giselle: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t606600 Quinley: +Burn on left clavicle sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606600 Jasper: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t606600 Jarrah: +Burn on left arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606600 Giselle: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t606600 Rosalind: +Burn on left arm sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606600 Rosalind: +Burn on left clavicle sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606630 Quinley: +Burn on neck sev 2.00 src=- | job=no job
+d11 t606630 Ivo: +Burn on left clavicle sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606630 Della: +Burn on left arm sev 2.00 src=- | job=BeatFire
+d11 t606660 Quinley: +Burn on left arm sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606660 Rosalind: +Burn on left arm sev 2.92 src=- | job=BeatFire
+d11 t606660 Della: +Burn on right leg sev 2.00 src=- | job=LayDown
+d11 t606660 Della: +Burn on right arm sev 2.00 src=- | job=LayDown
+d11 t606720 Quinley: +Burn on right arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606720 Giselle: +Burn on left femur sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606750 Jasper: +Burn on left leg sev 2.92 src=- | job=BeatFire
+d11 t606750 Jarrah: +Burn on jaw sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606750 Jarrah: +Burn on left tibia sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606750 Ivo: +Burn on left arm sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606750 Della: +Burn on left tibia sev 2.00 src=- | job=BeatFire
+d11 t606780 Quinley: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t606780 Jasper: +Burn on skull sev 3.00 src=- | job=BeatFire
+d11 t606780 Jarrah: +Burn on left foot sev 2.00 src=- | job=BeatFire
+d11 t606780 Ivo: +Burn on right lung sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606780 Giselle: +Burn on right kidney sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606780 Noor: +Burn on right leg sev 3.00 src=- | job=BeatFire
+d11 t606810 Quinley: +Burn on left eye sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606810 Rosalind: +Burn on right lung sev 3.00 src=- | job=BeatFire
+d11 t606810 Della: +Burn on torso sev 2.00 src=- | job=LayDown
+d11 t606840 Rosalind: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d11 t606870 Quinley: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t606870 Giselle: +Burn on left femur sev 3.00 src=- | job=no job
+d11 t606870 Noor: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t606870 Rosalind: +Burn on left femur sev 3.00 src=- | job=BeatFire
+d11 t606900 Jasper: +Burn on right tibia sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606900 Jarrah: +Burn on left lung sev 3.00 src=- | job=BeatFire
+d11 t606900 Ivo: +Burn on left arm sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606900 Della: +Burn on right shoulder sev 3.00 src=- | job=BeatFire
+d11 t606900 Silas: +Burn on right femur sev 3.00 src=- | job=TendPatient target=Tribesperson
+d11 t606930 Jasper: +Burn on ribcage sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606930 Jasper: +Burn on ribcage sev 3.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606930 Jarrah: +Burn on left arm sev 3.00 src=- | job=BeatFire
+d11 t606930 Ivo: +Burn on left leg sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606930 Della: +Burn on left leg sev 3.00 src=- | job=BeatFire
+d11 t606960 Quinley: +Burn on torso sev 2.00 src=- | job=no job
+d11 t606960 Quinley: +Burn on right kidney sev 2.00 src=- | job=no job
+d11 t606960 Ivo: +Burn on left radius sev 2.00 src=- | job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+d11 t606960 Silas: +Burn on heart sev 1.00 src=- | job=TendPatient target=Tribesperson
+d11 t606960 Noor: +Burn on left radius sev 2.00 src=- | job=BeatFire
+d11 t606960 Della: +Burn on left humerus sev 2.00 src=- | job=LayDown
+d11 t606990 Noor: +Burn on stomach sev 2.00 src=- | job=BeatFire
+d11 t607020 Quinley: +Burn on left hand sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t607020 Giselle: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t607050 Silas: +Burn on skull sev 3.00 src=- | job=BeatFire
+d11 t607050 Giselle: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t607050 Noor: +Burn on torso sev 3.00 src=- | job=BeatFire
+d11 t607050 Rosalind: +Burn on left arm sev 3.00 src=- | job=BeatFire
+d11 t607080 Quinley: +Burn on torso sev 2.00 src=- | job=no job
+d11 t607080 Ivo: +Burn on neck sev 2.00 src=- | job=BeatFire
+d11 t607110 Jasper: +Burn on torso sev 3.00 src=- | job=BeatFire
+d11 t607110 Jarrah: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t607110 Ivo: +Burn on pelvis sev 3.00 src=- | job=BeatFire
+d11 t607110 Della: +Burn on right humerus sev 2.00 src=- | job=BeatFire
+d11 t607110 Holt: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t607110 Holt: +Burn on sternum sev 2.00 src=- | job=BeatFire
+d11 t607110 Rosalind: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t607110 Della: +Burn on right foot sev 3.00 src=- | job=LayDown
+d11 t607140 Jasper: +Burn on right foot sev 2.00 src=- | job=BeatFire
+d11 t607140 Ivo: +Burn on brain sev 2.00 src=- | job=BeatFire
+d11 t607170 Quinley: +Burn on torso sev 3.00 src=- | job=no job
+d11 t607170 Silas: +Burn on left leg sev 3.00 src=- | job=BeatFire
+d11 t607170 Silas: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d11 t607170 Giselle: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t607200 Quinley: +Burn on left humerus sev 2.00 src=- | job=no job
+d11 t607200 Giselle: +Burn on right humerus sev 2.00 src=- | job=no job
+d11 t607200 Noor: +Burn on sternum sev 3.00 src=- | job=BeatFire
+d11 t607200 Rosalind: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t607230 Noor: +Burn on spine sev 2.00 src=- | job=BeatFire
+d11 t607260 Jarrah: +Burn on brain sev 2.00 src=- | job=no job
+d11 t607260 Ivo: +Burn on stomach sev 3.00 src=- | job=BeatFire
+d11 t607260 Della: +Burn on right kidney sev 2.00 src=- | job=BeatFire
+d11 t607260 Della: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d11 t607260 Della: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t607260 Silas: +Burn on sternum sev 2.00 src=- | job=BeatFire
+d11 t607260 Holt: +Burn on left tibia sev 2.00 src=- | job=BeatFire
+d11 t607260 Della: +Burn on right eye sev 2.00 src=- | job=BeatFire
+d11 t607290 Jarrah: +Burn on heart sev 2.00 src=- | job=no job
+d11 t607290 Ivo: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t607320 Quinley: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t607320 Giselle: +Burn on right lung sev 2.00 src=- | job=no job
+d11 t607350 Noor: +Burn on ribcage sev 3.00 src=- | job=BeatFire
+d11 t607350 Rosalind: +Burn on torso sev 3.00 src=- | job=no job
+d11 t607380 Quinley: +Burn on spine sev 2.00 src=- | job=no job
+d11 t607380 Quinley: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t607380 Noor: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t607380 Noor: +Burn on torso sev 3.00 src=- | job=no job
+d11 t607410 Ulric: +Burn on left leg sev 3.00 src=- | job=BeatFire
+d11 t607410 Jarrah: +Burn on pelvis sev 2.00 src=- | job=no job
+d11 t607410 Della: +Burn on pelvis sev 2.00 src=- | job=BeatFire
+d11 t607410 Holt: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d11 t607410 Della: +Burn on neck sev 2.00 src=- | job=BeatFire
+d11 t607440 Giselle: +Burn on torso sev 2.00 src=- | job=no job
+d11 t607440 Rosalind: +Burn on right lung sev 2.00 src=- | job=no job
+d11 t607470 Quinley: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t607470 Ulric: +Burn on left shoulder sev 2.00 src=- | job=BeatFire
+d11 t607470 Jarrah: +Burn on torso sev 2.00 src=- | job=no job
+d11 t607470 Giselle: +Burn on right tibia sev 3.00 src=- | job=no job
+d11 t607500 Silas: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t607500 Holt: +Burn on right foot sev 2.00 src=- | job=BeatFire
+d11 t607500 Rosalind: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t607530 Quinley: +Burn on torso sev 2.00 src=- | job=no job
+d11 t607530 Quinley: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t607530 Giselle: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t607530 Noor: +Burn on neck sev 3.00 src=- | job=no job
+d11 t607560 Quinley: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t607560 Ulric: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d11 t607560 Jarrah: +Burn on heart sev 3.00 src=- | job=no job
+d11 t607560 Silas: +Burn on left femur sev 2.00 src=- | job=BeatFire
+d11 t607560 Holt: +Burn on right lung sev 3.00 src=- | job=BeatFire
+d11 t607560 Holt: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t607560 Rosalind: +Burn on right hand sev 2.00 src=- | job=no job
+d11 t607620 Quinley: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t607620 Giselle: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t607650 Silas: +Burn on right hand sev 3.00 src=- | job=BeatFire
+d11 t607650 Noor: +Burn on sternum sev 2.00 src=- | job=no job
+d11 t607650 Rosalind: +Burn on left kidney sev 3.00 src=- | job=no job
+d11 t607680 Quinley: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t607680 Jarrah: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t607680 Noor: +Burn on torso sev 3.00 src=- | job=no job
+d11 t607710 Ulric: +Burn on left lung sev 2.00 src=- | job=BeatFire
+d11 t607710 Quinley: +Burn on nose sev 2.00 src=- | job=no job
+d11 t607710 Jarrah: +Burn on torso sev 2.00 src=- | job=no job
+d11 t607710 Silas: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t607770 Quinley: +Burn on neck sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t607770 Giselle: +Burn on right lung sev 3.00 src=- | job=no job
+d11 t607770 Noor: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t607800 Ivo: +Burn on stomach sev 2.00 src=- | job=no job
+d11 t607800 Della: +Burn on left shoulder sev 1.00 src=- | job=BeatFire
+d11 t607800 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d11 t607800 Holt: +Burn on right arm sev 3.00 src=- | job=BeatFire
+d11 t607800 Rosalind: +Burn on right little toe sev 3.00 src=- | job=no job
+d11 t607830 Quinley: +Burn on left kidney sev 2.00 src=- | job=no job
+d11 t607830 Noor: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t607830 Holt: +Burn on right tibia sev 2.00 src=- | job=BeatFire
+d11 t607860 Ulric: +Burn on stomach sev 2.00 src=- | job=BeatFire
+d11 t607860 Ulric: +Burn on pelvis sev 2.00 src=- | job=BeatFire
+d11 t607860 Quinley: +Burn on sternum sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t607860 Jarrah: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t607860 Giselle: +Burn on left humerus sev 2.00 src=- | job=no job
+d11 t607890 Ivo: +Burn on nose sev 2.00 src=- | job=no job
+d11 t607890 Della: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d11 t607890 Rosalind: +Burn on left foot sev 2.00 src=- | job=no job
+d11 t607920 Quinley: +Burn on stomach sev 3.00 src=- | job=no job
+d11 t607920 Giselle: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t607920 Noor: +Burn on right leg sev 1.00 src=- | job=no job
+d11 t607950 Ivo: +Burn on left arm sev 1.00 src=- | job=no job
+d11 t607950 Della: +Burn on heart sev 2.00 src=- | job=BeatFire
+d11 t607950 Silas: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t607950 Holt: +Burn on right leg sev 3.00 src=- | job=BeatFire
+d11 t607950 Rosalind: +Burn on torso sev 3.00 src=- | job=no job
+d11 t607980 Quinley: +Burn on left arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t607980 Jarrah: +Burn on left kidney sev 2.00 src=- | job=no job
+d11 t607980 Silas: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t607980 Noor: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608010 Ulric: +Burn on stomach sev 2.00 src=- | job=BeatFire
+d11 t608010 Ulric: +Burn on sternum sev 2.00 src=- | job=BeatFire
+d11 t608010 Quinley: +Burn on left hand sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t608010 Jarrah: +Burn on right lung sev 2.00 src=- | job=no job
+d11 t608040 Della: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t608070 Quinley: +Burn on torso sev 2.00 src=- | job=no job
+d11 t608070 Della: +Burn on right foot sev 2.00 src=- | job=BeatFire
+d11 t608070 Giselle: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t608100 Ivo: +Burn on right middle toe sev 2.00 src=- | job=no job
+d11 t608100 Della: +Burn on spine sev 3.00 src=- | job=BeatFire
+d11 t608100 Silas: +Burn on torso sev 3.00 src=- | job=no job
+d11 t608100 Rosalind: +Burn on left radius sev 3.00 src=- | job=no job
+d11 t608130 Quinley: +Burn on right lung sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t608130 Jarrah: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t608130 Giselle: +Burn on right femur sev 2.00 src=- | job=no job
+d11 t608130 Noor: +Burn on spine sev 3.00 src=- | job=no job
+d11 t608160 Ulric: +Burn on pelvis sev 3.00 src=- | job=BeatFire
+d11 t608160 Ulric: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d11 t608160 Quinley: +Burn on right clavicle sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t608160 Jarrah: +Burn on left tibia sev 3.00 src=- | job=no job
+d11 t608160 Holt: +Burn on right kidney sev 2.00 src=- | job=BeatFire
+d11 t608190 Della: +Burn on torso sev 2.00 src=- | job=no job
+d11 t608190 Noor: +Burn on right femur sev 2.00 src=- | job=no job
+d11 t608190 Rosalind: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608220 Quinley: +Burn on right femur sev 3.00 src=- | job=no job
+d11 t608220 Giselle: +Burn on torso sev 3.00 src=- | job=no job
+d11 t608220 Holt: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d11 t608250 Ulric: +Burn on right foot sev 2.00 src=- | job=BeatFire
+d11 t608250 Ulric: +Burn on left clavicle sev 2.00 src=- | job=BeatFire
+d11 t608250 Ivo: +Burn on right radius sev 2.00 src=- | job=no job
+d11 t608250 Silas: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t608250 Rosalind: +Burn on sternum sev 2.00 src=- | job=no job
+d11 t608280 Quinley: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608280 Quinley: +Burn on ribcage sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t608280 Jarrah: +Burn on right eye sev 2.00 src=- | job=no job
+d11 t608280 Della: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t608280 Silas: +Burn on right foot sev 2.00 src=- | job=no job
+d11 t608280 Noor: +Burn on spine sev 3.00 src=- | job=no job
+d11 t608310 Ulric: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d11 t608310 Quinley: +Burn on left arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t608310 Jarrah: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t608310 Giselle: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t608310 Holt: +Burn on torso sev 3.00 src=- | job=BeatFire
+d11 t608340 Noor: +Burn on spine sev 2.00 src=- | job=no job
+d11 t608370 Quinley: +Burn on right femur sev 2.00 src=- | job=no job
+d11 t608370 Della: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608370 Giselle: +Burn on left foot sev 2.00 src=- | job=no job
+d11 t608400 Ulric: +Burn on skull sev 2.00 src=- | job=BeatFire
+d11 t608400 Jasper: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d11 t608400 Ivo: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t608400 Silas: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t608400 Holt: +Burn on right hand sev 2.00 src=- | job=BeatFire
+d11 t608400 Rosalind: +Burn on torso sev 3.00 src=- | job=no job
+d11 t608430 Quinley: +Burn on left leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t608430 Jarrah: +Burn on torso sev 2.00 src=- | job=no job
+d11 t608430 Della: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t608430 Noor: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t608460 Ulric: +Burn on left clavicle sev 2.00 src=- | job=BeatFire
+d11 t608460 Quinley: +Burn on ribcage sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t608460 Jasper: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t608460 Jarrah: +Burn on right hand sev 2.00 src=- | job=no job
+d11 t608460 Silas: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t608460 Giselle: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608460 Noor: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t608460 Holt: +Burn on right arm sev 3.00 src=- | job=BeatFire
+d11 t608520 Quinley: +Burn on torso sev 3.00 src=- | job=no job
+d11 t608520 Ivo: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t608520 Giselle: +Burn on stomach sev 2.00 src=- | job=no job
+d11 t608550 Ulric: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d11 t608550 Jasper: +Burn on sternum sev 2.00 src=- | job=no job
+d11 t608550 Ivo: +Burn on heart sev 2.00 src=- | job=no job
+d11 t608550 Silas: +Burn on right pinky sev 3.00 src=- | job=no job
+d11 t608550 Holt: +Burn on sternum sev 2.00 src=- | job=no job
+d11 t608550 Rosalind: +Burn on left big toe sev 2.00 src=- | job=no job
+d11 t608550 Rosalind: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t608580 Quinley: +Burn on right tibia sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t608580 Jarrah: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608580 Della: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t608580 Noor: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t608610 Ulric: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t608610 Quinley: +Burn on right kidney sev 2.00 src=- | job=no job
+d11 t608610 Jasper: +Burn on spine sev 2.00 src=- | job=no job
+d11 t608610 Jarrah: +Burn on right hand sev 2.00 src=- | job=no job
+d11 t608610 Silas: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608610 Giselle: +Burn on right clavicle sev 2.00 src=- | job=no job
+d11 t608610 Noor: +Burn on right hand sev 2.00 src=- | job=no job
+d11 t608610 Holt: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t608640 Quinley: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608670 Quinley: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t608670 Giselle: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t608670 DEATH Giselle age 34 carrying: Bitex4(9.00), Crackx1(8.51), Burnx47(3.00)
+d11 t608700 Ulric: +Burn on heart sev 3.00 src=- | job=no job
+d11 t608700 Ulric: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t608700 Jasper: +Burn on torso sev 2.00 src=- | job=no job
+d11 t608700 Ivo: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t608700 Silas: +Burn on right lung sev 3.00 src=- | job=no job
+d11 t608700 Holt: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t608700 Rosalind: +Burn on pelvis sev 3.00 src=- | job=no job
+d11 t608700 Rosalind: +Burn on torso sev 3.00 src=- | job=no job
+d11 t608730 Quinley: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t608730 Della: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t608730 Della: +Burn on torso sev 2.00 src=- | job=no job
+d11 t608730 Noor: +Burn on torso sev 2.00 src=- | job=no job
+d11 t608760 Ulric: +Burn on left shoulder sev 2.00 src=- | job=no job
+d11 t608760 Quinley: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t608760 Jasper: +Burn on left tibia sev 2.00 src=- | job=no job
+d11 t608760 Jarrah: +Burn on left foot sev 3.00 src=- | job=no job
+d11 t608760 Ivo: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t608760 Silas: +Burn on left tibia sev 2.00 src=- | job=no job
+d11 t608760 Noor: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608760 Holt: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608790 Quinley: +Burn on torso sev 2.00 src=- | job=no job
+d11 t608820 Quinley: +Burn on torso sev 3.00 src=- | job=no job
+d11 t608850 Ulric: +Burn on torso sev 2.00 src=- | job=no job
+d11 t608850 Jasper: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t608850 Ivo: +Burn on left shoulder sev 2.00 src=- | job=no job
+d11 t608850 Silas: +Burn on sternum sev 2.00 src=- | job=no job
+d11 t608850 Holt: +Burn on right tibia sev 2.00 src=- | job=no job
+d11 t608850 Rosalind: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t608850 Rosalind: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t608880 Quinley: +Burn on torso sev 2.00 src=- | job=no job
+d11 t608880 Jarrah: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t608880 Della: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t608880 Della: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t608880 Noor: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t608910 Ulric: +Burn on right tibia sev 3.00 src=- | job=no job
+d11 t608910 Quinley: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t608910 Jasper: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t608910 Jarrah: +Burn on left radius sev 3.00 src=- | job=no job
+d11 t608910 Ivo: +Burn on liver sev 3.00 src=- | job=no job
+d11 t608910 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d11 t608910 Noor: +Burn on right clavicle sev 2.00 src=- | job=no job
+d11 t608910 Holt: +Burn on left kidney sev 2.00 src=- | job=no job
+d11 t608940 Quinley: +Burn on nose sev 2.00 src=- | job=no job
+d11 t608970 Quinley: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t609000 Ulric: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609000 Jasper: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609000 Ivo: +Burn on left humerus sev 3.00 src=- | job=no job
+d11 t609000 Silas: +Burn on right radius sev 3.00 src=- | job=no job
+d11 t609000 Holt: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609000 Rosalind: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t609000 Rosalind: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t609030 Quinley: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t609030 Jarrah: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609030 Della: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t609030 Della: +Burn on left femur sev 2.00 src=- | job=no job
+d11 t609030 Noor: +Burn on jaw sev 3.00 src=- | job=no job
+d11 t609060 Ulric: +Burn on spine sev 2.00 src=- | job=no job
+d11 t609060 Quinley: +Burn on right lung sev 2.00 src=- | job=no job
+d11 t609060 Jarrah: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t609060 Ivo: +Burn on right kidney sev 2.00 src=- | job=no job
+d11 t609060 Silas: +Burn on pelvis sev 2.00 src=- | job=no job
+d11 t609060 Noor: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t609060 Holt: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t609090 Quinley: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t609120 Quinley: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t609150 Ulric: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609150 Jasper: +Burn on right hand sev 2.00 src=- | job=no job
+d11 t609150 Ivo: +Burn on stomach sev 3.00 src=- | job=no job
+d11 t609150 Dorian: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t609150 Silas: +Burn on left shoulder sev 3.00 src=- | job=no job
+d11 t609150 Holt: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t609150 Rosalind: +Burn on head sev 3.00 src=- | job=no job
+d11 t609150 Rosalind: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t609180 Quinley: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t609180 Jarrah: +Burn on left radius sev 2.00 src=- | job=no job
+d11 t609180 Della: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t609180 Della: +Burn on spine sev 2.00 src=- | job=no job
+d11 t609180 Noor: +Burn on right shoulder sev 3.00 src=- | job=no job
+d11 t609210 Ulric: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t609210 Quinley: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t609210 Jasper: +Burn on right clavicle sev 2.00 src=- | job=no job
+d11 t609210 Jarrah: +Burn on spine sev 2.00 src=- | job=no job
+d11 t609210 Ivo: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t609210 Silas: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609210 Noor: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t609210 Holt: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t609240 Quinley: +Burn on brain sev 2.00 src=- | job=no job
+d11 t609270 Quinley: +Burn on right shoulder sev 3.00 src=- | job=no job
+d11 t609270 Dorian: +Burn on left index finger sev 2.00 src=- | job=BeatFire
+d11 t609300 Ulric: +Burn on spine sev 2.00 src=- | job=no job
+d11 t609300 Jasper: +Burn on torso sev 2.00 src=- | job=no job
+d11 t609300 Ivo: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t609300 Dorian: +Burn on torso sev 3.00 src=- | job=BeatFire
+d11 t609300 Silas: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609300 Holt: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609300 Rosalind: +Burn on spine sev 2.00 src=- | job=no job
+d11 t609300 Rosalind: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609330 Quinley: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t609330 Jarrah: +Burn on right clavicle sev 2.00 src=- | job=no job
+d11 t609330 Della: +Burn on left second toe sev 2.00 src=- | job=no job
+d11 t609330 Della: +Burn on right tibia sev 3.00 src=- | job=no job
+d11 t609330 Noor: +Burn on left foot sev 3.00 src=- | job=no job
+d11 t609360 Ulric: +Burn on left radius sev 2.00 src=- | job=no job
+d11 t609360 Quinley: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t609360 Jarrah: +Burn on torso sev 2.00 src=- | job=no job
+d11 t609360 Ivo: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609360 Dorian: +Burn on spine sev 3.00 src=- | job=BeatFire
+d11 t609360 Silas: +Burn on stomach sev 2.00 src=- | job=no job
+d11 t609360 Noor: +Burn on spine sev 2.00 src=- | job=no job
+d11 t609360 Holt: +Burn on neck sev 3.00 src=- | job=no job
+d11 t609390 Quinley: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t609390 Jasper: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609420 Quinley: +MissingBodyPart on left leg sev 30.00 src=- | job=no job
+d11 t609420 Dorian: +Burn on left arm sev 2.00 src=- | job=BeatFire
+d11 t609450 Ulric: +Burn on left kidney sev 2.00 src=- | job=no job
+d11 t609450 Jasper: +Burn on torso sev 2.00 src=- | job=no job
+d11 t609450 Ivo: +Burn on jaw sev 3.00 src=- | job=no job
+d11 t609450 Dorian: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t609450 Silas: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t609450 Holt: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t609450 Rosalind: +Burn on liver sev 2.00 src=- | job=no job
+d11 t609450 Rosalind: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t609480 Quinley: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t609480 Jarrah: +Burn on torso sev 2.00 src=- | job=no job
+d11 t609480 Della: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t609480 Della: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609480 Noor: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609510 Ulric: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t609510 Quinley: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t609510 Jarrah: +Burn on left pinky sev 3.00 src=- | job=no job
+d11 t609510 Ivo: +Burn on right kidney sev 2.00 src=- | job=no job
+d11 t609510 Silas: +Burn on left humerus sev 2.00 src=- | job=no job
+d11 t609510 Noor: +Burn on right tibia sev 2.00 src=- | job=no job
+d11 t609510 Holt: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609540 Quinley: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t609540 Jasper: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t609570 Quinley: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t609570 Dorian: +Burn on right radius sev 2.00 src=- | job=BeatFire
+d11 t609600 Ulric: +Burn on left kidney sev 2.00 src=- | job=no job
+d11 t609600 Jasper: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609600 Ivo: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t609600 Dorian: +Burn on right hand sev 2.00 src=- | job=BeatFire
+d11 t609600 Silas: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609600 Holt: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t609600 Rosalind: +Burn on sternum sev 2.00 src=- | job=no job
+d11 t609600 Rosalind: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t609630 Quinley: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t609630 Jarrah: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t609630 Della: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t609630 Della: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t609630 Noor: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t609660 Ulric: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609660 Quinley: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t609660 Jarrah: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t609660 Ivo: +Burn on right clavicle sev 2.00 src=- | job=no job
+d11 t609660 Silas: +Burn on right tibia sev 2.00 src=- | job=no job
+d11 t609660 Noor: +Burn on spine sev 2.00 src=- | job=no job
+d11 t609660 Holt: +Burn on neck sev 3.00 src=- | job=no job
+d11 t609690 Quinley: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t609690 Jasper: +Burn on right lung sev 2.00 src=- | job=no job
+d11 t609720 Quinley: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609720 Dorian: +Burn on left humerus sev 2.00 src=- | job=BeatFire
+d11 t609750 Ulric: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609750 Jasper: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609750 Ivo: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t609750 Dorian: +Burn on right lung sev 2.00 src=- | job=BeatFire
+d11 t609750 Silas: +Burn on liver sev 3.00 src=- | job=no job
+d11 t609750 Holt: +Burn on heart sev 2.00 src=- | job=no job
+d11 t609750 Rosalind: +Burn on torso sev 2.00 src=- | job=no job
+d11 t609750 Rosalind: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t609780 Quinley: +Burn on right humerus sev 3.00 src=- | job=no job
+d11 t609780 Jarrah: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t609780 Della: +Burn on left shoulder sev 2.00 src=- | job=no job
+d11 t609780 Della: +Burn on heart sev 3.00 src=- | job=no job
+d11 t609780 Noor: +Burn on right lung sev 3.00 src=- | job=no job
+d11 t609810 Ulric: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609810 Quinley: +Burn on right foot sev 2.00 src=- | job=no job
+d11 t609810 Jarrah: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t609810 Ivo: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t609810 Silas: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t609810 Noor: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t609810 Holt: +Burn on left hand sev 3.00 src=- | job=no job
+d11 t609840 Quinley: +Burn on spine sev 2.00 src=- | job=no job
+d11 t609840 Jasper: +Burn on heart sev 2.00 src=- | job=no job
+d11 t609870 Quinley: +Burn on left shoulder sev 3.00 src=- | job=no job
+d11 t609870 Dorian: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t609900 Ulric: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t609900 Jasper: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t609900 Ivo: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t609900 Silas: +Burn on sternum sev 2.00 src=- | job=no job
+d11 t609900 Holt: +Burn on stomach sev 2.00 src=- | job=no job
+d11 t609900 Rosalind: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t609900 Rosalind: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t609930 Quinley: +Burn on torso sev 2.00 src=- | job=no job
+d11 t609930 Jarrah: +Burn on spine sev 2.00 src=- | job=no job
+d11 t609930 Della: +Burn on left ear sev 3.00 src=- | job=no job
+d11 t609930 Della: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609930 Noor: +Burn on torso sev 3.00 src=- | job=no job
+d11 t609960 Ulric: +Burn on torso sev 2.00 src=- | job=no job
+d11 t609960 Quinley: +Burn on left foot sev 2.00 src=- | job=no job
+d11 t609960 Jarrah: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t609960 Ivo: +Burn on left radius sev 2.00 src=- | job=no job
+d11 t609960 Silas: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t609960 Noor: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t609960 Holt: +Burn on jaw sev 3.00 src=- | job=no job
+d11 t609990 Quinley: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t609990 Jasper: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t610020 Quinley: +Burn on right foot sev 3.00 src=- | job=no job
+d11 t610020 Dorian: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d11 t610050 Ulric: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t610050 Jasper: +Burn on torso sev 3.00 src=- | job=no job
+d11 t610050 Ivo: +Burn on right foot sev 3.00 src=- | job=no job
+d11 t610050 Silas: +Burn on left tibia sev 3.00 src=- | job=no job
+d11 t610050 Holt: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t610050 Rosalind: +Burn on liver sev 3.00 src=- | job=no job
+d11 t610050 Rosalind: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t610080 Quinley: +Burn on right index finger sev 3.00 src=- | job=no job
+d11 t610080 Jarrah: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610080 Della: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t610080 Della: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t610080 Noor: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610110 Ulric: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t610110 Quinley: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t610110 Jarrah: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t610110 Ivo: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t610110 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610110 Noor: +Burn on spine sev 3.00 src=- | job=no job
+d11 t610110 Holt: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t610140 Quinley: +Burn on liver sev 2.00 src=- | job=no job
+d11 t610140 Jasper: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t610170 Quinley: +Burn on right middle toe sev 2.00 src=- | job=no job
+d11 t610170 Dorian: +Burn on right foot sev 2.00 src=- | job=BeatFire
+d11 t610200 Ulric: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t610200 Jasper: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t610200 Ivo: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t610200 Dorian: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t610200 Silas: +Burn on skull sev 2.00 src=- | job=no job
+d11 t610200 Holt: +Burn on pelvis sev 2.00 src=- | job=no job
+d11 t610200 Rosalind: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t610200 Rosalind: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610230 Quinley: +Burn on right femur sev 3.00 src=- | job=no job
+d11 t610230 Jarrah: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t610230 Della: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t610230 Della: +Burn on nose sev 2.00 src=- | job=no job
+d11 t610230 Noor: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t610260 Ulric: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610260 Quinley: +Burn on jaw sev 2.00 src=- | job=no job
+d11 t610260 Jarrah: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t610260 Ivo: +Burn on right hand sev 3.00 src=- | job=no job
+d11 t610260 Silas: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t610260 Noor: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t610260 Holt: +Burn on right humerus sev 3.00 src=- | job=no job
+d11 t610290 Quinley: +Burn on sternum sev 3.00 src=- | job=no job
+d11 t610290 Jasper: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610320 Quinley: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t610320 Dorian: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d11 t610350 Ulric: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t610350 Jasper: +Burn on right clavicle sev 3.00 src=- | job=no job
+d11 t610350 Ivo: +Burn on right tibia sev 2.00 src=- | job=no job
+d11 t610350 Dorian: +Burn on right humerus sev 3.00 src=- | job=BeatFire
+d11 t610350 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610350 Holt: +Burn on right clavicle sev 2.00 src=- | job=no job
+d11 t610350 Rosalind: +Burn on right foot sev 3.00 src=- | job=no job
+d11 t610350 Rosalind: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610380 Quinley: +Burn on neck sev 2.00 src=- | job=no job
+d11 t610380 Jarrah: +Burn on left eye sev 3.00 src=- | job=no job
+d11 t610380 Della: +Burn on stomach sev 2.00 src=- | job=no job
+d11 t610380 Della: +Burn on right clavicle sev 3.00 src=- | job=no job
+d11 t610380 Noor: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t610380 DEATH Quinley age 27 carrying: MissingBodyPartx1(8.00), Crackx2(11.56), Bitex2(12.20), Burnx48(3.00)
+d11 t610410 Jarrah: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t610410 Ivo: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t610410 Silas: +Burn on right kidney sev 3.00 src=- | job=no job
+d11 t610410 Noor: +Burn on right clavicle sev 3.00 src=- | job=no job
+d11 t610410 Holt: +Burn on sternum sev 3.00 src=- | job=no job
+d11 t610440 Quinley: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t610440 Jasper: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610470 Quinley: +Burn on left shoulder sev 3.00 src=- | job=no job
+d11 t610470 Ulric: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610470 Dorian: +Burn on left kidney sev 2.00 src=- | job=BeatFire
+d11 t610500 Ulric: +Burn on torso sev 3.00 src=- | job=no job
+d11 t610500 Jasper: +Burn on right clavicle sev 3.00 src=- | job=no job
+d11 t610500 Ivo: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t610500 Silas: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t610500 Holt: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610500 Rosalind: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t610500 Rosalind: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t610530 Jarrah: +Burn on left tibia sev 2.00 src=- | job=no job
+d11 t610530 Della: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610530 Della: +Burn on right tibia sev 3.00 src=- | job=no job
+d11 t610530 Noor: +Burn on left femur sev 3.00 src=- | job=no job
+d11 t610560 Jarrah: +Burn on left tibia sev 3.00 src=- | job=no job
+d11 t610560 Ivo: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t610560 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610560 Noor: +Burn on liver sev 2.00 src=- | job=no job
+d11 t610560 Holt: +Burn on torso sev 3.00 src=- | job=no job
+d11 t610590 Quinley: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t610590 Jasper: +Burn on pelvis sev 3.00 src=- | job=no job
+d11 t610620 Quinley: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t610620 Dorian: +Burn on left arm sev 2.00 src=- | job=BeatFire
+d11 t610650 Ulric: +Burn on torso sev 3.00 src=- | job=no job
+d11 t610650 Jasper: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t610650 Ivo: +Burn on right tibia sev 3.00 src=- | job=no job
+d11 t610650 Dorian: +Burn on sternum sev 3.00 src=- | job=no job
+d11 t610650 Silas: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t610650 Holt: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t610650 Rosalind: +Burn on heart sev 2.00 src=- | job=no job
+d11 t610650 Rosalind: +Burn on left ear sev 3.00 src=- | job=no job
+d11 t610650 DEATH Rosalind age 34 carrying: Burnx59(3.00)
+d11 t610680 Ulric: +Burn on skull sev 2.00 src=- | job=no job
+d11 t610680 Jarrah: +Burn on right humerus sev 3.00 src=- | job=no job
+d11 t610680 Della: +Burn on neck sev 3.00 src=- | job=no job
+d11 t610680 Della: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t610680 Noor: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t610710 Jarrah: +Burn on spine sev 3.00 src=- | job=no job
+d11 t610710 Ivo: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610710 Silas: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t610710 Noor: +Burn on skull sev 3.00 src=- | job=no job
+d11 t610710 Holt: +Burn on right ear sev 3.00 src=- | job=no job
+d11 t610740 Quinley: +Burn on left clavicle sev 2.00 src=- | job=no job
+d11 t610740 Jasper: +Burn on right lung sev 2.00 src=- | job=no job
+d11 t610770 Quinley: +Burn on torso sev 3.00 src=- | job=no job
+d11 t610770 Dorian: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t610800 Ulric: +Burn on right clavicle sev 3.00 src=- | job=no job
+d11 t610800 Jasper: +Burn on sternum sev 3.00 src=- | job=no job
+d11 t610800 Ivo: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t610800 Dorian: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t610800 Silas: +Burn on torso sev 3.00 src=- | job=no job
+d11 t610800 Holt: +Burn on heart sev 3.00 src=- | job=no job
+d11 t610830 Ulric: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t610830 Jarrah: +Burn on torso sev 3.00 src=- | job=no job
+d11 t610830 Della: +Burn on right hand sev 3.00 src=- | job=no job
+d11 t610830 Della: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t610830 Noor: +Burn on right lung sev 3.00 src=- | job=no job
+d11 t610830 DEATH Jarrah age 25 carrying: Burnx63(3.00)
+d11 t610830 DEATH Noor age 34 carrying: Burnx62(3.00)
+d11 t610860 Ivo: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t610860 Silas: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t610860 Holt: +Burn on left radius sev 3.00 src=- | job=no job
+d11 t610890 Quinley: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t610890 Jasper: +Burn on torso sev 3.00 src=- | job=no job
+d11 t610920 Quinley: +Burn on torso sev 3.00 src=- | job=no job
+d11 t610920 Dorian: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610950 Ulric: +Burn on pelvis sev 3.00 src=- | job=no job
+d11 t610950 Jasper: +Burn on torso sev 2.00 src=- | job=no job
+d11 t610950 Ivo: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t610950 Dorian: +Burn on jaw sev 3.00 src=- | job=no job
+d11 t610950 Silas: +Burn on right lung sev 3.00 src=- | job=no job
+d11 t610950 Holt: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t610980 Ulric: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t610980 Della: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t610980 Della: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t611010 Ivo: +Burn on left shoulder sev 2.00 src=- | job=no job
+d11 t611010 Silas: +MissingBodyPart on right leg sev 30.00 src=- | job=no job
+d11 t611010 Holt: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t611040 Quinley: +Burn on right hand sev 3.00 src=- | job=no job
+d11 t611040 Jasper: +Burn on right tibia sev 3.00 src=- | job=no job
+d11 t611070 Quinley: +Burn on liver sev 3.00 src=- | job=no job
+d11 t611070 Dorian: +Burn on right pinky sev 3.00 src=- | job=no job
+d11 t611100 Ulric: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t611100 Jasper: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t611100 Ivo: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t611100 Dorian: +Burn on left femur sev 3.00 src=- | job=no job
+d11 t611100 Silas: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t611100 Holt: +Burn on right radius sev 3.00 src=- | job=no job
+d11 t611130 Ulric: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t611130 Della: +Burn on torso sev 2.00 src=- | job=no job
+d11 t611130 Della: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t611160 Ivo: +Burn on jaw sev 2.00 src=- | job=no job
+d11 t611160 Silas: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t611160 Holt: +Burn on left ear sev 3.00 src=- | job=no job
+d11 t611190 Quinley: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t611190 Jasper: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t611190 DEATH Quinley age 36 carrying: Burnx62(3.00), MissingBodyPartx1(30.00)
+d11 t611220 Dorian: +Burn on neck sev 3.00 src=- | job=no job
+d11 t611250 Ulric: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t611250 Jasper: +Burn on torso sev 3.00 src=- | job=no job
+d11 t611250 Ivo: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t611250 Dorian: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t611250 Silas: +Burn on torso sev 3.00 src=- | job=no job
+d11 t611250 Holt: +Burn on left shoulder sev 2.00 src=- | job=no job
+d11 t611280 Ulric: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t611280 Della: +Burn on left clavicle sev 3.00 src=- | job=no job
+d11 t611280 Della: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t611310 Ivo: +Burn on spine sev 3.00 src=- | job=no job
+d11 t611310 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d11 t611310 Holt: +Burn on left thumb sev 3.00 src=- | job=no job
+d11 t611340 Jasper: +Burn on right clavicle sev 2.00 src=- | job=no job
+d11 t611370 Dorian: +Burn on right femur sev 3.00 src=- | job=no job
+d11 t611400 Ulric: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t611400 Jasper: +Burn on right tibia sev 3.00 src=- | job=no job
+d11 t611400 Ivo: +Burn on left ear sev 3.00 src=- | job=no job
+d11 t611400 Dorian: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t611400 Silas: +Burn on right shoulder sev 3.00 src=- | job=no job
+d11 t611400 Holt: +Burn on stomach sev 2.00 src=- | job=no job
+d11 t611430 Ulric: +Burn on left ear sev 2.00 src=- | job=no job
+d11 t611430 Della: +Burn on pelvis sev 3.00 src=- | job=no job
+d11 t611430 Della: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t611460 Ivo: +Burn on left ear sev 3.00 src=- | job=no job
+d11 t611460 Silas: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t611460 Holt: +Burn on left femur sev 3.00 src=- | job=no job
+d11 t611490 Jasper: +Burn on pelvis sev 3.00 src=- | job=no job
+d11 t611520 Dorian: +Burn on left kidney sev 3.00 src=- | job=no job
+d11 t611550 Ulric: +Burn on torso sev 2.00 src=- | job=no job
+d11 t611550 Jasper: +Burn on neck sev 3.00 src=- | job=no job
+d11 t611550 Ivo: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t611550 Dorian: +Burn on spine sev 3.00 src=- | job=no job
+d11 t611550 Silas: +Burn on torso sev 3.00 src=- | job=no job
+d11 t611550 Holt: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t611580 Ulric: +Burn on right ear sev 2.00 src=- | job=no job
+d11 t611580 Della: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t611580 Della: +Burn on torso sev 2.00 src=- | job=no job
+d11 t611580 DEATH Della age 29 carrying: Burnx63(3.00)
+d11 t611610 Ivo: +Burn on left shoulder sev 2.00 src=- | job=no job
+d11 t611610 Silas: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t611610 Holt: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t611610 DEATH Ivo age 21 carrying: Burnx65(3.00)
+d11 t611640 Jasper: +Burn on torso sev 3.00 src=- | job=no job
+d11 t611670 Dorian: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t611700 Ulric: +Burn on liver sev 3.00 src=- | job=no job
+d11 t611700 Jasper: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t611700 Dorian: +Burn on torso sev 3.00 src=- | job=no job
+d11 t611700 Silas: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t611700 Holt: +Burn on right lung sev 3.00 src=- | job=no job
+d11 t611730 Ulric: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t611760 Silas: +Burn on right kidney sev 3.00 src=- | job=no job
+d11 t611760 Holt: +Burn on left middle finger sev 3.00 src=- | job=no job
+d11 t611790 Jasper: +Burn on torso sev 3.00 src=- | job=no job
+d11 t611820 Dorian: +Burn on left kidney sev 3.00 src=- | job=no job
+d11 t611850 Ulric: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t611850 Jasper: +Burn on torso sev 3.00 src=- | job=no job
+d11 t611850 Dorian: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t611850 Silas: +Burn on torso sev 2.00 src=- | job=no job
+d11 t611850 Holt: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t611850 DEATH Jasper age 35 carrying: Burnx61(3.00)
+d11 t611850 DEATH Holt age 35 carrying: MissingBodyPartx1(8.00), Burnx62(3.00)
+d11 t611880 Ulric: +Burn on torso sev 2.00 src=- | job=no job
+d11 t611910 Silas: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t611970 Dorian: +Burn on left shoulder sev 3.00 src=- | job=no job
+d11 t612000 Ulric: +Burn on left ring finger sev 3.00 src=- | job=no job
+d11 t612000 Dorian: +Burn on skull sev 2.00 src=- | job=no job
+d11 t612000 Silas: +Burn on right lung sev 3.00 src=- | job=no job
+d11 t612030 Ulric: +Burn on nose sev 3.00 src=- | job=no job
+d11 t612060 Silas: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t612120 Dorian: +Burn on spine sev 3.00 src=- | job=no job
+d11 t612150 Ulric: +Burn on torso sev 3.00 src=- | job=no job
+d11 t612150 Dorian: +Burn on sternum sev 3.00 src=- | job=no job
+d11 t612150 Silas: +Burn on torso sev 3.00 src=- | job=no job
+d11 t612150 DEATH Silas age 24 carrying: Burnx58(3.00), MissingBodyPartx1(30.00)
+d11 t612180 Ulric: +Burn on left femur sev 3.00 src=- | job=no job
+d11 t612270 Dorian: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t612300 Ulric: +Burn on torso sev 3.00 src=- | job=no job
+d11 t612300 Dorian: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t612300 DEATH Ulric age 33 carrying: MissingBodyPartx1(15.00), Burnx66(3.00)
+d11 t612420 Dorian: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t612450 Dorian: +Burn on torso sev 3.00 src=- | job=no job
+d11 t612570 Dorian: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t612600 Dorian: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t612720 Dorian: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t612750 Dorian: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t612870 Dorian: +Burn on left clavicle sev 2.00 src=- | job=no job
+d11 t612900 Dorian: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t613020 Dorian: +Burn on right shoulder sev 3.00 src=- | job=no job
+d11 t613050 Dorian: +Burn on stomach sev 2.00 src=- | job=no job
+d11 t613170 Dorian: +Burn on right radius sev 3.00 src=- | job=no job
+d11 t613200 Dorian: +Burn on left femur sev 2.00 src=- | job=no job
+d11 t613320 Dorian: +Burn on heart sev 3.00 src=- | job=no job
+d11 t613350 Dorian: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t613470 Dorian: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t613500 Dorian: +Burn on torso sev 3.00 src=- | job=no job
+d11 t613620 Dorian: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t613650 Dorian: +Burn on pelvis sev 3.00 src=- | job=no job
+d11 t613650 DEATH Dorian age 18 carrying: Burnx59(3.00)
+d11 t618630 Esme: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t618660 Esme: +Burn on right femur sev 2.00 src=- | job=no job
+d11 t618780 Esme: +Burn on right radius sev 3.00 src=- | job=no job
+d11 t618810 Esme: +Burn on ribcage sev 2.00 src=- | job=no job
+d11 t618930 Esme: +Burn on right lung sev 3.00 src=- | job=no job
+d11 t618960 Esme: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t619080 Esme: +Burn on right kidney sev 3.00 src=- | job=no job
+d11 t619110 Esme: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t619230 Esme: +Burn on right tibia sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t619260 Esme: +Burn on right femur sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t619380 Esme: +Burn on left leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t619410 Esme: +Burn on torso sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t619530 Esme: +Burn on ribcage sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t619560 Esme: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t619680 Esme: +Burn on right clavicle sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t619710 Esme: +Burn on skull sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t619830 Esme: +Burn on left lung sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t619860 Esme: +Burn on ribcage sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t619980 Esme: +Burn on neck sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t620010 Esme: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t620130 Esme: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t620160 Esme: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t620280 Esme: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t620310 Esme: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t620310 Quill: +Burn on right kidney sev 2.00 src=- | job=BeatFire
+d11 t620430 Esme: +Burn on right arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t620430 Quill: +Burn on left leg sev 2.00 src=- | job=TendPatient target=Tribesperson
+d11 t620460 Quill: +Burn on right foot sev 2.00 src=- | job=TendPatient target=Tribesperson
+d11 t620580 Esme: +Burn on torso sev 3.00 src=- | job=no job
+d11 t620580 Esme: +Burn on left tibia sev 2.00 src=- | job=no job
+d11 t620580 Quill: +Burn on right shoulder sev 2.00 src=- | job=BeatFire
+d11 t620610 Quill: +Burn on left kidney sev 2.00 src=- | job=BeatFire
+d11 t620730 Esme: +Burn on left leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t620730 Rosalind: +Burn on torso sev 3.00 src=- | job=BeatFire
+d11 t620730 Quill: +Burn on stomach sev 2.00 src=- | job=TendPatient target=Tribesperson
+d11 t620760 Quill: +Burn on jaw sev 2.00 src=- | job=BeatFire
+d11 t620790 Esme: +Burn on left humerus sev 2.00 src=- | job=no job
+d11 t620880 Esme: +Burn on liver sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t620880 Quill: +Burn on right arm sev 2.00 src=- | job=TendPatient target=Tribesperson
+d11 t621030 Esme: +Burn on skull sev 3.00 src=- | job=no job
+d11 t621030 Rosalind: +Burn on left leg sev 3.00 src=- | job=Ingest
+d11 t621030 Rosalind: +Burn on right arm sev 2.00 src=- | job=Ingest
+d11 t621180 Esme: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t621180 Rosalind: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t621180 Quill: +Burn on left radius sev 3.00 src=- | job=BeatFire
+d11 t621210 Quill: +Burn on right foot sev 2.00 src=- | job=BeatFire
+d11 t621330 Esme: +Burn on left arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t621330 Rosalind: +Burn on left foot sev 3.00 src=- | job=no job
+d11 t621360 Esme: +Burn on right tibia sev 2.00 src=- | job=no job
+d11 t621360 Rosalind: +Burn on torso sev 2.00 src=- | job=no job
+d11 t621360 Quill: +Burn on right tibia sev 2.00 src=- | job=BeatFire
+d11 t621480 Esme: +Burn on torso sev 3.00 src=- | job=no job
+d11 t621480 Rosalind: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t621480 Della: +Burn on left leg sev 3.00 src=- | job=BeatFire
+d11 t621480 Della: +Burn on liver sev 2.00 src=- | job=BeatFire
+d11 t621510 Esme: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t621510 Quill: +Burn on left femur sev 2.00 src=- | job=BeatFire
+d11 t621630 Esme: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t621630 Rosalind: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t621660 Rosalind: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t621660 Quill: +Burn on left tibia sev 2.00 src=- | job=BeatFire
+d11 t621720 Esme: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t621780 Esme: +MissingBodyPart on left leg sev 30.00 src=- | job=no job
+d11 t621780 Rosalind: +Burn on torso sev 3.00 src=- | job=no job
+d11 t621840 Rosalind: +Burn on left kidney sev 2.00 src=- | job=no job
+d11 t621870 Della: +Burn on left leg sev 2.00 src=- | job=Ingest
+d11 t621930 Esme: +Burn on right kidney sev 2.00 src=- | job=no job
+d11 t621930 Rosalind: +Burn on right kidney sev 3.00 src=- | job=no job
+d11 t621930 Della: +Burn on left kidney sev 3.00 src=- | job=Ingest
+d11 t621930 Della: +Burn on left arm sev 2.00 src=- | job=Ingest
+d11 t621990 Esme: +Burn on right hand sev 2.00 src=- | job=no job
+d11 t622020 Rosalind: +Burn on heart sev 2.00 src=- | job=no job
+d11 t622020 Quill: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d11 t622080 Esme: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t622080 Rosalind: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t622080 Della: +Burn on liver sev 3.00 src=- | job=BeatFire
+d11 t622140 Esme: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t622140 Quill: +Burn on stomach sev 2.00 src=- | job=BeatFire
+d11 t622170 Quill: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d11 t622230 Esme: +Burn on ribcage sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t622230 Rosalind: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t622230 Della: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t622260 Esme: +Burn on left arm sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t622320 Quill: +Burn on sternum sev 2.00 src=- | job=BeatFire
+d11 t622320 Della: +Burn on right kidney sev 2.00 src=- | job=BeatFire
+d11 t622380 Esme: +Burn on right kidney sev 3.00 src=- | job=no job
+d11 t622380 Rosalind: +Burn on left shoulder sev 3.00 src=- | job=no job
+d11 t622380 Della: +Burn on torso sev 3.00 src=- | job=no job
+d11 t622440 Rosalind: +Burn on left humerus sev 2.00 src=- | job=no job
+d11 t622440 Quill: +Burn on right lung sev 2.00 src=- | job=BeatFire
+d11 t622470 Esme: +Burn on torso sev 2.00 src=- | job=no job
+d11 t622470 Quill: +Burn on right leg sev 2.00 src=- | job=BeatFire
+d11 t622530 Esme: +Burn on torso sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t622530 Rosalind: +Burn on left ear sev 3.00 src=- | job=no job
+d11 t622530 Della: +Burn on right shoulder sev 3.00 src=- | job=no job
+d11 t622530 Della: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t622560 Esme: +Burn on pelvis sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t622560 Rosalind: +Burn on neck sev 2.00 src=- | job=no job
+d11 t622590 Quill: +Burn on right femur sev 2.00 src=- | job=no job
+d11 t622620 Quill: +Burn on left shoulder sev 2.00 src=- | job=no job
+d11 t622680 Esme: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t622680 Rosalind: +Burn on right tibia sev 3.00 src=- | job=no job
+d11 t622680 Della: +Burn on right kidney sev 3.00 src=- | job=no job
+d11 t622680 Della: +Burn on left radius sev 2.00 src=- | job=no job
+d11 t622710 Esme: +Burn on torso sev 2.00 src=- | job=no job
+d11 t622710 Rosalind: +Burn on torso sev 2.00 src=- | job=no job
+d11 t622740 Quill: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t622770 Quill: +Burn on right big toe sev 2.00 src=- | job=no job
+d11 t622830 Esme: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t622830 Rosalind: +Burn on pelvis sev 3.00 src=- | job=no job
+d11 t622830 Della: +Burn on right ear sev 3.00 src=- | job=no job
+d11 t622830 Della: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t622860 Esme: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t622860 Rosalind: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t622860 DEATH Esme age 37 carrying: Bitex2(7.96), Burnx58(3.00), MissingBodyPartx1(30.00)
+d11 t622890 Quill: +Burn on torso sev 2.00 src=- | job=no job
+d11 t622920 Quill: +Burn on torso sev 2.00 src=- | job=no job
+d11 t622980 Rosalind: +Burn on torso sev 3.00 src=- | job=no job
+d11 t622980 Della: +Burn on right eye sev 3.00 src=- | job=no job
+d11 t622980 Della: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t623010 Rosalind: +Burn on head sev 2.00 src=- | job=no job
+d11 t623040 Quill: +Burn on stomach sev 2.00 src=- | job=no job
+d11 t623070 Quill: +Burn on left little toe sev 2.00 src=- | job=no job
+d11 t623130 Rosalind: +Burn on right ear sev 2.00 src=- | job=no job
+d11 t623130 Della: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t623130 Della: +Burn on torso sev 2.00 src=- | job=no job
+d11 t623160 Rosalind: +Burn on left clavicle sev 2.00 src=- | job=no job
+d11 t623190 Quill: +Burn on right ear sev 2.00 src=- | job=no job
+d11 t623220 Quill: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t623280 Rosalind: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t623280 Della: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t623280 Della: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t623310 Rosalind: +Burn on torso sev 2.00 src=- | job=no job
+d11 t623340 Quill: +Burn on torso sev 3.00 src=- | job=no job
+d11 t623370 Quill: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t623430 Rosalind: +Burn on right femur sev 3.00 src=- | job=no job
+d11 t623430 Della: +Burn on right shoulder sev 2.00 src=- | job=no job
+d11 t623430 Della: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t623460 Rosalind: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t623490 Quill: +Burn on torso sev 2.00 src=- | job=no job
+d11 t623520 Quill: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t623580 Rosalind: +Burn on torso sev 3.00 src=- | job=no job
+d11 t623580 Della: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t623580 Della: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t623610 Rosalind: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t623640 Quill: +Burn on right radius sev 3.00 src=- | job=no job
+d11 t623670 Quill: +Burn on right foot sev 2.00 src=- | job=no job
+d11 t623730 Rosalind: +Burn on torso sev 3.00 src=- | job=no job
+d11 t623730 Della: +Burn on right kidney sev 3.00 src=- | job=no job
+d11 t623730 Della: +Burn on left eye sev 2.00 src=- | job=no job
+d11 t623760 Rosalind: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t623790 Quill: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t623820 Quill: +Burn on left kidney sev 3.00 src=- | job=no job
+d11 t623880 Rosalind: +Burn on brain sev 3.00 src=- | job=no job
+d11 t623880 Della: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t623880 Della: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t623910 Rosalind: +Burn on pelvis sev 2.00 src=- | job=no job
+d11 t623940 Quill: +Burn on torso sev 3.00 src=- | job=no job
+d11 t623970 Quill: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t624030 Rosalind: +Burn on spine sev 3.00 src=- | job=no job
+d11 t624030 Della: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t624030 Della: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t624060 Rosalind: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t624090 Quill: +Burn on left humerus sev 3.00 src=- | job=no job
+d11 t624120 Quill: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t624180 Rosalind: +Burn on right tibia sev 3.00 src=- | job=no job
+d11 t624180 Della: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t624180 Della: +Burn on sternum sev 3.00 src=- | job=no job
+d11 t624210 Rosalind: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t624240 Quill: +Burn on right clavicle sev 3.00 src=- | job=no job
+d11 t624270 Quill: +Burn on heart sev 3.00 src=- | job=no job
+d11 t624330 Rosalind: +Burn on left kidney sev 2.00 src=- | job=no job
+d11 t624330 Della: +Burn on neck sev 2.00 src=- | job=no job
+d11 t624330 Della: +Burn on left tibia sev 2.00 src=- | job=no job
+d11 t624360 Rosalind: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t624390 Quill: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t624420 Quill: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t624480 Rosalind: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t624480 Della: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t624480 Della: +Burn on torso sev 3.00 src=- | job=no job
+d11 t624510 Rosalind: +Burn on liver sev 2.00 src=- | job=no job
+d11 t624540 Quill: +Burn on torso sev 2.00 src=- | job=no job
+d11 t624570 Quill: +Burn on liver sev 3.00 src=- | job=no job
+d11 t624630 Rosalind: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t624630 Della: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t624630 Della: +Burn on left shoulder sev 3.00 src=- | job=no job
+d11 t624660 Rosalind: +Burn on torso sev 2.00 src=- | job=no job
+d11 t624660 DEATH Rosalind age 36 carrying: Bitex4(9.11), WoundInfectionx2(0.75), Burnx47(3.00)
+d11 t624690 Quill: +Burn on skull sev 2.00 src=- | job=no job
+d11 t624720 Quill: +Burn on torso sev 3.00 src=- | job=no job
+d11 t624780 Della: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t624780 Della: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t624840 Quill: +Burn on right lung sev 2.00 src=- | job=no job
+d11 t624840 Della: +WoundInfection on right foot sev 0.00 src=- | job=no job
+d11 t624870 Quill: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t624930 Della: +Burn on stomach sev 3.00 src=- | job=no job
+d11 t624930 Della: +Burn on left kidney sev 3.00 src=- | job=no job
+d11 t624990 Quill: +Burn on right lung sev 3.00 src=- | job=no job
+d11 t625020 Quill: +Burn on left second toe sev 2.00 src=- | job=no job
+d11 t625080 Della: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t625080 Della: +Burn on torso sev 3.00 src=- | job=no job
+d11 t625140 Quill: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t625170 Quill: +Burn on torso sev 3.00 src=- | job=no job
+d11 t625230 Della: +Burn on liver sev 2.00 src=- | job=no job
+d11 t625230 Della: +Burn on heart sev 3.00 src=- | job=no job
+d11 t625290 Quill: +Burn on right tibia sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t625320 Quill: +Burn on left leg sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t625380 Della: +Burn on pelvis sev 3.00 src=- | job=no job
+d11 t625380 Della: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t625440 Quill: +Burn on right leg sev 2.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t625470 Quill: +Burn on heart sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t625530 Della: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t625530 Della: +Burn on left lung sev 3.00 src=- | job=no job
+d11 t625590 Quill: +Burn on left arm sev 3.00 src=- | job=no job aimedBy=Tribesperson:TendPatient(own)
+d11 t625620 Cyrus: +Burn on left tibia sev 2.00 src=- | job=BeatFire
+d11 t625620 Quill: +Burn on skull sev 2.00 src=- | job=no job
+d11 t625680 Della: +Burn on right kidney sev 3.00 src=- | job=no job
+d11 t625680 DEATH Della age 34 carrying: Burnx63(3.00), WoundInfectionx1(0.01)
+d11 t625740 Cyrus: +Burn on left humerus sev 2.00 src=- | job=BeatFire
+d11 t625740 Quill: +Burn on torso sev 3.00 src=- | job=no job
+d11 t625770 Cyrus: +Burn on ribcage sev 2.00 src=- | job=BeatFire
+d11 t625770 Quill: +Burn on left shoulder sev 3.00 src=- | job=no job
+d11 t625890 Cyrus: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t625890 Quill: +Burn on heart sev 2.00 src=- | job=no job
+d11 t625920 Cyrus: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t625920 Quill: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t625920 DEATH Quill age 22 carrying: Burnx65(3.00)
+d11 t626040 Cyrus: +Burn on left tibia sev 2.00 src=- | job=no job
+d11 t626070 Cyrus: +Burn on torso sev 2.00 src=- | job=no job
+d11 t626190 Cyrus: +Burn on torso sev 2.00 src=- | job=no job
+d11 t626220 Cyrus: +Burn on left eye sev 2.00 src=- | job=no job
+d11 t626340 Cyrus: +Burn on left foot sev 3.00 src=- | job=no job
+d11 t626370 Cyrus: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t626490 Cyrus: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t626520 Cyrus: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t626640 Cyrus: +Burn on right index finger sev 3.00 src=- | job=no job
+d11 t626670 Cyrus: +Burn on torso sev 2.00 src=- | job=no job
+d11 t626790 Cyrus: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t626820 Cyrus: +Burn on left kidney sev 3.00 src=- | job=no job
+d11 t626940 Cyrus: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t626970 Cyrus: +Burn on torso sev 3.00 src=- | job=no job
+d11 t627090 Cyrus: +Burn on torso sev 2.00 src=- | job=no job
+d11 t627120 Cyrus: +Burn on left tibia sev 3.00 src=- | job=no job
+d11 t627240 Cyrus: +Burn on left tibia sev 3.00 src=- | job=no job
+d11 t627270 Cyrus: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t627390 Cyrus: +Burn on torso sev 2.00 src=- | job=no job
+d11 t627420 Cyrus: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t627540 Cyrus: +Burn on heart sev 3.00 src=- | job=no job
+d11 t627570 Cyrus: +Burn on skull sev 3.00 src=- | job=no job
+d11 t627690 Cyrus: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t627720 Cyrus: +Burn on torso sev 2.00 src=- | job=no job
+d11 t627840 Cyrus: +Burn on nose sev 3.00 src=- | job=no job
+d11 t627870 Cyrus: +Burn on left foot sev 2.00 src=- | job=no job
+d11 t627990 Cyrus: +Burn on skull sev 3.00 src=- | job=no job
+d11 t628020 Cyrus: +Burn on right clavicle sev 3.00 src=- | job=no job
+d11 t628140 Cyrus: +Burn on torso sev 3.00 src=- | job=no job
+d11 t628170 Cyrus: +Burn on torso sev 3.00 src=- | job=no job
+d11 t628290 Cyrus: +Burn on torso sev 3.00 src=- | job=no job
+d11 t628320 Cyrus: +Burn on heart sev 3.00 src=- | job=no job
+d11 t628440 Cyrus: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t628470 Cyrus: +Burn on left humerus sev 3.00 src=- | job=no job
+d11 t628590 Cyrus: +Burn on pelvis sev 3.00 src=- | job=no job
+d11 t628620 Cyrus: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t628620 DEATH Cyrus age 23 carrying: Crackx2(3.61), Bruisex1(0.18), Bitex8(6.47), MissingBodyPartx1(8.00), WoundInfectionx1(0.41), Burnx41(3.00)
+d11 t636330 Kestrel: +Burn on stomach sev 2.00 src=- | job=BeatFire
+d11 t636390 Kestrel: +Burn on pelvis sev 2.00 src=- | job=BeatFire
+d11 t636450 Kestrel: +Burn on right clavicle sev 2.00 src=- | job=BeatFire
+d11 t637080 Kestrel: +Burn on left arm sev 2.00 src=- | job=BeatFire
+d11 t637140 Kestrel: +Burn on stomach sev 2.00 src=- | job=BeatFire
+d11 t637320 Kestrel: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t637350 Kestrel: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d11 t637740 Kestrel: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d11 t638190 Kestrel: +Burn on right eye sev 2.00 src=- | job=BeatFire
+d11 t638250 Kestrel: +Burn on liver sev 2.00 src=- | job=BeatFire
+d11 t639030 Kestrel: +Burn on stomach sev 2.00 src=- | job=BeatFire
+d11 t639120 Kestrel: +Burn on pelvis sev 2.00 src=- | job=BeatFire
+d11 t639690 Kestrel: +Burn on right tibia sev 2.00 src=- | job=BeatFire
+d11 t639720 Kestrel: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d11 t640530 Kestrel: +Burn on right shoulder sev 2.00 src=- | job=BeatFire
+d11 t640620 Kestrel: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d11 t640770 Kestrel: +Burn on left leg sev 2.00 src=- | job=BeatFire
+d11 t641010 Kestrel: +Burn on torso sev 2.00 src=- | job=BeatFire
+d11 t641070 Kestrel: +Burn on right arm sev 2.00 src=- | job=BeatFire
+d11 t641430 Kestrel: +Burn on left lung sev 2.00 src=- | job=BeatFire
+d11 t642480 Kestrel: +Burn on left lung sev 2.00 src=- | job=no job
+d11 t642540 Kestrel: +Burn on stomach sev 2.00 src=- | job=no job
+d11 t642630 Kestrel: +Burn on right femur sev 2.00 src=- | job=no job
+d11 t642690 Kestrel: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t642780 Kestrel: +Burn on torso sev 2.00 src=- | job=no job
+d11 t642840 Kestrel: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t642930 Kestrel: +Burn on torso sev 3.00 src=- | job=no job
+d11 t642990 Kestrel: +Burn on torso sev 2.00 src=- | job=no job
+d11 t643080 Kestrel: +Burn on right hand sev 2.00 src=- | job=no job
+d11 t643140 Kestrel: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t643230 Kestrel: +Burn on right kidney sev 2.00 src=- | job=no job
+d11 t643290 Kestrel: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t643380 Kestrel: +Burn on left leg sev 3.00 src=- | job=no job
+d11 t643440 Kestrel: +Burn on right arm sev 2.00 src=- | job=no job
+d11 t643530 Kestrel: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t643590 Kestrel: +Burn on right middle finger sev 2.00 src=- | job=no job
+d11 t643680 Kestrel: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t643740 Kestrel: +Burn on spine sev 3.00 src=- | job=no job
+d11 t643830 Kestrel: +Burn on ribcage sev 3.00 src=- | job=no job
+d11 t643890 Kestrel: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t643980 Kestrel: +Burn on left arm sev 2.00 src=- | job=no job
+d11 t644040 Kestrel: +Burn on right tibia sev 3.00 src=- | job=no job
+d11 t644130 Kestrel: +Burn on left arm sev 3.00 src=- | job=no job
+d11 t644190 Kestrel: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t644280 Kestrel: +Burn on pelvis sev 2.00 src=- | job=no job
+d11 t644340 Kestrel: +Burn on left leg sev 2.00 src=- | job=no job
+d11 t644430 Kestrel: +Burn on torso sev 3.00 src=- | job=no job
+d11 t644490 Kestrel: +Burn on left shoulder sev 3.00 src=- | job=no job
+d11 t644580 Kestrel: +Burn on right leg sev 3.00 src=- | job=no job
+d11 t644640 Kestrel: +Burn on torso sev 2.00 src=- | job=no job
+d11 t644730 Kestrel: +Burn on torso sev 2.00 src=- | job=no job
+d11 t644790 Kestrel: +Burn on spine sev 2.00 src=- | job=no job
+d11 t644880 Kestrel: +Burn on right leg sev 2.00 src=- | job=no job
+d11 t644940 Kestrel: +Burn on right femur sev 2.00 src=- | job=no job
+d11 t645030 Kestrel: +Burn on torso sev 3.00 src=- | job=no job
+d11 t645090 Kestrel: +Burn on right tibia sev 2.00 src=- | job=no job
+d11 t645180 Kestrel: +Burn on torso sev 2.00 src=- | job=no job
+d11 t645240 Kestrel: +Burn on right ear sev 3.00 src=- | job=no job
+d11 t645330 Kestrel: +Burn on left femur sev 3.00 src=- | job=no job
+d11 t645390 Kestrel: +Burn on pelvis sev 3.00 src=- | job=no job
+d11 t645480 Kestrel: +Burn on right humerus sev 3.00 src=- | job=no job
+d11 t645540 Kestrel: +Burn on left radius sev 2.00 src=- | job=no job
+d11 t645630 Kestrel: +Burn on nose sev 3.00 src=- | job=no job
+d11 t645690 Kestrel: +Burn on left tibia sev 3.00 src=- | job=no job
+d11 t645780 Kestrel: +Burn on right arm sev 3.00 src=- | job=no job
+d11 t645840 Kestrel: +Burn on torso sev 3.00 src=- | job=no job
+d11 t645840 DEATH Kestrel age 22 carrying: Burnx66(3.00)
+== end of day 11: citizens 0, deaths 21 (Injury 21)
+== end of day 12: citizens 0, deaths 21 (Injury 21)
+== end of day 13: citizens 0, deaths 21 (Injury 21)
+== end of day 14: citizens 0, deaths 21 (Injury 21)
+== end of day 15: citizens 0, deaths 21 (Injury 21)
+== end of day 16: citizens 0, deaths 21 (Injury 21)
+== end of day 17: citizens 0, deaths 21 (Injury 21)
+== end of day 18: citizens 0, deaths 21 (Injury 21)
+== end of day 19: citizens 0, deaths 21 (Injury 21)
+== end of day 20: citizens 0, deaths 21 (Injury 21)
+
+## new hediffs on citizens, by context
+827	Burn <- job=no job
+183	Burn <- job=BeatFire
+57	Burn <- job=no job aimedBy=Tribesperson:TendPatient(own)
+30	Burn <- job=BeatFire aimedBy=Tribesperson:TendPatient(own)
+12	Burn <- job=TendPatient target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+10	Burn <- job=TendPatient target=Tribesperson
+7	Bite <- job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+6	BloodLoss <- job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+5	MissingBodyPart <- job=no job
+5	Burn <- job=Repair aimedBy=Tribesperson:TendPatient(own)
+5	Burn <- job=LayDown
+5	Burn <- job=Ingest
+4	Bruise <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+4	BloodLoss <- job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+3	Bite <- job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+3	Bruise <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:TendPatient(own)+Tribesperson:SocialFight[SocialFighting](own)
+3	BloodLoss <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+3	BloodLoss <- job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+3	Bite <- job=Train target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(own)
+3	Bite <- job=no job aimedBy=Tribesperson:TendPatient(own)
+3	Bite <- job=Tame target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+3	Burn <- job=Repair
+2	Crack <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)
+2	Crack <- job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+2	Crush <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+2	Bite <- job=no job
+2	WoundInfection <- job=no job
+2	Bite <- job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+2	Burn <- job=TendPatient target=Muffalo aimedBy=Tribesperson:TendPatient(own)
+2	Burn <- job=Sow
+2	Burn <- job=Sow aimedBy=Tribesperson:TendPatient(own)
+1	Crack <- job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+1	BloodLoss <- job=Harvest aimedBy=Tribesperson:TendPatient(own)
+1	Crack <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:TendPatient(own)+Tribesperson:SocialFight[SocialFighting](own)
+1	MissingBodyPart <- job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+1	Bite <- job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(own)
+1	BloodLoss <- job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(own)
+1	Crack <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+1	Bruise <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialFight[SocialFighting](own)+Tribesperson:TendPatient(own)
+1	Bruise <- job=SocialFight target=Tribesperson mental=SocialFighting aimedBy=Tribesperson:SocialRelax(own)+Tribesperson:SocialFight[SocialFighting](own)
+1	Bruise <- job=Mine aimedBy=Tribesperson:SocialRelax(own)+Tribesperson:TendPatient(own)
+1	Crack <- job=no job aimedBy=Tribesperson:TendPatient(own)
+1	Crack <- job=Tame target=Husky aimedBy=Husky:AttackMelee(wild)
+1	Bruise <- job=Tame target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(wild)
+1	Bite <- job=Tame target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(wild)
+1	BloodLoss <- job=Tame target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(wild)
+1	MissingBodyPart <- job=Tame target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(wild)
+1	Crack <- job=Train target=Husky aimedBy=Tribesperson:TendPatient(own)+Husky:AttackMelee(own)
+1	MissingBodyPart <- job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+1	BloodLoss <- job=Tame target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+1	Bruise <- job=Tame target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+1	Bite <- job=Tame target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+1	BloodLoss <- job=Tame target=Muffalo aimedBy=Muffalo:AttackMelee(wild)
+1	Crack <- job=Tame target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(wild)
+1	BloodLoss <- job=no job
+1	MissingBodyPart <- job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(own)
+1	WoundInfection <- job=no job aimedBy=Tribesperson:TendPatient(own)
+1	BloodLoss <- job=no job aimedBy=Tribesperson:TendPatient(own)
+1	Crack <- job=AttackStatic target=Muffalo aimedBy=Muffalo:AttackMelee(own)
+1	Crack <- job=AttackStatic target=Muffalo aimedBy=Tribesperson:TendPatient(own)+Muffalo:AttackMelee(own)
+1	WoundInfection <- job=LayDown
+1	Burn <- job=TendPatient target=Muffalo
+1	Burn <- job=Harvest
+1	Burn <- job=Harvest aimedBy=Tribesperson:TendPatient(own)
+1	Burn <- job=Rescue target=Tribesperson aimedBy=Tribesperson:TendPatient(own)
+exit=0
