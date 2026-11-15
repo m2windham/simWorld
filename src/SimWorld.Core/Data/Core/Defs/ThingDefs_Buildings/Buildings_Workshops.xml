@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Blueprint/Frame pairs for the three workbenches that had none (crafting.stonework.gaps): Smithy,
+    TableTailor and TableButcher. Each has shipped in Buildings_Production.xml with a thingClass, and
+    recipes name all three in recipeUsers (Make_MeleeWeapon_Knife, Make_Apparel_Shirt, ButcherAnimal), but
+    GenConstruct.BlueprintDefFor returned null for every one of them, so no settlement could ever raise one.
+
+    Its own file, per CLAUDE.md's "add a file rather than edit a shared one", the same as
+    Buildings_Kitchen.xml and Buildings_Research.xml. Like those pairs, the benches carry no costList, so a
+    Frame needs nothing delivered and ConstructFinishFrames finishes it outright; pricing benches in stuff
+    is the costStuffCount gap, which is the Building module's.
+
+    What these pairs do not do is decide to place a bench: that is a settlement initiative's job, and which
+    one wants a smithy or a tailor's bench is the open crafting.billcreators question.
+  -->
+
+  <ThingDef>
+    <defName>Blueprint_Smithy</defName>
+    <label>smithy (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Smithy</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Smithy</defName>
+    <label>smithy (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>Smithy</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_TableTailor</defName>
+    <label>tailoring bench (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>TableTailor</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_TableTailor</defName>
+    <label>tailoring bench (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>TableTailor</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_TableButcher</defName>
+    <label>butcher table (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>TableButcher</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_TableButcher</defName>
+    <label>butcher table (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>TableButcher</entityToBuild>
+  </ThingDef>
+
+</Defs>
