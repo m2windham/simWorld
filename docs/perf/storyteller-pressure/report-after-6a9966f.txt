@@ -1,0 +1,15 @@
+runs: 4; incomplete or non-deterministic: []
+
+| band | arm | seeds | day half the band was dead | day roster <= 25% | extinct by day 60 | deaths/run | credited to raid or pack | raids+packs on a live settlement, per run | attackers per defender | killed per such threat | after collapse, per run | points d0 / d10 / d20 | moments |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 20 | off | 4 | 25 (3 never) | 25 (3 never) | 1/4 | 6 [2..20] | 0 [0..0] | 0 [0..0] | - | - | 0 [0..0] | 210 [210..210] / 398 [396..404] / 566 [529..611] | 16 [10..17] |
+
+| band | seed | arm | pop at day 0/5/10/15/20/30/45/60 | ledger |
+| --- | --- | --- | --- | --- |
+| 20 | 99 | off | 20/20/20/21/21/21/21/22 | deaths 2 (Age 1, Injury 1) [Earthquake 1] |
+| 20 | 777 | off | 20/20/20/21/20/21/21/22 | deaths 4 (Age 2, Disease 2) [Disease_Plague 1] |
+| 20 | 2024 | off | 20/20/20/20/20/0/1/1 | deaths 20 (Injury 20) |
+| 20 | 12345 | off | 20/20/20/21/18/18/15/17 | deaths 8 (Age 1, Disease 4, Injury 3) [Earthquake 3] |
+
+| band | seed | raids and packs that found at least half the band alive (day: kind attackers/defenders at points -> killed, peak downed within 2 days) |
+| --- | --- | --- |

@@ -1,0 +1,77 @@
+== end of day 1: citizens 20, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 0 (none)
+== end of day 2: citizens 20, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 0 (none)
+== end of day 3: citizens 20, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 0 (none)
+== end of day 4: citizens 19, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 1 (Disease 1)
+== end of day 5: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 2)
+== end of day 6: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 3 (Disease 3)
+== end of day 7: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 3 (Disease 3)
+== end of day 8: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 3 (Disease 3)
+== end of day 9: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 3 (Disease 3)
+== end of day 10: citizens 17, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 4 (Disease 4)
+== end of day 11: citizens 17, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 4 (Disease 4)
+== end of day 12: citizens 16, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 5 (Disease 5)
+== end of day 13: citizens 13, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 8 (Disease 7, Injury 1)
+== end of day 14: citizens 12, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 9 (Disease 8, Injury 1)
+== end of day 15: citizens 11, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 10 (Disease 9, Injury 1)
+== end of day 16: citizens 11, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 10 (Disease 9, Injury 1)
+== end of day 17: citizens 7, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 14 (Disease 12, Injury 2)
+== end of day 18: citizens 7, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 14 (Disease 12, Injury 2)
+== end of day 19: citizens 6, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 15 (Disease 13, Injury 2)
+== end of day 20: citizens 6, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 15 (Disease 13, Injury 2)
+
+## infections: pawn | onset day | job at onset | first tend after (h) | tends | mean tend quality | share of time tended | in bed | asleep | downed | mean immunity gain speed | max severity | immunity at end | lasted (d) | outcome
+Della | 2.1 | Harvest | 10.4 | 1 | 0.09 | 0.96 | 0.36 | 0.26 | 0.13 | 1.06 | 1.00 | 0.83 | 1.22 | DIED
+Halle | 3.7 | none | 0.6 | 2 | 0.11 | 0.98 | 0.99 | 0.00 | 0.99 | 1.17 | 1.00 | 0.95 | 1.25 | DIED
+Kira | 3.9 | Ingest | 0.7 | 3 | 0.06 | 0.98 | 0.31 | 0.19 | 0.13 | 1.05 | 1.00 | 0.84 | 1.24 | DIED
+Juniper | 8.5 | LayDown | 10.1 | 2 | 0.09 | 0.99 | 0.34 | 0.22 | 0.13 | 1.06 | 1.00 | 0.85 | 1.24 | DIED
+Delphine | 10.2 | HaulToCell | 0.8 | 3 | 0.08 | 0.97 | 0.77 | 0.01 | 0.76 | 1.14 | 1.00 | 0.92 | 1.25 | DIED
+Delphine | 10.8 | none | never | 0 | - | 0.99 | 1.00 | 0.00 | 1.00 | 1.18 | 0.57 | 0.92 | 0.67 | DIED
+Halle | 10.8 | Harvest | 0.1 | 2 | 0.10 | 1.00 | 0.36 | 0.21 | 0.13 | 1.06 | 1.00 | 0.85 | 1.24 | DIED
+Alden | 10.9 | Harvest | 0.1 | 3 | 0.06 | 1.00 | 0.27 | 0.17 | 0.13 | 1.05 | 1.00 | 0.84 | 1.24 | DIED
+Delphine | 11.0 | none | 0.3 | 2 | 0.11 | 0.97 | 1.00 | 0.00 | 1.00 | 1.18 | 0.35 | 0.92 | 0.45 | DIED
+Delphine | 11.1 | none | 0.4 | 1 | 0.11 | 0.95 | 1.00 | 0.00 | 1.00 | 1.18 | 0.30 | 0.92 | 0.38 | DIED
+Elian | 12.0 | SocialRelax | 0.7 | 3 | 0.10 | 0.98 | 0.44 | 0.17 | 0.30 | 1.08 | 1.00 | 0.88 | 1.27 | DIED
+Elian | 12.4 | LayDown | 0.5 | 2 | 0.06 | 0.98 | 0.59 | 0.19 | 0.44 | 1.10 | 0.70 | 0.88 | 0.87 | DIED
+Dorian | 13.0 | none | 0.4 | 3 | 0.04 | 0.99 | 0.95 | 0.00 | 1.00 | 1.17 | 1.00 | 0.92 | 1.23 | DIED
+Esme | 15.4 | none | 0.2 | 2 | 0.12 | 0.99 | 1.00 | 0.00 | 1.00 | 1.18 | 1.00 | 0.95 | 1.25 | DIED
+Quinley | 15.4 | none | 0.5 | 3 | 0.08 | 0.98 | 0.97 | 0.00 | 1.00 | 1.17 | 1.00 | 0.94 | 1.25 | DIED
+Esme | 15.6 | none | 0.2 | 3 | 0.14 | 0.99 | 1.00 | 0.00 | 1.00 | 1.18 | 0.83 | 0.95 | 1.08 | DIED
+Quinley | 15.7 | none | 0.3 | 3 | 0.12 | 0.99 | 1.00 | 0.00 | 1.00 | 1.18 | 0.79 | 0.94 | 1.02 | DIED
+Adara | 15.7 | Harvest | 9.8 | 2 | 0.08 | 0.98 | 0.88 | 0.05 | 0.85 | 1.16 | 1.00 | 0.92 | 1.24 | DIED
+Quinley | 15.8 | none | 0.2 | 2 | 0.11 | 0.99 | 1.00 | 0.00 | 1.00 | 1.18 | 0.66 | 0.94 | 0.85 | DIED
+Elian | 17.1 | FeedPatient | 22.8 | 1 | 0.12 | 0.96 | 0.18 | 0.08 | 0.14 | 1.03 | 1.00 | 0.80 | 1.21 | DIED
+Jarrah | 19.3 | none | 0.1 | 1 | 0.08 | 0.99 | 1.00 | 0.00 | 1.00 | 1.18 | 0.59 | 0.54 | 0.72 | running
+Quill | 19.8 | none | 0.3 | 1 | 0.05 | 0.95 | 1.00 | 0.00 | 1.00 | 1.18 | 0.20 | 0.19 | 0.25 | running
+
+## fatal case: Della, infection from day 2.08
+  +0.00d sev 0.00 imm 0.00 tended no job Harvest gainSpeed 1.00
+  +0.10d sev 0.09 imm 0.06 tended yes q0.00 job Harvest gainSpeed 1.00
+  +0.20d sev 0.17 imm 0.13 tended yes q0.00 job Sow gainSpeed 1.00
+  +0.30d sev 0.25 imm 0.19 tended yes q0.00 job Sow gainSpeed 1.00
+  +0.40d sev 0.34 imm 0.26 tended yes q0.00 job SocialRelax gainSpeed 1.00
+  +0.43d TEND quality 0.09 (patient in bed: yes)
+  +0.50d sev 0.42 imm 0.33 tended yes q0.09 job LayDown IN BED asleep gainSpeed 1.18
+  +0.60d sev 0.50 imm 0.40 tended yes q0.09 job Mine gainSpeed 1.00
+  +0.70d sev 0.58 imm 0.46 tended yes q0.09 job Mine gainSpeed 1.00
+  +0.80d sev 0.66 imm 0.53 tended yes q0.09 job LayDown IN BED asleep gainSpeed 1.18
+  +0.90d sev 0.74 imm 0.60 tended yes q0.09 job LayDown IN BED asleep gainSpeed 1.18
+  +1.00d sev 0.82 imm 0.68 tended yes q0.00 job LayDown IN BED asleep gainSpeed 1.18
+  +1.10d sev 0.90 imm 0.74 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+  +1.20d sev 0.99 imm 0.82 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+
+## fatal case: Halle, infection from day 3.75
+  +0.00d sev 0.00 imm 0.00 tended no job none IN BED DOWNED gainSpeed 1.18
+  +0.02d TEND quality 0.10 (patient in bed: yes)
+  +0.10d sev 0.08 imm 0.08 tended yes q0.10 job none IN BED DOWNED gainSpeed 1.18
+  +0.20d sev 0.16 imm 0.15 tended yes q0.10 job none IN BED DOWNED gainSpeed 1.18
+  +0.30d sev 0.24 imm 0.23 tended yes q0.10 job none IN BED DOWNED gainSpeed 1.18
+  +0.40d sev 0.32 imm 0.30 tended yes q0.10 job none IN BED DOWNED gainSpeed 1.18
+  +0.43d TEND quality 0.12 (patient in bed: yes)
+  +0.50d sev 0.40 imm 0.38 tended yes q0.12 job none IN BED DOWNED gainSpeed 1.18
+  +0.60d sev 0.47 imm 0.46 tended yes q0.12 job none IN BED DOWNED gainSpeed 1.18
+  +0.70d sev 0.55 imm 0.53 tended yes q0.12 job none IN BED DOWNED gainSpeed 1.18
+  +0.80d sev 0.63 imm 0.61 tended yes q0.12 job none IN BED DOWNED gainSpeed 1.18
+  +0.90d sev 0.71 imm 0.68 tended yes q0.12 job none IN BED DOWNED gainSpeed 1.18
+  +1.00d sev 0.79 imm 0.76 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+  +1.10d sev 0.87 imm 0.83 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+  +1.20d sev 0.96 imm 0.91 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18

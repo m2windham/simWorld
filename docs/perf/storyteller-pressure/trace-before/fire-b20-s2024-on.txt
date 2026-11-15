@@ -1,0 +1,273 @@
+d1 t0 CHRONICLE Founding: Greycrest founded by 20 settlers.
+d1 t2000 CHRONICLE Accession: Ulric takes the eldership of North combine.
+d1 t2000 CHRONICLE Accession: Elian takes the stewardship of Greycrest.
+== end of day 1: citizens 20, beds 1, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 0 (none)
+== end of day 2: citizens 20, beds 1, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 0 (none)
+== end of day 3: citizens 19, beds 1, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 1 (Disease 1)
+d4 t217500 CHRONICLE Divorce: Zane and Maren divorced.
+d4 t240000 CHRONICLE ManhunterPack
+== end of day 4: citizens 18, beds 1, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 2)
+== end of day 5: citizens 18, beds 1, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 2)
+d6 t304000 CHRONICLE Earthquake
+d6 t315000 CHRONICLE Divorce: Bryn and Emrys divorced.
+d6 t350000 CHRONICLE Flashstorm
+d6 t352800 fires 1 citizens-on-fire 0 raining Clear | HaulToCell 16, LayDown 1
+d6 t353400 fires 4 citizens-on-fire 0 raining Clear | HaulToCell 16, LayDown 1
+d6 t354000 fires 7 citizens-on-fire 0 raining Clear | HaulToCell 16, LayDown 1
+d6 t354600 fires 9 citizens-on-fire 0 raining Clear | HaulToCell 15, LayDown 1, Ingest 1
+d6 t355200 fires 19 citizens-on-fire 0 raining Clear | HaulToCell 15, LayDown 1, Ingest 1
+d6 t355800 fires 20 citizens-on-fire 0 raining Clear | HaulToCell 15, LayDown 1, Sow 1
+d6 t356400 fires 27 citizens-on-fire 0 raining Clear | HaulToCell 13, Ingest 2, LayDown 1, Sow 1
+d6 t357000 fires 35 citizens-on-fire 0 raining Clear | HaulToCell 12, Sow 4, LayDown 1
+d6 t357360 Cyrus burn #1 job Sow fire-in-cell yes attached yes
+d6 t357450 Cyrus burn #2 job Sow fire-in-cell yes attached yes
+d6 t357510 Cyrus burn #3 job Sow fire-in-cell yes attached yes
+d6 t357600 fires 43 citizens-on-fire 1 raining Clear | HaulToCell 11, Sow 5, LayDown 1
+d6 t358200 fires 49 citizens-on-fire 1 raining Clear | HaulToCell 10, Sow 5, LayDown 1, TendPatient 1
+d6 t358350 Cyrus burn #10 job Sow fire-in-cell yes attached yes
+d6 t358800 fires 56 citizens-on-fire 1 raining Clear | HaulToCell 9, Sow 5, LayDown 1, BeatFire 1, TendPatient 1
+d6 t358890 Esme burn #1 job BeatFire fire-in-cell yes attached yes
+d6 t359070 Esme burn #2 job BeatFire fire-in-cell yes attached yes
+d6 t359220 Esme burn #3 job BeatFire fire-in-cell yes attached yes
+d6 t359250 Elian burn #1 job BeatFire fire-in-cell yes attached yes
+d6 t359310 Bryn burn #1 job TendPatient fire-in-cell yes attached yes
+d6 t359340 Elian burn #2 job BeatFire fire-in-cell yes attached no
+d6 t359340 Bryn burn #2 job TendPatient fire-in-cell yes attached yes
+d6 t359400 fires 61 citizens-on-fire 0 raining Clear | HaulToCell 7, Sow 5, TendPatient 4, LayDown 1
+d6 t359460 Bryn burn #3 job TendPatient fire-in-cell yes attached yes
+d6 t359970 Elian burn #3 job TendPatient fire-in-cell yes attached yes
+d6 t360000 fires 70 citizens-on-fire 1 raining Clear | HaulToCell 7, Sow 4, TendPatient 3, Ingest 1, BeatFire 1, none(downed) 1
+== end of day 6: citizens 17, beds 0, medicine on map 0, medicine in ledger 20, peak fires 70, deaths 3 (Disease 2, Injury 1) [Earthquake 1]
+d7 t360060 Cyrus burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t360090 Silas burn #1 job TendPatient fire-in-cell yes attached yes
+d7 t360210 Silas burn #2 job TendPatient fire-in-cell yes attached yes
+d7 t360210 Emrys burn #1 job BeatFire fire-in-cell yes attached yes
+d7 t360240 Silas burn #3 job TendPatient fire-in-cell yes attached yes
+d7 t360420 Emrys burn #2 job TendPatient fire-in-cell yes attached yes
+d7 t360450 Esme burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t360480 Elian burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t360540 Ulric burn #1 job Sow fire-in-cell yes attached yes
+d7 t360570 Emrys burn #3 job BeatFire fire-in-cell yes attached yes
+d7 t360600 fires 76 citizens-on-fire 4 raining Clear | TendPatient 5, HaulToCell 4, BeatFire 4, Sow 2, none(downed) 1, Ingest 1
+d7 t360630 Ulric burn #2 job Sow fire-in-cell yes attached yes
+d7 t361050 Ulric burn #3 job BeatFire fire-in-cell yes attached yes
+d7 t361110 Cyrus burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t361170 Esme burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t361200 fires 78 citizens-on-fire 3 raining Clear | TendPatient 5, Sow 5, BeatFire 3, none(downed) 2, Skygaze 1, Ingest 1
+d7 t361260 Wren burn #1 job BeatFire fire-in-cell yes attached yes
+d7 t361260 Aveline burn #2 job BeatFire fire-in-cell yes attached yes
+d7 t361410 Wren burn #2 job BeatFire fire-in-cell yes attached yes
+d7 t361530 Wren burn #3 job BeatFire fire-in-cell yes attached yes
+d7 t361590 Juniper burn #1 job Sow fire-in-cell yes attached yes
+d7 t361740 Juniper burn #2 job Sow fire-in-cell yes attached yes
+d7 t361800 fires 75 citizens-on-fire 2 raining Clear | TendPatient 6, Sow 5, BeatFire 2, none(downed) 2, Skygaze 1, Ingest 1
+d7 t361830 Hana burn #1 job TendPatient fire-in-cell yes attached yes
+d7 t361950 Cyrus burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t361980 Ulric burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t362010 Emrys burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t362040 Juniper burn #3 job BeatFire fire-in-cell yes attached yes
+d7 t362190 Hana burn #3 job BeatFire fire-in-cell yes attached yes
+d7 t362220 Esme burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t362340 Marek burn #1 job BeatFire fire-in-cell yes attached yes
+d7 t362340 Zane burn #1 job BeatFire fire-in-cell yes attached yes
+d7 t362400 fires 85 citizens-on-fire 6 raining Clear | BeatFire 6, TendPatient 4, none(downed) 3, Sow 2, Skygaze 1, SocialRelax 1
+d7 t362430 Wren burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t362490 Marek burn #2 job BeatFire fire-in-cell yes attached yes
+d7 t362490 Zane burn #3 job BeatFire fire-in-cell yes attached no
+d7 t362550 Marek burn #3 job Ingest fire-in-cell yes attached yes
+d7 t362640 Elian burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t362670 Briony burn #1 job SocialRelax fire-in-cell yes attached yes
+d7 t362670 Aveline burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t362730 Esme burn #1 job BeatFire fire-in-cell yes attached yes
+d7 t362730 Briony burn #2 job SocialRelax fire-in-cell yes attached yes
+d7 t362820 Esme burn #2 job BeatFire fire-in-cell yes attached yes
+d7 t362850 Esme burn #3 job BeatFire fire-in-cell yes attached yes
+d7 t362850 Hana burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t362880 Briony burn #3 job BeatFire fire-in-cell yes attached yes
+d7 t362880 Xiomara burn #1 job TendPatient fire-in-cell yes attached yes
+d7 t362910 Cyrus burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t362910 Emrys burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t363000 fires 89 citizens-on-fire 5 raining Clear | BeatFire 5, TendPatient 5, none(downed) 4, Ingest 1, Skygaze 1, SocialRelax 1
+d7 t363000 Xiomara burn #2 job TendPatient fire-in-cell yes attached yes
+d7 t363090 Zane burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t363180 Esme burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t363270 Ulric burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t363570 Aveline burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t363600 fires 87 citizens-on-fire 6 raining Clear | none(downed) 8, BeatFire 5, Ingest 1, TendPatient 1, Skygaze 1, SocialRelax 1
+d7 t363600 Marek burn #10 job Ingest fire-in-cell yes attached yes
+d7 t363630 Wren burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t363690 Elian burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t363690 Silas burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t363690 Emrys burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t363750 Xiomara burn #3 job BeatFire fire-in-cell yes attached yes
+d7 t363810 Cyrus burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t363840 Briony burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t363960 Hana burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t363990 Zane burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t364080 Esme burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t364170 Ulric burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t364200 fires 96 citizens-on-fire 14 raining Clear | none(downed) 10, BeatFire 4, Ingest 1, Skygaze 1, SocialRelax 1
+d7 t364230 Xiomara burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t364410 Cyrus burn #67 job none DEAD fire-in-cell no attached no
+d7 t364410 Aveline burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t364500 Elian burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t364500 Wren burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t364590 Briony burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t364590 Silas burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t364680 Emrys burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t364710 Hana burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t364770 Zane burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t364800 fires 98 citizens-on-fire 11 raining Clear | none(downed) 11, BeatFire 3, Skygaze 1, SocialRelax 1
+d7 t364920 Ulric burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t364920 Esme burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t364980 Esme burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t365100 Xiomara burn #20 job BeatFire fire-in-cell yes attached yes
+d7 t365100 Aveline burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t365220 Esme burn #64 job none DEAD fire-in-cell no attached no
+d7 t365340 Briony burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t365340 Elian burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t365400 fires 97 citizens-on-fire 11 raining Clear | none(downed) 12, TendPatient 2, SocialRelax 1
+d7 t365400 Silas burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t365430 Emrys burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t365460 Hana burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t365580 Emrys burn #62 job none DEAD fire-in-cell no attached no
+d7 t365700 Ulric burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t365730 Esme burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t365850 Xiomara burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t365850 Aveline burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t366000 fires 97 citizens-on-fire 10 raining Clear | none(downed) 11, TendPatient 2, SocialRelax 1
+d7 t366090 Briony burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t366090 Elian burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t366150 Silas burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t366210 Hana burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t366450 Ulric burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t366480 Esme burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t366600 fires 102 citizens-on-fire 10 raining Clear | none(downed) 11, TendPatient 2, SocialRelax 1
+d7 t366600 Xiomara burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t366600 Aveline burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t366690 Elian burn #68 job none DEAD fire-in-cell no attached no
+d7 t366720 Ulric burn #63 job none DEAD fire-in-cell no attached no
+d7 t366720 Aveline burn #61 job none DEAD fire-in-cell no attached no
+d7 t366840 Briony burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t366900 Silas burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t366930 Wren burn #63 job none DEAD fire-in-cell no attached no
+d7 t366960 Hana burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t366990 Zane burn #58 job none DEAD fire-in-cell no attached no
+d7 t367050 Silas burn #62 job none DEAD fire-in-cell no attached no
+d7 t367200 fires 101 citizens-on-fire 4 raining Clear | none(downed) 5, Ingest 1, BeatFire 1, TendPatient 1
+d7 t367230 Esme burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t367350 Xiomara burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t367590 Briony burn #60 job none DEAD fire-in-cell no attached no
+d7 t367800 fires 98 citizens-on-fire 2 raining Clear | none(downed) 3, Ingest 1, BeatFire 1, TendPatient 1
+d7 t367980 Esme burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t368000 CHRONICLE Accession: Esme takes the eldership of North combine.
+d7 t368000 CHRONICLE Accession: Juniper takes the stewardship of Greycrest.
+d7 t368040 Juniper burn #10 job BeatFire fire-in-cell yes attached yes
+d7 t368190 Esme burn #63 job none DEAD fire-in-cell no attached no
+d7 t368250 Xiomara burn #60 job none DOWNED fire-in-cell yes attached no
+d7 t368400 fires 102 citizens-on-fire 2 raining Clear | none(downed) 2, Ingest 1, SocialRelax 1, TendPatient 1
+d7 t368580 Xiomara burn #64 job none DEAD fire-in-cell no attached no
+d7 t369000 fires 102 citizens-on-fire 0 raining Clear | none(downed) 1, TendPatient 1, LayDown 1, Sow 1
+d7 t369600 fires 103 citizens-on-fire 0 raining Clear | none(downed) 1, TendPatient 1, LayDown 1, Sow 1
+d7 t370000 CHRONICLE Accession: Marek takes the eldership of North combine.
+d7 t370200 fires 99 citizens-on-fire 0 raining Clear | none(downed) 1, TendPatient 1, LayDown 1, FeedPatient 1
+d7 t370800 fires 96 citizens-on-fire 0 raining Clear | none(downed) 1, TendPatient 1, LayDown 1, FeedPatient 1
+d7 t371400 fires 89 citizens-on-fire 0 raining Clear | none(downed) 1, Sow 1, LayDown 1, FeedPatient 1
+d7 t372000 fires 80 citizens-on-fire 0 raining Clear | none(downed) 1, Sow 1, LayDown 1, FeedPatient 1
+d7 t372600 fires 69 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t373200 fires 58 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t373800 fires 45 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t374400 fires 45 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t375000 fires 41 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t375600 fires 35 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t376200 fires 33 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t376800 fires 29 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t377400 fires 26 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t378000 fires 23 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t378600 fires 21 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, TendPatient 1
+d7 t379200 fires 18 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, FeedPatient 1
+d7 t379800 fires 16 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, FeedPatient 1
+d7 t380400 fires 13 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, FeedPatient 1
+d7 t381000 fires 10 citizens-on-fire 0 raining Clear | LayDown 2, SocialRelax 1, Sow 1
+d7 t381600 fires 6 citizens-on-fire 0 raining Clear | LayDown 2, SocialRelax 1, Sow 1
+d7 t382200 fires 4 citizens-on-fire 0 raining Clear | LayDown 2, SocialRelax 1, Sow 1
+d7 t382800 fires 3 citizens-on-fire 0 raining Clear | LayDown 2, SocialRelax 1, Sow 1
+d7 t383400 fires 1 citizens-on-fire 0 raining Clear | LayDown 2, SocialRelax 1, Sow 1
+d7 t399600 fires 1 citizens-on-fire 0 raining Clear | LayDown 2, SocialRelax 1, Sow 1
+d7 t400200 fires 1 citizens-on-fire 0 raining Clear | LayDown 2, Sow 2
+d7 t400800 fires 2 citizens-on-fire 0 raining Clear | LayDown 2, Sow 2
+d7 t401400 fires 3 citizens-on-fire 0 raining Clear | LayDown 2, Sow 2
+d7 t402000 fires 3 citizens-on-fire 0 raining Clear | LayDown 2, Sow 2
+d7 t402600 fires 2 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t403200 fires 3 citizens-on-fire 0 raining Clear | LayDown 2, Sow 2
+d7 t403800 fires 4 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t404400 fires 5 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t405000 fires 4 citizens-on-fire 0 raining Clear | LayDown 2, none(downed) 1, Sow 1
+d7 t405540 Marek burn #20 job Sow fire-in-cell yes attached yes
+d7 t405600 fires 7 citizens-on-fire 1 raining Clear | Sow 2, LayDown 1, none(downed) 1
+d7 t405810 Maren burn #2 job BeatFire fire-in-cell yes attached yes
+d7 t405960 Maren burn #3 job Ingest fire-in-cell yes attached yes
+d7 t406200 fires 7 citizens-on-fire 1 raining Clear | none(downed) 2, Ingest 1, BeatFire 1
+d7 t406800 fires 8 citizens-on-fire 2 raining Clear | none(downed) 2, Ingest 1, BeatFire 1
+d7 t406830 Marek burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t407010 Maren burn #10 job Ingest fire-in-cell yes attached yes
+d7 t407400 fires 7 citizens-on-fire 2 raining Clear | none(downed) 2, Ingest 1, BeatFire 1
+d7 t407580 Marek burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t408000 fires 7 citizens-on-fire 2 raining Clear | none(downed) 2, Ingest 1, BeatFire 1
+d7 t408330 Marek burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t408510 Maren burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t408600 fires 7 citizens-on-fire 2 raining Clear | none(downed) 3, BeatFire 1
+d7 t409080 Marek burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t409200 fires 6 citizens-on-fire 1 raining Clear | none(downed) 3, TendPatient 1
+d7 t409800 fires 6 citizens-on-fire 1 raining Clear | none(downed) 2, BeatFire 1, TendPatient 1
+d7 t409830 Marek burn #69 job none DEAD fire-in-cell no attached no
+d7 t410000 CHRONICLE Accession: Maren takes the eldership of North combine.
+d7 t410400 fires 5 citizens-on-fire 0 raining Clear | none(downed) 1, Sow 1, TendPatient 1
+d7 t411000 fires 9 citizens-on-fire 0 raining Clear | none(downed) 2, Sow 1
+d7 t411600 fires 10 citizens-on-fire 0 raining Clear | none(downed) 2, Sow 1
+d7 t412200 fires 10 citizens-on-fire 0 raining Clear | none(downed) 2, Sow 1
+d7 t412800 fires 14 citizens-on-fire 0 raining Clear | none(downed) 2, Sow 1
+d7 t413400 fires 16 citizens-on-fire 0 raining Clear | none(downed) 2, Sow 1
+d7 t413850 Juniper burn #20 job none DOWNED fire-in-cell yes attached yes
+d7 t414000 fires 21 citizens-on-fire 1 raining Clear | none(downed) 2, FeedPatient 1
+d7 t414600 fires 26 citizens-on-fire 1 raining Clear | none(downed) 2, FeedPatient 1
+d7 t414600 Juniper burn #30 job none DOWNED fire-in-cell yes attached yes
+d7 t415200 fires 23 citizens-on-fire 1 raining Clear | none(downed) 2, FeedPatient 1
+d7 t415350 Juniper burn #40 job none DOWNED fire-in-cell yes attached yes
+d7 t415800 fires 24 citizens-on-fire 1 raining Clear | none(downed) 2, FeedPatient 1
+d7 t416100 Juniper burn #50 job none DOWNED fire-in-cell yes attached yes
+d7 t416400 fires 27 citizens-on-fire 1 raining Clear | none(downed) 2, FeedPatient 1
+d7 t416850 Juniper burn #60 job none DOWNED fire-in-cell yes attached yes
+d7 t417000 fires 25 citizens-on-fire 1 raining Clear | none(downed) 2, FeedPatient 1
+d7 t417300 Juniper burn #66 job none DEAD fire-in-cell no attached no
+d7 t417600 fires 25 citizens-on-fire 0 raining Clear | none(downed) 1, FeedPatient 1
+d7 t418000 CHRONICLE Accession: Bryn takes the stewardship of Greycrest.
+d7 t418200 fires 22 citizens-on-fire 0 raining Clear | none(downed) 1, FeedPatient 1
+d7 t418800 fires 21 citizens-on-fire 0 raining Clear | none(downed) 1, FeedPatient 1
+d7 t419400 fires 19 citizens-on-fire 0 raining Clear | none(downed) 1, FeedPatient 1
+d7 t420000 fires 19 citizens-on-fire 0 raining Clear | none(downed) 1, Ingest 1
+== end of day 7: citizens 2, beds 0, medicine on map 0, medicine in ledger 20, peak fires 107, deaths 18 (Disease 2, Injury 16) [Earthquake 1]
+d8 t420600 fires 18 citizens-on-fire 0 raining Clear | none(downed) 1, Sow 1
+d8 t421200 fires 20 citizens-on-fire 0 raining Clear | none(downed) 1, Sow 1
+d8 t421800 fires 21 citizens-on-fire 0 raining Clear | none(downed) 1, Sow 1
+d8 t422400 fires 21 citizens-on-fire 1 raining Clear | none(downed) 1, Sow 1
+d8 t422430 Bryn burn #10 job Sow fire-in-cell yes attached yes
+d8 t423000 fires 21 citizens-on-fire 1 raining Clear | none(downed) 1, Sow 1
+d8 t423600 fires 20 citizens-on-fire 1 raining Clear | none(downed) 1, Sow 1
+d8 t423630 Bryn burn #20 job Sow fire-in-cell yes attached yes
+d8 t424200 fires 20 citizens-on-fire 1 raining Clear | none(downed) 2
+d8 t424800 fires 19 citizens-on-fire 1 raining Clear | none(downed) 2
+d8 t425130 Bryn burn #30 job none DOWNED fire-in-cell yes attached yes
+d8 t425400 fires 17 citizens-on-fire 1 raining Clear | none(downed) 2
+d8 t426000 fires 15 citizens-on-fire 1 raining Clear | none(downed) 2
+d8 t426600 fires 11 citizens-on-fire 1 raining Clear | none(downed) 2
+d8 t426630 Bryn burn #40 job none DOWNED fire-in-cell yes attached yes
+d8 t427200 fires 9 citizens-on-fire 1 raining Clear | none(downed) 2
+d8 t427800 fires 5 citizens-on-fire 1 raining Fog | none(downed) 2
+d8 t428130 Bryn burn #50 job none DOWNED fire-in-cell yes attached yes
+d8 t428400 fires 5 citizens-on-fire 1 raining Fog | none(downed) 2
+d8 t429000 fires 4 citizens-on-fire 1 raining Fog | none(downed) 2
+d8 t429600 fires 1 citizens-on-fire 1 raining Fog | none(downed) 2
+d8 t429630 Bryn burn #60 job none DOWNED fire-in-cell yes attached yes
+d8 t429930 Bryn burn #62 job none DEAD fire-in-cell no attached no
+== end of day 8: citizens 1, beds 0, medicine on map 0, medicine in ledger 20, peak fires 107, deaths 19 (Disease 2, Injury 17) [Earthquake 1]

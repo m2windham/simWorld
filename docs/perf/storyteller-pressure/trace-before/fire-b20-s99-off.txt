@@ -1,0 +1,361 @@
+d1 t0 CHRONICLE Founding: Bramblemarsh founded by 20 settlers.
+d1 t2000 CHRONICLE Accession: Silas takes the eldership of South state.
+d1 t2000 CHRONICLE Accession: Cyrus takes the stewardship of Bramblemarsh.
+== end of day 1: citizens 20, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 0 (none)
+== end of day 2: citizens 20, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 0 (none)
+d3 t154000 CHRONICLE HeatWave
+d3 t168000 CHRONICLE Wanderer: Idris joins Bramblemarsh.
+d3 t168000 CHRONICLE WandererJoin
+== end of day 3: citizens 20, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 1 (Injury 1)
+== end of day 4: citizens 19, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 1, Injury 1)
+== end of day 5: citizens 17, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 4 (Disease 3, Injury 1)
+== end of day 6: citizens 17, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 4 (Disease 3, Injury 1)
+== end of day 7: citizens 17, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 4 (Disease 3, Injury 1)
+== end of day 8: citizens 17, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 4 (Disease 3, Injury 1)
+== end of day 9: citizens 17, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 4 (Disease 3, Injury 1)
+d10 t545000 CHRONICLE Divorce: Fira and Nolan divorced.
+== end of day 10: citizens 16, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 5 (Disease 4, Injury 1)
+== end of day 11: citizens 14, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 7 (Disease 5, Injury 2)
+d12 t688000 CHRONICLE Flashstorm
+d12 t689910 Cyrus burn #1 job Harvest fire-in-cell yes attached yes
+d12 t689940 Cyrus burn #2 job Harvest fire-in-cell yes attached yes
+d12 t690000 fires 2 citizens-on-fire 1 raining Clear | Harvest 10, LayDown 1, SocialRelax 1, none(downed) 1, TendPatient 1
+d12 t690090 Cyrus burn #3 job Harvest fire-in-cell yes attached yes
+d12 t690600 fires 2 citizens-on-fire 1 raining Clear | Harvest 9, LayDown 1, SocialRelax 1, none(downed) 1, TendPatient 1, FeedPatient 1
+d12 t691140 Cyrus burn #10 job Harvest fire-in-cell yes attached yes
+d12 t691200 fires 1 citizens-on-fire 1 raining Clear | Harvest 11, LayDown 1, SocialRelax 1, none(downed) 1
+d12 t691800 fires 2 citizens-on-fire 1 raining Clear | Harvest 9, LayDown 1, SocialRelax 1, none(downed) 1, TendPatient 1, Ingest 1
+d12 t692400 fires 2 citizens-on-fire 1 raining Clear | Harvest 8, none(downed) 2, LayDown 1, BeatFire 1, FeedPatient 1, Rescue 1
+d12 t692640 Cyrus burn #20 job none DOWNED fire-in-cell yes attached yes
+d12 t693000 fires 2 citizens-on-fire 0 raining Clear | Harvest 9, none(downed) 2, LayDown 1, CutPlant 1, Rescue 1
+d12 t693600 fires 2 citizens-on-fire 0 raining Clear | Harvest 9, none(downed) 2, LayDown 1, HaulToBuildingSite 1, TendPatient 1
+d12 t694200 fires 2 citizens-on-fire 0 raining Clear | Harvest 8, none(downed) 3, LayDown 1, HaulToBuildingSite 1, Rescue 1
+d12 t694800 fires 2 citizens-on-fire 0 raining Clear | Harvest 7, none(downed) 3, GoForWalk 1, FeedPatient 1, Rescue 1, ConstructFinishFrame 1
+d12 t695400 fires 2 citizens-on-fire 0 raining Clear | Harvest 7, none(downed) 3, FeedPatient 2, SocialRelax 1, ConstructFinishFrame 1
+d12 t696000 fires 2 citizens-on-fire 0 raining Clear | Harvest 9, none(downed) 3, SocialRelax 1, ConstructFinishFrame 1
+d12 t696600 fires 2 citizens-on-fire 0 raining Clear | Harvest 8, none(downed) 3, SocialRelax 1, CutPlant 1, Ingest 1
+d12 t697200 fires 3 citizens-on-fire 0 raining Clear | Harvest 7, none(downed) 3, FeedPatient 2, SocialRelax 1, ConstructFinishFrame 1
+d12 t697800 fires 3 citizens-on-fire 0 raining Clear | Harvest 9, none(downed) 3, SocialRelax 1, TendPatient 1
+d12 t698400 fires 3 citizens-on-fire 0 raining Clear | Harvest 9, none(downed) 3, SocialRelax 1, TendPatient 1
+d12 t699000 fires 4 citizens-on-fire 0 raining Clear | Harvest 9, none(downed) 3, SocialRelax 1, TendPatient 1
+d12 t699600 fires 5 citizens-on-fire 0 raining Clear | Harvest 6, none(downed) 3, FeedPatient 2, Research 1, TendPatient 1, Tame 1
+d12 t700200 fires 5 citizens-on-fire 0 raining Clear | Harvest 8, none(downed) 3, Research 1, LayDown 1, Tame 1
+d12 t700800 fires 6 citizens-on-fire 0 raining Clear | Harvest 8, none(downed) 3, Research 1, LayDown 1, AttackStatic 1
+d12 t701400 fires 6 citizens-on-fire 0 raining Clear | Harvest 7, none(downed) 3, Research 1, Tame 1, LayDown 1
+d12 t702000 fires 9 citizens-on-fire 0 raining Clear | Harvest 5, none(downed) 3, FeedPatient 2, Research 1, Tame 1, LayDown 1
+d12 t702600 fires 11 citizens-on-fire 0 raining Clear | Harvest 5, none(downed) 3, Research 1, Tame 1, LayDown 1, TendPatient 1, SocialRelax 1
+d12 t703200 fires 11 citizens-on-fire 0 raining Clear | Harvest 6, none(downed) 2, Research 1, Tame 1, LayDown 1, SocialRelax 1
+d12 t703800 fires 13 citizens-on-fire 0 raining Clear | Harvest 5, none(downed) 2, Research 1, Tame 1, LayDown 1, FeedPatient 1, SocialRelax 1
+d12 t704400 fires 17 citizens-on-fire 0 raining Clear | Harvest 5, none(downed) 2, Research 1, TendPatient 1, LayDown 1, FeedPatient 1, SocialRelax 1
+d12 t705000 fires 18 citizens-on-fire 0 raining Clear | Harvest 5, none(downed) 2, LayDown 2, Research 1, Train 1, SocialRelax 1
+d12 t705600 fires 19 citizens-on-fire 0 raining Clear | Harvest 4, LayDown 3, none(downed) 2, Research 1, Train 1, SocialRelax 1
+d12 t706200 fires 22 citizens-on-fire 0 raining Clear | Harvest 4, LayDown 3, none(downed) 2, Research 1, FeedPatient 1, SocialRelax 1
+d12 t706800 fires 19 citizens-on-fire 0 raining Clear | Harvest 4, LayDown 3, none(downed) 2, Research 1, FeedPatient 1, GotoWander 1
+d12 t707400 fires 21 citizens-on-fire 0 raining Clear | Harvest 3, LayDown 3, none(downed) 2, Research 1, HaulToBuildingSite 1, FeedPatient 1, GotoWander 1
+d12 t708000 fires 22 citizens-on-fire 0 raining Clear | LayDown 4, CutPlant 2, none(downed) 2, Research 1, HaulToBuildingSite 1, Harvest 1, GotoWander 1
+d12 t708600 fires 26 citizens-on-fire 0 raining Clear | LayDown 4, Harvest 2, none(downed) 2, Research 1, HaulToBuildingSite 1, CutPlant 1, GotoWander 1
+d12 t709200 fires 26 citizens-on-fire 0 raining Clear | LayDown 5, none(downed) 2, Research 1, FeedPatient 1, HaulToBuildingSite 1, CutPlant 1, GotoWander 1
+d12 t709800 fires 23 citizens-on-fire 0 raining Clear | LayDown 6, none(downed) 2, Research 1, FeedPatient 1, HaulToBuildingSite 1, GotoWander 1
+d12 t710400 fires 26 citizens-on-fire 0 raining Clear | LayDown 6, none(downed) 2, Research 1, FeedPatient 1, ConstructFinishFrame 1, GotoWander 1
+d12 t711000 fires 25 citizens-on-fire 0 raining Clear | LayDown 7, none(downed) 2, Research 1, Harvest 1, GotoWander 1
+d12 t711600 fires 22 citizens-on-fire 0 raining Clear | LayDown 7, none(downed) 2, Research 1, Harvest 1, GotoWander 1
+d12 t712200 fires 23 citizens-on-fire 0 raining Clear | LayDown 7, none(downed) 3, Research 1, GotoWander 1
+d12 t712800 fires 22 citizens-on-fire 0 raining Clear | LayDown 7, none(downed) 3, Research 1, GotoWander 1
+d12 t713400 fires 19 citizens-on-fire 0 raining Clear | LayDown 7, none(downed) 3, Research 1, GotoWander 1
+d12 t714000 fires 18 citizens-on-fire 0 raining Clear | LayDown 7, none(downed) 3, Research 1, GotoWander 1
+d12 t714600 fires 18 citizens-on-fire 0 raining Clear | LayDown 6, none(downed) 3, Research 1, TendPatient 1, GotoWander 1
+d12 t715200 fires 19 citizens-on-fire 0 raining Clear | LayDown 6, none(downed) 3, Research 1, FeedPatient 1, GotoWander 1
+d12 t715800 fires 22 citizens-on-fire 0 raining Clear | LayDown 6, none(downed) 3, Research 1, FeedPatient 1, GotoWander 1
+d12 t716400 fires 23 citizens-on-fire 0 raining Clear | LayDown 6, none(downed) 3, Research 1, FeedPatient 1, GotoWander 1
+d12 t717000 fires 27 citizens-on-fire 0 raining Clear | LayDown 6, none(downed) 3, Research 1, HaulToBuildingSite 1, GotoWander 1
+d12 t717600 fires 26 citizens-on-fire 0 raining Clear | LayDown 6, none(downed) 3, Research 1, HaulToBuildingSite 1, GotoWander 1
+d12 t718200 fires 28 citizens-on-fire 0 raining Clear | LayDown 6, none(downed) 3, Research 1, TendPatient 1, GotoWander 1
+d12 t718800 fires 29 citizens-on-fire 0 raining Clear | LayDown 5, none(downed) 3, Research 1, Ingest 1, FeedPatient 1, GotoWander 1
+d12 t719400 fires 31 citizens-on-fire 0 raining Clear | LayDown 5, none(downed) 3, Research 1, FeedPatient 1, HaulToBuildingSite 1, GotoWander 1
+d12 t720000 fires 33 citizens-on-fire 0 raining Clear | LayDown 4, none(downed) 3, FeedPatient 2, Research 1, HaulToBuildingSite 1, GotoWander 1
+== end of day 12: citizens 12, beds 20, medicine on map 0, medicine in ledger 20, peak fires 33, deaths 9 (Disease 6, Injury 3)
+d13 t720600 fires 31 citizens-on-fire 0 raining Clear | none(downed) 3, LayDown 2, FeedPatient 2, Research 1, Tame 1, ConstructFinishFrame 1, Ingest 1, GotoWander 1
+d13 t721200 fires 28 citizens-on-fire 0 raining Clear | none(downed) 3, LayDown 2, Repair 2, Harvest 2, Research 1, Tame 1, GotoWander 1
+d13 t721800 fires 28 citizens-on-fire 0 raining Clear | none(downed) 3, LayDown 2, Repair 2, Harvest 2, Research 1, AttackStatic 1, GotoWander 1
+d13 t722400 fires 26 citizens-on-fire 0 raining Clear | none(downed) 2, TendPatient 2, Research 1, LayDown 1, Harvest 1, FeedPatient 1, AttackStatic 1, Tame 1, GotoWander 1
+d13 t723000 fires 27 citizens-on-fire 0 raining Clear | none(downed) 2, Ingest 1, LayDown 1, Harvest 1, FeedPatient 1, TendPatient 1, Tame 1, Train 1, GotoWander 1
+d13 t723600 fires 28 citizens-on-fire 0 raining Clear | none(downed) 2, Harvest 2, FeedPatient 2, Research 1, LayDown 1, Tame 1, GotoWander 1
+d13 t724200 fires 25 citizens-on-fire 0 raining Clear | Harvest 4, none(downed) 2, Research 1, LayDown 1, Tame 1, GotoWander 1
+d13 t724800 fires 26 citizens-on-fire 0 raining Clear | Harvest 3, none(downed) 2, Research 1, LayDown 1, FeedPatient 1, Tame 1, GotoWander 1
+d13 t725400 fires 26 citizens-on-fire 0 raining Clear | none(downed) 2, FeedPatient 2, Harvest 2, Research 1, LayDown 1, Tame 1, GotoWander 1
+d13 t726000 fires 25 citizens-on-fire 0 raining Clear | TendPatient 2, none(downed) 2, Harvest 2, Research 1, Tame 1, FeedPatient 1, GotoWander 1
+d13 t726600 fires 22 citizens-on-fire 0 raining Clear | Harvest 4, none(downed) 2, Research 1, TendPatient 1, Tame 1, GotoWander 1
+d13 t727200 fires 21 citizens-on-fire 0 raining Clear | Harvest 4, none(downed) 2, Research 1, FeedPatient 1, Ingest 1, GotoWander 1
+d13 t727800 fires 17 citizens-on-fire 0 raining Clear | Harvest 4, FeedPatient 2, none(downed) 2, Research 1, GotoWander 1
+d13 t728400 fires 22 citizens-on-fire 0 raining Clear | Sow 2, none(downed) 2, Harvest 2, Research 1, FeedPatient 1, Tame 1, GotoWander 1
+d13 t729000 fires 23 citizens-on-fire 0 raining Clear | Sow 2, none(downed) 2, Research 1, Harvest 1, FeedPatient 1, SocialRelax 1, Tame 1, GotoWander 1
+d13 t729600 fires 23 citizens-on-fire 0 raining Clear | Sow 3, none(downed) 2, Harvest 1, FeedPatient 1, SocialRelax 1, Tame 1, GotoWander 1
+d13 t730200 fires 21 citizens-on-fire 0 raining Clear | Sow 5, none(downed) 2, SocialRelax 1, Tame 1, GotoWander 1
+d13 t730800 fires 20 citizens-on-fire 0 raining Clear | Sow 3, none(downed) 2, Skygaze 1, FeedPatient 1, SocialRelax 1, TendPatient 1, GotoWander 1
+d13 t731400 fires 20 citizens-on-fire 0 raining Clear | none(downed) 3, Research 1, Tame 1, Ingest 1, Skygaze 1, SocialRelax 1, TendPatient 1, GotoWander 1
+d13 t732000 fires 18 citizens-on-fire 0 raining Clear | none(downed) 3, Sow 2, Research 1, Tame 1, Skygaze 1, SocialRelax 1, GotoWander 1
+d13 t732600 fires 19 citizens-on-fire 0 raining Clear | none(downed) 3, Research 1, FeedPatient 1, Tame 1, Skygaze 1, SocialRelax 1, Sow 1, GotoWander 1
+d13 t733200 fires 19 citizens-on-fire 0 raining Clear | none(downed) 3, Sow 2, Research 1, SocialRelax 1, Skygaze 1, Tame 1, GotoWander 1
+d13 t733800 fires 19 citizens-on-fire 0 raining Clear | none(downed) 3, Research 1, Sow 1, SocialRelax 1, Skygaze 1, Tame 1, FeedPatient 1, GotoWander 1
+d13 t734400 fires 19 citizens-on-fire 0 raining Clear | none(downed) 3, Sow 2, Research 1, SocialRelax 1, Skygaze 1, Tame 1, GotoWander 1
+d13 t735000 fires 21 citizens-on-fire 0 raining Clear | none(downed) 3, Sow 2, Research 1, SocialRelax 1, Tame 1, FeedPatient 1, GotoWander 1
+d13 t735600 fires 20 citizens-on-fire 0 raining Clear | none(downed) 3, Sow 2, Research 1, SocialRelax 1, AttackStatic 1, TendPatient 1, GotoWander 1
+d13 t736200 fires 19 citizens-on-fire 0 raining Clear | none(downed) 3, Research 1, BeatFire 1, SocialRelax 1, FeedPatient 1, Tame 1, Sow 1, GotoWander 1
+d13 t736800 fires 19 citizens-on-fire 0 raining Clear | none(downed) 3, Sow 2, Research 1, BeatFire 1, Tame 1, FeedPatient 1, GotoWander 1
+d13 t737400 fires 21 citizens-on-fire 0 raining Clear | Sow 3, none(downed) 3, Research 1, TendPatient 1, GoForWalk 1, GotoWander 1
+d13 t738000 fires 20 citizens-on-fire 0 raining Clear | Sow 4, none(downed) 3, Research 1, TendPatient 1, GotoWander 1
+d13 t738600 fires 21 citizens-on-fire 0 raining Clear | none(downed) 3, Harvest 3, Research 1, Sow 1, Train 1, GotoWander 1
+d13 t739200 fires 21 citizens-on-fire 0 raining Clear | none(downed) 3, Harvest 3, Research 1, FeedPatient 1, BeatFire 1, GotoWander 1
+d13 t739800 fires 20 citizens-on-fire 0 raining Clear | Harvest 3, none(downed) 3, Research 1, Train 1, BeatFire 1, GotoWander 1
+d13 t740400 fires 17 citizens-on-fire 0 raining Clear | none(downed) 3, Harvest 2, Research 1, Train 1, FeedPatient 1, BeatFire 1, GotoWander 1
+d13 t741000 fires 16 citizens-on-fire 0 raining Clear | Harvest 3, none(downed) 3, Research 1, Train 1, FeedPatient 1, GotoWander 1
+d13 t741600 fires 15 citizens-on-fire 0 raining Clear | none(downed) 3, Harvest 2, FeedPatient 2, Research 1, GoForWalk 1, GotoWander 1
+d13 t742200 fires 15 citizens-on-fire 0 raining Clear | Harvest 3, none(downed) 3, FeedPatient 2, Research 1, GotoWander 1
+d13 t742800 fires 14 citizens-on-fire 0 raining Clear | none(downed) 3, Harvest 3, Ingest 2, Research 1, GotoWander 1
+d13 t743400 fires 13 citizens-on-fire 0 raining Clear | none(downed) 3, Harvest 3, Research 1, Train 1, FeedPatient 1, GotoWander 1
+d13 t744000 fires 13 citizens-on-fire 0 raining Clear | none(downed) 3, Harvest 2, Research 1, Train 1, BeatFire 1, FeedPatient 1, GotoWander 1
+d13 t744600 fires 13 citizens-on-fire 0 raining Clear | none(downed) 3, FeedPatient 2, Harvest 2, Research 1, BeatFire 1, GotoWander 1
+d13 t745200 fires 14 citizens-on-fire 0 raining Clear | none(downed) 3, Harvest 3, Research 1, FeedPatient 1, BeatFire 1, GotoWander 1
+d13 t745800 fires 14 citizens-on-fire 0 raining Clear | Harvest 3, none(downed) 3, Research 1, FeedPatient 1, BeatFire 1, Ingest 1
+d13 t746400 fires 13 citizens-on-fire 0 raining Clear | Harvest 3, none(downed) 3, BeatFire 2, Research 1, FeedPatient 1
+d13 t746730 Brandt burn #1 job BeatFire fire-in-cell yes attached yes
+d13 t746820 Brandt burn #2 job BeatFire fire-in-cell yes attached yes
+d13 t746880 Brandt burn #3 job BeatFire fire-in-cell yes attached yes
+d13 t747000 fires 14 citizens-on-fire 1 raining Clear | none(downed) 3, Harvest 2, BeatFire 2, Research 1, TendPatient 1, FeedPatient 1
+d13 t747600 fires 14 citizens-on-fire 1 raining Clear | none(downed) 3, BeatFire 2, FeedPatient 2, Research 1, TendPatient 1, Harvest 1
+d13 t747720 Brandt burn #10 job FeedPatient fire-in-cell yes attached yes
+d13 t748200 fires 16 citizens-on-fire 1 raining Clear | BeatFire 3, none(downed) 3, TendPatient 2, Research 1, FeedPatient 1
+d13 t748560 Tamsin burn #1 job BeatFire fire-in-cell yes attached yes
+d13 t748800 fires 17 citizens-on-fire 1 raining Clear | none(downed) 4, BeatFire 2, TendPatient 2, Research 1, LayDown 1
+d13 t749220 Brandt burn #20 job none DOWNED fire-in-cell yes attached yes
+d13 t749400 fires 22 citizens-on-fire 2 raining Clear | BeatFire 4, none(downed) 4, Research 1, LayDown 1
+d13 t749400 Briony burn #1 job BeatFire fire-in-cell yes attached yes
+d13 t749430 Briony burn #2 job BeatFire fire-in-cell yes attached yes
+d13 t749670 Briony burn #3 job BeatFire fire-in-cell yes attached yes
+d13 t749940 Quinley burn #2 job BeatFire fire-in-cell yes attached yes
+d13 t750000 fires 21 citizens-on-fire 3 raining Clear | BeatFire 4, none(downed) 4, Research 1, LayDown 1
+d13 t750090 Quinley burn #3 job Skygaze fire-in-cell yes attached yes
+d13 t750600 fires 28 citizens-on-fire 2 raining Clear | none(downed) 4, TendPatient 2, BeatFire 2, Research 1, LayDown 1
+d13 t750720 Brandt burn #30 job none DOWNED fire-in-cell yes attached yes
+d13 t751140 Quinley burn #10 job TendPatient fire-in-cell yes attached yes
+d13 t751200 fires 28 citizens-on-fire 1 raining Clear | none(downed) 4, TendPatient 2, Research 1, BeatFire 1, Ingest 1, LayDown 1
+d13 t751800 fires 36 citizens-on-fire 1 raining Clear | none(downed) 4, Research 1, SocialRelax 1, BeatFire 1, FeedPatient 1, TendPatient 1, LayDown 1
+d13 t752340 Tamsin burn #2 job BeatFire fire-in-cell yes attached yes
+d13 t752400 fires 65 citizens-on-fire 2 raining Clear | none(downed) 5, BeatFire 3, Research 1, FeedPatient 1
+d13 t752490 Quinley burn #20 job none DOWNED fire-in-cell yes attached yes
+d13 t753000 fires 78 citizens-on-fire 1 raining Clear | none(downed) 5, BeatFire 4, Research 1
+d13 t753030 Briony burn #10 job BeatFire fire-in-cell yes attached yes
+d13 t753600 fires 90 citizens-on-fire 0 raining Clear | none(downed) 5, TendPatient 3, Research 1, BeatFire 1
+d13 t754200 fires 131 citizens-on-fire 0 raining Clear | none(downed) 5, BeatFire 3, Research 1, TendPatient 1
+d13 t754650 Briony burn #20 job none DOWNED fire-in-cell yes attached yes
+d13 t754740 Lyra burn #1 job BeatFire fire-in-cell yes attached yes
+d13 t754800 fires 155 citizens-on-fire 2 raining Clear | none(downed) 6, BeatFire 3, Research 1
+d13 t754830 Lyra burn #2 job BeatFire fire-in-cell yes attached yes
+d13 t754920 Lyra burn #3 job BeatFire fire-in-cell yes attached yes
+d13 t755400 fires 185 citizens-on-fire 2 raining Clear | none(downed) 6, BeatFire 3, Research 1
+d13 t755640 Lyra burn #10 job BeatFire fire-in-cell yes attached yes
+d13 t756000 fires 212 citizens-on-fire 3 raining Clear | none(downed) 6, BeatFire 3, Research 1
+d13 t756000 Tamsin burn #10 job BeatFire fire-in-cell yes attached yes
+d13 t756060 Finn burn #2 job BeatFire fire-in-cell yes attached yes
+d13 t756210 Finn burn #3 job BeatFire fire-in-cell yes attached yes
+d13 t756360 Briony burn #40 job none DOWNED fire-in-cell yes attached yes
+d13 t756600 fires 222 citizens-on-fire 4 raining Clear | none(downed) 8, Research 1, BeatFire 1
+d13 t756660 Lyra burn #20 job none DOWNED fire-in-cell yes attached yes
+d13 t756660 Finn burn #10 job none DOWNED fire-in-cell yes attached yes
+d13 t757110 Briony burn #50 job none DOWNED fire-in-cell yes attached yes
+d13 t757200 fires 247 citizens-on-fire 4 raining Clear | none(downed) 9, Research 1
+d13 t757410 Lyra burn #30 job none DOWNED fire-in-cell yes attached yes
+d13 t757410 Finn burn #20 job none DOWNED fire-in-cell yes attached yes
+d13 t757500 Tamsin burn #20 job none DOWNED fire-in-cell yes attached yes
+d13 t757800 fires 271 citizens-on-fire 4 raining Clear | none(downed) 9, Research 1
+d13 t757860 Briony burn #60 job none DOWNED fire-in-cell yes attached yes
+d13 t758160 Lyra burn #40 job none DOWNED fire-in-cell yes attached yes
+d13 t758160 Finn burn #30 job none DOWNED fire-in-cell yes attached yes
+d13 t758400 fires 271 citizens-on-fire 3 raining Clear | none(downed) 8, Research 1
+d13 t758910 Lyra burn #50 job none DOWNED fire-in-cell yes attached yes
+d13 t758910 Finn burn #40 job none DOWNED fire-in-cell yes attached yes
+d13 t759000 fires 292 citizens-on-fire 3 raining Rain | none(downed) 8, Research 1
+d13 t759000 Tamsin burn #30 job none DOWNED fire-in-cell yes attached yes
+d13 t759150 Finn burn #43 job none DEAD fire-in-cell no attached no
+d13 t759600 fires 304 citizens-on-fire 2 raining Rain | none(downed) 7, Research 1
+d13 t759660 Lyra burn #60 job none DOWNED fire-in-cell yes attached yes
+d13 t759690 Lyra burn #61 job none DEAD fire-in-cell no attached no
+d13 t760200 fires 291 citizens-on-fire 1 raining Rain | none(downed) 6, Research 1
+d13 t760500 Tamsin burn #40 job none DOWNED fire-in-cell yes attached yes
+d13 t760800 fires 285 citizens-on-fire 1 raining Rain | none(downed) 6, Research 1
+d13 t761400 fires 285 citizens-on-fire 1 raining Rain | none(downed) 6, BeatFire 1
+d13 t762000 fires 279 citizens-on-fire 1 raining Rain | none(downed) 6, BeatFire 1
+d13 t762000 Tamsin burn #50 job none DOWNED fire-in-cell yes attached yes
+d13 t762450 Tamsin burn #53 job none DEAD fire-in-cell no attached no
+d13 t762600 fires 268 citizens-on-fire 0 raining Rain | none(downed) 5, BeatFire 1
+d13 t763200 fires 245 citizens-on-fire 0 raining Rain | none(downed) 5, BeatFire 1
+d13 t763800 fires 228 citizens-on-fire 0 raining Rain | none(downed) 5, BeatFire 1
+d13 t763830 Silas burn #1 job BeatFire fire-in-cell yes attached yes
+d13 t763890 Silas burn #2 job BeatFire fire-in-cell yes attached yes
+d13 t764400 fires 229 citizens-on-fire 0 raining Rain | none(downed) 5, BeatFire 1
+d13 t765000 fires 242 citizens-on-fire 0 raining Rain | none(downed) 5, BeatFire 1
+d13 t765600 fires 237 citizens-on-fire 0 raining Rain | none(downed) 5, BeatFire 1
+d13 t766200 fires 231 citizens-on-fire 0 raining Rain | none(downed) 5, BeatFire 1
+d13 t766800 fires 241 citizens-on-fire 1 raining Rain | none(downed) 5, BeatFire 1
+d13 t767040 Quinley burn #30 job none DOWNED fire-in-cell yes attached yes
+d13 t767160 Silas burn #3 job BeatFire fire-in-cell yes attached yes
+d13 t767400 fires 240 citizens-on-fire 2 raining Rain | none(downed) 5, BeatFire 1
+d13 t767790 Quinley burn #40 job none DOWNED fire-in-cell yes attached yes
+d13 t767970 Brandt burn #40 job none DOWNED fire-in-cell yes attached yes
+d13 t768000 fires 240 citizens-on-fire 2 raining Rain | none(downed) 5, BeatFire 1
+d13 t768540 Quinley burn #50 job none DOWNED fire-in-cell yes attached yes
+d13 t768600 fires 244 citizens-on-fire 2 raining Rain | none(downed) 5, BeatFire 1
+d13 t768750 Brandt burn #50 job none DOWNED fire-in-cell yes attached yes
+d13 t769200 fires 247 citizens-on-fire 2 raining Rain | none(downed) 5, BeatFire 1
+d13 t769290 Quinley burn #60 job none DOWNED fire-in-cell yes attached yes
+d13 t769620 Brandt burn #60 job none DOWNED fire-in-cell yes attached yes
+d13 t769740 Quinley burn #66 job none DEAD fire-in-cell no attached no
+d13 t769800 fires 231 citizens-on-fire 1 raining Rain | none(downed) 4, BeatFire 1
+d13 t770070 Brandt burn #66 job none DEAD fire-in-cell no attached no
+d13 t770400 fires 228 citizens-on-fire 1 raining Rain | none(downed) 3, BeatFire 1
+d13 t771000 fires 237 citizens-on-fire 1 raining Rain | none(downed) 3, BeatFire 1
+d13 t771450 Silas burn #20 job BeatFire fire-in-cell no attached no
+d13 t771600 fires 247 citizens-on-fire 0 raining Rain | none(downed) 3, BeatFire 1
+d13 t772200 fires 249 citizens-on-fire 0 raining Rain | none(downed) 3, BeatFire 1
+d13 t772800 fires 255 citizens-on-fire 1 raining Rain | none(downed) 4
+d13 t772950 Silas burn #30 job none DOWNED fire-in-cell yes attached yes
+d13 t773400 fires 260 citizens-on-fire 1 raining Rain | none(downed) 4
+d13 t773700 Silas burn #40 job none DOWNED fire-in-cell yes attached yes
+d13 t774000 fires 275 citizens-on-fire 1 raining Rain | none(downed) 4
+d13 t774450 Silas burn #50 job none DOWNED fire-in-cell yes attached yes
+d13 t774600 fires 268 citizens-on-fire 1 raining Rain | none(downed) 4
+d13 t775200 fires 274 citizens-on-fire 1 raining Rain | none(downed) 4
+d13 t775200 Silas burn #60 job none DOWNED fire-in-cell yes attached yes
+d13 t775260 Alden burn #1 job none DOWNED fire-in-cell yes attached yes
+d13 t775260 Fira burn #1 job none DOWNED fire-in-cell yes attached yes
+d13 t775380 Alden burn #2 job none DOWNED fire-in-cell yes attached yes
+d13 t775380 Fira burn #2 job none DOWNED fire-in-cell yes attached yes
+d13 t775410 Alden burn #3 job none DOWNED fire-in-cell yes attached yes
+d13 t775410 Fira burn #3 job none DOWNED fire-in-cell yes attached yes
+d13 t775740 Silas burn #67 job none DEAD fire-in-cell no attached no
+d13 t775800 fires 285 citizens-on-fire 3 raining Rain | none(downed) 3
+d13 t775860 Cyrus burn #30 job none DOWNED fire-in-cell yes attached yes
+d13 t775980 Alden burn #10 job none DOWNED fire-in-cell yes attached yes
+d13 t775980 Fira burn #10 job none DOWNED fire-in-cell yes attached yes
+d13 t776000 CHRONICLE Accession: Alden takes the eldership of South state.
+d13 t776400 fires 281 citizens-on-fire 3 raining Rain | none(downed) 3
+d13 t776730 Alden burn #20 job none DOWNED fire-in-cell yes attached yes
+d13 t776730 Fira burn #20 job none DOWNED fire-in-cell yes attached yes
+d13 t777000 fires 291 citizens-on-fire 2 raining Rain | none(downed) 3
+d13 t777600 fires 297 citizens-on-fire 2 raining Rain | none(downed) 3
+d13 t777930 Alden burn #30 job none DOWNED fire-in-cell yes attached yes
+d13 t777930 Fira burn #30 job none DOWNED fire-in-cell yes attached yes
+d13 t778200 fires 298 citizens-on-fire 2 raining Rain | none(downed) 3
+d13 t778800 fires 312 citizens-on-fire 1 raining Rain | none(downed) 3
+d13 t779400 fires 314 citizens-on-fire 1 raining Rain | none(downed) 3
+d13 t779430 Alden burn #40 job none DOWNED fire-in-cell yes attached yes
+d13 t780000 fires 312 citizens-on-fire 1 raining Rain | none(downed) 3
+== end of day 13: citizens 3, beds 18, medicine on map 0, medicine in ledger 20, peak fires 328, deaths 18 (Disease 7, Injury 11)
+d14 t780600 fires 323 citizens-on-fire 1 raining Rain | none(downed) 3
+d14 t780930 Alden burn #50 job none DOWNED fire-in-cell yes attached yes
+d14 t781200 fires 330 citizens-on-fire 1 raining Rain | none(downed) 3
+d14 t781800 fires 334 citizens-on-fire 1 raining Rain | none(downed) 3
+d14 t782400 fires 341 citizens-on-fire 1 raining Rain | none(downed) 3
+d14 t782430 Alden burn #60 job none DEAD fire-in-cell no attached no
+d14 t782910 Cyrus burn #50 job none DOWNED fire-in-cell yes attached yes
+d14 t783000 fires 336 citizens-on-fire 2 raining Rain | none(downed) 2
+d14 t783090 Fira burn #39 job none DEAD fire-in-cell no attached no
+d14 t783600 fires 334 citizens-on-fire 1 raining Rain | none(downed) 1
+d14 t784200 fires 359 citizens-on-fire 1 raining Rain | none(downed) 1
+d14 t784410 Cyrus burn #60 job none DOWNED fire-in-cell yes attached yes
+d14 t784800 fires 372 citizens-on-fire 1 raining Rain | none(downed) 1
+d14 t785400 fires 377 citizens-on-fire 1 raining Rain | none(downed) 1
+d14 t785910 Cyrus burn #70 job none DOWNED fire-in-cell yes attached yes
+d14 t786000 fires 379 citizens-on-fire 1 raining Rain | none(downed) 1
+d14 t786360 Cyrus burn #73 job none DEAD fire-in-cell no attached no
+d14 t786600 fires 389 citizens-on-fire 0 raining Rain | 
+d14 t787200 fires 408 citizens-on-fire 0 raining Rain | 
+d14 t787800 fires 410 citizens-on-fire 0 raining Rain | 
+d14 t788400 fires 426 citizens-on-fire 0 raining Rain | 
+d14 t789000 fires 439 citizens-on-fire 0 raining Rain | 
+d14 t789600 fires 467 citizens-on-fire 0 raining Rain | 
+d14 t790200 fires 480 citizens-on-fire 0 raining Rain | 
+d14 t790800 fires 506 citizens-on-fire 0 raining Rain | 
+d14 t791400 fires 515 citizens-on-fire 0 raining Rain | 
+d14 t792000 fires 537 citizens-on-fire 0 raining Rain | 
+d14 t792600 fires 542 citizens-on-fire 0 raining FoggyRain | 
+d14 t793200 fires 563 citizens-on-fire 0 raining FoggyRain | 
+d14 t793800 fires 573 citizens-on-fire 0 raining FoggyRain | 
+d14 t794400 fires 580 citizens-on-fire 0 raining FoggyRain | 
+d14 t795000 fires 601 citizens-on-fire 0 raining FoggyRain | 
+d14 t795600 fires 617 citizens-on-fire 0 raining FoggyRain | 
+d14 t796200 fires 632 citizens-on-fire 0 raining FoggyRain | 
+d14 t796800 fires 631 citizens-on-fire 0 raining FoggyRain | 
+d14 t797400 fires 643 citizens-on-fire 0 raining FoggyRain | 
+d14 t798000 fires 641 citizens-on-fire 0 raining FoggyRain | 
+d14 t798600 fires 652 citizens-on-fire 0 raining FoggyRain | 
+d14 t799200 fires 640 citizens-on-fire 0 raining FoggyRain | 
+d14 t799800 fires 646 citizens-on-fire 0 raining FoggyRain | 
+d14 t800400 fires 651 citizens-on-fire 0 raining FoggyRain | 
+d14 t801000 fires 648 citizens-on-fire 0 raining FoggyRain | 
+d14 t801600 fires 658 citizens-on-fire 0 raining FoggyRain | 
+d14 t802200 fires 669 citizens-on-fire 0 raining FoggyRain | 
+d14 t802800 fires 669 citizens-on-fire 0 raining FoggyRain | 
+d14 t803400 fires 690 citizens-on-fire 0 raining FoggyRain | 
+d14 t804000 fires 679 citizens-on-fire 0 raining FoggyRain | 
+d14 t804600 fires 681 citizens-on-fire 0 raining FoggyRain | 
+d14 t805200 fires 677 citizens-on-fire 0 raining FoggyRain | 
+d14 t805800 fires 691 citizens-on-fire 0 raining FoggyRain | 
+d14 t806400 fires 697 citizens-on-fire 0 raining FoggyRain | 
+d14 t807000 fires 692 citizens-on-fire 0 raining FoggyRain | 
+d14 t807600 fires 696 citizens-on-fire 0 raining FoggyRain | 
+d14 t808200 fires 701 citizens-on-fire 0 raining FoggyRain | 
+d14 t808800 fires 702 citizens-on-fire 0 raining FoggyRain | 
+d14 t809400 fires 703 citizens-on-fire 0 raining FoggyRain | 
+d14 t810000 fires 698 citizens-on-fire 0 raining FoggyRain | 
+d14 t810600 fires 700 citizens-on-fire 0 raining FoggyRain | 
+d14 t811200 fires 705 citizens-on-fire 0 raining FoggyRain | 
+d14 t811800 fires 704 citizens-on-fire 0 raining FoggyRain | 
+d14 t812400 fires 714 citizens-on-fire 0 raining FoggyRain | 
+d14 t813000 fires 716 citizens-on-fire 0 raining FoggyRain | 
+d14 t813600 fires 709 citizens-on-fire 0 raining FoggyRain | 
+d14 t814200 fires 705 citizens-on-fire 0 raining FoggyRain | 
+d14 t814800 fires 714 citizens-on-fire 0 raining FoggyRain | 
+d14 t815400 fires 714 citizens-on-fire 0 raining Rain | 
+d14 t816000 fires 709 citizens-on-fire 0 raining Rain | 
+d14 t816600 fires 707 citizens-on-fire 0 raining Rain | 
+d14 t817200 fires 710 citizens-on-fire 0 raining Rain | 
+d14 t817800 fires 703 citizens-on-fire 0 raining Rain | 
+d14 t818400 fires 710 citizens-on-fire 0 raining Rain | 
+d14 t819000 fires 700 citizens-on-fire 0 raining Rain | 
+d14 t819600 fires 704 citizens-on-fire 0 raining Rain | 
+d14 t820200 fires 705 citizens-on-fire 0 raining Rain | 
+d14 t820800 fires 699 citizens-on-fire 0 raining Rain | 
+d14 t821400 fires 683 citizens-on-fire 0 raining Rain | 
+d14 t822000 fires 688 citizens-on-fire 0 raining Rain | 
+d14 t822600 fires 690 citizens-on-fire 0 raining Rain | 
+d14 t823200 fires 693 citizens-on-fire 0 raining Rain | 
+d14 t823800 fires 689 citizens-on-fire 0 raining Rain | 
+d14 t824400 fires 688 citizens-on-fire 0 raining Rain | 
+d14 t825000 fires 691 citizens-on-fire 0 raining Rain | 
+d14 t825600 fires 681 citizens-on-fire 0 raining Rain | 
+d14 t826200 fires 693 citizens-on-fire 0 raining Rain | 
+d14 t826800 fires 697 citizens-on-fire 0 raining Rain | 
+d14 t827400 fires 704 citizens-on-fire 0 raining Rain | 
+d14 t828000 fires 686 citizens-on-fire 0 raining Rain | 
+d14 t828600 fires 694 citizens-on-fire 0 raining Rain | 
+d14 t829200 fires 699 citizens-on-fire 0 raining Rain | 
+d14 t829800 fires 699 citizens-on-fire 0 raining Rain | 
+d14 t830400 fires 686 citizens-on-fire 0 raining Rain | 
+d14 t831000 fires 692 citizens-on-fire 0 raining Rain | 
+d14 t831600 fires 689 citizens-on-fire 0 raining Rain | 
+d14 t832200 fires 678 citizens-on-fire 0 raining Rain | 
+d14 t832800 fires 679 citizens-on-fire 0 raining Rain | 
+d14 t833400 fires 680 citizens-on-fire 0 raining Rain | 
+d14 t834000 fires 692 citizens-on-fire 0 raining Rain | 
+d14 t834600 fires 666 citizens-on-fire 0 raining Rain | 
+d14 t835200 fires 672 citizens-on-fire 0 raining Rain | 
+d14 t835800 fires 683 citizens-on-fire 0 raining Rain | 
+d14 t836400 fires 669 citizens-on-fire 0 raining Rain | 
+d14 t837000 fires 685 citizens-on-fire 0 raining Rain | 
+d14 t837600 fires 693 citizens-on-fire 0 raining Rain | 
+d14 t838200 fires 682 citizens-on-fire 0 raining Rain | 
+d14 t838800 fires 681 citizens-on-fire 0 raining Rain | 
+d14 t839400 fires 681 citizens-on-fire 0 raining Rain | 
+d14 t840000 fires 672 citizens-on-fire 0 raining Rain | 
+== end of day 14: citizens 0, beds 0, medicine on map 0, medicine in ledger 20, peak fires 734, deaths 21 (Disease 7, Injury 14)

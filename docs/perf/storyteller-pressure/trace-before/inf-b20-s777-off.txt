@@ -1,0 +1,61 @@
+== end of day 1: citizens 20, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 0 (none)
+== end of day 2: citizens 20, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 0 (none)
+== end of day 3: citizens 20, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 0 (none)
+== end of day 4: citizens 19, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 1 (Disease 1)
+== end of day 5: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 2)
+== end of day 6: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 2)
+== end of day 7: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 2)
+== end of day 8: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 2)
+== end of day 9: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 2)
+== end of day 10: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 2)
+== end of day 11: citizens 18, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 2 (Disease 2)
+== end of day 12: citizens 16, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 4 (Disease 4)
+== end of day 13: citizens 16, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 4 (Disease 4)
+== end of day 14: citizens 15, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 5 (Disease 5)
+== end of day 15: citizens 15, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 5 (Disease 5)
+== end of day 16: citizens 15, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 5 (Disease 5)
+== end of day 17: citizens 15, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 5 (Disease 5)
+== end of day 18: citizens 15, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 5 (Disease 5)
+== end of day 19: citizens 15, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 5 (Disease 5)
+== end of day 20: citizens 15, beds 20, medicine on map 0, medicine in ledger 20, peak fires 0, deaths 5 (Disease 5)
+
+## infections: pawn | onset day | job at onset | first tend after (h) | tends | mean tend quality | share of time tended | in bed | asleep | downed | mean immunity gain speed | max severity | immunity at end | lasted (d) | outcome
+Yara | 2.1 | Mine | 0.3 | 1 | 0.12 | 0.99 | 0.27 | 0.17 | 0.13 | 1.05 | 1.00 | 0.82 | 1.22 | DIED
+Kaia | 3.6 | none | 0.3 | 2 | 0.08 | 0.99 | 0.99 | 0.00 | 1.00 | 1.17 | 1.00 | 0.92 | 1.22 | DIED
+Kaia | 3.7 | none | never | 0 | - | 0.98 | 1.00 | 0.00 | 1.00 | 1.18 | 0.99 | 0.92 | 1.18 | DIED
+Oren | 10.5 | Harvest | 0.5 | 2 | 0.12 | 0.98 | 0.29 | 0.17 | 0.12 | 1.05 | 1.00 | 0.85 | 1.26 | DIED
+Fira | 10.6 | CutPlant | 21.5 | 1 | 0.06 | 0.99 | 0.34 | 0.21 | 0.13 | 1.06 | 1.00 | 0.82 | 1.20 | DIED
+Yara | 12.4 | SocialRelax | 0.4 | 3 | 0.09 | 0.99 | 0.29 | 0.17 | 0.13 | 1.05 | 1.00 | 0.85 | 1.26 | DIED
+
+## fatal case: Yara, infection from day 2.15
+  +0.00d sev 0.00 imm 0.00 tended no job Mine gainSpeed 1.00
+  +0.01d TEND quality 0.12 (patient in bed: no)
+  +0.10d sev 0.08 imm 0.06 tended yes q0.12 job Mine gainSpeed 1.00
+  +0.20d sev 0.16 imm 0.13 tended yes q0.12 job Mine gainSpeed 1.00
+  +0.30d sev 0.23 imm 0.19 tended yes q0.12 job SocialRelax gainSpeed 1.00
+  +0.40d sev 0.31 imm 0.26 tended yes q0.00 job Mine gainSpeed 1.00
+  +0.50d sev 0.40 imm 0.32 tended yes q0.00 job Mine gainSpeed 1.00
+  +0.60d sev 0.48 imm 0.39 tended yes q0.00 job LayDown IN BED asleep gainSpeed 1.18
+  +0.70d sev 0.56 imm 0.46 tended yes q0.00 job LayDown IN BED asleep gainSpeed 1.18
+  +0.80d sev 0.65 imm 0.54 tended yes q0.00 job Ingest gainSpeed 1.00
+  +0.90d sev 0.73 imm 0.60 tended yes q0.00 job Mine gainSpeed 1.00
+  +1.00d sev 0.82 imm 0.67 tended yes q0.00 job Mine gainSpeed 1.00
+  +1.10d sev 0.90 imm 0.73 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+  +1.20d sev 0.98 imm 0.81 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+
+## fatal case: Kaia, infection from day 3.63
+  +0.00d sev 0.00 imm 0.00 tended no job none DOWNED gainSpeed 1.00
+  +0.01d TEND quality 0.04 (patient in bed: no)
+  +0.10d sev 0.08 imm 0.07 tended yes q0.04 job none IN BED DOWNED gainSpeed 1.18
+  +0.20d sev 0.17 imm 0.15 tended yes q0.04 job none IN BED DOWNED gainSpeed 1.18
+  +0.30d sev 0.25 imm 0.23 tended yes q0.04 job none IN BED DOWNED gainSpeed 1.18
+  +0.40d sev 0.33 imm 0.30 tended yes q0.04 job none IN BED DOWNED gainSpeed 1.18
+  +0.50d sev 0.41 imm 0.38 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+  +0.60d sev 0.50 imm 0.45 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+  +0.70d sev 0.58 imm 0.53 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+  +0.80d sev 0.67 imm 0.61 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+  +0.90d sev 0.75 imm 0.68 tended yes q0.00 job none IN BED DOWNED gainSpeed 1.18
+  +0.92d TEND quality 0.12 (patient in bed: yes)
+  +1.00d sev 0.83 imm 0.76 tended yes q0.12 job none IN BED DOWNED gainSpeed 1.18
+  +1.10d sev 0.91 imm 0.83 tended yes q0.12 job none IN BED DOWNED gainSpeed 1.18
+  +1.20d sev 0.98 imm 0.91 tended yes q0.12 job none IN BED DOWNED gainSpeed 1.18
