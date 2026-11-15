@@ -32,8 +32,27 @@ namespace SimWorld.Map
             RecalculateAllPerceivedPathCosts();
         }
 
-        /// <summary>Terrain cost plus every spawned non-pawn thing's <c>pathCost</c> at this cell; impassable overrides all of it.</summary>
-        public int CalculatedCostAt(IntVec3 c)
+        /// <summary>What a free-standing fire on a cell adds to that cell's <i>perceived</i> cost (RimWorld:
+        /// <c>PathGrid.CalculatedCostAt</c> with <c>perceivedStatic</c>, which adds 1000 for a fire on the cell
+        /// and 150 for each fire in the eight around it). Recalled from the decompile, not sourced; the tests
+        /// pin "a path goes round a fire and a wanderer does not stop in one", not the literals.</summary>
+        public const int PerceivedCostFireOnCell = 1000;
+
+        /// <summary>See <see cref="PerceivedCostFireOnCell"/>: per burning neighbour.</summary>
+        public const int PerceivedCostFireAdjacent = 150;
+
+        /// <summary>Terrain cost plus every spawned non-pawn thing's <c>pathCost</c> at this cell; impassable
+        /// overrides all of it. This is what walking the cell actually costs (<c>Pawn_PathFollower</c>).</summary>
+        public int CalculatedCostAt(IntVec3 c) => CalculatedCostAt(c, perceivedStatic: false);
+
+        /// <summary>
+        /// <see cref="CalculatedCostAt(IntVec3)"/>, plus, when <paramref name="perceivedStatic"/>, what a pawn
+        /// planning a route or choosing where to stand makes of fire on and beside the cell (RimWorld's own
+        /// split: the cached grid the pathfinder and the wander-cell check read is the perceived one, while
+        /// the follower pays only the real cost — so a pawn routes round a fire but is not slowed to a crawl
+        /// inside one it is already standing in).
+        /// </summary>
+        public int CalculatedCostAt(IntVec3 c, bool perceivedStatic)
         {
             TerrainDef terrain = map.terrainGrid.TerrainAt(c);
             if (terrain.passability == Traversability.Impassable) return ImpassableCost;
@@ -47,6 +66,15 @@ namespace SimWorld.Map
                 if (thing.def.passability == Traversability.Impassable) return ImpassableCost;
                 cost += thing.def.pathCost;
             }
+
+            if (perceivedStatic)
+            {
+                if (FireUtility.StaticFireIn(c, map) != null) cost += PerceivedCostFireOnCell;
+                for (int i = 0; i < GenAdj.AdjacentCells.Length; i++)
+                {
+                    if (FireUtility.StaticFireIn(c + GenAdj.AdjacentCells[i], map) != null) cost += PerceivedCostFireAdjacent;
+                }
+            }
             return cost;
         }
 
@@ -57,7 +85,7 @@ namespace SimWorld.Map
             if (!GenGrid.InBounds(c, map)) return;
             int i = map.cellIndices.CellToIndex(c);
             bool wasWalkable = perceivedPathCost[i] < ImpassableCost;
-            perceivedPathCost[i] = CalculatedCostAt(c);
+            perceivedPathCost[i] = CalculatedCostAt(c, perceivedStatic: true);
             Version++;
 
             // Only a walkability *flip* can change the region graph's shape — a cost change between two
@@ -74,7 +102,7 @@ namespace SimWorld.Map
         {
             foreach (IntVec3 c in map.AllCells)
             {
-                perceivedPathCost[map.cellIndices.CellToIndex(c)] = CalculatedCostAt(c);
+                perceivedPathCost[map.cellIndices.CellToIndex(c)] = CalculatedCostAt(c, perceivedStatic: true);
             }
             Version++;
         }

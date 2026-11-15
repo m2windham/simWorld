@@ -89,6 +89,9 @@ namespace SimWorld.AI
             };
             sleep.FailOn(() => pawn.needs.rest == null);
             sleep.FailOnDespawnedOrNull(TargetIndex.A);
+            // A bed that catches fire is no longer a bed (RimWorld: Toils_Bed.FailOnBedNoLongerUsable, which
+            // includes FailOnBurningImmobile on the bed). The ground case has no bed to burn.
+            if (inBed) sleep.FailOn(() => job.GetTarget(TargetIndex.A).Thing is Thing bed && bed.IsBurning());
             yield return sleep;
         }
 

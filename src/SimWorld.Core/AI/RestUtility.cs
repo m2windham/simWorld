@@ -68,6 +68,8 @@ namespace SimWorld.AI
             {
                 Thing bed = beds[i];
                 if (!bed.Spawned) continue;
+                // RimWorld: RestUtility.IsValidBedFor refuses a bed that is on fire (bedThing.IsBurning()).
+                if (bed.IsBurning()) continue;
                 if (!map.reservationManager.CanReserve(pawn, bed)) continue;
                 int distSq = (bed.Position - pawn.Position).LengthHorizontalSquared;
                 if (distSq >= bestDistSq) continue;

@@ -100,6 +100,31 @@ namespace SimWorld.Things
         /// <summary>Ticks this fire has been alive; a burn duration other systems can read.</summary>
         public int TicksSinceSpawn => ticksSinceSpawn;
 
+        /// <summary>A fire is felt in the cells around it, not only its own (RimWorld:
+        /// <c>Fire.SpawnSetup</c>/<c>DeSpawn</c> both call <c>RecalcPathsOnAndAroundMe</c>), so the perceived
+        /// path cost of all nine is refreshed — see <see cref="Map.PathGrid.CalculatedCostAt(IntVec3, bool)"/>.</summary>
+        public override void SpawnSetup(Map.Map map, bool respawningAfterLoad)
+        {
+            base.SpawnSetup(map, respawningAfterLoad);
+            RecalcPathsAround(map, Position);
+        }
+
+        public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
+        {
+            Map.Map? map = Map;
+            IntVec3 cell = Position;
+            base.DeSpawn(mode);
+            if (map != null) RecalcPathsAround(map, cell);
+        }
+
+        private static void RecalcPathsAround(Map.Map map, IntVec3 cell)
+        {
+            for (int i = 0; i < GenAdj.AdjacentCells.Length; i++)
+            {
+                map.pathGrid.RecalculatePerceivedPathCostAt(cell + GenAdj.AdjacentCells[i]);
+            }
+        }
+
         public override void Tick()
         {
             // AttachableThing follows the parent and dies with it; that can destroy us mid-tick.
