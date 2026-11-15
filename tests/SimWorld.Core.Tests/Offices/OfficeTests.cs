@@ -200,6 +200,11 @@ namespace SimWorld.Tests.Offices
             first.health.Kill(null, null);
             OfficeManager.ReconcileWorld(world);
 
+            // Interregnum: the sweep that empties the seat does not refill it, so the town goes one sweep
+            // without a steward (EdictDef.requiredOffice is what reads that gap).
+            Assert.Null(OfficeManager.HolderIn(OfficeDefOf.Steward, town));
+            OfficeManager.ReconcileWorld(world);
+
             Pawn second = Steward(town);
             Assert.NotSame(first, second);
             Assert.False(second.Dead);
@@ -257,6 +262,7 @@ namespace SimWorld.Tests.Offices
             for (int i = 0; i < 6; i++) town.AddCitizen(NewAdult(30f));
 
             OfficeManager.ReconcileWorld(world);
+            OfficeManager.ReconcileWorld(world); // the first sweep only empties the dead steward's seat
 
             Assert.NotNull(OfficeManager.HolderIn(OfficeDefOf.Steward, town));
             Assert.Null(OfficeManager.HolderIn(OfficeDefOf.Elder, town));
