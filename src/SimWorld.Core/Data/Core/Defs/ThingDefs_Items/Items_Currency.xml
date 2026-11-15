@@ -19,6 +19,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>
     <stackLimit>1000</stackLimit>
+    <resourceReadoutPriority>First</resourceReadoutPriority>
     <statBases><MarketValue>1</MarketValue></statBases>
   </ThingDef>
 

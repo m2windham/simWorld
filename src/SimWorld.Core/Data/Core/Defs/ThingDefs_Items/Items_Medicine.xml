@@ -35,6 +35,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>Medicine</li></thingCategories>
     <stackLimit>25</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
     <statBases>
       <MarketValue>10</MarketValue>
       <MedicalPotency>0.6</MedicalPotency>
@@ -50,6 +51,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>Medicine</li></thingCategories>
     <stackLimit>25</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
     <statBases>
       <MarketValue>18</MarketValue>
       <MedicalPotency>1.0</MedicalPotency>

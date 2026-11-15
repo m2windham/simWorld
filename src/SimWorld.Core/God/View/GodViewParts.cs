@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+using SimWorld.Defs;
 using SimWorld.Director;
 using SimWorld.Research;
 
@@ -82,7 +83,9 @@ namespace SimWorld.God.View
     {
         internal SettlementSummary(
             string name, int tile, int foundingTick,
-            int totalPopulation, int citizenCount, int statisticalPopulation, bool hasInteriorMap)
+            int totalPopulation, int citizenCount, int statisticalPopulation, bool hasInteriorMap,
+            float meanMood, float meanHealth, float meanFoodNeed,
+            IReadOnlyList<StockLine> stock, int storedUnits, float storedNutrition)
         {
             Name = name;
             Tile = tile;
@@ -91,6 +94,12 @@ namespace SimWorld.God.View
             CitizenCount = citizenCount;
             StatisticalPopulation = statisticalPopulation;
             HasInteriorMap = hasInteriorMap;
+            MeanMood = meanMood;
+            MeanHealth = meanHealth;
+            MeanFoodNeed = meanFoodNeed;
+            Stock = stock;
+            StoredUnits = storedUnits;
+            StoredNutrition = storedNutrition;
         }
 
         public string Name { get; }
@@ -112,6 +121,64 @@ namespace SimWorld.God.View
         /// looks like inside belongs to the map layer, and a civilization view only needs to know whether
         /// there is something to descend into.</summary>
         public bool HasInteriorMap { get; }
+
+        /// <summary>Mean mood of this settlement's people, 0-1. The same number as
+        /// <see cref="CivilizationSummary.MeanMood"/> taken over one settlement instead of all of them: a
+        /// <see cref="GodRollup"/> of this settlement alone, so its Statistical cohort is folded in by the
+        /// same weighted sample and nobody in it is walked. 0 when nobody lives here — a mean over nobody,
+        /// not a miserable town, so check <see cref="TotalPopulation"/> before drawing it.</summary>
+        public float MeanMood { get; }
+
+        /// <summary>Mean fraction of health, 0-1, over this settlement alone. 1 when nobody lives here.</summary>
+        public float MeanHealth { get; }
+
+        /// <summary>Mean food need, 0-1, over this settlement alone. High is fed, low is hungry — a need
+        /// level, not a shortage, and not the share of people who have eaten. 0 when nobody lives here.</summary>
+        public float MeanFoodNeed { get; }
+
+        /// <summary>The resources this settlement holds, one line per kind, most important first (by the
+        /// def's readout priority, then defName). Empty — never null — when it holds none. See
+        /// <see cref="StockLine"/> for what counts: resources in either book, never gear, rubble or bodies.</summary>
+        public IReadOnlyList<StockLine> Stock { get; }
+
+        /// <summary>Every unit in <see cref="Stock"/>, summed: how much there is to store, whatever it is.</summary>
+        public int StoredUnits { get; }
+
+        /// <summary>Nutrition in <see cref="Stock"/>: each edible line's count times its def's nutrition per
+        /// unit, in the same units a citizen's food need is filled in. Every food shipped counts as a
+        /// resource, so this is the settlement-scale figure <c>AI.HuntingInitiative.NutritionAvailable</c>
+        /// answers "how much food does this town have" with — ledger and map together — and
+        /// <c>Economy.SettlementLarder.StoredNutrition</c> for a settlement that has no map.</summary>
+        public float StoredNutrition { get; }
+
+        internal static SettlementSummary From(World.Settlement settlement)
+        {
+            // A rollup of this settlement alone rather than a second way of averaging: the per-settlement
+            // means are then the civilization's own definition, cohort sampling included, and cannot drift
+            // from the number beside them.
+            var rollup = new GodRollup();
+            rollup.Recompute(settlement);
+
+            Dictionary<ThingDef, int> held = StockLine.Tally(settlement);
+            int storedUnits = 0;
+            float storedNutrition = 0f;
+            foreach (KeyValuePair<ThingDef, int> entry in held)
+            {
+                storedUnits += entry.Value;
+                if (entry.Key.IsNutritionGivingIngestible) storedNutrition += entry.Key.ingestible!.nutrition * entry.Value;
+            }
+
+            return new SettlementSummary(
+                settlement.name,
+                settlement.tile,
+                settlement.foundingTick,
+                settlement.TotalPopulation,
+                settlement.Citizens.Count,
+                settlement.StatisticalPopulation,
+                settlement.InteriorMap != null,
+                rollup.MeanMood, rollup.MeanHealth, rollup.MeanFoodNeed,
+                StockLine.AllOf(held), storedUnits, storedNutrition);
+        }
     }
 
     /// <summary>Why an edict can or cannot be issued right now.</summary>

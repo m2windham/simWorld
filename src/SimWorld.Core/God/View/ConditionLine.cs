@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using SimWorld.Conditions;
+using SimWorld.Sim;
 
 namespace SimWorld.God.View
 {
@@ -29,13 +30,14 @@ namespace SimWorld.God.View
     /// </summary>
     public sealed class ConditionLine
     {
-        internal ConditionLine(string defName, string label, string description, int startTick, int ticksLeft, bool permanent, float temperatureOffset)
+        internal ConditionLine(string defName, string label, string description, int startTick, int ticksLeft, string timeLeftLabel, bool permanent, float temperatureOffset)
         {
             DefName = defName;
             Label = label;
             Description = description;
             StartTick = startTick;
             TicksLeft = ticksLeft;
+            TimeLeftLabel = timeLeftLabel;
             Permanent = permanent;
             TemperatureOffset = temperatureOffset;
         }
@@ -53,6 +55,12 @@ namespace SimWorld.God.View
         /// <summary>Ticks until it ends. <see cref="int.MaxValue"/> when <see cref="Permanent"/>; check that
         /// flag rather than testing this against a threshold.</summary>
         public int TicksLeft { get; }
+
+        /// <summary><see cref="TicksLeft"/> in words — "2.3 days", "5 hours", "less than an hour"
+        /// (<see cref="GenDate.ToStringTicksToPeriod"/>) — or "permanent" for a condition that does not end
+        /// on its own. A bare span with no "left" on it, so it reads after "Time left:" and inside
+        /// parentheses alike; formatted here so every host says the same thing about the same condition.</summary>
+        public string TimeLeftLabel { get; }
 
         public bool Permanent { get; }
 
@@ -78,6 +86,7 @@ namespace SimWorld.God.View
                     condition.def?.description ?? "",
                     condition.startTick,
                     condition.TicksLeft,
+                    condition.Permanent ? "permanent" : GenDate.ToStringTicksToPeriod(condition.TicksLeft),
                     condition.Permanent,
                     condition.TemperatureOffset()));
             }

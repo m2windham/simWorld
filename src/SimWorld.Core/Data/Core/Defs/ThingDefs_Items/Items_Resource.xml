@@ -18,6 +18,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>
     <stackLimit>75</stackLimit>
+    <resourceReadoutPriority>First</resourceReadoutPriority>
     <statBases><MarketValue>1.2</MarketValue></statBases>
     <stuffProps>
       <categories><li>Woody</li></categories>
@@ -33,6 +34,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
     <stackLimit>75</stackLimit>
+    <resourceReadoutPriority>First</resourceReadoutPriority>
     <!--
       Flammability (system: fire) follows RimWorld's own data for the stuff defs: the stat defaults to 1, so
       wood and cloth need no entry at all, and the materials that do not burn say so twice — once as their
@@ -62,6 +64,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>Textiles</li></thingCategories>
     <stackLimit>100</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
     <statBases><MarketValue>1.5</MarketValue></statBases>
     <stuffProps>
       <categories><li>Fabric</li></categories>
@@ -83,6 +86,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>
     <stackLimit>75</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
     <statBases><MarketValue>1.0</MarketValue></statBases>
   </ThingDef>
 
@@ -94,6 +98,7 @@
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>StoneBlocks</li></thingCategories>
     <stackLimit>75</stackLimit>
+    <resourceReadoutPriority>Middle</resourceReadoutPriority>
     <statBases>
       <MarketValue>0.9</MarketValue>
       <Flammability>0</Flammability>
