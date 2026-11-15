@@ -54,11 +54,16 @@ namespace SimWorld.Pawns
         public const float MedicineLifespanBonusYears = 10f;
 
         /// <summary>
-        /// Days removed from the lifespan budget per food interval spent starving. Over a season of famine
-        /// (~15 in-game days at this interval) that is roughly a year off the end of a life — enough that
-        /// repeated hunger shortens a generation, without a single bad winter being a death sentence.
+        /// Days removed from the lifespan budget per food interval (<see cref="Needs.Need.IntervalTicks"/>,
+        /// 150 ticks, so 400 a day) spent starving. Fifteen days of famine is 6,000 intervals, which at this
+        /// rate is 60 days: one year off the end of a life. Enough that repeated hunger shortens a
+        /// generation, without a single bad winter being a death sentence.
+        /// <para/>It was 4 until 2026-11-15, written as if an interval were a day. That cost about 27 years
+        /// per day of hunger, so any adult who went hungry for a day had the budget pinned to their current
+        /// age by <see cref="Pawn_AgeTracker.AdjustLifespan"/>'s floor, and the next yearly sweep killed every
+        /// one of them on the same tick (17 of 17 hungry survivors on one bench seed).
         /// </summary>
-        public const float StarvationLifespanPenaltyDays = 4f;
+        public const float StarvationLifespanPenaltyDays = 0.01f;
 
         /// <summary>
         /// Minimum years between successive births from the same household. Approximates historical,

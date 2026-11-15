@@ -712,6 +712,24 @@ namespace SimWorld.Tests.Pawns
             Assert.Equal(starved, p.ageTracker.DebugDeathAgeYears, 3);
         }
 
+        [Fact]
+        public void A_season_of_famine_costs_about_a_year_and_does_not_kill_an_adult_outright()
+        {
+            Pawn p = global::SimWorld.Pawns.Generation.PawnGenerator.GeneratePawn(
+                new global::SimWorld.Pawns.Generation.PawnGenerationRequest(PawnKindDefOf.Colonist));
+            p.ageTracker.DebugSetAge(30f);
+            p.ageTracker.RollLifespanBudget(p.RaceProps);
+            float before = p.ageTracker.DebugDeathAgeYears;
+
+            // Fifteen days starving, slice by slice, the way the food need reports it.
+            int slicesPerDay = GenDate.TicksPerDay / global::SimWorld.Needs.Need.IntervalTicks;
+            p.Notify_StarvationInterval(true, 15f * slicesPerDay);
+
+            float lost = before - p.ageTracker.DebugDeathAgeYears;
+            Assert.InRange(lost, 0.5f, 2f);
+            Assert.False(p.ageTracker.ShouldDieOfAge(), "one bad season must not pin a 30-year-old's budget to their age");
+        }
+
         // ---- demography.migration: arrivals ----
 
         private static void ForceNeutralNeeds(Pawn p)
