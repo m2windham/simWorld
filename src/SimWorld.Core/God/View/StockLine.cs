@@ -19,8 +19,20 @@ namespace SimWorld.God.View
     /// This is the same total <c>AI.HuntingInitiative.NutritionAvailable</c> calls "the honest total of both
     /// books", carried per def rather than only as nutrition.
     ///
-    /// <para/><b>A body is not goods.</b> A <see cref="Corpse"/> lying on the map is left out, for the reason
-    /// banking leaves it alone: a settlement's dead are its people, not its stock.
+    /// <para/><b>Resources only, the way RimWorld's readout counts them.</b> A def is listed only when it
+    /// <see cref="ThingDef.CountAsResource"/> (RimWorld: <c>ResourceCounter</c> filters by the same flag), in
+    /// both books alike. That leaves out gear and rubble — the knives a founding band carried in, the rock
+    /// chunks a freshly generated map is strewn with — which a settlement has lying about but does not store
+    /// against need, and which would otherwise crowd the things a player is actually watching run down.
+    ///
+    /// <para/><b>One deliberate departure: not only what is in storage.</b> RimWorld's counter also requires
+    /// an item to be resting in a stockpile, and this does not. In this port a watched settlement's larder is
+    /// issued onto the map loose, on purpose (<c>Economy.SettlementStockInitiative.IssueFromStores</c>: "left
+    /// loose rather than zoned"), so a storage-only count would show a town that has just been opened — and
+    /// fed — as holding no food at all until somebody had hauled it back indoors.
+    ///
+    /// <para/><b>A body is not goods.</b> A <see cref="Corpse"/> lying on the map is left out whatever its def
+    /// says, for the reason banking leaves it alone: a settlement's dead are its people, not its stock.
     ///
     /// <para/>A value and a defName, like every other line on this seam; sparse, so a def the settlement
     /// holds none of is absent rather than listed at zero.
@@ -42,12 +54,17 @@ namespace SimWorld.God.View
         /// <summary>Units held across both books. Always positive.</summary>
         public int Count { get; }
 
-        /// <summary>Everything <paramref name="settlement"/> holds, by def: its ledger plus every item on its
-        /// interior map, when it has one. Never generates a map to look — a settlement nobody has entered
-        /// has its ledger and nothing else.</summary>
+        /// <summary>Every resource <paramref name="settlement"/> holds, by def: what its ledger lists plus
+        /// what lies on its interior map, when it has one, each filtered by
+        /// <see cref="ThingDef.CountAsResource"/>. Never generates a map to look — a settlement nobody has
+        /// entered has its ledger and nothing else.</summary>
         internal static Dictionary<ThingDef, int> Tally(World.Settlement settlement)
         {
-            var held = new Dictionary<ThingDef, int>(settlement.Stores);
+            var held = new Dictionary<ThingDef, int>();
+            foreach (KeyValuePair<ThingDef, int> stored in settlement.Stores)
+            {
+                if (stored.Key.CountAsResource && stored.Value > 0) held[stored.Key] = stored.Value;
+            }
 
             Map.Map? map = settlement.InteriorMap;
             if (map == null) return held;
@@ -56,23 +73,30 @@ namespace SimWorld.God.View
             for (int i = 0; i < items.Count; i++)
             {
                 Thing item = items[i];
-                if (item is Corpse || item.stackCount <= 0) continue;
+                if (item is Corpse || !item.def.CountAsResource || item.stackCount <= 0) continue;
                 held.TryGetValue(item.def, out int have);
                 held[item.def] = have + item.stackCount;
             }
             return held;
         }
 
-        /// <summary>One line per def held, ordered by defName so the list reads the same way on every capture
-        /// rather than in whatever order the ledger's dictionary happens to enumerate.</summary>
+        /// <summary>One line per def held, highest <see cref="ThingDef.resourceReadoutPriority"/> first and
+        /// by defName within a priority (RimWorld's readout leads with what matters most), so the list reads
+        /// the same way on every capture rather than in whatever order a dictionary happens to enumerate.</summary>
         internal static List<StockLine> AllOf(Dictionary<ThingDef, int> held)
         {
-            var lines = new List<StockLine>(held.Count);
-            foreach (KeyValuePair<ThingDef, int> entry in held)
+            var defs = new List<ThingDef>(held.Keys);
+            defs.Sort(static (a, b) =>
             {
-                if (entry.Value > 0) lines.Add(new StockLine(entry.Key.defName, entry.Key.LabelCap, entry.Value));
+                int byPriority = b.resourceReadoutPriority.CompareTo(a.resourceReadoutPriority);
+                return byPriority != 0 ? byPriority : string.CompareOrdinal(a.defName, b.defName);
+            });
+
+            var lines = new List<StockLine>(defs.Count);
+            for (int i = 0; i < defs.Count; i++)
+            {
+                lines.Add(new StockLine(defs[i].defName, defs[i].LabelCap, held[defs[i]]));
             }
-            lines.Sort(static (a, b) => string.CompareOrdinal(a.DefName, b.DefName));
             return lines;
         }
     }

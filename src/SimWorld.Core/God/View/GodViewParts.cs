@@ -136,18 +136,19 @@ namespace SimWorld.God.View
         /// level, not a shortage, and not the share of people who have eaten. 0 when nobody lives here.</summary>
         public float MeanFoodNeed { get; }
 
-        /// <summary>What this settlement holds, one line per kind of goods, ordered by defName. Empty — never
-        /// null — when it holds nothing. See <see cref="StockLine"/> for what counts.</summary>
+        /// <summary>The resources this settlement holds, one line per kind, most important first (by the
+        /// def's readout priority, then defName). Empty — never null — when it holds none. See
+        /// <see cref="StockLine"/> for what counts: resources in either book, never gear, rubble or bodies.</summary>
         public IReadOnlyList<StockLine> Stock { get; }
 
         /// <summary>Every unit in <see cref="Stock"/>, summed: how much there is to store, whatever it is.</summary>
         public int StoredUnits { get; }
 
         /// <summary>Nutrition in <see cref="Stock"/>: each edible line's count times its def's nutrition per
-        /// unit, in the same units a citizen's food need is filled in. The settlement-scale figure
-        /// <c>AI.HuntingInitiative.NutritionAvailable</c> answers "how much food does this town have" with —
-        /// ledger and map together — and <c>Economy.SettlementLarder.StoredNutrition</c> for a settlement
-        /// that has no map.</summary>
+        /// unit, in the same units a citizen's food need is filled in. Every food shipped counts as a
+        /// resource, so this is the settlement-scale figure <c>AI.HuntingInitiative.NutritionAvailable</c>
+        /// answers "how much food does this town have" with — ledger and map together — and
+        /// <c>Economy.SettlementLarder.StoredNutrition</c> for a settlement that has no map.</summary>
         public float StoredNutrition { get; }
 
         internal static SettlementSummary From(World.Settlement settlement)

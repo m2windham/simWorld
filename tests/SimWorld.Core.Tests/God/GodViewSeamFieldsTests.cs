@@ -225,19 +225,23 @@ namespace SimWorld.Tests.God
         // ---- what a settlement holds ----
 
         [Fact]
-        public void A_settlement_nobody_has_entered_holds_exactly_its_ledger()
+        public void A_settlement_nobody_has_entered_holds_the_resources_in_its_ledger()
         {
             Game game = NewSoloGame("seam-ledger");
             Settlement settlement = PlayerSettlement(game);
             Assert.Null(settlement.InteriorMap);
-            Assert.NotEmpty(settlement.Stores);
+            settlement.AddStore(Def("Silver"), 40);
+            settlement.AddStore(Def("Pemmican"), 60);
+
+            var resources = settlement.Stores
+                .Where(kv => kv.Key.CountAsResource)
+                .ToDictionary(kv => kv.Key.defName, kv => kv.Value);
+            Assert.NotEmpty(resources);
 
             SettlementSummary summary = SummaryOf(settlement);
 
-            Assert.Equal(
-                settlement.Stores.ToDictionary(kv => kv.Key.defName, kv => kv.Value),
-                Counts(summary));
-            Assert.Equal(settlement.Stores.Values.Sum(), summary.StoredUnits);
+            Assert.Equal(resources, Counts(summary));
+            Assert.Equal(resources.Values.Sum(), summary.StoredUnits);
             Assert.Equal(SettlementLarder.StoredNutrition(settlement), summary.StoredNutrition, 3);
 
             // Reading the stock never generated a map to look in.
@@ -256,17 +260,30 @@ namespace SimWorld.Tests.God
             SettlementSummary before = SummaryOf(settlement);
             settlement.AddStore(blocks, 7);
             settlement.AddStore(wood, 30);
+            settlement.AddStore(Def("Silver"), 5);
+            settlement.AddStore(Def("RawRice"), 9);
+            settlement.AddStore(Def("Cloth"), 3);
             SettlementSummary after = SummaryOf(settlement);
 
             Assert.Equal(CountOf(before, blocks) + 7, CountOf(after, blocks));
             Assert.Equal(CountOf(before, wood) + 30, CountOf(after, wood));
-            Assert.Equal(before.StoredUnits + 37, after.StoredUnits);
-            // Neither is food, so the larder has not changed.
-            Assert.Equal(before.StoredNutrition, after.StoredNutrition, 3);
+            Assert.Equal(before.StoredUnits + 54, after.StoredUnits);
+            Assert.True(after.StoredNutrition > before.StoredNutrition, "Rice went into the ledger and the larder did not grow.");
 
+            // Most important first, by name within a rank, and by nothing else: a second capture of the
+            // same settlement cannot shuffle the bar.
+            List<string> shown = after.Stock.Select(line => line.DefName).ToList();
+            Assert.True(shown.Count >= 5);
             Assert.Equal(
-                after.Stock.Select(line => line.DefName).OrderBy(name => name, StringComparer.Ordinal),
-                after.Stock.Select(line => line.DefName));
+                shown
+                    .OrderByDescending(name => Def(name).resourceReadoutPriority)
+                    .ThenBy(name => name, StringComparer.Ordinal),
+                shown);
+            Assert.Equal(shown, SummaryOf(settlement).Stock.Select(line => line.DefName));
+            // The rule is exercised, not vacuous: more than one rank is on show, and more than one def in a rank.
+            Assert.True(shown.Select(name => Def(name).resourceReadoutPriority).Distinct().Count() > 1);
+            Assert.Contains(shown.GroupBy(name => Def(name).resourceReadoutPriority), rank => rank.Count() > 1);
+
             Assert.All(after.Stock, line =>
             {
                 Assert.True(line.Count > 0);
@@ -276,6 +293,125 @@ namespace SimWorld.Tests.God
             // Spent to nothing, a line goes away rather than standing at zero.
             settlement.SetStoreCount(blocks, 0);
             Assert.DoesNotContain(SummaryOf(settlement).Stock, line => line.DefName == blocks.defName);
+        }
+
+        [Fact]
+        public void Gear_and_rubble_are_not_stock_in_either_book_and_silver_food_and_medicine_are()
+        {
+            Game game = NewSoloGame("seam-resources-only");
+            Settlement settlement = PlayerSettlement(game);
+            GodCommands.OpenSettlement(settlement.tile);
+            CoreMap map = settlement.InteriorMap!;
+
+            ThingDef chunk = Def("ChunkSandstone");
+            ThingDef club = Def("MeleeWeapon_Club");
+            ThingDef knife = Def("MeleeWeapon_Knife");
+            ThingDef silver = Def("Silver");
+            ThingDef rice = Def("RawRice");
+            ThingDef medicine = Def("MedicineHerbal");
+
+            SettlementSummary before = SummaryOf(settlement);
+
+            // The same six things in each book: three a settlement stores against need, three it merely has.
+            settlement.AddStore(chunk, 9);
+            settlement.AddStore(club, 2);
+            settlement.AddStore(knife, 3);
+            settlement.AddStore(silver, 50);
+            settlement.AddStore(rice, 20);
+            settlement.AddStore(medicine, 4);
+
+            SpawnStack(map, chunk, 6);
+            SpawnStack(map, club, 1);
+            SpawnStack(map, knife, 1);
+            SpawnStack(map, silver, 25);
+            SpawnStack(map, rice, 10);
+            SpawnStack(map, medicine, 2);
+
+            SettlementSummary after = SummaryOf(settlement);
+
+            Assert.DoesNotContain(after.Stock, line => line.DefName == chunk.defName);
+            Assert.DoesNotContain(after.Stock, line => line.DefName == club.defName);
+            Assert.DoesNotContain(after.Stock, line => line.DefName == knife.defName);
+
+            Assert.Equal(CountOf(before, silver) + 75, CountOf(after, silver));
+            Assert.Equal(CountOf(before, rice) + 30, CountOf(after, rice));
+            Assert.Equal(CountOf(before, medicine) + 6, CountOf(after, medicine));
+
+            // The totals follow the lines: the twenty-two units of gear and rubble moved neither.
+            Assert.Equal(before.StoredUnits + 75 + 30 + 6, after.StoredUnits);
+            Assert.Equal(after.Stock.Sum(line => line.Count), after.StoredUnits);
+            Assert.Equal(before.StoredNutrition + rice.ingestible!.nutrition * 30, after.StoredNutrition, 2);
+        }
+
+        [Fact]
+        public void A_settlement_opened_for_the_first_time_reports_resources_and_nothing_else()
+        {
+            // What the bar shows the moment a player first looks inside a town. A generated map is strewn
+            // with rock chunks and the founding band's weapons lie where the scenario dropped them; before
+            // the filter all of it read as stock.
+            Game game = NewSoloGame("seam-both-books");
+            Settlement settlement = PlayerSettlement(game);
+            GodCommands.OpenSettlement(settlement.tile);
+            CoreMap map = settlement.InteriorMap!;
+
+            List<Thing> lying = map.listerThings.ThingsInGroup(ThingRequestGroup.Item).Where(t => !(t is Corpse)).ToList();
+            Assert.Contains(lying, t => !t.def.CountAsResource);   // otherwise this proves nothing
+            Assert.Contains(lying, t => t.def.CountAsResource);
+
+            SettlementSummary summary = SummaryOf(settlement);
+
+            Assert.NotEmpty(summary.Stock);
+            Assert.All(summary.Stock, line => Assert.True(Def(line.DefName).CountAsResource, line.DefName + " is not a resource"));
+            Assert.All(
+                lying.Where(t => !t.def.CountAsResource).Select(t => t.def.defName).Distinct(),
+                name => Assert.DoesNotContain(summary.Stock, line => line.DefName == name));
+
+            // Nothing countable was dropped along with the rubble.
+            foreach (IGrouping<ThingDef, Thing> held in lying.Where(t => t.def.CountAsResource).GroupBy(t => t.def))
+            {
+                Assert.Equal(settlement.StoreCountOf(held.Key) + held.Sum(t => t.stackCount), CountOf(summary, held.Key));
+            }
+        }
+
+        [Fact]
+        public void What_counts_as_a_resource_is_what_a_settlement_stores_against_need()
+        {
+            // The counted set, as a rule rather than a list of priorities: content says which defs a
+            // readout counts, and these are the properties that set has to have for the readout to be
+            // believed. No def's own priority is pinned: those are recalled, and only order a list.
+            List<ThingDef> items = DefDatabase<ThingDef>.AllDefsListForReading
+                .Where(d => d.category == ThingCategory.Item)
+                .ToList();
+            List<ThingDef> counted = items.Where(d => d.CountAsResource).ToList();
+
+            Assert.NotEmpty(counted);
+            Assert.All(DefDatabase<ThingDef>.AllDefsListForReading.Where(d => d.CountAsResource), d =>
+                Assert.True(d.category == ThingCategory.Item, d.defName + " is counted and is not an item"));
+
+            // Gear is never a resource, and a resource is something that stacks.
+            Assert.All(items.Where(d => d.IsWeapon || d.IsApparel), d =>
+                Assert.False(d.CountAsResource, d.defName + " is gear and is counted"));
+            Assert.All(counted, d => Assert.True(d.stackLimit > 1, d.defName + " is counted and does not stack"));
+
+            // Every food is counted, which is the only reason StoredNutrition is the settlement's whole larder.
+            Assert.All(items.Where(d => d.IsNutritionGivingIngestible), d =>
+                Assert.True(d.CountAsResource, d.defName + " is food and is not counted"));
+
+            // No body is.
+            Assert.All(items.Where(d => d.defName.StartsWith("Corpse_", StringComparison.Ordinal)), d =>
+                Assert.False(d.CountAsResource, d.defName + " is a body and is counted"));
+
+            foreach (string name in new[] { "Silver", "WoodLog", "Steel", "BlocksSandstone", "Cloth", "MedicineHerbal", "RawBerries", "MealSimple" })
+            {
+                Assert.True(Def(name).CountAsResource, name + " should be counted");
+            }
+            foreach (string name in new[] { "ChunkSandstone", "ChunkGranite", "ChunkLimestone", "MeleeWeapon_Club", "MeleeWeapon_Knife", "SimpleProstheticLeg" })
+            {
+                Assert.False(Def(name).CountAsResource, name + " should not be counted");
+            }
+
+            // A def that says nothing is left out: uncounted is the default, not a choice content has to make.
+            Assert.False(new ThingDef().CountAsResource);
         }
 
         [Fact]
