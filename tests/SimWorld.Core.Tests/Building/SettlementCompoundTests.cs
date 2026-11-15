@@ -223,7 +223,7 @@ namespace SimWorld.Tests.Building
             foreach (int citizens in new[] { bands.min, (bands.min + bands.max) / 2, bands.max })
             {
                 CoreMap map = NewMap(120, 120);
-                Settlement settlement = Band(citizens, storedWood: 3 * ConstructionInitiativeTuning.GoodsPerStorageHut);
+                Settlement settlement = Band(citizens, storedWood: WoodFor(3));
                 RunUntilSettled(settlement, map);
 
                 // Every citizen's bed is inside the ring, and the storage it wanted is against the ring.
@@ -294,6 +294,85 @@ namespace SimWorld.Tests.Building
             AssertIsACompound(map, bedsInside: citizens);
             Assert.All(map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial),
                 t => Assert.All(t.OccupiedRect().Cells, c => Assert.True(map.areaManager.Home[c], t.def.defName + " at " + c + " is outside the home area")));
+        }
+
+        // ---- which way things are turned ----
+
+        /// <summary>Stored wood enough for the settlement to want <paramref name="huts"/> storage huts.</summary>
+        private static int WoodFor(int huts) => huts * StorageHutNeed.StacksPerStorageHut * Def("WoodLog").stackLimit;
+
+        [Fact]
+        public void The_door_lies_in_the_wall_run_it_closes()
+        {
+            int citizens = SettlementTuning.FoundingBandRange.min;
+            CoreMap map = NewMap(120, 120);
+            RunUntilSettled(Band(citizens), map);
+
+            // Planned turned, and it keeps the turn through the frame into the finished door.
+            Blueprint planned = Assert.Single(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>(),
+                bp => ReferenceEquals(bp.EntityToBuild, Door));
+            Rot4 plannedTurn = planned.Rotation;
+            BuildEverythingPlanned(map);
+            Thing door = Assert.Single(map.listerThings.ThingsOfDef(Door));
+            Assert.Equal(plannedTurn, door.Rotation);
+
+            // In line with its wall: a wall either side of the way it faces, open ground before and behind
+            // it. That is RimWorld's reading of a door's rotation, and for a door in the east side, a wall
+            // running north-south, it comes to East.
+            HashSet<IntVec3> walls = CellsOf(Sites(map, StoneWallMaterials.IsWall));
+            IntVec3 through = door.Rotation.FacingCell;
+            IntVec3 along = door.Rotation.Rotated(RotationDirection.Clockwise).FacingCell;
+            Assert.Contains(door.Position + along, walls);
+            Assert.Contains(door.Position - along, walls);
+            Assert.DoesNotContain(door.Position + through, walls);
+            Assert.DoesNotContain(door.Position - through, walls);
+            Assert.Equal(Rot4.East, door.Rotation);
+
+            // Turning it changed nothing about what it is: it can be walked through, the ground either side
+            // of it can be stood on, and with it shut the ring is still closed round every bed.
+            Assert.True(map.pathGrid.Walkable(door.Position), "the door at " + door.Position + " cannot be walked through");
+            Assert.True(GenGrid.Standable(door.Position + through, map));
+            Assert.True(GenGrid.Standable(door.Position - through, map));
+            AssertIsACompound(map, bedsInside: citizens);
+        }
+
+        [Fact]
+        public void Storage_against_the_ring_turns_its_back_to_it_on_every_side()
+        {
+            // More storage than the ring has room for, so all four sides fill and some huts go elsewhere.
+            int citizens = SettlementTuning.FoundingBandRange.min;
+            CoreMap map = NewMap(120, 120);
+            RunUntilSettled(Band(citizens, storedWood: WoodFor(60)), map);
+
+            HashSet<IntVec3> inside = AssertIsACompound(map, bedsInside: citizens);
+            HashSet<IntVec3> ring = CellsOf(Sites(map, StoneWallMaterials.IsWall));
+            ring.UnionWith(CellsOf(Sites(map, Door)));
+
+            var turns = new HashSet<Rot4>();
+            int elsewhere = 0;
+            foreach (Blueprint hut in map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>()
+                .Where(bp => ReferenceEquals(bp.EntityToBuild, Hut)))
+            {
+                if (!hut.Position.AdjacentToCardinal(ring))
+                {
+                    // Not one of the compound's: placed by the draw, unturned as it always was.
+                    Assert.Equal(Rot4.North, hut.Rotation);
+                    elsewhere++;
+                    continue;
+                }
+
+                // A model's front is authored toward -Z at North, the opposite of the way a thing faces. So
+                // a hut whose front is to open onto the ground outside faces the wall it stands against,
+                // and what lies behind its facing is neither the ring nor the inside of it.
+                IntVec3 faces = hut.Position + hut.Rotation.FacingCell;
+                IntVec3 front = hut.Position - hut.Rotation.FacingCell;
+                Assert.True(ring.Contains(faces), "the hut at " + hut.Position + " turned " + hut.Rotation + " does not face the ring");
+                Assert.False(ring.Contains(front) || inside.Contains(front), "the hut at " + hut.Position + " opens onto the ring");
+                turns.Add(hut.Rotation);
+            }
+
+            Assert.Equal(4, turns.Count); // a side each: west, north, south and east of the ring
+            Assert.True(elsewhere > 0, "the ring took every hut, so the unturned case was never exercised");
         }
 
         // ---- determinism ----

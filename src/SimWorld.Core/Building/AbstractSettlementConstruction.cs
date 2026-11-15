@@ -188,22 +188,11 @@ namespace SimWorld.Building
                 needs.Add((ConstructionThingDefOf.Wall, wallTarget));
             }
 
-            int storageTarget = StorageTarget(settlement);
+            // The one target here that is shared rather than restated: it needs no map (StorageHutNeed).
+            int storageTarget = StorageHutNeed.Target(settlement);
             if (storageTarget > 0) needs.Add((ConstructionThingDefOf.StorageHut, storageTarget));
 
             return needs;
-        }
-
-        /// <summary>One <c>StorageHut</c> per <see cref="ConstructionInitiativeTuning.GoodsPerStorageHut"/>
-        /// units held in <see cref="World.Settlement.Stores"/>, at least one once anything is held at all —
-        /// <see cref="SettlementConstructionInitiative"/>'s own arithmetic, restated verbatim against the same
-        /// constant.</summary>
-        private static int StorageTarget(Settlement settlement)
-        {
-            int totalStored = 0;
-            foreach (KeyValuePair<ThingDef, int> kv in settlement.Stores) totalStored += kv.Value;
-            if (totalStored <= 0) return 0;
-            return Math.Max(1, (totalStored + ConstructionInitiativeTuning.GoodsPerStorageHut - 1) / ConstructionInitiativeTuning.GoodsPerStorageHut);
         }
     }
 }

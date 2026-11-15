@@ -157,7 +157,7 @@ namespace SimWorld.Tests.Building
             CoreMap smallMap = NewMap(20, 20);
 
             Settlement large = PlainSettlement(2);
-            large.AddStore(Def("WoodLog"), 200); // several huts' worth
+            large.AddStore(Def("WoodLog"), 4 * StorageHutNeed.StacksPerStorageHut * Def("WoodLog").stackLimit); // several huts' worth
             CoreMap largeMap = NewMap(20, 20);
 
             SettlementConstructionInitiative.TickSettlement(small, smallMap);

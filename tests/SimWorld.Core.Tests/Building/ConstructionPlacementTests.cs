@@ -109,8 +109,9 @@ namespace SimWorld.Tests.Building
             var home = new CellRect(4, 44, 10, 10);
             Paint(map, home);
 
-            // 5 citizens: 5 beds, 10 walls; 120 wood stored: 3 huts. 18 things, room for 100.
-            Settlement settlement = PlainSettlement(citizens: 5, storedWood: 120);
+            // 5 citizens: 5 beds, 10 walls; three huts' worth of wood stored: 3 huts. 18 things, room for 100.
+            Settlement settlement = PlainSettlement(citizens: 5,
+                storedWood: 3 * StorageHutNeed.StacksPerStorageHut * Def("WoodLog").stackLimit);
             RunPasses(settlement, map, passes: 10);
 
             List<global::SimWorld.Building.Blueprint> placed = Blueprints(map);

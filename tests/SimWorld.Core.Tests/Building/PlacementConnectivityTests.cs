@@ -33,7 +33,7 @@ namespace SimWorld.Tests.Building
         private static Settlement HoardingSettlement(int huts)
         {
             var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Hoard", 0);
-            settlement.AddStore(Def("WoodLog"), huts * ConstructionInitiativeTuning.GoodsPerStorageHut);
+            settlement.AddStore(Def("WoodLog"), huts * StorageHutNeed.StacksPerStorageHut * Def("WoodLog").stackLimit);
             return settlement;
         }
 
