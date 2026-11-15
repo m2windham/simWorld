@@ -216,6 +216,19 @@ namespace SimWorld.Director
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
             string label = string.IsNullOrEmpty(detail) ? pawn.Label : pawn.Label + " (" + detail + ")";
+
+            // Once per death, keyed on who died. Every death reaches here from the death notification
+            // (StorytellerDeathEvents.Notify_PawnDied), and FamilyManager.HandleDeath — which kills through that
+            // same notification first — calls again afterwards with the lifespan detail only it knows. The
+            // second call adds that detail to the entry the first wrote and changes nothing else: the curator
+            // has already judged this death, and judging it twice is what this guard is for.
+            ChronicleEntry? already = DeathEntryFor(pawn.thingIDNumber);
+            if (already != null)
+            {
+                if (!string.IsNullOrEmpty(detail)) already.targetLabel = label;
+                return;
+            }
+
             var entry = new ChronicleEntry(Find.TickManager.TicksGame, "Death", label, 0f)
             {
                 deathCause = cause,
@@ -233,6 +246,18 @@ namespace SimWorld.Director
             // — the trigger Pawn_TierTracker.Notify_ChronicleNamed's own doc says a director-policy decision
             // must supply (deliberately not wired to every RecordDeath call, only to ones that matter).
             if (entry.isMoment) pawn.tier.Notify_ChronicleNamed();
+        }
+
+        /// <summary>The death entry already written for this thing id, searched from the newest end (a second
+        /// call for one death comes on the same tick as the first).</summary>
+        private ChronicleEntry? DeathEntryFor(int thingId)
+        {
+            for (int i = chronicle.Count - 1; i >= 0; i--)
+            {
+                ChronicleEntry e = chronicle[i];
+                if (e.deathCause != null && e.involvedThingIds != null && e.involvedThingIds.Contains(thingId)) return e;
+            }
+            return null;
         }
 
         private static string DescribeTarget(IIncidentTarget target) =>

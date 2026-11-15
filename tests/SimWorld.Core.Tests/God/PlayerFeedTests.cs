@@ -159,6 +159,37 @@ namespace SimWorld.Tests.God
         }
 
         [Fact]
+        public void A_citizen_who_dies_on_the_map_is_chronicled_once_with_cause_and_id()
+        {
+            Settlement s = OpenedSettlement("chronicle-onmap");
+            Pawn victim = SpawnedCitizen(s);
+            int tick = Find.TickManager.TicksGame;
+
+            // Not HandleDeath: the plain on-map funnel bleeding, infection and starvation all end in.
+            victim.health.Kill(null, null);
+
+            ChronicleLine death = GodViewSnapshot.ChronicleSince(tick - 1).Single(l => l.Kind == ChronicleKind.Death);
+            Assert.Equal(victim.health.CauseOfDeath, death.DeathCause);
+            Assert.Equal(new[] { victim.thingIDNumber }, death.InvolvedThingIds);
+            Assert.Contains(victim.Label, death.Text);
+        }
+
+        [Fact]
+        public void A_death_by_age_is_chronicled_once_though_it_passes_both_funnels()
+        {
+            Settlement s = OpenedSettlement("chronicle-age");
+            Pawn victim = SpawnedCitizen(s);
+            int tick = Find.TickManager.TicksGame;
+
+            Find.FamilyManager.HandleDeath(victim, DeathCause.Age, s.Citizens.ToDictionary(p => p.thingIDNumber));
+
+            ChronicleLine death = GodViewSnapshot.ChronicleSince(tick - 1).Single(l => l.Kind == ChronicleKind.Death);
+            Assert.Equal(DeathCause.Age, death.DeathCause);
+            string detail = victim.ageTracker.DescribeLifespanForChronicle();
+            if (detail.Length > 0) Assert.Contains(detail, death.Text);
+        }
+
+        [Fact]
         public void The_chronicle_feed_returns_only_entries_after_the_tick_given_and_nothing_before_a_game()
         {
             Find.Storyteller = new Storyteller();
