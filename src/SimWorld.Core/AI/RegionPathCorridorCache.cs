@@ -101,6 +101,17 @@ namespace SimWorld.AI
             int distinctGoalRegions = CollectDistinctGoalRegions(goalCells, goalCount);
             if (distinctGoalRegions == 0) return false;
 
+            // Already standing in a goal region: the corridor would be that one region, which narrows
+            // nothing worth narrowing. Regions grow by geometry alone (RegionMaker's remarks), so on open
+            // terrain one region holds nearly every walkable cell — measured at 99-100% of walkable on six of
+            // seven generated 250x250 maps (ai.pathingshape) — and there a constrained search was the same
+            // search plus a corridor lookup per neighbour, 1.4-2x slower for an identical path. The
+            // unconstrained search is never worse than a constrained one, so this can only shorten a path.
+            for (int i = 0; i < distinctGoalRegions; i++)
+            {
+                if (ReferenceEquals(goalRegionScratch[i], startRegion)) return false;
+            }
+
             if (map.regionAndRoomUpdater.Version != builtAtVersion)
             {
                 trees.Clear();

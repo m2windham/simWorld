@@ -248,6 +248,18 @@ namespace SimWorld.Tests.AI
         public void Hierarchical_corridor_can_be_longer_than_optimal_but_is_still_a_valid_path()
         {
             CoreMap map = BuildDetourMap();
+
+            // The pawn starts in a shed (x 3-5, z 0-2) whose own door opens north onto the field. Without it
+            // the pawn would stand in the destination's own region, where no corridor is built at all
+            // (ai.pathingshape, PathShapeTests) and the search is the unconstrained optimum; the shed puts
+            // the start two hops from the goal region the short way round and six hops the long way.
+            for (int x = 2; x <= 5; x++)
+            {
+                if (x == 4) BuildDoor(map, new IntVec3(x, 0, 3));
+                else BuildWall(map, new IntVec3(x, 0, 3));
+            }
+            for (int z = 0; z <= 2; z++) BuildWall(map, new IntVec3(2, 0, z));
+
             Pawn pawn = SpawnHuman(map, new IntVec3(5, 0, 1));
             var dest = new IntVec3(11, 0, 1);
 
@@ -256,7 +268,7 @@ namespace SimWorld.Tests.AI
             int hierarchicalLen = hierarchical.NodesLeftCount;
             AssertPathNeverCutsAWallOrACorner(map, pawn.Position, hierarchical);
 
-            // The corridor picked the zero-hop top-row detour over the five-hop door chain (see
+            // The corridor picked the two-hop shed-door-and-top-row detour over the six-hop door chain (see
             // BuildDetourMap) even though the door chain is the true shortest route — disabling sharing for
             // this one call recovers PathFinder's own unconstrained optimum to compare against.
             map.pathFinder.DisableRegionCorridor = true;
