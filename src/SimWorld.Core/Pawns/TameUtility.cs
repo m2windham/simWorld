@@ -47,7 +47,11 @@ namespace SimWorld.Pawns
                 return true;
             }
 
-            if (Rand.Chance(AnimalTuning.TameFailAngerChance * animal.RaceProps.wildness))
+            // The race's own chance, not a function of wildness (RimWorld: manhunterOnTameFailChance). It
+            // was half the wildness, which made a failed tame of a chicken turn it on the handler one time
+            // in four; in RimWorld a chicken, a husky or a muffalo never does. Those fights were the largest
+            // single source of wounds in a threat-free settlement (docs/perf/storyteller-pressure).
+            if (Rand.Chance(animal.RaceProps.manhunterOnTameFailChance))
             {
                 animal.mindState.angryAt = tamer;
                 animal.mindState.angryUntilTick = Find.TickManager.TicksGame + AnimalTuning.TameFailAngerDurationTicks;

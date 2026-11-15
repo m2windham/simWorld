@@ -216,12 +216,48 @@ namespace SimWorld.Tests.AI
             Assert.Equal(1f, husky.mindState.tameness);
         }
 
+        /// <summary>RimWorld's three: a failed tame of a chicken, a husky or a muffalo never turns it on the
+        /// handler (their manhunterOnTameFailChance is 0).</summary>
+        [Fact]
+        public void A_failed_tame_never_turns_a_shipped_animal_on_its_handler()
+        {
+            Pawn tamer = NewHuman("Handler");
+            tamer.skills.GetSkill(SkillDefOf.Animals)!.Level = 0;
+
+            foreach (ThingDef race in new[] { Muffalo, Husky, DefDatabase<ThingDef>.GetNamed("Chicken") })
+            {
+                for (int seed = 1; seed <= 300; seed++)
+                {
+                    var animal = new Pawn(race, "Wild");
+                    Rand.Current = new RandomStream(seed);
+                    TameUtility.TryTame(animal, tamer);
+                    Assert.Null(animal.mindState.angryAt);
+                }
+            }
+        }
+
+        /// <summary>The mechanism is still there for a race that has the chance; given one for the length of
+        /// the test, since no shipped race does.</summary>
         [Fact]
         public void Failed_taming_can_turn_the_animal_against_the_tamer_but_not_always()
         {
             Pawn tamer = NewHuman("Handler");
             tamer.skills.GetSkill(SkillDefOf.Animals)!.Level = 0;
 
+            float shipped = Muffalo.race!.manhunterOnTameFailChance;
+            Muffalo.race!.manhunterOnTameFailChance = 0.3f;
+            try
+            {
+                FailedTamingAngersSometimes(tamer);
+            }
+            finally
+            {
+                Muffalo.race!.manhunterOnTameFailChance = shipped;
+            }
+        }
+
+        private static void FailedTamingAngersSometimes(Pawn tamer)
+        {
             bool everAngry = false;
             bool everNotAngry = false;
             for (int seed = 1; seed <= 200 && !(everAngry && everNotAngry); seed++)
