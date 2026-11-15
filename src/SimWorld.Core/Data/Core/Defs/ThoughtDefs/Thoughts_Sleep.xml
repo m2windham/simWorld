@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Where somebody slept (RimWorld: Toils_LayDown.ApplyBedThoughts, with SleptInBedroom and SleptInBarracks
+    from Thoughts_Memory_Misc.xml). Applied by AI.BedThoughtUtility; SleptOnGround and SleptOutside already
+    ship in Thoughts_Memories.xml and are applied by the same code. Its own file rather than an addition to
+    Thoughts_Memories.xml, for the reason CLAUDE.md gives.
+
+    RimWorld scales both by the room's impressiveness (Thought_MemoryRoomImpressiveness), from "awful" to
+    "unbelievably impressive". This port has no room stats, so each carries the one stage a room with none
+    would sit at, the mediocre one. Its values are RimWorld's recalled, not sourced: a mediocre bedroom 0,
+    a mediocre barracks -4. The sleep-thought tests pin that a home beats a dormitory and that a dormitory
+    beats the ground, never these literals.
+  -->
+
+  <ThoughtDef>
+    <defName>SleptInBedroom</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>slept at home</label>
+        <description>I slept in my own household's home.</description>
+        <baseMoodEffect>0</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>SleptInBarracks</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>slept in barracks</label>
+        <description>I slept in a room full of other people. No privacy, and somebody always snores.</description>
+        <baseMoodEffect>-4</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

@@ -50,6 +50,7 @@ namespace SimWorld.AI
                     Thing? bed = job.GetTarget(TargetIndex.A).Thing;
                     pawn.needs.rest.lastRestEffectiveness = bed != null ? Need_Rest.BedRestEffectiveness : 1f;
                 }
+                BedThoughtUtility.ApplyBedThoughts(pawn, job.GetTarget(TargetIndex.A).Thing);
             };
             sleep.tickAction = () =>
             {
