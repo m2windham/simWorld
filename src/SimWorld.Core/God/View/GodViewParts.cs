@@ -262,15 +262,26 @@ namespace SimWorld.God.View
 
         /// <summary>The option for <paramref name="def"/> as <paramref name="god"/> stands right now: the one
         /// place both the snapshot and <see cref="GodCommands.IssueEdict"/> build it from, so the two can never
-        /// read the state differently.</summary>
-        internal static EdictOption For(EdictDef def, GodManager god) =>
-            For(def, god.IsActive(def), Sim.Find.ResearchManager.CurrentEra,
+        /// read the state differently. Only an edict actually in force is asked whether anyone may carry it out
+        /// — a suspended one is already explained by its vacant office, and one not issued has nobody to fail.</summary>
+        internal static EdictOption For(EdictDef def, GodManager god)
+        {
+            bool isActive = god.IsActive(def);
+            return For(def, isActive, Sim.Find.ResearchManager.CurrentEra,
                 slotFree: god.IssuedEdicts.Count < GodTuning.MaxActiveEdicts,
                 isSuspended: god.IsSuspended(def),
-                officeSeated: def.requiredOffice == null || GodManager.IsSeated(def.requiredOffice));
+                officeSeated: def.requiredOffice == null || GodManager.IsSeated(def.requiredOffice),
+                workNobodyMayDo: isActive ? GodViewSnapshot.NobodyMayDo(def) : null);
+        }
 
+        /// <param name="workNobodyMayDo">For an edict in force: the gerund labels of its work that no citizen
+        /// it applies to may do (<see cref="EdictWorkUtility.WorkNobodyMayDo"/>). When there are any, the reason
+        /// says so instead of a bare "In force." — an edict nobody can carry out is stalled, and the player
+        /// should hear it from the edict rather than infer it from nothing happening. Ignored for any edict not
+        /// in force.</param>
         internal static EdictOption For(
-            EdictDef def, bool isActive, EraDef? currentEra, bool slotFree, bool isSuspended, bool officeSeated)
+            EdictDef def, bool isActive, EraDef? currentEra, bool slotFree, bool isSuspended, bool officeSeated,
+            IReadOnlyList<string>? workNobodyMayDo = null)
         {
             EdictAvailability availability;
             string reason;
@@ -278,7 +289,10 @@ namespace SimWorld.God.View
             if (isActive)
             {
                 availability = EdictAvailability.Active;
-                reason = "In force.";
+                reason = workNobodyMayDo == null || workNobodyMayDo.Count == 0
+                    ? "In force."
+                    : "In force, but nobody is allowed to do " + string.Join(" or ", workNobodyMayDo) +
+                      ": everyone it applies to has it set to never or cannot do it.";
             }
             else if (isSuspended)
             {
@@ -325,15 +339,53 @@ namespace SimWorld.God.View
         }
     }
 
+    /// <summary>What sort of thing a <see cref="ChronicleLine"/> records — which of the storyteller's three
+    /// writers produced it.</summary>
+    public enum ChronicleKind
+    {
+        /// <summary>An incident fired (<c>Storyteller.TryFire</c>): a raid, a trader, a disease.
+        /// <see cref="ChronicleLine.IncidentDefName"/> names it.</summary>
+        Incident,
+
+        /// <summary>Somebody died (<c>Storyteller.RecordDeath</c>). <see cref="ChronicleLine.DeathCause"/> says
+        /// of what.</summary>
+        Death,
+
+        /// <summary>A line some system wrote in its own words (<c>Storyteller.RecordChronicle(string)</c>): an
+        /// accession, a birth, a treaty, an edict.</summary>
+        Event,
+    }
+
     /// <summary>One line of the civilization's history, flattened for display.</summary>
     public sealed class ChronicleLine
     {
-        internal ChronicleLine(int tick, string text, bool isMoment)
+        internal ChronicleLine(
+            int tick, string text, bool isMoment, ChronicleKind kind, string? incidentDefName,
+            Pawns.DeathCause? deathCause, IReadOnlyList<int> involvedThingIds)
         {
             Tick = tick;
             Text = text;
             IsMoment = isMoment;
+            Kind = kind;
+            IncidentDefName = incidentDefName;
+            DeathCause = deathCause;
+            InvolvedThingIds = involvedThingIds;
         }
+
+        /// <summary>Which writer produced this line — see <see cref="ChronicleKind"/>.</summary>
+        public ChronicleKind Kind { get; }
+
+        /// <summary>The incident's defName for <see cref="ChronicleKind.Incident"/>; null otherwise.</summary>
+        public string? IncidentDefName { get; }
+
+        /// <summary>What they died of, for <see cref="ChronicleKind.Death"/>; null otherwise. The same enum
+        /// <see cref="DeathCauseLine.Cause"/> carries.</summary>
+        public Pawns.DeathCause? DeathCause { get; }
+
+        /// <summary>Thing ids of the people the line is about, where the writer recorded them (a death names
+        /// the one who died). Empty when it did not — most event lines carry names only in
+        /// <see cref="Text"/>.</summary>
+        public IReadOnlyList<int> InvolvedThingIds { get; }
 
         public int Tick { get; }
 
@@ -354,10 +406,25 @@ namespace SimWorld.God.View
             var lines = new List<ChronicleLine>(entries.Count - start);
             for (int i = start; i < entries.Count; i++)
             {
-                ChronicleEntry e = entries[i];
-                lines.Add(new ChronicleLine(e.tick, Describe(e), e.isMoment));
+                lines.Add(Of(entries[i]));
             }
             return lines;
+        }
+
+        internal static ChronicleLine Of(ChronicleEntry e)
+        {
+            ChronicleKind kind = e.deathCause != null
+                ? ChronicleKind.Death
+                : !string.IsNullOrEmpty(e.targetLabel) ? ChronicleKind.Incident : ChronicleKind.Event;
+
+            IReadOnlyList<int> involved = e.involvedThingIds == null || e.involvedThingIds.Count == 0
+                ? Array.Empty<int>()
+                : e.involvedThingIds.ToArray();
+
+            return new ChronicleLine(
+                e.tick, Describe(e), e.isMoment, kind,
+                kind == ChronicleKind.Incident ? e.incidentDefName : null,
+                e.deathCause, involved);
         }
 
         private static string Describe(ChronicleEntry entry)
