@@ -282,5 +282,27 @@ namespace SimWorld.Tests.Building
             Assert.True(global::SimWorld.AI.HaulAIUtility.TryFindBestStockpileCell(hauler, cloth, out IntVec3 to));
             Assert.Contains(to, stock.Cells);
         }
+
+        [Fact]
+        public void A_cotton_field_starts_within_reach_of_the_tailors_table_not_by_the_food_field()
+        {
+            (Settlement settlement, CoreMap map) = BuiltCompound();
+            SpawnBareCitizen(map, TheDoor(map));
+            SettlementWorkshops.Run(settlement, map);
+            Thing bench = Assert.Single(Planned(map, Def(SettlementWorkshops.TailorDefName))).ReplaceWithFrame().CompleteConstruction(NewHuman("Builder"));
+
+            // The food field far off in a corner, where cotton used to start.
+            var food = new Zone_Growing { label = FarmingInitiative.FieldLabel, plantDefToGrow = Def("Plant_Potato") };
+            map.zoneManager.RegisterZone(food);
+            map.zoneManager.AddCell(food, new IntVec3(3, 0, 3));
+
+            global::SimWorld.Farming.CropDemandFields.Run(map, settlement);
+
+            Zone_Growing cotton = Assert.Single(map.zoneManager.AllZones.OfType<Zone_Growing>(), z => z.plantDefToGrow == Def("Plant_Cotton"));
+            Assert.NotEqual(0, cotton.CellCount);
+            CellRect reach = CellRect.CenteredOn(bench.Position, WorkGiver_DoBill.IngredientSearchRadius);
+            Assert.True(reach.Contains(cotton.Cells[0]), "first cotton cell " + cotton.Cells[0] + ", bench at " + bench.Position);
+            Assert.All(cotton.Cells, c => Assert.False(map.settlementCompound!.Reserves(CellRect.SingleCell(c)), "cotton on compound ground at " + c));
+        }
     }
 }
