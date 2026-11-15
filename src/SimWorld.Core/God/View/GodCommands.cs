@@ -90,14 +90,16 @@ namespace SimWorld.God.View
 
             GodManager god = Find.God;
             if (god.IsActive(def)) return GodCommandResult.NoChange(def.LabelCap + " is already in force.");
+            if (god.IsSuspended(def))
+            {
+                return GodCommandResult.NoChange(def.LabelCap + " is already issued. " + EdictOption.For(def, god).Reason);
+            }
 
             if (!god.CanActivate(def))
             {
                 // Reuse the read model's own wording rather than composing a second explanation here: two
                 // descriptions of one rule set drift apart, and the view has already shown the player this one.
-                EdictOption option = EdictOption.For(def, isActive: false, Find.ResearchManager.CurrentEra,
-                    slotFree: god.ActiveEdicts.Count < GodTuning.MaxActiveEdicts);
-                return GodCommandResult.Refused(option.Reason);
+                return GodCommandResult.Refused(EdictOption.For(def, god).Reason);
             }
 
             return god.Activate(def)
@@ -108,18 +110,19 @@ namespace SimWorld.God.View
                 : GodCommandResult.Refused(def.LabelCap + " was refused on issue.");
         }
 
-        /// <summary>Rescinds the named edict. Rescinding one that is not in force is a no-op, not a failure —
-        /// the world already matches what was asked for.</summary>
         /// <summary>Issuing an edict nobody may carry out is allowed — a bad order is still the player's to give
         /// — but the result says so, in the same words the edict's own <see cref="EdictOption.Reason"/> will
-        /// show while it stays stalled.</summary>
+        /// show while it stays stalled. Read off the option itself, so it is only ever the in-force stall and
+        /// never a second wording of anything else.</summary>
         private static string StalledNote(EdictDef def)
         {
-            List<string>? nobody = GodViewSnapshot.NobodyMayDo(def);
-            if (nobody == null) return "";
-            return " " + EdictOption.For(def, true, Find.ResearchManager.CurrentEra, true, nobody).Reason;
+            GodManager god = Find.God;
+            if (!god.IsActive(def) || GodViewSnapshot.NobodyMayDo(def) == null) return "";
+            return " " + EdictOption.For(def, god).Reason;
         }
 
+        /// <summary>Rescinds the named edict. Rescinding one that is not in force is a no-op, not a failure —
+        /// the world already matches what was asked for.</summary>
         public static GodCommandResult RescindEdict(string defName)
         {
             EdictDef? def = Resolve(defName);

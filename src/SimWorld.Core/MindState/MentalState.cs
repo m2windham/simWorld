@@ -410,6 +410,10 @@ namespace SimWorld.MindState
         /// </summary>
         public AI.DutyDef? duty;
 
+        /// <summary><see cref="Sim.TickManager.TicksGame"/> before which <see cref="AI.JobGiver_OptimizeApparel"/>
+        /// does not look for better apparel (RimWorld: <c>Pawn_MindState.nextApparelOptimizeTick</c>).</summary>
+        public int nextApparelOptimizeTick = -99999;
+
         public Pawn_MindState(Pawn pawn)
         {
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
@@ -438,6 +442,7 @@ namespace SimWorld.MindState
             angryAt = aa;
             Scribe_Values.Look(ref angryUntilTick, "angryUntilTick", -1);
             Scribe_Values.Look(ref manhunterUntilTickInt, "manhunterUntilTick", -1);
+            Scribe_Values.Look(ref nextApparelOptimizeTick, "nextApparelOptimizeTick", -99999);
 
             // A raid saved mid-approach has to still be a raid when it loads, or reloading would disarm every
             // squad on the map — the duty is the only thing that makes them march.

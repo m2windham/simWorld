@@ -51,6 +51,16 @@ namespace SimWorld.God
         /// </summary>
         public EraDef? obsoleteEra;
 
+        /// <summary>
+        /// The seat that has to be filled for this edict to be issued or to stay in force; null means none
+        /// (offices.edicts). Held anywhere in the civilization counts (<see cref="GodManager.IsSeated"/>). An
+        /// issued edict whose seat falls vacant is suspended, not rescinded: it keeps its slot, stops having
+        /// any effect, and resumes when the seat is filled (<see cref="GodManager.ReconcileSuspensions"/>).
+        /// Never name an office that can retire for good (the Elder's): that would end the edict with no
+        /// remedy.
+        /// </summary>
+        public Offices.OfficeDef? requiredOffice;
+
         /// <summary>Set as <see cref="Research.ResearchManager.CurrentProj"/> on activation, when not already
         /// finished. Optional: not every edict directs research.</summary>
         public ResearchProjectDef? researchFocus;

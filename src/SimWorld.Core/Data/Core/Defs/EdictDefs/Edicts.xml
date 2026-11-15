@@ -63,6 +63,11 @@
       <li>StorageHut</li>
     </prioritizedConstruction>
     <workerClass>SimWorld.God.EdictWorker_ExemptMinors</workerClass>
+    <!-- offices.edicts: a settlement's public works are the stewardship's own business (Roles_Offices.xml
+         emphasizes Construction for it), so a mandate to put them first needs a seated steward to drive it.
+         With none seated anywhere it cannot be issued, and a standing one is suspended until one is. The
+         eldership is never named here: it retires for good, and an edict gated on it would end with it. -->
+    <requiredOffice>Steward</requiredOffice>
     <moodThought>UnderGreatWorksMandate</moodThought>
   </EdictDef>
 

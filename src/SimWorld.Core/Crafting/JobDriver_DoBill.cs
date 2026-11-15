@@ -2,7 +2,9 @@ using System.Collections.Generic;
 using SimWorld.AI;
 using SimWorld.Defs;
 using SimWorld.Map;
+using SimWorld.Pawns;
 using SimWorld.Sim;
+using SimWorld.Stats;
 using SimWorld.Things;
 
 namespace SimWorld.Crafting
@@ -39,6 +41,20 @@ namespace SimWorld.Crafting
             new CurvePoint(0, 0.4f),
             new CurvePoint(20, 1.8f),
         });
+
+        /// <summary>
+        /// How fast <paramref name="pawn"/> works <paramref name="recipe"/>, per tick. A recipe naming a
+        /// <see cref="RecipeDef.workSpeedStat"/> is worked at that stat's value, as RimWorld's
+        /// <c>Toils_Recipe.DoRecipeWork</c> does (<c>actor.GetStatValue(recipe.workSpeedStat)</c>), so the
+        /// stat's own skill and capacity factors decide the pace; one that names none keeps this driver's
+        /// unsourced skill curve above.
+        /// </summary>
+        public static float WorkSpeedFor(Pawn pawn, RecipeDef recipe)
+        {
+            if (recipe.workSpeedStat != null) return pawn.GetStatValue(recipe.workSpeedStat);
+            int skillLevel = recipe.workSkill != null ? pawn.skills?.GetSkill(recipe.workSkill)?.Level ?? 0 : 0;
+            return WorkSpeedFactorFromSkillLevel.Evaluate(skillLevel);
+        }
 
         /// <summary>
         /// The bench and every ingredient stack the giver chose must be claimable before this job starts
@@ -88,10 +104,7 @@ namespace SimWorld.Crafting
                     return;
                 }
 
-                int skillLevel = bill.recipe.workSkill != null
-                    ? work.Pawn.skills?.GetSkill(bill.recipe.workSkill)?.Level ?? 0
-                    : 0;
-                workDone += BaseWorkPerTick * WorkSpeedFactorFromSkillLevel.Evaluate(skillLevel);
+                workDone += BaseWorkPerTick * WorkSpeedFor(work.Pawn, bill.recipe);
                 if (workDone < bill.recipe.WorkAmountTotal()) return;
 
                 if (!TryTakeReservedIngredients(work.Job, out List<(Thing thing, int count)> takes))

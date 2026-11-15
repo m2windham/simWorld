@@ -14,7 +14,7 @@ namespace SimWorld.Offices
         /// (<c>GodManager.GodTick</c>, <c>Storyteller.StorytellerTick</c>, <c>FamilyManager.DemographyTick</c>,
         /// <c>GuildManager.GuildManagerTick</c>) — a succession is a fact about the civilization, not an
         /// event that has to land on the exact tick a leader stopped breathing. It also sets the worst-case
-        /// interregnum: a settlement is leaderless for at most one sweep, and during it nobody in that town
+        /// interregnum: the sweep that empties a seat never refills it (OfficeManager.ReconcileSeat), so a settlement is leaderless for one to two sweeps, and during it nobody in that town
         /// carries the stewardship's <c>RoleDef</c>, so the work it emphasizes is not emphasized by anyone.
         /// </summary>
         public const int ReconcileIntervalTicks = GenTicks.TickLongInterval;

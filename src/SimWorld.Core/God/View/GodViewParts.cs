@@ -198,6 +198,12 @@ namespace SimWorld.God.View
 
         /// <summary>Nothing wrong with the edict — every slot is simply taken.</summary>
         NoSlotFree,
+
+        /// <summary>The seat it needs (<see cref="EdictDef.requiredOffice"/>) is vacant everywhere.</summary>
+        NeedsSeatedOffice,
+
+        /// <summary>Issued, and holding its slot, but out of force until its seat is filled again.</summary>
+        Suspended,
     }
 
     /// <summary>
@@ -254,15 +260,28 @@ namespace SimWorld.God.View
         /// <summary>The era that retires it, or null if nothing does.</summary>
         public string? ObsoleteEraDefName { get; }
 
-        internal static EdictOption For(EdictDef def, bool isActive, EraDef? currentEra, bool slotFree) =>
-            For(def, isActive, currentEra, slotFree, null);
+        /// <summary>The option for <paramref name="def"/> as <paramref name="god"/> stands right now: the one
+        /// place both the snapshot and <see cref="GodCommands.IssueEdict"/> build it from, so the two can never
+        /// read the state differently. Only an edict actually in force is asked whether anyone may carry it out
+        /// — a suspended one is already explained by its vacant office, and one not issued has nobody to fail.</summary>
+        internal static EdictOption For(EdictDef def, GodManager god)
+        {
+            bool isActive = god.IsActive(def);
+            return For(def, isActive, Sim.Find.ResearchManager.CurrentEra,
+                slotFree: god.IssuedEdicts.Count < GodTuning.MaxActiveEdicts,
+                isSuspended: god.IsSuspended(def),
+                officeSeated: def.requiredOffice == null || GodManager.IsSeated(def.requiredOffice),
+                workNobodyMayDo: isActive ? GodViewSnapshot.NobodyMayDo(def) : null);
+        }
 
         /// <param name="workNobodyMayDo">For an edict in force: the gerund labels of its work that no citizen
         /// it applies to may do (<see cref="EdictWorkUtility.WorkNobodyMayDo"/>). When there are any, the reason
         /// says so instead of a bare "In force." — an edict nobody can carry out is stalled, and the player
-        /// should hear it from the edict rather than infer it from nothing happening.</param>
+        /// should hear it from the edict rather than infer it from nothing happening. Ignored for any edict not
+        /// in force.</param>
         internal static EdictOption For(
-            EdictDef def, bool isActive, EraDef? currentEra, bool slotFree, IReadOnlyList<string>? workNobodyMayDo)
+            EdictDef def, bool isActive, EraDef? currentEra, bool slotFree, bool isSuspended, bool officeSeated,
+            IReadOnlyList<string>? workNobodyMayDo = null)
         {
             EdictAvailability availability;
             string reason;
@@ -275,6 +294,12 @@ namespace SimWorld.God.View
                     : "In force, but nobody is allowed to do " + string.Join(" or ", workNobodyMayDo) +
                       ": everyone it applies to has it set to never or cannot do it.";
             }
+            else if (isSuspended)
+            {
+                // Issued, so the host offers to rescind it; the reason says what brings it back.
+                availability = EdictAvailability.Suspended;
+                reason = "Suspended. " + GodManager.NeedsSeatedReason(def.requiredOffice!);
+            }
             else if (def.obsoleteEra != null && currentEra != null && currentEra.order >= def.obsoleteEra.order)
             {
                 availability = EdictAvailability.Obsolete;
@@ -284,6 +309,12 @@ namespace SimWorld.God.View
             {
                 availability = EdictAvailability.RequiresLaterEra;
                 reason = "Needs the " + def.requiredEra.LabelCap + " era.";
+            }
+            else if (!officeSeated)
+            {
+                // Before the slot, for the reason the era comes first: the seat is a fact about this edict.
+                availability = EdictAvailability.NeedsSeatedOffice;
+                reason = GodManager.NeedsSeatedReason(def.requiredOffice!);
             }
             else if (!slotFree)
             {

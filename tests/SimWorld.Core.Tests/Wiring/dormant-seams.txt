@@ -147,7 +147,7 @@ unwritten SimWorld.Pawns.Pawn.environment | Per-pawn override of the environment
 # by neither. It was found by a person reading the Def class, at the cost the audit exists to avoid.
 #
 # 48 entries at the measurement that decided this check shipped, out of 774 content fields surveyed.
-# Sixteen are marked "Real gap" below: a knob somebody meant to matter, whose consumer could be written
+# The entries marked "Real gap" below are each a knob somebody meant to matter, whose consumer could be written
 # today against systems that already run. `grep "untouched.*Real gap"` is that to-do list, and it is the
 # only part of this section anyone needs to read twice. The rest are RimWorld fields carried for parity
 # whose consumer is a view, or whose system nobody has built.
@@ -158,7 +158,6 @@ unwritten SimWorld.Pawns.Pawn.environment | Per-pawn override of the environment
 
 untouched SimWorld.Combat.Tool.chanceFactor | Per-tool selection weight. Nothing picks between a pawn's tools — Tools.cs turns each into a verb and the caller takes the first — so there is no weighted draw for this to weight.
 untouched SimWorld.Combat.Tool.linkedBodyPartsGroup | Ties a tool to the part that wields it, so a severed hand loses the punch. Needs the same tool-selection step chanceFactor does; both land together.
-untouched SimWorld.Crafting.RecipeDef.workSpeedStat | Real gap — which stat scales this recipe's work. Guild.cs charges a flat recipe workAmount against the labour pool, so a master smith and a novice cost the guild exactly the same and no skill ever pays off in throughput.
 untouched SimWorld.Defs.StatDef.hideAtValue | Presentation: whether a stat is omitted from a readout at a given value. Its consumer is God/View's stat panel, which today reports every stat it is asked for.
 untouched SimWorld.Defs.StatDef.hideAtValueThreshold | The threshold hideAtValue compares against; dormant for the same reason and lands in the same edit.
 untouched SimWorld.Defs.ThingDef.costStuffCount | Real gap — how much stuff a stuff-built thing costs. Stuff exists (StatWorker reads stuffProps), and Frame.cs delivers costList and only costList, so anything priced in stuff is built out of nothing.
@@ -180,8 +179,6 @@ untouched SimWorld.Health.DamageDef.isExplosive | Nothing in src/ raises an expl
 untouched SimWorld.Health.HediffCompProperties_TendDuration.showTendQuality | Presentation: whether a tended wound reports the quality of the tend. Consumer is God/View's health panel.
 untouched SimWorld.Health.HediffDef.labelNoun | The noun form a hediff takes inside a sentence ("a broken leg"). No text path in the core builds that sentence; lands with the view.
 untouched SimWorld.Health.HediffDef.priceImpact | Real gap — a hediff that changes what a pawn is worth. Market value and trade both run (Economy/), so nothing blocks this except a reader at the valuation site.
-untouched SimWorld.Health.HediffStage.forgetMemoryThoughtMtbDays | Real gap — a stage that makes a pawn forget memories on a mean time. Memories age and expire already; this is a stage tick consulting one more field.
-untouched SimWorld.Health.HediffStage.mentalBreakMtbDays | Real gap — a stage that triggers mental breaks on a mean time. MindState runs breaks today, so a hediff stage that should drive a pawn to one is a single call site short of working.
 untouched SimWorld.Health.InjuryProps.alwaysUseDestroyedLabel | Naming detail for a destroyed part: which of two label forms to use. Nothing in the core picks between them; lands with the view's health panel.
 untouched SimWorld.Health.InjuryProps.destroyedOutLabel | The alternative label alwaysUseDestroyedLabel selects. Same consumer, same edit.
 untouched SimWorld.Health.PawnCapacityDef.showOnHumanlikes | Presentation: which capacities a health panel lists for which kind of pawn. God/View has no capacity readout yet.
