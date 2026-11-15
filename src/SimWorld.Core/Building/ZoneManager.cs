@@ -62,6 +62,8 @@ namespace SimWorld.Building
 
             zoneGrid[i] = zone;
             zone.AddCellRaw(cell);
+            // RimWorld: Zone.AddCell -> AutoHomeAreaMaker.Notify_ZoneCellAdded.
+            AutoHomeAreaMaker.Notify_ZoneCellAdded(cell, map);
             return true;
         }
 

@@ -22,9 +22,9 @@ namespace SimWorld.Building
     /// engine-free core to hold one in, and this lane does not invent one. So this class always behaves as the
     /// default: always on. If a settings surface is ever added, gating this class behind it is a one-line
     /// change here, not a redesign.</item>
-    /// <item><c>Notify_ZoneCellAdded</c> (a player's stockpile/growing zone also expands the home area, radius
-    /// 4, around each cell added to it) is not ported. The task this class was written for scopes to
-    /// buildings; nothing here reads a zone.</item>
+    /// <item><c>Notify_ZoneCellAdded</c> (a stockpile or growing zone also expands the home area, radius 4,
+    /// around each cell added to it) was left out at first, scoped to buildings. It is ported now — see
+    /// <see cref="Notify_ZoneCellAdded"/> for what leaving it out cost.</item>
     /// </list>
     ///
     /// <para/><b>"The player's faction", translated.</b> RimWorld gates
@@ -85,6 +85,31 @@ namespace SimWorld.Building
             if (b.def.building != null && !b.def.building.expandHomeArea) return;
             MarkHomeAroundThing(b);
         }
+
+        /// <summary>
+        /// Marks home area around a cell just added to a zone (RimWorld:
+        /// <c>RimWorld.AutoHomeAreaMaker.Notify_ZoneCellAdded</c>, 1.0 decompile
+        /// <c>josh-m/RW-Decompile/RimWorld/AutoHomeAreaMaker.cs</c>: <c>CellRect.CenteredOn(c, 4)</c>, clipped
+        /// inside the map). Called from <see cref="ZoneManager.AddCell"/>, the one place a zone gains a cell; a
+        /// zone in this port is only ever drawn by the settlement's own initiatives or the player on their own
+        /// settlement, the same "it is ours" reasoning this class's doc gives for buildings. A loaded zone
+        /// restores its cells without passing through here, as RimWorld's load does not re-mark either.
+        /// <para/><b>What leaving it out cost.</b> The settlement's fields were never home area, so a
+        /// lightning fire in them was not firefighting work (<see cref="AI.WorkGiver_FightFires"/> keeps
+        /// RimWorld's home-area gate). Traced on a threat-free founding band
+        /// (<c>docs/perf/storyteller-pressure</c>): a flashstorm fire grew from one cell to over a hundred
+        /// while citizens sowed and harvested beside it, every one of them outside a 1,500-cell home area.
+        /// </summary>
+        public static void Notify_ZoneCellAdded(IntVec3 c, Map.Map map)
+        {
+            if (map == null) return;
+            CellRect rect = new CellRect(c.x - ZoneCellRadius, c.z - ZoneCellRadius, ZoneCellRadius * 2 + 1, ZoneCellRadius * 2 + 1)
+                .ClipInsideMap(map);
+            foreach (IntVec3 cell in rect.Cells) map.areaManager.Home[cell] = true;
+        }
+
+        /// <summary>RimWorld's <c>CellRect.CenteredOn(c, 4)</c> in <c>Notify_ZoneCellAdded</c>.</summary>
+        public const int ZoneCellRadius = 4;
 
         /// <summary>
         /// Sets true, unconditionally, for every cell in a border of <see cref="BorderWidth"/> around
