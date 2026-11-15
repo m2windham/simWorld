@@ -22,6 +22,11 @@ namespace SimWorld.Director
         /// the three rules; most chronicle entries never set this.</summary>
         public bool isMoment;
 
+        /// <summary>Thing ids (<c>thingIDNumber</c>) of the people this entry is about, so a reader can go from
+        /// the line to the person. Set by <see cref="Storyteller.RecordDeath"/>; null on every other entry, and
+        /// on any entry saved before this field existed.</summary>
+        public List<int>? involvedThingIds;
+
         public ChronicleEntry()
         {
         }
@@ -42,6 +47,9 @@ namespace SimWorld.Director
             Scribe_Values.Look(ref points, "points");
             Scribe_Values.Look(ref deathCause, "deathCause");
             Scribe_Values.Look(ref isMoment, "isMoment");
+            List<int>? involved = involvedThingIds;
+            Scribe_Collections.Look(ref involved, "involvedThingIds", LookMode.Value);
+            involvedThingIds = involved;
         }
     }
 
@@ -208,7 +216,11 @@ namespace SimWorld.Director
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
             string label = string.IsNullOrEmpty(detail) ? pawn.Label : pawn.Label + " (" + detail + ")";
-            var entry = new ChronicleEntry(Find.TickManager.TicksGame, "Death", label, 0f) { deathCause = cause };
+            var entry = new ChronicleEntry(Find.TickManager.TicksGame, "Death", label, 0f)
+            {
+                deathCause = cause,
+                involvedThingIds = new List<int> { pawn.thingIDNumber },
+            };
             chronicle.Add(entry);
             while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
 
