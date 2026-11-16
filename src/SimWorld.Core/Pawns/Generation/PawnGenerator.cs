@@ -231,7 +231,29 @@ namespace SimWorld.Pawns.Generation
                             (b.requiredWorkTags == WorkTags.None || (disabled & b.requiredWorkTags) == WorkTags.None) &&
                             (b.spawnCategories == null || b.spawnCategories.Count == 0 || b.spawnCategories.Any(categories.Contains)))
                 .ToList();
-            return candidates.Count == 0 ? null : Rand.Element((IReadOnlyList<BackstoryDef>)candidates);
+            return GenCollection.TryRandomElementByWeight(candidates, b => SelectionWeightFactorFromWorkTagsDisabled(b.workDisables), Rand.Current, out BackstoryDef picked)
+                ? picked
+                : null;
+        }
+
+        /// <summary>
+        /// RimWorld's <c>PawnBioAndNameGenerator.SelectionWeightFactorFromWorkTagsDisabled</c>: a backstory that
+        /// bars work is drawn less often than one that bars none, so incapable pawns are the exception they are
+        /// in RimWorld rather than an even share. It was a uniform draw here, and the tribal pool is four
+        /// adulthoods, so a quarter of every band was a tribal elder who will not hunt. The factors are
+        /// recalled from the decompiled source, not read from it (unreachable from here); what is pinned, in
+        /// <c>BackstoryWeightTests</c>, is that a backstory barring work is drawn less often, not these numbers.
+        /// </summary>
+        internal static float SelectionWeightFactorFromWorkTagsDisabled(WorkTags wt)
+        {
+            float factor = 1f;
+            if ((wt & WorkTags.ManualDumb) != 0) factor *= 0.5f;
+            if ((wt & WorkTags.Violent) != 0) factor *= 0.6f;
+            if ((wt & WorkTags.Caring) != 0) factor *= 0.9f;
+            if ((wt & WorkTags.Social) != 0) factor *= 0.7f;
+            if ((wt & WorkTags.Intellectual) != 0) factor *= 0.4f;
+            if ((wt & WorkTags.Firefighting) != 0) factor *= 0.8f;
+            return factor;
         }
 
         private static void GenerateTraits(Pawn pawn, PawnKindDef kind)
