@@ -58,6 +58,14 @@ namespace SimWorld.Bench
         /// does to itself over the same days with nobody attacking it.</summary>
         public bool Threats { get; set; } = true;
 
+        /// <summary>--suite layout: the new-game seed string (the host's own by default), how many ticks to
+        /// run, and how often to print a brief interim line (0: never).</summary>
+        public string LayoutSeed { get; set; } = Suites.LayoutSuite.HostSeed;
+
+        public int LayoutTicks { get; set; } = 60000;
+
+        public int LayoutEvery { get; set; }
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }

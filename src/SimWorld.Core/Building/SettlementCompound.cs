@@ -493,11 +493,20 @@ namespace SimWorld.Building
         /// every site accepts what the layout puts on it. A map edge or an outcrop therefore moves the
         /// compound; it never bends it.
         /// <para/>
-        /// <b>Room for the village first.</b> Within each domain, a position whose whole <see cref="Village"/>
-        /// (the street, the work yard and every planned dwelling plot) is on the map and open ground is
-        /// preferred over one where only the compound fits; the square round the hub only grows when neither
-        /// kind fits in it, so the village never moves away from where its founders stand just to be whole.
-        /// Plots that cannot be had are skipped (<see cref="TryFindCell"/>). Either way it is one draw.
+        /// <b>Room for the village first.</b> Within each domain, the draw is over the positions with the most
+        /// room for the village: the <see cref="WorkYard"/> open first (the benches stand in front of the door),
+        /// then the most planned dwelling plots open (<see cref="VillageRoom"/>). A position whose whole
+        /// <see cref="Village"/> is open ground always ranks top. The square round the hub only grows when no
+        /// compound fits in it at all, so the village never moves away from where its founders stand just to
+        /// be whole, with one exception: a compound whose work yard is rock opens its door onto nothing, so
+        /// the square also grows while none in it has the yard open, and the first such compound found nearest
+        /// the hub is taken only when no square has one. Plots that cannot be had are skipped
+        /// (<see cref="TryFindCell"/>).
+        /// <para/>
+        /// It was all-or-nothing: either the whole village was open or any compound would do. On the host's
+        /// default game no whole village fitted round the hub, so the draw took a compound whose door looked
+        /// onto a cliff, with its work yard and every plot east of it in solid rock, while positions a few
+        /// cells away had both open (<c>tools/bench --suite layout</c>).
         /// </summary>
         public static SettlementCompound? TryPlan(Map.Map map, int citizens, int wallBudget)
         {
@@ -510,16 +519,54 @@ namespace SimWorld.Building
             if (home.TrueCount > 0) return TryPickPreferringVillage(map, wholeMap, width, height, open);
 
             var hub = new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
+            SettlementCompound? yardless = null;
             for (int radius = Math.Max(1, ConstructionInitiativeTuning.HubPlacementRadius); ; radius *= 2)
             {
                 CellRect square = CellRect.CenteredOn(hub, radius).ClipInsideMap(map);
                 SettlementCompound? compound = TryPickPreferringVillage(map, square, width, height, open);
-                if (compound != null || square == wholeMap) return compound;
+                if (compound != null && open.IsOpen(compound.WorkYard)) return compound;
+                yardless ??= compound;
+                if (square == wholeMap) return yardless;
             }
         }
 
-        private static SettlementCompound? TryPickPreferringVillage(Map.Map map, CellRect domain, int width, int height, OpenGround open) =>
-            TryPick(map, domain, width, height, open, wholeVillage: true) ?? TryPick(map, domain, width, height, open, wholeVillage: false);
+        private static SettlementCompound? TryPickPreferringVillage(Map.Map map, CellRect domain, int width, int height, OpenGround open)
+        {
+            var best = new List<SettlementCompound>();
+            int bestRoom = -1;
+            for (int z = domain.minZ + 2; z + height + 1 <= domain.maxZ; z++)
+            {
+                for (int x = domain.minX + 2; x + width + 1 <= domain.maxX; x++)
+                {
+                    var interior = new CellRect(x, z, width, height);
+                    if (!open.IsOpen(interior.ExpandedBy(2))) continue;
+                    var candidate = new SettlementCompound(interior);
+                    int room = candidate.VillageRoom(open);
+                    if (room < bestRoom || !candidate.SitesAreFree(map)) continue;
+                    if (room > bestRoom)
+                    {
+                        best.Clear();
+                        bestRoom = room;
+                    }
+                    best.Add(candidate);
+                }
+            }
+            return best.Count == 0 ? null : best[Rand.Range(0, best.Count)];
+        }
+
+        /// <summary>How much of the village round this compound is open ground, as a rank: the work yard
+        /// outranks every plot, then one for each planned plot. The whole <see cref="Village"/> open ranks
+        /// highest of all.</summary>
+        private int VillageRoom(OpenGround open)
+        {
+            if (open.IsOpen(Village)) return int.MaxValue;
+            int plots = 0;
+            foreach ((CellRect plot, Rot4 _) in DwellingPlots(PlannedDwellings))
+            {
+                if (open.IsOpen(plot)) plots++;
+            }
+            return (open.IsOpen(WorkYard) ? PlannedDwellings + 1 : 0) + plots;
+        }
 
         /// <summary>
         /// The interior a ring of <paramref name="wallBudget"/> cells closes round, chosen to hold the most
@@ -556,23 +603,6 @@ namespace SimWorld.Building
             }
             if (beds == 0) return false;
             return beds >= citizens || wallBudget >= ConstructionInitiativeTuning.MaxWallShelterCount;
-        }
-
-        private static SettlementCompound? TryPick(Map.Map map, CellRect domain, int width, int height, OpenGround open, bool wholeVillage)
-        {
-            var fitting = new List<SettlementCompound>();
-            for (int z = domain.minZ + 2; z + height + 1 <= domain.maxZ; z++)
-            {
-                for (int x = domain.minX + 2; x + width + 1 <= domain.maxX; x++)
-                {
-                    var interior = new CellRect(x, z, width, height);
-                    if (!open.IsOpen(interior.ExpandedBy(2))) continue;
-                    var candidate = new SettlementCompound(interior);
-                    if (wholeVillage && !open.IsOpen(candidate.Village)) continue;
-                    if (candidate.SitesAreFree(map)) fitting.Add(candidate);
-                }
-            }
-            return fitting.Count == 0 ? null : fitting[Rand.Range(0, fitting.Count)];
         }
 
         /// <summary>Which ground a compound may stand on — on the map, walkable (no rock, no deep water), and
