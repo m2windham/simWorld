@@ -1,0 +1,26 @@
+Threat-off bench, 60 days, population at day 59 / day 60 (tools/bench --suite storyteller --threats false).
+before = f25ac42 (docs/perf/storyteller-pressure/before), after-6a9966f = previous lane's fixes,
+after-33518fa = this lane (FireWatcher, fire avoidance, zone home area, healroot), on integration incl. 599e306.
+
+band seed    before   after-6a9966f   after-33518fa
+20   12345   1 / 0    16 / 17         21 / 23
+20   777     6 / 4    21 / 22         21 / 23
+20   2024    13 / 0   1 / 1           20 / 20
+20   31337   -        16 / 17         19 / 22
+20   99      0 / 0    22 / 22         19 / 21
+40   12345   1 / 0    33 / 6          30 / 32
+40   777     0 / 0    33 / 32         35 / 35
+
+after-33518fa: extinct 0/5 (band 20), 0/2 (band 40). No Age deaths in any run. Flashstorms fired in
+b20-s12345 (d33), b20-s777 (d31), b20-s99 (d22), b40-s12345 (d31, d53); none caused a fire death.
+The world under each seed has changed since 6a9966f (other lanes merged below), so seed 2024 no longer
+draws the day-25 flashstorm: trace-b20-s2024-off-60d.txt shows no fire in 60 days.
+
+Same-world A/B of the fire chain: a flashstorm forced on day 8, seed 12345, band 20 (trace.cs.txt, args
+"12345 12 20 false <Data> fire 8 12"):
+  storm-d8-...-before-zone-home.txt  fields not home area: 1 fire -> 135, firesInHome 0 throughout, no BeatFire
+                                      until ~100 fires, 20+ citizens burned
+  storm-d8-...-after.txt             fields are home area: first fire in home, BeatFire at once, peak fires 1
+
+healroot-diag-b20-s2024.txt: seed 2024's map has no ground above fertility 0.6 (sand), so healroot
+(RimWorld sowMinFertility 0.7) cannot be sown there; the medicine runs out (0 on map from day ~25).

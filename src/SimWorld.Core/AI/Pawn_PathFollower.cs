@@ -150,7 +150,9 @@ namespace SimWorld.AI
             IntVec3 next = curPath!.Peek(0);
             bool diagonal = cur.x != next.x && cur.z != next.z;
             int baseCost = diagonal ? TicksPerMoveDiagonal : TicksPerMoveCardinal;
-            return baseCost + pawn.Map!.pathGrid.PerceivedPathCostAt(next);
+            // The real cost, not the perceived one (RimWorld: CostToMoveIntoCell reads
+            // CalculatedCostAt(c, perceivedStatic: false)) — a fire is something to route round, not mud.
+            return baseCost + pawn.Map!.pathGrid.CalculatedCostAt(next);
         }
 
         public void ExposeData()

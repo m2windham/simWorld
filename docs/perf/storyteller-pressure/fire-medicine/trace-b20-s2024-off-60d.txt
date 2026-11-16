@@ -1,0 +1,91 @@
+d1 t0 CHRONICLE Founding: Greycrest founded by 20 settlers.
+d1 t2000 CHRONICLE Accession: Ulric takes the eldership of North combine.
+d1 t2000 CHRONICLE Accession: Elian takes the stewardship of Greycrest.
+== end of day 1: citizens 20, beds 0, medicine on map 20, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 2: citizens 20, beds 0, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 3: citizens 20, beds 0, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d4 t217500 CHRONICLE Divorce: Elian and Wren divorced.
+d4 t240000 CHRONICLE Divorce: Bryn and Emrys divorced.
+== end of day 4: citizens 20, beds 0, medicine on map 18, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 5: citizens 20, beds 0, medicine on map 16, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 6: citizens 20, beds 0, medicine on map 16, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 7: citizens 20, beds 0, medicine on map 14, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 8: citizens 20, beds 0, medicine on map 12, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d9 t520000 CHRONICLE Accession: Briony takes the stewardship of Greycrest.
+== end of day 9: citizens 19, beds 0, medicine on map 7, medicine in ledger 0, peak fires 0, deaths 1 (Disease 1)
+== end of day 10: citizens 19, beds 0, medicine on map 6, medicine in ledger 0, peak fires 0, deaths 1 (Disease 1)
+d11 t632500 CHRONICLE Divorce: Cyrus and Esme divorced.
+== end of day 11: citizens 18, beds 0, medicine on map 4, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 12: citizens 18, beds 0, medicine on map 4, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 13: citizens 18, beds 0, medicine on map 4, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 14: citizens 18, beds 0, medicine on map 2, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d15 t842000 CHRONICLE ColdSnap
+d15 t892000 CHRONICLE HeatWave
+== end of day 15: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 16: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d17 t1010000 CHRONICLE Divorce: Maren and Zane divorced.
+== end of day 17: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 18: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 19: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 20: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 21: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 22: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d23 t1352500 CHRONICLE Divorce: Cyrus and Aveline divorced.
+== end of day 23: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 24: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 25: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d26 t1503000 CHRONICLE Quest offered: Lost caravan
+d26 t1503000 CHRONICLE GiveQuest_Random
+== end of day 26: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 27: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 28: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 29: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 30: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 31: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 32: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d33 t1968000 CHRONICLE TraderCaravanArrival
+== end of day 33: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 34: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 35: citizens 18, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d36 t2105000 CHRONICLE Divorce: Xiomara and Silas divorced.
+d36 t2112000 CHRONICLE Wanderer: Tobin joins Greycrest.
+d36 t2112000 CHRONICLE WandererJoin
+== end of day 36: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d37 t2200000 CHRONICLE HeatWave
+== end of day 37: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 38: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d39 t2319000 CHRONICLE TraderCaravanArrival
+== end of day 39: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 40: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 41: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 42: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d43 t2552000 CHRONICLE ColdSnap
+== end of day 43: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d44 t2617000 CHRONICLE Earthquake
+== end of day 44: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 45: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 46: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 47: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 48: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 49: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 50: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d51 t3048000 CHRONICLE TraderCaravanArrival
+== end of day 51: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d52 t3095000 CHRONICLE Divorce: Ulric and Esme divorced.
+== end of day 52: citizens 19, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d53 t3155000 CHRONICLE Drought
+d53 t3168000 CHRONICLE Wanderer: Marisol joins Greycrest.
+d53 t3168000 CHRONICLE WandererJoin
+== end of day 53: citizens 20, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 54: citizens 20, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 55: citizens 20, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d56 t3325000 CHRONICLE Quest offered: Tribute demand
+d56 t3325000 CHRONICLE GiveQuest_Random
+== end of day 56: citizens 20, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 57: citizens 20, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+== end of day 58: citizens 20, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d59 t3517000 CHRONICLE Eclipse
+== end of day 59: citizens 20, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+d60 t3600000 CHRONICLE Longevity: Zane is the oldest person the civilization has known.
+== end of day 60: citizens 20, beds 0, medicine on map 0, medicine in ledger 0, peak fires 0, deaths 2 (Disease 2)
+exit=0

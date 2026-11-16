@@ -36,6 +36,24 @@ namespace SimWorld.Weather
         /// decides when the first transition happens, and the test that matters asserts that one does.</summary>
         public const int InitialWeatherDurationTicks = 10000;
 
+        /// <summary>While a large fire burns, the current weather lasts a quarter as long
+        /// (rimworldwiki.com/wiki/Weather: "the duration of any current non-forced weather will be shortened
+        /// by 75%" — a note the page itself flags as merged-in, so this is also the recalled decompile shape,
+        /// <c>num = (int)(num * 0.25f)</c> in <c>WeatherDeciderTick</c>).</summary>
+        public const float LargeFireDurationFactor = 0.25f;
+
+        /// <summary>While a large fire burns, a weather that rains harder than
+        /// <see cref="LargeFireMinRainRate"/> has its commonality multiplied by this
+        /// (rimworldwiki.com/wiki/Weather: progress toward "weather with a rain rate above 0.1" is
+        /// "increasing 15 times faster than normal"). That it is a multiplier on the biome commonality, and
+        /// not a flat replacement, is recalled from the decompile rather than sourced; the tests pin "rain
+        /// becomes the likeliest next weather", not the literal.</summary>
+        public const float LargeFireRainCommonalityFactor = 15f;
+
+        /// <summary>RimWorld: the <c>weather.rainRate &gt; 0.1f</c> test beside the factor above (wiki: "a rain
+        /// rate above 0.1").</summary>
+        public const float LargeFireMinRainRate = 0.1f;
+
         private readonly WeatherManager manager;
 
         private int curWeatherDuration = InitialWeatherDurationTicks;
@@ -69,7 +87,12 @@ namespace SimWorld.Weather
 
         public void WeatherDeciderTick()
         {
-            if (manager.CurWeatherAge < curWeatherDuration) return;
+            // A large fire hurries the weather along (RimWorld: WeatherDeciderTick quarters the current
+            // weather's duration while map.fireWatcher.LargeFireDangerPresent; rimworldwiki.com/wiki/Weather:
+            // "the duration of any current non-forced weather will be shortened by 75%").
+            int duration = curWeatherDuration;
+            if (manager.FireWatcher.LargeFireDangerPresent) duration = (int)(duration * LargeFireDurationFactor);
+            if (manager.CurWeatherAge < duration) return;
             StartNextWeather();
         }
 
@@ -119,6 +142,15 @@ namespace SimWorld.Weather
             MapClimate? climate = manager.Climate;
             float commonality = weather.CommonalityIn(climate?.biome);
             if (commonality <= 0f) return 0f;
+
+            // ...and leans the next roll toward rain (RimWorld: CurrentWeatherCommonality). After the
+            // RainDisabled gate above, as in RimWorld: a flashstorm's dry spell outranks the fire watcher
+            // (wiki: "Flashstorms will disable rain entirely, preventing it from appearing during accelerated
+            // weather").
+            if (weather.rainRate > LargeFireMinRainRate && manager.FireWatcher.LargeFireDangerPresent)
+            {
+                commonality *= LargeFireRainCommonalityFactor;
+            }
 
             if (weather.commonalityRainfallCurve != null && climate != null)
             {

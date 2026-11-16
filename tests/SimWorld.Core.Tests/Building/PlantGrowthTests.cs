@@ -100,11 +100,13 @@ namespace SimWorld.Tests.Building
                 return plant.Growth - before;
             }
 
-            float onGravel = GrowthAfterOneTick(DefDatabase<TerrainDef>.GetNamed("Gravel")); // fertility 0
+            float onMarsh = GrowthAfterOneTick(DefDatabase<TerrainDef>.GetNamed("Marsh")); // fertility 0 (RimWorld)
+            float onGravel = GrowthAfterOneTick(SimWorld.Map.TerrainDefOf.Gravel); // stony soil, poorer than soil
             float onSoil = GrowthAfterOneTick(SimWorld.Map.TerrainDefOf.Soil);
             float onRichSoil = GrowthAfterOneTick(DefDatabase<TerrainDef>.GetNamed("SoilRich"));
 
-            Assert.Equal(0f, onGravel);
+            Assert.Equal(0f, onMarsh);
+            Assert.True(onGravel > onMarsh);
             Assert.True(onSoil > onGravel);
             Assert.True(onRichSoil > onSoil, "Richer soil (higher TerrainDef.fertility) should grow a plant faster.");
         }

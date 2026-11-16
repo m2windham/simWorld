@@ -1,0 +1,28 @@
+d1 t0 CHRONICLE Founding: Redfield founded by 20 settlers.
+d1 t2000 CHRONICLE Accession: Dashiell takes the eldership of East haven.
+d1 t2000 CHRONICLE Accession: Quill takes the stewardship of Redfield.
+d1 t5000 CHRONICLE Divorce: Jarrah and Kira divorced.
+d1 t35000 CHRONICLE Divorce: Quill and Lyra divorced.
+== end of day 1: citizens 20, beds 20, medicine on map 20, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d2 t85000 CHRONICLE Divorce: Juniper and Alden divorced.
+== end of day 2: citizens 20, beds 20, medicine on map 20, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 3: citizens 20, beds 20, medicine on map 19, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 4: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 5: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d6 t347500 CHRONICLE Divorce: Oona and Elian divorced.
+== end of day 6: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 0, deaths 0 (none)
+== end of day 7: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 0, deaths 0 (none)
+d8 t450000 FORCED Flashstorm
+d8 t454200 fires 1 citizens-on-fire 0 raining Clear rainOff True danger 0.00 homeCells 4281 firesInHome 1 fightable 1 ffEnabled 19/20 nearestCitizen 14 | HaulToCell 15, Harvest 2, Research 1, BeatFire 1, Tame 1
+== end of day 8: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 1, deaths 0 (none)
+== end of day 9: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 1, deaths 0 (none)
+d10 t547000 CHRONICLE Flashstorm
+d10 t552600 fires 1 citizens-on-fire 0 raining Clear rainOff True danger 1.15 homeCells 4364 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 16 | HaulToCell 10, LayDown 5, Hunt 3, Skygaze 1, HaulToBuildingSite 1
+d10 t553200 fires 1 citizens-on-fire 0 raining Clear rainOff True danger 1.40 homeCells 4364 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 52 | HaulToCell 11, LayDown 5, Hunt 3, ConstructFinishFrame 1
+d10 t553800 fires 1 citizens-on-fire 0 raining Clear rainOff True danger 1.90 homeCells 4364 firesInHome 0 fightable 0 ffEnabled 19/20 nearestCitizen 54 | HaulToCell 11, LayDown 4, Hunt 3, Ingest 2
+== end of day 10: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 1, deaths 0 (none)
+d11 t636000 CHRONICLE TraderCaravanArrival
+== end of day 11: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 1, deaths 0 (none)
+d12 t667000 CHRONICLE TraderCaravanArrival
+== end of day 12: citizens 20, beds 20, medicine on map 18, medicine in ledger 0, peak fires 1, deaths 0 (none)
+exit=0

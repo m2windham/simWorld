@@ -61,7 +61,12 @@ namespace SimWorld.Weather
         {
             this.map = map ?? throw new ArgumentNullException(nameof(map));
             decider = new WeatherDecider(this);
+            FireWatcher = new FireWatcher(map);
         }
+
+        /// <summary>How much of this map is burning (RimWorld: <c>map.fireWatcher</c>; see
+        /// <see cref="Weather.FireWatcher"/> for why the weather manager holds it here).</summary>
+        public FireWatcher FireWatcher { get; }
 
         public Map.Map Map => map;
 
@@ -151,6 +156,7 @@ namespace SimWorld.Weather
         /// </summary>
         public void WeatherManagerTick()
         {
+            FireWatcher.FireWatcherTick();
             decider.WeatherDeciderTick();
             curWeatherAge++;
 

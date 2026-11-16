@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Healroot (RimWorld: Plant_Healroot), the crop herbal medicine is grown from. Its own file, additively
+    (CLAUDE.md). It yields the MedicineHerbal that Items_Medicine.xml already ships; no new item.
+
+    THE NUMBERS are RimWorld's, from rimworldwiki.com/wiki/Healroot: "Time to grow 7 days", "Base Harvest
+    Yield 1 herbal medicine", "Min Fertility 70%", "Min Skill 8 Plants", HP 60. The other crops in
+    Plants_Cultivated.xml carry this port's own short grow times, so healroot is the one sourced crop here,
+    and the slowest.
+
+    WHO PLANTS IT. Nobody paints a field in this port, so CropDemandDefs/CropDemands_Medicine.xml does it
+    for the settlement when its medicine runs low (Farming.CropDemandWorker_Medicine). Sowing it needs Plants 8, RimWorld's own gate
+    (PlantProperties.sowMinSkill, checked by WorkGiver_GrowerSow); harvesting it does not.
+  -->
+
+  <ThingDef ParentName="BasePlantCrop">
+    <defName>Plant_Healroot</defName>
+    <label>healroot</label>
+    <description>A medicinal herb. Its roots and leaves are dried and made into herbal medicine. It takes a skilled grower to raise.</description>
+    <plant>
+      <growDays>7</growDays>
+      <harvestedThingDef>MedicineHerbal</harvestedThingDef>
+      <harvestYield>1</harvestYield>
+      <sowMinFertility>0.7</sowMinFertility>
+      <sowMinSkill>8</sowMinSkill>
+    </plant>
+  </ThingDef>
+
+</Defs>
