@@ -79,7 +79,8 @@ namespace SimWorld.Tests.Building
                 Assert.True(plots.Any(p => p.Plot == rect && p.Rot == d.Rotation), d.def.defName + " at " + d.Position + " " + d.Rotation + " is not on a street plot");
             });
 
-            Assert.All(compound.WorkYard.Cells, c => Assert.True(map.pathGrid.Walkable(c), "the work yard in front of the door is blocked at " + c));
+            // The yard is the benches' (they may stand on it by now), never rock.
+            Assert.All(compound.WorkYard.Cells, c => Assert.False(map.edificeGrid[c] is Thing e && e.def.mineable, "the work yard in front of the door is rock at " + c));
         }
 
         /// <summary>
@@ -107,6 +108,27 @@ namespace SimWorld.Tests.Building
             List<Thing> beds = AllOf(map, d => ReferenceEquals(d, ConstructionThingDefOf.Bed));
             Assert.Equal(settlement.Citizens.Count, beds.Count);
             Assert.All(beds, b => Assert.True(compound.Interior.Contains(b.Position), "bed at " + b.Position + " is outside " + compound.Interior));
+        }
+
+        /// <summary>
+        /// Cause 1, its other half. The field starts where the first citizen stands, and a founding band stands
+        /// on the ground its village is laid out on; a field there is a field across the street and the plots.
+        /// </summary>
+        [Fact]
+        public void A_field_begun_from_a_citizen_on_the_street_is_sown_off_the_villages_ground()
+        {
+            var map = new CoreMap(120, 120, SimWorld.Map.TerrainDefOf.Soil);
+            map.settlementCompound = SettlementCompound.TryPlan(map, 20, 50);
+            SettlementCompound compound = Assert.IsType<SettlementCompound>(map.settlementCompound);
+            IntVec3 onTheStreet = compound.DoorCell + new IntVec3(3, 0, 0);
+            for (int i = 0; i < 10; i++) GenSpawn.Spawn(NewHuman("Founder" + i), onTheStreet, map);
+
+            FarmingInitiative.Run(map);
+
+            Zone_Growing? field = FarmingInitiative.FieldOf(map);
+            Assert.NotNull(field);
+            Assert.NotEmpty(field!.Cells);
+            Assert.DoesNotContain(field.Cells, c => compound.Reserves(CellRect.SingleCell(c)));
         }
 
         /// <summary>
