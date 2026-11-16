@@ -24,6 +24,20 @@ namespace SimWorld.Bench.Suites
     /// </summary>
     internal static class MiningSuite
     {
+        /// <summary>Everything a rock on this map yields when mined (chunks, ore), on the map and in the
+        /// settlement's ledger, as "mined=N".</summary>
+        internal static string MinedStock(Settlement settlement, CoreMap map)
+        {
+            var yields = new System.Collections.Generic.HashSet<SimWorld.Defs.ThingDef>();
+            foreach (SimWorld.Defs.ThingDef d in SimWorld.Defs.DefDatabase<SimWorld.Defs.ThingDef>.AllDefsListForReading)
+            {
+                if (d.mineable && d.mineableThing != null) yields.Add(d.mineableThing);
+            }
+            int onMap = map.listerThings.AllThings.Where(t => t.Spawned && yields.Contains(t.def)).Sum(t => t.stackCount);
+            int stored = settlement.Stores.Where(kv => yields.Contains(kv.Key)).Sum(kv => kv.Value);
+            return "mined=" + (onMap + stored).ToString(CultureInfo.InvariantCulture).PadRight(5);
+        }
+
         public static void Run(BenchOptions opt)
         {
             Report.Heading("Mining: the wood-supply founding band, " + opt.LayoutTicks + " ticks");
@@ -52,7 +66,8 @@ namespace SimWorld.Bench.Suites
                     .GroupBy(p => p.jobs?.curJob?.def.defName ?? "-").OrderByDescending(g => g.Count())
                     .Select(g => g.Key + ":" + g.Count());
                 Console.WriteLine("  ticks " + (tick + 1 - Window).ToString(CultureInfo.InvariantCulture).PadLeft(7) + ".." + (tick + 1).ToString(CultureInfo.InvariantCulture).PadRight(7)
-                    + (Window / secs).ToString("0", CultureInfo.InvariantCulture).PadLeft(7) + " ticks/s   " + string.Join(", ", jobs));
+                    + (Window / secs).ToString("0", CultureInfo.InvariantCulture).PadLeft(7) + " ticks/s   " + MinedStock(settlement, map)
+                    + "   " + string.Join(", ", jobs));
             }
             Console.WriteLine("  total " + total.Elapsed.TotalSeconds.ToString("0.0", CultureInfo.InvariantCulture) + " s, "
                 + (opt.LayoutTicks / total.Elapsed.TotalSeconds).ToString("0", CultureInfo.InvariantCulture) + " ticks/s");

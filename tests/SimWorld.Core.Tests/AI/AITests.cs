@@ -467,11 +467,12 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
-        public void Idle_colonist_mines_a_reachable_rock()
+        public void Idle_colonist_mines_a_reachable_designated_rock()
         {
             CoreMap map = NewMap(6, 6);
             Pawn pawn = SpawnHuman(map, new IntVec3(0, 0, 0));
             Thing rock = SpawnRock(map, new IntVec3(2, 0, 0));
+            map.designationManager.AddDesignation(new global::SimWorld.Designations.Designation(new global::SimWorld.AI.LocalTargetInfo(rock.Position), global::SimWorld.Designations.DesignationDefOf.Mine));
 
             RunTicks(2000, pawn);
 

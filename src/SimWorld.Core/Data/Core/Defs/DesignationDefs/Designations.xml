@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    RimWorld's Designations.xml, cut to the defs this port has a worker for. Placed by a settlement
+    (SimWorld.AI.MiningInitiative) rather than by a player; the icon, sound and designator fields stay in the host.
+  -->
+
+  <DesignationDef>
+    <defName>Mine</defName>
+    <targetType>Cell</targetType>
+    <removeIfBuildingDespawned>true</removeIfBuildingDespawned>
+  </DesignationDef>
+
+</Defs>

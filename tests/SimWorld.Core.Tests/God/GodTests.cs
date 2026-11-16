@@ -264,6 +264,7 @@ namespace SimWorld.Tests.God
             GenSpawn.Spawn(blueprint, new IntVec3(5, 0, 5), map);
             SpawnStack(map, new IntVec3(1, 0, 1), "WoodLog", 5);
             SpawnRock(map, new IntVec3(2, 0, 0));
+            map.designationManager.AddDesignation(new global::SimWorld.Designations.Designation(new global::SimWorld.AI.LocalTargetInfo(new IntVec3(2, 0, 0)), global::SimWorld.Designations.DesignationDefOf.Mine));
 
             Job? baseline = ThinkTreeDefOf.Humanlike.thinkRoot.TryIssueJobPackage(pawn).Job;
             Assert.NotNull(baseline);

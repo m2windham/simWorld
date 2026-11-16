@@ -71,6 +71,9 @@ namespace SimWorld.Map
         /// <summary>Every Area on this map — today, only the home area (system 16: Building — zones).</summary>
         public Building.AreaManager areaManager = null!;
 
+        /// <summary>Every designation on this map (RimWorld: <c>Map.designationManager</c>); saved by <see cref="ExposeData"/>.</summary>
+        public Designations.DesignationManager designationManager = null!;
+
         /// <summary>The layout this map's settlement is building itself into, or null while it has none
         /// (system 16: Building — see <see cref="Building.SettlementCompound"/>). Planned and read by
         /// <see cref="Building.SettlementConstructionInitiative"/>; saved by <see cref="ExposeData"/>.</summary>
@@ -208,6 +211,8 @@ namespace SimWorld.Map
             Crafting.CookingInitiative.TickMap(this);
             // Shirts and knives for the citizens who lack them, at whatever bench stands (same cadence).
             Crafting.OutfittingInitiative.TickMap(this);
+            // The rock it wants dug: Mine designations by need (AI.MiningInitiative, same cadence).
+            AI.MiningInitiative.TickMap(this);
 
             // Raids: each lord notices who it has lost and whether that, or the clock, ends the assault.
             lordManager.LordManagerTick();
@@ -245,6 +250,7 @@ namespace SimWorld.Map
             roomTracker = new Building.RoomTracker(this);
             zoneManager = new Building.ZoneManager(this);
             areaManager = new Building.AreaManager(this);
+            designationManager = new Designations.DesignationManager();
             gameConditionManager = new Conditions.GameConditionManager(this);
             weatherManager = new Weather.WeatherManager(this);
             lordManager = new AI.Group.LordManager(this);
@@ -301,6 +307,7 @@ namespace SimWorld.Map
             roomTracker.ExposeTemperatures();
             zoneManager.ExposeData();
             areaManager.ExposeData();
+            designationManager.ExposeData();
             // A save written before compounds existed has no node and loads with none; the settlement
             // then plans one on its next pass, as a new one would.
             Scribe_Deep.Look(ref settlementCompound, "settlementCompound");

@@ -21,6 +21,10 @@ namespace SimWorld.Building
         private readonly Map.Map map;
         private readonly bool[] grid;
 
+        /// <summary>Kept as cells are set, as RimWorld's <c>Area.trueCountInt</c> is: cleaning asks for it once per
+        /// filth it considers, and counting the grid each time was most of an idle band's job search.</summary>
+        private int trueCount;
+
         public string label;
 
         public Area(Map.Map map, string label)
@@ -35,22 +39,15 @@ namespace SimWorld.Building
             get => GenGrid.InBounds(c, map) && grid[map.cellIndices.CellToIndex(c)];
             set
             {
-                if (GenGrid.InBounds(c, map)) grid[map.cellIndices.CellToIndex(c)] = value;
+                if (!GenGrid.InBounds(c, map)) return;
+                int i = map.cellIndices.CellToIndex(c);
+                if (grid[i] == value) return;
+                grid[i] = value;
+                trueCount += value ? 1 : -1;
             }
         }
 
-        public int TrueCount
-        {
-            get
-            {
-                int n = 0;
-                for (int i = 0; i < grid.Length; i++)
-                {
-                    if (grid[i]) n++;
-                }
-                return n;
-            }
-        }
+        public int TrueCount => trueCount;
 
         /// <summary>Saved as the list of true cell indices — an area is typically sparse relative to the
         /// whole map, so this beats <c>Map.EncodeRunLength</c>'s dense per-cell token stream for the common case.</summary>
@@ -62,12 +59,17 @@ namespace SimWorld.Building
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
                 Array.Clear(grid, 0, grid.Length);
+                trueCount = 0;
                 if (trueCells != null)
                 {
                     for (int i = 0; i < trueCells.Count; i++)
                     {
                         int idx = trueCells[i];
-                        if (idx >= 0 && idx < grid.Length) grid[idx] = true;
+                        if (idx >= 0 && idx < grid.Length && !grid[idx])
+                        {
+                            grid[idx] = true;
+                            trueCount++;
+                        }
                     }
                 }
             }

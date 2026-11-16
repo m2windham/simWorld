@@ -41,6 +41,12 @@ namespace SimWorld.AI
     /// half designation-driven and half initiative-driven, or mean retrofitting all five. <b>What is missing
     /// is a reason, not a record.</b>
     ///
+    /// <para/><b>Mining found the reason.</b> The miner has since gone <c>initiative → designation → giver</c>
+    /// (<see cref="MiningInitiative"/>, <see cref="Designations.DesignationManager"/>): scanning every rock on
+    /// the map made mining endless, so a band with nothing above Mining's priority to do mined all at once, and
+    /// the scan itself was most of the simulation. Rock is a fixed field of candidates where animals are few and
+    /// move; for taming the argument above still stands.
+    ///
     /// <para/><b>What a Designation layer would still buy, and why it can wait.</b> Three things, all real
     /// and none of them load-bearing for "does a settlement that needs meat hunt": a durable, save-visible
     /// record of intent the god view could show and a host could write into; one place for every work type to

@@ -58,6 +58,7 @@ namespace SimWorld.Tests.God
             wood.stackCount = 5;
             GenSpawn.Spawn(wood, new IntVec3(1, 0, 1), map);
             GenSpawn.Spawn(ThingMaker.MakeThing(Def("Sandstone")), new IntVec3(2, 0, 0), map);
+            map.designationManager.AddDesignation(new global::SimWorld.Designations.Designation(new global::SimWorld.AI.LocalTargetInfo(new IntVec3(2, 0, 0)), global::SimWorld.Designations.DesignationDefOf.Mine));
             return pawn;
         }
 
