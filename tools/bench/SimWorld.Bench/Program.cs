@@ -96,6 +96,9 @@ namespace SimWorld.Bench
                 case "band":
                     BandSuite.Run(opt);
                     break;
+                case "mining":
+                    MiningSuite.Run(opt);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -289,7 +292,7 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | storyteller | layout | band | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | storyteller | layout | band | mining | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
   --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc, probe, tension, storyteller.
                           For --suite tension the span is read in years: 60 days to the year, which is also
@@ -323,7 +326,7 @@ OPTIONS
                           disallowed and everything else as Medium, the baseline a threat reading is read
                           against (default true).
   --layout-seed <s>       for --suite layout and band: new-game seed string (default simworld-host, the Unity host's).
-  --layout-ticks <N>      for --suite layout: ticks to run before reporting (default 60000).
+  --layout-ticks <N>      for --suite layout and mining: ticks to run before reporting (default 60000).
   --layout-every <N>      for --suite layout: also print a brief line every N ticks (default 0, never).
   --help, -h              show this text.
 
