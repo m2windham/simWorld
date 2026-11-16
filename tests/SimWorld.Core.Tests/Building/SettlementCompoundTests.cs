@@ -687,7 +687,12 @@ namespace SimWorld.Tests.Building
                 }
                 if (ringUpTick < 0) continue;
 
-                sleptInside += settlement.Citizens.Count(p => p.Spawned && p.Asleep && compound.Interior.Contains(p.Position));
+                // Inside the ring, or in a house the band built on its street: a household that has a home
+                // sleeps there and leaves the dormitory (DwellingUtility.FindDwellingFor), and with timber to
+                // spare the houses can be up before the first night. Counting only the ring then ran all fifteen
+                // days looking for a sleeper who was, correctly, at home.
+                sleptInside += settlement.Citizens.Count(p => p.Spawned && p.Asleep
+                    && (compound.Interior.Contains(p.Position) || SimWorld.AI.RestUtility.CurrentBed(p) is Dwelling));
                 if (sleptInside > 0) break;
             }
 
@@ -695,7 +700,7 @@ namespace SimWorld.Tests.Building
                 + (ringUpTick / (float)GenDate.TicksPerDay).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
                 + "); sleepers seen inside it: " + sleptInside);
             Assert.True(ringUpTick >= 0, "the band never finished its ring:\n" + Picture(map));
-            Assert.True(sleptInside > 0, "nobody was ever seen asleep inside the ring");
+            Assert.True(sleptInside > 0, "nobody was ever seen asleep inside the ring or in a house it built");
 
             HashSet<IntVec3> inside = AssertIsACompound(map, bedsInside: Sites(map, Bed).Count, notTheSettlements: ancient);
 
