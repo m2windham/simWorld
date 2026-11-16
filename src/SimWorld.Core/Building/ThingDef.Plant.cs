@@ -1,10 +1,12 @@
+using System.Collections.Generic;
+
 namespace SimWorld.Defs
 {
     /// <summary>
     /// What makes a ThingDef a growable plant (RimWorld: <c>RimWorld.PlantProperties</c>), trimmed to what
     /// <see cref="Building.Plant"/>'s growth tick and harvest actually use — no growth stages, no wind
-    /// exposure/visual size, no <c>sowTags</c> (a <see cref="Building.Zone_Growing"/> names a plant def
-    /// directly rather than filtering by tag).
+    /// exposure/visual size. A <see cref="Building.Zone_Growing"/> names a plant def directly; <see cref="sowTags"/>
+    /// only says whether a plant may be sown at all.
     /// </summary>
     public class PlantProperties
     {
@@ -37,6 +39,14 @@ namespace SimWorld.Defs
         /// <c>PlantProperties.sowMinSkill</c>, checked by <c>WorkGiver_GrowerSow</c>). 0, the default, means
         /// anyone may sow it.</summary>
         public int sowMinSkill;
+
+        /// <summary>Where this plant may be sown (RimWorld: <c>PlantProperties.sowTags</c>; its crops carry
+        /// <c>Ground</c>). None, as on a wild berry bush, means nobody sows it — "they can't be grown by the
+        /// player" (rimworldwiki.com/wiki/Berry_bush).</summary>
+        public List<string>? sowTags;
+
+        /// <summary>Sowable in open ground (RimWorld: <c>sowTags</c> contains <c>"Ground"</c>).</summary>
+        public bool SowableInGround => sowTags != null && sowTags.Contains("Ground");
 
         /// <summary>
         /// What kind of harvest this plant gives (RimWorld: <c>PlantProperties.harvestTag</c>). RimWorld's

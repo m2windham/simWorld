@@ -19,6 +19,12 @@
     <statBases>
       <MaxHitPoints>60</MaxHitPoints>
     </statBases>
+    <plant>
+      <!-- RimWorld's crops are sown in open ground; wild plants carry no sowTags and are never sown. -->
+      <sowTags>
+        <li>Ground</li>
+      </sowTags>
+    </plant>
   </ThingDef>
 
   <ThingDef ParentName="BasePlantCrop">

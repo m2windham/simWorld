@@ -204,7 +204,7 @@ namespace SimWorld.Building
             for (int i = 0; i < all.Count; i++)
             {
                 ThingDef def = all[i];
-                if (def.category != ThingCategory.Plant || def.plant == null) continue;
+                if (def.category != ThingCategory.Plant || def.plant == null || !def.plant.SowableInGround) continue;
                 if (def.plant.sowMinFertility > bestFertility) continue;
 
                 float yield = NutritionPerCellPerDay(def);

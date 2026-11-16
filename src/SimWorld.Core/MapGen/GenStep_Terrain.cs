@@ -62,6 +62,24 @@ namespace SimWorld.MapGen
             return TerrainDefOf.Soil;
         }
 
+        /// <summary>Every ground terrain <see cref="PickBaseTerrain"/> can paint on <paramref name="tile"/>,
+        /// whatever the cell's noise: what a map of this tile can be made of before rivers and roads. Kept
+        /// beside <see cref="PickBaseTerrain"/> because it is that method's branches, read without a cell.</summary>
+        public static TerrainDef[] BaseTerrainsFor(Tile tile)
+        {
+            if (tile.swampiness >= MapGenTuning.MarshSwampinessFloor)
+            {
+                return new[] { MapGenTerrainDefOf.Marsh, MapGenTerrainDefOf.MarshyTerrain };
+            }
+            BiomeDef? biome = tile.biome;
+            bool arid = biome != null && biome.forageability <= MapGenTuning.AridForageabilityCeiling && tile.rainfall <= MapGenTuning.AridRainfallCeilingMm;
+            if (arid)
+            {
+                return new[] { TerrainDefOf.Sand };
+            }
+            return new[] { MapGenTerrainDefOf.SoilRich, TerrainDefOf.Soil, TerrainDefOf.Gravel };
+        }
+
         /// <summary>
         /// Carves the tile's river across the map. Where the world grid is available, the river runs along the
         /// heading of the neighbouring tile it actually flows to — the same real bearing

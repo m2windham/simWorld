@@ -381,6 +381,10 @@ namespace SimWorld.Sim
         /// <see cref="God.AttentionManager"/> relies on to name a settlement by its tile: focusing that tile
         /// would attend both.
         ///
+        /// <para/>Among habitable tiles, one whose map has ground a food crop can be sown on comes first
+        /// (<see cref="SimWorld.World.Siting.FoundingGround"/>): the founding band is not set down on bare sand
+        /// to starve. Only this founding path does that; later settlements may still land on hard ground.
+        ///
         /// <para/>Falls back to the best-scored habitable tile when no candidate clears the spacing — a
         /// crowded world should still start a game rather than refuse to, and the fallback is the behaviour
         /// this method had before the rule existed.
@@ -401,17 +405,21 @@ namespace SimWorld.Sim
 
             int best = -1;
             float bestScore = float.NegativeInfinity;
+            bool bestFarms = false;
             int bestIgnoringSpacing = -1;
             float bestScoreIgnoringSpacing = float.NegativeInfinity;
+            bool bestFarmsIgnoringSpacing = false;
 
             for (int i = 0; i < grid.TilesCount; i++)
             {
                 if (grid.Tiles[i].WaterCovered) continue;
                 float score = SimWorld.World.Siting.SiteScorer.Score(grid, i, weights);
+                bool farms = score > 0f && SimWorld.World.Siting.FoundingGround.CanFarm(grid.Tiles[i]);
 
-                if (score > bestScoreIgnoringSpacing)
+                if (Outranks(farms, score, bestFarmsIgnoringSpacing, bestScoreIgnoringSpacing))
                 {
                     bestScoreIgnoringSpacing = score;
+                    bestFarmsIgnoringSpacing = farms;
                     bestIgnoringSpacing = i;
                 }
 
@@ -422,9 +430,10 @@ namespace SimWorld.Sim
                 }
                 if (tooClose) continue;
 
-                if (score > bestScore)
+                if (Outranks(farms, score, bestFarms, bestScore))
                 {
                     bestScore = score;
+                    bestFarms = farms;
                     best = i;
                 }
             }
@@ -433,6 +442,11 @@ namespace SimWorld.Sim
             if (bestIgnoringSpacing >= 0) return bestIgnoringSpacing;
             throw new InvalidOperationException("World generation produced no habitable tile to found a settlement on.");
         }
+
+        /// <summary>A habitable tile (score above zero) whose ground a founding band can farm
+        /// (<see cref="SimWorld.World.Siting.FoundingGround"/>) outranks any score without it; between two tiles alike in that, the higher score wins.</summary>
+        private static bool Outranks(bool farms, float score, bool bestFarms, float bestScore) =>
+            farms != bestFarms ? farms : score > bestScore;
 
         // ---- tick order (spec §4: pre-tickers -> normal -> rare -> long -> post-tickers) ----
 
