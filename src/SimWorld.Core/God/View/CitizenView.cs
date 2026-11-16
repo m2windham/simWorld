@@ -68,8 +68,25 @@ namespace SimWorld.God.View
             PawnTier tier, string? officeDefName, string? officeLabel, string? roleDefName,
             float? moodLevel, MentalBreakIntensity? moodBand, CitizenFidelity moodFidelity,
             float healthFraction, CitizenFidelity healthFidelity,
-            bool downed, bool dead)
+            bool downed, bool dead,
+            string? lifeStageDefName, string? lifeStageLabel,
+            string? activityLabel, string? currentJobDefName, string? mentalStateDefName,
+            IReadOnlyList<string> criticalNeedDefNames, bool sick, bool inBed,
+            IReadOnlyList<SkillLine> skills, CitizenFidelity skillsFidelity,
+            int? householdId, string? householdName)
         {
+            LifeStageDefName = lifeStageDefName;
+            LifeStageLabel = lifeStageLabel;
+            ActivityLabel = activityLabel;
+            CurrentJobDefName = currentJobDefName;
+            MentalStateDefName = mentalStateDefName;
+            CriticalNeedDefNames = criticalNeedDefNames;
+            Sick = sick;
+            InBed = inBed;
+            Skills = skills;
+            SkillsFidelity = skillsFidelity;
+            HouseholdId = householdId;
+            HouseholdName = householdName;
             ThingId = thingId;
             Name = name;
             FullName = fullName;
@@ -156,6 +173,53 @@ namespace SimWorld.God.View
         /// pruned they leave the roster entirely — see <see cref="GodViewSnapshot.Remembered"/>.</summary>
         public bool Dead { get; }
 
+        /// <summary>The life stage they are in (<c>Pawn_AgeTracker.CurLifeStage</c>), e.g. <c>HumanlikeChild</c>;
+        /// null for a pawn whose race has none.</summary>
+        public string? LifeStageDefName { get; }
+
+        public string? LifeStageLabel { get; }
+
+        /// <summary>
+        /// What they are doing, in the core's words: the mental state's label while they are in one, otherwise
+        /// the current job's <c>reportString</c> ("mining.", "lying down.") or, for a job with none, its label.
+        /// Null when they are not on a map — a citizen at a coarse tier runs no jobs, and "nothing" would be a
+        /// claim the simulation is not making.
+        /// </summary>
+        public string? ActivityLabel { get; }
+
+        /// <summary>The current job's defName, or null (same rule as <see cref="ActivityLabel"/>).</summary>
+        public string? CurrentJobDefName { get; }
+
+        /// <summary>The mental state they are in, or null.</summary>
+        public string? MentalStateDefName { get; }
+
+        /// <summary>
+        /// The defNames of needs at a level that hurts now: food at <c>UrgentlyHungry</c> or <c>Starving</c>,
+        /// rest at <c>Exhausted</c>, recreation at <c>Empty</c> — each need's own category bands, not a scale
+        /// drawn here. Empty when none is, and empty for a citizen whose needs are not tracked
+        /// (<see cref="CitizenView.NeedsFidelity"/>).
+        /// </summary>
+        public IReadOnlyList<string> CriticalNeedDefNames { get; }
+
+        /// <summary>Carrying a visible illness that makes them feel sick (<c>HediffSet.AnyHediffMakesSickThought</c>
+        /// — RimWorld's own "sick" test). False at <see cref="PawnTier.Statistical"/>, where the hediff set is
+        /// not opened (see <see cref="CitizenView.HediffFidelity"/>).</summary>
+        public bool Sick { get; }
+
+        /// <summary>Lying in a bed right now (<c>RestUtility.InBed</c>).</summary>
+        public bool InBed { get; }
+
+        /// <summary>Every skill with its level and passion, as <see cref="CitizenView.Skills"/> has them.</summary>
+        public IReadOnlyList<SkillLine> Skills { get; }
+
+        public CitizenFidelity SkillsFidelity { get; }
+
+        /// <summary>Their household (<c>FamilyManager</c>'s family id), or null for nobody's household.</summary>
+        public int? HouseholdId { get; }
+
+        /// <summary>The household's surname, or "Family N" for one without; null with no household.</summary>
+        public string? HouseholdName { get; }
+
         /// <summary>
         /// One roster row for a live citizen. Every read here is a field read or a cached one
         /// (<c>SummaryHealthPercent</c> caches; <c>OfficeOf</c> is a handful of reference comparisons), and
@@ -187,7 +251,58 @@ namespace SimWorld.God.View
                 HealthFractionOf(pawn, tier),
                 FidelityOfLiveState(tier),
                 pawn.Downed,
-                pawn.Dead);
+                pawn.Dead,
+                pawn.ageTracker?.CurLifeStage?.defName,
+                pawn.ageTracker?.CurLifeStage?.label,
+                ActivityOf(pawn),
+                pawn.Spawned ? pawn.jobs?.curJob?.def.defName : null,
+                pawn.MentalStateDef?.defName,
+                CriticalNeedsOf(pawn),
+                tier != PawnTier.Statistical && (pawn.health?.hediffSet?.AnyHediffMakesSickThought ?? false),
+                pawn.Spawned && AI.RestUtility.InBed(pawn),
+                CitizenView.SkillsOf(pawn),
+                pawn.skills == null ? CitizenFidelity.NotTracked : FidelityOfLiveState(tier),
+                HouseholdIdOf(pawn),
+                HouseholdNameOf(pawn));
+        }
+
+        private static string? ActivityOf(Pawn pawn)
+        {
+            if (!pawn.Spawned) return null;
+            MentalStateDef? mental = pawn.MentalStateDef;
+            if (mental != null) return mental.LabelCap;
+            AI.JobDef? job = pawn.jobs?.curJob?.def;
+            if (job == null) return null;
+            return string.IsNullOrEmpty(job.reportString) ? job.LabelCap : job.reportString;
+        }
+
+        private static IReadOnlyList<string> CriticalNeedsOf(Pawn pawn)
+        {
+            Pawn_NeedsTracker? needs = pawn.needs;
+            if (needs == null) return Array.Empty<string>();
+
+            List<string>? critical = null;
+            if (needs.food != null && needs.food.CurCategory >= HungerCategory.UrgentlyHungry)
+                (critical ??= new List<string>()).Add(needs.food.def.defName);
+            if (needs.rest != null && needs.rest.CurCategory == RestCategory.Exhausted)
+                (critical ??= new List<string>()).Add(needs.rest.def.defName);
+            if (needs.joy != null && needs.joy.CurCategory == JoyCategory.Empty)
+                (critical ??= new List<string>()).Add(needs.joy.def.defName);
+            return critical ?? (IReadOnlyList<string>)Array.Empty<string>();
+        }
+
+        private static int? HouseholdIdOf(Pawn pawn) =>
+            pawn.relations != null && pawn.relations.HasFamily ? pawn.relations.familyId : (int?)null;
+
+        private static string? HouseholdNameOf(Pawn pawn)
+        {
+            int? id = HouseholdIdOf(pawn);
+            if (id == null) return null;
+            Family? family = Find.FamilyManager.GetFamily(id.Value);
+            if (family == null) return null;
+            return family.surname.Length > 0
+                ? family.surname
+                : "Family " + family.id.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>Full ticks it; Interval advances it in bulk on the long bucket; Statistical redraws it from
@@ -729,7 +844,7 @@ namespace SimWorld.God.View
             return lines;
         }
 
-        private static List<SkillLine> SkillsOf(Pawn pawn)
+        internal static List<SkillLine> SkillsOf(Pawn pawn)
         {
             var lines = new List<SkillLine>();
             List<SkillRecord>? skills = pawn.skills?.skills;

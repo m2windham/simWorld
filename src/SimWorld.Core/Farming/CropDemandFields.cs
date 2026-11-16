@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using SimWorld.Building;
 using SimWorld.Defs;
 using SimWorld.Map;
+using SimWorld.Things;
 using SimWorld.World;
 
 namespace SimWorld.Farming
@@ -66,24 +67,33 @@ namespace SimWorld.Farming
         }
 
         /// <summary>Adds up to <paramref name="budget"/> sowable cells, spiralling out from the field's own
-        /// first cell, else the food field's, else the first humanlike on the map: crops are tended by the
-        /// same farmers, so they sit together.</summary>
+        /// first cell, else a bench that works what the crop yields, else the food field's, else the first
+        /// humanlike on the map. Never on ground the settlement's compound keeps
+        /// (<see cref="SettlementCompound.Reserves"/>).</summary>
         private static void Grow(Map.Map map, Zone_Growing field, ThingDef crop, int budget)
         {
-            IntVec3 seed = SeedCell(map, field);
+            IntVec3 seed = SeedCell(map, field, crop);
+            SettlementCompound? compound = map.settlementCompound;
             int added = 0;
             IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
             for (int i = 0; i < pattern.Count && added < budget; i++)
             {
                 IntVec3 candidate = seed + pattern[i];
                 if (!FarmingInitiative.CanSowIn(map, candidate, crop)) continue;
+                if (compound != null && compound.Reserves(CellRect.SingleCell(candidate))) continue;
                 if (map.zoneManager.AddCell(field, candidate)) added++;
             }
         }
 
-        private static IntVec3 SeedCell(Map.Map map, Zone_Growing field)
+        private static IntVec3 SeedCell(Map.Map map, Zone_Growing field, ThingDef crop)
         {
             if (field.CellCount > 0) return field.Cells[0];
+            // A crop a bench works (cotton for a tailor's table) starts beside that bench, built or planned,
+            // so the harvest lands within the bill's ingredient reach and is hauled to the bench's own stock
+            // rather than to a granary out of reach. The spiral grows nearest-first, so the field starts as
+            // close to the bench as sowable ground allows.
+            ThingDef? product = crop.plant?.harvestedThingDef;
+            if (product != null && TryFindBenchWorking(map, product, out IntVec3 bench)) return bench;
             Zone_Growing? food = FarmingInitiative.FieldOf(map);
             if (food != null && food.CellCount > 0) return food.Cells[0];
             IReadOnlyList<Pawns.Pawn> pawns = map.mapPawns.AllPawnsSpawned;
@@ -92,6 +102,44 @@ namespace SimWorld.Farming
                 if (pawns[i].RaceProps.Humanlike) return pawns[i].Position;
             }
             return new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
+        }
+
+        /// <summary>The first bench on <paramref name="map"/>, standing, framed or planned, one of whose
+        /// recipes takes <paramref name="product"/>.</summary>
+        private static bool TryFindBenchWorking(Map.Map map, ThingDef product, out IntVec3 at)
+        {
+            foreach (ThingRequestGroup group in new[] { ThingRequestGroup.Building, ThingRequestGroup.BuildingFrame, ThingRequestGroup.Blueprint })
+            {
+                IReadOnlyList<Thing> things = map.listerThings.ThingsInGroup(group);
+                for (int i = 0; i < things.Count; i++)
+                {
+                    ThingDef? benchDef = things[i] switch
+                    {
+                        Blueprint blueprint => blueprint.EntityToBuild,
+                        Frame frame => frame.EntityToBuild,
+                        _ => things[i].def,
+                    };
+                    if (benchDef == null || !Takes(benchDef, product)) continue;
+                    at = things[i].Position;
+                    return true;
+                }
+            }
+            at = default;
+            return false;
+        }
+
+        private static bool Takes(ThingDef bench, ThingDef product)
+        {
+            IReadOnlyList<Crafting.RecipeDef> recipes = bench.AllRecipes;
+            for (int r = 0; r < recipes.Count; r++)
+            {
+                if (recipes[r].ingredients is not List<Crafting.IngredientCount> ingredients) continue;
+                for (int i = 0; i < ingredients.Count; i++)
+                {
+                    if (ingredients[i].filter.Allows(product)) return true;
+                }
+            }
+            return false;
         }
     }
 }

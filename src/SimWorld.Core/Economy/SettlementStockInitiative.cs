@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using SimWorld.AI;
 using SimWorld.Building;
+using SimWorld.Crafting;
 using SimWorld.Defs;
 using SimWorld.Map;
 using SimWorld.Sim;
@@ -347,6 +348,11 @@ namespace SimWorld.Economy
             float nutritionSurplus = HuntingInitiative.NutritionAvailable(null, map)
                 - HuntingInitiative.NutritionWanted(settlement, map);
 
+            // What a standing bill on this map would take stays where its crafter can reach it, as medicine
+            // does: banked, cloth for a tailor's bill or chunks for a stonecutter's would leave the map, and
+            // the bill could never be worked. Food keeps its own rule, the nutrition reserve below.
+            List<RecipeDef> billed = StandingBillRecipes(map);
+
             int banked = 0;
             for (int z = 0; z < zones.Count; z++)
             {
@@ -359,6 +365,7 @@ namespace SimWorld.Economy
                     if (HoldsPawn(stack)) continue;
                     if (!stockpile.filter.Allows(stack.def)) continue;
                     if (map.reservationManager.IsReserved(stack)) continue;
+                    if (!stack.def.IsNutritionGivingIngestible && AnyTakes(billed, stack.def)) continue;
 
                     int take = BankableUnits(stack, ref nutritionSurplus);
                     if (take <= 0) continue;
@@ -405,6 +412,38 @@ namespace SimWorld.Economy
         /// drawn down from <paramref name="nutritionSurplus"/> as it is spent, so one pass cannot bank the same
         /// surplus twice across several stacks.
         /// </summary>
+        /// <summary>The recipe of every bill standing on a bench on <paramref name="map"/> that is not
+        /// suspended.</summary>
+        private static List<RecipeDef> StandingBillRecipes(Map.Map map)
+        {
+            var recipes = new List<RecipeDef>();
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            for (int b = 0; b < buildings.Count; b++)
+            {
+                if (!buildings[b].Spawned || (buildings[b] as ThingWithComps)?.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;
+                IReadOnlyList<Bill> bills = comp.BillStack.Bills;
+                for (int i = 0; i < bills.Count; i++)
+                {
+                    if (!bills[i].suspended && bills[i].recipe != null) recipes.Add(bills[i].recipe);
+                }
+            }
+            return recipes;
+        }
+
+        private static bool AnyTakes(List<RecipeDef> recipes, ThingDef def)
+        {
+            for (int r = 0; r < recipes.Count; r++)
+            {
+                List<IngredientCount>? ingredients = recipes[r].ingredients;
+                if (ingredients == null) continue;
+                for (int i = 0; i < ingredients.Count; i++)
+                {
+                    if (ingredients[i].filter.Allows(def)) return true;
+                }
+            }
+            return false;
+        }
+
         private static int BankableUnits(Thing stack, ref float nutritionSurplus)
         {
             ThingDef def = stack.def;

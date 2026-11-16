@@ -404,10 +404,14 @@ namespace SimWorld.Tests.Filth
                 CoreFilth filth = FilthAt(map, cell)!;
                 Assert.Equal(thickness, filth.thickness);
 
+                // Count only ticks spent on the cleaning job itself: whatever else the citizen chooses to do
+                // first (dressing, picking up a weapon) depends on the seeded stream, not on the pile.
+                int scrubbing = 0;
                 for (int t = 0; t < 8000; t++)
                 {
                     RunTicks(1, citizen);
-                    if (filth.Destroyed) return t;
+                    if (citizen.jobs.curJob?.def == CleaningJobDefOf.Clean) scrubbing++;
+                    if (filth.Destroyed) return scrubbing;
                 }
                 return int.MaxValue;
             }

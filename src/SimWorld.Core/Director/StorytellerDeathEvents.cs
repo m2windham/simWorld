@@ -81,6 +81,12 @@ namespace SimWorld.Director
             // people while nobody is watching has to be able to feel it. See Thoughts.BereavementUtility.
             if (ours) SimWorld.Thoughts.BereavementUtility.Notify_CitizenDied(pawn);
 
+            // And the chronicle records it, once, whatever killed them — the history the god view reads. Before
+            // this only FamilyManager.HandleDeath (old age, a raid resolved off the map) wrote a death line, so a
+            // citizen who bled out, burned or starved on the map left a letter and no history. RecordDeath is
+            // keyed on the dead citizen's id, so HandleDeath's own call afterwards does not count them twice.
+            if (ours) Find.Storyteller.RecordDeath(pawn, pawn.health.CauseOfDeath, culprit?.Label ?? dinfo?.Def.label ?? "");
+
             if (!ours) return false;
 
             // RimWorld's AdaptationEvent.Died: every colonist death, with no question asked about the cause

@@ -134,6 +134,7 @@ namespace SimWorld.Building
             if (settlement.Citizens.Count == 0) return;
 
             EnsureResearchBenches(map);
+            SettlementWorkshops.Run(settlement, map);
             EnsureArt(map);
         }
 
@@ -156,6 +157,7 @@ namespace SimWorld.Building
             if (!bench.IsResearchFinished) return; // Ungated in shipped content; honoured anyway, not assumed.
             if (CountBuiltOrPlanned(map, bench) >= WorksInitiativeTuning.ResearchBenchesWanted) return;
 
+            if (TryPlaceOnWorkSite(map, SettlementCompound.WorkSite.Research, bench)) return;
             TryPlaceBlueprint(map, bench, anchor: null, radius: 0);
         }
 
@@ -174,7 +176,25 @@ namespace SimWorld.Building
             if (target <= 0) return;
             if (CountBuiltOrPlanned(map, wanted) >= target) return;
 
+            if (TryPlaceOnWorkSite(map, SettlementCompound.WorkSite.Art, wanted)) return;
             TryPlaceBlueprint(map, wanted, ArtAnchor(map), ArtClusterRadius);
+        }
+
+        /// <summary>
+        /// Plants <paramref name="entityDef"/> on the next free site of <paramref name="site"/>'s kind in the
+        /// settlement's work yard (<see cref="SettlementCompound.WorkSiteCells"/>), and reports whether it did.
+        /// Neither work here has a material it must stand beside (see the class remarks), so the yard is
+        /// always the first answer: by the door, where the settlement can be seen to have a scholar's bench
+        /// and art in its street. False with no compound or no free site, and the search below takes over.
+        /// </summary>
+        private static bool TryPlaceOnWorkSite(Map.Map map, SettlementCompound.WorkSite site, ThingDef entityDef)
+        {
+            SettlementCompound? compound = map.settlementCompound;
+            if (compound == null || !compound.TryFindWorkSite(map, site, entityDef, out IntVec3 cell)) return false;
+            ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(entityDef);
+            if (blueprintDef == null) return false;
+            GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), cell, map);
+            return true;
         }
 
         /// <summary>
@@ -278,6 +298,7 @@ namespace SimWorld.Building
                 CellRect scan = CellRect.CenteredOn(anchor.Value, radius).ClipInsideMap(map);
                 foreach (IntVec3 candidate in scan.Cells)
                 {
+                    if (SettlementCompound.Refuses(map, entityDef, candidate)) continue;
                     if (GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _))
                     {
                         cell = candidate;
@@ -292,6 +313,7 @@ namespace SimWorld.Building
             for (int attempt = 0; attempt < ConstructionInitiativeTuning.MaxPlacementAttempts; attempt++)
             {
                 var candidate = new IntVec3(Rand.Range(0, map.Size.x), 0, Rand.Range(0, map.Size.z));
+                if (SettlementCompound.Refuses(map, entityDef, candidate)) continue; // the compound's own ground
                 if (GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _))
                 {
                     cell = candidate;

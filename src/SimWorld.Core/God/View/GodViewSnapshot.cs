@@ -266,5 +266,14 @@ namespace SimWorld.God.View
             }
             return options;
         }
+
+        internal static List<string>? NobodyMayDo(EdictDef edict)
+        {
+            List<Work.WorkTypeDef> blocked = EdictWorkUtility.WorkNobodyMayDo(edict);
+            if (blocked.Count == 0) return null;
+            var labels = new List<string>(blocked.Count);
+            for (int i = 0; i < blocked.Count; i++) labels.Add(blocked[i].gerundLabel ?? blocked[i].label ?? blocked[i].defName);
+            return labels;
+        }
     }
 }

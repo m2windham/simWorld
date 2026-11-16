@@ -139,20 +139,228 @@ namespace SimWorld.Building
             }
         }
 
-        /// <summary>Whether <paramref name="rect"/> touches any ground the compound keeps for itself. The
-        /// initiative's own random draw asks this, so an overflow bed never lands on the wall line.</summary>
-        public bool Reserves(CellRect rect) => !rect.ClipInsideRect(Footprint).IsEmpty;
+        /// <summary>Whether <paramref name="rect"/> touches any ground the compound keeps for itself: the
+        /// whole <see cref="Village"/>, ring, street, work yard and planned dwellings. Every fallback search
+        /// that places a building asks this (<see cref="Refuses"/>), so nothing drawn at random lands on a
+        /// wall slot, the door threshold, a work site or a household's plot.</summary>
+        public bool Reserves(CellRect rect) => !rect.ClipInsideRect(Village).IsEmpty;
+
+        /// <summary>Whether a fallback search on <paramref name="map"/> must refuse <paramref name="entityDef"/>
+        /// at <paramref name="cell"/> because the map's compound keeps that ground. False with no compound.</summary>
+        public static bool Refuses(Map.Map map, ThingDef entityDef, IntVec3 cell, Rot4 rot = default) =>
+            map.settlementCompound != null && map.settlementCompound.Reserves(GenAdj.OccupiedRect(cell, rot, entityDef.size));
+
+        // ---------------------------------------------------------------------------------------------
+        // The village: a street out of the door, a work yard either side of it, dwellings along it.
+        // Seen from above, north up, a dwelling drawn as 2x2 rather than its 4x5 to fit:
+        //
+        //   n n . n n   s s s s s s   . . . .   n n . n n      n  dwelling north of the street, turned North
+        //   n n . n n   # # # # # #   w . w .   n n . n n      u  dwelling south of the street, turned South
+        //   = = = = = = # b b b b D = = = = = = = = = = =      =  the street, three cells wide
+        //   u u . u u   # # # # # #   k . c .   u u . u u      w  research, k kitchen, c stonecutter
+        //   u u . u u   s s s s s s   . . . .   u u . u u      (art fills the yard rows behind the benches)
+        //
+        // The street runs east from the door and west from the back of the ring, centred on the door's row.
+        // Every dwelling is turned so its front, authored toward -Z at North (simWorld.Model's contract),
+        // faces the street. The work yard is one dwelling plot either side of the street just outside the
+        // door, so the benches stand beside the storage, on the way in.
+        // ---------------------------------------------------------------------------------------------
+
+        private static IntVec2 DwellingSize => DwellingThingDefOf.House_Paleo.size;
+
+        /// <summary>The row the street is centred on: the door's.</summary>
+        public int StreetZ => DoorCell.z;
+
+        /// <summary>The work yard: a dwelling's width of ground east of the compound's footprint, spanning
+        /// both rows of plots and the street between them.</summary>
+        public CellRect WorkYard => new CellRect(Footprint.maxX + 1, StreetZ - 1 - DwellingSize.z, DwellingSize.x, 2 * DwellingSize.z + 3);
+
+        /// <summary>How many dwellings the village is laid out for: one per two beds of the dormitory, a
+        /// founding couple to a house. More can be built past these, further along the street.</summary>
+        public int PlannedDwellings
+        {
+            get
+            {
+                IntVec2 bed = ConstructionThingDefOf.Bed.size;
+                return ((interior.width / bed.x) * (interior.height / bed.z) + 1) / 2;
+            }
+        }
+
+        /// <summary>Everything the compound keeps for itself: the <see cref="Footprint"/>, the
+        /// <see cref="WorkYard"/>, and the street with the <see cref="PlannedDwellings"/> plots along it, as
+        /// one rectangle.</summary>
+        public CellRect Village
+        {
+            get
+            {
+                CellRect bounds = Footprint;
+                bounds = Union(bounds, WorkYard);
+                foreach ((CellRect plot, Rot4 _) in DwellingPlots(PlannedDwellings)) bounds = Union(bounds, plot);
+                return bounds;
+            }
+        }
+
+        /// <summary>
+        /// The dwelling plots in the order the village fills them, as the rect each covers and the way it is
+        /// turned: east and west of the compound in turn, the north side of the street then the south, one
+        /// plot's width plus a one-cell alley apart. North of the street a dwelling is turned North and so
+        /// opens south onto it; south of the street it is turned South. <paramref name="count"/> plots, or
+        /// every plot until both ends of the street leave a map of <paramref name="mapSize"/>.
+        /// </summary>
+        public IEnumerable<(CellRect Plot, Rot4 Rot)> DwellingPlots(int count, IntVec3? mapSize = null)
+        {
+            IntVec2 size = DwellingSize;
+            int step = size.x + 1;
+            int northMinZ = StreetZ + 2;
+            int southMinZ = StreetZ - 1 - size.z;
+            int yielded = 0;
+            for (int k = 0; ; k++)
+            {
+                int eastMinX = FirstEastPlotX + k * step;
+                int westMinX = FirstWestPlotX - k * step;
+                if (mapSize.HasValue && eastMinX >= mapSize.Value.x && westMinX + size.x <= 0) yield break;
+                foreach (int minX in new[] { eastMinX, westMinX })
+                {
+                    if (yielded++ >= count) yield break;
+                    yield return (new CellRect(minX, northMinZ, size.x, size.z), Rot4.North);
+                    if (yielded++ >= count) yield break;
+                    yield return (new CellRect(minX, southMinZ, size.x, size.z), Rot4.South);
+                }
+            }
+        }
+
+        /// <summary>The cell a thing of <paramref name="size"/> turned <paramref name="rot"/> is placed on to
+        /// cover exactly <paramref name="rect"/> (the inverse of <see cref="GenAdj.OccupiedRect"/>, which turns
+        /// even spans about the placed cell).</summary>
+        internal static IntVec3 PlacementCellFor(CellRect rect, Rot4 rot, IntVec2 size)
+        {
+            foreach (IntVec3 c in rect.Cells)
+            {
+                if (GenAdj.OccupiedRect(c, rot, size) == rect) return c;
+            }
+            throw new ArgumentException("no cell places a " + size + " footprint turned " + rot + " on " + rect);
+        }
+
+        /// <summary>The west edge of the first plot east of the work yard, past a one-cell alley.</summary>
+        private int FirstEastPlotX => WorkYard.maxX + 2;
+
+        /// <summary>The west edge of the first plot west of the compound, past a one-cell alley beside the
+        /// storage on that side.</summary>
+        private int FirstWestPlotX => Footprint.minX - 1 - DwellingSize.x;
+
+        private IEnumerable<IntVec3> DwellingCells(Map.Map map)
+        {
+            foreach ((CellRect plot, Rot4 rot) in DwellingPlots(int.MaxValue, map.Size))
+            {
+                yield return PlacementCellFor(plot, rot, DwellingSize);
+            }
+        }
+
+        private static CellRect Union(CellRect a, CellRect b)
+        {
+            int minX = Math.Min(a.minX, b.minX), minZ = Math.Min(a.minZ, b.minZ);
+            return new CellRect(minX, minZ, Math.Max(a.maxX, b.maxX) - minX + 1, Math.Max(a.maxZ, b.maxZ) - minZ + 1);
+        }
+
+        /// <summary>The work a settlement raises in its <see cref="WorkYard"/>.</summary>
+        public enum WorkSite
+        {
+            Kitchen,
+            Stonecutter,
+            Research,
+            Butcher,
+            Tailor,
+            Smithy,
+            Art,
+        }
+
+        /// <summary>
+        /// Where each kind of work goes in the yard. The benches stand on the row beside the street, a cell
+        /// apart, so each is worked from the street and none walls in another: research north of it, the
+        /// kitchen and the stonecutter south. The workshops stand in the next row back, worked from the open
+        /// row between: the butcher's table behind the kitchen it feeds, the smithy beside it, the tailor's
+        /// north. Art fills the rest, where everyone going in or out of the door passes it (beauty is read
+        /// over what a citizen sees, <c>Needs.BeautyUtility</c>).
+        /// </summary>
+        public IEnumerable<IntVec3> WorkSiteCells(WorkSite site)
+        {
+            int x = WorkYard.minX;
+            int z = StreetZ;
+            switch (site)
+            {
+                case WorkSite.Research:
+                    yield return new IntVec3(x, 0, z + 2);
+                    yield return new IntVec3(x + 2, 0, z + 2);
+                    break;
+                case WorkSite.Kitchen:
+                    yield return new IntVec3(x, 0, z - 2);
+                    break;
+                case WorkSite.Stonecutter:
+                    yield return new IntVec3(x + 2, 0, z - 2);
+                    break;
+                case WorkSite.Butcher:
+                    yield return new IntVec3(x, 0, z - 4);
+                    break;
+                case WorkSite.Smithy:
+                    yield return new IntVec3(x + 2, 0, z - 4);
+                    break;
+                case WorkSite.Tailor:
+                    yield return new IntVec3(x, 0, z + 4);
+                    break;
+                case WorkSite.Art:
+                    yield return new IntVec3(x + 2, 0, z + 4);
+                    yield return new IntVec3(x + 1, 0, z + 6);
+                    yield return new IntVec3(x + 1, 0, z - 6);
+                    yield return new IntVec3(x + 3, 0, z + 6);
+                    yield return new IntVec3(x + 3, 0, z - 6);
+                    break;
+            }
+        }
+
+        /// <summary>The first free site of <paramref name="site"/>'s kind for <paramref name="entityDef"/>, held
+        /// to the same rules as every other site of the compound: inside the home area once there is one, and
+        /// <see cref="GenConstruct.CanPlaceBlueprintAt"/> accepting it.</summary>
+        public bool TryFindWorkSite(Map.Map map, WorkSite site, ThingDef entityDef, out IntVec3 cell)
+        {
+            Area home = map.areaManager.Home;
+            Area? within = home.TrueCount > 0 ? home : null;
+            foreach (IntVec3 c in WorkSiteCells(site))
+            {
+                if (!Free(map, entityDef, c, within, Rot4.North)) continue;
+                cell = c;
+                return true;
+            }
+            cell = default;
+            return false;
+        }
+
+        /// <summary>Whether any spawned item <paramref name="accepts"/> lies within <paramref name="radius"/>
+        /// cells of <paramref name="site"/>, measured as <c>Crafting.WorkGiver_DoBill</c> measures its
+        /// ingredient search (a square). A bench whose ingredients are out of that reach is never worked.</summary>
+        public static bool ItemWithin(Map.Map map, IntVec3 site, int radius, Func<ThingDef, bool> accepts)
+        {
+            foreach (IntVec3 c in CellRect.CenteredOn(site, radius).ClipInsideMap(map).Cells)
+            {
+                IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(c);
+                for (int i = 0; i < here.Count; i++)
+                {
+                    Thing t = here[i];
+                    if (t.def.category == ThingCategory.Item && t.stackCount > 0 && accepts(t.def)) return true;
+                }
+            }
+            return false;
+        }
 
         /// <summary>
         /// The next free site for <paramref name="entityDef"/>, in the order the layout fills. False when the
-        /// compound has no site left for it, or never had one (it only places beds, walls, its door and
-        /// storage). With <paramref name="within"/>, a site must lie wholly inside that area.
+        /// compound has no site left for it, or never had one (it places beds, walls, its door,
+        /// storage and dwellings; the work yard has <see cref="TryFindWorkSite"/>). With <paramref name="within"/>, a site must lie wholly inside that area.
         /// </summary>
         public bool TryFindCell(Map.Map map, ThingDef entityDef, Area? within, out IntVec3 cell)
         {
-            foreach (IntVec3 c in CellsFor(entityDef))
+            foreach (IntVec3 c in CellsFor(map, entityDef))
             {
-                if (!Free(map, entityDef, c, within)) continue;
+                if (!Free(map, entityDef, c, within, RotationAt(entityDef, c))) continue;
                 cell = c;
                 return true;
             }
@@ -166,9 +374,9 @@ namespace SimWorld.Building
         public int CountFree(Map.Map map, ThingDef entityDef, Area? within)
         {
             int n = 0;
-            foreach (IntVec3 c in CellsFor(entityDef))
+            foreach (IntVec3 c in CellsFor(map, entityDef))
             {
-                if (Free(map, entityDef, c, within)) n++;
+                if (Free(map, entityDef, c, within, RotationAt(entityDef, c))) n++;
             }
             return n;
         }
@@ -194,6 +402,7 @@ namespace SimWorld.Building
         public Rot4 RotationAt(ThingDef entityDef, IntVec3 cell)
         {
             if (ReferenceEquals(entityDef, CompoundThingDefOf.Door)) return cell == DoorCell ? Rot4.East : Rot4.North;
+            if (DwellingUtility.IsDwelling(entityDef)) return DwellingRotationAt(cell);
             if (!ReferenceEquals(entityDef, ConstructionThingDefOf.StorageHut)) return Rot4.North;
 
             CellRect ring = Ring;
@@ -207,8 +416,8 @@ namespace SimWorld.Building
         }
 
         /// <summary>
-        /// Marks as home area what <see cref="AutoHomeAreaMaker"/> would mark round the finished ring, before
-        /// the ring exists. Called only while the map has no home area at all.
+        /// Marks as home area what <see cref="AutoHomeAreaMaker"/> would mark round the finished
+        /// <see cref="Village"/>, before any of it exists. Called only while the map has no home area at all.
         /// <para/>
         /// Without it the first bed to be finished would make a home area of a few cells round itself, and
         /// from that pass on the rest of the compound would lie outside the home area and be refused. This
@@ -217,28 +426,47 @@ namespace SimWorld.Building
         public void ClaimHome(Map.Map map)
         {
             Area home = map.areaManager.Home;
-            foreach (IntVec3 c in Ring.ExpandedBy(AutoHomeAreaMaker.BorderWidth).ClipInsideMap(map).Cells) home[c] = true;
+            foreach (IntVec3 c in Village.ExpandedBy(AutoHomeAreaMaker.BorderWidth).ClipInsideMap(map).Cells) home[c] = true;
         }
 
-        private IEnumerable<IntVec3> CellsFor(ThingDef entityDef)
+        /// <summary>A dwelling on one of the village's plots south of the street is turned South, so it opens
+        /// onto the street; anywhere else, North, like everything else. Only the exact cell a plot is placed
+        /// from counts: a dwelling the fallback draw put south of the street was checked turned North.</summary>
+        private Rot4 DwellingRotationAt(IntVec3 cell)
+        {
+            if (cell.z >= StreetZ) return Rot4.North;
+            IntVec2 size = DwellingSize;
+            int step = size.x + 1;
+            int east = FirstEastPlotX, west = FirstWestPlotX;
+            int minX;
+            if (cell.x >= east) minX = east + (cell.x - east) / step * step;
+            else if (cell.x < west + size.x) minX = west - (west + size.x - 1 - cell.x) / step * step;
+            else return Rot4.North;
+            var plot = new CellRect(minX, StreetZ - 1 - size.z, size.x, size.z);
+            return plot.Contains(cell) && PlacementCellFor(plot, Rot4.South, size) == cell ? Rot4.South : Rot4.North;
+        }
+
+        private IEnumerable<IntVec3> CellsFor(Map.Map map, ThingDef entityDef)
         {
             if (ReferenceEquals(entityDef, ConstructionThingDefOf.Bed)) return BedCells;
+            if (DwellingUtility.IsDwelling(entityDef)) return DwellingCells(map);
             if (ReferenceEquals(entityDef, CompoundThingDefOf.Door)) return new[] { DoorCell };
             if (ReferenceEquals(entityDef, ConstructionThingDefOf.StorageHut)) return StorageCells;
             if (StoneWallMaterials.IsWall(entityDef)) return WallCells;
             return Array.Empty<IntVec3>();
         }
 
-        private static bool Free(Map.Map map, ThingDef entityDef, IntVec3 cell, Area? within)
+        private static bool Free(Map.Map map, ThingDef entityDef, IntVec3 cell, Area? within, Rot4 rot)
         {
-            if (within != null)
+            CellRect rect = GenAdj.OccupiedRect(cell, rot, entityDef.size);
+            foreach (IntVec3 c in rect.Cells)
             {
-                foreach (IntVec3 c in GenAdj.OccupiedRect(cell, default, entityDef.size).Cells)
-                {
-                    if (!within[c]) return false;
-                }
+                if (within != null && !within[c]) return false;
+                // A house is lived in: none on deep water or rock, which nothing else here needs saying for
+                // (a bed's or a wall's cell is the compound's own, already checked open when it was planned).
+                if (DwellingUtility.IsDwelling(entityDef) && (!GenGrid.InBounds(c, map) || !map.pathGrid.Walkable(c))) return false;
             }
-            if (!GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out _)) return false;
+            if (!GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out _, rot)) return false;
 
             // The ring is the one impassable thing allowed to close round ground (see the class remarks).
             // Storage is held to the same rule as everywhere else.
@@ -264,6 +492,12 @@ namespace SimWorld.Building
         /// every cell of <see cref="Footprint"/> is on the map and walkable (no rock, no deep water) and
         /// every site accepts what the layout puts on it. A map edge or an outcrop therefore moves the
         /// compound; it never bends it.
+        /// <para/>
+        /// <b>Room for the village first.</b> Within each domain, a position whose whole <see cref="Village"/>
+        /// (the street, the work yard and every planned dwelling plot) is on the map and open ground is
+        /// preferred over one where only the compound fits; the square round the hub only grows when neither
+        /// kind fits in it, so the village never moves away from where its founders stand just to be whole.
+        /// Plots that cannot be had are skipped (<see cref="TryFindCell"/>). Either way it is one draw.
         /// </summary>
         public static SettlementCompound? TryPlan(Map.Map map, int citizens, int wallBudget)
         {
@@ -272,16 +506,20 @@ namespace SimWorld.Building
 
             var wholeMap = new CellRect(0, 0, map.Size.x, map.Size.z);
             Area home = map.areaManager.Home;
-            if (home.TrueCount > 0) return TryPick(map, wholeMap, width, height, home);
+            var open = new OpenGround(map, home.TrueCount > 0 ? home : null);
+            if (home.TrueCount > 0) return TryPickPreferringVillage(map, wholeMap, width, height, open);
 
             var hub = new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
             for (int radius = Math.Max(1, ConstructionInitiativeTuning.HubPlacementRadius); ; radius *= 2)
             {
                 CellRect square = CellRect.CenteredOn(hub, radius).ClipInsideMap(map);
-                SettlementCompound? compound = TryPick(map, square, width, height, null);
+                SettlementCompound? compound = TryPickPreferringVillage(map, square, width, height, open);
                 if (compound != null || square == wholeMap) return compound;
             }
         }
+
+        private static SettlementCompound? TryPickPreferringVillage(Map.Map map, CellRect domain, int width, int height, OpenGround open) =>
+            TryPick(map, domain, width, height, open, wholeVillage: true) ?? TryPick(map, domain, width, height, open, wholeVillage: false);
 
         /// <summary>
         /// The interior a ring of <paramref name="wallBudget"/> cells closes round, chosen to hold the most
@@ -320,7 +558,7 @@ namespace SimWorld.Building
             return beds >= citizens || wallBudget >= ConstructionInitiativeTuning.MaxWallShelterCount;
         }
 
-        private static SettlementCompound? TryPick(Map.Map map, CellRect domain, int width, int height, Area? within)
+        private static SettlementCompound? TryPick(Map.Map map, CellRect domain, int width, int height, OpenGround open, bool wholeVillage)
         {
             var fitting = new List<SettlementCompound>();
             for (int z = domain.minZ + 2; z + height + 1 <= domain.maxZ; z++)
@@ -328,22 +566,49 @@ namespace SimWorld.Building
                 for (int x = domain.minX + 2; x + width + 1 <= domain.maxX; x++)
                 {
                     var interior = new CellRect(x, z, width, height);
-                    if (!GroundIsOpen(map, interior.ExpandedBy(2), within)) continue;
+                    if (!open.IsOpen(interior.ExpandedBy(2))) continue;
                     var candidate = new SettlementCompound(interior);
+                    if (wholeVillage && !open.IsOpen(candidate.Village)) continue;
                     if (candidate.SitesAreFree(map)) fitting.Add(candidate);
                 }
             }
             return fitting.Count == 0 ? null : fitting[Rand.Range(0, fitting.Count)];
         }
 
-        private static bool GroundIsOpen(Map.Map map, CellRect footprint, Area? within)
+        /// <summary>Which ground a compound may stand on — on the map, walkable (no rock, no deep water), and
+        /// inside the home area when one binds — summed once per plan so that asking it of a whole village's
+        /// rectangle at every candidate position costs four lookups rather than a thousand.</summary>
+        private sealed class OpenGround
         {
-            foreach (IntVec3 c in footprint.Cells)
+            private readonly int sizeX;
+            private readonly int sizeZ;
+            private readonly int[] blockedBelow; // (sizeX + 1) * (sizeZ + 1) prefix sums of blocked cells
+
+            public OpenGround(Map.Map map, Area? within)
             {
-                if (within != null && !within[c]) return false;
-                if (!map.pathGrid.Walkable(c)) return false;
+                sizeX = map.Size.x;
+                sizeZ = map.Size.z;
+                blockedBelow = new int[(sizeX + 1) * (sizeZ + 1)];
+                for (int z = 0; z < sizeZ; z++)
+                {
+                    int row = 0;
+                    for (int x = 0; x < sizeX; x++)
+                    {
+                        var c = new IntVec3(x, 0, z);
+                        if (!map.pathGrid.Walkable(c) || (within != null && !within[c])) row++;
+                        blockedBelow[(z + 1) * (sizeX + 1) + x + 1] = blockedBelow[z * (sizeX + 1) + x + 1] + row;
+                    }
+                }
             }
-            return true;
+
+            public bool IsOpen(CellRect rect)
+            {
+                if (rect.minX < 0 || rect.minZ < 0 || rect.maxX >= sizeX || rect.maxZ >= sizeZ) return false;
+                int w = sizeX + 1;
+                int blocked = blockedBelow[(rect.maxZ + 1) * w + rect.maxX + 1] - blockedBelow[rect.minZ * w + rect.maxX + 1]
+                    - blockedBelow[(rect.maxZ + 1) * w + rect.minX] + blockedBelow[rect.minZ * w + rect.minX];
+                return blocked == 0;
+            }
         }
 
         private bool SitesAreFree(Map.Map map)

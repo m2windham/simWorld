@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using SimWorld.Defs;
 using SimWorld.Research;
@@ -102,11 +103,22 @@ namespace SimWorld.God.View
             }
 
             return god.Activate(def)
-                ? GodCommandResult.Done(def.LabelCap + " issued.")
+                ? GodCommandResult.Done(def.LabelCap + " issued." + StalledNote(def))
                 // Unreachable while Activate's only refusal is CanActivate, which was just checked. Kept
                 // because "the simulation said no after saying yes" is worth surfacing rather than asserting
                 // away, and a silent false here would be indistinguishable from success to the host.
                 : GodCommandResult.Refused(def.LabelCap + " was refused on issue.");
+        }
+
+        /// <summary>Issuing an edict nobody may carry out is allowed — a bad order is still the player's to give
+        /// — but the result says so, in the same words the edict's own <see cref="EdictOption.Reason"/> will
+        /// show while it stays stalled. Read off the option itself, so it is only ever the in-force stall and
+        /// never a second wording of anything else.</summary>
+        private static string StalledNote(EdictDef def)
+        {
+            GodManager god = Find.God;
+            if (!god.IsActive(def) || GodViewSnapshot.NobodyMayDo(def) == null) return "";
+            return " " + EdictOption.For(def, god).Reason;
         }
 
         /// <summary>Rescinds the named edict. Rescinding one that is not in force is a no-op, not a failure —
