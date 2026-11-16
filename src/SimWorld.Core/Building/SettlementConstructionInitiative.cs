@@ -120,6 +120,7 @@ namespace SimWorld.Building
             if (Find.TickManager.TicksGame % ConstructionInitiativeTuning.IntervalTicks != 0) return;
 
             EnsureCompound(settlement, map);
+            DwellingUtility.AssignHomes(settlement, map);
 
             List<Need> needs = ComputeNeeds(settlement, map);
             if (needs.Count == 0) return;
@@ -181,9 +182,12 @@ namespace SimWorld.Building
             var needs = new List<Need>(3);
 
             int citizens = settlement.Citizens.Count;
+            int housed = citizens > 0 ? DwellingUtility.HousedCitizens(settlement, map) : 0;
             if (citizens > 0)
             {
-                needs.Add(new Need(ConstructionThingDefOf.Bed, citizens));
+                // A bed for everyone a household dwelling does not sleep: the dormitory shrinks as homes go
+                // up. Beds already built stay; they are simply not added to.
+                needs.Add(new Need(ConstructionThingDefOf.Bed, citizens - housed));
 
                 // Which material, not how many: the wall need is computed once, here, and
                 // StoneWallMaterials only answers what to cut it from — the toughest stone the settlement has
@@ -200,6 +204,14 @@ namespace SimWorld.Building
             // Storage for what the ledger holds, counted in stacks: see StorageHutNeed.
             int storageTarget = StorageHutNeed.Target(settlement);
             if (storageTarget > 0) needs.Add(new Need(ConstructionThingDefOf.StorageHut, storageTarget));
+
+            // A home for each household, last: once everyone has a bed to sleep in (built, not planned), a
+            // household without a dwelling is what the settlement builds next. See Shortfall for the throttle.
+            if (citizens > 0 && map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count + housed >= citizens)
+            {
+                int households = DwellingUtility.Households(settlement).Count;
+                if (households > 0) needs.Add(new Need(DwellingUtility.PreferredDwellingDef(), households));
+            }
 
             return needs;
         }
@@ -225,6 +237,12 @@ namespace SimWorld.Building
             if (compound != null && OnlyOnTheRing(need.EntityDef))
             {
                 return compound.CountFree(map, need.EntityDef, HomeIfAny(map));
+            }
+            if (DwellingUtility.IsDwelling(need.EntityDef))
+            {
+                // Every rung fills the one need, and only DwellingTuning.MaxUnderway go up at a time.
+                int wanted = need.Target - DwellingUtility.CountBuiltOrPlanned(map);
+                return Math.Min(wanted, DwellingTuning.MaxUnderway - DwellingUtility.CountUnderway(map));
             }
             return need.Target - CountBuiltOrPlanned(map, need.EntityDef);
         }

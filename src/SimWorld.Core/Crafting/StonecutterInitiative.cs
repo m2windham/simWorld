@@ -211,7 +211,8 @@ namespace SimWorld.Crafting
             {
                 Thing? chunk = IngredientOnMap(map, recipes[i]);
                 if (chunk == null) continue;
-                if (!TryFindPlacementCell(map, benchDef, chunk.Position, out IntVec3 cell)) continue;
+                if (!TryFindYardSite(map, benchDef, recipes, out IntVec3 cell)
+                    && !TryFindPlacementCell(map, benchDef, chunk.Position, out cell)) continue;
                 PlaceBlueprint(map, benchDef, cell);
                 return;
             }
@@ -274,6 +275,7 @@ namespace SimWorld.Crafting
             CellRect scan = CellRect.CenteredOn(near, StonecuttingTuning.BenchPlacementRadius).ClipInsideMap(map);
             foreach (IntVec3 candidate in scan.Cells)
             {
+                if (SettlementCompound.Refuses(map, entityDef, candidate)) continue; // the compound's own ground
                 if (GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _))
                 {
                     cell = candidate;
@@ -281,6 +283,37 @@ namespace SimWorld.Crafting
                 }
             }
             cell = default;
+            return false;
+        }
+
+        /// <summary>
+        /// The stonecutter's site in the settlement's work yard (<see cref="SettlementCompound.WorkSite.Stonecutter"/>),
+        /// when it has one free and a chunk this table cuts already lies within the cutter's reach of it
+        /// (<see cref="WorkGiver_DoBill.IngredientSearchRadius"/>): a table there is one that can be worked.
+        /// Chunks lie where the rock was, so on most maps this is false and the table goes to the stone, the
+        /// rule above; a settlement whose chunks have been hauled home cuts them at home.
+        /// </summary>
+        private static bool TryFindYardSite(Map.Map map, ThingDef benchDef, List<RecipeDef> recipes, out IntVec3 cell)
+        {
+            cell = default;
+            SettlementCompound? compound = map.settlementCompound;
+            if (compound == null || !compound.TryFindWorkSite(map, SettlementCompound.WorkSite.Stonecutter, benchDef, out IntVec3 site)) return false;
+            if (!SettlementCompound.ItemWithin(map, site, WorkGiver_DoBill.IngredientSearchRadius, def => CutsFrom(recipes, def))) return false;
+            cell = site;
+            return true;
+        }
+
+        private static bool CutsFrom(List<RecipeDef> recipes, ThingDef def)
+        {
+            for (int r = 0; r < recipes.Count; r++)
+            {
+                List<IngredientCount>? ingredients = recipes[r].ingredients;
+                if (ingredients == null) continue;
+                for (int i = 0; i < ingredients.Count; i++)
+                {
+                    if (ReferenceEquals(Guild.FixedDefOf(ingredients[i]), def)) return true;
+                }
+            }
             return false;
         }
 

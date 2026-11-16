@@ -27,14 +27,20 @@ namespace SimWorld.Building
             // for them to move. A pawn on the blueprint of an impassable building would be walled in by its frame.
             if (thing is Blueprint blueprint && GenConstruct.FirstBlockingPawn(blueprint, pawn) != null) return false;
             if (!pawn.Map!.reservationManager.CanReserve(pawn, thing)) return false;
+            if (CostsNothing(thing)) return true;
             return FindNeededResource(pawn, thing) != null;
         }
 
         public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
+            // RimWorld: a blueprint with no material cost is turned into its frame by PlaceNoCostFrame.
+            if (CostsNothing(thing)) return new Job(NoCostFrameJobDefOf.PlaceNoCostFrame, thing);
             Thing? resource = FindNeededResource(pawn, thing);
             return resource != null ? new Job(JobDefOf.HaulToBuildingSite, resource, thing) : null;
         }
+
+        private static bool CostsNothing(Thing site) =>
+            site is Blueprint blueprint && (blueprint.EntityToBuild.costList == null || blueprint.EntityToBuild.costList.Count == 0);
 
         private static Thing? FindNeededResource(Pawn pawn, Thing site)
         {

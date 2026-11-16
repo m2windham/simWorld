@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- A blueprint that costs nothing becomes its frame (RimWorld: PlaceNoCostFrame). Its own file rather than
+       an addition to JobDefs_Core.xml (CLAUDE.md). Bound by SimWorld.Building.NoCostFrameJobDefOf. -->
+
+  <JobDef>
+    <defName>PlaceNoCostFrame</defName>
+    <driverClass>SimWorld.Building.JobDriver_PlaceNoCostFrame</driverClass>
+    <reportString>placing a frame for TargetA.</reportString>
+  </JobDef>
+
+</Defs>

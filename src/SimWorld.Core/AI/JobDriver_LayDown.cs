@@ -24,13 +24,18 @@ namespace SimWorld.AI
         {
             LocalTargetInfo target = job.GetTarget(TargetIndex.A);
             if (!target.HasThing) return true;
-            return pawn.Map != null && pawn.Map.reservationManager.CanReserve(pawn, target);
+            return pawn.Map != null && pawn.Map.reservationManager.CanReserve(pawn, target, SleepingSlots(target), 0);
         }
+
+        /// <summary>A bed is reserved once per sleeping slot, with no stack claimed (RimWorld:
+        /// <c>pawn.Reserve(Bed, job, Bed.SleepingSlotsCount, 0)</c>), so a household's dwelling takes all of
+        /// it and a single bed still takes one sleeper.</summary>
+        private static int SleepingSlots(LocalTargetInfo target) => BedUtility.GetSleepingSlotsCount(target.Thing!.def.size);
 
         public override IEnumerable<Toil> MakeNewToils()
         {
             bool inBed = job.GetTarget(TargetIndex.A).HasThing;
-            if (inBed) yield return Toils_Reserve.Reserve(TargetIndex.A);
+            if (inBed) yield return Toils_Reserve.Reserve(TargetIndex.A, SleepingSlots(job.GetTarget(TargetIndex.A)), 0);
 
             // A bed is walked onto at its sleeping slot, not wherever its footprint happens to be nearest
             // (RimWorld: Toils_Bed.GotoBed). The ground case walks to the cell it was given, as it always did.
@@ -45,6 +50,7 @@ namespace SimWorld.AI
                     Thing? bed = job.GetTarget(TargetIndex.A).Thing;
                     pawn.needs.rest.lastRestEffectiveness = bed != null ? Need_Rest.BedRestEffectiveness : 1f;
                 }
+                BedThoughtUtility.ApplyBedThoughts(pawn, job.GetTarget(TargetIndex.A).Thing);
             };
             sleep.tickAction = () =>
             {
