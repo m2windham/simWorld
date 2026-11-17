@@ -1,0 +1,69 @@
+// Lane-private: forces one earthquake on a watched founding settlement and follows deaths, injuries and rebuilding.
+using System;
+using System.Globalization;
+using System.Linq;
+using SimWorld.Building;
+using SimWorld.Content;
+using SimWorld.Defs;
+using SimWorld.Director;
+using SimWorld.God.View;
+using SimWorld.Health;
+using SimWorld.Pawns;
+using SimWorld.Scenario;
+using SimWorld.Sim;
+using SimWorld.Things;
+using SimWorld.World;
+
+internal static class Program
+{
+    private static int Main(string[] args)
+    {
+        int seed = int.Parse(args[0], CultureInfo.InvariantCulture);
+        int band = int.Parse(args[1], CultureInfo.InvariantCulture);
+        int days = int.Parse(args[3], CultureInfo.InvariantCulture);
+        int quakeDay = int.Parse(args[4], CultureInfo.InvariantCulture);
+        var database = new DefDatabase();
+        DefLoadResult result = CoreContent.Load(database, new DefTypeResolver(), new DefLoadOptions { BindDefOfs = true }, args[2]);
+        if (!result.Success) throw new InvalidOperationException("content failed to load");
+        DefDatabase.Global = database;
+        Find.Reset();
+        Find.TickManager = new TickManager();
+        Rand.Current = new RandomStream(seed);
+        Pawn.ResetThingIdCounter();
+        SimWorld.Map.Map.ResetMapIdCounter();
+        Ablation.Clear();
+        var difficulty = new DifficultyDef { defName = "MediumWithoutThreats", threatScale = DifficultyDefOf.Medium.threatScale, allowBigThreats = false, allowIntroThreats = false };
+        Game game = Game.NewGame(ScenarioDefOf.TribalStart.scenario, seed.ToString(CultureInfo.InvariantCulture), subdivisionOverride: 3, soloStart: false, bandSize: band, difficultyDef: difficulty);
+        Settlement home = game.CivilizationTarget.Seat!;
+        GodCommands.OpenSettlement(home.tile);
+        SimWorld.Map.Map map = home.InteriorMap!;
+        Console.WriteLine("seed " + seed + " band " + band + " watched " + (Find.God.Attention.FocusedTile == home.tile));
+        string[] kinds = { "Wall", "Bed", "StorageHut" };
+        string Census()
+        {
+            var built = map.listerThings.AllThings.Where(t => t.Spawned && (kinds.Contains(t.def.defName) || t.def.defName.StartsWith("House") || t.def.defName.Contains("Wall"))).ToList();
+            var bps = map.listerThings.ThingsInGroup(SimWorld.Map.ThingRequestGroup.Blueprint).OfType<Blueprint>().ToList();
+            var frames = map.listerThings.ThingsInGroup(SimWorld.Map.ThingRequestGroup.BuildingFrame).OfType<Frame>().ToList();
+            return "built " + built.Count + " [" + string.Join(",", built.GroupBy(t => t.def.defName).OrderBy(g => g.Key).Select(g => g.Key + ":" + g.Count())) + "]"
+                + " blueprints " + bps.Count + " frames " + frames.Count;
+        }
+        for (int day = 1; day <= days; day++)
+        {
+            for (int i = 0; i < GenDate.TicksPerDay; i++)
+            {
+                if (day == quakeDay && i == 2 * 2500) // 02:00, the band asleep
+                {
+                    int before = home.Citizens.Count(c => !c.Dead);
+                    Console.WriteLine("d" + day + " before quake: alive " + before + " " + Census());
+                    bool fired = DefDatabase<IncidentDef>.GetNamed("Earthquake").Worker.TryExecute(new IncidentParms { target = game.CivilizationTarget });
+                    var hurt = home.Citizens.Where(c => !c.Dead && c.health.hediffSet.hediffs.Any(h => h.def.defName != "Malnutrition")).Count();
+                    Console.WriteLine("d" + day + " QUAKE fired=" + fired + " alive " + home.Citizens.Count(c => !c.Dead) + " (died " + (before - home.Citizens.Count(c => !c.Dead)) + ") with any hediff " + hurt + " " + Census());
+                }
+                game.TickManager.DoSingleTick();
+            }
+            int injured = home.Citizens.Count(c => !c.Dead && c.health.hediffSet.hediffs.OfType<Hediff_Injury>().Any());
+            Console.WriteLine("d" + day + " alive " + home.Citizens.Count(c => !c.Dead) + " injured " + injured + " " + Census() + " deaths " + game.Storyteller.deaths);
+        }
+        return 0;
+    }
+}
