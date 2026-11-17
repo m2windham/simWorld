@@ -1,0 +1,104 @@
+diff --git a/src/SimWorld.Core/AI/Reachability.cs b/src/SimWorld.Core/AI/Reachability.cs
+index 95db05d..f2aeae0 100644
+--- a/src/SimWorld.Core/AI/Reachability.cs
++++ b/src/SimWorld.Core/AI/Reachability.cs
+@@ -78,6 +78,16 @@ namespace SimWorld.AI
+         }
+ 
+         /// <summary>Convenience matching RimWorld's call shape; resolves the map from the pawn.</summary>
++        /// <summary>Whether a walker standing on <paramref name="a"/> could walk to <paramref name="b"/>: both
++        /// cells lie in regions of one connected component. No pawn involved, for planners siting things.</summary>
++        public bool CanReachCells(IntVec3 a, IntVec3 b)
++        {
++            map.regionAndRoomUpdater.RebuildIfNeeded();
++            Region? from = map.regionGrid.RegionAt(a);
++            Region? to = map.regionGrid.RegionAt(b);
++            return from != null && to != null && Connected(from, to);
++        }
++
+         private int componentsVersion = -1;
+         private int nextComponent;
+         private readonly Queue<Region> componentQueue = new Queue<Region>();
+diff --git a/src/SimWorld.Core/Building/SettlementCompound.cs b/src/SimWorld.Core/Building/SettlementCompound.cs
+index 6ff4a1d..41e76b6 100644
+--- a/src/SimWorld.Core/Building/SettlementCompound.cs
++++ b/src/SimWorld.Core/Building/SettlementCompound.cs
+@@ -508,14 +508,14 @@ namespace SimWorld.Building
+         /// onto a cliff, with its work yard and every plot east of it in solid rock, while positions a few
+         /// cells away had both open (<c>tools/bench --suite layout</c>).
+         /// </summary>
+-        public static SettlementCompound? TryPlan(Map.Map map, int citizens, int wallBudget)
++        public static SettlementCompound? TryPlan(Map.Map map, int citizens, int wallBudget, IntVec3? reachableFrom = null)
+         {
+             if (map == null) throw new ArgumentNullException(nameof(map));
+             if (!TrySize(citizens, wallBudget, out int width, out int height)) return null;
+ 
+             var wholeMap = new CellRect(0, 0, map.Size.x, map.Size.z);
+             Area home = map.areaManager.Home;
+-            var open = new OpenGround(map, home.TrueCount > 0 ? home : null);
++            var open = new OpenGround(map, home.TrueCount > 0 ? home : null, reachableFrom);
+             if (home.TrueCount > 0) return TryPickPreferringVillage(map, wholeMap, width, height, open);
+ 
+             var hub = new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
+@@ -605,8 +605,9 @@ namespace SimWorld.Building
+             return beds >= citizens || wallBudget >= ConstructionInitiativeTuning.MaxWallShelterCount;
+         }
+ 
+-        /// <summary>Which ground a compound may stand on — on the map, walkable (no rock, no deep water), and
+-        /// inside the home area when one binds — summed once per plan so that asking it of a whole village's
++        /// <summary>Which ground a compound may stand on — on the map, walkable (no rock, no deep water),
++        /// inside the home area when one binds, and walkable to from where the band stands when that is
++        /// given — summed once per plan so that asking it of a whole village's
+         /// rectangle at every candidate position costs four lookups rather than a thousand.</summary>
+         private sealed class OpenGround
+         {
+@@ -614,7 +615,10 @@ namespace SimWorld.Building
+             private readonly int sizeZ;
+             private readonly int[] blockedBelow; // (sizeX + 1) * (sizeZ + 1) prefix sums of blocked cells
+ 
+-            public OpenGround(Map.Map map, Area? within)
++            /// <param name="reachableFrom">Where the band stands. A cell it cannot walk to is not open: on seed
++            /// 2024's mountain map the band stood in one rock pocket and the hub in another, so every bed, wall
++            /// and bench was planned where no one could ever reach it and nothing was built for good.</param>
++            public OpenGround(Map.Map map, Area? within, IntVec3? reachableFrom)
+             {
+                 sizeX = map.Size.x;
+                 sizeZ = map.Size.z;
+@@ -625,7 +629,8 @@ namespace SimWorld.Building
+                     for (int x = 0; x < sizeX; x++)
+                     {
+                         var c = new IntVec3(x, 0, z);
+-                        if (!map.pathGrid.Walkable(c) || (within != null && !within[c])) row++;
++                        if (!map.pathGrid.Walkable(c) || (within != null && !within[c]) ||
++                            (reachableFrom != null && !map.reachability.CanReachCells(reachableFrom.Value, c))) row++;
+                         blockedBelow[(z + 1) * (sizeX + 1) + x + 1] = blockedBelow[z * (sizeX + 1) + x + 1] + row;
+                     }
+                 }
+diff --git a/src/SimWorld.Core/Building/SettlementConstructionInitiative.cs b/src/SimWorld.Core/Building/SettlementConstructionInitiative.cs
+index 8186509..bbdacbe 100644
+--- a/src/SimWorld.Core/Building/SettlementConstructionInitiative.cs
++++ b/src/SimWorld.Core/Building/SettlementConstructionInitiative.cs
+@@ -174,11 +174,22 @@ namespace SimWorld.Building
+             int citizens = settlement.Citizens.Count;
+             if (map.settlementCompound == null && citizens > 0)
+             {
+-                map.settlementCompound = SettlementCompound.TryPlan(map, citizens, WallTarget(citizens));
++                map.settlementCompound = SettlementCompound.TryPlan(map, citizens, WallTarget(citizens), WhereTheBandStands(settlement, map));
+             }
+             if (map.settlementCompound != null && map.areaManager.Home.TrueCount == 0) map.settlementCompound.ClaimHome(map);
+         }
+ 
++        /// <summary>A spawned citizen's cell on <paramref name="map"/>, so the compound is planned on ground
++        /// the band can walk to; null when none stands there yet.</summary>
++        private static IntVec3? WhereTheBandStands(Settlement settlement, Map.Map map)
++        {
++            foreach (Pawns.Pawn citizen in settlement.Citizens)
++            {
++                if (citizen.Spawned && citizen.Map == map) return citizen.Position;
++            }
++            return null;
++        }
++
+         /// <summary>
+         /// What this settlement currently lacks, each already trimmed to what is not already built or already
+         /// planned (see <see cref="CountBuiltOrPlanned"/>) — callers see only genuine shortfalls. Order is the

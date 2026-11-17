@@ -1,0 +1,140 @@
+// Lane-private: why seed 2024's construction stalls. Reads only.
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using SimWorld.Building;
+using SimWorld.Content;
+using SimWorld.Defs;
+using SimWorld.Director;
+using SimWorld.God.View;
+using SimWorld.Health;
+using SimWorld.Pawns;
+using SimWorld.Scenario;
+using SimWorld.Sim;
+using SimWorld.Things;
+using SimWorld.World;
+
+internal static class Program
+{
+    private static int Main(string[] args)
+    {
+        int seed = int.Parse(args[0], CultureInfo.InvariantCulture);
+        int band = int.Parse(args[1], CultureInfo.InvariantCulture);
+        int days = int.Parse(args[3], CultureInfo.InvariantCulture);
+        var database = new DefDatabase();
+        DefLoadResult result = CoreContent.Load(database, new DefTypeResolver(), new DefLoadOptions { BindDefOfs = true }, args[2]);
+        if (!result.Success) throw new InvalidOperationException("content failed to load");
+        DefDatabase.Global = database;
+        Find.Reset();
+        Find.TickManager = new TickManager();
+        Rand.Current = new RandomStream(seed);
+        Pawn.ResetThingIdCounter();
+        SimWorld.Map.Map.ResetMapIdCounter();
+        Ablation.Clear();
+        var difficulty = new DifficultyDef { defName = "MediumWithoutThreats", threatScale = DifficultyDefOf.Medium.threatScale, allowBigThreats = false, allowIntroThreats = false };
+        Game game = Game.NewGame(ScenarioDefOf.TribalStart.scenario, seed.ToString(CultureInfo.InvariantCulture), subdivisionOverride: 3, soloStart: false, bandSize: band, difficultyDef: difficulty);
+        Settlement home = game.CivilizationTarget.Seat!;
+        GodCommands.OpenSettlement(home.tile);
+        SimWorld.Map.Map map = home.InteriorMap!;
+        Console.WriteLine("seed " + seed + " tile " + home.tile + " " + Find.World!.grid.Tiles[home.tile].biome?.defName);
+        var jobTally = new Dictionary<string, int>();
+        for (int day = 1; day <= days; day++)
+        {
+            for (int i = 0; i < GenDate.TicksPerDay; i++)
+            {
+                game.TickManager.DoSingleTick();
+                if (i % 250 == 0)
+                    foreach (Pawn p in home.Citizens.Where(c => !c.Dead && c.Spawned))
+                    {
+                        string j = p.jobs?.curJob?.def?.defName ?? "none";
+                        jobTally[j] = jobTally.TryGetValue(j, out int n) ? n + 1 : 1;
+                    }
+                if (day == 1 && i == 1)
+                {
+                    var comp = new int[map.Size.x * map.Size.z]; int nComp = 0; var sizes = new List<int> { 0 };
+                    foreach (var start in map.AllCells)
+                    {
+                        int si = start.z * map.Size.x + start.x;
+                        if (comp[si] != 0 || !SimWorld.Map.GenGrid.Standable(start, map)) continue;
+                        nComp++; int sz = 0; var q2 = new Queue<SimWorld.Map.IntVec3>(); q2.Enqueue(start); comp[si] = nComp;
+                        while (q2.Count > 0)
+                        {
+                            var c = q2.Dequeue(); sz++;
+                            foreach (var d in new[] { new SimWorld.Map.IntVec3(1,0,0), new SimWorld.Map.IntVec3(-1,0,0), new SimWorld.Map.IntVec3(0,0,1), new SimWorld.Map.IntVec3(0,0,-1) })
+                            {
+                                var n = c + d;
+                                if (!SimWorld.Map.GenGrid.InBounds(n, map) || comp[n.z * map.Size.x + n.x] != 0 || !SimWorld.Map.GenGrid.Standable(n, map)) continue;
+                                comp[n.z * map.Size.x + n.x] = nComp; q2.Enqueue(n);
+                            }
+                        }
+                        sizes.Add(sz);
+                    }
+                    int CompOf(SimWorld.Map.IntVec3 c) { foreach (var o in SimWorld.Map.GenAdj.CellsAdjacent8Way(c).Prepend(c)) if (SimWorld.Map.GenGrid.InBounds(o, map) && comp[o.z * map.Size.x + o.x] != 0) return comp[o.z * map.Size.x + o.x]; return 0; }
+                    var big = Enumerable.Range(1, nComp).OrderByDescending(k => sizes[k]).Take(5).Select(k => "#" + k + "=" + sizes[k]);
+                    Console.WriteLine("   COMPONENTS " + nComp + " largest " + string.Join(" ", big) + " map " + map.Size.x + "x" + map.Size.z);
+                    Console.WriteLine("   CITIZENS " + string.Join(" ", home.Citizens.Where(c => c.Spawned).Select(c => c.Position + "#" + CompOf(c.Position))));
+                    var fr1 = map.listerThings.ThingsInGroup(SimWorld.Map.ThingRequestGroup.BuildingFrame).Concat(map.listerThings.ThingsInGroup(SimWorld.Map.ThingRequestGroup.Blueprint)).ToList();
+                    Console.WriteLine("   SITES " + fr1.Count + " by component: " + string.Join(" ", fr1.GroupBy(f => CompOf(f.Position)).Select(g => "#" + g.Key + ":" + g.Count())));
+                    var art = map.listerThings.ThingsInGroup(SimWorld.Map.ThingRequestGroup.BuildingArtificial);
+                    Console.WriteLine("   ARTIFICIAL " + art.Count + " " + string.Join(" ", art.GroupBy(x => x.def.defName).Select(g => g.Key + ":" + g.Count())) + (art.Count > 0 ? " centroid " + (art.Sum(x => x.Position.x) / art.Count) + "," + (art.Sum(x => x.Position.z) / art.Count) : "") + " centerStandable=" + SimWorld.Map.GenGrid.Standable(new SimWorld.Map.IntVec3(100,0,100), map) + " maxRadius=" + SimWorld.Map.GenRadial.MaxRadius);
+                    Console.WriteLine("   CENTER " + new SimWorld.Map.IntVec3(map.Size.x / 2, 0, map.Size.z / 2) + "#" + CompOf(new SimWorld.Map.IntVec3(map.Size.x / 2, 0, map.Size.z / 2)) + " homeCells by component: " + string.Join(" ", map.AllCells.Where(c => map.areaManager.Home[c]).GroupBy(c => comp[c.z * map.Size.x + c.x]).OrderByDescending(g => g.Count()).Take(4).Select(g => "#" + g.Key + ":" + g.Count())));
+                }
+                if (day == 2 && i == 30000)
+                {
+                    var giver = new WorkGiver_ConstructFinishFrame();
+                    var fr = map.listerThings.ThingsInGroup(SimWorld.Map.ThingRequestGroup.BuildingFrame).OfType<Frame>().ToList();
+                    var construction = DefDatabase<SimWorld.Work.WorkTypeDef>.GetNamed("Construction");
+                    foreach (Pawn p in home.Citizens.Where(c => !c.Dead && c.Spawned).Take(5))
+                    {
+                        int reach = fr.Count(f => SimWorld.AI.Reachability.CanReach(p, f, SimWorld.AI.PathEndMode.Touch));
+                        int reserve = fr.Count(f => map.reservationManager.CanReserve(p, f));
+                        int has = fr.Count(f => giver.HasJobOnThing(p, f));
+                        Console.WriteLine($"   DIAG {p.Name?.ToStringShort} at {p.Position} constructionPrio={p.workSettings?.GetPriority(construction)} reach={reach} reserve={reserve} hasJob={has} of {fr.Count} downed={p.Downed} role={p.workSettings?.Role?.defName}");
+                    }
+                    {
+                        Pawn p0 = home.Citizens.First(c => !c.Dead && c.Spawned);
+                        var seen = new HashSet<SimWorld.Map.IntVec3> { p0.Position };
+                        var q = new Queue<SimWorld.Map.IntVec3>(); q.Enqueue(p0.Position);
+                        while (q.Count > 0)
+                        {
+                            var c = q.Dequeue();
+                            foreach (var d in new[] { new SimWorld.Map.IntVec3(1,0,0), new SimWorld.Map.IntVec3(-1,0,0), new SimWorld.Map.IntVec3(0,0,1), new SimWorld.Map.IntVec3(0,0,-1) })
+                            {
+                                var n = c + d;
+                                if (!SimWorld.Map.GenGrid.InBounds(n, map) || seen.Contains(n) || !SimWorld.Map.GenGrid.Standable(n, map)) continue;
+                                seen.Add(n); q.Enqueue(n);
+                            }
+                        }
+                        var f0 = fr.First();
+                        bool adj = SimWorld.Map.GenAdj.CellsAdjacent8Way(f0.Position).Any(seen.Contains);
+                        Console.WriteLine($"   BFS from {p0.Position}: {seen.Count} standable cells reachable of {map.cellIndices.NumGridCells}; frame {f0.Position} adjacent-reachable={adj}; rivers {Find.World!.grid.Tiles[home.tile].Rivers.Count}");
+                        var line = new List<string>();
+                        for (int k = 0; k <= 20; k++)
+                        {
+                            var c = new SimWorld.Map.IntVec3(p0.Position.x + (f0.Position.x - p0.Position.x) * k / 20, 0, p0.Position.z + (f0.Position.z - p0.Position.z) * k / 20);
+                            line.Add(c + ":" + map.terrainGrid.TerrainAt(c).defName + (map.edificeGrid[c] != null ? "/" + map.edificeGrid[c]!.def.defName : "") + (seen.Contains(c) ? "" : "!"));
+                        }
+                        Console.WriteLine("   LINE " + string.Join(" ", line));
+                    }
+                    foreach (var f in fr.Take(6))
+                        Console.WriteLine($"   FRAME {f.EntityToBuild.defName} at {f.Position} reserved={map.reservationManager.IsReserved(f)} inHome={map.areaManager.Home[f.Position]} pct={f.PercentComplete:F2}");
+                }
+                if (i % 15000 != 14999) continue;
+                var frames = map.listerThings.ThingsInGroup(SimWorld.Map.ThingRequestGroup.BuildingFrame).OfType<Frame>().ToList();
+                var bps = map.listerThings.ThingsInGroup(SimWorld.Map.ThingRequestGroup.Blueprint).OfType<Blueprint>().ToList();
+                var mats = frames.Where(f => f.EntityToBuild.costList != null).SelectMany(f => f.EntityToBuild.costList!).Select(c => c.thingDef).Distinct().ToList();
+                string need = string.Join(",", mats.Select(m => m.defName + ":need" + frames.Sum(f => f.MaterialStillNeeded(m)) + "/onMap" + map.listerThings.ThingsOfDef(m).Where(t => t.Spawned).Sum(t => t.stackCount) + "/ledger" + home.StoreCountOf(m)));
+                var trees = map.listerThings.AllThings.OfType<Plant>().Where(p => p.def.plant != null && p.def.plant.IsTree).ToList();
+                Console.WriteLine($"d{day} h{(i + 1) / 2500}: alive {home.Citizens.Count(c => !c.Dead)} frames {frames.Count} [{string.Join(",", frames.GroupBy(f => f.EntityToBuild.defName).Select(g => g.Key + ":" + g.Count()))}] satisfied {frames.Count(f => f.MaterialsFullySatisfied())} worked {frames.Count(f => f.workDone > 0)} inHome {frames.Count(f => map.areaManager.Home[f.Position])} blueprints {bps.Count} | {need} | wood {map.listerThings.AllThings.Where(t => t.Spawned && t.def.defName == "WoodLog").Sum(t => t.stackCount)} trees {trees.Count} mature {trees.Count(t => t.Growth >= 1f)} home {map.areaManager.Home.TrueCount}");
+                Console.WriteLine("   jobs: " + string.Join(" ", jobTally.OrderByDescending(kv => kv.Value).Take(14).Select(kv => kv.Key + ":" + kv.Value)));
+                jobTally.Clear();
+                var sick = home.Citizens.Where(c => !c.Dead && c.health.hediffSet.hediffs.Any(h => h.def.makesSickThought || h.def.defName.Contains("Flu") || h.def.defName.Contains("Plague") || h.def.defName.Contains("Malaria") || h.def.defName.Contains("Infection"))).ToList();
+                if (sick.Count > 0)
+                    Console.WriteLine("   sick: " + string.Join(" ", sick.Select(c => c.Name?.ToStringShort + "[" + string.Join("/", c.health.hediffSet.hediffs.Where(h => h.def.makesSickThought || h.def.defName.Contains("Flu") || h.def.defName.Contains("Plague") || h.def.defName.Contains("Malaria") || h.def.defName.Contains("Infection")).Select(h => h.def.defName + "=" + h.Severity.ToString("0.00", CultureInfo.InvariantCulture))) + " job=" + (c.jobs?.curJob?.def?.defName ?? "none") + (c.Lying ? " lying" : "") + "]")));
+            }
+        }
+        Console.WriteLine("deaths " + game.Storyteller.deaths);
+        return 0;
+    }
+}

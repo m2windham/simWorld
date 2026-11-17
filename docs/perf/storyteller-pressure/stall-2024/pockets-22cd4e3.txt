@@ -1,0 +1,17 @@
+   COMPONENTS 46 largest #20=4081 #15=2840 #26=1658 #4=1360 #7=1321 map 200x200
+   CITIZENS (78, 0, 61)#15 (77, 0, 61)#15 (78, 0, 60)#15 (78, 0, 62)#15 (79, 0, 61)#15 (77, 0, 60)#15 (77, 0, 62)#15 (79, 0, 60)#15 (79, 0, 62)#15 (76, 0, 61)#15 (78, 0, 59)#15 (80, 0, 61)#15 (78, 0, 63)#15 (79, 0, 59)#15 (80, 0, 62)#15 (77, 0, 59)#15 (80, 0, 60)#15 (79, 0, 63)#15 (77, 0, 63)#15 (76, 0, 62)#15
+   ARTIFICIAL 19 Wall:19 centroid 78,61 centerStandable=False maxRadius=60
+   CENTER (100, 0, 100)#20 homeCells by component: 
+   DIAG Ostervale at (42, 0, 109) constructionPrio=3 reach=0 reserve=77 hasJob=0 of 77 downed=False role=Elder
+   DIAG Stormcrest at (56, 0, 95) constructionPrio=3 reach=0 reserve=77 hasJob=0 of 77 downed=False role=
+   DIAG Marek at (58, 0, 95) constructionPrio=3 reach=0 reserve=77 hasJob=0 of 77 downed=False role=
+   DIAG Senna at (78, 0, 60) constructionPrio=3 reach=0 reserve=77 hasJob=0 of 77 downed=False role=
+   DIAG Emrys at (56, 0, 98) constructionPrio=3 reach=0 reserve=77 hasJob=0 of 77 downed=False role=
+   BFS from (42, 0, 109): 2863 standable cells reachable of 40000; frame (114, 0, 113) adjacent-reachable=False; rivers 0
+   LINE (42, 0, 109):Soil (45, 0, 109):Soil (49, 0, 109):Soil (52, 0, 109):Soil (56, 0, 109):Soil (60, 0, 110):Soil (63, 0, 110):Soil (67, 0, 110):Soil (70, 0, 110):Soil/Limestone! (74, 0, 110):Soil/Limestone! (78, 0, 111):Soil/Limestone! (81, 0, 111):Soil/Limestone! (85, 0, 111):Soil/Limestone! (88, 0, 111):Soil/Limestone! (92, 0, 111):Soil/Limestone! (96, 0, 112):Soil/Limestone! (99, 0, 112):Soil/Limestone! (103, 0, 112):Soil/Limestone! (106, 0, 112):Soil! (110, 0, 112):Soil! (114, 0, 113):Soil/Frame_Bed!
+   FRAME Bed at (114, 0, 113) reserved=False inHome=True pct=0.00
+   FRAME Bed at (115, 0, 113) reserved=False inHome=True pct=0.00
+   FRAME Bed at (116, 0, 113) reserved=False inHome=True pct=0.00
+   FRAME Bed at (117, 0, 113) reserved=False inHome=True pct=0.00
+   FRAME Bed at (118, 0, 113) reserved=False inHome=True pct=0.00
+   FRAME Bed at (119, 0, 113) reserved=False inHome=True pct=0.00

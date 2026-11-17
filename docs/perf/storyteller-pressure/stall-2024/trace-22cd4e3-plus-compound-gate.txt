@@ -1,0 +1,95 @@
+seed 2024 tile 284 AridShrubland
+   COMPONENTS 46 largest #20=4081 #15=2840 #26=1658 #4=1360 #7=1321 map 200x200
+   CITIZENS (78, 0, 61)#15 (77, 0, 61)#15 (78, 0, 60)#15 (78, 0, 62)#15 (79, 0, 61)#15 (77, 0, 60)#15 (77, 0, 62)#15 (79, 0, 60)#15 (79, 0, 62)#15 (76, 0, 61)#15 (78, 0, 59)#15 (80, 0, 61)#15 (78, 0, 63)#15 (79, 0, 59)#15 (80, 0, 62)#15 (77, 0, 59)#15 (80, 0, 60)#15 (79, 0, 63)#15 (77, 0, 63)#15 (76, 0, 62)#15
+   SITES 0 by component: 
+   ARTIFICIAL 19 Wall:19 centroid 78,61 centerStandable=False maxRadius=60
+   CENTER (100, 0, 100)#20 homeCells by component: 
+d1 h6: alive 20 frames 1 [Wall:1] satisfied 0 worked 0 inHome 1 blueprints 3 | WoodLog:need1/onMap14/ledger7 | wood 14 trees 473 mature 468 home 3059
+   jobs: Sow:455 HaulToBuildingSite:327 Harvest:146 ConstructFinishFrame:122 CutPlant:105 Research:45
+d1 h12: alive 20 frames 2 [House_Paleo:2] satisfied 2 worked 1 inHome 2 blueprints 0 | WoodLog:need0/onMap8/ledger7 | wood 8 trees 467 mature 457 home 3059
+   jobs: Sow:650 SocialRelax:310 HaulToBuildingSite:60 Research:56 ConstructFinishFrame:48 Ingest:42 CutPlant:34
+d1 h18: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 469 mature 449 home 3094
+   jobs: Mine:423 LayDown:234 Clean:162 HaulToCell:144 Sow:55 Ingest:45 Research:44 CutPlant:27 ConstructFinishFrame:24 SocialRelax:16 HaulToBuildingSite:16 SocialFight:6 TendPatient:4
+d1 h24: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 474 mature 449 home 3094
+   jobs: LayDown:804 Mine:185 Clean:93 Research:59 HaulToCell:41 Ingest:18
+d2 h6: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 478 mature 449 home 3094
+   jobs: Clean:404 Mine:260 SocialRelax:254 LayDown:118 Research:54 Ingest:41 HaulToCell:36 Skygaze:16 GoForWalk:15 GotoWander:2
+d2 h12: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 482 mature 449 home 3094
+   jobs: Clean:438 GotoWander:301 SocialRelax:151 Research:116 LayDown:63 Ingest:52 GoForWalk:41 Skygaze:38
+   DIAG Ostervale at (85, 0, 78) constructionPrio=3 reach=0 reserve=1 hasJob=0 of 1 downed=False role=Elder
+   DIAG Stormcrest at (73, 0, 71) constructionPrio=3 reach=0 reserve=1 hasJob=0 of 1 downed=False role=
+   DIAG Marek at (75, 0, 82) constructionPrio=3 reach=0 reserve=1 hasJob=0 of 1 downed=False role=
+   DIAG Senna at (84, 0, 76) constructionPrio=3 reach=0 reserve=1 hasJob=0 of 1 downed=False role=
+   DIAG Emrys at (68, 0, 80) constructionPrio=3 reach=0 reserve=1 hasJob=0 of 1 downed=False role=
+   BFS from (85, 0, 78): 3252 standable cells reachable of 40000; frame (68, 0, 39) adjacent-reachable=False; rivers 0
+   LINE (85, 0, 78):Soil (85, 0, 77):Soil (84, 0, 75):Soil (83, 0, 73):Soil (82, 0, 71):SoilRich (81, 0, 69):SoilRich (80, 0, 67):SoilRich (80, 0, 65):SoilRich (79, 0, 63):SoilRich (78, 0, 61):SoilRich (77, 0, 59):SoilRich (76, 0, 57):Soil (75, 0, 55):Soil (74, 0, 53):Soil (74, 0, 51):Soil (73, 0, 49):Soil/Limestone! (72, 0, 47):Soil/Limestone! (71, 0, 45):Soil! (70, 0, 43):Soil! (69, 0, 41):Soil/Frame_House_Paleo! (68, 0, 39):Soil/Frame_House_Paleo!
+   FRAME House_Paleo at (68, 0, 39) reserved=False inHome=True pct=0.00
+d2 h18: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 484 mature 449 home 3094
+   jobs: Clean:425 GotoWander:271 LayDown:260 Research:118 SocialRelax:70 GoForWalk:21 Ingest:20 Skygaze:15
+d2 h24: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 492 mature 449 home 3094
+   jobs: LayDown:618 Clean:203 GotoWander:158 Research:118 SocialRelax:46 Ingest:36 GoForWalk:15 Skygaze:6
+d3 h6: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 495 mature 449 home 3094
+   jobs: Clean:429 GotoWander:397 Research:120 SocialRelax:97 LayDown:91 Skygaze:25 Ingest:20 GoForWalk:20 none:1
+d3 h12: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:496 GotoWander:285 LayDown:120 Research:118 SocialRelax:93 Ingest:37 GoForWalk:18 Skygaze:13 HaulToCell:10 DoBill:8 PlaceNoCostFrame:1 ConstructFinishFrame:1
+d3 h18: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:365 LayDown:295 GotoWander:279 SocialRelax:121 Research:118 Ingest:22
+d3 h24: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:584 Clean:239 GotoWander:164 Research:112 SocialRelax:65 Ingest:36
+d4 h6: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:472 GotoWander:396 Research:118 SocialRelax:99 LayDown:50 GoForWalk:23 Ingest:23 Skygaze:19
+d4 h12: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:463 GotoWander:315 LayDown:131 Research:120 SocialRelax:75 Ingest:38 Skygaze:23 GoForWalk:20 TendPatient:8 SocialFight:7
+d4 h18: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:405 Clean:363 GotoWander:206 Research:118 SocialRelax:51 Ingest:22 GoForWalk:15 Skygaze:12 TendPatient:6 SocialFight:2
+d4 h24: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:629 Clean:242 Research:118 GotoWander:116 Ingest:38 SocialRelax:36 GoForWalk:15 Skygaze:6
+d5 h6: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:387 GotoWander:287 LayDown:285 Research:118 SocialRelax:67 Ingest:29 GoForWalk:14 Skygaze:13
+d5 h12: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:353 LayDown:313 GotoWander:246 Research:118 SocialRelax:78 Ingest:45 GoForWalk:13 TendPatient:13 Skygaze:11 SocialFight:10
+d5 h18: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:463 Clean:314 GotoWander:185 Research:118 SocialRelax:57 Ingest:28 Skygaze:19 TendPatient:8 GoForWalk:7 SocialFight:1
+d5 h24: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:529 Clean:279 GotoWander:164 Research:118 SocialRelax:53 Ingest:42 Skygaze:8 GoForWalk:7
+d6 h6: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:402 LayDown:352 GotoWander:205 Research:118 SocialRelax:67 Ingest:28 GoForWalk:18 Skygaze:10
+d6 h12: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:434 Clean:365 GotoWander:172 Research:118 SocialRelax:52 Ingest:32 Skygaze:14 GoForWalk:13
+d6 h18: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:398 LayDown:311 GotoWander:216 Research:118 SocialRelax:68 Ingest:37 Skygaze:24 GoForWalk:13 SocialFight:8 TendPatient:7
+d6 h24: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:417 Clean:377 GotoWander:177 Research:118 SocialRelax:45 Ingest:27 Skygaze:26 GoForWalk:12 none:1
+d7 h6: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:394 LayDown:348 GotoWander:211 Research:118 SocialRelax:74 Ingest:31 GoForWalk:15 Skygaze:9
+d7 h12: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:340 Clean:312 GotoWander:269 Research:120 SocialRelax:72 Ingest:45 GoForWalk:16 Skygaze:10 SocialFight:8 TendPatient:8
+d7 h18: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:363 Clean:352 GotoWander:244 Research:118 SocialRelax:64 Ingest:41 Skygaze:9 GoForWalk:8 none:1
+d7 h24: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: GotoWander:337 Clean:328 LayDown:289 Research:118 SocialRelax:70 Ingest:27 GoForWalk:18 Skygaze:13
+d8 h6: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:458 Clean:334 GotoWander:182 Research:120 SocialRelax:47 Ingest:32 Skygaze:16 GoForWalk:11
+d8 h12: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:344 LayDown:319 GotoWander:250 Research:118 SocialRelax:88 Ingest:34 Skygaze:20 GoForWalk:13 Harvest:6 DoBill:5 HaulToCell:3
+d8 h18: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:373 LayDown:345 GotoWander:209 Research:118 SocialRelax:57 Ingest:38 Skygaze:17 Harvest:17 GoForWalk:12 DoBill:7 HaulToCell:7
+d8 h24: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:416 LayDown:298 GotoWander:217 Research:118 SocialRelax:80 Ingest:34 GoForWalk:20 Skygaze:16 none:1
+d9 h6: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:428 LayDown:330 GotoWander:187 Research:120 SocialRelax:72 Ingest:36 GoForWalk:15 Skygaze:12
+d9 h12: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: Clean:456 GotoWander:258 LayDown:232 Research:120 SocialRelax:72 Ingest:28 Skygaze:16 GoForWalk:13 Harvest:5
+d9 h18: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:365 Clean:344 GotoWander:232 Research:119 SocialRelax:63 Ingest:32 GoForWalk:12 Skygaze:10 TendPatient:10 SocialFight:8 Harvest:3 DoBill:2
+d9 h24: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:392 Clean:347 GotoWander:179 Research:119 SocialRelax:73 Ingest:40 Skygaze:18 GoForWalk:15 TendPatient:9 SocialFight:8
+d10 h6: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:369 Clean:347 GotoWander:245 Research:118 SocialRelax:65 Ingest:32 GoForWalk:13 Skygaze:10 none:1
+d10 h12: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3129
+   jobs: LayDown:391 Clean:346 GotoWander:214 Research:120 SocialRelax:63 Ingest:36 GoForWalk:21 Skygaze:8 none:1
+d10 h18: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 0 | WoodLog:need0/onMap0/ledger86 | wood 0 trees 500 mature 449 home 3209
+   jobs: LayDown:487 Harvest:245 Clean:179 GotoWander:105 Research:103 SocialRelax:33 Ingest:28 Skygaze:9 GoForWalk:7 DoBill:3 HaulToCell:1
+d10 h24: alive 20 frames 1 [House_Paleo:1] satisfied 1 worked 0 inHome 1 blueprints 1 | WoodLog:need0/onMap2/ledger86 | wood 2 trees 499 mature 448 home 3279
+   jobs: LayDown:496 Sow:349 HaulToCell:157 Harvest:112 Research:60 DoBill:12 Ingest:11 CutPlant:3
+deaths deaths 0 (none)

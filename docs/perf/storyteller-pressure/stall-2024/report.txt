@@ -1,0 +1,37 @@
+Seed 2024 (b20, threats off) construction stall - diagnosis at 22cd4e3
+Tool: stall.cs.txt (lane-private StallTrace). Same setup as the bench.
+
+Cause: the band and everything it plans stand in different sealed rock pockets.
+- The founding map (tile 284, AridShrubland) is mostly rock. 46 walkable pockets;
+  the largest is 4081 of 40000 cells. The map centre (100,100) is rock, next to pocket #20.
+- Citizens spawn near the centroid of BuildingArtificial things. On a fresh map those
+  are the 19 GenStep_Ruins walls (centroid 78,61), so the band lands in pocket #15.
+- SettlementCompound.TryPlan sites the compound round the road hub using
+  walkability only, so it lands in pocket #20. ClaimHome then puts home there and every
+  later bed, wall, hut, bench and sculpture is drawn there too.
+- Day 2: 5 sampled citizens could reach 0 of 77 frames (CanReach false for all);
+  BFS from the band covers 2863 cells and meets limestone before the first frame.
+  All 77 frames were already fully materialed (WoodLog need 0); none was ever worked.
+- Wood is not the bottleneck: 475-500 trees (469 mature) on the map, 16-32 WoodLog in stores.
+- Jobs: Sow, Harvest, Clean, HaulToCell, GotoWander, SocialRelax, LayDown. ConstructFinishFrame
+  appears only in hour 1 of day 1.
+- The "19 walls built" in earlier census lines are the ruins: SyncStructureLedger counts
+  them as the settlement's own walls.
+
+d642abf (dwellings-v2, unverified) on the same seed: citizens must reach the map edge, so the
+band spawns at (36..55,0), pocket #1. The compound and fields are still planned in the
+centre pockets. 19 of 20 starve by day 10 (deaths 20: Starvation 19, Disease 1). That commit
+makes seed 2024 lethal unless planners respect reachability too.
+
+Tried, not committed (compound-reach-gate.diff.txt): TryPlan treats as closed every cell the
+band cannot walk to. On 22cd4e3 no compound fits in pocket #15, so TryPlan returns null; the
+fallback draws (TryFindPlacementCell/Fits, SettlementWorksInitiative, dwelling placement) are
+not gated, and the one House_Paleo frame is unreachable again. 0 deaths in 10 days, nothing
+built. A full fix gates every planner on reachability from the band, and must agree with
+d642abf's citizen placement. That spans dwellings-v2's files.
+
+Beds and disease: refuted as the direct cause. Both day 1-10 deaths at 22cd4e3 are
+WoundInfection, and they follow SocialFight jobs on day 1. A regular bed gives only
+BedRestEffectiveness x1.07 (immunity) and no MedicalTendQualityOffset, as in RimWorld. Lior's
+infection went 0.18 to 0.95 in about 1.5 days, which 7% would not have stopped. Sleeping on
+the ground may still raise fights through mood; this run does not show that.
