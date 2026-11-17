@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Snow clearing (RimWorld: WorkGiverDef CleanClearSnow, Cleaning work type). Its own file rather than an
+       addition to WorkGivers.xml (CLAUDE.md). Cell-scanning over the snow-clear area the player paints;
+       see SimWorld.Weather.WorkGiver_ClearSnow. Ranked below filth, as in RimWorld. -->
+
+  <WorkGiverDef>
+    <defName>CleanClearSnow</defName>
+    <label>clear snow</label>
+    <verb>Clear</verb>
+    <gerund>clearing snow</gerund>
+    <workType>Cleaning</workType>
+    <priorityInType>50</priorityInType>
+    <giverClass>SimWorld.Weather.WorkGiver_ClearSnow</giverClass>
+    <scanCells>true</scanCells>
+    <scanThings>false</scanThings>
+  </WorkGiverDef>
+
+</Defs>

@@ -49,6 +49,19 @@ namespace SimWorld.Building
 
         public int TrueCount => trueCount;
 
+        /// <summary>Every cell in this area, in index order (RimWorld: <c>Area.ActiveCells</c>).</summary>
+        public IEnumerable<IntVec3> ActiveCells
+        {
+            get
+            {
+                if (trueCount == 0) yield break;
+                for (int i = 0; i < grid.Length; i++)
+                {
+                    if (grid[i]) yield return map.cellIndices.IndexToCell(i);
+                }
+            }
+        }
+
         /// <summary>Saved as the list of true cell indices — an area is typically sparse relative to the
         /// whole map, so this beats <c>Map.EncodeRunLength</c>'s dense per-cell token stream for the common case.</summary>
         public void ExposeData()
@@ -87,16 +100,39 @@ namespace SimWorld.Building
     }
 
     /// <summary>Owns every <see cref="Area"/> on a map (RimWorld: <c>Verse.AreaManager</c>), trimmed to the
-    /// one Area this pass ships.</summary>
+    /// two Areas this port ships.</summary>
     public sealed class AreaManager
     {
         public Area Home { get; }
 
+        /// <summary>Where snow is shovelled (RimWorld: <c>Verse.Area_SnowClear</c>, <c>AreaManager.SnowClear</c>):
+        /// painted by the player (<see cref="Map.View.MapCommands.SetSnowClearArea"/>), read by
+        /// <see cref="Weather.WorkGiver_ClearSnow"/>.</summary>
+        public Area SnowClear { get; }
+
         public AreaManager(Map.Map map)
         {
             Home = new Area(map, "Home area");
+            SnowClear = new Area(map, "Snow clear");
         }
 
-        public void ExposeData() => Home.ExposeData();
+        /// <summary>The home area keeps writing at the map's own level, where saves made before the snow-clear
+        /// area existed have it; the snow-clear area gets its own node so the two "trueCells" never collide.
+        /// A save without that node loads with an empty snow-clear area.</summary>
+        public void ExposeData()
+        {
+            Home.ExposeData();
+            if (Scribe.EnterNode("snowClearArea"))
+            {
+                try
+                {
+                    SnowClear.ExposeData();
+                }
+                finally
+                {
+                    Scribe.ExitNode();
+                }
+            }
+        }
     }
 }

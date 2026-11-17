@@ -172,6 +172,8 @@ namespace SimWorld.Building
                 int z = RandomStream.RangeSeeded(0, map.Size.z, SeedFor(map, tick, cellPurposeBase + attempt * 2 + 1));
                 var cell = new IntVec3(x, 0, z);
                 if (def.plant != null && def.plant.IsTree ? !TreeTuning.CanGrowTreeAt(map, cell) : !CanRegrowAt(map, cell)) continue;
+                // RimWorld's CheckSpawnWildPlantAt refuses a snowed-in cell for every wild plant, trees included.
+                if (!PlantUtility.SnowAllowsPlanting(cell, map)) continue;
 
                 Thing plant = ThingMaker.MakeThing(def);
                 if (plant is Plant seedling) seedling.Growth = Plant.SeedlingGrowth;

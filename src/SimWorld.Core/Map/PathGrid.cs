@@ -67,6 +67,10 @@ namespace SimWorld.Map
                 cost += thing.def.pathCost;
             }
 
+            // Snow underfoot (RimWorld: CalculatedCostAt adds SnowUtility.MovementTicksAddOn of the cell's
+            // snow category). Real cost, not only perceived: deep snow slows the walker, not just the plan.
+            cost += Weather.SnowUtility.MovementTicksAddOn(map.snowGrid.GetCategory(c));
+
             if (perceivedStatic)
             {
                 if (FireUtility.StaticFireIn(c, map) != null) cost += PerceivedCostFireOnCell;

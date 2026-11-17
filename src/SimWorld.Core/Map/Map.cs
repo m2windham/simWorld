@@ -31,6 +31,15 @@ namespace SimWorld.Map
         public ThingGrid thingGrid = null!;
         public EdificeGrid edificeGrid = null!;
         public PathGrid pathGrid = null!;
+
+        /// <summary>How deep the snow lies on each cell (RimWorld: <c>Map.snowGrid</c>; see
+        /// <see cref="Weather.SnowGrid"/>). Built with the other grids and before <see cref="pathGrid"/>, which
+        /// reads it.</summary>
+        public Weather.SnowGrid snowGrid = null!;
+
+        /// <summary>Snow falling and melting a few cells a tick (RimWorld: <c>Map.steadyEnvironmentEffects</c>;
+        /// see <see cref="Weather.SteadyEnvironmentEffects"/>). Ticked from <see cref="MapTick"/>.</summary>
+        public Weather.SteadyEnvironmentEffects steadyEnvironmentEffects = null!;
         public ListerThings listerThings = null!;
         public MapPawns mapPawns = null!;
 
@@ -187,6 +196,10 @@ namespace SimWorld.Map
             powerNetManager.PowerNetManagerTick();
             roomTracker.RoomTrackerTick();
 
+            // After the rooms, so a cell's room (and so whether it melts at the outdoor or the indoor
+            // temperature) is this tick's; after the weather, so the snow rate is this tick's.
+            steadyEnvironmentEffects.SteadyEnvironmentEffectsTick();
+
             // Undergrowth grows back toward what this map's biome supports, at the pace that biome sets
             // (Building.WildPlantSpawner). Stateless and seeded from this map's own id and the tick, so it
             // needs nothing here to own or save, and draws nothing from the ambient Rand stream. A map with
@@ -230,6 +243,7 @@ namespace SimWorld.Map
 
             terrainGrid = new TerrainGrid(this, fill);
             roofGrid = new RoofGrid(this);
+            snowGrid = new Weather.SnowGrid(this);
             thingGrid = new ThingGrid(this);
             edificeGrid = new EdificeGrid(this);
             listerThings = new ListerThings();
@@ -253,6 +267,7 @@ namespace SimWorld.Map
             designationManager = new Designations.DesignationManager();
             gameConditionManager = new Conditions.GameConditionManager(this);
             weatherManager = new Weather.WeatherManager(this);
+            steadyEnvironmentEffects = new Weather.SteadyEnvironmentEffects(this);
             lordManager = new AI.Group.LordManager(this);
         }
 
@@ -279,6 +294,10 @@ namespace SimWorld.Map
             Scribe_Values.Look(ref terrainString, "terrain", "");
             string roofString = Scribe.mode == LoadSaveMode.Saving ? EncodeRoof() : "";
             Scribe_Values.Look(ref roofString, "roof", "");
+            // Beside terrain and roof, and decoded with them below, because the path grid rebuilt right after
+            // costs every cell's snow (Weather.SnowGrid.Encode for the format).
+            string snowString = Scribe.mode == LoadSaveMode.Saving ? snowGrid.Encode() : "";
+            Scribe_Values.Look(ref snowString, "snowDepth", "");
 
             if (Scribe.mode == LoadSaveMode.LoadingVars)
             {
@@ -289,6 +308,7 @@ namespace SimWorld.Map
                 InitializeGridsExceptPath(sizeX, sizeZ, placeholder);
                 DecodeTerrainInto(terrainString ?? "");
                 DecodeRoofInto(roofString ?? "");
+                snowGrid.Decode(snowString);
                 pathGrid = new PathGrid(this);
                 InitializeAIManagers();
             }
@@ -313,6 +333,7 @@ namespace SimWorld.Map
             Scribe_Deep.Look(ref settlementCompound, "settlementCompound");
             gameConditionManager.ExposeData();
             weatherManager.ExposeData();
+            steadyEnvironmentEffects.ExposeData();
             Scribe_Values.Look(ref medicalCare, "medicalCare", Health.MedicalCareCategory.Best);
 
             // After the things, so every member a lord points at is already in the document. A save written

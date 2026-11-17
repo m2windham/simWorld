@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Clearing snow (RimWorld: JobDefOf.ClearSnow). Its own file, per CLAUDE.md; bound by
+       SimWorld.Weather.SnowJobDefOf and issued by SimWorld.Weather.WorkGiver_ClearSnow. -->
+
+  <JobDef>
+    <defName>ClearSnow</defName>
+    <driverClass>SimWorld.Weather.JobDriver_ClearSnow</driverClass>
+    <reportString>clearing snow.</reportString>
+  </JobDef>
+
+</Defs>

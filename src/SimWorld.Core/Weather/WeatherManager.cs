@@ -105,10 +105,9 @@ namespace SimWorld.Weather
         /// <c>Things.Fire.TryExtinguishFromRain</c> has been waiting for.</summary>
         public float RainRate => LerpedRate(static w => w.rainRate);
 
-        /// <summary>How hard it is snowing, 0 to 1. Nothing accumulates it: this port has no snow grid, no
-        /// <c>SnowDepth</c> and no movement or plant consequence from lying snow — see this module's report.
-        /// It is exposed because snow is what a cold map does instead of raining, and the choice between the
-        /// two is real (<see cref="WeatherDef.temperatureRange"/>).</summary>
+        /// <summary>How hard it is snowing, 0 to 1 (RimWorld: <c>WeatherManager.SnowRate</c>).
+        /// <see cref="SteadyEnvironmentEffects"/> reads it to lay snow on the map's open cells
+        /// (<see cref="SnowGrid"/>), where it slows walking and stops planting.</summary>
         public float SnowRate => LerpedRate(static w => w.snowRate);
 
         /// <summary>

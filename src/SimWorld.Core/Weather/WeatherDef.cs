@@ -30,9 +30,9 @@ namespace SimWorld.Weather
         /// extinguishment (<c>Things.FireUtility.ExtinguishFiresFromRain</c>).</summary>
         public float rainRate;
 
-        /// <summary>0 none, 1 blizzard. Nothing accumulates snow in this port (there is no snow grid — see
-        /// <see cref="WeatherManager.SnowRate"/>), so this is carried, lerped and exposed but drives no
-        /// depth; it is the gate the weather itself is chosen through (<see cref="temperatureRange"/>).</summary>
+        /// <summary>0 none, 1 blizzard (RimWorld: <c>WeatherDef.snowRate</c>). Lerped into
+        /// <see cref="WeatherManager.SnowRate"/>, which <see cref="SteadyEnvironmentEffects"/> turns into depth on
+        /// the <see cref="SnowGrid"/>. Only falls where it is cold enough, through <see cref="temperatureRange"/>.</summary>
         public float snowRate;
 
         /// <summary>Multiplies the map's base wind speed (RimWorld: <c>WeatherDef.windSpeedFactor</c>).</summary>
