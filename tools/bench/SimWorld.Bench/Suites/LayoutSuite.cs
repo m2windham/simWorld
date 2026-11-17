@@ -33,7 +33,9 @@ namespace SimWorld.Bench.Suites
         {
             Report.Heading("Layout: where the settlement built (" + opt.LayoutSeed + ", tick " + opt.LayoutTicks + ")");
 
-            CoreMap.ResetMapIdCounter();
+            // The host's SimHarness.StartGame resets neither counter, so a second Play in one Editor session
+            // (domain reload off) starts with both where the first left them; --layout-host-counters does that.
+            if (!opt.LayoutHostCounters) CoreMap.ResetMapIdCounter();
             Game game = Game.NewGame(ScenarioDefOf.TribalStart.scenario, opt.LayoutSeed, subdivisionOverride: 3, soloStart: true, bandSize: 20);
             Settlement settlement = game.World!.worldObjects.OfType<Settlement>().First();
             // The host's SimHarness.StartGame reads the god view before it opens the settlement.
@@ -49,7 +51,11 @@ namespace SimWorld.Bench.Suites
                 if (opt.LayoutViewEvery > 0 && (i + 1) % opt.LayoutViewEvery == 0)
                 {
                     GodViewSnapshot.Capture();
-                    held = MapViewSnapshot.CaptureChanges(map, held).Versions;
+                    GodViewSnapshot.ChronicleSince(-1);
+                    GodViewSnapshot.CitizensOf(settlement.tile);
+                    GodViewSnapshot.WorkPrioritiesOf(settlement.tile);
+                    MapViewSnapshot.Capture();
+                    held = MapViewSnapshot.CaptureChanges(held).Versions;
                 }
                 if (opt.LayoutEvery > 0 && (i + 1) % opt.LayoutEvery == 0) Console.WriteLine(Describe(map, settlement, i + 1, brief: true));
             }
@@ -78,7 +84,8 @@ namespace SimWorld.Bench.Suites
                     var on = plot.Cells.SelectMany(c => map.thingGrid.ThingsListAt(c))
                         .Where(t => t.def.category != ThingCategory.Pawn && t.def.category != ThingCategory.Plant && t.def.category != ThingCategory.Filth)
                         .Select(t => t.def.defName).Distinct().OrderBy(n => n, StringComparer.Ordinal);
-                    sb.AppendLine("    plot " + Rect(plot) + " " + rot + ": not-home " + notHome + ", unwalkable " + unwalkable + ", holds " + string.Join(",", on));
+                    int trees = plot.Cells.Count(c => map.thingGrid.ThingsListAt(c).Any(t => t.def.plant != null && t.def.plant.IsTree));
+                    sb.AppendLine("    plot " + Rect(plot) + " " + rot + ": not-home " + notHome + ", unwalkable " + unwalkable + ", trees " + trees + ", holds " + string.Join(",", on));
                 }
             }
 
@@ -86,6 +93,14 @@ namespace SimWorld.Bench.Suites
                 ? new List<(CellRect Plot, Rot4 Rot)>()
                 : compound.DwellingPlots(int.MaxValue, map.Size).ToList();
 
+            ThingDef wood = MapGen.MapGenThingDefOf.WoodLog;
+            int woodOnMap = map.listerThings.AllThings.Where(t => t.def == wood && t.Spawned).Sum(t => t.stackCount);
+            int woodStored = settlement.Stores.TryGetValue(wood, out int stored) ? stored : 0;
+            var jobs = map.mapPawns.AllPawnsSpawned.Where(p => p.jobs != null)
+                .GroupBy(p => p.jobs!.curJob?.def.defName ?? "none")
+                .OrderByDescending(g => g.Count()).ThenBy(g => g.Key, StringComparer.Ordinal)
+                .Select(g => g.Key + ":" + g.Count());
+            sb.AppendLine("  wood on map " + woodOnMap + ", stored " + woodStored + "; jobs " + string.Join(" ", jobs));
             sb.AppendLine("  dwellings:");
             foreach (Thing t in map.listerThings.AllThings.Where(t => DwellingUtility.IsDwelling(BuiltDef(t))).OrderBy(t => t.thingIDNumber))
             {

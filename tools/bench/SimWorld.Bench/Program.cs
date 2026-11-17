@@ -91,7 +91,7 @@ namespace SimWorld.Bench
                     StorytellerSuite.Run(opt);
                     break;
                 case "layout":
-                    LayoutSuite.Run(opt);
+                    for (int play = 0; play < opt.LayoutPlays; play++) LayoutSuite.Run(opt);
                     break;
                 case "band":
                     BandSuite.Run(opt);
@@ -222,6 +222,12 @@ namespace SimWorld.Bench
                     case "--layout-every":
                         opt.LayoutEvery = ParseInt(Next(args, ref i), "--layout-every");
                         break;
+                    case "--layout-plays":
+                        opt.LayoutPlays = ParseInt(Next(args, ref i), "--layout-plays");
+                        break;
+                    case "--layout-host-counters":
+                        opt.LayoutHostCounters = true;
+                        break;
                     case "--layout-digest-every":
                         opt.LayoutDigestEvery = ParseInt(Next(args, ref i), "--layout-digest-every");
                         break;
@@ -336,6 +342,8 @@ OPTIONS
   --layout-every <N>      for --suite layout: also print a brief line every N ticks (default 0, never).
   --layout-view-every <N> for --suite layout: read the god view and map view every N ticks, as the host's
                           renderer does each frame (default 0, never).
+  --layout-host-counters  for --suite layout: do not reset the map id counter, as the host does not.
+  --layout-plays <N>      for --suite layout: run N times in one process, as repeated Plays in one Editor.
   --layout-digest-every <N> for --suite layout: print SimDigest.Line (tick, Rand draws, map hash) every N ticks.
   --help, -h              show this text.
 
