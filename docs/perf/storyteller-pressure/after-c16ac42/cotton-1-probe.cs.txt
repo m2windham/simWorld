@@ -1,0 +1,100 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+
+using SimWorld.Building;
+using SimWorld.Crafting;
+using SimWorld.Defs;
+using SimWorld.God.View;
+using SimWorld.Map;
+using SimWorld.Pawns;
+using SimWorld.Scenario;
+using SimWorld.Sim;
+using SimWorld.Tests.Content;
+using SimWorld.Things;
+using SimWorld.World;
+
+using Xunit;
+
+namespace SimWorld.Tests.Integration
+{
+    // LANE PROBE, NOT FOR COMMIT: measures whether cloth reaches the tailor's table on a seeded watched run.
+    // PROBE_STRIP citizens have their apparel taken off on day 0, so somebody lacks a shirt.
+    public class ZzLaneProbe_CottonReach : ContentTestBase
+    {
+        public ZzLaneProbe_CottonReach(CoreContentFixture content) : base(content)
+        {
+        }
+
+        [Fact]
+        public void Probe()
+        {
+            string seed = Environment.GetEnvironmentVariable("PROBE_SEED") ?? "cotton-1";
+            int days = int.Parse(Environment.GetEnvironmentVariable("PROBE_DAYS") ?? "30");
+            int strip = int.Parse(Environment.GetEnvironmentVariable("PROBE_STRIP") ?? "5");
+            string outPath = Environment.GetEnvironmentVariable("PROBE_OUT") ?? Path.Combine(Path.GetTempPath(), "probe.txt");
+            Game game = Game.NewGame(ScenarioDefOf.TribalStart.scenario, seed, subdivisionOverride: 3, soloStart: true, bandSize: 20);
+            Settlement settlement = game.World!.worldObjects.OfType<Settlement>().First();
+            GodCommands.OpenSettlement(settlement.tile);
+            global::SimWorld.Map.Map map = settlement.InteriorMap!;
+
+            int stripped = 0;
+            foreach (Pawn p in settlement.Citizens.Where(c => c.Spawned).Take(strip))
+            {
+                foreach (ThingWithComps a in p.apparel!.WornApparel.ToList())
+                {
+                    p.apparel.RemoveApparel(a);
+                    if (!a.Destroyed && a.Spawned) a.Destroy();
+                }
+                stripped++;
+            }
+
+            ThingDef tailor = DefDatabase<ThingDef>.GetNamed("TableTailor");
+            ThingDef cloth = DefDatabase<ThingDef>.GetNamed("Cloth");
+            ThingDef shirt = DefDatabase<ThingDef>.GetNamed("Apparel_Shirt");
+            int r = WorkGiver_DoBill.IngredientSearchRadius;
+            var sb = new StringBuilder();
+            sb.AppendLine($"seed={seed} band=20 stripped={stripped} radius={r} (square, Chebyshev)");
+            static int Cheb(IntVec3 a, IntVec3 b) => Math.Max(Math.Abs(a.x - b.x), Math.Abs(a.z - b.z));
+            static string Near(IntVec3? p, IEnumerable<IntVec3> cells)
+            {
+                var l = cells.ToList();
+                if (p == null || l.Count == 0) return "-";
+                return l.Min(c => Cheb(p.Value, c)).ToString();
+            }
+
+            for (int day = 1; day <= days; day++)
+            {
+                for (int i = 0; i < GenDate.TicksPerDay; i++) game.TickManager.DoSingleTick();
+                Thing? bench = map.listerThings.ThingsOfDef(tailor).FirstOrDefault();
+                Thing? planned = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>().FirstOrDefault(b => b.EntityToBuild == tailor)
+                    ?? (Thing?)map.listerThings.AllThings.OfType<Frame>().FirstOrDefault(f => f.EntityToBuild == tailor);
+                IntVec3? at = bench?.Position ?? planned?.Position;
+                Zone_Growing? field = map.zoneManager.AllZones.OfType<Zone_Growing>().FirstOrDefault(z => z.plantDefToGrow?.defName == "Plant_Cotton");
+                var clothStacks = map.listerThings.ThingsOfDef(cloth).Where(t => t.Spawned).ToList();
+                var huts = map.listerThings.ThingsOfDef(ConstructionThingDefOf.StorageHut);
+                int plants = map.listerThings.AllThings.Count(t => t.def.defName == "Plant_Cotton");
+                int shirtsWorn = settlement.Citizens.Count(c => !c.Dead && c.apparel != null && c.apparel.WornApparel.Any(a => a.def == shirt));
+                int naked = settlement.Citizens.Count(c => !c.Dead && c.apparel != null && c.apparel.WornApparel.Count == 0);
+                int bills = bench is ThingWithComps twc && twc.GetComp<CompBillGiver>() is CompBillGiver comp ? comp.BillStack.Count : 0;
+                sb.AppendLine($"day {day}: tailor={(bench != null ? "built" : planned is Frame ? "frame" : planned != null ? "blueprint" : "none")}@{at?.ToString() ?? "-"} bills={bills} "
+                    + $"field={field?.CellCount ?? 0} nearestField={Near(at, field?.Cells ?? new List<IntVec3>())} cottonPlants={plants} "
+                    + $"cloth={clothStacks.Sum(t => t.stackCount)}/{clothStacks.Count}stacks nearestCloth={Near(at, clothStacks.Select(t => t.Position))} "
+                    + $"clothInReach={clothStacks.Where(t => at != null && Cheb(at.Value, t.Position) <= r).Sum(t => t.stackCount)} "
+                    + $"nearestHut={Near(at, huts.Select(h => h.Position))} naked={naked} shirtsWorn={shirtsWorn} "
+                    + $"blueprints={map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).Count} frames={map.listerThings.AllThings.OfType<Frame>().Count()} "
+                    + $"cottonGrowth={(map.listerThings.AllThings.OfType<Plant>().Where(t => t.def.defName == "Plant_Cotton").Select(t => t.Growth).DefaultIfEmpty(0f).Average()):F2} "
+                    + $"foodHarvestable={map.listerThings.AllThings.OfType<Plant>().Count(t => t.HarvestableNow && t.def.defName != "Plant_Cotton")} temp={map.outdoorTemperature:F1} "
+                    + $"clothBanked={settlement.StoreCountOf(cloth)} shirtsOnMap={map.listerThings.ThingsOfDef(shirt).Count} "
+                    + $"alive={settlement.Citizens.Count(c => !c.Dead)} spawned={settlement.Citizens.Count(c => !c.Dead && c.Spawned)} deaths={Find.Storyteller?.deaths?.Total ?? -1} by=[{string.Join(",", (Find.Storyteller?.deaths?.BySource ?? new System.Collections.Generic.Dictionary<string, int>()).Select(kv => kv.Key + ":" + kv.Value))}] "
+                    + $"fires={map.listerThings.AllThings.Count(x => x.def.defName == "Fire")} deadHediffs=[{string.Join(",", settlement.Citizens.Where(c => c.Dead).SelectMany(c => c.health.hediffSet.hediffs).GroupBy(h => h.def.defName).Select(g => g.Key + ":" + g.Count()))}] "
+                    + $"healroot={(map.zoneManager.AllZones.OfType<Zone_Growing>().FirstOrDefault(z => z.plantDefToGrow?.defName == "Plant_Healroot") is Zone_Growing hz ? hz.CellCount + (hz.allowSow ? "+sow" : "-sow") : "none")} healPlants={map.listerThings.AllThings.Count(x => x.def.defName == "Plant_Healroot")} meds={map.listerThings.ThingsInGroup(ThingRequestGroup.Item).Where(x => x.def.IsMedicine).Sum(x => x.stackCount)} "
+                    + $"stoves={map.listerThings.ThingsOfDef(DefDatabase<ThingDef>.GetNamed("FueledStove")).Count} "
+                    + $"bp={string.Join(",", map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>().GroupBy(b => b.EntityToBuild.defName).Select(g => g.Key + ":" + g.Count()))}");
+                File.WriteAllText(outPath, sb.ToString());
+            }
+        }
+    }
+}
