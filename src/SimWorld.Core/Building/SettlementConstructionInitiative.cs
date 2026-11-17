@@ -479,6 +479,7 @@ namespace SimWorld.Building
             SettlementCompound? compound = map.settlementCompound;
             if (compound != null && compound.Reserves(GenAdj.OccupiedRect(cell, default, entityDef.size))) return false;
             if (!GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out _)) return false;
+            if (!SettlementReach.CanReach(map, SettlementReach.BandCell(map), cell)) return false;
             return entityDef.passability != Traversability.Impassable || !WouldCutOffGround(map, entityDef, cell);
         }
 

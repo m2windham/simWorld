@@ -274,12 +274,14 @@ namespace SimWorld.Building
             if (budget <= 0) return;
 
             IntVec3 seed = field.CellCount > 0 ? field.Cells[0] : FieldSeedCell(map);
+            IntVec3? band = SettlementReach.BandCell(map);
             int added = 0;
             IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
             for (int i = 0; i < pattern.Count && added < budget; i++)
             {
                 IntVec3 candidate = seed + pattern[i];
                 if (!CanSowIn(map, candidate, crop)) continue;
+                if (!SettlementReach.CanReach(map, band, candidate)) continue; // a field nobody can walk to
                 // The street, the plots and the yard are the compound's (CropDemandFields keeps off them too).
                 if (map.settlementCompound != null && map.settlementCompound.Reserves(CellRect.SingleCell(candidate))) continue;
                 if (map.zoneManager.AddCell(field, candidate)) added++;
