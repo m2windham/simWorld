@@ -18,7 +18,7 @@ namespace SimWorld.Tests.Director
 {
     /// <summary>
     /// A household's dwelling is one of the structures an earthquake brings down, and whoever sleeps in it is
-    /// crushed with it, the same risk a dormitory bed carries (<see cref="EarthquakeFootprintTests"/>). Set
+    /// hurt by it, the same risk a dormitory bed carries (<see cref="EarthquakeFootprintTests"/>). Set
     /// up as that file sets up its sleeper; a file of its own rather than an addition to it.
     /// </summary>
     [Collection("GlobalDefs")]
@@ -35,7 +35,7 @@ namespace SimWorld.Tests.Director
         }
 
         [Fact]
-        public void A_dwelling_that_comes_down_crushes_the_household_sleeping_in_it()
+        public void A_dwelling_that_comes_down_hurts_the_household_sleeping_in_it()
         {
             CoreMap map = new CoreMap(24, 24, TerrainDefOf.Soil);
             var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Quaketown", 0);
@@ -56,8 +56,9 @@ namespace SimWorld.Tests.Director
 
             Assert.True(fired);
             Assert.True(house.Destroyed, "the dwelling must come down");
-            Assert.True(sleeper.Dead, "sleeping in a dwelling that fell on them");
-            Assert.Equal(1, Find.Storyteller.deaths.AttributedTo("Earthquake"));
+            // Hurt, not killed: a fallen dwelling is RimWorld's built-roof hit (IncidentWorker_Earthquake).
+            Assert.False(sleeper.Dead, "a healthy sleeper survives a dwelling falling on them");
+            Assert.True(sleeper.health.hediffSet.hediffs.Count > 0, "sleeping in a dwelling that fell on them");
         }
     }
 }

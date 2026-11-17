@@ -39,13 +39,16 @@ namespace SimWorld.Director
     /// it reaches exactly the <see cref="ThingDef"/>s <see cref="World.Settlement.StructureCount"/> already
     /// tracks, watched or not, with no dependency on where the map generator happened to paint rock.
     ///
-    /// <para/><b>A pawn standing where a destroyed structure stood is crushed with it.</b> Not every collapse
-    /// finds someone — a <see cref="Building.StoneWallMaterials.AllWallDefs"/> wall and a <c>StorageHut</c> are
-    /// both <c>Impassable</c>, so this only ever finds someone in a destroyed <c>Bed</c> cell, the one known
-    /// structure def a pawn can actually stand on — but when it does, the hit is certain death
-    /// (<see cref="CollapseCrushDamage"/>, aimed at the core body part): a building actually
-    /// falling directly onto somebody is not a coin flip, the same judgement
-    /// <see cref="Building.RoofCollapserImmediate.MakeSure"/> already makes for a mountain roof. Those deaths
+    /// <para/><b>A pawn standing where a destroyed structure stood is hit by it, and usually lives.</b> Only a
+    /// bed or a dwelling can have someone on it (a wall and a <c>StorageHut</c> are <c>Impassable</c>). The
+    /// hit is RimWorld's for a constructed roof coming down
+    /// (<see cref="Building.RoofCollapserImmediate.ThinRoofCrushDamageRange"/>, 15–30 Crush on the head and
+    /// shoulders), not the mountain's certain death: what falls here is something the settlement built, and
+    /// RimWorld's own built roof is "a knock on the head" a healthy colonist walks away from. The injured are
+    /// then tended like any other wound, which is the remedy. Before this, every sleeper under a fallen
+    /// structure died outright, and one quake on a sleeping 20-strong band killed four
+    /// (<c>docs/perf/storyteller-pressure</c>, seed 2024). The deaths that still happen (someone already badly
+    /// hurt) are
     /// are credited through <see cref="DeathLedger.RecordAttributed"/> from the ledger's own delta, copying
     /// <see cref="SettlementRaidResolver.Resolve"/>'s own approach — never from this worker's own count of
     /// who it hit — so attribution can never exceed the deaths the ledger actually counted: a settlement that
@@ -76,16 +79,6 @@ namespace SimWorld.Director
         /// be one) and never 1 (a single quake razing a settlement outright is a wipe this port does not model).
         /// </summary>
         public static readonly FloatRange DestructionFractionRange = new FloatRange(0.15f, 0.45f);
-
-        /// <summary>
-        /// Damage dealt to whoever is standing where a destroyed structure stood, aimed at the core body part
-        /// rather than rolled for coverage — comfortably past <c>Health.HealthTuning.LethalDamageThreshold</c>
-        /// (150) regardless of which non-missing part a coverage roll would otherwise have picked, the same
-        /// margin <c>Health.Tests.DeathAttributionTests.KilledBy</c> uses to guarantee a kill. A structure
-        /// actually falling directly onto somebody is not a near-miss; see
-        /// <see cref="Building.RoofCollapserImmediate.MakeSure"/> for the same judgement about a mountain roof.
-        /// </summary>
-        private const float CollapseCrushDamage = 500f;
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
@@ -229,17 +222,18 @@ namespace SimWorld.Director
             // armor source with a nonzero rating, which a bare test pawn never has and a clothed citizen does.
             // Seeded from this incident's own stream so the callee stays deterministic and the ambient stream
             // comes back to exactly where it was — see IncidentWorker_ManhunterPack.Generate.
+            float amount = rand.Range(RoofCollapserImmediate.ThinRoofCrushDamageRange);
             Rand.PushState(rand.Int);
             try
             {
-                BodyPartRecord? core = pawn.health.hediffSet.GetNotMissingParts().FirstOrDefault(p => p.IsCorePart);
-                var dinfo = new DamageInfo(RoofCollapseDefOf.Crush, CollapseCrushDamage,
-                    RoofCollapserImmediate.ThickRoofArmorPenetration, instigator: null, hitPart: core);
+                // RimWorld's constructed-roof hit (RoofCollapserImmediate.CrushUnderRoof): Top/Outside, so it
+                // lands on the head and shoulders and never reaches an organ.
+                var dinfo = new DamageInfo(RoofCollapseDefOf.Crush, amount)
+                {
+                    Height = BodyPartHeight.Top,
+                    Depth = BodyPartDepth.Outside,
+                };
                 RoofCollapseDefOf.Crush.Worker.Apply(dinfo, pawn);
-
-                // Defensive, exactly as RoofCollapserImmediate.MakeSure is for a mountain collapse: certain
-                // death must not quietly become "usually" because coverage found no valid part.
-                if (!pawn.Dead) pawn.health.Kill(dinfo, null);
             }
             finally
             {

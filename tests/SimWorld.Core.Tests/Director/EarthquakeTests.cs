@@ -4,6 +4,7 @@ using System.Linq;
 using SimWorld.Defs;
 using SimWorld.Director;
 using SimWorld.Factions;
+using SimWorld.Health;
 using SimWorld.Letters;
 using SimWorld.Map;
 using SimWorld.Pawns;
@@ -133,6 +134,22 @@ namespace SimWorld.Tests.Director
             return sleeper;
         }
 
+        /// <summary>Wounds <paramref name="pawn"/> to just under <c>HealthTuning.LethalDamageThreshold</c> (150)
+        /// without destroying a part, so the collapse's 15–30 hit is what kills them. A healthy sleeper now
+        /// survives a fallen bed, so the death-crediting tests need someone the hit can actually finish.</summary>
+        private static void Frail(Pawn pawn)
+        {
+            DamageDef cut = DefDatabase<DamageDef>.GetNamed("Cut");
+            void Hit(string part, float amount) =>
+                cut.Worker.Apply(new DamageInfo(cut, amount, hitPart: pawn.RaceProps.body!.GetPartByLabel(part)), pawn);
+            Hit("torso", 21f);
+            foreach (string part in new[] { "left shoulder", "right shoulder", "left leg", "right leg", "left arm", "right arm" })
+            {
+                Hit(part, 20f);
+            }
+            Assert.False(pawn.Dead, "fixture: frail, not dead");
+        }
+
         // ---- content ----
 
         [Fact]
@@ -247,6 +264,7 @@ namespace SimWorld.Tests.Director
             CoreMap map = NewMap();
             Settlement settlement = PlainSettlement();
             Pawn sleeper = SpawnBedWithSleeper(settlement, map, new IntVec3(5, 0, 5));
+            Frail(sleeper);
 
             bool fired = Earthquake.Worker.TryExecute(OntoWatchedMap(settlement, map, registerWithStoryteller: true));
 
@@ -273,6 +291,7 @@ namespace SimWorld.Tests.Director
             CoreMap map = NewMap();
             Settlement settlement = PlainSettlement();
             Pawn sleeper = SpawnBedWithSleeper(settlement, map, new IntVec3(5, 0, 5));
+            Frail(sleeper);
 
             bool fired = Earthquake.Worker.TryExecute(OntoWatchedMap(settlement, map, registerWithStoryteller: false));
 
@@ -282,6 +301,56 @@ namespace SimWorld.Tests.Director
                 "a death nobody's civilization counted must not be counted here either");
             Assert.True(Find.Storyteller.deaths.AttributedTo("Earthquake") == 0,
                 "attribution exceeded what the ledger actually counted — the exact bug this guard exists to prevent");
+        }
+
+        /// <summary>
+        /// The remedy: a bed coming down on a healthy sleeper is RimWorld's built-roof hit (15–30 Crush on the
+        /// head and shoulders), not the mountain's certain death. Twenty firings, each on its own tick so each
+        /// rolls its own hit, and the bed always falls (one bed: <c>DestroyCount</c> is at least one). Every
+        /// sleeper is hurt; most live. The few who do not took the hit on the neck (25 HP), as a RimWorld
+        /// colonist under a falling built roof can. Before this, every one of them died.
+        /// </summary>
+        [Fact]
+        public void A_healthy_sleeper_under_a_fallen_bed_is_hurt_and_usually_lives()
+        {
+            const int trials = 20;
+            int hurt = 0, dead = 0;
+            for (int i = 0; i < trials; i++)
+            {
+                Find.TickManager.DebugSetTicksGame(1000 * (i + 1));
+                CoreMap map = NewMap();
+                Settlement settlement = PlainSettlement();
+                Pawn sleeper = SpawnBedWithSleeper(settlement, map, new IntVec3(5, 0, 5));
+
+                Assert.True(Earthquake.Worker.TryExecute(OntoWatchedMap(settlement, map, registerWithStoryteller: true)));
+                Assert.Empty(map.listerThings.ThingsOfDef(Bed));
+
+                if (sleeper.Dead) dead++;
+                else if (sleeper.health.hediffSet.hediffs.Count > 0) hurt++; // a wound, a crack or a lost part
+            }
+            Assert.Equal(trials, hurt + dead);
+            Assert.True(dead * 4 < trials, $"{dead} of {trials} healthy sleepers died under a fallen bed");
+        }
+
+        /// <summary>The ruling this answers: one quake must not kill a fifth of a band. Twenty sleepers in twenty
+        /// beds, ten quakes on ten ticks (so ten severities and ten sets of hits), each on a fresh band.</summary>
+        [Fact]
+        public void One_quake_on_a_sleeping_band_of_twenty_kills_fewer_than_a_fifth()
+        {
+            int worst = 0;
+            for (int q = 0; q < 10; q++)
+            {
+                Find.TickManager.DebugSetTicksGame(7919 * (q + 1));
+                CoreMap map = NewMap(size: 30);
+                Settlement settlement = PlainSettlement();
+                var sleepers = new List<Pawn>();
+                for (int i = 0; i < 20; i++) sleepers.Add(SpawnBedWithSleeper(settlement, map, new IntVec3(2 + (i % 10) * 2, 0, 3 + (i / 10) * 4)));
+
+                Assert.True(Earthquake.Worker.TryExecute(OntoWatchedMap(settlement, map, registerWithStoryteller: true)));
+                Assert.True(map.listerThings.ThingsOfDef(Bed).Count < 20, "fixture: the quake must bring beds down");
+                worst = System.Math.Max(worst, sleepers.Count(p => p.Dead));
+            }
+            Assert.True(worst < 4, $"the worst of ten quakes killed {worst} of 20 sleepers");
         }
 
         [Fact]
