@@ -268,6 +268,27 @@ namespace SimWorld.Tests.Economy
             Assert.True(granary.filter.Allows(Chunk));
         }
 
+        /// <summary>A settlement with a compound keeps its granary beside it, not wherever the first loose stack
+        /// lies (on the host's seed that was a hundred cells off), and never on the ground the village keeps.</summary>
+        [Fact]
+        public void With_a_compound_the_granary_is_seeded_beside_it_not_at_a_far_stack()
+        {
+            Settlement settlement = PeopledSettlement();
+            CoreMap map = NewMap(120);
+            var compound = Assert.IsType<global::SimWorld.Building.SettlementCompound>(global::SimWorld.Building.SettlementCompound.TryPlan(map, 20, 50));
+            map.settlementCompound = compound;
+            IntVec3 far = new[] { new IntVec3(1, 0, 1), new IntVec3(118, 0, 1), new IntVec3(1, 0, 118), new IntVec3(118, 0, 118) }
+                .OrderByDescending(c => c.DistanceToSquared(compound.DoorCell)).First();
+            for (int i = 0; i < 6; i++) SpawnStack(map, far + new IntVec3(far.x < 60 ? i : -i, 0, 0), Chunk, 1);
+
+            Assert.True(SettlementStockInitiative.EnsureGranary(settlement, map) > 0);
+
+            Zone_Stockpile granary = SettlementStockInitiative.GranaryOf(map)!;
+            Assert.All(granary.Cells, c => Assert.False(compound.Village.Contains(c), $"{c} is village ground"));
+            Assert.All(granary.Cells, c => Assert.True(c.DistanceTo(compound.DoorCell) < far.DistanceTo(compound.DoorCell) / 2,
+                $"{c} is nearer the far stack than the compound"));
+        }
+
         [Fact]
         public void An_empty_map_is_given_no_granary_at_all()
         {
@@ -580,7 +601,6 @@ namespace SimWorld.Tests.Economy
             Game game = Game.NewGame(TribalStart(), "stock-end-to-end", subdivisionOverride: 3, soloStart: true);
             Settlement settlement = game.World!.worldObjects.OfType<Settlement>().First();
             CoreMap map = game.EnterSettlement(settlement);
-            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("Masonry"));
 
             // The town is bigger than the handful of people the camera follows — the ordinary shape of a real
             // settlement (spec §11.3), and the tier a guild's craftsmen come from.
@@ -597,12 +617,19 @@ namespace SimWorld.Tests.Economy
             Assert.Equal(0, settlement.StoreCountOf(Chunk));
             Assert.Equal(0, settlement.StoreCountOf(Blocks));
 
+            // Banking first, masonry after. Stone a standing bill on the map would take stays on the map
+            // (BankStoredGoods), so once a stonecutter's table stands with its bill, chunks are no longer banked;
+            // whether the haul beat the table was a race this test used to win only because most of the band
+            // was founded sealed in a rock pocket with nothing else to do. Masonry is what the table waits on.
             int peakChunksBanked = 0;
+            for (int i = 0; i < 30000 && settlement.StoreCountOf(Chunk) == 0; i++) game.TickManager.DoSingleTick();
+            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("Masonry"));
             for (int i = 0; i < 14000; i++)
             {
-                game.TickManager.DoSingleTick();
                 peakChunksBanked = System.Math.Max(peakChunksBanked, settlement.StoreCountOf(Chunk));
+                game.TickManager.DoSingleTick();
             }
+            peakChunksBanked = System.Math.Max(peakChunksBanked, settlement.StoreCountOf(Chunk));
 
             Assert.True(peakChunksBanked > 0,
                 "A settlement whose citizens hauled stone into its own granary should have banked some of it into the civilization's ledger.");

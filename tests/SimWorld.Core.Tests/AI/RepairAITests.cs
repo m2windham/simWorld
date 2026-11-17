@@ -213,6 +213,73 @@ namespace SimWorld.Tests.AI
             Assert.True(repair.HasJobOnThing(citizen, ruin));
         }
 
+        /// <summary>
+        /// RimWorld's <c>t.Faction == pawn.Faction</c> guard: a ruin has no faction, so it is nobody's chore even
+        /// inside the home area (a stockpile's home margin reaching one used to hold half a band on it), while
+        /// a wall the settlement built carries the builder's faction and is repaired.
+        /// </summary>
+        [Fact]
+        public void A_ruin_inside_the_home_area_is_left_alone_and_the_settlements_own_wall_is_not()
+        {
+            CoreMap map = NewMap(12, 12);
+            Pawn citizen = SpawnHuman(map, new IntVec3(0, 0, 0));
+            citizen.faction = new SimWorld.Factions.Faction(DefDatabase<SimWorld.Factions.FactionDef>.GetNamed("PlayerCivilization"), "Settlers", "F_Settlers");
+            Thing ruin = SpawnDamaged(map, new IntVec3(3, 0, 5), "Wall", 40f);
+            Thing own = SpawnDamaged(map, new IntVec3(9, 0, 5), "Wall", 40f);
+            own.SetFaction(citizen.Faction);
+            int ruinHp = ruin.HitPoints;
+            var repair = new WorkGiver_Repair { def = DefDatabase<WorkGiverDef>.GetNamed("Repair") };
+
+            Assert.False(repair.HasJobOnThing(citizen, ruin));
+            Assert.True(repair.HasJobOnThing(citizen, own));
+
+            RunTicks(3000, citizen);
+            Assert.Equal(own.MaxHitPoints, own.HitPoints);
+            Assert.Equal(ruinHp, ruin.HitPoints);
+        }
+
+        [Fact]
+        public void A_finished_frame_hands_its_builders_faction_to_the_building()
+        {
+            CoreMap map = NewMap(12, 12);
+            Pawn citizen = SpawnHuman(map, new IntVec3(0, 0, 0));
+            citizen.faction = new SimWorld.Factions.Faction(DefDatabase<SimWorld.Factions.FactionDef>.GetNamed("PlayerCivilization"), "Settlers", "F_Settlers");
+            var frame = (Frame)ThingMaker.MakeThing(Def("Frame_Bed"));
+            frame.AddMaterial(Def("WoodLog"), 100);
+            GenSpawn.Spawn(frame, new IntVec3(2, 0, 0), map);
+
+            Thing bed = frame.CompleteConstruction(citizen);
+
+            Assert.Same(citizen.Faction, bed.Faction);
+        }
+
+        /// <summary>A building's faction is a reference to a world faction, so the round trip is a whole game's.</summary>
+        [Fact]
+        public void A_buildings_faction_survives_a_scribe_round_trip()
+        {
+            SimWorld.Map.Map.ResetMapIdCounter();
+            Game game = Game.NewGame(SimWorld.Scenario.ScenarioDefOf.TribalStart.scenario, "faction-roundtrip", subdivisionOverride: 3, soloStart: true, bandSize: 20);
+            var settlement = System.Linq.Enumerable.First(System.Linq.Enumerable.OfType<SimWorld.World.Settlement>(game.World!.worldObjects));
+            SimWorld.God.View.GodCommands.OpenSettlement(settlement.tile);
+            CoreMap map = settlement.InteriorMap!;
+            var faction = System.Linq.Enumerable.First(settlement.Citizens, c => c.Spawned).Faction;
+            Assert.NotNull(faction);
+            IntVec3 cell = System.Linq.Enumerable.First(map.AllCells, c => GenGrid.Standable(c, map) && map.thingGrid.ThingsListAt(c).Count == 0);
+            Thing own = ThingMaker.MakeThing(Def("Wall"));
+            own.SetFaction(faction);
+            GenSpawn.Spawn(own, cell, map);
+            int ownId = own.thingIDNumber;
+
+            string xml = Scribe.SaveToString(game, "game");
+            Game loaded = Scribe.Load<Game>(xml, "game", out IReadOnlyList<string> errors, Content.Database);
+
+            CoreMap loadedMap = System.Linq.Enumerable.First(System.Linq.Enumerable.OfType<SimWorld.World.Settlement>(loaded.World!.worldObjects)).InteriorMap!;
+            Thing loadedWall = System.Linq.Enumerable.Single(loadedMap.listerThings.ThingsOfDef(Def("Wall")), w => w.thingIDNumber == ownId);
+            Assert.NotNull(loadedWall.Faction);
+            Assert.Same(System.Linq.Enumerable.First(loadedMap.mapPawns.AllPawns, p => p.RaceProps.Humanlike).Faction, loadedWall.Faction);
+            Assert.All(loadedMap.listerThings.ThingsOfDef(Def("Wall")), w => Assert.True(w.thingIDNumber == ownId || w.Faction == null));
+        }
+
         [Fact]
         public void Two_citizens_do_not_both_claim_the_only_damaged_building()
         {

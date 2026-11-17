@@ -13,24 +13,11 @@ namespace SimWorld.AI
     /// <c>WorkGivers.xml</c>; before this it fell back to <see cref="WorkGiver_Pending"/>, so the whole
     /// Construction work type could only ever build, never maintain.
     /// <para/>
-    /// <b>Translation — "the player faction's damaged buildings" becomes "any damaged artificial building
-    /// on this map".</b> RimWorld scans <c>Map.listerBuildingsRepairable.RepairableBuildings(pawn.Faction)</c>
-    /// and then re-checks <c>t.Faction == pawn.Faction</c>, so a colonist never repairs a raider's turret.
-    /// Neither half of that is expressible here. This port's <see cref="Thing"/> carries <b>no faction field
-    /// at all</b> — only <see cref="Pawn.faction"/> does, a gap <see cref="Building.CompTurretGun.Faction"/>
-    /// already had to work around by giving the comp its own — so a building simply has no owner to compare
-    /// against, and there is no <c>listerBuildingsRepairable</c> to consult either. What the map does carry
-    /// is <see cref="ThingRequestGroup.BuildingArtificial"/>: category <c>Building</c>, not
-    /// <see cref="ThingDef.mineable"/>. That is this codebase's own standing line between natural rock and
-    /// something somebody built, and it lands in the same place as RimWorld's <c>building.repairable</c>
-    /// (false on mineable rock, true on constructed buildings) — so the predicate becomes
+    /// <b>Ported guards:</b> RimWorld's home-area check and its <c>t.Faction == pawn.Faction</c> check, so a
+    /// ruin (factionless, from <c>MapGen.GenStep_Ruins</c>) is never anybody's chore, inside the home area or
+    /// out. <b>Translation, what is left:</b> there is no <c>listerBuildingsRepairable</c>, so the scan is
+    /// <see cref="ThingRequestGroup.BuildingArtificial"/> (category <c>Building</c>, not mineable) filtered by
     /// <see cref="IsRepairable"/>: an artificial building that uses hit points and is missing some.
-    /// RimWorld's other guard, the home area, is expressible and is ported (<see cref="HasJobOnThing"/>), so
-    /// what is left of the translation is a ruin wall that happens to stand inside the home area: RimWorld
-    /// would leave it (no faction), this port repairs it. A stockpile's home-area margin reaching a ruin is
-    /// enough (the host's seed has one at tick 35,000), so that remains a known cost of the missing faction.
-    /// The same shape <see cref="WorkGiver_Miner"/> once used when it translated mining's <c>Designation.Mine</c>
-    /// away and mined any reachable mineable edifice instead (it scans Mine designations now).
     /// <para/>
     /// <b>What actually damages a building here</b> (nothing did for a while, so this is worth naming):
     /// <see cref="Combat.GenExplosion.DoExplosion"/>, reached from <see cref="Building.CompExplosive"/> — a
@@ -78,6 +65,9 @@ namespace SimWorld.AI
             // never repairs because a ruin has no faction: without it, half a band walked the map patching ruin
             // walls while the compound and its houses stood unfinished (the host's game at tick 46,000).
             if (!forced && !pawn.Map!.areaManager.Home[thing.Position]) return false;
+            // RimWorld: t.Faction != pawn.Faction -> no job. A ruin has no faction, so nobody repairs it, home
+            // area or not; a stockpile's home margin used to reach one and keep half a band on it.
+            if (!ReferenceEquals(thing.Faction, pawn.Faction)) return false;
             // RimWorld: WorkGiver_Repair's own t.IsBurning() guard. Patching up a building that is still on
             // fire is work thrown away — put the fire out first, which is emergency work and will already be
             // this pawn's next job anyway (WorkGiver_FightFires).

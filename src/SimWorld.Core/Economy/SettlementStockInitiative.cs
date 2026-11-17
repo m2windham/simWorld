@@ -487,10 +487,12 @@ namespace SimWorld.Economy
         /// tracks the <i>rate</i> a settlement produces goods at, never the total it has ever produced. A
         /// settlement with nothing lying around never paints a cell.
         ///
-        /// <para/><b>Where.</b> Around the goods, exactly as <c>Crafting.StonecutterInitiative</c> puts the
-        /// bench where the stone is and for the same reason (a store nobody can reach is a store nobody uses):
-        /// the first pass seeds the granary at the first homeless stack, and later passes grow outward from
-        /// that seed through <see cref="GenRadial.RadialPattern"/> — nearest-first, deterministic, no draw on
+        /// <para/><b>Where.</b> Beside the settlement's compound when it has one: the first pass seeds the
+        /// granary at the open cell nearest the compound's door outside the ground the village keeps, and growth
+        /// never paints that ground. A settlement without a compound puts it around the goods, exactly as
+        /// <c>Crafting.StonecutterInitiative</c> puts the bench where the stone is and for the same reason (a
+        /// store nobody can reach is a store nobody uses), seeded at the first homeless stack. Later passes grow
+        /// outward from that seed through <see cref="GenRadial.RadialPattern"/> — nearest-first, deterministic, no draw on
         /// the shared <see cref="Rand"/> stream for a decision that has a perfectly good ordered answer.
         ///
         /// <para/><b>What it accepts.</b> What any new stockpile accepts: RimWorld's
@@ -515,20 +517,44 @@ namespace SimWorld.Economy
                 SettlementStockTuning.MaxGranaryCellsPerPass);
             if (wanted <= 0) return 0;
 
-            Zone_Stockpile granary = GranaryOf(map) ?? NewGranary(map);
-            IntVec3 seed = granary.CellCount > 0 ? granary.Cells[0] : homeless[0].Position;
+            SettlementCompound? compound = map.settlementCompound;
+            IntVec3 seed;
+            if (GranaryOf(map) is Zone_Stockpile existing && existing.CellCount > 0) seed = existing.Cells[0];
+            else if (compound == null) seed = homeless[0].Position;
+            else if (!TryFindGranaryCell(map, compound.DoorCell, compound, out seed)) return 0;
 
+            Zone_Stockpile granary = GranaryOf(map) ?? NewGranary(map);
             int added = 0;
             IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
             for (int i = 0; i < pattern.Count && added < wanted; i++)
             {
                 IntVec3 candidate = seed + pattern[i];
-                if (!GenGrid.InBounds(candidate, map) || !GenGrid.Standable(candidate, map)) continue;
-                if (map.zoneManager.ZoneAt(candidate) != null) continue; // one zone per cell (ZoneManager's own rule)
+                if (!CanBeGranary(map, candidate, compound)) continue;
                 if (map.zoneManager.AddCell(granary, candidate)) added++;
             }
             return added;
         }
+
+        /// <summary>The nearest cell to <paramref name="origin"/> a granary could take: where a settlement with a
+        /// compound seeds its store, beside the village rather than at whatever loose stack the lister names first
+        /// (on the host's seed that was a hundred cells off, and the store's home-area margin then took in a ruin).</summary>
+        private static bool TryFindGranaryCell(Map.Map map, IntVec3 origin, SettlementCompound compound, out IntVec3 cell)
+        {
+            IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
+            for (int i = 0; i < pattern.Count; i++)
+            {
+                cell = origin + pattern[i];
+                if (CanBeGranary(map, cell, compound)) return true;
+            }
+            cell = IntVec3.Invalid;
+            return false;
+        }
+
+        /// <summary>Open, unzoned ground (one zone per cell, ZoneManager's own rule) that the compound does not
+        /// keep for its walls, street, yard or plots.</summary>
+        private static bool CanBeGranary(Map.Map map, IntVec3 c, SettlementCompound? compound) =>
+            GenGrid.InBounds(c, map) && GenGrid.Standable(c, map) && map.zoneManager.ZoneAt(c) == null &&
+            (compound == null || !compound.Reserves(CellRect.SingleCell(c)));
 
         private static Zone_Stockpile NewGranary(Map.Map map)
         {
