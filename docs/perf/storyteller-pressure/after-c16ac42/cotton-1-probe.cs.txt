@@ -67,7 +67,20 @@ namespace SimWorld.Tests.Integration
 
             for (int day = 1; day <= days; day++)
             {
-                for (int i = 0; i < GenDate.TicksPerDay; i++) game.TickManager.DoSingleTick();
+                int stormDay = int.Parse(Environment.GetEnvironmentVariable("PROBE_STORM_DAY") ?? "-1");
+                int peakFires = 0;
+                for (int i = 0; i < GenDate.TicksPerDay; i++)
+                {
+                    if (day == stormDay && i == 12 * 2500)
+                    {
+                        Find.World!.gameConditionManager.RegisterCondition(
+                            global::SimWorld.Conditions.GameConditionMaker.MakeConditionForDays(global::SimWorld.Conditions.GameConditionDefOf.Flashstorm, 0.1f));
+                        sb.AppendLine($"day {day}: FORCED Flashstorm at tick {Find.TickManager.TicksGame}");
+                    }
+                    game.TickManager.DoSingleTick();
+                    if (i % 250 == 0) peakFires = Math.Max(peakFires, map.listerThings.AllThings.Count(x => x.def.defName == "Fire"));
+                }
+                sb.Append($"peakFires={peakFires} ");
                 Thing? bench = map.listerThings.ThingsOfDef(tailor).FirstOrDefault();
                 Thing? planned = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>().FirstOrDefault(b => b.EntityToBuild == tailor)
                     ?? (Thing?)map.listerThings.AllThings.OfType<Frame>().FirstOrDefault(f => f.EntityToBuild == tailor);
