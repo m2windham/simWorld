@@ -132,8 +132,14 @@ namespace SimWorld.Tests.Social
         [Fact]
         public void A_founders_mood_rises_measurably_more_under_an_active_Ideo_than_an_identical_founding_with_none()
         {
+            // The arms run one after the other, never interleaved. Find resolves through the current game, and
+            // NewGame makes the newest game current and resets the shared services, so ticking the first game
+            // after the second was founded ran it against the second's clock and ideology: neither arm had the
+            // belonging precept, and the test passed on chitchat noise until a change to pawn generation moved it.
             Game withIdeo = NewSoloGame("ideo-mood-seed");
             Pawn founderWithIdeo = withIdeo.World!.Settlements.First().Citizens[0];
+            for (int i = 0; i < Ticks; i++) withIdeo.TickManager.DoSingleTick();
+            float moodWithIdeo = founderWithIdeo.needs.mood!.CurLevel;
 
             Game withoutIdeo = NewSoloGame("ideo-mood-seed"); // same seed: identical founding band and tile.
             Find.Ideo = null; // the one input this test isolates — cleared before a single tick runs.
@@ -142,13 +148,7 @@ namespace SimWorld.Tests.Social
             // Same seed really did found the same band (Name has no value equality, so compare the rendered form).
             Assert.Equal(founderWithIdeo.Name?.ToStringFull, founderWithoutIdeo.Name?.ToStringFull);
 
-            for (int i = 0; i < Ticks; i++)
-            {
-                withIdeo.TickManager.DoSingleTick();
-                withoutIdeo.TickManager.DoSingleTick();
-            }
-
-            float moodWithIdeo = founderWithIdeo.needs.mood!.CurLevel;
+            for (int i = 0; i < Ticks; i++) withoutIdeo.TickManager.DoSingleTick();
             float moodWithoutIdeo = founderWithoutIdeo.needs.mood!.CurLevel;
 
             // The belonging precept is a flat +3 mood points under either shipped ideoligion and asks nothing

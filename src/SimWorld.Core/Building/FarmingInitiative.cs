@@ -122,6 +122,10 @@ namespace SimWorld.Building
             if (map == null) throw new ArgumentNullException(nameof(map));
 
             Settlement? settlement = HuntingInitiative.SettlementFor(map);
+            // The village is laid out before any field breaks ground: a field marks home area round itself,
+            // and a home area that is only a field's border has no room for the compound
+            // (SettlementConstructionInitiative.EnsureCompound).
+            if (settlement != null) SettlementConstructionInitiative.EnsureCompound(settlement, map);
             // Non-food crops (cotton for cloth, ...) keep fields of their own, each sized by its CropDemandDef.
             Farming.CropDemandFields.Run(map, settlement);
             int wanted = FieldCellsWantedFor(settlement, map);
@@ -276,6 +280,8 @@ namespace SimWorld.Building
             {
                 IntVec3 candidate = seed + pattern[i];
                 if (!CanSowIn(map, candidate, crop)) continue;
+                // The street, the plots and the yard are the compound's (CropDemandFields keeps off them too).
+                if (map.settlementCompound != null && map.settlementCompound.Reserves(CellRect.SingleCell(candidate))) continue;
                 if (map.zoneManager.AddCell(field, candidate)) added++;
             }
         }

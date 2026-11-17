@@ -90,6 +90,15 @@ namespace SimWorld.Bench
                 case "storyteller":
                     StorytellerSuite.Run(opt);
                     break;
+                case "layout":
+                    LayoutSuite.Run(opt);
+                    break;
+                case "band":
+                    BandSuite.Run(opt);
+                    break;
+                case "mining":
+                    MiningSuite.Run(opt);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -204,6 +213,15 @@ namespace SimWorld.Bench
                     case "--target-ns":
                         opt.TargetNs = ParseIntList(Next(args, ref i), "--target-ns");
                         break;
+                    case "--layout-seed":
+                        opt.LayoutSeed = Next(args, ref i);
+                        break;
+                    case "--layout-ticks":
+                        opt.LayoutTicks = ParseInt(Next(args, ref i), "--layout-ticks");
+                        break;
+                    case "--layout-every":
+                        opt.LayoutEvery = ParseInt(Next(args, ref i), "--layout-every");
+                        break;
                     case "--target-tick-ns":
                         opt.TargetTickNs = ParseIntList(Next(args, ref i), "--target-tick-ns");
                         break;
@@ -274,7 +292,7 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | storyteller | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | storyteller | layout | band | mining | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
   --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc, probe, tension, storyteller.
                           For --suite tension the span is read in years: 60 days to the year, which is also
@@ -307,6 +325,9 @@ OPTIONS
   --threats <true|false>  for --suite storyteller: false runs the same world with big and intro threats
                           disallowed and everything else as Medium, the baseline a threat reading is read
                           against (default true).
+  --layout-seed <s>       for --suite layout and band: new-game seed string (default simworld-host, the Unity host's).
+  --layout-ticks <N>      for --suite layout and mining: ticks to run before reporting (default 60000).
+  --layout-every <N>      for --suite layout: also print a brief line every N ticks (default 0, never).
   --help, -h              show this text.
 
 SUITES

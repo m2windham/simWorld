@@ -192,6 +192,56 @@ namespace SimWorld.Tests.Map
         }
 
         [Fact]
+        public void Mining_into_a_rock_face_beside_open_ground_extends_its_region_without_a_reflood()
+        {
+            // A rock face two cells deep on open ground; mine both cells between two rebuilds.
+            CoreMap map = NewMap(30, 30);
+            Thing outer = BuildWall(map, new IntVec3(15, 0, 15));
+            Thing inner = BuildWall(map, new IntVec3(16, 0, 15));
+            for (int z = 14; z <= 16; z += 2) for (int x = 15; x <= 17; x++) BuildWall(map, new IntVec3(x, 0, z));
+            BuildWall(map, new IntVec3(17, 0, 15));
+            map.regionAndRoomUpdater.RebuildIfNeeded();
+            Region open = map.regionGrid.RegionAt(new IntVec3(0, 0, 0))!;
+            int version = map.regionAndRoomUpdater.Version;
+
+            inner.Destroy();
+            outer.Destroy();
+            map.regionAndRoomUpdater.RebuildIfNeeded();
+
+            Assert.Same(open, map.regionGrid.RegionAt(new IntVec3(0, 0, 0)));
+            Assert.Same(open, map.regionGrid.RegionAt(new IntVec3(15, 0, 15)));
+            Assert.Same(open, map.regionGrid.RegionAt(new IntVec3(16, 0, 15)));
+            Assert.Equal(0, map.regionAndRoomUpdater.RegionsCreatedLastRebuild);
+            Assert.True(map.regionAndRoomUpdater.Version > version);
+        }
+
+        [Fact]
+        public void Reachability_follows_the_graph_when_a_wall_cuts_a_hall_between_two_rooms_and_is_mined_through_again()
+        {
+            // Room | door | hall | door | room. Cutting the hall rebuilds only the hall: the two rooms and doors keep
+            // their region objects, so a reachability answer cached on them must not outlive the cut.
+            CoreMap map = NewMap(30, 5);
+            for (int z = 0; z < 5; z++)
+            {
+                if (z == 2) { BuildDoor(map, new IntVec3(5, 0, z)); BuildDoor(map, new IntVec3(24, 0, z)); }
+                else { BuildWall(map, new IntVec3(5, 0, z)); BuildWall(map, new IntVec3(24, 0, z)); }
+            }
+            Pawn pawn = NewHuman();
+            GenSpawn.Spawn(pawn, new IntVec3(0, 0, 2), map);
+            var target = new IntVec3(29, 0, 2);
+            Assert.True(Reachability.CanReach(pawn, target));
+            Region room = map.regionGrid.RegionAt(new IntVec3(0, 0, 2))!;
+
+            var cut = new List<Thing>();
+            for (int z = 0; z < 5; z++) cut.Add(BuildWall(map, new IntVec3(15, 0, z)));
+            Assert.False(Reachability.CanReach(pawn, target));
+            Assert.Same(room, map.regionGrid.RegionAt(new IntVec3(0, 0, 2)));
+
+            cut[2].Destroy();
+            Assert.True(Reachability.CanReach(pawn, target));
+        }
+
+        [Fact]
         public void Pawn_spawning_and_despawning_does_not_dirty_the_region_graph()
         {
             CoreMap map = NewMap(10, 10);

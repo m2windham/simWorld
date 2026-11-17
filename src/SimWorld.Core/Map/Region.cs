@@ -35,6 +35,11 @@ namespace SimWorld.Map
         /// per cell.</summary>
         internal int reachedIndex;
 
+        /// <summary><see cref="AI.Reachability"/>'s cached connected component, valid while
+        /// <see cref="componentVersion"/> equals the map's <see cref="RegionAndRoomUpdater.Version"/>.</summary>
+        internal int component;
+        internal int componentVersion = -1;
+
         public Region()
         {
             id = nextId++;

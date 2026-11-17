@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using SimWorld.Health;
 using SimWorld.Map;
 using SimWorld.Pawns;
@@ -14,6 +15,11 @@ namespace SimWorld.AI
     /// class used to keep its own flat flood-fill cache and pay an O(map) recompute on *any* path-grid
     /// change anywhere, however small (see this repository's <c>ai.regions</c> tracker item for that
     /// history) — that cost now lives, correctly scoped, in the region graph instead.
+    ///
+    /// Answers are cached the way RimWorld's <c>ReachabilityCache</c> caches them, until the region graph next
+    /// changes: here as a connected-component label on each region, filled lazily by one BFS per component.
+    /// With regions bounded to 12x12 an open map is hundreds of regions, and a work scan asks this once per
+    /// candidate thing, so a fresh BFS per question was a third of the simulation (tools/bench --suite mining).
     /// </summary>
     public sealed class Reachability
     {
@@ -39,7 +45,7 @@ namespace SimWorld.AI
             if (mode == PathEndMode.OnCell || mode == PathEndMode.None)
             {
                 Region? to = map.regionGrid.RegionAt(targetCell);
-                return to != null && RegionTraverser.WithinRegions(from, to);
+                return to != null && Connected(from, to);
             }
 
             // A multi-cell Thing is reached from the ring touching its footprint — the same cells
@@ -54,7 +60,7 @@ namespace SimWorld.AI
                         var c = new IntVec3(x, 0, z);
                         if (footprint.Contains(c) || !GenGrid.InBounds(c, map)) continue;
                         Region? r = map.regionGrid.RegionAt(c);
-                        if (r != null && RegionTraverser.WithinRegions(from, r)) return true;
+                        if (r != null && Connected(from, r)) return true;
                     }
                 }
                 return false;
@@ -65,13 +71,55 @@ namespace SimWorld.AI
             for (int d = 0; d < GenAdj.AdjacentCells.Length; d++)
             {
                 Region? nb = map.regionGrid.RegionAt(targetCell + GenAdj.AdjacentCells[d]);
-                if (nb != null && RegionTraverser.WithinRegions(from, nb)) return true;
+                if (nb != null && Connected(from, nb)) return true;
             }
             Region? onTarget = map.regionGrid.RegionAt(targetCell);
-            return onTarget != null && RegionTraverser.WithinRegions(from, onTarget);
+            return onTarget != null && Connected(from, onTarget);
         }
 
         /// <summary>Convenience matching RimWorld's call shape; resolves the map from the pawn.</summary>
+        private int componentsVersion = -1;
+        private int nextComponent;
+        private readonly Queue<Region> componentQueue = new Queue<Region>();
+
+        /// <summary>Same answer as <see cref="RegionTraverser.WithinRegions"/> over every passable region type, which
+        /// every region is: two regions are mutually reachable exactly when their components match.</summary>
+        private bool Connected(Region from, Region to)
+        {
+            if (ReferenceEquals(from, to)) return true;
+            int version = map.regionAndRoomUpdater.Version;
+            if (version != componentsVersion)
+            {
+                componentsVersion = version;
+                nextComponent = 0;
+            }
+            return ComponentOf(from, version) == ComponentOf(to, version);
+        }
+
+        private int ComponentOf(Region root, int version)
+        {
+            if (root.componentVersion == version) return root.component;
+            int id = nextComponent++;
+            root.componentVersion = version;
+            root.component = id;
+            componentQueue.Clear();
+            componentQueue.Enqueue(root);
+            while (componentQueue.Count > 0)
+            {
+                Region cur = componentQueue.Dequeue();
+                IReadOnlyList<RegionLink> links = cur.Links;
+                for (int i = 0; i < links.Count; i++)
+                {
+                    Region? other = links[i].GetOtherRegion(cur);
+                    if (other == null || other.componentVersion == version) continue;
+                    other.componentVersion = version;
+                    other.component = id;
+                    componentQueue.Enqueue(other);
+                }
+            }
+            return id;
+        }
+
         public static bool CanReach(Pawn pawn, LocalTargetInfo target, PathEndMode mode = PathEndMode.Touch) =>
             pawn.Map?.reachability.CanReachTarget(pawn, target, mode) ?? false;
     }

@@ -160,8 +160,16 @@ namespace SimWorld.Building
         /// stay a pure read. A settlement that cannot have a compound yet
         /// (<see cref="SettlementCompound.TryPlan"/>) is asked again every pass, so a band that grows into
         /// one, or a home area widened until it holds one, gets it then.
+        /// <para/>
+        /// <b>It has to come before the first field.</b> <see cref="FarmingInitiative"/> runs inside the map's
+        /// own tick, ahead of this pass, and every cell it adds to a field marks home area round itself
+        /// (<see cref="AutoHomeAreaMaker.Notify_ZoneCellAdded"/>, as in RimWorld). Planned after that, the
+        /// compound had to fit inside a few hundred cells of field border, did not, and the band's beds were
+        /// drawn at random round the field; by the time the home area had grown enough to hold a compound every
+        /// bed already stood outside it (the host's default game, <c>tools/bench --suite layout</c>). So the
+        /// farming pass asks for this first.
         /// </summary>
-        private static void EnsureCompound(Settlement settlement, Map.Map map)
+        internal static void EnsureCompound(Settlement settlement, Map.Map map)
         {
             int citizens = settlement.Citizens.Count;
             if (map.settlementCompound == null && citizens > 0)

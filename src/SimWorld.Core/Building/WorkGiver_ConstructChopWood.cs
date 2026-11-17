@@ -158,9 +158,13 @@ namespace SimWorld.Building
         }
 
         /// <summary>The tree shares its cell with a <see cref="Blueprint"/> or a <see cref="Frame"/> — the
-        /// same test <see cref="WorkGiver_PlantsCut"/> uses for a plant blocking construction.</summary>
+        /// same test <see cref="WorkGiver_PlantsCut"/> uses for a plant blocking construction — or stands inside
+        /// the ring of the map's <see cref="SettlementCompound"/>. That ground is the dormitory: a RimWorld
+        /// player cuts the trees inside the walls they raise, and the host's capture showed a finished ring with
+        /// a copse growing in it.</summary>
         private static bool StandsOnASite(Plant plant, Map.Map map) =>
             map.thingGrid.CellContains(plant.Position, ThingCategory.Blueprint) ||
-            map.thingGrid.CellContains(plant.Position, ThingCategory.Frame);
+            map.thingGrid.CellContains(plant.Position, ThingCategory.Frame) ||
+            (map.settlementCompound != null && map.settlementCompound.Interior.Contains(plant.Position));
     }
 }

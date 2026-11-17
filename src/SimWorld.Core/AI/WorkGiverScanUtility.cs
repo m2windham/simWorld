@@ -50,18 +50,29 @@ namespace SimWorld.AI
             }
             if (!scanner.def.scanThings) return null;
 
-            Thing? best = null;
-            int bestDistSq = int.MaxValue;
+            // Nearest first. RimWorld's GenClosest.ClosestThing_Global_Reachable walks the candidates in list order
+            // and tightens its distance bound only on a candidate it accepts, so every rejection let farther
+            // candidates through to HasJobOnThing. That is cheap over a designation list; this port's miner has
+            // no designations and offers every rock on the map, and testing them in list order was most of the
+            // simulation once a band took to mining (tools/bench --suite mining). Sorting by (distance, list
+            // position) and stopping at the first accepted candidate picks the same thing the list-order walk
+            // picks — the nearest accepted, the earliest-listed on a tie — without asking about the rest.
+            var candidates = new List<Thing>();
+            var order = new List<long>();
             foreach (Thing t in scanner.PotentialWorkThingsGlobal(pawn))
             {
                 if (!t.Spawned || t.Map != map) continue;
-                int distSq = (t.Position - pawn.Position).LengthHorizontalSquared;
-                if (distSq >= bestDistSq) continue;
-                if (!scanner.HasJobOnThing(pawn, t)) continue;
-                best = t;
-                bestDistSq = distSq;
+                long distSq = (t.Position - pawn.Position).LengthHorizontalSquared;
+                order.Add((distSq << 32) | (uint)candidates.Count);
+                candidates.Add(t);
             }
-            return best != null ? scanner.JobOnThing(pawn, best) : null;
+            order.Sort();
+            for (int i = 0; i < order.Count; i++)
+            {
+                Thing t = candidates[(int)(order[i] & 0xFFFFFFFF)];
+                if (scanner.HasJobOnThing(pawn, t)) return scanner.JobOnThing(pawn, t);
+            }
+            return null;
         }
 
         private static Job? TryFindJobOnCellScanner(Pawn pawn, WorkGiver_Scanner scanner)

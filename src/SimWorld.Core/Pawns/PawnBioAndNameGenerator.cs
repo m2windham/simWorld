@@ -15,12 +15,28 @@ namespace SimWorld.Pawns
     public static class NameUseChecker
     {
         private static readonly HashSet<string> usedFullNames = new HashSet<string>(StringComparer.Ordinal);
+        private static readonly HashSet<string> usedNicks = new HashSet<string>(StringComparer.Ordinal);
 
         public static bool NameWordIsUsed(string fullName) => usedFullNames.Contains(fullName);
 
+        /// <summary>Whether a <see cref="NameTriple"/> already given out goes by <paramref name="nick"/> — the
+        /// test RimWorld's <c>GeneratePawnName_Shuffled</c> retries its nick against
+        /// (<c>NameUseChecker.AllPawnsNamesEverUsed</c>, any <c>NameTriple</c> whose <c>Nick</c> matches).</summary>
+        public static bool NickIsUsed(string nick) => usedNicks.Contains(nick);
+
         public static void AddName(string fullName) => usedFullNames.Add(fullName);
 
-        public static void Clear() => usedFullNames.Clear();
+        public static void AddName(NameTriple name)
+        {
+            usedFullNames.Add(name.ToStringFull);
+            usedNicks.Add(name.nick);
+        }
+
+        public static void Clear()
+        {
+            usedFullNames.Clear();
+            usedNicks.Clear();
+        }
     }
 
     /// <summary>
@@ -33,8 +49,20 @@ namespace SimWorld.Pawns
     {
         private const int MaxTries = 50;
 
-        /// <summary>A first + last name from the loaded banks, retried until it has not been used yet this run
-        /// (falling back to a numbered surname if every combination in the banks collides).</summary>
+        /// <summary>
+        /// A first + last name from the loaded banks, retried until it has not been used yet this run (falling
+        /// back to a numbered surname if every combination in the banks collides), and the name the pawn goes
+        /// by, which is what every readout shows (<see cref="NameTriple.ToStringShort"/>).
+        /// <para/>
+        /// <b>The nick is RimWorld's, retried against the nicks already in use</b>
+        /// (<c>PawnBioAndNameGenerator.GeneratePawnName_Shuffled</c>, recalled from the decompiled source, which
+        /// is not reachable from here to quote): up to 50 times, 15% a nickname from the nick bank (gendered one
+        /// time in five), otherwise the first name or the last name evenly. It used to be the first name always,
+        /// with only the full name kept unique, so a band of 20 drawn from 40 first names per gender went by
+        /// three Oonas and two Ivos (the host's default game). There is no nick bank in content yet; that branch
+        /// falls back to the first name. Pinned by behaviour in <c>PawnNameTests</c>, not by the constants.
+        /// </para>
+        /// </summary>
         public static NameTriple GeneratePawnName(Pawn pawn)
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
@@ -49,10 +77,10 @@ namespace SimWorld.Pawns
                     first = RandomNameFromBank(gender, NameSlot.First) ?? first;
                     last = RandomNameFromBank(Gender.None, NameSlot.Last) ?? last;
                 }
-                var candidate = new NameTriple(first, first, last);
+                var candidate = new NameTriple(first, NickFor(gender, first, last), last);
                 if (!NameUseChecker.NameWordIsUsed(candidate.ToStringFull))
                 {
-                    NameUseChecker.AddName(candidate.ToStringFull);
+                    NameUseChecker.AddName(candidate);
                     return candidate;
                 }
             }
@@ -64,10 +92,33 @@ namespace SimWorld.Pawns
                 var candidate = new NameTriple(first, first, last + suffix.ToString(CultureInfo.InvariantCulture));
                 if (!NameUseChecker.NameWordIsUsed(candidate.ToStringFull))
                 {
-                    NameUseChecker.AddName(candidate.ToStringFull);
+                    NameUseChecker.AddName(candidate);
                     return candidate;
                 }
             }
+        }
+
+        /// <summary>RimWorld's nick loop (see <see cref="GeneratePawnName"/>): gives up after 50 tries and keeps
+        /// the last draw, as RimWorld does.</summary>
+        private static string NickFor(Gender gender, string first, string last)
+        {
+            string nick;
+            int tries = 0;
+            do
+            {
+                tries++;
+                if (Rand.Value < 0.15f)
+                {
+                    Gender nickGender = Rand.Value < 0.8f ? Gender.None : gender;
+                    nick = RandomNameFromBank(nickGender, NameSlot.Nick) ?? first;
+                }
+                else
+                {
+                    nick = Rand.Value < 0.5f ? first : last;
+                }
+            }
+            while (tries < 50 && NameUseChecker.NickIsUsed(nick));
+            return nick;
         }
 
         /// <summary>Non-humanlike pawns get one name: from a name bank sharing the race's gender-less first-name

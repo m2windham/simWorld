@@ -112,6 +112,12 @@ namespace SimWorld.Map
             // exact split of a torn-down area into new regions reproduce identically for the same map.
             cells.Sort((a, b) => map.cellIndices.CellToIndex(a).CompareTo(map.cellIndices.CellToIndex(b)));
 
+            if (TryJoinNewlyOpenCells(cells))
+            {
+                Version++;
+                return;
+            }
+
             var toClear = new List<Region>();
             var seen = new HashSet<Region>();
             foreach (IntVec3 c in cells)
@@ -121,28 +127,105 @@ namespace SimWorld.Map
                 if (r != null && seen.Add(r)) toClear.Add(r);
             }
 
-            var reflood = new List<IntVec3>();
+            // The cells to re-flood are visited in ascending cell index, as before, but marked on a map-sized
+            // array and swept rather than collected and sorted. A torn-down region here is a whole connected
+            // area (regions are not bounded to RimWorld's 12x12), so one mined rock beside the open ground put
+            // tens of thousands of cells through a comparison sort, every time: with a band mining, that sort
+            // alone was 40% of the simulation (tools/bench --suite mining). Same order, same regions, same ids.
+            int n = map.cellIndices.NumGridCells;
+            if (refloodMarks == null || refloodMarks.Length != n) refloodMarks = new bool[n];
+            int lowest = n, highest = -1;
             foreach (Region r in toClear)
             {
-                reflood.AddRange(r.Cells);
+                IReadOnlyList<IntVec3> regionCells = r.Cells;
+                for (int i = 0; i < regionCells.Count; i++) Mark(map.cellIndices.CellToIndex(regionCells[i]), ref lowest, ref highest);
                 regionGrid.RemoveRegion(r);
             }
             foreach (IntVec3 c in cells)
             {
                 // Cells that never had a region (freshly walkable, e.g. a mined wall) still need flooding.
-                if (GenGrid.InBounds(c, map)) reflood.Add(c);
+                if (GenGrid.InBounds(c, map)) Mark(map.cellIndices.CellToIndex(c), ref lowest, ref highest);
             }
-            reflood.Sort((a, b) => map.cellIndices.CellToIndex(a).CompareTo(map.cellIndices.CellToIndex(b)));
 
             var maker = new RegionMaker(map, regionGrid);
-            var processed = new HashSet<IntVec3>();
-            foreach (IntVec3 c in reflood)
+            for (int i = lowest; i <= highest; i++)
             {
-                if (!processed.Add(c) || regionGrid.RegionAt(c) != null) continue;
-                if (!map.pathGrid.Walkable(c)) continue;
-                if (maker.TryGenerateRegionFrom(c)) RegionsCreatedLastRebuild++;
+                if (!refloodMarks[i]) continue;
+                refloodMarks[i] = false;
+                if (regionGrid.RegionAtIndex(i) != null || !map.pathGrid.WalkableFast(i)) continue;
+                if (maker.TryGenerateRegionFrom(map.cellIndices.IndexToCell(i))) RegionsCreatedLastRebuild++;
             }
             Version++;
+        }
+
+        private bool[]? refloodMarks;
+
+        /// <summary>
+        /// The common case of a mined rock, done without a re-flood: when every dirty cell is either unchanged or
+        /// newly open floor (not a door), and each newly open cell borders exactly one region, a Normal one, and
+        /// no door, that cell simply joins the region. Regions here grow by geometry alone, so the one beside a
+        /// rock face is usually most of the map, and re-flooding it for every rock mined was most of the
+        /// simulation once a band took to mining (tools/bench --suite mining). The partition this leaves is the
+        /// one a re-flood would produce: a region is a connected run of non-door floor, and a cell touching only
+        /// one such run extends it. Anything else — a cell closed, a door placed or removed, a cell joining two
+        /// regions or opening a pocket of its own — returns false and gets the full rebuild, which is still
+        /// correct over a graph this has partly extended because it tears down every region a dirty cell is in.
+        /// </summary>
+        private bool TryJoinNewlyOpenCells(List<IntVec3> cells)
+        {
+            var open = new List<IntVec3>();
+            foreach (IntVec3 c in cells)
+            {
+                if (!GenGrid.InBounds(c, map)) continue;
+                int i = map.cellIndices.CellToIndex(c);
+                Region? r = regionGrid.RegionAtIndex(i);
+                bool walkable = map.pathGrid.WalkableFast(i);
+                bool door = map.edificeGrid[c] is Building.Door;
+                if (r != null)
+                {
+                    if (!walkable || door != (r.type == RegionType.Portal)) return false;
+                }
+                else if (walkable)
+                {
+                    if (door) return false;
+                    open.Add(c);
+                }
+            }
+
+            // Repeat in index order until nothing more joins: a run of mined cells joins from the region inwards.
+            bool progress = true;
+            while (open.Count > 0 && progress)
+            {
+                progress = false;
+                for (int k = 0; k < open.Count; k++)
+                {
+                    IntVec3 c = open[k];
+                    Region? only = null;
+                    for (int d = 0; d < GenAdj.CardinalDirections.Length; d++)
+                    {
+                        IntVec3 nb = c + GenAdj.CardinalDirections[d];
+                        if (!GenGrid.InBounds(nb, map) || !map.pathGrid.Walkable(nb)) continue;
+                        if (map.edificeGrid[nb] is Building.Door) return false;
+                        Region? nr = regionGrid.RegionAt(nb);
+                        if (nr == null || ReferenceEquals(nr, only)) continue;
+                        if (only != null) return false;
+                        only = nr;
+                    }
+                    if (only == null) continue;
+                    only.cells.Add(c);
+                    regionGrid.SetRegionAt(c, only);
+                    open.RemoveAt(k--);
+                    progress = true;
+                }
+            }
+            return open.Count == 0;
+        }
+
+        private void Mark(int index, ref int lowest, ref int highest)
+        {
+            refloodMarks![index] = true;
+            if (index < lowest) lowest = index;
+            if (index > highest) highest = index;
         }
     }
 }
