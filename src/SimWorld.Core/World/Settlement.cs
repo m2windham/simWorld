@@ -515,33 +515,24 @@ namespace SimWorld.World
         private bool TryFindCitizenPlacementCell(Map.Map map, HashSet<IntVec3> taken, out IntVec3 cell)
         {
             IntVec3 anchor = SettlementAnchor(map);
-            IntVec3? edge = OpenEdgeCell(map);
             foreach (IntVec3 offset in GenRadial.RadialPattern)
             {
                 IntVec3 candidate = anchor + offset;
-                if (TryUseCell(map, taken, candidate, edge, out cell)) return true;
+                if (TryUseCell(map, taken, candidate, out cell)) return true;
             }
 
             foreach (IntVec3 candidate in map.AllCells)
             {
-                if (TryUseCell(map, taken, candidate, edge, out cell)) return true;
+                if (TryUseCell(map, taken, candidate, out cell)) return true;
             }
 
             cell = default;
             return false;
         }
 
-        /// <summary>
-        /// Standable, not already given out, and not sealed in a pocket of rock: a cell from which the map's open
-        /// ground can be walked to (<paramref name="edge"/>, one standable edge cell of it). Without that, a seed
-        /// founded eighteen of twenty-two citizens inside a limestone pocket next to the map's centre, where
-        /// they stayed: nothing designates rock to dig them out, and RimWorld never starts a colonist there
-        /// either. A map with no standable edge cell skips the check rather than placing nobody.
-        /// </summary>
-        private static bool TryUseCell(Map.Map map, HashSet<IntVec3> taken, IntVec3 candidate, IntVec3? edge, out IntVec3 cell)
+        private static bool TryUseCell(Map.Map map, HashSet<IntVec3> taken, IntVec3 candidate, out IntVec3 cell)
         {
-            if (!taken.Contains(candidate) && GenGrid.InBounds(candidate, map) && GenGrid.Standable(candidate, map) &&
-                (edge == null || map.reachability.CanReachCells(candidate, edge.Value)))
+            if (!taken.Contains(candidate) && GenGrid.InBounds(candidate, map) && GenGrid.Standable(candidate, map))
             {
                 cell = candidate;
                 return true;
@@ -550,28 +541,11 @@ namespace SimWorld.World
             return false;
         }
 
-        /// <summary>A standable border cell of the map's main open ground, standing for "the open map": of the
-        /// standable border cells, one from the connected group that holds the most of them. Not simply the
-        /// first one: a corner sealed off by rock is a border cell too, and every citizen would be founded
-        /// beside it. Null if the border has no standable cell.</summary>
-        private static IntVec3? OpenEdgeCell(Map.Map map)
-        {
-            var groups = new List<(IntVec3 Cell, int Count)>();
-            foreach (IntVec3 c in map.AllCells)
-            {
-                if (!(c.x == 0 || c.z == 0 || c.x == map.Size.x - 1 || c.z == map.Size.z - 1) || !GenGrid.Standable(c, map)) continue;
-                int g = groups.FindIndex(e => map.reachability.CanReachCells(e.Cell, c));
-                if (g < 0) groups.Add((c, 1));
-                else groups[g] = (groups[g].Cell, groups[g].Count + 1);
-            }
-            if (groups.Count == 0) return null;
-            (IntVec3 Cell, int Count) best = groups[0];
-            for (int i = 1; i < groups.Count; i++) if (groups[i].Count > best.Count) best = groups[i];
-            return best.Cell;
-        }
-
         /// <summary>The centroid of what this settlement has built, or the map's centre before it has built
-        /// anything. Only its own buildings: a map-generated ruin has no faction and is no part of the town.</summary>
+        /// anything. Only its own buildings: a map-generated ruin has no faction and is no part of the town. It
+        /// used to count ruins too, and on one seed their centroid sat in a pocket sealed in limestone: eighteen
+        /// of twenty-two founders were put down in it and never got out, since nothing designates rock to free
+        /// them.</summary>
         private IntVec3 SettlementAnchor(Map.Map map)
         {
             IReadOnlyList<Thing> built = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial);

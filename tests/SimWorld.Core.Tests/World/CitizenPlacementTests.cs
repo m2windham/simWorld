@@ -17,10 +17,10 @@ namespace SimWorld.Tests.World
 
         /// <summary>
         /// Every founding citizen starts on the map's main open ground: from where they stand they can walk to
-        /// most of the map's open border. On "stock-end-to-end" the nearest standable ground to the map's centre
-        /// is a pocket sealed in limestone, and the band used to be put down in it (eighteen of twenty-two, who
-        /// never got out: nothing designates rock to free them). On "simworld-host" a border cell sealed off in
-        /// a corner once stood for "the open map", and the whole band was founded beside it, idle for good.
+        /// most of the map's open border. Citizens are put down around what the settlement has built, and that
+        /// used to include the ruins map generation scatters; on "stock-end-to-end" their centroid sat in a pocket
+        /// sealed in limestone, and eighteen of twenty-two founders never got out (nothing designates rock to
+        /// free them). "simworld-host" is the host's own seed.
         /// </summary>
         [Theory]
         [InlineData("stock-end-to-end")]
