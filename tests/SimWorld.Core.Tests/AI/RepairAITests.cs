@@ -28,7 +28,14 @@ namespace SimWorld.Tests.AI
         {
         }
 
-        private static CoreMap NewMap(int sizeX, int sizeZ) => new CoreMap(sizeX, sizeZ, SimWorld.Map.TerrainDefOf.Soil);
+        /// <summary>A map that is all home area: RimWorld repairs only inside it, and these tests are about the
+        /// repair itself. <see cref="A_damaged_building_outside_the_home_area_is_left_alone"/> is about the edge.</summary>
+        private static CoreMap NewMap(int sizeX, int sizeZ)
+        {
+            var map = new CoreMap(sizeX, sizeZ, SimWorld.Map.TerrainDefOf.Soil);
+            foreach (IntVec3 c in map.AllCells) map.areaManager.Home[c] = true;
+            return map;
+        }
 
         private static ThingDef Def(string name) => DefDatabase<ThingDef>.GetNamed(name);
 
@@ -179,6 +186,31 @@ namespace SimWorld.Tests.AI
             Assert.True(unskilled > 0, "Even an unskilled builder should make progress in 1500 ticks.");
             Assert.True(skilled > unskilled,
                 $"Higher construction skill should repair faster: level 20 restored {skilled}, level 0 restored {unskilled}.");
+        }
+
+        /// <summary>
+        /// RimWorld's home-area guard on <see cref="WorkGiver_Repair"/>: a damaged building off the home area
+        /// is nobody's chore unless the player orders it. Without it a founding band walked off to patch the
+        /// weathered ruin walls map generation scatters, and left its own compound and houses unbuilt.
+        /// </summary>
+        [Fact]
+        public void A_damaged_building_outside_the_home_area_is_left_alone()
+        {
+            var map = new CoreMap(12, 12, SimWorld.Map.TerrainDefOf.Soil);
+            foreach (IntVec3 c in CellRect.FromLimits(0, 0, 5, 11).Cells) map.areaManager.Home[c] = true;
+            Pawn citizen = SpawnHuman(map, new IntVec3(0, 0, 0));
+            Thing ruin = SpawnDamaged(map, new IntVec3(9, 0, 5), "Wall", 40f);
+            int damaged = ruin.HitPoints;
+            var repair = new WorkGiver_Repair { def = DefDatabase<WorkGiverDef>.GetNamed("Repair") };
+
+            Assert.False(repair.HasJobOnThing(citizen, ruin));
+            Assert.True(repair.HasJobOnThing(citizen, ruin, forced: true), "An order still reaches it.");
+
+            RunTicks(600, citizen);
+            Assert.Equal(damaged, ruin.HitPoints);
+
+            map.areaManager.Home[ruin.Position] = true;
+            Assert.True(repair.HasJobOnThing(citizen, ruin));
         }
 
         [Fact]

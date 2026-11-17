@@ -281,6 +281,7 @@ namespace SimWorld.Tests.AI
             Assert.False(repair.HasJobOnThing(citizen, wall), "But nobody repairs a building while it is on fire.");
 
             fire.Destroy();
+            map.areaManager.Home[cell] = true; // RimWorld repairs only inside the home area
             Assert.True(repair.HasJobOnThing(citizen, wall));
         }
 
