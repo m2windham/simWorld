@@ -132,7 +132,10 @@ namespace SimWorld.Tests.Conditions
             Assert.True(FireThrough(game, ConditionIncidentDefOf.ColdSnap));
             RunGame(5000);
 
-            GameCondition condition = Assert.Single(game.World!.gameConditionManager.ActiveConditions);
+            // The cold snap this test started. Not Assert.Single: the storyteller runs in this game and may start
+            // weather of its own in 5000 ticks (a flashstorm did, once founder-name draws moved the stream).
+            GameCondition condition = Assert.Single(game.World!.gameConditionManager.ActiveConditions,
+                c => c.def == GameConditionDefOf.ColdSnap);
             Assert.True(condition.TicksPassed >= 5000, "The condition's own clock ran with no map in sight.");
 
             CoreMap map = game.EnterSettlement(settlement);

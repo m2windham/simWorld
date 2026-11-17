@@ -558,14 +558,26 @@ namespace SimWorld.Tests.Director
             return (IncidentWorker_RaidEnemy)raidDef.Worker;
         }
 
-        private static int RepelledOutOf(bool shaken, int seed, int trials = 120)
+        /// <summary>
+        /// Whether each of <paramref name="trials"/> raids was repelled. Every trial reseeds the ambient stream
+        /// from <paramref name="seed"/> and its own index, so the shaken and unshaken arms of one trial meet
+        /// the same raiders and the same dice: the quake draws only from its own named stream and shields the
+        /// ambient one (see <see cref="IncidentWorker_Earthquake"/>), so the only difference between the arms
+        /// is the walls it brought down. Without that pairing the two arms drifted apart on the ambient stream
+        /// and the comparison measured luck: a change to founder-name draws elsewhere turned it into
+        /// shaken=56, unshaken=53.
+        /// </summary>
+        private static bool[] RepelledOutOf(bool shaken, int seed, int trials = 120)
         {
-            Rand.Current = new RandomStream(seed);
-            Faction raiders = Raiders("Quake" + shaken);
-            int held = 0;
+            var held = new bool[trials];
             for (int i = 0; i < trials; i++)
             {
-                Settlement town = Town("Q" + shaken + "_" + i, 1000 + i, citizens: 5, walls: 40);
+                // Names in use are global and steer name generation's draws, so a name the other arm took would
+                // shift every draw after it; each trial starts from none, with a raiding faction of its own.
+                NameUseChecker.Clear();
+                Rand.Current = new RandomStream(seed * 1000 + i);
+                Faction raiders = Raiders("Quake_" + i);
+                Settlement town = Town("Q_" + i, 1000 + i, citizens: 5, walls: 40);
                 Find.God.Attention.ClearFocus();
                 if (shaken) Earthquake.Worker.TryExecute(OntoSettlement(town));
 
@@ -573,7 +585,7 @@ namespace SimWorld.Tests.Director
                 var raidTarget = new CivilizationTarget();
                 raidTarget.SetSettlements(new[] { town });
                 Assert.True(raidWorker.TryExecute(new IncidentParms { target = raidTarget, points = 500f, faction = raiders }));
-                if (raidWorker.LastRaidOutcome!.Value.Repelled) held++;
+                held[i] = raidWorker.LastRaidOutcome!.Value.Repelled;
             }
             return held;
         }
@@ -581,9 +593,17 @@ namespace SimWorld.Tests.Director
         [Fact]
         public void An_earthquake_weakened_settlement_repels_fewer_of_the_same_raids_than_an_unshaken_one()
         {
-            int shakenHeld = RepelledOutOf(shaken: true, seed: 4242);
-            int unshakenHeld = RepelledOutOf(shaken: false, seed: 4242);
+            bool[] shaken = RepelledOutOf(shaken: true, seed: 4242);
+            bool[] unshaken = RepelledOutOf(shaken: false, seed: 4242);
 
+            // Paired: the same raid against the same town, with and without the quake. Fewer walls can only
+            // lower the odds, so no raid the shaken town held may be one the unshaken town lost, and some raid
+            // the unshaken town held must be one the shaken town lost.
+            for (int i = 0; i < shaken.Length; i++)
+            {
+                Assert.False(shaken[i] && !unshaken[i], "trial " + i + ": the shaken town held a raid its unshaken twin lost");
+            }
+            int shakenHeld = shaken.Count(h => h), unshakenHeld = unshaken.Count(h => h);
             Assert.True(unshakenHeld > shakenHeld,
                 "an earthquake-weakened settlement repelled no fewer of the same raids than an identical unshaken one (shaken="
                 + shakenHeld + ", unshaken=" + unshakenHeld + ")");
