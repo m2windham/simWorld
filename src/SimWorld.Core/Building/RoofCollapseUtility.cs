@@ -96,17 +96,21 @@ namespace SimWorld.Building
         /// <para/><b>This is a translation, and it is recorded as one.</b> RimWorld has no such question,
         /// because in RimWorld nobody mines anything a player did not designate: <c>WorkGiver_Miner</c> scans
         /// <c>DesignationDefOf.Mine</c>, and the player choosing where to dig is looking at the overhead-
-        /// mountain overlay while they choose. This port has no designation layer at all
-        /// (<c>docs/WORK-REGISTER.md</c> §10 names that as a missing layer, not an oversight), so
-        /// <c>AI.WorkGiver_Miner</c> substitutes "mine any reachable mineable edifice" — and with it, the
+        /// mountain overlay while they choose. This port had no designation layer at all
+        /// (<c>docs/WORK-REGISTER.md</c> §10 named that as a missing layer, not an oversight), so
+        /// <c>AI.WorkGiver_Miner</c> substituted "mine any reachable mineable edifice" — and with it, the
         /// judgement the player was making silently went missing along with the player. Measured on a founded
         /// settlement of twenty-five, that substitution mined <b>2,286 rock cells on its second day</b> and
         /// brought <b>724 roof cells</b> down on the people doing it. The rule restored here is the one the
         /// overlay existed to let a player follow: <i>do not dig out what is holding the ceiling up.</i>
         ///
         /// <para/>It is deliberately the narrowest form of that rule. It does not decide <i>whether</i> a
-        /// settlement should be mining, or how much — that is the designation layer's question and it is still
-        /// open. It only refuses the cells that kill.
+        /// settlement should be mining, or how much. That question was left open here and is now answered by the
+        /// designation layer: <see cref="AI.MiningInitiative"/> places <c>Mine</c> designations by need (clearing
+        /// the compound's planned ground, and the stone and ore its blueprints and bills are short of), never on
+        /// rock this says would bring a roof down, and withdraws any that come to; <see cref="AI.WorkGiver_Miner"/>
+        /// mines designated rock only. This check stays at hand-out and in the driver all the same, because a
+        /// designation placed before a neighbour is dug can go stale.
         ///
         /// <para/><b>Asked twice, and the second time is the one that works.</b>
         /// <see cref="AI.WorkGiver_Miner.HasJobOnThing"/> asks it when the job is handed out, and
@@ -127,9 +131,9 @@ namespace SimWorld.Building
         /// The multiplier is not this check but the scan around it: <c>AI.WorkGiverScanUtility</c> walks every
         /// mineable edifice on the map — twelve thousand of them — and only lowers its "nearest so far" bound
         /// when a candidate is <i>accepted</i>, so a predicate that rejects lets more candidates through to
-        /// every predicate in front of it. A nearest-first scan there, or the designation layer that would
-        /// stop a settlement scanning the whole mountain in the first place, removes the cost at its source;
-        /// neither belongs to this module.
+        /// every predicate in front of it. Both fixes have since landed: that scan is nearest-first, and the
+        /// miner scans only Mine designations (at most <see cref="AI.MiningTuning.MaxOutstandingDesignations"/>),
+        /// not the mountain.
         /// </summary>
         public static bool WouldCollapseRoofIfRemoved(Thing edifice)
         {

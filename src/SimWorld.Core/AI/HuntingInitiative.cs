@@ -15,13 +15,15 @@ namespace SimWorld.AI
     /// designate prey.
     /// <para/>
     /// RimWorld's <c>WorkGiver_HunterHunt</c> scans for animals carrying <c>Designation.Hunt</c> — a mark the
-    /// player paints on individual animals. <b>There is no Designation system in this codebase at all</b>, so
-    /// that predicate cannot be ported; something has to answer "which animals should be shot?" in its place.
+    /// player paints on individual animals. <b>There was no Designation system in this codebase when this was
+    /// written</b> (there is one now, carrying only <c>Mine</c>: see <see cref="MiningInitiative"/>), so
+    /// that predicate could not be ported; something has to answer "which animals should be shot?" in its place.
     /// Two answers already exist here and neither fits on its own:
     /// <list type="bullet">
-    /// <item><see cref="WorkGiver_Miner"/> translated the same problem away by dropping the designation
-    /// entirely — it mines <i>any</i> reachable mineable edifice. That works for rock (a colony genuinely
-    /// wants all of it, and rock does not bleed) and would be catastrophic here: hunters would kill every
+    /// <item><see cref="WorkGiver_Miner"/> then translated the same problem away by dropping the designation
+    /// entirely and mining <i>any</i> reachable mineable edifice. That turned out not to work for rock either
+    /// (the whole band mined whenever nothing outranked Mining, so it now mines designated rock only), and it
+    /// would be catastrophic here: hunters would kill every
     /// animal on the map forever, including the ones a settlement is trying to tame.</item>
     /// <item><see cref="Building.SettlementConstructionInitiative"/> is the codebase's established shape for
     /// exactly this gap — "no player designation exists, so the settlement decides for itself" — reading real

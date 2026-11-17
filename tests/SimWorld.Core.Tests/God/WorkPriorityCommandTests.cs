@@ -71,6 +71,7 @@ namespace SimWorld.Tests.God
             GenSpawn.Spawn(wood, new IntVec3(1, 0, 1), map);
             Thing rock = ThingMaker.MakeThing(Def("Sandstone"));
             GenSpawn.Spawn(rock, new IntVec3(2, 0, 0), map);
+            map.designationManager.AddDesignation(new global::SimWorld.Designations.Designation(new global::SimWorld.AI.LocalTargetInfo(rock.Position), global::SimWorld.Designations.DesignationDefOf.Mine));
             return (pawn, rock);
         }
 

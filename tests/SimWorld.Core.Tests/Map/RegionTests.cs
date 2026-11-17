@@ -37,8 +37,8 @@ namespace SimWorld.Tests.Map
         [Fact]
         public void Region_flood_fill_does_not_fragment_a_large_open_area()
         {
-            // Pins down this class's own documented decision not to bake in an unsourced per-region cell
-            // cap: a big open room stays one region, exactly like real RimWorld's boundary-only growth.
+            // Pins this port's recorded deviation: RimWorld caps a region at its 12x12 square, this port does
+            // not (the path corridor cache depends on it; see RegionMaker), so a big open room stays one region.
             CoreMap map = NewMap(40, 40);
             map.regionAndRoomUpdater.RebuildIfNeeded();
 

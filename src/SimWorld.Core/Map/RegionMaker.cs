@@ -12,16 +12,18 @@ namespace SimWorld.Map
     /// open/closed state change later (this port's <see cref="Building.Door"/> does not model that yet — see
     /// its own remarks) without forcing the two rooms it separates to merge or split.
     ///
-    /// <b>Region size</b>: RimWorld's own region growth is bounded by geometry only (impassable cells,
-    /// doorways, the map edge) — there is no separate cell-count cap, so a large open area legitimately
-    /// becomes one large region. The brief that requested this port also named "region size 12" among the
-    /// constants to keep, but nothing in the sources available to this port pins down what that number
-    /// actually bounds (candidates considered and rejected for lack of a source: a per-region cell cap,
-    /// which would fragment a big open room into hundreds of tiny regions and contradicts the
-    /// geometry-only growth above; an internal list/array capacity hint, which has no observable behaviour
-    /// to test). Per this repository's rule for an unsourced constant, it is not implemented — flood growth
-    /// here is unbounded, and <c>Region_flood_fill_does_not_fragment_a_large_open_area</c> in
-    /// <c>RegionTests.cs</c> pins that behaviour down instead of the literal.
+    /// <b>Region size, a recorded deviation.</b> RimWorld does cap a region: <c>RegionMaker</c> confines each
+    /// one to the 12x12 square of the map grid its root falls in (<c>RegionSize = 12</c>, the region's
+    /// <c>extentsLimit</c>), so open ground is a patchwork of square regions and a passability change re-floods
+    /// only the squares it touches. An earlier version of this comment said RimWorld's growth is bounded by
+    /// geometry alone; that was wrong. This port still grows regions by geometry alone, deliberately:
+    /// <see cref="AI.RegionPathCorridorCache"/> confines each A* to a corridor of whole regions, picked by hop
+    /// count, and with 12x12 regions those corridors are poor (measured: paths through a house went from 16
+    /// steps to 22, a raider closed 70 of 153 cells, and a band's run diverged). Capping regions means
+    /// reworking that cache first. Meanwhile the cost the cap avoids, re-flooding one huge region per mined
+    /// rock, is avoided by <see cref="RegionAndRoomUpdater"/> joining a newly opened cell to the one region it
+    /// borders. <c>Region_flood_fill_does_not_fragment_a_large_open_area</c> in <c>RegionTests.cs</c> pins the
+    /// uncapped behaviour.
     ///
     /// <b>Trim</b>: a portal region is one door <i>cell</i>, not one door <i>Thing</i> — RimWorld's real
     /// portal region spans a whole (possibly multi-cell) door. Nothing in this port's content defines a

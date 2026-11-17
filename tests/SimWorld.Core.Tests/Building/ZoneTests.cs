@@ -148,6 +148,22 @@ namespace SimWorld.Tests.Building
             Assert.False(loaded.areaManager.Home[new IntVec3(0, 0, 0)]);
         }
 
+        [Fact]
+        public void Home_area_counts_its_cells_as_they_are_set_and_cleared()
+        {
+            CoreMap map = NewMap(6, 6);
+            Area home = map.areaManager.Home;
+            home[new IntVec3(2, 0, 2)] = true;
+            home[new IntVec3(2, 0, 2)] = true;
+            home[new IntVec3(3, 0, 3)] = true;
+            home[new IntVec3(9, 0, 9)] = true; // off the map
+            Assert.Equal(2, home.TrueCount);
+
+            home[new IntVec3(2, 0, 2)] = false;
+            home[new IntVec3(2, 0, 2)] = false;
+            Assert.Equal(1, home.TrueCount);
+        }
+
         // ---- Wiring: growing zone -> real AI work ----
 
         [Fact]

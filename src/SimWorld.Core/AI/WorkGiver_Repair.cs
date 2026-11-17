@@ -25,8 +25,12 @@ namespace SimWorld.AI
     /// something somebody built, and it lands in the same place as RimWorld's <c>building.repairable</c>
     /// (false on mineable rock, true on constructed buildings) — so the predicate becomes
     /// <see cref="IsRepairable"/>: an artificial building that uses hit points and is missing some.
-    /// The same shape <see cref="WorkGiver_Miner"/> used when it translated mining's <c>Designation.Mine</c>
-    /// away and mined any reachable mineable edifice instead.
+    /// RimWorld's other guard, the home area, is expressible and is ported (<see cref="HasJobOnThing"/>), so
+    /// what is left of the translation is a ruin wall that happens to stand inside the home area: RimWorld
+    /// would leave it (no faction), this port repairs it. A stockpile's home-area margin reaching a ruin is
+    /// enough (the host's seed has one at tick 35,000), so that remains a known cost of the missing faction.
+    /// The same shape <see cref="WorkGiver_Miner"/> once used when it translated mining's <c>Designation.Mine</c>
+    /// away and mined any reachable mineable edifice instead (it scans Mine designations now).
     /// <para/>
     /// <b>What actually damages a building here</b> (nothing did for a while, so this is worth naming):
     /// <see cref="Combat.GenExplosion.DoExplosion"/>, reached from <see cref="Building.CompExplosive"/> — a
@@ -68,6 +72,12 @@ namespace SimWorld.AI
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
             if (!IsRepairable(thing)) return false;
+            // RimWorld: WorkGiver_Repair's (!forced && pawn.Faction == Faction.OfPlayer &&
+            // !pawn.Map.areaManager.Home[t.Position]) guard; every worker here is the settlement's own. It is
+            // also what keeps builders off the weathered ruins GenStep_Ruins scatters across a map, which RimWorld
+            // never repairs because a ruin has no faction: without it, half a band walked the map patching ruin
+            // walls while the compound and its houses stood unfinished (the host's game at tick 46,000).
+            if (!forced && !pawn.Map!.areaManager.Home[thing.Position]) return false;
             // RimWorld: WorkGiver_Repair's own t.IsBurning() guard. Patching up a building that is still on
             // fire is work thrown away — put the fire out first, which is emergency work and will already be
             // this pawn's next job anyway (WorkGiver_FightFires).
