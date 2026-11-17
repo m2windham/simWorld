@@ -110,6 +110,10 @@ namespace SimWorld.Building
             Destroy(DestroyMode.WillReplace);
 
             Things.Thing building = ThingMaker.MakeThing(built);
+            // RimWorld hands the frame's faction on (thing.SetFactionDirect(Faction)), and the frame has its
+            // blueprint's, which has its placer's. Nothing here gives a blueprint a faction, so the builder's
+            // stands in: only a citizen ever completes a frame.
+            building.SetFaction(worker.Faction);
             GenSpawn.Spawn(building, pos, map, rot);
             worker.skills?.GetSkill(SkillDefOf.Construction)?.Learn(CompletionXp);
             // This port's stand-in for RimWorld's Building.SpawnSetup -> AutoHomeAreaMaker.Notify_BuildingSpawned,

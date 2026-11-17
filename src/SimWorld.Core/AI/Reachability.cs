@@ -78,6 +78,16 @@ namespace SimWorld.AI
         }
 
         /// <summary>Convenience matching RimWorld's call shape; resolves the map from the pawn.</summary>
+        /// <summary>Whether a walker standing on <paramref name="a"/> could walk to <paramref name="b"/>: both
+        /// cells lie in regions of one connected component. No pawn involved, for planners siting things.</summary>
+        public bool CanReachCells(IntVec3 a, IntVec3 b)
+        {
+            map.regionAndRoomUpdater.RebuildIfNeeded();
+            Region? from = map.regionGrid.RegionAt(a);
+            Region? to = map.regionGrid.RegionAt(b);
+            return from != null && to != null && Connected(from, to);
+        }
+
         private int componentsVersion = -1;
         private int nextComponent;
         private readonly Queue<Region> componentQueue = new Queue<Region>();

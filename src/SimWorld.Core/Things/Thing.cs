@@ -25,6 +25,17 @@ namespace SimWorld.Things
 
         public int HitPoints;
 
+        private Factions.Faction? factionInt;
+
+        /// <summary>Who this thing belongs to (RimWorld: <c>Thing.Faction</c>). Null for what nobody owns: a
+        /// map-generated ruin, rock, a loose stack. A building the settlement raises takes its builder's faction
+        /// when its frame completes (<see cref="Building.Frame.CompleteConstruction"/>). A pawn answers with its
+        /// own <see cref="Pawns.Pawn.faction"/>, which predates this and stays where it is.</summary>
+        public virtual Factions.Faction? Faction => factionInt;
+
+        /// <summary>RimWorld: <c>Thing.SetFaction</c>, without its reaction hooks: nothing here listens yet.</summary>
+        public virtual void SetFaction(Factions.Faction? newFaction) => factionInt = newFaction;
+
         private IntVec3 position = IntVec3.Invalid;
         private Rot4 rotation = Rot4.North;
         private Map.Map? map;
@@ -305,6 +316,8 @@ namespace SimWorld.Things
 
             Scribe_Values.Look(ref stackCount, "stackCount", 1);
             Scribe_Values.Look(ref HitPoints, "hitPoints", MaxHitPoints);
+            // A pawn scribes its own faction under the same name (Pawn.ExposeData).
+            if (!(this is Pawns.Pawn)) Scribe_References.Look(ref factionInt, "faction");
 
             if (Scribe.mode == LoadSaveMode.LoadingVars && thingIDNumber >= nextThingId)
             {

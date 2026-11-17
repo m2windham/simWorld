@@ -268,6 +268,27 @@ namespace SimWorld.Tests.Economy
             Assert.True(granary.filter.Allows(Chunk));
         }
 
+        /// <summary>A settlement with a compound keeps its granary beside it, not wherever the first loose stack
+        /// lies (on the host's seed that was a hundred cells off), and never on the ground the village keeps.</summary>
+        [Fact]
+        public void With_a_compound_the_granary_is_seeded_beside_it_not_at_a_far_stack()
+        {
+            Settlement settlement = PeopledSettlement();
+            CoreMap map = NewMap(120);
+            var compound = Assert.IsType<global::SimWorld.Building.SettlementCompound>(global::SimWorld.Building.SettlementCompound.TryPlan(map, 20, 50));
+            map.settlementCompound = compound;
+            IntVec3 far = new[] { new IntVec3(1, 0, 1), new IntVec3(118, 0, 1), new IntVec3(1, 0, 118), new IntVec3(118, 0, 118) }
+                .OrderByDescending(c => c.DistanceToSquared(compound.DoorCell)).First();
+            for (int i = 0; i < 6; i++) SpawnStack(map, far + new IntVec3(far.x < 60 ? i : -i, 0, 0), Chunk, 1);
+
+            Assert.True(SettlementStockInitiative.EnsureGranary(settlement, map) > 0);
+
+            Zone_Stockpile granary = SettlementStockInitiative.GranaryOf(map)!;
+            Assert.All(granary.Cells, c => Assert.False(compound.Village.Contains(c), $"{c} is village ground"));
+            Assert.All(granary.Cells, c => Assert.True(c.DistanceTo(compound.DoorCell) < far.DistanceTo(compound.DoorCell) / 2,
+                $"{c} is nearer the far stack than the compound"));
+        }
+
         [Fact]
         public void An_empty_map_is_given_no_granary_at_all()
         {

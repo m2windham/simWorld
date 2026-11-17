@@ -97,6 +97,10 @@ namespace SimWorld.Pawns
         /// through <c>Pawn.SetFaction</c>, which notifies the same cache). Every read and every write is
         /// unchanged at the call site; only spawned writes now cost a re-file.
         /// </summary>
+        public override Faction? Faction => factionInt;
+
+        public override void SetFaction(Faction? newFaction) => faction = newFaction;
+
         public Faction? faction
         {
             get => factionInt;
