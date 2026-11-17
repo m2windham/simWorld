@@ -467,6 +467,9 @@ namespace SimWorld.Building
                 if (DwellingUtility.IsDwelling(entityDef) && (!GenGrid.InBounds(c, map) || !map.pathGrid.Walkable(c))) return false;
             }
             if (!GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out _, rot)) return false;
+            // A site the band cannot walk to stays empty (SettlementReach): a plot or yard can run past the
+            // ground the compound was planned on.
+            if (!SettlementReach.CanReach(map, SettlementReach.BandCell(map), cell)) return false;
 
             // The ring is the one impassable thing allowed to close round ground (see the class remarks).
             // Storage is held to the same rule as everywhere else.
@@ -515,7 +518,7 @@ namespace SimWorld.Building
 
             var wholeMap = new CellRect(0, 0, map.Size.x, map.Size.z);
             Area home = map.areaManager.Home;
-            var open = new OpenGround(map, home.TrueCount > 0 ? home : null);
+            var open = new OpenGround(map, home.TrueCount > 0 ? home : null, SettlementReach.BandCell(map));
             if (home.TrueCount > 0) return TryPickPreferringVillage(map, wholeMap, width, height, open);
 
             var hub = new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
@@ -605,8 +608,9 @@ namespace SimWorld.Building
             return beds >= citizens || wallBudget >= ConstructionInitiativeTuning.MaxWallShelterCount;
         }
 
-        /// <summary>Which ground a compound may stand on — on the map, walkable (no rock, no deep water), and
-        /// inside the home area when one binds — summed once per plan so that asking it of a whole village's
+        /// <summary>Which ground a compound may stand on — on the map, walkable (no rock, no deep water),
+        /// inside the home area when one binds, and ground the band can walk to (<see cref="SettlementReach"/>)
+        /// — summed once per plan so that asking it of a whole village's
         /// rectangle at every candidate position costs four lookups rather than a thousand.</summary>
         private sealed class OpenGround
         {
@@ -614,7 +618,7 @@ namespace SimWorld.Building
             private readonly int sizeZ;
             private readonly int[] blockedBelow; // (sizeX + 1) * (sizeZ + 1) prefix sums of blocked cells
 
-            public OpenGround(Map.Map map, Area? within)
+            public OpenGround(Map.Map map, Area? within, IntVec3? band)
             {
                 sizeX = map.Size.x;
                 sizeZ = map.Size.z;
@@ -625,7 +629,7 @@ namespace SimWorld.Building
                     for (int x = 0; x < sizeX; x++)
                     {
                         var c = new IntVec3(x, 0, z);
-                        if (!map.pathGrid.Walkable(c) || (within != null && !within[c])) row++;
+                        if (!map.pathGrid.Walkable(c) || (within != null && !within[c]) || !SettlementReach.CanReach(map, band, c)) row++;
                         blockedBelow[(z + 1) * (sizeX + 1) + x + 1] = blockedBelow[z * (sizeX + 1) + x + 1] + row;
                     }
                 }

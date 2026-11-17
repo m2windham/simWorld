@@ -483,12 +483,14 @@ namespace SimWorld.World
             // since a cell holding one Standable pawn is still Standable for the next one (RimWorld's own
             // pawns can share a cell too; this only avoids piling every new arrival onto the exact same spot).
             HashSet<IntVec3>? taken = null;
+            IntVec3? ground = null;
             for (int i = 0; i < citizens.Count; i++)
             {
                 Pawn pawn = citizens[i];
                 if (pawn.tier.Tier != PawnTier.Full || pawn.Spawned) continue;
                 taken ??= OccupiedCitizenCells(map);
-                if (!TryFindCitizenPlacementCell(map, taken, out IntVec3 cell)) continue; // tried again next sync
+                ground ??= GroundToJoin(map);
+                if (!TryFindCitizenPlacementCell(map, taken, ground, out IntVec3 cell)) continue; // tried again next sync
                 GenSpawn.Spawn(pawn, cell, map);
                 taken.Add(cell);
             }
@@ -512,33 +514,84 @@ namespace SimWorld.World
         /// nearest-first pattern out to its own <see cref="GenRadial.MaxRadius"/> and only then falls back to
         /// a full-map scan, so the common case (a buildable map) never pays for one.
         /// </summary>
-        private static bool TryFindCitizenPlacementCell(Map.Map map, HashSet<IntVec3> taken, out IntVec3 cell)
+        private static bool TryFindCitizenPlacementCell(Map.Map map, HashSet<IntVec3> taken, IntVec3? ground, out IntVec3 cell)
         {
             IntVec3 anchor = SettlementAnchor(map);
             foreach (IntVec3 offset in GenRadial.RadialPattern)
             {
                 IntVec3 candidate = anchor + offset;
-                if (TryUseCell(map, taken, candidate, out cell)) return true;
+                if (TryUseCell(map, taken, candidate, ground, out cell)) return true;
             }
 
             foreach (IntVec3 candidate in map.AllCells)
             {
-                if (TryUseCell(map, taken, candidate, out cell)) return true;
+                if (TryUseCell(map, taken, candidate, ground, out cell)) return true;
             }
 
             cell = default;
             return false;
         }
 
-        private static bool TryUseCell(Map.Map map, HashSet<IntVec3> taken, IntVec3 candidate, out IntVec3 cell)
+        private static bool TryUseCell(Map.Map map, HashSet<IntVec3> taken, IntVec3 candidate, IntVec3? ground, out IntVec3 cell)
         {
-            if (!taken.Contains(candidate) && GenGrid.InBounds(candidate, map) && GenGrid.Standable(candidate, map))
+            if (!taken.Contains(candidate) && GenGrid.InBounds(candidate, map) && GenGrid.Standable(candidate, map)
+                && (ground == null || map.reachability.CanReachCells(ground.Value, candidate)))
             {
                 cell = candidate;
                 return true;
             }
             cell = default;
             return false;
+        }
+
+        /// <summary>
+        /// The ground a citizen arriving on <paramref name="map"/> must be able to walk from: where a citizen
+        /// already stands, or, for the first of a band, a cell of the largest piece of open ground (standable
+        /// cells joined edge to edge). Null on a map with no standable cell.
+        /// <para/>
+        /// <b>Why.</b> A map can be broken into sealed rock pockets. On seed 2024 (tile 284, 46 pockets) the
+        /// band was stood beside the map-gen ruins, in a pocket of 2840 cells, where no compound fits, while
+        /// everything it planned went to the largest. Every planner now keeps to ground the band can walk to
+        /// (<see cref="Building.SettlementReach"/>), so the band has to start where there is room to build.
+        /// A newcomer joins whoever is already there, so a band is never split across pockets.
+        /// </summary>
+        private IntVec3? GroundToJoin(Map.Map map)
+        {
+            for (int i = 0; i < citizens.Count; i++)
+            {
+                if (citizens[i].Spawned && citizens[i].Map == map) return citizens[i].Position;
+            }
+
+            int sizeX = map.Size.x;
+            var seen = new bool[sizeX * map.Size.z];
+            var queue = new Queue<IntVec3>();
+            IntVec3? best = null;
+            int bestSize = 0;
+            foreach (IntVec3 start in map.AllCells)
+            {
+                if (seen[start.z * sizeX + start.x] || !GenGrid.Standable(start, map)) continue;
+                seen[start.z * sizeX + start.x] = true;
+                queue.Enqueue(start);
+                int size = 0;
+                while (queue.Count > 0)
+                {
+                    IntVec3 c = queue.Dequeue();
+                    size++;
+                    for (int d = 0; d < 4; d++)
+                    {
+                        IntVec3 n = c + GenAdj.CardinalDirections[d];
+                        if (!GenGrid.InBounds(n, map) || seen[n.z * sizeX + n.x] || !GenGrid.Standable(n, map)) continue;
+                        seen[n.z * sizeX + n.x] = true;
+                        queue.Enqueue(n);
+                    }
+                }
+                if (size > bestSize)
+                {
+                    bestSize = size;
+                    best = start;
+                }
+            }
+            return best;
         }
 
         private static IntVec3 SettlementAnchor(Map.Map map)

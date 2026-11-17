@@ -74,12 +74,14 @@ namespace SimWorld.Farming
         {
             IntVec3 seed = SeedCell(map, field, crop);
             SettlementCompound? compound = map.settlementCompound;
+            IntVec3? band = SettlementReach.BandCell(map);
             int added = 0;
             IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
             for (int i = 0; i < pattern.Count && added < budget; i++)
             {
                 IntVec3 candidate = seed + pattern[i];
                 if (!FarmingInitiative.CanSowIn(map, candidate, crop)) continue;
+                if (!SettlementReach.CanReach(map, band, candidate)) continue;
                 if (compound != null && compound.Reserves(CellRect.SingleCell(candidate))) continue;
                 if (map.zoneManager.AddCell(field, candidate)) added++;
             }

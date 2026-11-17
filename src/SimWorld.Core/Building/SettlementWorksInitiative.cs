@@ -293,13 +293,14 @@ namespace SimWorld.Building
 
         private static bool TryFindPlacementCell(Map.Map map, ThingDef entityDef, IntVec3? anchor, int radius, out IntVec3 cell)
         {
+            IntVec3? band = SettlementReach.BandCell(map);
             if (anchor.HasValue && radius > 0)
             {
                 CellRect scan = CellRect.CenteredOn(anchor.Value, radius).ClipInsideMap(map);
                 foreach (IntVec3 candidate in scan.Cells)
                 {
                     if (SettlementCompound.Refuses(map, entityDef, candidate)) continue;
-                    if (GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _))
+                    if (GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _) && SettlementReach.CanReach(map, band, candidate))
                     {
                         cell = candidate;
                         return true;
@@ -314,7 +315,7 @@ namespace SimWorld.Building
             {
                 var candidate = new IntVec3(Rand.Range(0, map.Size.x), 0, Rand.Range(0, map.Size.z));
                 if (SettlementCompound.Refuses(map, entityDef, candidate)) continue; // the compound's own ground
-                if (GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _))
+                if (GenConstruct.CanPlaceBlueprintAt(entityDef, candidate, map, out _) && SettlementReach.CanReach(map, band, candidate))
                 {
                     cell = candidate;
                     return true;
