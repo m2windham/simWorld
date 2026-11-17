@@ -47,7 +47,7 @@ namespace SimWorld.Tests.AI
             CoreMap map = NewMap();
             Pawn pawn = NewHuman();
             GenSpawn.Spawn(pawn, new IntVec3(1, 0, 1), map);
-            Rock(map, 5, 5);
+            Thing undesignated = Rock(map, 5, 5);
             Thing designated = Rock(map, 9, 5);
             var miner = new WorkGiver_Miner();
 
@@ -57,6 +57,13 @@ namespace SimWorld.Tests.AI
             map.designationManager.AddDesignation(new Designation(new LocalTargetInfo(designated.Position), DesignationDefOf.Mine));
 
             Assert.False(miner.ShouldSkip(pawn));
+            Assert.Equal(new[] { designated }, miner.PotentialWorkThingsGlobal(pawn));
+            Assert.True(miner.HasJobOnThing(pawn, designated));
+            Assert.False(miner.HasJobOnThing(pawn, undesignated));
+
+            // Designated rock deep in a face is not offered until a miner could stand next to it.
+            for (int x = 19; x <= 21; x++) for (int z = 19; z <= 21; z++) Rock(map, x, z);
+            map.designationManager.AddDesignation(new Designation(new LocalTargetInfo(new IntVec3(20, 0, 20)), DesignationDefOf.Mine));
             Assert.Equal(new[] { designated }, miner.PotentialWorkThingsGlobal(pawn));
         }
 
@@ -77,8 +84,8 @@ namespace SimWorld.Tests.AI
         {
             CoreMap map = NewMap();
             GenSpawn.Spawn(ThingMaker.MakeThing(Def("Blueprint_Battery")), new IntVec3(30, 0, 30), map);
-            // Steel ore at increasing distance from the map centre (20, 20), limestone nearer than any of it.
-            for (int x = 22; x < 38; x += 3) Rock(map, x, 20, "MineableSteel");
+            // Steel ore along a row east of the map centre (20, 20), limestone nearer than any of it.
+            for (int x = 37; x > 21; x -= 3) Rock(map, x, 20, "MineableSteel"); // listed far to near
             Rock(map, 20, 18);
 
             MiningInitiative.Run(NewSettlement(), map);
