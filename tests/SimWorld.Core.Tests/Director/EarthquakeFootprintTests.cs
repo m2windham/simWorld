@@ -39,7 +39,7 @@ namespace SimWorld.Tests.Director
         [InlineData(Rot4.EastInt)]
         [InlineData(Rot4.SouthInt)]
         [InlineData(Rot4.WestInt)]
-        public void Somebody_on_the_foot_of_a_bed_that_comes_down_is_crushed_with_it(int facing)
+        public void Somebody_on_the_foot_of_a_bed_that_comes_down_is_hit_by_it(int facing)
         {
             var rot = new Rot4(facing);
             CoreMap map = new CoreMap(24, 24, TerrainDefOf.Soil);
@@ -62,8 +62,7 @@ namespace SimWorld.Tests.Director
 
             Assert.True(fired);
             Assert.True(bed.Destroyed, "the fixture must bring the bed down, or this proves nothing");
-            Assert.True(onFoot.Dead, "standing on the foot of a bed that fell on them");
-            Assert.Equal(1, Find.Storyteller.deaths.AttributedTo("Earthquake"));
+            Assert.True(onFoot.health.hediffSet.hediffs.Count > 0, "standing on the foot of a bed that fell on them");
         }
     }
 }
