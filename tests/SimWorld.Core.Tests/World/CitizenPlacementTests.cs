@@ -20,11 +20,13 @@ namespace SimWorld.Tests.World
         /// most of the map's open border. Citizens are put down around what the settlement has built, and that
         /// used to include the ruins map generation scatters; on "stock-end-to-end" their centroid sat in a pocket
         /// sealed in limestone, and eighteen of twenty-two founders never got out (nothing designates rock to
-        /// free them). "simworld-host" is the host's own seed.
+        /// free them). On "player-recalls-a-citizen" the nearest standable cell to the map's centre is such a pocket.
+        /// "simworld-host" is the host's own seed, whose border has a sealed-off corner.
         /// </summary>
         [Theory]
         [InlineData("stock-end-to-end")]
         [InlineData("simworld-host")]
+        [InlineData("player-recalls-a-citizen")]
         public void Every_citizen_is_founded_on_the_maps_main_open_ground(string seed)
         {
             CoreMap.ResetMapIdCounter();
