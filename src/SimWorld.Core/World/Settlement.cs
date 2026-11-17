@@ -550,15 +550,24 @@ namespace SimWorld.World
             return false;
         }
 
-        /// <summary>The first standable cell on the map's border, in a fixed order; null if there is none.
-        /// Standing for "the open map": a pocket sealed off from every edge is the case being ruled out.</summary>
+        /// <summary>A standable border cell of the map's main open ground, standing for "the open map": of the
+        /// standable border cells, one from the connected group that holds the most of them. Not simply the
+        /// first one: a corner sealed off by rock is a border cell too, and every citizen would be founded
+        /// beside it. Null if the border has no standable cell.</summary>
         private static IntVec3? OpenEdgeCell(Map.Map map)
         {
+            var groups = new List<(IntVec3 Cell, int Count)>();
             foreach (IntVec3 c in map.AllCells)
             {
-                if ((c.x == 0 || c.z == 0 || c.x == map.Size.x - 1 || c.z == map.Size.z - 1) && GenGrid.Standable(c, map)) return c;
+                if (!(c.x == 0 || c.z == 0 || c.x == map.Size.x - 1 || c.z == map.Size.z - 1) || !GenGrid.Standable(c, map)) continue;
+                int g = groups.FindIndex(e => map.reachability.CanReachCells(e.Cell, c));
+                if (g < 0) groups.Add((c, 1));
+                else groups[g] = (groups[g].Cell, groups[g].Count + 1);
             }
-            return null;
+            if (groups.Count == 0) return null;
+            (IntVec3 Cell, int Count) best = groups[0];
+            for (int i = 1; i < groups.Count; i++) if (groups[i].Count > best.Count) best = groups[i];
+            return best.Cell;
         }
 
         /// <summary>The centroid of what this settlement has built, or the map's centre before it has built

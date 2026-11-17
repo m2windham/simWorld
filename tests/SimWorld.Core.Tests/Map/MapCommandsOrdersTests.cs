@@ -257,8 +257,11 @@ namespace SimWorld.Tests.Map
                 "the citizen never returned to the work her own priorities called for");
             Assert.False(worker.jobs.curJob?.playerForced == true);
 
-            // 3. The standing rule was never rewritten to make any of that possible.
-            Assert.Equal(0, worker.workSettings!.GetPriority(WorkTypeDefOf.Mining));
+            // 3. The standing rule was never rewritten to make any of that possible. An office the settlement
+            // appoints her to meanwhile (OfficeManager -> SetRole; on this seed she becomes its Elder) rewrites
+            // the grid by its own rule, not the order's, so a role is the one thing allowed to have done it.
+            Assert.True(worker.workSettings!.GetPriority(WorkTypeDefOf.Mining) == 0 || worker.workSettings.Role != null,
+                "The order switched Mining on in her standing rule.");
             Assert.True(worker.workSettings!.GetPriority(WorkTypeDefOf.Growing) > 0);
         }
 
