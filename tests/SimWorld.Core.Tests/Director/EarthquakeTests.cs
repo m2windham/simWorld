@@ -109,15 +109,18 @@ namespace SimWorld.Tests.Director
         private static int WallsOn(CoreMap map) => map.listerThings.ThingsOfDef(Wall).Count;
 
         /// <summary>Spawns <paramref name="count"/> walls on empty standable cells, mirroring
-        /// <c>SettlementStructuresTests.SpawnThings</c>.</summary>
-        private static void SpawnWalls(CoreMap map, int count)
+        /// <c>SettlementStructuresTests.SpawnThings</c>. <paramref name="owner"/> is the faction a completed
+        /// frame would have handed on; a settlement only counts walls of its own faction.</summary>
+        private static void SpawnWalls(CoreMap map, int count, Faction? owner = null)
         {
             int placed = 0;
             foreach (IntVec3 c in map.AllCells)
             {
                 if (placed >= count) break;
                 if (!GenGrid.Standable(c, map) || GenGrid.GetThingList(c, map).Count != 0) continue;
-                GenSpawn.Spawn(ThingMaker.MakeThing(Wall), c, map);
+                Thing wall = ThingMaker.MakeThing(Wall);
+                wall.SetFaction(owner);
+                GenSpawn.Spawn(wall, c, map);
                 placed++;
             }
             Assert.Equal(count, placed); // fixture sanity: the test map must have room for this many
@@ -242,7 +245,7 @@ namespace SimWorld.Tests.Director
 
             CoreMap map = settlement.EnterMap(world);
             int before = settlement.StructureCount(Wall);
-            SpawnWalls(map, count: 30);
+            SpawnWalls(map, count: 30, owner: faction);
             Assert.Equal(before + 30, settlement.StructureCount(Wall));
 
             Find.God.Attention.Focus(settlement);

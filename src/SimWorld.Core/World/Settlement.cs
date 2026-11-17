@@ -280,11 +280,33 @@ namespace SimWorld.World
             return interiorMap != null ? CountOnMap(interiorMap, def) : StructureLedgerCount(def);
         }
 
-        /// <summary>Completed <paramref name="def"/> buildings actually standing on <paramref name="map"/> —
-        /// every spawned Thing of that def. A Blueprint or a Frame for the same entity carries its own,
-        /// different Def, so this never counts one: nothing here has to filter them out because they were
+        /// <summary>Completed <paramref name="def"/> buildings standing on <paramref name="map"/> that are this
+        /// settlement's own (<see cref="IsOwnStructure"/>). A Blueprint or a Frame for the same entity carries its
+        /// own, different Def, so this never counts one: nothing here has to filter them out because they were
         /// never filed under <paramref name="def"/> to begin with.</summary>
-        private static int CountOnMap(Map.Map map, ThingDef def) => map.listerThings.ThingsOfDef(def).Count;
+        private int CountOnMap(Map.Map map, ThingDef def)
+        {
+            IReadOnlyList<Thing> things = map.listerThings.ThingsOfDef(def);
+            int count = 0;
+            for (int i = 0; i < things.Count; i++)
+            {
+                if (IsOwnStructure(things[i])) count++;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Whether <paramref name="thing"/> belongs to this settlement: its <see cref="Thing.Faction"/> is this
+        /// settlement's <see cref="WorldObject.faction"/>. RimWorld scopes the same question by faction —
+        /// <c>ListerBuildings.Add</c> files a building under <c>allBuildingsColonist</c> only when
+        /// <c>b.Faction == Faction.OfPlayer</c> — so a map-generated ruin (<c>MapGen.GenStep_Ruins</c>, no
+        /// faction) is never one of the settlement's walls. A building takes its builder's faction when its frame
+        /// completes (<see cref="Building.Frame"/>), and a citizen carries the settlement's
+        /// (<see cref="AdoptCitizen"/>). A settlement with no faction owns what has none, exactly as a factionless
+        /// pawn does in <c>AI.WorkGiver_Repair</c>'s <c>t.Faction == pawn.Faction</c> check; it cannot tell its
+        /// own walls from a ruin's, which is the cost of having no faction to tell them by.
+        /// </summary>
+        private bool IsOwnStructure(Thing thing) => ReferenceEquals(thing.Faction, faction);
 
         /// <summary>
         /// Writes what <see cref="InteriorMap"/> currently holds — every completed, artificial building,
@@ -314,6 +336,7 @@ namespace SimWorld.World
             IReadOnlyList<Thing> built = interiorMap.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial);
             for (int i = 0; i < built.Count; i++)
             {
+                if (!IsOwnStructure(built[i])) continue;
                 ThingDef def = built[i].def;
                 counts.TryGetValue(def, out int have);
                 counts[def] = have + 1;
