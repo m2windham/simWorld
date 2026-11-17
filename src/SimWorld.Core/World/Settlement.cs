@@ -505,42 +505,34 @@ namespace SimWorld.World
         }
 
         /// <summary>
-        /// Nearest standable cell to whatever the settlement has already built — the centroid of its own
-        /// <see cref="ThingRequestGroup.BuildingArtificial"/> things (<see cref="SettlementAnchor"/>) — or the map's own centre before anything
+        /// Nearest standable cell to whatever the settlement has already built — the centroid of its
+        /// <see cref="ThingRequestGroup.BuildingArtificial"/> things — or the map's own centre before anything
         /// has been built at all; never a map corner or an edge (spec brief: "somewhere sane and walkable,
         /// ideally near whatever the settlement already has built"). Searches <see cref="GenRadial"/>'s
         /// nearest-first pattern out to its own <see cref="GenRadial.MaxRadius"/> and only then falls back to
         /// a full-map scan, so the common case (a buildable map) never pays for one.
         /// </summary>
-        private bool TryFindCitizenPlacementCell(Map.Map map, HashSet<IntVec3> taken, out IntVec3 cell)
+        private static bool TryFindCitizenPlacementCell(Map.Map map, HashSet<IntVec3> taken, out IntVec3 cell)
         {
             IntVec3 anchor = SettlementAnchor(map);
-            IntVec3? open = OpenGroundCell(map);
             foreach (IntVec3 offset in GenRadial.RadialPattern)
             {
                 IntVec3 candidate = anchor + offset;
-                if (TryUseCell(map, taken, candidate, open, out cell)) return true;
+                if (TryUseCell(map, taken, candidate, out cell)) return true;
             }
 
             foreach (IntVec3 candidate in map.AllCells)
             {
-                if (TryUseCell(map, taken, candidate, open, out cell)) return true;
+                if (TryUseCell(map, taken, candidate, out cell)) return true;
             }
 
             cell = default;
             return false;
         }
 
-        /// <summary>
-        /// Standable, not already given out, and on the map's main open ground (connected to
-        /// <paramref name="open"/>), never in a pocket sealed off by rock: nothing designates rock to dig a
-        /// citizen out of one, so a citizen founded there stays there. On "player-recalls-a-citizen" the nearest
-        /// standable cell to the map's centre is such a pocket. Skipped when the map has no open border.
-        /// </summary>
-        private static bool TryUseCell(Map.Map map, HashSet<IntVec3> taken, IntVec3 candidate, IntVec3? open, out IntVec3 cell)
+        private static bool TryUseCell(Map.Map map, HashSet<IntVec3> taken, IntVec3 candidate, out IntVec3 cell)
         {
-            if (!taken.Contains(candidate) && GenGrid.InBounds(candidate, map) && GenGrid.Standable(candidate, map) &&
-                (open == null || map.reachability.CanReachCells(candidate, open.Value)))
+            if (!taken.Contains(candidate) && GenGrid.InBounds(candidate, map) && GenGrid.Standable(candidate, map))
             {
                 cell = candidate;
                 return true;
@@ -549,47 +541,18 @@ namespace SimWorld.World
             return false;
         }
 
-        /// <summary>A standable border cell of the map's main open ground: of the standable border cells, one
-        /// from the connected group that holds the most of them. Not simply the first: a corner sealed off by
-        /// rock is a border cell too, and every citizen would be founded beside it (the host's seed has one).
-        /// Null if the border has no standable cell.</summary>
-        private static IntVec3? OpenGroundCell(Map.Map map)
-        {
-            var groups = new List<(IntVec3 Cell, int Count)>();
-            foreach (IntVec3 c in map.AllCells)
-            {
-                if (!(c.x == 0 || c.z == 0 || c.x == map.Size.x - 1 || c.z == map.Size.z - 1) || !GenGrid.Standable(c, map)) continue;
-                int g = groups.FindIndex(e => map.reachability.CanReachCells(e.Cell, c));
-                if (g < 0) groups.Add((c, 1));
-                else groups[g] = (groups[g].Cell, groups[g].Count + 1);
-            }
-            if (groups.Count == 0) return null;
-            (IntVec3 Cell, int Count) best = groups[0];
-            for (int i = 1; i < groups.Count; i++)
-            {
-                if (groups[i].Count > best.Count) best = groups[i];
-            }
-            return best.Cell;
-        }
-
-        /// <summary>The centroid of what this settlement has built, or the map's centre before it has built
-        /// anything. Only its own buildings: a map-generated ruin has no faction and is no part of the town. It
-        /// used to count ruins too, and on one seed their centroid sat in a pocket sealed in limestone: eighteen
-        /// of twenty-two founders were put down in it and never got out, since nothing designates rock to free
-        /// them.</summary>
-        private IntVec3 SettlementAnchor(Map.Map map)
+        private static IntVec3 SettlementAnchor(Map.Map map)
         {
             IReadOnlyList<Thing> built = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial);
-            int sumX = 0, sumZ = 0, count = 0;
+            if (built.Count == 0) return new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
+
+            int sumX = 0, sumZ = 0;
             for (int i = 0; i < built.Count; i++)
             {
-                if (built[i].Faction == null || !ReferenceEquals(built[i].Faction, faction)) continue;
                 sumX += built[i].Position.x;
                 sumZ += built[i].Position.z;
-                count++;
             }
-            if (count == 0) return new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
-            return new IntVec3(sumX / count, 0, sumZ / count);
+            return new IntVec3(sumX / built.Count, 0, sumZ / built.Count);
         }
 
         // ---- Scribe ----

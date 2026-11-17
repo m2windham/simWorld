@@ -6,6 +6,7 @@ using SimWorld.Building;
 using SimWorld.Crafting;
 using SimWorld.Defs;
 using SimWorld.Map;
+using SimWorld.Pawns;
 using SimWorld.Sim;
 using SimWorld.Things;
 using SimWorld.World;
@@ -518,10 +519,18 @@ namespace SimWorld.Economy
             if (wanted <= 0) return 0;
 
             SettlementCompound? compound = map.settlementCompound;
+            // A store the band cannot walk to is no store: on a map broken into sealed rock pockets the compound
+            // can be planned in one pocket and the band founded in another, so the granary is drawn only on
+            // ground a citizen of this settlement can reach.
+            Pawn? walker = null;
+            foreach (Pawn citizen in settlement.Citizens)
+            {
+                if (citizen.Spawned && citizen.Map == map) { walker = citizen; break; }
+            }
             IntVec3 seed;
             if (GranaryOf(map) is Zone_Stockpile existing && existing.CellCount > 0) seed = existing.Cells[0];
             else if (compound == null) seed = homeless[0].Position;
-            else if (!TryFindGranaryCell(map, compound.DoorCell, compound, out seed)) return 0;
+            else if (!TryFindGranaryCell(map, compound.DoorCell, compound, walker, out seed)) return 0;
 
             Zone_Stockpile granary = GranaryOf(map) ?? NewGranary(map);
             int added = 0;
@@ -529,7 +538,7 @@ namespace SimWorld.Economy
             for (int i = 0; i < pattern.Count && added < wanted; i++)
             {
                 IntVec3 candidate = seed + pattern[i];
-                if (!CanBeGranary(map, candidate, compound)) continue;
+                if (!CanBeGranary(map, candidate, compound, walker)) continue;
                 if (map.zoneManager.AddCell(granary, candidate)) added++;
             }
             return added;
@@ -538,23 +547,25 @@ namespace SimWorld.Economy
         /// <summary>The nearest cell to <paramref name="origin"/> a granary could take: where a settlement with a
         /// compound seeds its store, beside the village rather than at whatever loose stack the lister names first
         /// (on the host's seed that was a hundred cells off, and the store's home-area margin then took in a ruin).</summary>
-        private static bool TryFindGranaryCell(Map.Map map, IntVec3 origin, SettlementCompound compound, out IntVec3 cell)
+        private static bool TryFindGranaryCell(Map.Map map, IntVec3 origin, SettlementCompound compound, Pawn? walker, out IntVec3 cell)
         {
             IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
             for (int i = 0; i < pattern.Count; i++)
             {
                 cell = origin + pattern[i];
-                if (CanBeGranary(map, cell, compound)) return true;
+                if (CanBeGranary(map, cell, compound, walker)) return true;
             }
             cell = IntVec3.Invalid;
             return false;
         }
 
         /// <summary>Open, unzoned ground (one zone per cell, ZoneManager's own rule) that the compound does not
-        /// keep for its walls, street, yard or plots.</summary>
-        private static bool CanBeGranary(Map.Map map, IntVec3 c, SettlementCompound? compound) =>
+        /// keep for its walls, street, yard or plots, and that <paramref name="walker"/> (a citizen, when one is on
+        /// the map) can walk to.</summary>
+        private static bool CanBeGranary(Map.Map map, IntVec3 c, SettlementCompound? compound, Pawn? walker) =>
             GenGrid.InBounds(c, map) && GenGrid.Standable(c, map) && map.zoneManager.ZoneAt(c) == null &&
-            (compound == null || !compound.Reserves(CellRect.SingleCell(c)));
+            (compound == null || !compound.Reserves(CellRect.SingleCell(c))) &&
+            (walker == null || Reachability.CanReach(walker, c, PathEndMode.OnCell));
 
         private static Zone_Stockpile NewGranary(Map.Map map)
         {
