@@ -1407,3 +1407,29 @@ not save the settlement and *could not have* — a faithful overhead-mountain co
 lethal than what this port had, and the staged measurement says so. The deaths stopped because
 mining stopped digging out its own ceiling. A lane that had reported "ported it 1:1, deaths went
 away" would have been believed, and would have left the real mechanism undiscovered.
+
+## 13. Batch of 2026-11-16: the founding band lives, the village is a village
+
+Merged on `integration/2026-11` at 59ec72a; full suite 3024/3024 (47 min, down from 1 h 53 after the mining
+fix). Lanes: open-items, player-seam, storyteller-pressure (fire, medicine, founding ground, earthquakes),
+dwellings-v2 (dwellings, layout, names, mining, repair).
+
+- **Starvation on sand was a site choice, not a map bug.** Map generation never reads `TerrainDef.fertility`;
+  seed 2024 founded in a 139 mm desert. The founding band now prefers ground a food crop can be sown on.
+  Berry bushes were being sown on sand; RimWorld forbids that and so do we now (`sowTags`).
+- **Seven threat-free seeds, 60 days: 0/7 extinct**, no fire, starvation or old-age deaths.
+- **Fire is fought before it spreads.** A flashstorm forced on cotton-1 at day 6: at most 5 fires, out the same day.
+- **Earthquakes injure rather than execute** (RimWorld built-roof hit). Open: rebuild of destroyed buildings.
+- **Layout:** the farm claimed the home area before the compound existed; now the compound is planned first.
+  Builders were repairing ruins across the map; repair now keeps to the home area as in RimWorld.
+- **Mining:** every rock was work because there was no designation layer. Mining is now designation-gated
+  (resolving the §10 open question), and the mining stretch is 5x faster with identical outcomes.
+- **The bench and the Unity host play different games from the same seed**: Mono evaluates `float` at double
+  precision where CoreCLR rounds per step (`GenStep_Trees` gives 1800 vs 1799 trees). `tools/hostmirror`
+  runs the bench on Unity's Mono and reproduces the host exactly; use it for anything the host shows.
+- **Weak tests found by the founder-name RNG shift**: five tests passed on luck (ideology arms in lockstep,
+  attention budget per seed, compound sleep, quake raid comparison, single-condition assert). Each now measures
+  its claim directly. A hung test can make `dotnet test` print "Passed!" for a partial run — check the total.
+
+Open: buildings carry no faction (ruins in the home area get repaired); granary sited far from the compound;
+`terrainsByFertility`; costStuffCount; threat re-aim; weather.snow; social fights / doctor-by-skill / hunt-revenge.

@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-09-24",
-  "testsTotal": 2751,
+  "updated": "2026-11-16",
+  "testsTotal": 3024,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -333,6 +333,11 @@
           "id": "worldgen.citizenfaction",
           "label": "A citizen carries its settlement's faction, and four more systems turned out to be inert without it. Measured on a generated settlement with a real TribalCivilization raid, nothing armed or enfactioned by hand: 0 of 15 raiders saw a citizen as hostile before and 15 of 15 after; 0 of 30 citizens saw a raider before and 30 of 30 after; attack jobs went from none on either side to 15 of 15 raiders and 24 of 30 citizens, the six abstainers being the pawns whose backstories disable Violent work. The faction is taken at generation rather than stamped on afterwards, which is load-bearing: the gear generators read request.Faction as a tech-level ceiling, so enfactioning after the fact leaves a neolithic founder holding a revolver. All four doors covered — founding band, migrants through AddCitizen, newborns at the birth site since births never pass through AddCitizen, and a sweep as backstop — and AdoptCitizen only ever fills a null so it cannot undo a recruitment. A leaver keeps its faction deliberately: emigrating is not renouncing a civilization, and clearing it would make walking out of town turn a household into prey for hostileToFactionlessHumanlikes. The bigger half was the four systems nobody had looked at: medicine (DoctorUtility.IsCaredForBy returns false on a null faction, so no citizen could tend, rescue or feed another), taming (the animal inherited the tamer's null, stayed wild and huntable, and could never be trained), wardens, and capture in both directions. Every one had passing unit tests; every one of those tests hands its own pawn a faction by hand.",
           "done": true
+        },
+        {
+          "id": "worldgen.foundingground",
+          "label": "The founding band settles on a tile whose map can carry a sowable food crop (FoundingGround.CanFarm over GenStep_Terrain.BaseTerrainsFor), ranked ahead of the site score. Seed 2024 had founded on 98% sand and starved; it now founds on AridShrubland soil and holds 20 to day 60. Open: RimWorld's terrainsByFertility is not ported; the terrain picker is this port's simplification.",
+          "done": true
         }
       ]
     },
@@ -394,6 +399,11 @@
         {
           "id": "mapgen.trees",
           "label": "Generated maps have trees: GenStep_Trees scatters Plant_TreePoplar in proportion to the tile's Timber deposit, on its own seeded stream, so no other gen step's draws move. Before, the only wood on any map was ruin loot.",
+          "done": true
+        },
+        {
+          "id": "mapgen.fertility",
+          "label": "Terrain fertility ported to RimWorld's values: Soil 1.0, SoilRich 1.4, Gravel 0.7, Sand 0.1, MarshyTerrain 1.0, Marsh 0. Crops carry RimWorld's Ground sowTag; berry bushes are never sown.",
           "done": true
         }
       ]
@@ -543,6 +553,11 @@
         {
           "id": "pawngen.wildanimals",
           "label": "Nothing anywhere spawned a wild animal on an interior map, so WorkGiver_Hunt.PotentialWorkThingsGlobal yielded nothing for ever and WorkGiver_TameAnimals was dead too - the same defect shape as the wild food plants, one system over. BiomeDef.animalDensity is authored for all 14 shipped biomes and was read by exactly ONE line of core, which used it as a deposit-placement proxy. MapGen/GenStep_Animals scatters at generation and Pawns/WildAnimalSpawner maintains the population against the biome's own density, matching WildFoodPlants/WildPlantSpawner; RepopulateDays was retuned against a measurement after the first calibration let the map empty in 6 days and refill in 15. Content gap recorded rather than papered over: BiomeDef carries no wildAnimals table and only three animal PawnKindDefs ship, so every land biome draws the same three kinds and differs only in how many. HUNTING STILL DOES NOT CLOSE, and the reason is a missing layer: 12 days produced ZERO hunts and 66 tamings - the population is not hunted flat, it is tamed flat. Two links past this module hold it shut. HuntingInitiative.WantsMeat was false on 12,000 of 12,000 samples, because a founded band's rations (440 nutrition) exceed the gate's want (160) and nothing draws that ledger down while the settlement has a map. And THIS PORT HAS NO DESIGNATION SYSTEM AT ALL - no DesignationManager, no DesignationDef, no DesignationDefs content. In RimWorld both taming and hunting gate on a player designation; here hunting got a civilization-scale substitute for the absent player and taming got nothing, so every wild animal is unconditional taming work at Handling (950) against Hunting (850). Also open: wild animals starve - JobGiver_GetFood finds only items and there is no grazing in this codebase.",
+          "done": true
+        },
+        {
+          "id": "pawngen.uniquenames",
+          "label": "Founders go by unused names: RimWorld's GeneratePawnName_Shuffled nickname loop with NameUseChecker tracking nicknames; backstories that bar work are weighted down (SelectionWeightFactorFromWorkTagsDisabled). Bands with a repeated name: 46/50 to 7/50. Ported constants are recalled, not quoted. Open: small name banks and tribal backstory pool.",
           "done": true
         }
       ]
@@ -885,6 +900,11 @@
           "id": "health.bedrestmedicine",
           "label": "Beds and medicine change who survives. ImmunityGainSpeed carries RimWorld's StatPart_Resting (x1.10 in bed or lying down, not when downed on open ground) and StatPart_BedStat (a bed's BedRestEffectiveness, 1.07 for a Bed), so WoundInfection's raw 0.6441/day is 0.644 up and about or downed on the ground, 0.709 resting and 0.759 in bed. Tend quality is RimWorld's: doctor skill x medicine potency (none 0.3, herbal 0.6, industrial 1.0) plus the bed's offset, capped at the medicine's own maximum; the tend job fetches and consumes one medicine. The player's lever is RimWorld's MedicalCareCategory as a settlement standing rule (MapCommands.SetMedicalCare, default Best). Recorded deviations: one settlement-wide care level, not per pawn; tend batching is not gated on medicine; herbal medicine comes only from the scenario's starting stock (Lost Tribe 20, Crashlanded 30 industrial) because nothing grows healroot yet (ImmunityGainSpeedTests, MedicineTests, MedicalCareCommandTests).",
           "done": true
+        },
+        {
+          "id": "health.healroot",
+          "label": "Healroot is sown when medicine runs out (CropDemandDef HealrootForMedicine, CropDemandWorker_Medicine, sowMinSkill). cotton-1: medicine out day 10, field day 28, first harvest day 44.",
+          "done": true
         }
       ]
     },
@@ -961,6 +981,16 @@
         {
           "id": "work.allgivers",
           "label": "Every WorkGiverDef in content now carries a real giverClass — 29 of 29. WardenDeliverFood was the last, and its recorded blocker had expired rather than been wrong: it needed a room concept to ask 'is there food in this prisoner's own room', and RoomTracker landed two batches later",
+          "done": true
+        },
+        {
+          "id": "work.miningdesignations",
+          "label": "Mining is designation-gated: a minimal DesignationManager with Mine designations, placed by a settlement MiningInitiative from stone demand and rock blocking planned compound cells. At tribal tech stone demand is zero by content, so idle bands no longer mine.",
+          "done": true
+        },
+        {
+          "id": "work.repairhome",
+          "label": "WorkGiver_Repair skips buildings outside the home area unless forced, as RimWorld does. Builders had been repairing map-gen ruins across the map; houses built by tick 60k rose from 68/120 to 104/120 over 6 seeds x 2 runtimes. Open: ruins inside the home area still get repaired until buildings carry a faction.",
           "done": true
         }
       ]
@@ -1104,6 +1134,11 @@
           "id": "ai.lord",
           "label": "Raids break and run. A raid is a Lord running LordJob_AssaultColony (RimWorld 1.0 and 1.6 decompiles): it flees on Trigger_FractionPawnsLost(0.5) when its faction sets autoFlee, gives up after 26,000-38,000 ticks, and drops its downed members where they fall; leaving raiders walk to the nearest edge and are despawned, not killed, so the death ledger and raid credit are unchanged. RoughOutlanders' autoFlee=false, unsourced since the first factions port and never RimWorld's (only mechanoids and insects set it), is removed, so the raids the populated world actually sends can break: raid 1's median hold fell 5,485 -> 3,265 ticks and citizen downings 77 -> 46 over ten paired seeds, and 'Raiders fleeing' is a recorded moment (docs/perf/retreat). Recorded deviations, in the code: the lord polls its members, panic flee is a duty not a mental state, the flee fraction is 1.0's flat 0.5; not ported: kidnap, steal, sappers, the satisfied-with-damage trigger (RaidRetreatTests).",
           "done": true
+        },
+        {
+          "id": "ai.reachcache",
+          "label": "Mining bands no longer slow 10x: a newly opened cell joins its one bordering region instead of re-flooding, reachability is cached per region component (RimWorld's ReachabilityCache idea), and work scans test candidates nearest first. Same outcomes at a fixed tick; mining stretch 4,200 to 21,700 ticks/s. Regions stay uncapped (the 12x12 extentsLimit changed paths and broke the corridor cache).",
+          "done": true
         }
       ]
     },
@@ -1235,6 +1270,16 @@
         {
           "id": "director.earthquake",
           "label": "The first of the three defects docs/design/phase-2-pressure.md named as blocked on a settlement having anything to damage — Settlement.Structures unblocks it. IncidentWorker_Earthquake composes its target settlement and severity through NamedRand before the Ablation check, exactly as ManhunterPack does. An unwatched settlement loses a severity-share of each structure type straight out of Settlement.Structures, no map generated to stage it — the important path, and the one that was impossible before this lane. A watched settlement loses the same share of real Things off its own map: RoofCollapserImmediate.DropRoofInCells was the obvious first reach but is a poor fit here — this port's roof grid is painted only over mountain and cave cells at map generation (GenStep_Roofs), never over a settlement's own constructed rooms, so scattering 'currently roofed' cells would almost always miss the very buildings a settlement built. Thing.TakeDamage is used directly instead, reaching exactly the ThingDefs StructureCount already tracks. A pawn standing on a destroyed structure's own footprint (only ever a Bed — a wall and a StorageHut are both Impassable) is crushed for certain, and credited through DeathLedger.RecordAttributed from the ledger's own delta, never from this worker's own count — reproducing and closing the exact 'four kills against a total of zero deaths' failure director.deathattribution's own item records, this time for a settlement off the civilization roster. Structures destroyed are a second quantity on ResourceImpactLedger, never a second number that could disagree with the first. Tests: tests/SimWorld.Core.Tests/Director/EarthquakeTests.cs.",
+          "done": true
+        },
+        {
+          "id": "director.fireremedy",
+          "label": "Fire is fought before it spreads: FireWatcher forced rain, fire-aware path cost and wander, burning beds refused, zone cells mark home area. A flashstorm forced on cotton-1 day 6 started at most 5 fires, out the same day; the old branch lost all 20 to 751 fires.",
+          "done": true
+        },
+        {
+          "id": "director.earthquakeinjury",
+          "label": "An earthquake's fallen bed or dwelling hurts its sleeper with RimWorld's built-roof hit (15-30 Crush) instead of a forced kill; the injured are tended. Ten quakes on a sleeping band of 20 never kill four. Open: rebuild of destroyed buildings (in progress).",
           "done": true
         }
       ]
@@ -1631,6 +1676,16 @@
           "id": "building.autohomearea",
           "label": "The home area grows on its own around what the settlement builds: RimWorld's AutoHomeAreaMaker (BorderWidth 4, MarkHomeAroundThing's rect from Position and RotatedSize), so cleaning, firefighting and construction placement are bounded in play without the player painting. Translation: Things here carry no Faction, so the hook is Frame.CompleteConstruction, the one way a settlement's building comes into being; a ruin's or raider's building never marks. A player-erased cell comes back when a later building's range reaches it, as in RimWorld. Not ported: the autoHomeArea play setting (always on, RimWorld's default) and Notify_ZoneCellAdded (AutoHomeAreaMakerTests).",
           "done": true
+        },
+        {
+          "id": "building.layout",
+          "label": "The compound is planned before the first field, fields keep off the compound's ground, compound siting ranks positions by open yard and plots, and trees inside the ring are felled. Host default game at tick 60k: 20/20 beds in the ring, dwellings on street plots.",
+          "done": true
+        },
+        {
+          "id": "building.dwellings",
+          "label": "Dwellings v2: 4x5 House_Paleo/Meso/Neo/Chalco by research along a street, facing it (Rot4 North/South per side); work yard; bench stockpile; PlaceNoCostFrame; bill ingredients not banked off map; slept-in-bedroom/barracks thoughts.",
+          "done": true
         }
       ]
     },
@@ -1987,6 +2042,11 @@
         {
           "id": "god.read-model-losses",
           "label": "GodViewSnapshot.Losses (LossSummary): phase 2's measurement ledgers — Storyteller.deaths (DeathLedger) and Storyteller.resourceImpact (ResourceImpactLedger) — surfaced onto the read model rather than left invisible behind Find.Storyteller. DeathsByCause (DeathCause enum + count) and DeathsBySource/NutritionDeniedBySource/StructuresDestroyedBySource (source defName + count, e.g. \"ManhunterPack\", \"Drought\", \"Earthquake\", \"Disease_Plague\") plus each ledger's own running total (TotalDeaths, TotalNutritionDenied, TotalStructuresDestroyed), read straight off the ledgers with nothing recomputed. Sparse throughout, matching both ledgers: a cause or source that has never acted is absent, never a zero row. DeathCause is passed as the enum itself, not a string — it is a bare value type with no worker to reach, so the defName/never-a-Def handle rule this seam exists for has nothing to say about it. A dedicated structural test (GodViewLossTests, since the read model's own The_command_surface_is_the_only_way_in checks only EdictOption and GodViewSnapshot's immediate properties, not a nested type) walks LossSummary and its line types for a Def, a live Pawn or a live Settlement.",
+          "done": true
+        },
+        {
+          "id": "god.playerseam",
+          "label": "Player seam: roster fields, WorkPrioritiesOf/SetWorkPriority (ranked per citizen), 10 Alerts, Letters with DismissLetter, ChronicleSince; every death chronicled once; edicts report Suspended and 'nobody is allowed'. The host renders all five screens.",
           "done": true
         }
       ]
