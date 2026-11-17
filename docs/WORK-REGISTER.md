@@ -1433,3 +1433,8 @@ dwellings-v2 (dwellings, layout, names, mining, repair).
 
 Open: buildings carry no faction (ruins in the home area get repaired); granary sited far from the compound;
 `terrainsByFertility`; costStuffCount; threat re-aim; weather.snow; social fights / doctor-by-skill / hunt-revenge.
+
+Later the same night (integration 31f5487, suite 3031/3031): earthquakes leave rebuild blueprints; buildings carry
+a faction; every planner and the band's spawn agree on reachable ground, so seed 2024 builds and feeds itself.
+Open for next week: StructureCount and the structure ledger still count ruin walls; no test catches removal of
+the `Fits` or works-placement reach gates; after a load the map-id counter is not advanced past loaded maps.
