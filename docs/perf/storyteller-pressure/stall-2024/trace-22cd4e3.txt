@@ -1,0 +1,92 @@
+seed 2024 tile 284 AridShrubland
+d1 h6: alive 20 frames 76 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:3,Door:1] satisfied 76 worked 0 inHome 70 blueprints 0 | WoodLog:need0/onMap14/ledger0 | wood 14 trees 475 mature 470 home 3222
+   jobs: Sow:988 Harvest:141 CutPlant:59 HaulToBuildingSite:6 ConstructFinishFrame:6
+d1 h12: alive 20 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 479 mature 469 home 3222
+   jobs: SocialRelax:324 Sow:313 Clean:231 GotoWander:147 HaulToCell:79 Ingest:49 none:30 TendPatient:12 SocialFight:6 FeedPatient:5 CutPlant:4
+d1 h18: alive 20 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 488 mature 469 home 3222
+   jobs: GotoWander:474 Clean:427 LayDown:239 Ingest:60
+d1 h24: alive 20 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 493 mature 469 home 3222
+   jobs: LayDown:1185 Clean:6 Ingest:5 TendPatient:4
+   sick: Lior[WoundInfection=0.18 job=LayDown lying]
+d2 h6: alive 20 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 497 mature 469 home 3222
+   jobs: Clean:361 SocialRelax:295 GotoWander:286 LayDown:103 Ingest:62 Skygaze:62 GoForWalk:27 TendPatient:4
+   sick: Lior[WoundInfection=0.37 job=GotoWander]
+d2 h12: alive 20 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:572 Clean:451 SocialRelax:70 Ingest:45 GoForWalk:35 Skygaze:20 TendPatient:7
+   sick: Lior[WoundInfection=0.56 job=GotoWander]
+d2 h18: alive 20 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:632 Clean:395 SocialRelax:82 Skygaze:31 Ingest:29 GoForWalk:28 LayDown:3
+   sick: Lior[WoundInfection=0.76 job=Clean]
+d2 h24: alive 20 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:987 Clean:120 GotoWander:43 none:25 SocialRelax:13 TendPatient:4 Ingest:3 Skygaze:3 GoForWalk:2
+   sick: Lior[WoundInfection=0.95 job=none lying]
+d3 h6: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:485 Clean:256 GotoWander:249 SocialRelax:74 Ingest:59 none:15 SocialFight:7 GoForWalk:5 TendPatient:5
+d3 h12: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:598 Clean:394 SocialRelax:128 SocialFight:7 Ingest:5 TendPatient:5 LayDown:3
+d3 h18: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:514 Clean:433 SocialRelax:113 Ingest:62 GoForWalk:12 Skygaze:6
+d3 h24: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:579 Clean:257 GotoWander:230 SocialRelax:46 Ingest:13 Skygaze:8 GoForWalk:7
+d4 h6: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:703 GotoWander:172 Clean:157 Ingest:56 SocialRelax:35 GoForWalk:11 Skygaze:6
+d4 h12: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: Clean:460 GotoWander:413 LayDown:137 SocialRelax:79 GoForWalk:24 Skygaze:14 Ingest:13
+d4 h18: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:465 Clean:438 LayDown:84 SocialRelax:71 Ingest:41 Skygaze:22 GoForWalk:19
+d4 h24: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:417 LayDown:308 Clean:297 SocialRelax:68 Skygaze:18 GoForWalk:17 Ingest:15
+d5 h6: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:838 Clean:110 GotoWander:107 SocialRelax:39 Ingest:31 TendPatient:8 SocialFight:4 GoForWalk:2 Skygaze:1
+d5 h12: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:432 Clean:372 LayDown:170 SocialRelax:114 Ingest:37 GoForWalk:9 TendPatient:3 Skygaze:3
+   sick: Emrys[WoundInfection=0.14 job=Clean]
+d5 h18: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:484 Clean:395 LayDown:94 SocialRelax:72 Ingest:42 GoForWalk:26 Skygaze:15 TendPatient:12
+   sick: Emrys[WoundInfection=0.31 job=Clean]
+d5 h24: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: Clean:477 GotoWander:403 LayDown:126 SocialRelax:70 Ingest:29 Skygaze:21 GoForWalk:14
+   sick: Emrys[WoundInfection=0.51 job=Clean]
+d6 h6: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:811 GotoWander:178 Clean:112 SocialRelax:16 Ingest:13 GoForWalk:5 Skygaze:3 TendPatient:1 none:1
+   sick: Emrys[WoundInfection=0.70 job=LayDown lying]
+d6 h12: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:428 LayDown:340 Clean:240 SocialRelax:64 Ingest:36 GoForWalk:20 Skygaze:12
+   sick: Emrys[WoundInfection=0.85 job=Ingest]
+d6 h18: alive 18 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:468 Clean:368 LayDown:110 SocialRelax:67 none:50 GoForWalk:22 Ingest:20 Skygaze:14 TendPatient:11 SocialFight:7
+d6 h24: alive 18 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:414 Clean:388 LayDown:141 SocialRelax:63 Ingest:38 GoForWalk:19 Skygaze:16 SocialFight:1
+d7 h6: alive 18 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:543 Clean:262 GotoWander:202 SocialRelax:40 Ingest:14 GoForWalk:10 Skygaze:8 none:1
+d7 h12: alive 18 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:530 Clean:241 GotoWander:215 SocialRelax:41 Ingest:37 GoForWalk:9 Skygaze:7
+d7 h18: alive 18 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:431 Clean:411 LayDown:105 SocialRelax:79 GoForWalk:16 Skygaze:15 Ingest:11 SocialFight:6 TendPatient:6
+d7 h24: alive 18 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:372 Clean:363 LayDown:217 SocialRelax:59 Ingest:38 GoForWalk:19 Skygaze:12
+d8 h6: alive 18 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: Clean:350 LayDown:329 GotoWander:294 SocialRelax:54 Ingest:27 GoForWalk:14 Skygaze:12
+d8 h12: alive 18 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:644 GotoWander:218 Clean:134 SocialRelax:34 Ingest:31 Skygaze:7 GoForWalk:6 Harvest:5 HaulToCell:1
+d8 h18: alive 18 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: Clean:407 GotoWander:384 LayDown:138 SocialRelax:72 Ingest:25 Harvest:21 Skygaze:17 GoForWalk:15 HaulToCell:1
+d8 h24: alive 18 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:427 Clean:363 LayDown:167 SocialRelax:68 Ingest:29 GoForWalk:14 Skygaze:12
+d9 h6: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:394 Clean:356 LayDown:236 SocialRelax:77 Skygaze:13 GoForWalk:13 Ingest:11
+d9 h12: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:648 GotoWander:209 Clean:209 SocialRelax:30 Ingest:16 GoForWalk:15 Skygaze:10 Harvest:3
+d9 h18: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: Clean:384 GotoWander:341 LayDown:270 Ingest:64 SocialRelax:54 GoForWalk:15 Skygaze:8 Harvest:4
+d9 h24: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: GotoWander:481 Clean:365 LayDown:158 SocialRelax:74 GoForWalk:25 Ingest:24 Skygaze:11 SocialFight:2
+d10 h6: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: Clean:389 LayDown:328 GotoWander:306 SocialRelax:60 Ingest:38 GoForWalk:13 Skygaze:6
+d10 h12: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3222
+   jobs: LayDown:505 Clean:264 GotoWander:237 SocialRelax:78 Ingest:32 Harvest:12 SocialFight:5 TendPatient:4 HaulToCell:2 Skygaze:1
+d10 h18: alive 19 frames 77 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:4,Door:1] satisfied 77 worked 0 inHome 71 blueprints 0 | WoodLog:need0/onMap0/ledger16 | wood 0 trees 500 mature 469 home 3521
+   jobs: Harvest:467 LayDown:415 GotoWander:119 Clean:54 Sow:47 SocialRelax:20 Ingest:11 Skygaze:4 GoForWalk:3
+d10 h24: alive 19 frames 87 [Bed:20,Sculpture:11,ResearchBench:2,Wall:39,StorageHut:14,Door:1] satisfied 86 worked 0 inHome 81 blueprints 0 | WoodLog:need23/onMap0/ledger32 | wood 0 trees 495 mature 460 home 3521
+   jobs: HaulToCell:618 Sow:386 LayDown:115 CutPlant:17 Ingest:4
+deaths deaths 2 (Disease 2)

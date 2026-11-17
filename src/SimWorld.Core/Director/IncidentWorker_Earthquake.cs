@@ -180,6 +180,9 @@ namespace SimWorld.Director
                     // Captured before TakeDamage can invalidate it (DeSpawn resets Position). The whole
                     // footprint, not Position: a 1x2 bed falls on its foot cell as well as its head.
                     CellRect footprint = target.OccupiedRect();
+                    IntVec3 at = target.Position;
+                    Rot4 rot = target.Rotation;
+                    ThingDef built = target.def;
                     target.TakeDamage(new DamageInfo(RoofCollapseDefOf.Crush, target.MaxHitPoints));
 
                     // Credited from whether the Thing is actually gone, never assumed from the hit alone: a
@@ -187,6 +190,7 @@ namespace SimWorld.Director
                     // never happened — the same "never over-claim" discipline CrushOnePawn applies to a death.
                     if (!target.Destroyed) continue;
                     destroyedTotal++;
+                    PlaceRebuildBlueprint(map, built, at, rot);
 
                     foreach (IntVec3 cell in footprint.Cells)
                     {
@@ -243,6 +247,22 @@ namespace SimWorld.Director
             if (ledger == null || ledger.Total <= before) return 0;
             ledger.RecordAttributed(source);
             return 1;
+        }
+
+        /// <summary>
+        /// RimWorld's auto-rebuild: a player building destroyed outright leaves a blueprint for itself where it
+        /// stood, so the colony puts it back (RimWorld: <c>Building.Destroy</c>, on <c>KillFinalize</c>, when
+        /// <c>PlaySettings.autoRebuild</c> is on, through <c>GenConstruct.PlaceBlueprintForBuild</c>). Everything
+        /// this incident destroys on a map is the settlement's own (<see cref="KnownStructureDefs"/>), so no
+        /// faction check is needed here. Skipped where no blueprint is authored for the def or the cell can no
+        /// longer take one. <see cref="Building.SettlementConstructionInitiative"/> counts blueprints toward what
+        /// the settlement wants, so it does not also lay a second one elsewhere.
+        /// </summary>
+        private static void PlaceRebuildBlueprint(Map.Map map, ThingDef built, IntVec3 at, Rot4 rot)
+        {
+            ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(built);
+            if (blueprintDef == null || !GenConstruct.CanPlaceBlueprintAt(built, at, map, out _, rot)) return;
+            GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), at, map, rot);
         }
 
         // ---- shared arithmetic ----
