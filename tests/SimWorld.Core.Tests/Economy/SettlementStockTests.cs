@@ -601,7 +601,6 @@ namespace SimWorld.Tests.Economy
             Game game = Game.NewGame(TribalStart(), "stock-end-to-end", subdivisionOverride: 3, soloStart: true);
             Settlement settlement = game.World!.worldObjects.OfType<Settlement>().First();
             CoreMap map = game.EnterSettlement(settlement);
-            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("Masonry"));
 
             // The town is bigger than the handful of people the camera follows — the ordinary shape of a real
             // settlement (spec §11.3), and the tier a guild's craftsmen come from.
@@ -618,12 +617,21 @@ namespace SimWorld.Tests.Economy
             Assert.Equal(0, settlement.StoreCountOf(Chunk));
             Assert.Equal(0, settlement.StoreCountOf(Blocks));
 
+            // Banking first, masonry after. Stone a standing bill on the map would take stays on the map
+            // (BankStoredGoods), so once a stonecutter's table stands with its bill, chunks are no longer banked;
+            // whether the haul beat the table was a race this test used to win only because most of the band
+            // was founded sealed in a rock pocket with nothing else to do. Masonry is what the table waits on.
+            // A band founded on open ground sows its first fields before it hauls loose stone: on this seed
+            // the first chunks are banked a little over a day in.
             int peakChunksBanked = 0;
+            for (int i = 0; i < 90000 && settlement.StoreCountOf(Chunk) == 0; i++) game.TickManager.DoSingleTick();
+            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("Masonry"));
             for (int i = 0; i < 14000; i++)
             {
-                game.TickManager.DoSingleTick();
                 peakChunksBanked = System.Math.Max(peakChunksBanked, settlement.StoreCountOf(Chunk));
+                game.TickManager.DoSingleTick();
             }
+            peakChunksBanked = System.Math.Max(peakChunksBanked, settlement.StoreCountOf(Chunk));
 
             Assert.True(peakChunksBanked > 0,
                 "A settlement whose citizens hauled stone into its own granary should have banked some of it into the civilization's ledger.");

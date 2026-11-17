@@ -314,9 +314,6 @@ namespace SimWorld.World
             IReadOnlyList<Thing> built = interiorMap.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial);
             for (int i = 0; i < built.Count; i++)
             {
-                // Only what this settlement built: a map-gen ruin has no faction (Thing.Faction) and is not
-                // one of its walls.
-                if (built[i].Faction == null || !ReferenceEquals(built[i].Faction, faction)) continue;
                 ThingDef def = built[i].def;
                 counts.TryGetValue(def, out int have);
                 counts[def] = have + 1;
