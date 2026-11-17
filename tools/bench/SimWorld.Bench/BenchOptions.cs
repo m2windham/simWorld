@@ -66,6 +66,14 @@ namespace SimWorld.Bench
 
         public int LayoutEvery { get; set; }
 
+        /// <summary>--suite layout: read the god view and the map view every this many ticks, as the host's
+        /// renderer does every frame (0, never).</summary>
+        public int LayoutViewEvery { get; set; }
+
+        /// <summary>--suite layout: print <see cref="SimWorld.Sim.SimDigest"/> every this many ticks (0, never), to
+        /// compare a run line by line with the host's.</summary>
+        public int LayoutDigestEvery { get; set; }
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }

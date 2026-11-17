@@ -222,6 +222,12 @@ namespace SimWorld.Bench
                     case "--layout-every":
                         opt.LayoutEvery = ParseInt(Next(args, ref i), "--layout-every");
                         break;
+                    case "--layout-digest-every":
+                        opt.LayoutDigestEvery = ParseInt(Next(args, ref i), "--layout-digest-every");
+                        break;
+                    case "--layout-view-every":
+                        opt.LayoutViewEvery = ParseInt(Next(args, ref i), "--layout-view-every");
+                        break;
                     case "--target-tick-ns":
                         opt.TargetTickNs = ParseIntList(Next(args, ref i), "--target-tick-ns");
                         break;
@@ -328,6 +334,9 @@ OPTIONS
   --layout-seed <s>       for --suite layout and band: new-game seed string (default simworld-host, the Unity host's).
   --layout-ticks <N>      for --suite layout and mining: ticks to run before reporting (default 60000).
   --layout-every <N>      for --suite layout: also print a brief line every N ticks (default 0, never).
+  --layout-view-every <N> for --suite layout: read the god view and map view every N ticks, as the host's
+                          renderer does each frame (default 0, never).
+  --layout-digest-every <N> for --suite layout: print SimDigest.Line (tick, Rand draws, map hash) every N ticks.
   --help, -h              show this text.
 
 SUITES

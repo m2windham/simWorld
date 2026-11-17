@@ -7,6 +7,7 @@ using SimWorld.Building;
 using SimWorld.Defs;
 using SimWorld.God.View;
 using SimWorld.Map;
+using SimWorld.Map.View;
 using SimWorld.Scenario;
 using SimWorld.Sim;
 using SimWorld.Things;
@@ -35,12 +36,21 @@ namespace SimWorld.Bench.Suites
             CoreMap.ResetMapIdCounter();
             Game game = Game.NewGame(ScenarioDefOf.TribalStart.scenario, opt.LayoutSeed, subdivisionOverride: 3, soloStart: true, bandSize: 20);
             Settlement settlement = game.World!.worldObjects.OfType<Settlement>().First();
+            // The host's SimHarness.StartGame reads the god view before it opens the settlement.
+            if (opt.LayoutViewEvery > 0) GodViewSnapshot.Capture();
             GodCommands.OpenSettlement(settlement.tile);
             CoreMap map = settlement.InteriorMap!;
+            MapViewVersions? held = null;
 
             for (int i = 0; i < opt.LayoutTicks; i++)
             {
                 game.TickManager.DoSingleTick();
+                if (opt.LayoutDigestEvery > 0 && (i + 1) % opt.LayoutDigestEvery == 0) Console.WriteLine("  digest " + SimDigest.Line(map));
+                if (opt.LayoutViewEvery > 0 && (i + 1) % opt.LayoutViewEvery == 0)
+                {
+                    GodViewSnapshot.Capture();
+                    held = MapViewSnapshot.CaptureChanges(map, held).Versions;
+                }
                 if (opt.LayoutEvery > 0 && (i + 1) % opt.LayoutEvery == 0) Console.WriteLine(Describe(map, settlement, i + 1, brief: true));
             }
             Console.WriteLine(Describe(map, settlement, opt.LayoutTicks, brief: false));
