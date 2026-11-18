@@ -68,6 +68,12 @@ namespace SimWorld.Pawns
         /// hunting stealth.</summary>
         public float manhunterOnDamageChance;
 
+        /// <summary>How close an attacker closes in on a <i>downed</i> member of this race before finishing it
+        /// off — RimWorld: <c>RaceProperties.executionRange</c>, read by <c>Toils_Combat.GotoCastPosition</c>
+        /// (<c>closeIfDowned</c>) and <c>Toils_Jump.JumpIfTargetDownedDistant</c> in <c>JobDriver_Hunt</c>.
+        /// The default of 2 is recalled, not sourced; no shipped race overrides it.</summary>
+        public float executionRange = 2f;
+
         /// <summary>Which <see cref="TrainableDef"/>s this race can ever learn (RimWorld: <c>RaceProperties.trainability</c>);
         /// null (the Humanlike default) means none — nothing here is trainable in the <see cref="Pawn_TrainingTracker"/> sense.</summary>
         public TrainabilityDef? trainability;

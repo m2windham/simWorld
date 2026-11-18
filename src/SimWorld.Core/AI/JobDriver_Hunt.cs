@@ -142,7 +142,17 @@ namespace SimWorld.AI
             }
 
             float distance = (animal.Position - pawn.Position).LengthHorizontal;
-            if (distance > HuntUtility.EffectiveRange(v))
+            float range = HuntUtility.EffectiveRange(v);
+            if (animal.Downed && v.State == VerbState.Idle)
+            {
+                // Downed prey is finished off from close in (RimWorld: JobDriver_Hunt's GotoCastPosition with
+                // closeIfDowned, and JumpIfTargetDownedDistant between bursts, both bounded by the prey's
+                // RaceProperties.executionRange). Kept shooting from full bow range, the hunter missed most
+                // shots and the prey could come out of pain shock and stand up again. Only checked between
+                // bursts, as RimWorld's jump toil is, so a shot already being aimed still goes off.
+                range = System.Math.Min(range, animal.RaceProps.executionRange);
+            }
+            if (distance > range)
             {
                 // Re-path only once the previous path has run out: StartPath keeps an in-flight path to the
                 // same target rather than recomputing it, so a hunter walks to where the animal was, then

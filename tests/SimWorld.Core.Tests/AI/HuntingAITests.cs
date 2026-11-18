@@ -649,6 +649,36 @@ namespace SimWorld.Tests.AI
             Assert.NotEqual(HuntingDefOf.Hunt, hunter.jobs.curJob?.def);
         }
 
+        [Fact]
+        public void A_hunter_closes_in_on_downed_prey_and_finishes_it_off()
+        {
+            // RimWorld's JobDriver_Hunt walks up to downed prey (GotoCastPosition with closeIfDowned, bounded
+            // by the prey's RaceProperties.executionRange) and shoots it from there until it is dead. Before,
+            // the hunter stayed at full bow range and kept missing, and the prey could stand up again.
+            CoreMap map = NewMap(24, 3);
+            Pawn hunter = SpawnHunter(map, new IntVec3(0, 0, 1));
+            Pawn chicken = SpawnAnimal(map, Chicken, new IntVec3(20, 0, 1));
+            chicken.health.ForceDowned = true;
+            Assert.True(chicken.Downed);
+
+            hunter.jobs.TryFindAndStartJob();
+            Assert.Equal(HuntingDefOf.Hunt, hunter.jobs.curJob?.def);
+            float bowRange = HuntUtility.EffectiveRange(HuntUtility.MakeHuntVerb(hunter)!);
+            Assert.True((chicken.Position - hunter.Position).LengthHorizontal < bowRange,
+                "The prey starts inside bow range, so only the downed rule makes the hunter walk.");
+
+            float closest = float.MaxValue;
+            for (int i = 0; i < 6000 && !chicken.Dead; i++)
+            {
+                RunTicks(1, hunter, chicken);
+                if (!chicken.Dead) closest = System.Math.Min(closest, (chicken.Position - hunter.Position).LengthHorizontal);
+            }
+
+            Assert.True(closest <= chicken.RaceProps.executionRange,
+                $"The hunter never closed in on the downed prey (closest {closest:0.0} cells).");
+            Assert.True(chicken.Dead, "The hunt should go on until the downed prey is dead.");
+        }
+
         // ---- scribe round trip ----
 
         [Fact]
