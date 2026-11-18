@@ -1438,3 +1438,22 @@ Later the same night (integration 31f5487, suite 3031/3031): earthquakes leave r
 a faction; every planner and the band's spawn agree on reachable ground, so seed 2024 builds and feeds itself.
 Open for next week: StructureCount and the structure ledger still count ruin walls; no test catches removal of
 the `Fits` or works-placement reach gates; after a load the map-id counter is not advanced past loaded maps.
+
+## 14. Batch of 2026-11-17: snow, and last week's open items closed
+
+Merged on `integration/2026-11`; full suite 3058/3058. Lanes: structure-ledger, weather-snow.
+
+- **Ruin walls are no longer the settlement's.** `StructureCount` and the ledger sync both count only buildings of
+  the settlement's own faction (RimWorld's `allBuildingsColonist`). A faction-less settlement still cannot tell
+  its walls from a ruin's.
+- **The reach gates are pinned.** Pocket tests fail when the `Fits` gate or either works-placement gate is removed.
+- **Loading advances the map-id counter** past every loaded map, the same way thing ids already were.
+- **Construction materials stay on the map.** Banking skipped bill materials but not wood a blueprint or frame
+  still needs, and the ledger cannot hand wood back. RimWorld leaves it on the map; so do we now.
+- **Seed `delta` is pacing, not a stall.** 60000 ticks is one day, not sixty. CoreCLR now builds 10 by tick 45000;
+  Mono builds 7 by 60000 and all 10 by 70000 (early wood shortage, then the night). No frame is stuck.
+- **Snow** (`weather.snow`): grid, fall and melt, path cost, planting block, snow clearing, save/load. Constants are
+  recalled and marked in code. Not drawn by the host yet.
+
+Open: snow layer in the host; rain effects of `SteadyEnvironmentEffects`; a quake's `ShakeMap` still destroys ruin
+walls; what moved CoreCLR delta from 7 to 10 was not pinned down.

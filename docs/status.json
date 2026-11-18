@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-11-16",
-  "testsTotal": 3031,
+  "updated": "2026-11-17",
+  "testsTotal": 3058,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1694,7 +1694,7 @@
         },
         {
           "id": "building.reach",
-          "label": "Every settlement planner (compound siting, Fits, works placement, field growth, granary) sites only cells reachable from a citizen, and the band spawns on the largest open ground. Seed 2024 (46 sealed rock pockets) went from 89 unworked frames to 90 buildings and 642 field cells by day 10. Buildings carry a faction; repair skips ruins and other factions. Open: StructureCount still counts ruin walls.",
+          "label": "Every settlement planner (compound siting, Fits, works placement, field growth, granary) sites only cells reachable from a citizen, and the band spawns on the largest open ground. Seed 2024 (46 sealed rock pockets) went from 89 unworked frames to 90 buildings and 642 field cells by day 10. Buildings carry a faction; repair skips ruins and other factions. StructureCount and the structure ledger count only the settlement faction's own buildings (2026-11-17); pocket tests fail if the Fits or works-placement reach gate is removed.",
           "done": true
         }
       ]
@@ -2125,8 +2125,8 @@
         },
         {
           "id": "weather.snow",
-          "label": "CORRECTED AND NARROWED. Snow is still genuinely absent - there is no snow grid and no depth, and Weather/WeatherManager.cs:103 says so outright. But 'lightning ... and weather events are left out ... there is no weather-event system' is false: Conditions/GameCondition_Flashstorm.cs implements real lightning that ignites fires, wired through IncidentWorker_MakeGameCondition in Incidents_Misc.xml, with HeatWave and ColdSnap on the same path and test coverage in GameConditionTests. Thunderstorm-as-WeatherDef stays deliberately unshipped, which the WeatherDefs XML already states.",
-          "done": false
+          "label": "Snow ported (2026-11-17): per-cell SnowGrid (depth 0-1, saved), snowfall during SnowGentle/SnowHard on unroofed cells and melt by outdoor or room temperature via SteadyEnvironmentEffects, snow categories add path cost, planting and wild regrowth blocked above depth 0.2, a painted snow-clear area with WorkGiver_ClearSnow/JobDriver_ClearSnow under Cleaning. Snow draws nothing from the shared Rand. Constants are recalled rather than sourced and marked in code. Deferred: snow rendering in the host, the rest of SteadyEnvironmentEffects (rain fire-out, deterioration, filth washing), hideAtSnowDepth.",
+          "done": true
         }
       ]
     },
