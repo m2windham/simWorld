@@ -27,17 +27,8 @@ namespace SimWorld.MapGen
         /// <summary>Within the swampy band, fertility at/above this reads as true Marsh; below it, the drier MarshyTerrain.</summary>
         public const float MarshFertilityFloor = 0.5f;
 
-        /// <summary>Biome forageability at/below this, combined with <see cref="AridRainfallCeilingMm"/>, reads as arid enough for bare Sand.</summary>
-        public const float AridForageabilityCeiling = 0.25f;
-
-        /// <summary>Annual rainfall (mm) ceiling for the same arid/Sand rule.</summary>
-        public const float AridRainfallCeilingMm = 300f;
-
-        /// <summary>Fertility at/above this paints SoilRich instead of ordinary Soil.</summary>
-        public const float RichSoilFertilityFloor = 0.75f;
-
-        /// <summary>Fertility at/below this paints bare Gravel instead of ordinary Soil.</summary>
-        public const float GravelFertilityCeiling = 0.2f;
+        // The fertility ladder (SoilRich / Soil / Gravel, and the arid all-Sand rule) that used to live here is
+        // gone: GenStep_Terrain reads each biome's own terrainsByFertility bands, as RimWorld does.
 
         /// <summary>Map cells of river width per world-scale <see cref="RiverDef.widthOnWorld"/> unit.</summary>
         public const float RiverWidthCellsPerWorldUnit = 3f;

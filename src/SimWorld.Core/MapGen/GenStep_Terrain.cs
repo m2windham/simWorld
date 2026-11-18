@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using SimWorld.Map;
 using SimWorld.Noise;
 using SimWorld.Sim;
@@ -40,31 +41,41 @@ namespace SimWorld.MapGen
             }
         }
 
+        /// <summary>
+        /// The ground at a cell of fertility <paramref name="fertility"/> (RimWorld: the fertility half of
+        /// <c>GenStep_Terrain.TerrainFrom</c>). A boggy tile paints marsh first — this port's stand-in for the
+        /// biome <c>terrainPatchMakers</c> RimWorld consults at the same point, which are not ported — and
+        /// everything else is the biome's own <see cref="BiomeDef.terrainsByFertility"/> band.
+        /// <para/>
+        /// <b>Units.</b> RimWorld reads its fertility grid as raw Perlin output, about -1..1, and its biome
+        /// thresholds are written in those units. This port's <see cref="MapGenContext.fertilityGrid"/> is the
+        /// same kind of noise remapped to 0..1 (<see cref="GenStep_ElevationFertility"/>: raw * 0.5 + 0.5), so
+        /// the cell's value is mapped back with <see cref="RawFertility"/> and the XML keeps RimWorld's numbers.
+        /// <para/>
+        /// <b>Not ported:</b> RimWorld's elevation bands in the same method (gravel just below a mountain's
+        /// foot, rock floor under it), because this port raises mountains by a per-tile elevation quantile
+        /// (<see cref="GenStep_RocksAndMountains"/>), not RimWorld's fixed 0.61, so there is no fixed band to
+        /// sit gravel in. A biome with no band holding the value falls back to Sand, as RimWorld's does after
+        /// logging; a tile with no biome at all (only ever a test fixture) is plain Soil.
+        /// </summary>
         private static TerrainDef PickBaseTerrain(Tile tile, BiomeDef? biome, float fertility)
         {
             if (tile.swampiness >= MapGenTuning.MarshSwampinessFloor)
             {
                 return fertility >= MapGenTuning.MarshFertilityFloor ? MapGenTerrainDefOf.Marsh : MapGenTerrainDefOf.MarshyTerrain;
             }
-            bool arid = biome != null && biome.forageability <= MapGenTuning.AridForageabilityCeiling && tile.rainfall <= MapGenTuning.AridRainfallCeilingMm;
-            if (arid)
-            {
-                return TerrainDefOf.Sand;
-            }
-            if (fertility >= MapGenTuning.RichSoilFertilityFloor)
-            {
-                return MapGenTerrainDefOf.SoilRich;
-            }
-            if (fertility <= MapGenTuning.GravelFertilityCeiling)
-            {
-                return TerrainDefOf.Gravel;
-            }
-            return TerrainDefOf.Soil;
+            if (biome == null) return TerrainDefOf.Soil;
+            return TerrainThreshold.TerrainAtValue(biome.terrainsByFertility, RawFertility(fertility)) ?? TerrainDefOf.Sand;
         }
+
+        /// <summary>A <see cref="MapGenContext.fertilityGrid"/> value (0..1) in RimWorld's raw-noise units (-1..1),
+        /// the units <see cref="BiomeDef.terrainsByFertility"/> is written in.</summary>
+        public static float RawFertility(float fertility) => fertility * 2f - 1f;
 
         /// <summary>Every ground terrain <see cref="PickBaseTerrain"/> can paint on <paramref name="tile"/>,
         /// whatever the cell's noise: what a map of this tile can be made of before rivers and roads. Kept
-        /// beside <see cref="PickBaseTerrain"/> because it is that method's branches, read without a cell.</summary>
+        /// beside <see cref="PickBaseTerrain"/> because it is that method's branches, read without a cell: the
+        /// biome's bands that overlap the -1..1 a cell can hold.</summary>
         public static TerrainDef[] BaseTerrainsFor(Tile tile)
         {
             if (tile.swampiness >= MapGenTuning.MarshSwampinessFloor)
@@ -72,12 +83,20 @@ namespace SimWorld.MapGen
                 return new[] { MapGenTerrainDefOf.Marsh, MapGenTerrainDefOf.MarshyTerrain };
             }
             BiomeDef? biome = tile.biome;
-            bool arid = biome != null && biome.forageability <= MapGenTuning.AridForageabilityCeiling && tile.rainfall <= MapGenTuning.AridRainfallCeilingMm;
-            if (arid)
+            if (biome == null) return new[] { TerrainDefOf.Soil };
+
+            var terrains = new List<TerrainDef>();
+            float lowest = RawFertility(0f), highest = RawFertility(1f);
+            if (biome.terrainsByFertility != null)
             {
-                return new[] { TerrainDefOf.Sand };
+                foreach (TerrainThreshold band in biome.terrainsByFertility)
+                {
+                    if (band.max < lowest || band.min > highest || terrains.Contains(band.terrain)) continue;
+                    terrains.Add(band.terrain);
+                }
             }
-            return new[] { MapGenTerrainDefOf.SoilRich, TerrainDefOf.Soil, TerrainDefOf.Gravel };
+            if (terrains.Count == 0) terrains.Add(TerrainDefOf.Sand);
+            return terrains.ToArray();
         }
 
         /// <summary>
