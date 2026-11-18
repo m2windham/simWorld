@@ -6,6 +6,19 @@
     scores it highest; every land worker first checks Tile.WaterCovered (so land and water biomes never
     compete), and every water worker checks the opposite. Density/disease/movement numbers below are this
     port's own RimWorld-like approximations, not RimWorld's exact decompiled values.
+
+    terrainsByFertility (RimWorld: BiomeDef.terrainsByFertility, read by GenStep_Terrain) is in RimWorld's
+    raw-noise fertility units, about -1..1; GenStep_Terrain maps this port's 0..1 grid back to them. What is
+    recalled from RimWorld and what is not:
+      - The forest and wetland biomes' Soil below 0.87, SoilRich above it: recalled as RimWorld's
+        TemperateForest table, and used for every biome whose own table was not recalled differently. The
+        wetlands' marsh comes from tile swampiness in GenStep_Terrain, standing in for RimWorld's
+        terrainPatchMakers, which are not ported.
+      - Ice everywhere on SeaIce and IceSheet, and Sand everywhere on ExtremeDesert: recalled in shape.
+      - Tundra, AridShrubland and Desert bands: this port's own, ordered as RimWorld's are (barest ground at
+        the lowest fertility), with the cut points chosen, not sourced. Pinned by MapGen tests as shares of
+        a map, not as these literals.
+    Ocean and Lake carry none: no settlement map is generated on them.
   -->
 
   <BiomeDef>
@@ -48,6 +61,9 @@
     <plantDensity>0</plantDensity>
     <movementDifficulty>1.5</movementDifficulty>
     <settlementSelectionWeight>0</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Ice</terrain><min>-999</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -63,6 +79,9 @@
     <forageability>0</forageability>
     <wildPlantRegrowDays>60</wildPlantRegrowDays>
     <settlementSelectionWeight>0.1</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Ice</terrain><min>-999</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -76,6 +95,10 @@
     <forageability>0.25</forageability>
     <wildPlantRegrowDays>25</wildPlantRegrowDays>
     <settlementSelectionWeight>0.6</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Gravel</terrain><min>-999</min><max>-0.4</max></li>
+      <li><terrain>Soil</terrain><min>-0.4</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -89,6 +112,10 @@
     <forageability>0.35</forageability>
     <wildPlantRegrowDays>16</wildPlantRegrowDays>
     <settlementSelectionWeight>0.9</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
+      <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -102,6 +129,10 @@
     <forageability>0.3</forageability>
     <wildPlantRegrowDays>18</wildPlantRegrowDays>
     <settlementSelectionWeight>0.4</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
+      <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -115,6 +146,10 @@
     <forageability>0.4</forageability>
     <wildPlantRegrowDays>12</wildPlantRegrowDays>
     <settlementSelectionWeight>1.3</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
+      <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -128,6 +163,10 @@
     <forageability>0.35</forageability>
     <wildPlantRegrowDays>14</wildPlantRegrowDays>
     <settlementSelectionWeight>0.5</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
+      <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -141,6 +180,10 @@
     <forageability>0.5</forageability>
     <wildPlantRegrowDays>8</wildPlantRegrowDays>
     <settlementSelectionWeight>0.7</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
+      <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -154,6 +197,10 @@
     <forageability>0.4</forageability>
     <wildPlantRegrowDays>9</wildPlantRegrowDays>
     <settlementSelectionWeight>0.35</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
+      <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -167,6 +214,11 @@
     <forageability>0.2</forageability>
     <wildPlantRegrowDays>20</wildPlantRegrowDays>
     <settlementSelectionWeight>0.8</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Sand</terrain><min>-999</min><max>-0.45</max></li>
+      <li><terrain>Gravel</terrain><min>-0.45</min><max>0</max></li>
+      <li><terrain>Soil</terrain><min>0</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -180,6 +232,10 @@
     <forageability>0.08</forageability>
     <wildPlantRegrowDays>40</wildPlantRegrowDays>
     <settlementSelectionWeight>0.5</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Sand</terrain><min>-999</min><max>0.45</max></li>
+      <li><terrain>Gravel</terrain><min>0.45</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
   <BiomeDef>
@@ -195,6 +251,9 @@
     <forageability>0.02</forageability>
     <wildPlantRegrowDays>80</wildPlantRegrowDays>
     <settlementSelectionWeight>0.05</settlementSelectionWeight>
+    <terrainsByFertility>
+      <li><terrain>Sand</terrain><min>-999</min><max>999</max></li>
+    </terrainsByFertility>
   </BiomeDef>
 
 </Defs>

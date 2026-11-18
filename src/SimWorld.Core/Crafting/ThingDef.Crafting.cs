@@ -23,7 +23,24 @@ namespace SimWorld.Defs
         public List<StuffCategoryDef>? stuffCategories;
 
         public List<ThingDefCountClass>? costList;
+
+        /// <summary>How much of its chosen stuff a "made from stuff" def costs on top of <see cref="costList"/>,
+        /// in volume (RimWorld: <c>BuildableDef.costStuffCount</c>). Read through
+        /// <see cref="CostListAdjusted"/>, which divides it by the stuff's <see cref="VolumePerUnit"/>.</summary>
         public int costStuffCount;
+
+        /// <summary>A material dense enough that ten units fill the volume one ordinary unit does
+        /// (RimWorld: <c>ThingDef.smallVolume</c>, which its Silver and Gold set). No shipped stuff sets it:
+        /// this port's Silver and Gold carry no stuffProps, so nothing is built out of them.</summary>
+        public bool smallVolume;
+
+        /// <summary>RimWorld: <c>ThingDef.SmallVolumePerUnit</c>.</summary>
+        public const float SmallVolumePerUnit = 0.1f;
+
+        /// <summary>The volume one unit of this fills (RimWorld: <c>ThingDef.VolumePerUnit</c>): a stuff-built
+        /// thing's <see cref="costStuffCount"/> is a volume, so it takes ten times as many units of a
+        /// <see cref="smallVolume"/> stuff.</summary>
+        public float VolumePerUnit => smallVolume ? SmallVolumePerUnit : 1f;
 
         /// <summary>Present when pawns can eat this (RimWorld: <c>ThingDef.ingestible</c>).</summary>
         public IngestibleProperties? ingestible;

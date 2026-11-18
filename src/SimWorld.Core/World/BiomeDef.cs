@@ -44,6 +44,11 @@ namespace SimWorld.World
         /// <summary>Marks biomes RimWorld excludes from ordinary starting-site selection (ice sheet, extreme desert).</summary>
         public bool isExtremeBiome;
 
+        /// <summary>The ground a map of this biome is made of, by the cell's fertility in RimWorld's raw-noise
+        /// units (RimWorld: <c>BiomeDef.terrainsByFertility</c>, read by <c>GenStep_Terrain.TerrainFrom</c>
+        /// through <see cref="Map.TerrainThreshold.TerrainAtValue"/>).</summary>
+        public List<Map.TerrainThreshold>? terrainsByFertility;
+
         private BiomeWorker? workerInt;
 
         public BiomeWorker Worker

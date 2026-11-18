@@ -72,6 +72,31 @@ namespace SimWorld.Tests.Director
             Assert.All(blueprints, b => Assert.True(wallCells.Contains(b.Position) && !standing.Contains(b.Position)));
         }
 
+        /// <summary>A wall the settlement raised in granite is rebuilt in granite; a ruin's steel wall, which no
+        /// one there chose, is rebuilt in the default stuff (wood) rather than leaving a blueprint for steel a
+        /// tribe may never have.</summary>
+        [Fact]
+        public void A_fallen_wall_of_ours_is_rebuilt_in_its_own_stuff_and_a_ruins_in_the_default()
+        {
+            CoreMap map = new CoreMap(30, 30, SimWorld.Map.TerrainDefOf.Soil);
+            ThingDef wall = Def("Wall");
+            var ours = new Faction(DefDatabase<FactionDef>.GetNamed("PlayerCivilization"), "Settlers", "F_Settlers");
+            var walls = new List<Thing>();
+            for (int x = 2; x < 22; x++)
+            {
+                bool owned = x % 2 == 0;
+                Thing w = ThingMaker.MakeThing(wall, owned ? Def("BlocksGranite") : Def("Steel"));
+                if (owned) w.SetFaction(ours);
+                walls.Add(GenSpawn.Spawn(w, new IntVec3(x, 0, 10), map));
+            }
+
+            Shake(map);
+
+            List<Blueprint> blueprints = BlueprintsFor(map, wall);
+            Assert.NotEmpty(blueprints);
+            Assert.All(blueprints, b => Assert.Same(b.Position.x % 2 == 0 ? Def("BlocksGranite") : Def("WoodLog"), b.stuffToUse));
+        }
+
         [Fact]
         public void A_fallen_bed_is_laid_out_again_the_way_it_faced()
         {

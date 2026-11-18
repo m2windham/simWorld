@@ -32,17 +32,21 @@ namespace SimWorld.Tests.World
             swampiness = swampiness,
         };
 
+        /// <summary>The ground is the biome's (<c>terrainsByFertility</c>), not the tile's rainfall: an extreme
+        /// desert is sand however wet, and a desert has stony ground (70% fertile) between its dunes however
+        /// dry. Before the bands were ported, a dry tile of any arid biome painted all sand.</summary>
         [Fact]
-        public void An_arid_desert_tile_paints_only_sand_and_cannot_be_farmed()
+        public void An_extreme_desert_tile_paints_only_sand_and_cannot_be_farmed()
         {
-            Tile desert = MakeTile("Desert", rainfall: 139f);
+            Tile desert = MakeTile("ExtremeDesert", rainfall: 139f);
             Assert.All(GenStep_Terrain.BaseTerrainsFor(desert), t => Assert.Same(global::SimWorld.Map.TerrainDefOf.Sand, t));
             Assert.False(FoundingGround.CanFarm(desert));
         }
 
         [Theory]
         [InlineData("TemperateForest", 1200f, 0f)]
-        [InlineData("Desert", 600f, 0f)]
+        [InlineData("Desert", 139f, 0f)]
+        [InlineData("AridShrubland", 139f, 0f)]
         [InlineData("TemperateForest", 1200f, 0.5f)]
         public void Soil_or_marshy_ground_can_be_farmed(string biome, float rainfall, float swampiness)
         {

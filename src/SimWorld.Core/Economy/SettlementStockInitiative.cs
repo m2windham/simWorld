@@ -426,14 +426,14 @@ namespace SimWorld.Economy
             IReadOnlyList<Thing> blueprints = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
             for (int i = 0; i < blueprints.Count; i++)
             {
-                if (!(blueprints[i] is Blueprint bp) || bp.EntityToBuild.costList == null) continue;
-                foreach (ThingDefCountClass entry in bp.EntityToBuild.costList) wanted.Add(entry.thingDef);
+                if (!(blueprints[i] is Blueprint bp)) continue;
+                foreach (ThingDefCountClass entry in bp.TotalMaterialCost()) wanted.Add(entry.thingDef);
             }
             IReadOnlyList<Thing> frames = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame);
             for (int i = 0; i < frames.Count; i++)
             {
-                if (!(frames[i] is Frame frame) || frame.EntityToBuild.costList == null) continue;
-                foreach (ThingDefCountClass entry in frame.EntityToBuild.costList)
+                if (!(frames[i] is Frame frame)) continue;
+                foreach (ThingDefCountClass entry in frame.TotalMaterialCost())
                 {
                     if (frame.MaterialStillNeeded(entry.thingDef) > 0) wanted.Add(entry.thingDef);
                 }

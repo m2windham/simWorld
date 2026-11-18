@@ -39,11 +39,13 @@ namespace SimWorld.Building
     /// the need is met has to see both, or a settlement that built forty granite walls would decide it still
     /// had forty wooden ones to build.
     ///
-    /// <para/><b>Why per-material Defs at all.</b> RimWorld has one <c>Wall</c> made from stuff. This port's
-    /// construction pipeline costs a building through <see cref="Defs.ThingDef.costList"/> and nothing else
-    /// (see <see cref="Frame.MaterialStillNeeded"/>, <see cref="WorkGiver_ConstructDeliverResources"/>), and
-    /// a costList entry names one ThingDef — so stuff-chosen construction is a Building-module job of its own
-    /// and Def-per-material is the faithful fallback until it lands. See <c>Buildings_Stonework.xml</c>.
+    /// <para/><b>Why per-material Defs at all.</b> RimWorld has one <c>Wall</c> made from stuff. These defs
+    /// predate stuff cost: the pipeline used to cost a building through <see cref="Defs.ThingDef.costList"/>
+    /// alone. It now reads <see cref="Defs.ThingDef.CostListAdjusted"/>, and the plain
+    /// <see cref="ConstructionThingDefOf.Wall"/> is made from stuff (its default, wood, at RimWorld's
+    /// costStuffCount 5), but folding these stone defs into it — so a stone wall is <c>Wall</c> + granite blocks
+    /// and its toughness comes from a stuff factor — is still open. Costs here are read at each def's default
+    /// stuff, which for a stone wall (not made from stuff) is its costList. See <c>Buildings_Stonework.xml</c>.
     /// </summary>
     public static class StoneWallMaterials
     {
@@ -118,8 +120,8 @@ namespace SimWorld.Building
         /// goes looking for them.</summary>
         private static bool CanAffordOne(Map.Map map, ThingDef wall)
         {
-            List<ThingDefCountClass>? cost = wall.costList;
-            if (cost == null || cost.Count == 0) return false;
+            List<ThingDefCountClass> cost = wall.CostListAdjusted(null);
+            if (cost.Count == 0) return false;
 
             for (int i = 0; i < cost.Count; i++)
             {
@@ -145,8 +147,7 @@ namespace SimWorld.Building
             IReadOnlyList<ThingDef> walls = AllWallDefs;
             for (int i = 0; i < walls.Count; i++)
             {
-                List<ThingDefCountClass>? cost = walls[i].costList;
-                if (cost == null) continue;
+                List<ThingDefCountClass> cost = walls[i].CostListAdjusted(null);
                 for (int c = 0; c < cost.Count; c++)
                 {
                     if (ReferenceEquals(cost[c].thingDef, blockDef)) return walls[i];
@@ -165,13 +166,9 @@ namespace SimWorld.Building
         public static int BlocksWantedOf(ThingDef blockDef)
         {
             ThingDef? wall = WallBuiltFrom(blockDef);
-            if (wall?.costList == null) return 0;
+            if (wall == null) return 0;
 
-            int perWall = 0;
-            for (int i = 0; i < wall.costList.Count; i++)
-            {
-                if (ReferenceEquals(wall.costList[i].thingDef, blockDef)) perWall += wall.costList[i].count;
-            }
+            int perWall = wall.CostListCountFor(blockDef);
             return perWall * ConstructionInitiativeTuning.MaxWallShelterCount;
         }
 

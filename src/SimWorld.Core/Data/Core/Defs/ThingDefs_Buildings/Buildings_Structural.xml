@@ -20,9 +20,16 @@
       <MaxHitPoints>300</MaxHitPoints>
       <Insulation>100</Insulation>
     </statBases>
-    <costList>
-      <WoodLog>5</WoodLog>
-    </costList>
+    <!-- Made from stuff, as RimWorld's Wall is: costStuffCount 5 of whichever stuff it is built from
+         (ThingDef.CostListAdjusted), wood by default (GenStuff.DefaultStuffFor), so a wall placed without a
+         stuff costs the 5 WoodLog it always has. GenStep_Ruins already raised walls of sandstone blocks, steel
+         and wood; these are the categories that makes legal. -->
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>5</costStuffCount>
   </ThingDef>
 
   <ThingDef>

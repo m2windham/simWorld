@@ -138,13 +138,11 @@ namespace SimWorld.AI
                 Thing t = all[i];
                 if (t is Blueprint blueprint)
                 {
-                    List<ThingDefCountClass>? cost = blueprint.EntityToBuild.costList;
-                    if (cost != null) foreach (ThingDefCountClass c in cost) Add(needs, c.thingDef, c.count);
+                    foreach (ThingDefCountClass c in blueprint.TotalMaterialCost()) Add(needs, c.thingDef, c.count);
                 }
                 else if (t is Frame frame)
                 {
-                    List<ThingDefCountClass>? cost = frame.EntityToBuild.costList;
-                    if (cost != null) foreach (ThingDefCountClass c in cost) Add(needs, c.thingDef, frame.MaterialStillNeeded(c.thingDef));
+                    foreach (ThingDefCountClass c in frame.TotalMaterialCost()) Add(needs, c.thingDef, frame.MaterialStillNeeded(c.thingDef));
                 }
                 else if (t is ThingWithComps withComps && withComps.GetComp<CompBillGiver>() is CompBillGiver giver)
                 {

@@ -118,7 +118,7 @@ namespace SimWorld.Building
             IReadOnlyList<Thing> blueprints = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
             for (int i = 0; i < blueprints.Count; i++)
             {
-                if (blueprints[i] is Blueprint bp) needed += bp.EntityToBuild.CostListCountFor(material);
+                if (blueprints[i] is Blueprint bp) needed += bp.ThingCountNeeded(material);
             }
             IReadOnlyList<Thing> frames = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame);
             for (int i = 0; i < frames.Count; i++)
