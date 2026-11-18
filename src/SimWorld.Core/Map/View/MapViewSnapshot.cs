@@ -68,6 +68,7 @@ namespace SimWorld.Map.View
             int chunksZ,
             TerrainLayer terrain,
             RoofLayer roofs,
+            SnowLayer snow,
             IReadOnlyList<MapViewChunk> chunks,
             IReadOnlyList<PawnView> pawns,
             MapViewVersions versions)
@@ -86,6 +87,7 @@ namespace SimWorld.Map.View
             ChunksZ = chunksZ;
             Terrain = terrain;
             Roofs = roofs;
+            Snow = snow;
             Chunks = chunks;
             Pawns = pawns;
             Versions = versions;
@@ -136,6 +138,8 @@ namespace SimWorld.Map.View
         public TerrainLayer Terrain { get; }
 
         public RoofLayer Roofs { get; }
+
+        public SnowLayer Snow { get; }
 
         /// <summary>Every chunk, in index order, each with the non-pawn Things standing in it.</summary>
         public IReadOnlyList<MapViewChunk> Chunks { get; }
@@ -259,9 +263,10 @@ namespace SimWorld.Map.View
                 tracker.ChunksZ,
                 BuildTerrain(map, tracker),
                 BuildRoofs(map, tracker),
+                BuildSnow(map, tracker),
                 chunks,
                 BuildPawns(map),
-                new MapViewVersions(tracker.SessionId, tracker.TerrainVersion, tracker.RoofVersion, chunkVersions));
+                new MapViewVersions(tracker.SessionId, tracker.TerrainVersion, tracker.RoofVersion, tracker.SnowVersion, chunkVersions));
         }
 
         /// <summary>
@@ -303,6 +308,7 @@ namespace SimWorld.Map.View
 
             bool terrainChanged = resync || held!.Terrain != tracker.TerrainVersion;
             bool roofsChanged = resync || held!.Roofs != tracker.RoofVersion;
+            bool snowChanged = resync || held!.Snow != tracker.SnowVersion;
 
             return new MapViewDelta(
                 hasMap: true,
@@ -317,9 +323,10 @@ namespace SimWorld.Map.View
                 tracker.ChunksZ,
                 terrainChanged ? BuildTerrain(map, tracker) : null,
                 roofsChanged ? BuildRoofs(map, tracker) : null,
+                snowChanged ? BuildSnow(map, tracker) : null,
                 changed,
                 BuildPawns(map),
-                new MapViewVersions(tracker.SessionId, tracker.TerrainVersion, tracker.RoofVersion, chunkVersions));
+                new MapViewVersions(tracker.SessionId, tracker.TerrainVersion, tracker.RoofVersion, tracker.SnowVersion, chunkVersions));
         }
 
         // ---- layers ----
@@ -371,6 +378,14 @@ namespace SimWorld.Map.View
             }
 
             return new RoofLayer(tracker.RoofVersion, map.Size.x, map.Size.z, palette, cells);
+        }
+
+        private static SnowLayer BuildSnow(SimWorld.Map.Map map, MapViewTracker tracker)
+        {
+            int n = map.cellIndices.NumGridCells;
+            var depths = new float[n];
+            for (int i = 0; i < n; i++) depths[i] = map.snowGrid.GetDepth(map.cellIndices.IndexToCell(i));
+            return new SnowLayer(tracker.SnowVersion, map.Size.x, map.Size.z, depths);
         }
 
         /// <summary>
@@ -538,9 +553,10 @@ namespace SimWorld.Map.View
                 chunksZ: 0,
                 new TerrainLayer(0, 0, 0, noPalette, noCells),
                 new RoofLayer(0, 0, 0, noRoofs, noCells),
+                new SnowLayer(0, 0, 0, Array.Empty<float>()),
                 Array.Empty<MapViewChunk>(),
                 Array.Empty<PawnView>(),
-                new MapViewVersions(0L, 0, 0, noCells));
+                new MapViewVersions(0L, 0, 0, 0, noCells));
         }
     }
 }

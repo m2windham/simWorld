@@ -134,6 +134,37 @@ namespace SimWorld.Map.View
     }
 
     /// <summary>
+    /// Snow depth per cell, 0 (bare) to 1 (<see cref="Weather.SnowGrid.MaxDepth"/>), as the core holds it.
+    ///
+    /// <para/><b>Floats, not a palette.</b> Terrain and roofs are a handful of distinct kinds, so they cross as
+    /// a palette and an index; snow is a continuous depth with no kinds to name, so it crosses as the value
+    /// itself — the same <c>float</c> <see cref="Weather.SnowGrid.GetDepth"/> returns, and what a host maps to
+    /// opacity. Re-sent whole when <see cref="Version"/> moves, like the other two layers.
+    /// </summary>
+    public sealed class SnowLayer
+    {
+        internal SnowLayer(int version, int sizeX, int sizeZ, IReadOnlyList<float> depths)
+        {
+            Version = version;
+            SizeX = sizeX;
+            SizeZ = sizeZ;
+            Depths = depths;
+        }
+
+        /// <summary>The <see cref="MapViewTracker.SnowVersion"/> this layer was read at.</summary>
+        public int Version { get; }
+
+        public int SizeX { get; }
+
+        public int SizeZ { get; }
+
+        /// <summary>One depth per cell, 0..1, row-major: cell (x, z) is at <c>z * SizeX + x</c>.</summary>
+        public IReadOnlyList<float> Depths { get; }
+
+        public float DepthAt(int x, int z) => Depths[z * SizeX + x];
+    }
+
+    /// <summary>
     /// One spawned Thing, as much of it as drawing needs: where it is, what it is, which way it faces and how
     /// big its footprint is.
     ///
@@ -397,11 +428,12 @@ namespace SimWorld.Map.View
     /// </summary>
     public sealed class MapViewVersions
     {
-        internal MapViewVersions(long sessionId, int terrain, int roofs, IReadOnlyList<int> chunks)
+        internal MapViewVersions(long sessionId, int terrain, int roofs, int snow, IReadOnlyList<int> chunks)
         {
             SessionId = sessionId;
             Terrain = terrain;
             Roofs = roofs;
+            Snow = snow;
             Chunks = chunks;
         }
 
@@ -411,6 +443,8 @@ namespace SimWorld.Map.View
         public int Terrain { get; }
 
         public int Roofs { get; }
+
+        public int Snow { get; }
 
         /// <summary>One version per chunk, indexed by <see cref="MapViewChunk.Index"/>.</summary>
         public IReadOnlyList<int> Chunks { get; }

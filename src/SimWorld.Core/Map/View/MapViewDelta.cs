@@ -24,11 +24,12 @@ namespace SimWorld.Map.View
     /// if (delta.FullResync) DropScene();
     /// if (delta.Terrain != null) RebuildTerrain(delta.Terrain);
     /// if (delta.Roofs != null) RebuildRoofs(delta.Roofs);
+    /// if (delta.Snow != null) RedrawSnow(delta.Snow);
     /// foreach (MapViewChunk chunk in delta.ChangedChunks) RebuildChunk(chunk);
     /// DrawPawns(delta.Pawns);
     /// held = delta.Versions;
     /// </code>
-    /// The steady state of that loop is: no terrain, no roofs, no changed chunks, and one short list of
+    /// The steady state of that loop is: no terrain, no roofs, no snow, no changed chunks, and one short list of
     /// pawns — which is the whole reason this type exists. See <c>docs/perf/map-view.md</c> for what each
     /// branch costs.
     ///
@@ -56,6 +57,7 @@ namespace SimWorld.Map.View
             int chunksZ,
             TerrainLayer? terrain,
             RoofLayer? roofs,
+            SnowLayer? snow,
             IReadOnlyList<MapViewChunk> changedChunks,
             IReadOnlyList<PawnView> pawns,
             MapViewVersions versions)
@@ -72,6 +74,7 @@ namespace SimWorld.Map.View
             ChunksZ = chunksZ;
             Terrain = terrain;
             Roofs = roofs;
+            Snow = snow;
             ChangedChunks = changedChunks;
             Pawns = pawns;
             Versions = versions;
@@ -112,6 +115,10 @@ namespace SimWorld.Map.View
         /// collapse and a floor being laid are different events at very different rates.</summary>
         public RoofLayer? Roofs { get; }
 
+        /// <summary>The whole snow grid, or null when no cell's snow has moved visibly since the held versions
+        /// (see <see cref="MapViewTracker.SnowVersion"/> for what counts).</summary>
+        public SnowLayer? Snow { get; }
+
         /// <summary>Only the chunks whose contents moved, each complete in itself — a host rebuilds a changed
         /// chunk rather than patching it, which is both simpler and what an instanced renderer wants anyway.
         /// Empty in the steady state.</summary>
@@ -137,8 +144,9 @@ namespace SimWorld.Map.View
                 chunksZ: 0,
                 terrain: null,
                 roofs: null,
+                snow: null,
                 Array.Empty<MapViewChunk>(),
                 Array.Empty<PawnView>(),
-                new MapViewVersions(0L, 0, 0, Array.Empty<int>()));
+                new MapViewVersions(0L, 0, 0, 0, Array.Empty<int>()));
     }
 }
