@@ -369,6 +369,37 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
+        public void A_wall_raised_a_few_cells_ahead_makes_the_walker_replan_round_it_instead_of_walking_up_to_it()
+        {
+            // RimWorld's Pawn_PathFollower.NeedNewPath looks along the next cells of the path on every cell it
+            // enters and replans (TrySetNewPath) as soon as one has gone solid. Without it the walker walked
+            // straight up to the new wall, found it on the next cell and gave up, though a way round was open.
+            CoreMap map = NewMap(12, 3);
+            Pawn pawn = SpawnHuman(map, new IntVec3(0, 0, 1));
+            var goal = new IntVec3(11, 0, 1);
+            pawn.pather.StartPath(goal, PathEndMode.OnCell);
+            for (int i = 0; i < 200 && pawn.Position.x < 1; i++) pawn.pather.PatherTick();
+            Assert.Equal(new IntVec3(1, 0, 1), pawn.Position);
+
+            var wall = new IntVec3(5, 0, 1);
+            GenSpawn.Spawn(ThingMaker.MakeThing(DefDatabase<ThingDef>.GetNamed("Wall")), wall, map);
+
+            // The cell in front of the wall is a dead end: no diagonal step out of it clears the wall's corner,
+            // so a walker that replanned early never sets foot on it.
+            var deadEnd = new IntVec3(4, 0, 1);
+            bool stoodInFrontOfTheWall = false;
+            for (int i = 0; i < 2000 && pawn.pather.Moving; i++)
+            {
+                pawn.pather.PatherTick();
+                if (pawn.Position == deadEnd) stoodInFrontOfTheWall = true;
+            }
+
+            Assert.False(pawn.pather.Failed, "A route round the wall was open; the walker should have taken it.");
+            Assert.False(stoodInFrontOfTheWall, "The walker walked up to the wall before replanning.");
+            Assert.Equal(goal, pawn.Position);
+        }
+
+        [Fact]
         public void Steady_state_pather_ticking_allocates_nothing()
         {
             CoreMap map = NewMap(300, 300);
