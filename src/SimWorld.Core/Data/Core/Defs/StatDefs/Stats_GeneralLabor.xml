@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    GeneralLaborSpeed (RimWorld: StatDefOf.GeneralLaborSpeed), read per work tick by
+    SimWorld.Weather.JobDriver_ClearSnow. Unskilled labour: no skillNeedFactors, only what the body can do.
+    The capacity weights are recalled from RimWorld, not sourced; the snow tests pin the behaviour (the cell
+    ends bare, deeper snow takes longer), not these numbers (CLAUDE.md). Bound by
+    SimWorld.Weather.SnowStatDefOf.
+  -->
+
+  <StatDef>
+    <defName>GeneralLaborSpeed</defName>
+    <label>general labor speed</label>
+    <description>How fast this pawn does unskilled physical work, such as clearing snow.</description>
+    <category>BasicsPawn</category>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0.1</minValue>
+    <capacityFactors>
+      <li>
+        <capacity>Manipulation</capacity>
+        <weight>1</weight>
+      </li>
+      <li>
+        <capacity>Sight</capacity>
+        <weight>0.5</weight>
+        <max>1</max>
+      </li>
+    </capacityFactors>
+  </StatDef>
+
+</Defs>

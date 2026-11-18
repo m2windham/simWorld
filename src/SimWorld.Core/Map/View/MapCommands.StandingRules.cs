@@ -277,6 +277,30 @@ namespace SimWorld.Map.View
         }
 
         /// <summary>
+        /// Adds or removes <paramref name="cells"/> from <see cref="Building.AreaManager.SnowClear"/> — "keep
+        /// this shovelled" (RimWorld: painting <c>Area_SnowClear</c>). <see cref="Weather.WorkGiver_ClearSnow"/>
+        /// reads it the next time a cleaner looks for work. Same refusals as <see cref="SetHomeArea"/>, and only
+        /// those: painting it where no snow lies, or on a warm map, is merely early.
+        /// </summary>
+        public static MapCommandResult SetSnowClearArea(IReadOnlyList<IntVec3> cells, bool included)
+        {
+            SimWorld.Map.Map? map = ResolveMap(out string? mapReason);
+            if (map == null) return MapCommandResult.NoMap(mapReason!);
+
+            MapCommandResult? boundsBad = ValidateCellsInBounds(cells, map);
+            if (boundsBad != null) return boundsBad;
+
+            for (int i = 0; i < cells!.Count; i++)
+            {
+                map.areaManager.SnowClear[cells[i]] = included;
+            }
+
+            return MapCommandResult.Done(
+                (included ? "Added " : "Removed ") + cells.Count + " cell(s) "
+                + (included ? "to" : "from") + " the snow-clear area.");
+        }
+
+        /// <summary>
         /// Sets the settlement's own default <see cref="Health.MedicalCareCategory"/> — "tend like this, from
         /// now on" (task #104's own lever; RimWorld's real one is a per-pawn dropdown,
         /// <c>Pawn_PlayerSettings.medCare</c>, that this god-game has no pawn-level UI to expose, so the whole

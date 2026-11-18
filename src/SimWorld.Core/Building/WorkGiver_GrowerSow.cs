@@ -49,6 +49,7 @@ namespace SimWorld.Building
             if (map.thingGrid.CellContains(cell, ThingCategory.Frame)) return false;
             if (map.edificeGrid[cell] != null) return false;
             if (!GenGrid.Standable(cell, map)) return false;
+            if (!PlantUtility.SnowAllowsPlanting(cell, map)) return false;
 
             if (!Reachability.CanReach(pawn, cell, PathEndMode)) return false;
             return map.reservationManager.CanReserve(pawn, cell);

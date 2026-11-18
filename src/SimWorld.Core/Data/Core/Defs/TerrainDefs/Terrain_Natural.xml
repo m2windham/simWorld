@@ -98,6 +98,7 @@
     <fertility>0</fertility>
     <passability>Standable</passability>
     <water>true</water>
+    <holdSnow>false</holdSnow>
     <affordances>
       <li>Bridgeable</li>
     </affordances>
@@ -109,6 +110,7 @@
     <fertility>0</fertility>
     <passability>Impassable</passability>
     <water>true</water>
+    <holdSnow>false</holdSnow>
     <affordances>
       <li>Bridgeable</li>
     </affordances>
@@ -121,6 +123,7 @@
     <fertility>0</fertility>
     <passability>Standable</passability>
     <water>true</water>
+    <holdSnow>false</holdSnow>
     <affordances>
       <li>Bridgeable</li>
     </affordances>
@@ -132,6 +135,7 @@
     <fertility>0</fertility>
     <passability>Impassable</passability>
     <water>true</water>
+    <holdSnow>false</holdSnow>
     <affordances>
       <li>Bridgeable</li>
     </affordances>

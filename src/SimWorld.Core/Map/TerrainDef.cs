@@ -27,6 +27,10 @@ namespace SimWorld.Map
         /// <summary>Water terrain: no footprints, and later systems treat it as unbuildable/swimmable.</summary>
         public bool water;
 
+        /// <summary>Snow can lie on this terrain (RimWorld: <c>TerrainDef.holdSnow</c>, default true; water does
+        /// not). Read by <see cref="Weather.SnowGrid"/>.</summary>
+        public bool holdSnow = true;
+
         /// <summary>Removing the top layer (e.g. mining a floor) reveals the terrain beneath instead of bare ground.</summary>
         public TerrainDef? underTerrain;
 

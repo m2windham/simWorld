@@ -66,6 +66,16 @@ namespace SimWorld.Building
             return 1f;
         }
 
+        /// <summary>Snow at or above this depth stops anything being planted in the cell (RimWorld: the
+        /// <c>&lt; 0.2f</c> in <c>PlantUtility.SnowAllowsPlanting</c>; recalled, not sourced).</summary>
+        public const float MaxSnowDepthForPlanting = 0.2f;
+
+        /// <summary>Whether the snow on <paramref name="c"/> is shallow enough to plant in (RimWorld:
+        /// <c>PlantUtility.SnowAllowsPlanting</c>). Read by <see cref="WorkGiver_GrowerSow"/> and
+        /// <see cref="WildPlantSpawner"/>, as RimWorld's sowing and wild regrowth both read it.</summary>
+        public static bool SnowAllowsPlanting(Map.IntVec3 c, Map.Map map) =>
+            map.snowGrid.GetDepth(c) < MaxSnowDepthForPlanting;
+
         /// <summary>
         /// Same unsourced shape as <see cref="JobDriver_ConstructFinishFrame.WorkSpeedFactorFromConstructionLevel"/>,
         /// reused here for the Plants skill (sowing and harvesting both scale by it) rather than duplicated
