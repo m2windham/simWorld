@@ -8,8 +8,8 @@ using SimWorld.World;
 namespace SimWorld.MapGen
 {
     /// <summary>
-    /// Paints every cell's ground terrain from the elevation/fertility grids plus the tile's own biome and
-    /// swampiness, then — if the tile carries a river — carves a meandering band of water clear across the
+    /// Paints every cell's ground terrain from the fertility grid and the tile's biome (its patch makers, then
+    /// its fertility bands), then — if the tile carries a river — carves a meandering band of water clear across the
     /// map. RimWorld renders rivers as splines sized by <see cref="RiverDef.widthOnWorld"/>; this is this
     /// port's own simplification (a single noise-perturbed band per map), but it keeps the one correspondence
     /// the spec calls load-bearing: a tile on a river always produces a map with water crossing it (spec §5).
@@ -23,6 +23,7 @@ namespace SimWorld.MapGen
             Tile tile = ctx.tile;
             BiomeDef? biome = tile.biome;
             int sizeX = map.Size.x, sizeZ = map.Size.z;
+            Perlin[] patchNoise = PatchNoise(ctx, biome);
 
             for (int z = 0; z < sizeZ; z++)
             {
@@ -30,7 +31,7 @@ namespace SimWorld.MapGen
                 {
                     int i = map.cellIndices.CellToIndex(x, z);
                     var c = new IntVec3(x, 0, z);
-                    TerrainDef terrain = PickBaseTerrain(tile, biome, ctx.fertilityGrid[i]);
+                    TerrainDef terrain = PickBaseTerrain(c, biome, patchNoise, ctx.fertilityGrid[i]);
                     map.terrainGrid.SetTerrain(c, terrain);
                 }
             }
@@ -41,31 +42,51 @@ namespace SimWorld.MapGen
             }
         }
 
+        /// <summary>One patch field per <see cref="BiomeDef.terrainPatchMakers"/> entry, seeded from a stream of
+        /// its own so the river below draws exactly what it drew before patches were ported (RimWorld seeds
+        /// each from <c>Rand.Range(0, int.MaxValue)</c> on first use).</summary>
+        private Perlin[] PatchNoise(MapGenContext ctx, BiomeDef? biome)
+        {
+            if (biome == null || biome.terrainPatchMakers.Count == 0) return Array.Empty<Perlin>();
+            var rand = new RandomStream(GenText.StableStringHash(ctx.seedString + "_" + def.defName + "_patches"));
+            var noise = new Perlin[biome.terrainPatchMakers.Count];
+            for (int i = 0; i < noise.Length; i++)
+            {
+                noise[i] = biome.terrainPatchMakers[i].MakeNoise(rand.Range(0, int.MaxValue));
+            }
+            return noise;
+        }
+
         /// <summary>
-        /// The ground at a cell of fertility <paramref name="fertility"/> (RimWorld: the fertility half of
-        /// <c>GenStep_Terrain.TerrainFrom</c>). A boggy tile paints marsh first — this port's stand-in for the
-        /// biome <c>terrainPatchMakers</c> RimWorld consults at the same point, which are not ported — and
-        /// everything else is the biome's own <see cref="BiomeDef.terrainsByFertility"/> band.
+        /// The ground at a cell of fertility <paramref name="fertility"/> (RimWorld: the patch-maker and fertility
+        /// halves of <c>GenStep_Terrain.TerrainFrom</c>): the first of the biome's
+        /// <see cref="BiomeDef.terrainPatchMakers"/> that lays something here, else the biome's own
+        /// <see cref="BiomeDef.terrainsByFertility"/> band.
         /// <para/>
         /// <b>Units.</b> RimWorld reads its fertility grid as raw Perlin output, about -1..1, and its biome
         /// thresholds are written in those units. This port's <see cref="MapGenContext.fertilityGrid"/> is the
         /// same kind of noise remapped to 0..1 (<see cref="GenStep_ElevationFertility"/>: raw * 0.5 + 0.5), so
         /// the cell's value is mapped back with <see cref="RawFertility"/> and the XML keeps RimWorld's numbers.
+        /// Patch fields are sampled at the cell's own coordinates, as RimWorld's are, so their
+        /// <c>perlinFrequency</c> is per cell.
         /// <para/>
         /// <b>Not ported:</b> RimWorld's elevation bands in the same method (gravel just below a mountain's
         /// foot, rock floor under it), because this port raises mountains by a per-tile elevation quantile
         /// (<see cref="GenStep_RocksAndMountains"/>), not RimWorld's fixed 0.61, so there is no fixed band to
         /// sit gravel in. A biome with no band holding the value falls back to Sand, as RimWorld's does after
-        /// logging; a tile with no biome at all (only ever a test fixture) is plain Soil.
+        /// logging; a tile with no biome at all (only ever a test fixture) is plain Soil. Tile swampiness is not
+        /// read here, as RimWorld does not read it: it chooses the swamp biomes, whose patch makers lay the marsh.
         /// </summary>
-        private static TerrainDef PickBaseTerrain(Tile tile, BiomeDef? biome, float fertility)
+        private static TerrainDef PickBaseTerrain(IntVec3 c, BiomeDef? biome, Perlin[] patchNoise, float fertility)
         {
-            if (tile.swampiness >= MapGenTuning.MarshSwampinessFloor)
-            {
-                return fertility >= MapGenTuning.MarshFertilityFloor ? MapGenTerrainDefOf.Marsh : MapGenTerrainDefOf.MarshyTerrain;
-            }
             if (biome == null) return TerrainDefOf.Soil;
-            return TerrainThreshold.TerrainAtValue(biome.terrainsByFertility, RawFertility(fertility)) ?? TerrainDefOf.Sand;
+            float raw = RawFertility(fertility);
+            for (int i = 0; i < patchNoise.Length; i++)
+            {
+                TerrainDef? patch = biome.terrainPatchMakers[i].TerrainAt(c, patchNoise[i], raw);
+                if (patch != null) return patch;
+            }
+            return TerrainThreshold.TerrainAtValue(biome.terrainsByFertility, raw) ?? TerrainDefOf.Sand;
         }
 
         /// <summary>A <see cref="MapGenContext.fertilityGrid"/> value (0..1) in RimWorld's raw-noise units (-1..1),
@@ -74,29 +95,39 @@ namespace SimWorld.MapGen
 
         /// <summary>Every ground terrain <see cref="PickBaseTerrain"/> can paint on <paramref name="tile"/>,
         /// whatever the cell's noise: what a map of this tile can be made of before rivers and roads. Kept
-        /// beside <see cref="PickBaseTerrain"/> because it is that method's branches, read without a cell: the
-        /// biome's bands that overlap the -1..1 a cell can hold.</summary>
+        /// beside <see cref="PickBaseTerrain"/> because it is that method's branches, read without a cell: each
+        /// patch maker's bands whose fertility window and noise band overlap the -1..1 a cell can hold, then
+        /// the biome's fertility bands that do.</summary>
         public static TerrainDef[] BaseTerrainsFor(Tile tile)
         {
-            if (tile.swampiness >= MapGenTuning.MarshSwampinessFloor)
-            {
-                return new[] { MapGenTerrainDefOf.Marsh, MapGenTerrainDefOf.MarshyTerrain };
-            }
             BiomeDef? biome = tile.biome;
             if (biome == null) return new[] { TerrainDefOf.Soil };
 
             var terrains = new List<TerrainDef>();
             float lowest = RawFertility(0f), highest = RawFertility(1f);
-            if (biome.terrainsByFertility != null)
+            foreach (TerrainPatchMaker maker in biome.terrainPatchMakers)
             {
-                foreach (TerrainThreshold band in biome.terrainsByFertility)
-                {
-                    if (band.max < lowest || band.min > highest || terrains.Contains(band.terrain)) continue;
-                    terrains.Add(band.terrain);
-                }
+                if (maker.maxFertility < lowest || maker.minFertility > highest) continue;
+                AddReachable(terrains, maker.thresholds, PatchNoiseFloor, PatchNoiseCeiling);
             }
+            AddReachable(terrains, biome.terrainsByFertility, lowest, highest);
             if (terrains.Count == 0) terrains.Add(TerrainDefOf.Sand);
             return terrains.ToArray();
+        }
+
+        /// <summary>The span a patch field's value is taken to reach in <see cref="BaseTerrainsFor"/>: libnoise
+        /// Perlin is about -1..1. A band beyond it could in principle be touched by a rare peak; it is not
+        /// counted, as a terrain a map shows only by freak is not ground a band can plan on.</summary>
+        private const float PatchNoiseFloor = -1f, PatchNoiseCeiling = 1f;
+
+        private static void AddReachable(List<TerrainDef> terrains, List<TerrainThreshold>? bands, float lowest, float highest)
+        {
+            if (bands == null) return;
+            foreach (TerrainThreshold band in bands)
+            {
+                if (band.max < lowest || band.min > highest || terrains.Contains(band.terrain)) continue;
+                terrains.Add(band.terrain);
+            }
         }
 
         /// <summary>

@@ -49,6 +49,10 @@ namespace SimWorld.World
         /// through <see cref="Map.TerrainThreshold.TerrainAtValue"/>).</summary>
         public List<Map.TerrainThreshold>? terrainsByFertility;
 
+        /// <summary>Patch layers laid over <see cref="terrainsByFertility"/>, first match wins (RimWorld:
+        /// <c>BiomeDef.terrainPatchMakers</c>, read by <c>GenStep_Terrain.TerrainFrom</c> before the bands).</summary>
+        public List<Map.TerrainPatchMaker> terrainPatchMakers = new List<Map.TerrainPatchMaker>();
+
         private BiomeWorker? workerInt;
 
         public BiomeWorker Worker
