@@ -183,7 +183,11 @@ namespace SimWorld.Director
                     IntVec3 at = target.Position;
                     Rot4 rot = target.Rotation;
                     ThingDef built = target.def;
-                    ThingDef? builtStuff = target.Stuff;
+                    // Rebuilt in what it was built of, as RimWorld's auto-rebuild passes the destroyed thing's
+                    // Stuff — but only for a building somebody raised. A ruin's wall (no faction) was never the
+                    // settlement's choice of material: its sandstone or steel would leave a blueprint a tribe may
+                    // never be able to fill, so it gets the default stuff, as every rebuild did before stuff cost.
+                    ThingDef? builtStuff = target.Faction != null ? target.Stuff : null;
                     target.TakeDamage(new DamageInfo(RoofCollapseDefOf.Crush, target.MaxHitPoints));
 
                     // Credited from whether the Thing is actually gone, never assumed from the hit alone: a
@@ -263,7 +267,6 @@ namespace SimWorld.Director
         {
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(built);
             if (blueprintDef == null || !GenConstruct.CanPlaceBlueprintAt(built, at, map, out _, rot)) return;
-            // Rebuilt in what it was built of, as RimWorld's auto-rebuild passes the destroyed thing's Stuff.
             var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
             blueprint.stuffToUse = stuff;
             GenSpawn.Spawn(blueprint, at, map, rot);
