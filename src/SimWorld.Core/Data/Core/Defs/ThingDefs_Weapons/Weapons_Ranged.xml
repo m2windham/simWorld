@@ -15,7 +15,7 @@
     <weaponTags>
       <li>NeolithicRangedWeapon</li>
     </weaponTags>
-    <statBases><MarketValue>60</MarketValue></statBases>
+    <statBases><MarketValue>60</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
     <verbs>
       <li>
         <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
@@ -44,7 +44,7 @@
     <weaponTags>
       <li>IndustrialRangedWeapon</li>
     </weaponTags>
-    <statBases><MarketValue>150</MarketValue></statBases>
+    <statBases><MarketValue>150</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
     <verbs>
       <li>
         <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
@@ -74,7 +74,7 @@
     <weaponTags>
       <li>IndustrialRangedWeapon</li>
     </weaponTags>
-    <statBases><MarketValue>350</MarketValue></statBases>
+    <statBases><MarketValue>350</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
     <verbs>
       <li>
         <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>

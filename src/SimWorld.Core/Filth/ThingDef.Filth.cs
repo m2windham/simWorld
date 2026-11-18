@@ -15,9 +15,8 @@ namespace SimWorld.Defs
     /// inversion for <c>WorkGiverDef.fixedBillGiverDefs</c>). <see cref="SimWorld.Filth.FilthMaker.FilthFromTerrain"/>
     /// is the lookup that walks it.
     /// <para/>
-    /// <b>Not ported:</b> RimWorld's <c>rainWashes</c> (this port has no weather at all — see the Building
-    /// module's own report on <c>Map.outdoorTemperature</c> being a flat settable value), and its
-    /// <c>placementMote</c>/visual fields, which are renderer concerns an engine-free core has no use for.
+    /// <b>Not ported:</b> RimWorld's <c>placementMote</c>/visual fields, which are renderer concerns an
+    /// engine-free core has no use for.
     /// </summary>
     public class FilthProperties
     {
@@ -45,6 +44,10 @@ namespace SimWorld.Defs
         /// <summary>Whether a pawn walking over this picks some of it up to carry elsewhere (RimWorld:
         /// <c>FilthProperties.canFilthAttach</c>). False for filth that stays where it fell.</summary>
         public bool canFilthAttach = true;
+
+        /// <summary>Rain thins this off open ground (RimWorld: <c>FilthProperties.rainWashes</c>, default
+        /// false) — see <see cref="SimWorld.Weather.SteadyEnvironmentEffects"/>.</summary>
+        public bool rainWashes;
 
         /// <summary>
         /// Terrain a pawn walking over generates this filth on — the inverted

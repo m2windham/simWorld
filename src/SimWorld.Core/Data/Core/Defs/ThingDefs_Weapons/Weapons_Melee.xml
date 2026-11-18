@@ -22,7 +22,7 @@
     <weaponTags>
       <li>NeolithicMeleeWeapon</li>
     </weaponTags>
-    <statBases><MarketValue>30</MarketValue></statBases>
+    <statBases><MarketValue>30</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
     <tools>
       <li>
         <label>blade</label>
@@ -50,7 +50,7 @@
     <weaponTags>
       <li>NeolithicMeleeWeapon</li>
     </weaponTags>
-    <statBases><MarketValue>25</MarketValue></statBases>
+    <statBases><MarketValue>25</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
     <tools>
       <li>
         <label>head</label>

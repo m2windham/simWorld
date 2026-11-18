@@ -19,7 +19,7 @@
     <description>Sturdy leather tanned from an animal hide. Makes tough, plain apparel.</description>
     <thingCategories><li>Leathers</li></thingCategories>
     <stackLimit>75</stackLimit>
-    <statBases><MarketValue>2</MarketValue></statBases>
+    <statBases><MarketValue>2</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
   </ThingDef>
 
   <ThingDef ParentName="BaseAnimalProductItem">
@@ -28,7 +28,7 @@
     <description>Coarse wool sheared from an animal. Spun into textiles.</description>
     <thingCategories><li>Wool</li></thingCategories>
     <stackLimit>75</stackLimit>
-    <statBases><MarketValue>1.6</MarketValue></statBases>
+    <statBases><MarketValue>1.6</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
   </ThingDef>
 
   <ThingDef ParentName="BaseAnimalProductItem">

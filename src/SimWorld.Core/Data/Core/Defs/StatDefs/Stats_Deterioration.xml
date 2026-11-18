@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    How many hit points a Thing loses per day left out in the open (RimWorld: StatDefOf.DeteriorationRate),
+    read by SimWorld.Weather.SteadyEnvironmentEffects.FinalDeteriorationRate. Its own file for the usual
+    reason (CLAUDE.md). Bound by SimWorld.Weather.DeteriorationDefOf.
+
+    defaultBaseValue 0 is RimWorld's as recalled: nothing deteriorates unless its Def says so, which is why
+    steel, stone blocks and chunks carry no entry. The per-Def values (2 on wood, cloth, leather, wool,
+    medicine, apparel and weapons) are recalled from RimWorld's ResourceBase/ApparelBase/BaseWeapon, not
+    read from a decompile, so the tests pin the trend (outdoors wears down, indoors does not), never the 2.
+  -->
+
+  <StatDef>
+    <defName>DeteriorationRate</defName>
+    <label>deterioration rate</label>
+    <description>How many hit points this loses per day when left outside.</description>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+</Defs>
