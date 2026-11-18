@@ -12,6 +12,13 @@
     is how SimWorld.Crafting.WorkGiver_DoBill decides which WorkGiverDef's pawns may work a given bench —
     see that class's own remarks for why the match runs this direction instead of RimWorld's own
     WorkGiverDef.fixedBillGiverDefs.
+
+    Made from stuff: the butcher table, stonecutter's table, smithy and tailoring bench are each built of
+    costStuffCount 75 of Metallic, Woody or Stony stuff, as RimWorld's TableButcher, TableStonecutter,
+    FueledSmithy and HandTailoringBench are. 75 and the categories are RECALLED from RimWorld's
+    Buildings_Production.xml, not checked against the file from here; RimWorld's FueledSmithy may also
+    carry a small steel costList on top, which is not added. The fueled stove is not made from stuff in
+    RimWorld (it is priced in steel alone) and is left as it was: no cost.
   -->
 
   <ThingDef>
@@ -46,6 +53,12 @@
          recipe names, so no comp is needed for that; see its own doc). -->
     <thingClass>SimWorld.Building.Building</thingClass>
     <statBases><MarketValue>150</MarketValue></statBases>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>75</costStuffCount>
   </ThingDef>
 
   <ThingDef>
@@ -58,6 +71,12 @@
     <category>Building</category>
     <thingClass>SimWorld.Building.Building</thingClass>
     <statBases><MarketValue>180</MarketValue></statBases>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>75</costStuffCount>
     <comps>
       <li Class="SimWorld.Things.CompProperties_BillGiver">
         <!-- RimWorld's own stonecutting table is worked under the "Crafting" work type, the same as a
@@ -78,6 +97,12 @@
     <category>Building</category>
     <thingClass>SimWorld.Building.Building</thingClass>
     <statBases><MarketValue>280</MarketValue></statBases>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>75</costStuffCount>
     <comps>
       <li Class="SimWorld.Things.CompProperties_BillGiver">
         <workType>Smithing</workType>
@@ -92,6 +117,12 @@
     <category>Building</category>
     <thingClass>SimWorld.Building.Building</thingClass>
     <statBases><MarketValue>220</MarketValue></statBases>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>75</costStuffCount>
     <comps>
       <li Class="SimWorld.Things.CompProperties_BillGiver">
         <workType>Tailoring</workType>

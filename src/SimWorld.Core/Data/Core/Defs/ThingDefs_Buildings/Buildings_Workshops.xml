@@ -8,9 +8,8 @@
     GenConstruct.BlueprintDefFor returned null for every one of them, so no settlement could ever raise one.
 
     Its own file, per CLAUDE.md's "add a file rather than edit a shared one", the same as
-    Buildings_Kitchen.xml and Buildings_Research.xml. Like those pairs, the benches carry no costList, so a
-    Frame needs nothing delivered and ConstructFinishFrames finishes it outright; pricing benches in stuff
-    is the costStuffCount gap, which is the Building module's.
+    Buildings_Kitchen.xml and Buildings_Research.xml. The benches are made from stuff
+    (Buildings_Production.xml), so a Frame needs its costStuffCount of the blueprint's stuff delivered.
 
     What these pairs do not do is decide to place a bench: that is a settlement initiative's job, and which
     one wants a smithy or a tailor's bench is the open crafting.billcreators question.

@@ -27,7 +27,6 @@ namespace SimWorld.Tests.Building
         }
 
         [Theory]
-        [InlineData("TableTailor")]
         [InlineData("FueledStove")]
         public void A_builder_raises_a_bench_that_costs_nothing(string benchName)
         {

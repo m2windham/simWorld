@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SimWorld.Crafting;
 using SimWorld.Defs;
 using SimWorld.God;
 using SimWorld.Map;
@@ -596,7 +597,11 @@ namespace SimWorld.Building
         {
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(entityDef);
             if (blueprintDef == null) return; // No Blueprint content authored for this Def — nothing to place.
-            Thing blueprint = ThingMaker.MakeThing(blueprintDef);
+            var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
+            // A bed or a door is built of a stuff the settlement has a whole one's worth of, wood first. A
+            // wall is left at its default (wood): StoneWallMaterials already decides what a wall is built of,
+            // by research and by blocks on hand, and a Wall of blocks would get round its research gate.
+            if (!StoneWallMaterials.IsWall(entityDef)) blueprint.stuffToUse = GenStuff.AffordableStuffFor(map, entityDef);
             GenSpawn.Spawn(blueprint, cell, map, rot);
         }
     }

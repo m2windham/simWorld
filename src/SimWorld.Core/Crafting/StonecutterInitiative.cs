@@ -321,7 +321,9 @@ namespace SimWorld.Crafting
         {
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(entityDef);
             if (blueprintDef == null) return; // No Blueprint content authored for this Def — nothing to place.
-            GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), cell, map);
+            var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
+            blueprint.stuffToUse = GenStuff.AffordableStuffFor(map, entityDef); // wood first, else what is on hand
+            GenSpawn.Spawn(blueprint, cell, map);
         }
 
         // -----------------------------------------------------------------------------------------------

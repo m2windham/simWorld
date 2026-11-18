@@ -175,14 +175,38 @@ namespace SimWorld.Map.View
         /// <para/><paramref name="rot"/> is which way it faces, North by default. It matters for anything
         /// bigger than one cell: a 1x2 bed covers <paramref name="cell"/> and the cell beyond it in that
         /// direction, and every cell it would cover is checked (<see cref="GenAdj.OccupiedRect"/>).
+        ///
+        /// <para/><paramref name="stuffDefName"/> is what a thing made from stuff is built of, as RimWorld's
+        /// architect menu asks for a wall or a bed (<c>Blueprint_Build.stuffToUse</c>). Left null, the
+        /// blueprint takes the def's default stuff (<see cref="Crafting.GenStuff.DefaultStuffFor"/>, wood).
+        /// Refused when it names no ThingDef (<see cref="MapCommandOutcome.UnknownDef"/>), or a stuff the def
+        /// cannot be made of, or any stuff at all for a def not made from stuff
+        /// (<see cref="MapCommandOutcome.Refused"/>): RimWorld offers only stuffs in the def's
+        /// <c>stuffCategories</c>. Whether the settlement holds any of it is not checked — a blueprint
+        /// waits for its materials like any other.
         /// </summary>
-        public static MapCommandResult PlaceBlueprint(string defName, IntVec3 cell, Rot4 rot = default)
+        public static MapCommandResult PlaceBlueprint(string defName, IntVec3 cell, Rot4 rot = default, string? stuffDefName = null)
         {
             SimWorld.Map.Map? map = ResolveMap(out string? mapReason);
             if (map == null) return MapCommandResult.NoMap(mapReason!);
 
             ThingDef? entityDef = ResolveThingDef(defName);
             if (entityDef == null) return MapCommandResult.UnknownDef(defName);
+
+            ThingDef? stuff = null;
+            if (stuffDefName != null)
+            {
+                stuff = ResolveThingDef(stuffDefName);
+                if (stuff == null) return MapCommandResult.UnknownDef(stuffDefName);
+                if (!entityDef.MadeFromStuff)
+                {
+                    return MapCommandResult.Refused(entityDef.LabelCap + " is not made from stuff, so it cannot be built of " + stuff.label + ".");
+                }
+                if (!Crafting.GenStuff.CanMake(stuff, entityDef))
+                {
+                    return MapCommandResult.Refused(entityDef.LabelCap + " cannot be built of " + stuff.label + ".");
+                }
+            }
 
             if (!GenGrid.InBounds(cell, map)) return MapCommandResult.OffMap(cell);
 
@@ -200,7 +224,8 @@ namespace SimWorld.Map.View
                 return MapCommandResult.Refused("No Blueprint is authored for " + entityDef.LabelCap + ".");
             }
 
-            Thing blueprint = ThingMaker.MakeThing(blueprintDef);
+            var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
+            blueprint.stuffToUse = stuff;
             GenSpawn.Spawn(blueprint, cell, map, rot);
             return MapCommandResult.Done("Blueprint for " + entityDef.LabelCap + " placed at " + cell + ".");
         }

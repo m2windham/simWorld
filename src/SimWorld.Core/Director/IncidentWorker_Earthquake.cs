@@ -154,8 +154,9 @@ namespace SimWorld.Director
 
         /// <summary>
         /// Destroys a <paramref name="severity"/> share of each known structure def actually standing on
-        /// <paramref name="map"/>, and crushes anyone standing where one of them stood. Returns how many
-        /// structures were destroyed and how many people were killed doing it. Only what is
+        /// <paramref name="map"/>, and crushes anyone standing where one of them stood. Returns how many of
+        /// <paramref name="settlement"/>'s own structures were destroyed (a fallen ruin wall is not counted)
+        /// and how many people were killed doing it. Only what is
         /// <paramref name="settlement"/>'s own is laid out again (<see cref="PlaceRebuildBlueprint"/>).
         /// </summary>
         private static (int Destroyed, int Killed) ShakeMap(Map.Map map, SimWorld.World.Settlement settlement, float severity, RandomStream rand, string? source)
@@ -196,8 +197,15 @@ namespace SimWorld.Director
                     // future ThingDef with destroyable=false would otherwise let this claim a destruction that
                     // never happened — the same "never over-claim" discipline CrushOnePawn applies to a death.
                     if (!target.Destroyed) continue;
-                    destroyedTotal++;
-                    if (rebuild) PlaceRebuildBlueprint(map, built, builtStuff, at, rot);
+                    // Only the settlement's own count as its structures lost, in the letter and in
+                    // ResourceImpactLedger alike: a ruin's wall falls too, but it was never the settlement's, and
+                    // telling the player "12 structures come down" for a ruin across the map is a loss they never
+                    // had. Same faction test as the rebuild.
+                    if (rebuild)
+                    {
+                        destroyedTotal++;
+                        PlaceRebuildBlueprint(map, built, builtStuff, at, rot);
+                    }
 
                     foreach (IntVec3 cell in footprint.Cells)
                     {
