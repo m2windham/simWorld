@@ -26,7 +26,8 @@ namespace SimWorld.Pawns
 
         public const float TameSuccessXp = 40f;
 
-        public const int TameFailAngerDurationTicks = GenDate.TicksPerDay;
+        // A failed tame's grudge used to last TameFailAngerDurationTicks, a flat day. It lasts as long as
+        // RimWorld's manhunter state now: see ManhunterRecovery.
 
         // ---- training (Pawn_TrainingTracker) ----
 

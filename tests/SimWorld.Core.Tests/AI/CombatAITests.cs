@@ -522,7 +522,7 @@ namespace SimWorld.Tests.AI
         private static bool ForceGrudge(Pawn animal, Pawn at)
         {
             animal.mindState.angryAt = at;
-            animal.mindState.angryUntilTick = Find.TickManager.TicksGame + HuntingTuning.RevengeAngerDurationTicks;
+            animal.mindState.angryUntilTick = Find.TickManager.TicksGame + ManhunterRecovery.MinTicksBeforeRecovery;
             return true;
         }
 

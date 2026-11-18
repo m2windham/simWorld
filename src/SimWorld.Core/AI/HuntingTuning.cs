@@ -48,11 +48,8 @@ namespace SimWorld.AI
         // that a per-hit chance compounds over a hunt; RimWorld's answer to that is the stealth stat, not a
         // smaller number.
 
-        /// <summary>How long a hunt-provoked animal stays angry. Matched to the failed-tame duration
-        /// deliberately: both set the same <see cref="MindState.Pawn_MindState.angryAt"/> field and are read
-        /// by the same <see cref="ThinkNode_ConditionalAngryAtHandler"/> tier, so two different durations
-        /// would be two different meanings for one piece of state.</summary>
-        public const int RevengeAngerDurationTicks = Pawns.AnimalTuning.TameFailAngerDurationTicks;
+        // How long a hunt-provoked animal stays angry used to be RevengeAngerDurationTicks, the failed-tame
+        // day. Both grudges are RimWorld's manhunter state and now share its recovery: Pawns.ManhunterRecovery.
 
         /// <summary>
         /// How long a single hunt may run before the job gives up, enforced through <see cref="Job.expiryInterval"/>

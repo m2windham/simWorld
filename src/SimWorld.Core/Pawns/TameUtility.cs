@@ -54,7 +54,7 @@ namespace SimWorld.Pawns
             if (Rand.Chance(animal.RaceProps.manhunterOnTameFailChance))
             {
                 animal.mindState.angryAt = tamer;
-                animal.mindState.angryUntilTick = Find.TickManager.TicksGame + AnimalTuning.TameFailAngerDurationTicks;
+                animal.mindState.angryUntilTick = Find.TickManager.TicksGame + ManhunterRecovery.RollDurationTicks();
             }
             return false;
         }
@@ -65,7 +65,7 @@ namespace SimWorld.Pawns
         /// manhunter state with it — and stops every job).
         ///
         /// <para/><b>What its absence did.</b> A failed attempt can leave an animal angry at its handler for
-        /// a day (<see cref="AnimalTuning.TameFailAngerDurationTicks"/>), and wounded prey turns on its
+        /// hours (<see cref="ManhunterRecovery"/>), and wounded prey turns on its
         /// hunter the same way. The next handler to succeed changed the animal's faction and nothing else, so
         /// the settlement now owned an animal that was still mid-attack on one of its own people, with the
         /// grudge that had started it still running. Measured on a founding band of twenty with every

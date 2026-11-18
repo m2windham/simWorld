@@ -167,6 +167,10 @@ namespace SimWorld.AI
             if (animal == null) throw new ArgumentNullException(nameof(animal));
             if (hunter == null) throw new ArgumentNullException(nameof(hunter));
             if (animal.Dead || animal.mindState == null) return false;
+            // RimWorld's MentalStateHandler.TryStartMentalState refuses a downed pawn, and revenge is that
+            // call: an animal already on the ground cannot turn manhunter. Without this, a hunter's shots
+            // into downed prey kept rolling and could re-anger it where it lay.
+            if (animal.Downed) return false;
 
             float chance = animal.RaceProps.manhunterOnDamageChance;
             if (chance <= 0f) return false;
@@ -174,7 +178,7 @@ namespace SimWorld.AI
             if (!Rand.Chance(chance)) return false;
 
             animal.mindState.angryAt = hunter;
-            animal.mindState.angryUntilTick = Find.TickManager.TicksGame + HuntingTuning.RevengeAngerDurationTicks;
+            animal.mindState.angryUntilTick = Find.TickManager.TicksGame + ManhunterRecovery.RollDurationTicks();
             return true;
         }
     }
