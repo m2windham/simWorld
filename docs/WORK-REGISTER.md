@@ -1488,3 +1488,12 @@ items. Still open: destination-moved and near-goal reachability replans, the hun
 2026-11-18 (snow-view, suite 3091/3091 on the branch; integration differs only in docs): snow depth rides the
 map view seam as `MapViewSnapshot.Snow` / `MapViewDelta.Snow` (`SnowLayer`, floats 0..1), versioned without a
 roll: a bump when a cell crosses a 1/16 step or changes category. Host draws it (host f30eff8, 7228e11).
+
+2026-11-18 (stuff-cost, suite 3109/3109 on integration): `costStuffCount` is charged through
+`CostListAdjusted(stuff)` (only `Wall` is stuff-built so far; it still costs 5 wood by default, so no house costs
+more); map ground comes from each biome's `terrainsByFertility`. Layout benches unchanged (10 houses). Seven
+threat-free seeds: none stalled; seed 2024 fell from 17 to 13 alive (a day-2 drought the new map drew, one
+starvation). Host draws real snow from the seam (host b90e76c, d2cfc5d), throttled to twice a second because the
+snow version bumps almost every tick in a storm. Open: the core rebuilds a 40000-float snow list per delta during
+snowfall; rich soil is nearly absent without `terrainPatchMakers`; earthquakes still rebuild ruin walls; doors,
+beds and benches not stuff-built; no stuff choice in `MapCommands`.

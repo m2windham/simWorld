@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-11-18",
-  "testsTotal": 3091,
+  "testsTotal": 3109,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -336,7 +336,7 @@
         },
         {
           "id": "worldgen.foundingground",
-          "label": "The founding band settles on a tile whose map can carry a sowable food crop (FoundingGround.CanFarm over GenStep_Terrain.BaseTerrainsFor), ranked ahead of the site score. Seed 2024 had founded on 98% sand and starved; it now founds on AridShrubland soil and holds 20 to day 60. Open: RimWorld's terrainsByFertility is not ported; the terrain picker is this port's simplification.",
+          "label": "The founding band settles on a tile whose map can carry a sowable food crop (FoundingGround.CanFarm over GenStep_Terrain.BaseTerrainsFor), ranked ahead of the site score. Seed 2024 had founded on 98% sand and starved; it now founds on AridShrubland soil and holds 20 to day 60. BaseTerrainsFor reads the biome's terrainsByFertility bands (2026-11-18).",
           "done": true
         }
       ]
@@ -403,7 +403,7 @@
         },
         {
           "id": "mapgen.fertility",
-          "label": "Terrain fertility ported to RimWorld's values: Soil 1.0, SoilRich 1.4, Gravel 0.7, Sand 0.1, MarshyTerrain 1.0, Marsh 0. Crops carry RimWorld's Ground sowTag; berry bushes are never sown.",
+          "label": "Terrain fertility ported to RimWorld's values: Soil 1.0, SoilRich 1.4, Gravel 0.7, Sand 0.1, MarshyTerrain 1.0, Marsh 0. Crops carry RimWorld's Ground sowTag; berry bushes are never sown. Map ground is painted from each biome's terrainsByFertility (TerrainThreshold, 2026-11-18); terrainPatchMakers and the elevation gravel band are not ported, so rich soil is rare (Soil/SoilRich cut at a recalled 0.87). Stuff-built things charge costStuffCount through CostListAdjusted(stuff); blueprints and frames carry their stuff.",
           "done": true
         }
       ]
