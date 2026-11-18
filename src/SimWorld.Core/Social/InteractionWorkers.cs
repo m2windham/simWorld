@@ -53,13 +53,16 @@ namespace SimWorld.Social
         public override void Interacted(Pawn initiator, Pawn recipient)
         {
             recipient.needs.mood?.thoughts.memories.TryGainMemory(SocialThoughtDefOf.Insulted, initiator);
-            SocialFightUtility.TryStartSocialFight(initiator, recipient);
+            SocialFightUtility.TryStartSocialFight(def, initiator, recipient);
         }
     }
 
-    /// <summary>A milder, often unintentional put-down: the same low-opinion gate as insult but no fight
-    /// escalation and a smaller memory (<c>WasSlighted</c>) — RimWorld's own lighter negative interaction
-    /// alongside the full insult.</summary>
+    /// <summary>A milder, often unintentional put-down: the same low-opinion gate as insult and a smaller
+    /// memory (<c>WasSlighted</c>) — RimWorld's own lighter negative interaction alongside the full insult.
+    /// It can escalate into a social fight too, at its own much smaller
+    /// <see cref="InteractionDef.socialFightBaseChance"/> (0.5% against an insult's 4%). This used to say "no
+    /// fight escalation", which was this port's omission rather than RimWorld's rule: RimWorld rolls every
+    /// interaction through the same <c>CheckSocialFightStart</c>, and Slight's def carries a nonzero chance.</summary>
     public sealed class InteractionWorker_Slight : InteractionWorker
     {
         public override float RandomSelectionWeight(Pawn initiator, Pawn recipient)
@@ -69,12 +72,16 @@ namespace SimWorld.Social
             return weight;
         }
 
-        public override void Interacted(Pawn initiator, Pawn recipient) =>
+        public override void Interacted(Pawn initiator, Pawn recipient)
+        {
             recipient.needs.mood?.thoughts.memories.TryGainMemory(SocialThoughtDefOf.WasSlighted, initiator);
+            SocialFightUtility.TryStartSocialFight(def, initiator, recipient);
+        }
     }
 
     /// <summary>
-    /// The social-fight escalation roll shared by any interaction that can trigger one (today: insult only),
+    /// The social-fight escalation roll shared by any interaction that can trigger one (insult and slight, each
+    /// at its own <see cref="InteractionDef.socialFightBaseChance"/>),
     /// then starting <see cref="SocialMentalStateDefOf.SocialFighting"/> — the existing
     /// <see cref="MindState.MentalStateHandler"/> machinery, not a parallel fight system — on both
     /// participants at once, since a fight is never one-sided.
@@ -98,9 +105,9 @@ namespace SimWorld.Social
     /// </summary>
     public static class SocialFightUtility
     {
-        public static bool TryStartSocialFight(Pawn initiator, Pawn recipient)
+        public static bool TryStartSocialFight(InteractionDef interaction, Pawn initiator, Pawn recipient)
         {
-            float chance = SocialFightChance(initiator, recipient);
+            float chance = SocialFightChance(interaction, initiator, recipient);
             if (chance <= 0f) return false;
             if (!Rand.Chance(chance)) return false;
 
@@ -164,7 +171,7 @@ namespace SimWorld.Social
         public const int MinSocialFightAgeYears = 13;
 
         /// <summary>
-        /// The chance an insult from <paramref name="initiator"/> tips <paramref name="recipient"/> into a
+        /// The chance <paramref name="interaction"/> from <paramref name="initiator"/> tips <paramref name="recipient"/> into a
         /// fight (RimWorld: <c>Pawn_InteractionsTracker.SocialFightChance</c>, whose every factor below is
         /// its own, in its own order). Read from the recipient's side throughout, as RimWorld's is — there it
         /// is a method on the recipient's own interactions tracker.
@@ -175,12 +182,13 @@ namespace SimWorld.Social
         /// Both are multiplicative and default to 1, so leaving them out is exactly RimWorld's own answer for
         /// a pawn with no relevant hediff and no genes.
         /// </summary>
-        public static float SocialFightChance(Pawn initiator, Pawn recipient)
+        public static float SocialFightChance(InteractionDef interaction, Pawn initiator, Pawn recipient)
         {
-            if (initiator == null || recipient == null) return 0f;
+            if (interaction == null || initiator == null || recipient == null) return 0f;
+            if (interaction.socialFightBaseChance <= 0f) return 0f;
             if (!SocialFightPossible(recipient, initiator)) return 0f;
 
-            float chance = SocialTuning.InsultSocialFightBaseChance;
+            float chance = interaction.socialFightBaseChance;
             chance *= GenMath.InverseLerp(0.3f, 1f, recipient.health.capacities.GetLevel(Health.PawnCapacityDefOf.Manipulation));
             chance *= GenMath.InverseLerp(0.3f, 1f, recipient.health.capacities.GetLevel(Health.PawnCapacityDefOf.Moving));
 

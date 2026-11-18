@@ -78,16 +78,17 @@
 
   <!-- Social (SimWorld.Social, system 17): a brief mutual scuffle an insult can escalate into
        (see SocialFightUtility.TryStartSocialFight), not a mood-caused break — it does not derive from
-       MoodBreakBase, gets no Catharsis on recovery, and does not block normal thoughts. Durations are
-       SimWorld's own (not sourced from RimWorld's real constant): short enough to read as a scuffle rather
-       than a sustained state. -->
+       MoodBreakBase, gets no Catharsis on recovery, and does not block normal thoughts. The minimum is the
+       RimWorld wiki's (Social fight: the fight continues "until after at least 420 ticks (7 secs) have passed"
+       or one side is downed), a secondary source; it was 100 here, so a fight could end before the two had
+       even closed the distance. The maximum and the recovery MTB are still SimWorld's own, unsourced. -->
 
   <MentalStateDef>
     <defName>SocialFighting</defName>
     <label>social fighting</label>
     <stateClass>SimWorld.MindState.MentalState_SocialFighting</stateClass>
     <category>Aggro</category>
-    <minTicksBeforeRecovery>100</minTicksBeforeRecovery>
+    <minTicksBeforeRecovery>420</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>1200</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.02</recoveryMtbDays>
     <recoverFromSleep>true</recoverFromSleep>

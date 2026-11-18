@@ -17,12 +17,14 @@
     <defName>Insult</defName>
     <label>insult</label>
     <workerClass>SimWorld.Social.InteractionWorker_Insult</workerClass>
+    <socialFightBaseChance>0.04</socialFightBaseChance>
   </InteractionDef>
 
   <InteractionDef>
     <defName>Slight</defName>
     <label>slight</label>
     <workerClass>SimWorld.Social.InteractionWorker_Slight</workerClass>
+    <socialFightBaseChance>0.005</socialFightBaseChance>
   </InteractionDef>
 
   <!--
