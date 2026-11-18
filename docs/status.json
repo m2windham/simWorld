@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-11-17",
-  "testsTotal": 3058,
+  "updated": "2026-11-18",
+  "testsTotal": 3075,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1062,7 +1062,7 @@
         },
         {
           "id": "ai.hunt",
-          "label": "Hunt wired (WorkGiver_Hunt, JobDriver_Hunt, HuntingInitiative). Combat drives from a toil with no change to the Verb module; prey more than twice the hunter's BodySize is refused; an animal's revenge breaks off the hunt but it cannot fight back — no attack Job or JobGiver exists anywhere in this codebase",
+          "label": "Hunt wired (WorkGiver_Hunt, JobDriver_Hunt, HuntingInitiative); prey more than twice the hunter's BodySize is refused. Revenge (2026-11-17): a wounded animal turns on its hunter with its race's manhunter-on-damage chance (muffalo 10%, husky and chicken 0%) times 1 - the hunter's HuntingStealth; it attacks through JobGiver_Manhunter; the grudge ends when the animal is downed or asleep, never starts on a downed animal, and lasts 10000 + a random extra (wiki-sourced). Open: herd joining, distance and difficulty factors, revenge only rolled inside a hunt.",
           "done": true
         },
         {

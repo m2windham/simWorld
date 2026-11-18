@@ -1457,3 +1457,25 @@ Merged on `integration/2026-11`; full suite 3058/3058. Lanes: structure-ledger, 
 
 Open: snow layer in the host; rain effects of `SteadyEnvironmentEffects`; a quake's `ShakeMap` still destroys ruin
 walls; what moved CoreCLR delta from 7 to 10 was not pinned down.
+
+## 15. Batch of 2026-11-17 (evening): rain, social fights, hunting revenge
+
+Merged on `integration/2026-11` at f2e774b; full suite 3075/3075. Lanes: rain-effects, doctor-social. Host:
+door facing verified (10/10 face the street) and pinned by `DwellingFacingTests` (host b8405e4).
+
+- **Rest of `SteadyEnvironmentEffects`:** outdoor deterioration (`DeteriorationRate`, unroofed and terrain
+  factors), rain washes filth, auto-ignition (nothing can heat a room that far yet). Rain putting out fires was
+  already ported on the Fire itself. No shared `Rand` draws. Short circuits, shelves and corpse apparel deferred.
+- **Social fights:** slights roll (0.005, insults 0.04, now on `InteractionDef`), pawns incapable of violence
+  don't swing, fights last at least 420 ticks.
+- **Hunt revenge** uses the race's chance and the hunter's stealth instead of an invented wildness rule.
+- **The bench caught a 3-house loss on the host seed from it, and the cause was an old pather bug:** a wall
+  finished on the next cell charged its 10000 impassable cost as walking time, freezing haulers for 10000+ ticks
+  with wood in hand. One step is now capped at 450 ticks (recalled RimWorld constant). Grudges also end when the
+  animal is downed or asleep. Seven Mono seeds: 60 houses at day 1 before, 71 after; every seed reaches 10.
+- **Bench before merge.** A green suite did not catch the house loss; a hostmirror run on the host seed did.
+
+Open: doctor-by-skill needs a decision (RimWorld's founding work grid by skill for every work type, and roles
+resetting to it rather than flat 3); the pather does not re-check the path ahead as RimWorld does; herd revenge;
+hunters can leave downed prey to stand up again; snow not drawn by the host; GPU timing needs Doug's go-ahead
+for a windowed run.
