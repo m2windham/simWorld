@@ -106,6 +106,11 @@ namespace SimWorld.AI
             return toil;
         }
 
+        /// <summary>RimWorld: <c>JobDriver_Hunt</c> fails its approach and cast toils once
+        /// <c>Find.TickManager.TicksGame &gt; jobStartTick + 5000</c>. A hunt that has not killed in that long
+        /// gives up and the work giver may offer it again from where the hunter now stands.</summary>
+        public const int MaxHuntTicks = 5000;
+
         private void HuntTick()
         {
             if (!(job.GetTarget(TargetIndex.A).Thing is Pawn animal))
@@ -118,6 +123,15 @@ namespace SimWorld.AI
             {
                 pawn.pather.StopDead();
                 ReadyForNextToil();
+                return;
+            }
+
+            if (Sim.Find.TickManager.TicksGame > job.startTick + MaxHuntTicks)
+            {
+                // Checked after the death test so a kill on the last tick is still butchered, and only on
+                // the hunting toil: the butchery toil after it is not bound by the limit, as in RimWorld.
+                pawn.pather.StopDead();
+                EndJobWith(JobCondition.Incompletable);
                 return;
             }
 
@@ -169,10 +183,12 @@ namespace SimWorld.AI
             if (v.Available()) v.TryStartCastOn(animal, distance);
             v.VerbTick();
 
-            if (HuntUtility.WoundedThisTick(v) && HuntUtility.TryProvokeRevenge(animal, pawn))
+            if (AttackTargetsUtility.IsAngryAt(animal, pawn))
             {
-                // Provoked prey is no longer prey: break off. WorkGiver_Hunt refuses an angry animal, so the
-                // next job search picks something else rather than walking straight back into this.
+                // Provoked prey is no longer prey: break off. The revenge roll itself happens where the arrow
+                // lands (Pawn_MindState.Notify_DamageTaken, by way of HuntUtility.TryProvokeRevenge); the
+                // hunt only notices the result. WorkGiver_Hunt refuses an angry animal, so the next job
+                // search picks something else rather than walking straight back into this.
                 EndJobWith(JobCondition.Incompletable);
                 return;
             }

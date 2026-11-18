@@ -53,8 +53,9 @@ namespace SimWorld.Pawns
             // single source of wounds in a threat-free settlement (docs/perf/storyteller-pressure).
             if (Rand.Chance(animal.RaceProps.manhunterOnTameFailChance))
             {
-                animal.mindState.angryAt = tamer;
-                animal.mindState.angryUntilTick = Find.TickManager.TicksGame + ManhunterRecovery.RollDurationTicks();
+                // RimWorld: StartManhunterBecauseOfPawnAction("AnimalManhunterFromTaming"), the same call
+                // revenge on damage makes, packmates and all.
+                animal.mindState.StartManhunterBecauseOfPawnAction(tamer);
             }
             return false;
         }

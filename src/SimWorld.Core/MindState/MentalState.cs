@@ -421,6 +421,93 @@ namespace SimWorld.MindState
             mentalBreaker = new MentalBreaker(pawn);
         }
 
+        /// <summary>RimWorld: <c>Pawn_MindState</c>'s packmate radius for a manhunter that started because
+        /// of a pawn's action. <b>Recalled, not read from source</b> (<c>GetPackmates(pawn, 24f)</c>); the wiki
+        /// says "within 25 cells".</summary>
+        public const float PackmateRadius = 24f;
+
+        /// <summary>RimWorld: the chance that packmates join, 0.5. <b>Recalled, not read from source.</b></summary>
+        public const float PackmatesJoinChance = 0.5f;
+
+        /// <summary>
+        /// This pawn has just been hurt (RimWorld: <c>Pawn_MindState.Notify_DamageTaken</c>, called from
+        /// <see cref="Health.Pawn_HealthTracker.PostApplyDamage"/>). Ported: the manhunter-on-damage roll, for
+        /// a wild animal hurt by a person — hunting and every other harm share it. Not ported: the flee
+        /// response for an animal that does not turn (<c>makesAnimalsFlee</c>), <c>lastHarmTick</c>, and
+        /// turrets as instigators (RimWorld also accepts a <c>Building_Turret</c>, and an instigator of a
+        /// humanlike faction rather than a humanlike race; this port has neither turrets nor that field, so
+        /// it asks the race).
+        /// </summary>
+        public void Notify_DamageTaken(Health.DamageInfo dinfo)
+        {
+            if (dinfo == null) throw new ArgumentNullException(nameof(dinfo));
+            if (!dinfo.Def.externalViolence || !pawn.Spawned) return;
+            if (dinfo.Instigator is Pawn instigator
+                && instigator.RaceProps.Humanlike
+                && pawn.faction == null
+                && pawn.RaceProps.Animal)
+            {
+                AI.HuntUtility.TryProvokeRevenge(pawn, instigator);
+            }
+        }
+
+        /// <summary>
+        /// Whether <paramref name="animal"/> could start a manhunter grudge now (RimWorld:
+        /// <c>MentalStateHandler.TryStartMentalState</c>'s refusals): alive, standing, and not already angry at
+        /// anyone or manhunting. RimWorld also requires the pawn to be spawned; that is checked by
+        /// <see cref="Notify_DamageTaken"/>, and a failed tame of an unspawned animal still counts here.
+        /// </summary>
+        public static bool CanStartManhunter(Pawn animal)
+        {
+            if (animal.Dead || animal.Downed || animal.mindState == null) return false;
+            return !AI.HuntUtility.IsAngry(animal) && !AI.AttackTargetsUtility.IsManhunting(animal);
+        }
+
+        /// <summary>
+        /// Turns this animal on <paramref name="instigator"/>, and half the time its nearby kin with it
+        /// (RimWorld: <c>Pawn_MindState.StartManhunterBecauseOfPawnAction</c>, used for revenge on damage and
+        /// for a failed tame). The packmates are spawned pawns of the same race and faction within
+        /// <see cref="PackmateRadius"/> in the same room (RimWorld: <c>GetPackmates</c>, same district), each
+        /// started the same way and each with its own duration. Gated, as in RimWorld, on the difficulty
+        /// allowing big threats. Expressed as a grudge on the instigator
+        /// (<see cref="angryAt"/>) rather than RimWorld's general manhunter state, like the single-animal
+        /// case it extends. No letter is sent.
+        /// </summary>
+        public void StartManhunterBecauseOfPawnAction(Pawn instigator)
+        {
+            if (instigator == null) throw new ArgumentNullException(nameof(instigator));
+            if (!TryStartGrudge(pawn, instigator)) return;
+            if (!Director.DifficultyUtility.AllowsBigThreats || !Rand.Chance(PackmatesJoinChance)) return;
+
+            SimWorld.Map.Map? map = pawn.Map;
+            if (map == null) return;
+            Building.Room? room = map.roomTracker.RoomAt(pawn.Position);
+            IReadOnlyList<Pawn> all = map.mapPawns.AllPawnsSpawned;
+            tmpPackmates.Clear();
+            for (int i = 0; i < all.Count; i++)
+            {
+                Pawn p = all[i];
+                if (p == pawn || p.def != pawn.def || p.faction != pawn.faction) continue;
+                if (!p.Position.InHorDistOf(pawn.Position, PackmateRadius)) continue;
+                if (!ReferenceEquals(map.roomTracker.RoomAt(p.Position), room)) continue;
+                tmpPackmates.Add(p);
+            }
+            // Collected first: starting a grudge files the animal in the attack-target index, which must not
+            // happen while the map's pawn list is being walked.
+            for (int i = 0; i < tmpPackmates.Count; i++) TryStartGrudge(tmpPackmates[i], instigator);
+            tmpPackmates.Clear();
+        }
+
+        private static readonly List<Pawn> tmpPackmates = new List<Pawn>();
+
+        private static bool TryStartGrudge(Pawn animal, Pawn target)
+        {
+            if (!CanStartManhunter(animal)) return false;
+            animal.mindState.angryAt = target;
+            animal.mindState.angryUntilTick = Find.TickManager.TicksGame + Pawns.ManhunterRecovery.RollDurationTicks();
+            return true;
+        }
+
         public void MindStateTick()
         {
             mentalStateHandler.MentalStateHandlerTick();
