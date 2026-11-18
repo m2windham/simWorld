@@ -41,24 +41,12 @@ namespace SimWorld.AI
         /// </summary>
         public const float MaxPreyBodySizeRatio = 2f;
 
-        /// <summary>
-        /// Per wounding hit, the chance a surviving animal turns on its hunter, scaled by the race's
-        /// <see cref="Pawns.RaceProperties.wildness"/>. RimWorld's own trigger is
-        /// <c>RaceProperties.manhunterOnDamageChance</c>, a per-species field this port's
-        /// <see cref="Pawns.RaceProperties"/> does not carry; wildness ("how readily an untamed individual
-        /// ... turns on a handler", that field's own words) is the nearest thing it does, and
-        /// <see cref="Pawns.TameUtility.TryTame"/> already reaches for it exactly this way for the failed-tame
-        /// anger roll. Same shape, own constant.
-        /// <para/>
-        /// <b>Why it is so much smaller than <see cref="Pawns.AnimalTuning.TameFailAngerChance"/> (0.5), which
-        /// it otherwise mirrors.</b> A taming attempt rolls once per attempt; a hunt lands many wounds before
-        /// anything dies (a bow puts five-plus arrows into a chicken and dozens into a muffalo), so the same
-        /// per-event chance compounds into "practically every hunt is spoiled". The number that matters is the
-        /// per-<i>hunt</i> one, and this is picked so that provoked prey is an occasional setback rather than
-        /// the usual outcome — which is what it cost to find out: the first calibration here was an order of
-        /// magnitude higher and a single arrow routinely ended hunting for the day.
-        /// </summary>
-        public const float RevengeChancePerWildnessOnWound = 0.02f;
+        // The revenge chance per wounding hit used to live here as RevengeChancePerWildnessOnWound, 0.02 x the
+        // race's wildness, standing in for RimWorld's RaceProperties.manhunterOnDamageChance because this port
+        // did not carry that field. It does now (RaceProperties.manhunterOnDamageChance, scaled by the hunter's
+        // HuntingStealth in HuntUtility.TryProvokeRevenge), so the proxy is gone. The proxy's own doc warned
+        // that a per-hit chance compounds over a hunt; RimWorld's answer to that is the stealth stat, not a
+        // smaller number.
 
         /// <summary>How long a hunt-provoked animal stays angry. Matched to the failed-tame duration
         /// deliberately: both set the same <see cref="MindState.Pawn_MindState.angryAt"/> field and are read

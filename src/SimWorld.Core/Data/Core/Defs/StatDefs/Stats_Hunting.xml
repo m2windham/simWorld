@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Hunting stealth (RimWorld: StatDefOf.HuntingStealth). Its own file rather than an addition to
+    Stats_Work.xml, per CLAUDE.md. Every term is the RimWorld wiki's (rimworldwiki.com/wiki/Hunting_Stealth),
+    a secondary source rather than the def: base 100%; Shooting and Animals each a factor of 0% plus 5% a
+    level; Moving at full importance with no cap; then a post-process curve (0,0) (0.1,0.5) (0.2,0.75) (1,0.9)
+    that caps it at 90%. The wiki: "This stat reduces the chance of hunted animals attacking the hunter. A 0%
+    score means no reduction. A 100% score means animals never attack." Read by
+    AI.HuntUtility.TryProvokeRevenge as (1 - stealth) on the prey's manhunterOnDamageChance.
+  -->
+
+  <StatDef>
+    <defName>HuntingStealth</defName>
+    <label>hunting stealth</label>
+    <description>How well this pawn hunts without provoking its prey into attacking. The higher it is, the less likely a wounded animal is to turn on its hunter.</description>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0</minValue>
+    <skillNeedFactors>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Shooting</skill>
+        <baseValue>0</baseValue>
+        <bonusPerLevel>0.05</bonusPerLevel>
+      </li>
+      <li Class="SimWorld.Stats.SkillNeed_BaseBonus">
+        <skill>Animals</skill>
+        <baseValue>0</baseValue>
+        <bonusPerLevel>0.05</bonusPerLevel>
+      </li>
+    </skillNeedFactors>
+    <capacityFactors>
+      <li>
+        <capacity>Moving</capacity>
+        <weight>1</weight>
+      </li>
+    </capacityFactors>
+    <postProcessCurve>
+      <points>
+        <li>(0, 0)</li>
+        <li>(0.1, 0.5)</li>
+        <li>(0.2, 0.75)</li>
+        <li>(1, 0.9)</li>
+      </points>
+    </postProcessCurve>
+  </StatDef>
+
+</Defs>

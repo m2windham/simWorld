@@ -4,6 +4,7 @@ using SimWorld.Combat;
 using SimWorld.Defs;
 using SimWorld.Pawns;
 using SimWorld.Sim;
+using SimWorld.Stats;
 using SimWorld.Things;
 
 namespace SimWorld.AI
@@ -136,9 +137,20 @@ namespace SimWorld.AI
 
         /// <summary>
         /// RimWorld's famous hunting revenge: wounded prey turns manhunter and comes for the hunter. Rolled
-        /// once per wounding hit at <see cref="HuntingTuning.RevengeChancePerWildnessOnWound"/> × the race's
-        /// wildness, and expressed through the <see cref="MindState.Pawn_MindState.angryAt"/> field the
-        /// animals module already uses for a failed tame's identical consequence.
+        /// once per wounding hit at the race's own <see cref="RaceProperties.manhunterOnDamageChance"/> times
+        /// (1 − the hunter's <see cref="HuntingDefOf.HuntingStealth"/>), and expressed through the
+        /// <see cref="MindState.Pawn_MindState.angryAt"/> field the animals module already uses for a failed
+        /// tame's identical consequence.
+        /// <para/>
+        /// <b>The chance used to be invented.</b> It was 0.02 × wildness, a proxy for a race field this port
+        /// did not carry, which let a chicken or a husky turn on a hunter (both are 0% in RimWorld) and held a
+        /// muffalo to 1.2% a hit against RimWorld's 10%. A skilled hunter provoked exactly as often as a novice.
+        /// Now the race decides whether revenge is possible at all and the hunter's Shooting and Animals skills
+        /// decide how often it happens. Not ported: RimWorld also scales the chance up when the hunter is close
+        /// (the wiki says distance matters but gives no formula), multiplies it by the storyteller difficulty's
+        /// manhunter factor (no such field here), and rolls it on any injury a humanlike deals rather than only
+        /// inside a hunt; and a herd animal's nearby kin can join in (wiki: within 25 cells), which nothing here
+        /// does yet.
         /// <para/>
         /// <b>The animal now fights back.</b> This doc used to end "the animal does not fight back": the
         /// think tree tier that reads <c>angryAt</c> (<see cref="ThinkNode_ConditionalAngryAtHandler"/>)
@@ -156,7 +168,10 @@ namespace SimWorld.AI
             if (hunter == null) throw new ArgumentNullException(nameof(hunter));
             if (animal.Dead || animal.mindState == null) return false;
 
-            if (!Rand.Chance(HuntingTuning.RevengeChancePerWildnessOnWound * animal.RaceProps.wildness)) return false;
+            float chance = animal.RaceProps.manhunterOnDamageChance;
+            if (chance <= 0f) return false;
+            chance *= 1f - hunter.GetStatValue(HuntingDefOf.HuntingStealth);
+            if (!Rand.Chance(chance)) return false;
 
             animal.mindState.angryAt = hunter;
             animal.mindState.angryUntilTick = Find.TickManager.TicksGame + HuntingTuning.RevengeAngerDurationTicks;

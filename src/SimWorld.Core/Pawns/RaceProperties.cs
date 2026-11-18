@@ -61,6 +61,13 @@ namespace SimWorld.Pawns
         /// content sets it yet; a predator or a thrumbo would.</summary>
         public float manhunterOnTameFailChance;
 
+        /// <summary>Chance, per injury a humanlike deals it, that this animal turns on its attacker — RimWorld:
+        /// <c>RaceProperties.manhunterOnDamageChance</c>, shown in game as the Wildlife tab's revenge chance.
+        /// The rimworldwiki.com infoboxes give 10% for a muffalo and 0% for a husky or a chicken, so only the
+        /// muffalo sets it here. Read by <c>AI.HuntUtility.TryProvokeRevenge</c>, scaled down by the hunter's
+        /// hunting stealth.</summary>
+        public float manhunterOnDamageChance;
+
         /// <summary>Which <see cref="TrainableDef"/>s this race can ever learn (RimWorld: <c>RaceProperties.trainability</c>);
         /// null (the Humanlike default) means none — nothing here is trainable in the <see cref="Pawn_TrainingTracker"/> sense.</summary>
         public TrainabilityDef? trainability;
