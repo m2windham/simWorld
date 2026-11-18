@@ -633,15 +633,14 @@ namespace SimWorld.Tests.AI
         [Fact]
         public void A_hunt_that_cannot_be_finished_gives_up_rather_than_running_forever()
         {
-            // Prey walled off mid-hunt: the job must end, not spin. (The expiry ceiling is the backstop; an
-            // unreachable target trips the driver's own approach failure long before it.)
+            // Prey walled off mid-hunt: the job must end, not spin. (The driver's 5000-tick limit is the
+            // backstop, see HarmAndRevengeTests; an unreachable target trips its approach failure long before.)
             CoreMap map = NewMap(12, 12);
             Pawn hunter = SpawnHunter(map, new IntVec3(1, 0, 1));
             Pawn chicken = SpawnAnimal(map, Chicken, new IntVec3(10, 0, 10));
 
             hunter.jobs.TryFindAndStartJob();
             Assert.Equal(HuntingDefOf.Hunt, hunter.jobs.curJob?.def);
-            Assert.True(hunter.jobs.curJob!.expiryInterval > 0, "A hunt carries a give-up ceiling.");
 
             chicken.DeSpawn();
             RunTicks(5, hunter);

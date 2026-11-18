@@ -33,9 +33,9 @@ namespace SimWorld.AI
 
         /// <summary>
         /// How long one attack job may run before it gives up, through <see cref="Job.expiryInterval"/> (the
-        /// ceiling <see cref="HuntingTuning.HuntJobExpiryTicks"/> exists for, for the same reason: the target
-        /// moves and the attacker re-paths after it, so without a ceiling a chase across open ground never
-        /// ends). An hour rather than the hunt's half-day because a fight that has not resolved in an hour is
+        /// hunt's <see cref="JobDriver_Hunt.MaxHuntTicks"/> exists for the same reason: the target moves and the
+        /// attacker re-paths after it, so without a ceiling a chase across open ground never ends). An hour
+        /// rather than the hunt's 5000 ticks because a fight that has not resolved in an hour is
         /// a fight the attacker cannot win from where it stands, and re-deciding is cheap — the very next
         /// think-tree pass simply re-issues the same job if the enemy is still there.
         /// </summary>

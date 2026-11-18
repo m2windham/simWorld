@@ -80,10 +80,9 @@ namespace SimWorld.AI
             return pawn.Map!.reservationManager.CanReserve(pawn, animal);
         }
 
-        /// <summary>The hunt carries an expiry (<see cref="HuntingTuning.HuntJobExpiryTicks"/>) so a chase
-        /// after fleeing prey cannot run forever; <see cref="Pawn_JobTracker.JobTrackerTick"/> already
-        /// enforces <see cref="Job.expiryInterval"/> for every job, so nothing new drives it.</summary>
+        /// <summary>RimWorld: <c>WorkGiver_HunterHunt.JobOnThing</c>, a bare hunt job. A chase after fleeing
+        /// prey cannot run forever because the driver gives up after <see cref="JobDriver_Hunt.MaxHuntTicks"/>.</summary>
         public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false) =>
-            new Job(HuntingDefOf.Hunt, thing) { expiryInterval = HuntingTuning.HuntJobExpiryTicks };
+            new Job(HuntingDefOf.Hunt, thing);
     }
 }

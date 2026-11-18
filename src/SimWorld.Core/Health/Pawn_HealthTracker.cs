@@ -215,13 +215,12 @@ namespace SimWorld.Health
         /// <c>Pawn_HealthTracker.PostApplyDamage</c>, reached there from <c>Thing.TakeDamage</c> and here from
         /// <see cref="DamageWorker.Apply"/>, this port's only funnel for damage to a pawn).
         ///
-        /// <para/>Its one job today is telling the AI layer, which is what lets being shot interrupt whatever
+        /// <para/>Its first job is telling the AI layer, which is what lets being shot interrupt whatever
         /// the victim was doing (<see cref="SimWorld.AI.Pawn_JobTracker.Notify_DamageTaken"/>). A hit that
         /// killed outright notifies nothing: a dead pawn has already had its job ended by
         /// <see cref="Pawn.Notify_Died"/>, and starting it another would strand the reservations that ending
-        /// released. RimWorld also raises <c>Pawn_MindState.Notify_DamageTaken</c> from here for its
-        /// harm-driven mental breaks; this port's <see cref="SimWorld.MindState.Pawn_MindState"/> has no such
-        /// hook, and inventing one is the mood module's call, not this one's.
+        /// released. It also raises <see cref="SimWorld.MindState.Pawn_MindState.Notify_DamageTaken"/>
+        /// (a wild animal's revenge roll) and gives the "harmed me" memory, as RimWorld's does.
         /// </summary>
         /// <param name="dinfo">The hit, including whatever dealt it — the AI layer reads
         /// <see cref="DamageInfo.Instigator"/> to tell "someone new is shooting me" from "the enemy I am
@@ -232,7 +231,28 @@ namespace SimWorld.Health
         {
             if (dinfo == null) throw new ArgumentNullException(nameof(dinfo));
             if (Dead) return;
+            pawn.mindState?.Notify_DamageTaken(dinfo);
+            TryGainHarmedMe(dinfo);
             pawn.jobs?.Notify_DamageTaken(dinfo);
+        }
+
+        /// <summary>
+        /// The "harmed me" social memory (RimWorld: <c>ThoughtDefOf.HarmedMe</c>, given in
+        /// <c>Pawn_HealthTracker.PostApplyDamage</c>): a person hurt by another person remembers it, −15
+        /// opinion of them for ten days. RimWorld gives it when the instigator is not hostile to the victim
+        /// (friendly fire, a social fight) or is one of the victim's own faction in a mental state; an enemy
+        /// raider's shots leave nothing. <b>That condition is recalled, not read from source.</b>
+        /// </summary>
+        private void TryGainHarmedMe(DamageInfo dinfo)
+        {
+            if (!dinfo.Def.externalViolence) return;
+            if (!(dinfo.Instigator is Pawn instigator) || ReferenceEquals(instigator, pawn)) return;
+            if (!pawn.RaceProps.Humanlike || !instigator.RaceProps.Humanlike) return;
+            Thoughts.MemoryThoughtHandler? memories = pawn.needs?.mood?.thoughts.memories;
+            if (memories == null) return;
+            bool hostile = AI.AttackTargetsUtility.HostileTo(instigator, pawn);
+            if (hostile && !(ReferenceEquals(instigator.faction, pawn.faction) && instigator.InMentalState)) return;
+            memories.TryGainMemory(Thoughts.HarmThoughtDefOf.HarmedMe, instigator);
         }
 
         // ---- ticking ----

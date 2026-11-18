@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Being hurt by another person (RimWorld: ThoughtDefOf.HarmedMe, a Thought_MemorySocial). Given by
+    Health.Pawn_HealthTracker.PostApplyDamage when a humanlike harms another humanlike it is not at war with
+    (friendly fire, a social fight), or one of its own while in a mental state. Its own file rather than an
+    addition to Thoughts_Social.xml, per CLAUDE.md.
+
+    Sourced: -15 opinion for 10 days (rimworldwiki.com, Opinion: "Harmed me"). It is a social memory with no
+    mood effect. Not sourced: the stack limits. stackLimit 300 is recalled from RimWorld's social memories
+    rather than read from the def; stackLimitForSameOtherPawn 3 is this port's choice, the same as Insulted,
+    so a long fight weighs more than one blow but stops growing after three (pinned by HarmedMeTests).
+  -->
+
+  <ThoughtDef>
+    <defName>HarmedMe</defName>
+    <durationDays>10</durationDays>
+    <stackLimit>300</stackLimit>
+    <stackLimitForSameOtherPawn>3</stackLimitForSameOtherPawn>
+    <stages>
+      <li>
+        <label>harmed me</label>
+        <description>They hurt me.</description>
+        <baseOpinionOffset>-15</baseOpinionOffset>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>
