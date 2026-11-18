@@ -1479,3 +1479,8 @@ Open: doctor-by-skill needs a decision (RimWorld's founding work grid by skill f
 resetting to it rather than flat 3); the pather does not re-check the path ahead as RimWorld does; herd revenge;
 hunters can leave downed prey to stand up again; snow not drawn by the host; GPU timing needs Doug's go-ahead
 for a windowed run.
+
+2026-11-18 (pather-recheck, suite 3077/3077, benches 10 houses on host-Mono and delta-CoreCLR): the pather
+re-checks the next 20 cells on every cell entry (`NeedNewPath`) and replans round a cell that went solid, keeping
+the 450-tick step cap; hunters close to `executionRange` before finishing downed prey. Both close their §15 open
+items. Still open: destination-moved and near-goal reachability replans, the hunt's 5000-tick give-up.
