@@ -8,6 +8,7 @@ using SimWorld.Factions;
 using SimWorld.Map;
 using SimWorld.Pawns;
 using SimWorld.Sim;
+using SimWorld.Stats;
 using SimWorld.Tests.Content;
 using SimWorld.Things;
 using SimWorld.Work;
@@ -366,18 +367,6 @@ namespace SimWorld.Tests.AI
 
         // ---- revenge (RimWorld's manhunter-on-damage response) ----
 
-        [Fact]
-        public void Wounding_a_wilder_animal_provokes_it_more_often_than_a_tamer_one()
-        {
-            CoreMap map = NewMap(8, 8);
-            Pawn hunter = SpawnHunter(map, new IntVec3(0, 0, 0));
-            Pawn wild = SpawnAnimal(map, Muffalo, new IntVec3(3, 0, 3), "Wild");   // wildness 0.6
-            Pawn tamer = SpawnAnimal(map, Husky, new IntVec3(4, 0, 4), "Placid");  // wildness 0.3
-            Assert.True(wild.RaceProps.wildness > tamer.RaceProps.wildness);
-
-            Assert.True(ProvokeCount(wild, hunter, 1500) > ProvokeCount(tamer, hunter, 1500));
-        }
-
         /// <summary>Rolls the revenge consequence <paramref name="trials"/> times against one animal, clearing
         /// the mark between rolls so each trial is independent.</summary>
         private static int ProvokeCount(Pawn animal, Pawn hunter, int trials)
@@ -424,6 +413,51 @@ namespace SimWorld.Tests.AI
 
             for (int i = 0; i < 200; i++) Assert.False(HuntUtility.TryProvokeRevenge(chicken, hunter));
             Assert.Null(chicken.mindState.angryAt);
+        }
+
+        /// <summary>
+        /// Whether prey can take revenge at all is the race's own number (RimWorld:
+        /// <c>RaceProperties.manhunterOnDamageChance</c>): 10% for a muffalo, 0% for a husky or a chicken on
+        /// the RimWorld wiki. The old wildness proxy let a wounded chicken or husky turn on its hunter.
+        /// </summary>
+        [Fact]
+        public void Only_a_race_with_a_revenge_chance_ever_turns_on_its_hunter()
+        {
+            CoreMap map = NewMap(8, 8);
+            Pawn hunter = SpawnHunter(map, new IntVec3(0, 0, 0));
+            Pawn husky = SpawnAnimal(map, Husky, new IntVec3(3, 0, 3), "Husky");
+            Pawn chicken = SpawnAnimal(map, Chicken, new IntVec3(4, 0, 4), "Chicken");
+            Pawn muffalo = SpawnAnimal(map, Muffalo, new IntVec3(5, 0, 5), "Muffalo");
+
+            Assert.Equal(0, ProvokeCount(husky, hunter, 2000));
+            Assert.Equal(0, ProvokeCount(chicken, hunter, 2000));
+            Assert.True(ProvokeCount(muffalo, hunter, 2000) > 0);
+        }
+
+        /// <summary>
+        /// A practised hunter provokes its prey less often (RimWorld's HuntingStealth: Shooting and Animals,
+        /// 5% a level each, capped at 90% by its post-process curve, applied as 1 − stealth to the race's
+        /// chance). Before, the chance never looked at the hunter at all.
+        /// </summary>
+        [Fact]
+        public void A_skilled_hunter_provokes_its_prey_far_less_often_than_a_novice()
+        {
+            CoreMap map = NewMap(8, 8);
+            Pawn novice = SpawnHunter(map, new IntVec3(0, 0, 0), name: "Novice");
+            Pawn expert = SpawnHunter(map, new IntVec3(1, 0, 0), name: "Expert");
+            foreach (SkillDef skill in new[] { SkillDefOf.Shooting, SkillDefOf.Animals })
+            {
+                novice.skills.GetSkill(skill)!.Level = 0;
+                expert.skills.GetSkill(skill)!.Level = 20;
+            }
+            Pawn muffalo = SpawnAnimal(map, Muffalo, new IntVec3(4, 0, 4), "Muffalo");
+
+            Assert.Equal(0f, novice.GetStatValue(HuntingDefOf.HuntingStealth));
+            Assert.True(expert.GetStatValue(HuntingDefOf.HuntingStealth) > 0.8f);
+
+            int byNovice = ProvokeCount(muffalo, novice, 3000);
+            int byExpert = ProvokeCount(muffalo, expert, 3000);
+            Assert.True(byExpert * 3 < byNovice, $"expert {byExpert} vs novice {byNovice} over 3000 wounds each");
         }
 
         // ---- end to end, through the real work-giver path ----

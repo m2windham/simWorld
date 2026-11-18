@@ -364,7 +364,7 @@ namespace SimWorld.Tests.Social
 
                 Assert.True(b.relations.OpinionOf(a) < 0);
 
-                if (SocialFightUtility.TryStartSocialFight(a, b))
+                if (SocialFightUtility.TryStartSocialFight(InteractionDefOf.Insult, a, b))
                 {
                     everStarted = true;
                     Assert.True(a.InMentalState);
@@ -396,14 +396,14 @@ namespace SimWorld.Tests.Social
             (_, Pawn friendA, Pawn friendB) = SpawnPair();
             SocialUtility.AddMutualRelation(friendA, friendB, PawnRelationDefOf.Friend);
             for (int i = 0; i < 3; i++) friendB.needs.mood!.thoughts.memories.TryGainMemory(SocialThoughtDefOf.HadDeepTalk, friendA);
-            float friendly = SocialFightUtility.SocialFightChance(friendA, friendB);
+            float friendly = SocialFightUtility.SocialFightChance(InteractionDefOf.Insult, friendA, friendB);
 
             Pawn.ResetThingIdCounter();
             (_, Pawn rivalA, Pawn rivalB) = SpawnPair();
             SocialUtility.AddMutualRelation(rivalA, rivalB, PawnRelationDefOf.Rival);
             SocialUtility.AddMutualRelation(rivalA, rivalB, PawnRelationDefOf.ExSpouse);
             for (int i = 0; i < 3; i++) rivalB.needs.mood!.thoughts.memories.TryGainMemory(SocialThoughtDefOf.Insulted, rivalA);
-            float hostile = SocialFightUtility.SocialFightChance(rivalA, rivalB);
+            float hostile = SocialFightUtility.SocialFightChance(InteractionDefOf.Insult, rivalA, rivalB);
 
             Assert.True(friendly > 0f, "RimWorld's chance is continuous, never zero for a pawn who could fight");
             Assert.True(hostile > friendly * 1.5f,
@@ -424,12 +424,45 @@ namespace SimWorld.Tests.Social
             b.needs.mood!.CurLevel = 0f;
 
             Assert.False(SocialFightUtility.SocialFightPossible(b, a));
-            Assert.Equal(0f, SocialFightUtility.SocialFightChance(a, b));
+            Assert.Equal(0f, SocialFightUtility.SocialFightChance(InteractionDefOf.Insult, a, b));
             for (int seed = 0; seed < 50; seed++)
             {
                 Rand.Current = new RandomStream(seed);
-                Assert.False(SocialFightUtility.TryStartSocialFight(a, b));
+                Assert.False(SocialFightUtility.TryStartSocialFight(InteractionDefOf.Insult, a, b));
             }
+        }
+
+        /// <summary>
+        /// A slight can start a fight too, just far less often than an insult. RimWorld rolls every
+        /// interaction through one <c>CheckSocialFightStart</c> against that interaction's own
+        /// <c>socialFightBaseChance</c>; the wiki gives an insult 4% and a slight 0.5%. This port's Slight
+        /// never rolled at all.
+        /// </summary>
+        [Fact]
+        public void A_slight_can_escalate_into_a_social_fight_but_far_less_often_than_an_insult()
+        {
+            (_, Pawn rivalA, Pawn rivalB) = SpawnPair();
+            SocialUtility.AddMutualRelation(rivalA, rivalB, PawnRelationDefOf.Rival);
+            float slight = SocialFightUtility.SocialFightChance(InteractionDefOf.Slight, rivalA, rivalB);
+            float insult = SocialFightUtility.SocialFightChance(InteractionDefOf.Insult, rivalA, rivalB);
+            Assert.True(slight > 0f, "a slight should carry a nonzero social-fight chance");
+            Assert.True(insult > slight * 4f, $"an insult should be far likelier to start a fight: {insult:F4} vs {slight:F4}");
+
+            bool everStarted = false;
+            for (int seed = 0; seed < 600 && !everStarted; seed++)
+            {
+                Find.TickManager = new TickManager();
+                Rand.Current = new RandomStream(seed);
+                Pawn.ResetThingIdCounter();
+
+                (_, Pawn a, Pawn b) = SpawnPair();
+                SocialUtility.AddMutualRelation(a, b, PawnRelationDefOf.Rival);
+                SocialUtility.AddMutualRelation(a, b, PawnRelationDefOf.ExSpouse);
+
+                InteractionDefOf.Slight.Worker.Interacted(a, b);
+                if (b.MentalStateDef?.defName == "SocialFighting") everStarted = true;
+            }
+            Assert.True(everStarted, "a slight never started a social fight across 600 seeds");
         }
 
         // ---- social fights: MentalState_SocialFighting mechanics (blows, ending) ----
@@ -482,6 +515,53 @@ namespace SimWorld.Tests.Social
                 if (a.health.hediffSet.hediffs.Count > 0 || b.health.hediffSet.hediffs.Count > 0) sawDamage = true;
             }
             Assert.True(sawDamage, "expected at least one landed blow across 20 seeds of a full-duration fight");
+        }
+
+        /// <summary>
+        /// A pawn incapable of violence is pulled into the fight and throws nothing (RimWorld's
+        /// <c>JobGiver_SocialFighting</c> refuses a humanlike with Violent disabled; the wiki: "can provoke
+        /// fights but won't fight back"). Its opponent is never hurt, over a full-length fight on every seed.
+        /// </summary>
+        [Fact]
+        public void A_pawn_incapable_of_violence_never_lands_a_blow_in_a_social_fight()
+        {
+            for (int seed = 0; seed < 10; seed++)
+            {
+                Find.TickManager = new TickManager();
+                Rand.Current = new RandomStream(seed);
+                Pawn.ResetThingIdCounter();
+
+                (_, Pawn pacifist, Pawn other) = SpawnPair();
+                pacifist.story.adulthood = DefDatabase<BackstoryDef>.GetNamed("TribalElder");
+                Assert.True(pacifist.WorkTagIsDisabled(SimWorld.Work.WorkTags.Violent));
+
+                StartFightDirect(pacifist, other);
+                RunTicks(SocialMentalStateDefOf.SocialFighting.maxTicksBeforeRecovery + 100, pacifist, other);
+
+                Assert.Empty(other.health.hediffSet.hediffs);
+            }
+        }
+
+        /// <summary>
+        /// A fight runs at least 420 ticks unless somebody goes down (the RimWorld wiki's Social fight page).
+        /// The pair here are on no map, so nobody can be hit and nothing but the clock can end it.
+        /// </summary>
+        [Fact]
+        public void A_social_fight_lasts_at_least_420_ticks_when_nobody_goes_down()
+        {
+            for (int seed = 0; seed < 20; seed++)
+            {
+                Find.TickManager = new TickManager();
+                Rand.Current = new RandomStream(seed);
+                Pawn.ResetThingIdCounter();
+
+                Pawn a = NewHuman("A");
+                Pawn b = NewHuman("B");
+                StartFightDirect(a, b);
+                RunTicks(419, a, b);
+
+                Assert.True(a.InMentalState && b.InMentalState, $"seed {seed}: the fight ended before 420 ticks");
+            }
         }
 
         /// <summary>

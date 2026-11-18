@@ -16,6 +16,16 @@ namespace SimWorld.Social
     {
         public Type workerClass = typeof(InteractionWorker);
 
+        /// <summary>
+        /// Chance this interaction tips its recipient into a social fight, before
+        /// <see cref="SocialFightUtility.SocialFightChance"/>'s chain of factors (RimWorld:
+        /// <c>InteractionDef.socialFightBaseChance</c>, read by <c>Pawn_InteractionsTracker.SocialFightChance</c>).
+        /// 0 for every interaction that cannot start a fight. Insult 4% and Slight 0.5% in content; both
+        /// figures are the RimWorld wiki's (Social fight: "Every insult has a 4 % chance of starting social
+        /// fight, slights 0.5 %"), a secondary source rather than the def itself.
+        /// </summary>
+        public float socialFightBaseChance;
+
         private InteractionWorker? workerInt;
 
         public InteractionWorker Worker

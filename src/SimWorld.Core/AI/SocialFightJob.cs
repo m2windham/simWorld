@@ -28,11 +28,17 @@ namespace SimWorld.AI
     /// <see cref="MentalState_SocialFighting"/> swung at range zero from its own tick with no map at all —
     /// see that class for the measurement. Everything else about the fight (who starts one, how long it
     /// lasts, when it stops) is unchanged and still lives on the mental state.
+    /// <para/>
+    /// <b>A pawn incapable of violence is in the fight but throws nothing.</b> RimWorld's giver refuses a
+    /// humanlike whose <see cref="Work.WorkTags.Violent"/> is disabled, which is the wiki's "these pawns can
+    /// provoke fights but won't fight back" (Social fight). They still carry the state, so they still take
+    /// the other side's punches and still come away with a cathartic or angering memory.
     /// </summary>
     public sealed class JobGiver_SocialFighting : ThinkNode_JobGiver
     {
         protected override Job? TryGiveJob(Pawn pawn)
         {
+            if (pawn.RaceProps.Humanlike && pawn.WorkTagIsDisabled(Work.WorkTags.Violent)) return null;
             if (!(pawn.mindState.mentalStateHandler.CurState is MentalState_SocialFighting fight)) return null;
 
             Pawn? other = fight.otherPawn;

@@ -1,5 +1,6 @@
 using SimWorld.Crafting;
 using SimWorld.Defs;
+using SimWorld.Stats;
 
 namespace SimWorld.AI
 {
@@ -21,5 +22,10 @@ namespace SimWorld.AI
         /// same <c>ButcherAnimal</c> def a <c>TableButcher</c> lists, reused rather than duplicated. Bound
         /// here because <c>Crafting.RecipeDefOf</c> (a file this lane does not own) does not carry it.</summary>
         public static RecipeDef ButcherAnimal = null!;
+
+        /// <summary>How well a hunter keeps its prey from turning on it (RimWorld: <c>StatDefOf.HuntingStealth</c>);
+        /// see <see cref="HuntUtility.TryProvokeRevenge"/>. Bound here beside the other hunting defs, the way
+        /// <c>Stats.MiningStatDefOf</c> binds its own stat outside the shared <c>StatDefOf</c>.</summary>
+        public static StatDef HuntingStealth = null!;
     }
 }

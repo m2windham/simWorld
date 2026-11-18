@@ -61,6 +61,9 @@
       <foodLevelPercentageWantEat>0.3</foodLevelPercentageWantEat>
       <lifeExpectancy>16</lifeExpectancy>
       <wildness>0.6</wildness>
+      <!-- RimWorld's per-race revenge chance on damage (rimworldwiki.com/wiki/Muffalo, "Manhunter Chance
+           10%"). Husky and Chicken are 0% there and leave it unset. -->
+      <manhunterOnDamageChance>0.1</manhunterOnDamageChance>
       <trainability>Intermediate</trainability>
       <meatDef>Meat_Generic</meatDef>
       <leatherDef>Leather_Plain</leatherDef>

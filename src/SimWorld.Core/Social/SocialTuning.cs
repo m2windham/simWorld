@@ -63,27 +63,9 @@ namespace SimWorld.Social
 
         public const float SlightLowOpinionWeightFactor = 2.5f;
 
-        /// <summary>
-        /// Chance an insult escalates into a mutual <c>SocialFighting</c> mental state <i>before</i>
-        /// <see cref="SocialFightUtility.SocialFightChance"/>'s chain of factors — capacity, opinion, traits,
-        /// age gap — multiplies it (RimWorld: <c>InteractionDef.socialFightBaseChance</c>, a per-interaction
-        /// content field read by <c>Pawn_InteractionsTracker.SocialFightChance</c>).
-        ///
-        /// <para/><b>4%, and what that replaced.</b> This was 0.15 behind two hard gates that RimWorld does
-        /// not have (see <see cref="SocialFightUtility"/>). The RimWorld value for the Insult interaction
-        /// could not be read out of its content from this environment; 0.04 is the figure the RimWorld wiki's
-        /// own Social page states for an insult ("Every insult has a 4% chance of starting a social fight,
-        /// while slights have a 0.5% chance"), which is a secondary source rather than the def, so per
-        /// CLAUDE.md the resulting <i>behaviour</i> is what the tests pin — a settlement that is otherwise
-        /// healthy does not lose a third of its people to its own citizens in a week — and not this literal.
-        ///
-        /// <para/><b>Where it will eventually live.</b> On <see cref="InteractionDef"/>, as RimWorld has it,
-        /// so that Slight can carry its own 0.5% and content can add a fight-capable interaction without
-        /// touching code. It is here for now because moving it means editing
-        /// <c>Data/Core/Defs/InteractionDefs/Interactions.xml</c>, a shared content file, and this lane has
-        /// no need of a second escalating interaction — insult is still the only one that rolls.
-        /// </summary>
-        public const float InsultSocialFightBaseChance = 0.04f;
+        // The insult's social-fight base chance used to live here as InsultSocialFightBaseChance. It is now
+        // InteractionDef.socialFightBaseChance in content, where RimWorld keeps it, so Slight carries its own
+        // 0.5% beside Insult's 4% (both from the RimWorld wiki's Social fight page, a secondary source).
 
         /// <summary>
         /// Power of a bare fist — RimWorld's own natural "fists" tool exists on the Human race ThingDef, not
