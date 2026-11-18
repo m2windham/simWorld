@@ -21,14 +21,71 @@ namespace SimWorld.Defs
         /// </summary>
         public ThingDef? entityToBuild;
 
-        /// <summary>Sum of every <see cref="costList"/> entry naming <paramref name="stuff"/>, or 0.</summary>
-        public int CostListCountFor(ThingDef stuff)
+        private System.Collections.Generic.Dictionary<ThingDef, System.Collections.Generic.List<Crafting.ThingDefCountClass>>? cachedCostListsByStuff;
+        private System.Collections.Generic.List<Crafting.ThingDefCountClass>? cachedCostListNoStuff;
+
+        /// <summary>
+        /// What building this out of <paramref name="stuff"/> costs (RimWorld: <c>BuildableDef.CostListAdjusted</c>):
+        /// <see cref="costList"/>, plus <see cref="costStuffCount"/> divided by the stuff's
+        /// <see cref="VolumePerUnit"/> (rounded, at least 1) of the stuff itself — merged into the costList entry
+        /// when that already names the stuff, otherwise inserted first. A def that is not made from stuff costs
+        /// its costList whatever is passed.
+        /// <para/>
+        /// RimWorld logs an error for null stuff on a stuff-built def and prices it in
+        /// <see cref="Crafting.GenStuff.DefaultStuffFor"/> instead; this port takes the default without the log,
+        /// since every caller here that can hold null (a blueprint placed before it carried a stuff) means "the
+        /// default". Cached per stuff, as RimWorld caches per (def, stuff) pair; never invalidated, like
+        /// <see cref="AllRecipes"/>, because a def's costs do not change after load.
+        /// </summary>
+        public System.Collections.Generic.List<Crafting.ThingDefCountClass> CostListAdjusted(ThingDef? stuff)
         {
-            if (costList == null) return 0;
-            int total = 0;
-            for (int i = 0; i < costList.Count; i++)
+            if (!MadeFromStuff) stuff = null;
+            else stuff ??= Crafting.GenStuff.DefaultStuffFor(this);
+
+            if (stuff == null)
             {
-                if (ReferenceEquals(costList[i].thingDef, stuff)) total += costList[i].count;
+                return cachedCostListNoStuff ??= costList != null
+                    ? new System.Collections.Generic.List<Crafting.ThingDefCountClass>(costList)
+                    : new System.Collections.Generic.List<Crafting.ThingDefCountClass>();
+            }
+
+            cachedCostListsByStuff ??= new System.Collections.Generic.Dictionary<ThingDef, System.Collections.Generic.List<Crafting.ThingDefCountClass>>();
+            if (cachedCostListsByStuff.TryGetValue(stuff, out var cached)) return cached;
+
+            int stuffCount = (int)System.Math.Round(costStuffCount / stuff.VolumePerUnit, System.MidpointRounding.ToEven);
+            if (stuffCount < 1) stuffCount = 1; // RimWorld: a made-from-stuff thing always takes at least one unit.
+
+            var result = new System.Collections.Generic.List<Crafting.ThingDefCountClass>();
+            bool merged = false;
+            if (costList != null)
+            {
+                foreach (Crafting.ThingDefCountClass entry in costList)
+                {
+                    if (ReferenceEquals(entry.thingDef, stuff))
+                    {
+                        result.Add(new Crafting.ThingDefCountClass(entry.thingDef, entry.count + stuffCount));
+                        merged = true;
+                    }
+                    else
+                    {
+                        result.Add(entry);
+                    }
+                }
+            }
+            if (!merged) result.Insert(0, new Crafting.ThingDefCountClass(stuff, stuffCount));
+            cachedCostListsByStuff[stuff] = result;
+            return result;
+        }
+
+        /// <summary>How many of <paramref name="material"/> building this out of <paramref name="stuff"/> costs in
+        /// all (<see cref="CostListAdjusted"/>), or 0. Null stuff on a stuff-built def is its default stuff.</summary>
+        public int CostListCountFor(ThingDef material, ThingDef? stuff = null)
+        {
+            System.Collections.Generic.List<Crafting.ThingDefCountClass> cost = CostListAdjusted(stuff);
+            int total = 0;
+            for (int i = 0; i < cost.Count; i++)
+            {
+                if (ReferenceEquals(cost[i].thingDef, material)) total += cost[i].count;
             }
             return total;
         }

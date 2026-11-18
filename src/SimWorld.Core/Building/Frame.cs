@@ -52,21 +52,27 @@ namespace SimWorld.Building
 
         public int MaterialDelivered(ThingDef material) => resourceContainer.TryGetValue(material, out int n) ? n : 0;
 
+        /// <summary>Everything this Frame needs delivered in all: its building's cost in this Frame's
+        /// <see cref="Things.Thing.Stuff"/> (RimWorld: <c>Frame.TotalMaterialCost</c> →
+        /// <c>def.entityToBuild.CostListAdjusted(Stuff)</c>), so a wall carries its costStuffCount of whatever
+        /// it is being built from.</summary>
+        public List<ThingDefCountClass> TotalMaterialCost() => EntityToBuild.CostListAdjusted(Stuff);
+
         /// <summary>How many more of <paramref name="material"/> this Frame still needs, 0 if none or already met.</summary>
         public int MaterialStillNeeded(ThingDef material)
         {
-            int required = EntityToBuild.CostListCountFor(material);
+            int required = EntityToBuild.CostListCountFor(material, Stuff);
             int have = MaterialDelivered(material);
             return Math.Max(0, required - have);
         }
 
-        /// <summary>True once every <see cref="Defs.ThingDef.costList"/> entry is fully delivered.</summary>
+        /// <summary>True once every <see cref="TotalMaterialCost"/> entry is fully delivered.</summary>
         public bool MaterialsFullySatisfied()
         {
-            if (EntityToBuild.costList == null) return true;
-            for (int i = 0; i < EntityToBuild.costList.Count; i++)
+            List<ThingDefCountClass> cost = TotalMaterialCost();
+            for (int i = 0; i < cost.Count; i++)
             {
-                ThingDefCountClass entry = EntityToBuild.costList[i];
+                ThingDefCountClass entry = cost[i];
                 if (MaterialDelivered(entry.thingDef) < entry.count) return false;
             }
             return true;
@@ -109,7 +115,7 @@ namespace SimWorld.Building
             // of a call between "Frame gone" and "Building spawned" as this cell's support genuinely lost.
             Destroy(DestroyMode.WillReplace);
 
-            Things.Thing building = ThingMaker.MakeThing(built);
+            Things.Thing building = ThingMaker.MakeThing(built, Stuff);
             // RimWorld hands the frame's faction on (thing.SetFactionDirect(Faction)), and the frame has its
             // blueprint's, which has its placer's. Nothing here gives a blueprint a faction, so the builder's
             // stands in: only a citizen ever completes a frame.
@@ -137,6 +143,7 @@ namespace SimWorld.Building
             IntVec3 pos = Position;
             Rot4 rot = Rotation;
             ThingDef built = EntityToBuild;
+            ThingDef? stuff = Stuff;
 
             var refunds = new List<(ThingDef material, int count)>();
             foreach (KeyValuePair<ThingDef, int> kv in resourceContainer)
@@ -150,7 +157,8 @@ namespace SimWorld.Building
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(built);
             if (blueprintDef != null)
             {
-                Things.Thing blueprint = ThingMaker.MakeThing(blueprintDef);
+                var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
+                blueprint.stuffToUse = stuff;
                 GenSpawn.Spawn(blueprint, pos, map, rot);
             }
 

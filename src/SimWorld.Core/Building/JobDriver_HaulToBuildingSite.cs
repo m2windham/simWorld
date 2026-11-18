@@ -136,7 +136,7 @@ namespace SimWorld.Building
             return site switch
             {
                 Frame frame => frame.MaterialStillNeeded(material),
-                Blueprint blueprint => blueprint.EntityToBuild.CostListCountFor(material),
+                Blueprint blueprint => blueprint.ThingCountNeeded(material),
                 _ => 0,
             };
         }

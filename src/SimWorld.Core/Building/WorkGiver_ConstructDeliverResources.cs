@@ -40,24 +40,26 @@ namespace SimWorld.Building
         }
 
         private static bool CostsNothing(Thing site) =>
-            site is Blueprint blueprint && (blueprint.EntityToBuild.costList == null || blueprint.EntityToBuild.costList.Count == 0);
+            site is Blueprint blueprint && blueprint.TotalMaterialCost().Count == 0;
 
         private static Thing? FindNeededResource(Pawn pawn, Thing site)
         {
             Map.Map map = pawn.Map!;
-            ThingDef? entity = site switch
+            // The stuff-adjusted cost (RimWorld: IConstructible.TotalMaterialCost), so a stuff-built site asks
+            // for its costStuffCount of its chosen stuff as well as its costList.
+            List<ThingDefCountClass>? cost = site switch
             {
-                Frame frame => frame.EntityToBuild,
-                Blueprint blueprint => blueprint.EntityToBuild,
+                Frame frame => frame.TotalMaterialCost(),
+                Blueprint blueprint => blueprint.TotalMaterialCost(),
                 _ => null,
             };
-            if (entity?.costList == null) return null;
+            if (cost == null) return null;
 
             Thing? best = null;
             int bestDistSq = int.MaxValue;
-            for (int i = 0; i < entity.costList.Count; i++)
+            for (int i = 0; i < cost.Count; i++)
             {
-                ThingDefCountClass entry = entity.costList[i];
+                ThingDefCountClass entry = cost[i];
                 int stillNeeded = site is Frame f ? f.MaterialStillNeeded(entry.thingDef) : entry.count;
                 if (stillNeeded <= 0) continue;
 

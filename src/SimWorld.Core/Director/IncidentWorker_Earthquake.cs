@@ -183,6 +183,7 @@ namespace SimWorld.Director
                     IntVec3 at = target.Position;
                     Rot4 rot = target.Rotation;
                     ThingDef built = target.def;
+                    ThingDef? builtStuff = target.Stuff;
                     target.TakeDamage(new DamageInfo(RoofCollapseDefOf.Crush, target.MaxHitPoints));
 
                     // Credited from whether the Thing is actually gone, never assumed from the hit alone: a
@@ -190,7 +191,7 @@ namespace SimWorld.Director
                     // never happened — the same "never over-claim" discipline CrushOnePawn applies to a death.
                     if (!target.Destroyed) continue;
                     destroyedTotal++;
-                    PlaceRebuildBlueprint(map, built, at, rot);
+                    PlaceRebuildBlueprint(map, built, builtStuff, at, rot);
 
                     foreach (IntVec3 cell in footprint.Cells)
                     {
@@ -258,11 +259,14 @@ namespace SimWorld.Director
         /// longer take one. <see cref="Building.SettlementConstructionInitiative"/> counts blueprints toward what
         /// the settlement wants, so it does not also lay a second one elsewhere.
         /// </summary>
-        private static void PlaceRebuildBlueprint(Map.Map map, ThingDef built, IntVec3 at, Rot4 rot)
+        private static void PlaceRebuildBlueprint(Map.Map map, ThingDef built, ThingDef? stuff, IntVec3 at, Rot4 rot)
         {
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(built);
             if (blueprintDef == null || !GenConstruct.CanPlaceBlueprintAt(built, at, map, out _, rot)) return;
-            GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), at, map, rot);
+            // Rebuilt in what it was built of, as RimWorld's auto-rebuild passes the destroyed thing's Stuff.
+            var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
+            blueprint.stuffToUse = stuff;
+            GenSpawn.Spawn(blueprint, at, map, rot);
         }
 
         // ---- shared arithmetic ----
