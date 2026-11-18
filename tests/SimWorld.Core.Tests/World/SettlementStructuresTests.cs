@@ -61,17 +61,21 @@ namespace SimWorld.Tests.World
             return best;
         }
 
-        /// <summary>Spawns <paramref name="count"/> completed <paramref name="def"/> things onto the first
-        /// empty, standable cells the map offers — never onto a citizen, an existing building or unwalkable
-        /// terrain, so a freshly-entered settlement's own founders never get built over.</summary>
-        private static void SpawnThings(CoreMap map, ThingDef def, int count)
+        /// <summary>Spawns <paramref name="count"/> completed <paramref name="def"/> things owned by
+        /// <paramref name="owner"/> onto the first empty, standable cells the map offers — never onto a citizen,
+        /// an existing building or unwalkable terrain, so a freshly-entered settlement's own founders never get
+        /// built over. The owner is what a completed frame would have handed on (its builder's faction); a null
+        /// owner is a ruin's.</summary>
+        private static void SpawnThings(CoreMap map, ThingDef def, int count, Faction? owner)
         {
             int placed = 0;
             foreach (IntVec3 c in map.AllCells)
             {
                 if (placed >= count) break;
                 if (!GenGrid.Standable(c, map) || GenGrid.GetThingList(c, map).Count != 0) continue;
-                GenSpawn.Spawn(ThingMaker.MakeThing(def), c, map);
+                Thing thing = ThingMaker.MakeThing(def);
+                thing.SetFaction(owner);
+                GenSpawn.Spawn(thing, c, map);
                 placed++;
             }
             Assert.Equal(count, placed); // fixture sanity — the test map must have room for this many
@@ -124,10 +128,10 @@ namespace SimWorld.Tests.World
             Assert.Equal(12_345, settlement.StructureCount(Wall)); // still the ledger: no map yet
 
             CoreMap map = settlement.EnterMap(world);
-            int fromMapGeneration = settlement.StructureCount(Wall); // whatever ruins the generator itself scattered
+            int fromMapGeneration = settlement.StructureCount(Wall); // the settlement's own before it builds; the generator's ruins are nobody's
             Assert.NotEqual(12_345, fromMapGeneration);
 
-            SpawnThings(map, Wall, 3);
+            SpawnThings(map, Wall, 3, faction);
 
             Assert.Equal(fromMapGeneration + 3, settlement.StructureCount(Wall));
             Assert.NotEqual(12_345, settlement.StructureCount(Wall));
@@ -182,7 +186,7 @@ namespace SimWorld.Tests.World
             Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(15), "Scribemap");
             CoreMap map = settlement.EnterMap(world);
             int fromMapGeneration = settlement.StructureCount(Wall);
-            SpawnThings(map, Wall, 4);
+            SpawnThings(map, Wall, 4, faction);
 
             int before = settlement.StructureCount(Wall);
             Assert.Equal(fromMapGeneration + 4, before);
@@ -210,7 +214,7 @@ namespace SimWorld.Tests.World
 
             CoreMap map = settlement.EnterMap(world);
             int fromMapGeneration = settlement.StructureCount(Wall);
-            SpawnThings(map, Wall, 5);
+            SpawnThings(map, Wall, 5, faction);
             int total = fromMapGeneration + 5;
 
             // Nothing has run the gated sync yet — the raw ledger has not seen the map's walls, even though
@@ -222,6 +226,32 @@ namespace SimWorld.Tests.World
             settlement.Tick(world);
 
             Assert.Equal(total, settlement.Structures[Wall]);
+        }
+
+        /// <summary>
+        /// A ruin is not one of the settlement's walls. RimWorld counts a colony's buildings off
+        /// <c>listerBuildings.allBuildingsColonist</c>, which files a building only when its faction is the
+        /// player's; a <c>GenStep_Ruins</c> wall has none. Without the faction filter both
+        /// <see cref="Settlement.StructureCount"/> and the synced ledger count every ruin wall on the map.
+        /// </summary>
+        [Fact]
+        public void Ruin_walls_on_the_map_are_counted_by_neither_StructureCount_nor_the_synced_ledger()
+        {
+            CoreWorld world = GenerateSoloWorld("struct-ruins");
+            Faction faction = world.factions.First();
+            int tile = BestScoredTile(world.grid);
+            Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(16), "Ruinstruct");
+            CoreMap map = settlement.EnterMap(world);
+
+            SpawnThings(map, Wall, 7, owner: null); // ruins: nobody's
+            SpawnThings(map, Wall, 2, faction);     // the settlement's own
+            Assert.True(map.listerThings.ThingsOfDef(Wall).Count >= 9, "fixture: the map holds the ruins and the settlement's walls");
+
+            Assert.Equal(2, settlement.StructureCount(Wall));
+
+            Find.TickManager.DebugSetTicksGame(SettlementTuning.CitizenMapSyncIntervalTicks);
+            settlement.Tick(world);
+            Assert.Equal(2, settlement.Structures[Wall]);
         }
     }
 }

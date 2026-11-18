@@ -353,6 +353,10 @@ namespace SimWorld.Economy
             // does: banked, cloth for a tailor's bill or chunks for a stonecutter's would leave the map, and
             // the bill could never be worked. Food keeps its own rule, the nutrition reserve below.
             List<RecipeDef> billed = StandingBillRecipes(map);
+            // And what a blueprint or frame on this map still needs, for the same reason: banked, the wood for a
+            // planned house leaves the map and the ledger cannot hand it back, so the house waits on felling for
+            // timber the settlement already cut. In RimWorld a stockpiled log stays where a builder can fetch it.
+            HashSet<ThingDef> construction = ConstructionMaterialsWanted(map);
 
             int banked = 0;
             for (int z = 0; z < zones.Count; z++)
@@ -367,6 +371,7 @@ namespace SimWorld.Economy
                     if (!stockpile.filter.Allows(stack.def)) continue;
                     if (map.reservationManager.IsReserved(stack)) continue;
                     if (!stack.def.IsNutritionGivingIngestible && AnyTakes(billed, stack.def)) continue;
+                    if (construction.Contains(stack.def)) continue;
 
                     int take = BankableUnits(stack, ref nutritionSurplus);
                     if (take <= 0) continue;
@@ -413,6 +418,29 @@ namespace SimWorld.Economy
         /// drawn down from <paramref name="nutritionSurplus"/> as it is spent, so one pass cannot bank the same
         /// surplus twice across several stacks.
         /// </summary>
+        /// <summary>Every material a <see cref="Blueprint"/> on <paramref name="map"/> will need or a
+        /// <see cref="Frame"/> on it still lacks (<see cref="Frame.MaterialStillNeeded"/>).</summary>
+        private static HashSet<ThingDef> ConstructionMaterialsWanted(Map.Map map)
+        {
+            var wanted = new HashSet<ThingDef>();
+            IReadOnlyList<Thing> blueprints = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
+            for (int i = 0; i < blueprints.Count; i++)
+            {
+                if (!(blueprints[i] is Blueprint bp) || bp.EntityToBuild.costList == null) continue;
+                foreach (ThingDefCountClass entry in bp.EntityToBuild.costList) wanted.Add(entry.thingDef);
+            }
+            IReadOnlyList<Thing> frames = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame);
+            for (int i = 0; i < frames.Count; i++)
+            {
+                if (!(frames[i] is Frame frame) || frame.EntityToBuild.costList == null) continue;
+                foreach (ThingDefCountClass entry in frame.EntityToBuild.costList)
+                {
+                    if (frame.MaterialStillNeeded(entry.thingDef) > 0) wanted.Add(entry.thingDef);
+                }
+            }
+            return wanted;
+        }
+
         /// <summary>The recipe of every bill standing on a bench on <paramref name="map"/> that is not
         /// suspended.</summary>
         private static List<RecipeDef> StandingBillRecipes(Map.Map map)

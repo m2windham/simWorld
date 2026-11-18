@@ -283,6 +283,13 @@ namespace SimWorld.Map
         public void ExposeData()
         {
             Scribe_Values.Look(ref uniqueID, "uniqueID", -1);
+            // RimWorld never hands a loaded map's id out again: Map.uniqueID comes from
+            // UniqueIDsManager.GetNextMapID, and the manager is saved with the game, so a load resumes the
+            // counter past every map in the save. This port keeps the counter here, beside the map, so a load
+            // moves it past each map it reads — the same step Thing.ExposeData takes for thing ids. Left behind,
+            // the next map made would take a loaded map's id, and with it that map's WildPlantSpawner and
+            // WildAnimalSpawner seeds and its lords' graph seeds.
+            if (Scribe.mode == LoadSaveMode.LoadingVars && uniqueID >= nextMapId) nextMapId = uniqueID + 1;
             Scribe_Values.Look(ref tile, "tile", -1);
             Scribe_Values.Look(ref outdoorTemperature, "outdoorTemperature", 21f);
 
