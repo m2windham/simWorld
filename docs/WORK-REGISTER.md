@@ -1484,3 +1484,7 @@ for a windowed run.
 re-checks the next 20 cells on every cell entry (`NeedNewPath`) and replans round a cell that went solid, keeping
 the 450-tick step cap; hunters close to `executionRange` before finishing downed prey. Both close their §15 open
 items. Still open: destination-moved and near-goal reachability replans, the hunt's 5000-tick give-up.
+
+2026-11-18 (snow-view, suite 3091/3091 on the branch; integration differs only in docs): snow depth rides the
+map view seam as `MapViewSnapshot.Snow` / `MapViewDelta.Snow` (`SnowLayer`, floats 0..1), versioned without a
+roll: a bump when a cell crosses a 1/16 step or changes category. Host draws it (host f30eff8, 7228e11).
