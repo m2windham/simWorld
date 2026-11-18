@@ -424,6 +424,7 @@ namespace SimWorld.MindState
         public void MindStateTick()
         {
             mentalStateHandler.MentalStateHandlerTick();
+            Pawns.ManhunterRecovery.CheckRecover(pawn);
             mentalBreaker.MentalBreakerTick();
         }
 

@@ -460,6 +460,72 @@ namespace SimWorld.Tests.AI
             Assert.True(byExpert * 3 < byNovice, $"expert {byExpert} vs novice {byNovice} over 3000 wounds each");
         }
 
+        /// <summary>
+        /// A grudge is RimWorld's manhunter state, and that state ends the moment the animal is downed (wiki,
+        /// Manhunter: "ends ... when it is downed"; the port's own <c>recoverFromDowned</c>). Before, a
+        /// muffalo knocked down by the hunter it charged lay there still "angry", the hunt givers refused to
+        /// finish it, and it got up hours later still carrying the grudge.
+        /// </summary>
+        [Fact]
+        public void A_grudge_ends_when_the_animal_is_downed_and_does_not_come_back_when_it_stands()
+        {
+            CoreMap map = NewMap(10, 10);
+            Pawn hunter = SpawnHunter(map, new IntVec3(0, 0, 0));
+            Pawn muffalo = SpawnAnimal(map, Muffalo, new IntVec3(5, 0, 5), "Muffalo");
+            muffalo.mindState.angryAt = hunter;
+            muffalo.mindState.angryUntilTick = Find.TickManager.TicksGame + ManhunterRecovery.MinTicksBeforeRecovery;
+            Assert.True(HuntUtility.IsAngry(muffalo));
+
+            muffalo.health.ForceDowned = true;
+            RunTicks(1, muffalo);
+            Assert.False(HuntUtility.IsAngry(muffalo), "a downed animal is no longer manhunting");
+
+            muffalo.health.ForceDowned = false;
+            RunTicks(1, muffalo);
+            Assert.False(HuntUtility.IsAngry(muffalo), "standing up again does not bring the grudge back");
+            Assert.True(HuntUtility.IsSafeToHunt(hunter, muffalo), "it is prey again");
+        }
+
+        /// <summary>
+        /// Revenge is RimWorld's <c>TryStartMentalState</c>, which refuses a downed pawn: shooting prey that is
+        /// already down can never turn it.
+        /// </summary>
+        [Fact]
+        public void A_downed_animal_is_never_provoked()
+        {
+            CoreMap map = NewMap(8, 8);
+            Pawn hunter = SpawnHunter(map, new IntVec3(0, 0, 0));
+            Pawn muffalo = SpawnAnimal(map, Muffalo, new IntVec3(3, 0, 3), "Muffalo");
+            muffalo.health.ForceDowned = true;
+
+            Assert.Equal(0, ProvokeCount(muffalo, hunter, 2000));
+        }
+
+        /// <summary>
+        /// A provoked animal stays angry for hours, not a day: at least RimWorld's 10,000-tick manhunter
+        /// minimum, then a mean 18,000 more (wiki, Manhunter). It used to be a flat 60,000.
+        /// </summary>
+        [Fact]
+        public void A_provoked_animal_stays_angry_for_hours_not_a_whole_day()
+        {
+            CoreMap map = NewMap(8, 8);
+            Pawn hunter = SpawnHunter(map, new IntVec3(0, 0, 0));
+            Pawn muffalo = SpawnAnimal(map, Muffalo, new IntVec3(3, 0, 3), "Muffalo");
+
+            var durations = new List<int>();
+            for (int i = 0; i < 20000 && durations.Count < 200; i++)
+            {
+                muffalo.mindState.angryAt = null;
+                muffalo.mindState.angryUntilTick = -1;
+                if (HuntUtility.TryProvokeRevenge(muffalo, hunter))
+                    durations.Add(muffalo.mindState.angryUntilTick - Find.TickManager.TicksGame);
+            }
+            Assert.Equal(200, durations.Count);
+            Assert.All(durations, d => Assert.True(d >= ManhunterRecovery.MinTicksBeforeRecovery));
+            double mean = durations.Average();
+            Assert.InRange(mean, 20000, 36000);
+        }
+
         // ---- end to end, through the real work-giver path ----
 
         [Fact]

@@ -59,7 +59,7 @@ namespace SimWorld.Tests.AI
         private static void Anger(Pawn animal, Pawn at)
         {
             animal.mindState.angryAt = at;
-            animal.mindState.angryUntilTick = Find.TickManager.TicksGame + AnimalTuning.TameFailAngerDurationTicks;
+            animal.mindState.angryUntilTick = Find.TickManager.TicksGame + ManhunterRecovery.MinTicksBeforeRecovery;
         }
 
         private static bool IsAttackOn(Job? job, Pawn target) =>
