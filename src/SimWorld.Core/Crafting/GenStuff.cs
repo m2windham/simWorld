@@ -65,14 +65,30 @@ namespace SimWorld.Crafting
             return fallback;
         }
 
+        /// <summary>Whether a whole <paramref name="def"/>'s worth of <paramref name="stuff"/> lies on the map
+        /// that no blueprint or frame already placed is still waiting for. Without the second half one planner
+        /// pass laid three steel beds on one bed's worth of steel, and two of them waited for steel forever:
+        /// nothing on the map makes it, unlike wood, which a builder fells a tree for.</summary>
         private static bool HasOnMap(Map.Map map, ThingDef def, ThingDef stuff)
         {
             int need = def.CostListCountFor(stuff, stuff);
             int have = 0;
             IReadOnlyList<Things.Thing> stacks = map.listerThings.ThingsOfDef(stuff);
-            for (int i = 0; i < stacks.Count && have < need; i++)
+            for (int i = 0; i < stacks.Count; i++)
             {
                 if (stacks[i].Spawned) have += stacks[i].stackCount;
+            }
+            if (have < need) return false;
+
+            IReadOnlyList<Things.Thing> blueprints = map.listerThings.ThingsInGroup(Map.ThingRequestGroup.Blueprint);
+            for (int i = 0; i < blueprints.Count; i++)
+            {
+                if (blueprints[i] is Building.Blueprint bp) have -= bp.ThingCountNeeded(stuff);
+            }
+            IReadOnlyList<Things.Thing> frames = map.listerThings.ThingsInGroup(Map.ThingRequestGroup.BuildingFrame);
+            for (int i = 0; i < frames.Count; i++)
+            {
+                if (frames[i] is Building.Frame frame) have -= frame.MaterialStillNeeded(stuff);
             }
             return have >= need;
         }

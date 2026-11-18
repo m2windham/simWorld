@@ -61,7 +61,10 @@ namespace SimWorld.Tests.Crafting
 
             var blueprint = (Blueprint)GenSpawn.Spawn(ThingMaker.MakeThing(GenConstruct.BlueprintDefFor(bench)!), cell, map);
             Frame frame = blueprint.ReplaceWithFrame();
-            Assert.True(frame.MaterialsFullySatisfied(), "a bench with no costList needs nothing delivered");
+            // Made from stuff (Buildings_Production.xml): its costStuffCount of the default stuff, wood.
+            Assert.False(frame.MaterialsFullySatisfied(), "a stuff-built bench needs its stuff delivered");
+            foreach (global::SimWorld.Crafting.ThingDefCountClass cost in frame.TotalMaterialCost()) frame.AddMaterial(cost.thingDef, cost.count);
+            Assert.True(frame.MaterialsFullySatisfied());
 
             Pawn builder = NewHuman("builder");
             GenSpawn.Spawn(builder, new IntVec3(1, 0, 1), map);

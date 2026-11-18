@@ -241,7 +241,7 @@ namespace SimWorld.Tests.Building
 
             // The existing construction pipeline raises it: blueprint, frame, materials, finished building.
             Frame frame = planned.ReplaceWithFrame();
-            foreach (global::SimWorld.Crafting.ThingDefCountClass cost in ResearchWorkDefOf.ResearchBench.costList!)
+            foreach (global::SimWorld.Crafting.ThingDefCountClass cost in frame.TotalMaterialCost())
             {
                 frame.AddMaterial(cost.thingDef, cost.count);
             }

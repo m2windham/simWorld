@@ -97,7 +97,8 @@ namespace SimWorld.Tests.Research
             Frame frame = blueprint.ReplaceWithFrame();
             Assert.False(frame.MaterialsFullySatisfied());
 
-            frame.AddMaterial(Def("WoodLog"), 10);
+            // Made from stuff: its costStuffCount of wood, the default stuff (Buildings_Research.xml).
+            frame.AddMaterial(Def("WoodLog"), frame.MaterialStillNeeded(Def("WoodLog")));
             Assert.True(frame.MaterialsFullySatisfied());
 
             Thing built = frame.CompleteConstruction(NewHuman());

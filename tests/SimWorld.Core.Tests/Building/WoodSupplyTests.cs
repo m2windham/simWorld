@@ -198,13 +198,13 @@ namespace SimWorld.Tests.Building
             Pawn second = SpawnBuilder(map, new IntVec3(1, 0, 3), "Second");
             SpawnTree(map, new IntVec3(10, 0, 10));
             SpawnTree(map, new IntVec3(14, 0, 14));
-            SpawnBlueprint(map, new IntVec3(4, 0, 4), "Bed"); // needs less wood than one grown tree yields
+            SpawnBlueprint(map, new IntVec3(4, 0, 4), "Door"); // needs less wood than one grown tree yields
 
             Job? job = ChopJobFor(first);
             Assert.NotNull(job);
             first.jobs.StartJob(job!);
 
-            // One tree coming down covers the bed, so a second builder is not sent to fell another.
+            // One tree coming down covers the door, so a second builder is not sent to fell another.
             Assert.True(WorkGiver_ConstructChopWood.WoodShortfall(map, Wood) <= 0);
             Assert.Null(ChopJobFor(second));
         }
@@ -249,6 +249,7 @@ namespace SimWorld.Tests.Building
             CoreMap map = NewMap(16, 16);
             Pawn builder = SpawnBuilder(map, new IntVec3(1, 0, 1));
             SpawnTree(map, new IntVec3(10, 0, 10));
+            SpawnTree(map, new IntVec3(12, 0, 10)); // a bed's 45 wood is more than one poplar's yield
             SpawnBlueprint(map, new IntVec3(4, 0, 4), "Bed");
             Assert.Empty(map.listerThings.ThingsOfDef(Wood));
 

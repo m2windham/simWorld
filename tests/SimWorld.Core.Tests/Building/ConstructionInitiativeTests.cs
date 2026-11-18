@@ -342,7 +342,7 @@ namespace SimWorld.Tests.Building
             GenSpawn.Spawn(citizen, new IntVec3(0, 0, 0), map);
 
             Thing wood = ThingMaker.MakeThing(Def("WoodLog"));
-            wood.stackCount = 40;
+            wood.stackCount = 75; // a bed's costStuffCount of wood and two walls' worth
             GenSpawn.Spawn(wood, new IntVec3(1, 0, 1), map);
 
             // Places this tick's blueprints (bed target 1, wall target clamps to 4, cap 3): a Blueprint_Bed

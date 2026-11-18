@@ -96,6 +96,24 @@ namespace SimWorld.Tests.Building
             Assert.Null(GenStuff.AffordableStuffFor(both, Def("StorageHut"))); // not made from stuff
         }
 
+        /// <summary>Stuff already promised to a blueprint is not on hand for the next one: one bed's worth of
+        /// steel and no wood makes one steel bed, and the second asks for wood rather than waiting forever on
+        /// steel nothing on the map will make.</summary>
+        [Fact]
+        public void A_second_planner_pass_does_not_spend_stuff_a_blueprint_already_waits_for()
+        {
+            CoreMap map = NewMap();
+            ThingDef bed = Def("Bed");
+            SpawnStack(map, Steel, bed.costStuffCount, new IntVec3(1, 0, 1));
+            Assert.Same(Steel, GenStuff.AffordableStuffFor(map, bed));
+
+            var first = (Blueprint)ThingMaker.MakeThing(GenConstruct.BlueprintDefFor(bed)!);
+            first.stuffToUse = Steel;
+            GenSpawn.Spawn(first, new IntVec3(10, 0, 10), map);
+
+            Assert.Same(Wood, GenStuff.AffordableStuffFor(map, bed));
+        }
+
         /// <summary>The works initiative raises its research bench out of what the settlement has: with no wood
         /// and a bench's worth of steel, a steel bench, not a wooden one nobody can supply.</summary>
         [Fact]
