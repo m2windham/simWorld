@@ -1504,3 +1504,14 @@ makers). Patch tables are the port's reconstruction, marked in the XML; RimWorld
 need a source. Quakes rebuild only the settlement's own buildings. A delta carries a new snow layer at most once
 per 60 ticks; the final state is still owed and sent. Benches 10/10; seven seeds: none stalled, 2024 unchanged
 (desert), 20/12345 down 4 from a different incident draw. Open: quake letters still count fallen ruin walls.
+
+2026-11-18 (harm-memory, suite 3129/3129 on integration): `HarmedMe` (-15, 10 days, humanlike harm that isn't
+an enemy's); revenge rolled in `Pawn_MindState.Notify_DamageTaken` on any humanlike harm, with a recalled distance
+factor; herd joining (24 cells, 0.5, only with big threats allowed); hunts fail 5000 ticks after starting. Benches
+10/10; seven seeds 169 alive as before, 96 houses against 98, 2024 slower not stalled. Untraced: one bite death on
+seed 2024 day 15.
+
+Held, not merged: `stuff-buildings` (core-dwell eab6c79, a7075bb, suite 3132/3132). Doors, beds and benches cost
+stuff as in RimWorld (bed 8 -> 45 wood, door 4 -> 25, benches 75). Host seed 10 -> 7 houses at day 1, delta
+10 -> 5 (10 by tick 90000); desert seed 2024 builds no dwelling in 60 days, because this port's own rule that
+houses wait for every citizen's dormitory bed meets 45-wood beds on a map with almost no wood. Needs Doug's call.
