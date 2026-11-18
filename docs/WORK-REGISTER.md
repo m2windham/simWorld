@@ -1497,3 +1497,10 @@ starvation). Host draws real snow from the seam (host b90e76c, d2cfc5d), throttl
 snow version bumps almost every tick in a storm. Open: the core rebuilds a 40000-float snow list per delta during
 snowfall; rich soil is nearly absent without `terrainPatchMakers`; earthquakes still rebuild ruin walls; doors,
 beds and benches not stuff-built; no stuff choice in `MapCommands`.
+
+2026-11-18 (patch-makers, suite 3120/3120 on the branch; integration differs only in docs): `terrainPatchMakers`
+ported (forests 4-7% rich soil again; the swampiness marsh stand-in is gone, swamps lay marsh through patch
+makers). Patch tables are the port's reconstruction, marked in the XML; RimWorld's real per-biome tables still
+need a source. Quakes rebuild only the settlement's own buildings. A delta carries a new snow layer at most once
+per 60 ticks; the final state is still owed and sent. Benches 10/10; seven seeds: none stalled, 2024 unchanged
+(desert), 20/12345 down 4 from a different incident draw. Open: quake letters still count fallen ruin walls.
