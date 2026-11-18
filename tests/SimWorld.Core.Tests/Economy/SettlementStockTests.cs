@@ -622,9 +622,12 @@ namespace SimWorld.Tests.Economy
             // whether the haul beat the table was a race this test used to win only because most of the band
             // was founded sealed in a rock pocket with nothing else to do. Masonry is what the table waits on.
             // A band founded on open ground sows its first fields before it hauls loose stone: on this seed
-            // the first chunks are banked a little over a day in.
+            // the first chunks are banked a day and a half in. The window was 90,000 ticks with banking at about
+            // 73,000; porting RimWorld's per-race hunting revenge put one provoked muffalo on this seed's first
+            // morning (no one hurt), the band's day slid, and banking moved to about 92,000. Two days is the
+            // bound now, so a schedule that shifts by hours does not read as a band that never hauls.
             int peakChunksBanked = 0;
-            for (int i = 0; i < 90000 && settlement.StoreCountOf(Chunk) == 0; i++) game.TickManager.DoSingleTick();
+            for (int i = 0; i < 2 * GenDate.TicksPerDay && settlement.StoreCountOf(Chunk) == 0; i++) game.TickManager.DoSingleTick();
             Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("Masonry"));
             for (int i = 0; i < 14000; i++)
             {
