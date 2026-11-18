@@ -21,14 +21,9 @@ namespace SimWorld.MapGen
 
         // ---- Terrain (GenStep_Terrain) ----
 
-        /// <summary>At/above this <see cref="Tile.swampiness"/>, ground reads as boggy enough for Marsh/MarshyTerrain rather than ordinary soil.</summary>
-        public const float MarshSwampinessFloor = 0.3f;
-
-        /// <summary>Within the swampy band, fertility at/above this reads as true Marsh; below it, the drier MarshyTerrain.</summary>
-        public const float MarshFertilityFloor = 0.5f;
-
-        // The fertility ladder (SoilRich / Soil / Gravel, and the arid all-Sand rule) that used to live here is
-        // gone: GenStep_Terrain reads each biome's own terrainsByFertility bands, as RimWorld does.
+        // The fertility ladder (SoilRich / Soil / Gravel, and the arid all-Sand rule) and the swampiness marsh
+        // stand-in that used to live here are gone: GenStep_Terrain reads each biome's own terrainPatchMakers and
+        // terrainsByFertility, as RimWorld does.
 
         /// <summary>Map cells of river width per world-scale <see cref="RiverDef.widthOnWorld"/> unit.</summary>
         public const float RiverWidthCellsPerWorldUnit = 3f;

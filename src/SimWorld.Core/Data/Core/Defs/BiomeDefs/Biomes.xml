@@ -11,14 +11,32 @@
     raw-noise fertility units, about -1..1; GenStep_Terrain maps this port's 0..1 grid back to them. What is
     recalled from RimWorld and what is not:
       - The forest and wetland biomes' Soil below 0.87, SoilRich above it: recalled as RimWorld's
-        TemperateForest table, and used for every biome whose own table was not recalled differently. The
-        wetlands' marsh comes from tile swampiness in GenStep_Terrain, standing in for RimWorld's
-        terrainPatchMakers, which are not ported.
+        TemperateForest table, and used for every biome whose own table was not recalled differently. On
+        this port's fertility grid a cell almost never reaches 0.87, so, as in RimWorld, rich soil comes
+        from the patch makers below.
       - Ice everywhere on SeaIce and IceSheet, and Sand everywhere on ExtremeDesert: recalled in shape.
       - Tundra, AridShrubland and Desert bands: this port's own, ordered as RimWorld's are (barest ground at
         the lowest fertility), with the cut points chosen, not sourced. Pinned by MapGen tests as shares of
         a map, not as these literals.
     Ocean and Lake carry none: no settlement map is generated on them.
+
+    terrainPatchMakers (RimWorld: BiomeDef.terrainPatchMakers / TerrainPatchMaker, read by GenStep_Terrain
+    before the fertility bands, first match wins). Patch noise is sampled at cell coordinates, so
+    perlinFrequency is per cell; minFertility/maxFertility are in the same raw units as the bands. What is
+    recalled and what is not:
+      - The mechanism and the class defaults (frequency 0.01, lacunarity 2, persistence 0.5, 6 octaves,
+        fertility window -999..999): recalled from RimWorld's TerrainPatchMaker.
+      - perlinFrequency 0.027 on the forest makers: recalled, low confidence.
+      - Everything else is this port's own. The layers are shaped as RimWorld's forests and wetlands read
+        in play (rich-soil patches on the fertile half of a forest; small marshy hollows with mud at their
+        heart; wetlands of marshy soil, marsh and standing shallow water), and the cut points were chosen
+        to give, on 200x200 maps: forest rich soil about 4-7% (the share the old fertility ladder gave
+        before terrainsByFertility), forest hollows about 1-4%, wetland marsh plus water about 15-35%. The
+        three forests share one table, the three wetlands another, because no biome's own was recalled.
+        Pinned by MapGen tests as shares of a map, not as these literals.
+      - Tundra, Desert and ExtremeDesert carry none; the ice biomes neither. AridShrubland's small rich
+        soil patches on its fertile ground are this port's own.
+    Tile swampiness is not read by map generation: it picks the wetland biome, whose makers lay the marsh.
   -->
 
   <BiomeDef>
@@ -116,6 +134,22 @@
       <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
       <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
     </terrainsByFertility>
+    <terrainPatchMakers>
+      <li>
+        <perlinFrequency>0.027</perlinFrequency>
+        <minFertility>0</minFertility>
+        <thresholds>
+          <li><terrain>SoilRich</terrain><min>0.35</min><max>999</max></li>
+        </thresholds>
+      </li>
+      <li>
+        <perlinFrequency>0.027</perlinFrequency>
+        <thresholds>
+          <li><terrain>MarshyTerrain</terrain><min>0.55</min><max>0.65</max></li>
+          <li><terrain>Mud</terrain><min>0.65</min><max>999</max></li>
+        </thresholds>
+      </li>
+    </terrainPatchMakers>
   </BiomeDef>
 
   <BiomeDef>
@@ -133,6 +167,23 @@
       <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
       <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
     </terrainsByFertility>
+    <terrainPatchMakers>
+      <li>
+        <perlinFrequency>0.013</perlinFrequency>
+        <thresholds>
+          <li><terrain>MarshyTerrain</terrain><min>0</min><max>0.2</max></li>
+          <li><terrain>Marsh</terrain><min>0.2</min><max>0.45</max></li>
+          <li><terrain>WaterShallow</terrain><min>0.45</min><max>999</max></li>
+        </thresholds>
+      </li>
+      <li>
+        <perlinFrequency>0.027</perlinFrequency>
+        <minFertility>0</minFertility>
+        <thresholds>
+          <li><terrain>SoilRich</terrain><min>0.35</min><max>999</max></li>
+        </thresholds>
+      </li>
+    </terrainPatchMakers>
   </BiomeDef>
 
   <BiomeDef>
@@ -150,6 +201,22 @@
       <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
       <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
     </terrainsByFertility>
+    <terrainPatchMakers>
+      <li>
+        <perlinFrequency>0.027</perlinFrequency>
+        <minFertility>0</minFertility>
+        <thresholds>
+          <li><terrain>SoilRich</terrain><min>0.35</min><max>999</max></li>
+        </thresholds>
+      </li>
+      <li>
+        <perlinFrequency>0.027</perlinFrequency>
+        <thresholds>
+          <li><terrain>MarshyTerrain</terrain><min>0.55</min><max>0.65</max></li>
+          <li><terrain>Mud</terrain><min>0.65</min><max>999</max></li>
+        </thresholds>
+      </li>
+    </terrainPatchMakers>
   </BiomeDef>
 
   <BiomeDef>
@@ -167,6 +234,23 @@
       <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
       <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
     </terrainsByFertility>
+    <terrainPatchMakers>
+      <li>
+        <perlinFrequency>0.013</perlinFrequency>
+        <thresholds>
+          <li><terrain>MarshyTerrain</terrain><min>0</min><max>0.2</max></li>
+          <li><terrain>Marsh</terrain><min>0.2</min><max>0.45</max></li>
+          <li><terrain>WaterShallow</terrain><min>0.45</min><max>999</max></li>
+        </thresholds>
+      </li>
+      <li>
+        <perlinFrequency>0.027</perlinFrequency>
+        <minFertility>0</minFertility>
+        <thresholds>
+          <li><terrain>SoilRich</terrain><min>0.35</min><max>999</max></li>
+        </thresholds>
+      </li>
+    </terrainPatchMakers>
   </BiomeDef>
 
   <BiomeDef>
@@ -184,6 +268,22 @@
       <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
       <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
     </terrainsByFertility>
+    <terrainPatchMakers>
+      <li>
+        <perlinFrequency>0.027</perlinFrequency>
+        <minFertility>0</minFertility>
+        <thresholds>
+          <li><terrain>SoilRich</terrain><min>0.35</min><max>999</max></li>
+        </thresholds>
+      </li>
+      <li>
+        <perlinFrequency>0.027</perlinFrequency>
+        <thresholds>
+          <li><terrain>MarshyTerrain</terrain><min>0.55</min><max>0.65</max></li>
+          <li><terrain>Mud</terrain><min>0.65</min><max>999</max></li>
+        </thresholds>
+      </li>
+    </terrainPatchMakers>
   </BiomeDef>
 
   <BiomeDef>
@@ -201,6 +301,23 @@
       <li><terrain>Soil</terrain><min>-999</min><max>0.87</max></li>
       <li><terrain>SoilRich</terrain><min>0.87</min><max>999</max></li>
     </terrainsByFertility>
+    <terrainPatchMakers>
+      <li>
+        <perlinFrequency>0.013</perlinFrequency>
+        <thresholds>
+          <li><terrain>MarshyTerrain</terrain><min>0</min><max>0.2</max></li>
+          <li><terrain>Marsh</terrain><min>0.2</min><max>0.45</max></li>
+          <li><terrain>WaterShallow</terrain><min>0.45</min><max>999</max></li>
+        </thresholds>
+      </li>
+      <li>
+        <perlinFrequency>0.027</perlinFrequency>
+        <minFertility>0</minFertility>
+        <thresholds>
+          <li><terrain>SoilRich</terrain><min>0.35</min><max>999</max></li>
+        </thresholds>
+      </li>
+    </terrainPatchMakers>
   </BiomeDef>
 
   <BiomeDef>
@@ -219,6 +336,15 @@
       <li><terrain>Gravel</terrain><min>-0.45</min><max>0</max></li>
       <li><terrain>Soil</terrain><min>0</min><max>999</max></li>
     </terrainsByFertility>
+    <terrainPatchMakers>
+      <li>
+        <perlinFrequency>0.027</perlinFrequency>
+        <minFertility>0.2</minFertility>
+        <thresholds>
+          <li><terrain>SoilRich</terrain><min>0.35</min><max>999</max></li>
+        </thresholds>
+      </li>
+    </terrainPatchMakers>
   </BiomeDef>
 
   <BiomeDef>

@@ -105,7 +105,8 @@ namespace SimWorld.Tests.MapGen
         [Fact]
         public void The_ground_a_tile_can_be_made_of_is_its_biomes_bands()
         {
-            Assert.Equal(new[] { "Sand", "Gravel", "Soil" },
+            // Patch ground first (BiomeDef.terrainPatchMakers, consulted first), then the bands.
+            Assert.Equal(new[] { "SoilRich", "Sand", "Gravel", "Soil" },
                 GenStep_Terrain.BaseTerrainsFor(MakeTile("AridShrubland", rainfall: 200f)).Select(t => t.defName));
             Assert.Equal(new[] { "Sand" },
                 GenStep_Terrain.BaseTerrainsFor(MakeTile("ExtremeDesert", rainfall: 50f)).Select(t => t.defName));
