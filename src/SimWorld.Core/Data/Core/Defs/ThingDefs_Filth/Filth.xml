@@ -46,6 +46,7 @@
       <Beauty>-8</Beauty>
     </statBases>
     <filth>
+      <rainWashes>true</rainWashes>
       <maxThickness>3</maxThickness>
       <cleaningWorkToReduceThickness>40</cleaningWorkToReduceThickness>
       <!--
@@ -75,6 +76,7 @@
       <Beauty>-12</Beauty>
     </statBases>
     <filth>
+      <rainWashes>true</rainWashes>
       <maxThickness>3</maxThickness>
       <cleaningWorkToReduceThickness>40</cleaningWorkToReduceThickness>
       <!-- Dries and flakes away on its own; dirt does not. Rolled per pile, so a massacre's worth of blood
@@ -93,6 +95,7 @@
       <Beauty>-16</Beauty>
     </statBases>
     <filth>
+      <rainWashes>true</rainWashes>
       <maxThickness>2</maxThickness>
       <cleaningWorkToReduceThickness>60</cleaningWorkToReduceThickness>
       <disappearsInDays>6~10</disappearsInDays>

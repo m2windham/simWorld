@@ -22,6 +22,10 @@
     <stackLimit>1</stackLimit>
     <thingCategories><li>Manufactured</li></thingCategories>
     <hasQuality>true</hasQuality>
+    <statBases>
+      <!-- RimWorld's ApparelBase value as recalled; see Stats_Deterioration.xml. -->
+      <DeteriorationRate>2</DeteriorationRate>
+    </statBases>
     <comps>
       <li Class="SimWorld.Things.CompProperties_Quality" />
     </comps>

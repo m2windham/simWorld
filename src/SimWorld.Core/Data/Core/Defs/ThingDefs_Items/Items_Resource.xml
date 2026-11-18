@@ -19,7 +19,7 @@
     <thingCategories><li>ResourcesRaw</li></thingCategories>
     <stackLimit>75</stackLimit>
     <resourceReadoutPriority>First</resourceReadoutPriority>
-    <statBases><MarketValue>1.2</MarketValue></statBases>
+    <statBases><MarketValue>1.2</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
     <stuffProps>
       <categories><li>Woody</li></categories>
       <commonality>1.2</commonality>
@@ -65,7 +65,7 @@
     <thingCategories><li>Textiles</li></thingCategories>
     <stackLimit>100</stackLimit>
     <resourceReadoutPriority>Middle</resourceReadoutPriority>
-    <statBases><MarketValue>1.5</MarketValue></statBases>
+    <statBases><MarketValue>1.5</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
     <stuffProps>
       <categories><li>Fabric</li></categories>
       <commonality>1</commonality>

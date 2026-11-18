@@ -31,6 +31,11 @@ namespace SimWorld.Map
         /// not). Read by <see cref="Weather.SnowGrid"/>.</summary>
         public bool holdSnow = true;
 
+        /// <summary>Added to the factor items on this terrain deteriorate by (RimWorld:
+        /// <c>TerrainDef.extraDeteriorationFactor</c>, default 0). Read by
+        /// <see cref="Weather.SteadyEnvironmentEffects.FinalDeteriorationRate"/>.</summary>
+        public float extraDeteriorationFactor;
+
         /// <summary>Removing the top layer (e.g. mining a floor) reveals the terrain beneath instead of bare ground.</summary>
         public TerrainDef? underTerrain;
 

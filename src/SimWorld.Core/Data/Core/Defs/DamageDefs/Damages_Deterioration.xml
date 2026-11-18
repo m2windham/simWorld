@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The damage weather does to things left outside (RimWorld: DamageDefOf.Deterioration). It never harms a
+    pawn's health - SteadyEnvironmentEffects only deals it to items - so it carries no hediff. Its own file
+    for the usual reason (CLAUDE.md). Bound by SimWorld.Weather.DeteriorationDefOf.
+  -->
+
+  <DamageDef>
+    <defName>Deterioration</defName>
+    <label>deterioration</label>
+    <harmsHealth>false</harmsHealth>
+    <makesBlood>false</makesBlood>
+    <hasForcefulImpact>false</hasForcefulImpact>
+  </DamageDef>
+
+</Defs>

@@ -99,6 +99,8 @@
     <passability>Standable</passability>
     <water>true</water>
     <holdSnow>false</holdSnow>
+    <!-- RimWorld's shallow water rots what is dropped in it; 3 is recalled, unverified (SteadyEnvironmentEffects). -->
+    <extraDeteriorationFactor>3</extraDeteriorationFactor>
     <affordances>
       <li>Bridgeable</li>
     </affordances>
@@ -124,6 +126,8 @@
     <passability>Standable</passability>
     <water>true</water>
     <holdSnow>false</holdSnow>
+    <!-- RimWorld's shallow water rots what is dropped in it; 3 is recalled, unverified (SteadyEnvironmentEffects). -->
+    <extraDeteriorationFactor>3</extraDeteriorationFactor>
     <affordances>
       <li>Bridgeable</li>
     </affordances>

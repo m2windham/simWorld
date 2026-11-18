@@ -36,6 +36,7 @@
       <MarketValue>10</MarketValue>
       <MedicalPotency>0.6</MedicalPotency>
       <MedicalQualityMax>0.7</MedicalQualityMax>
+      <DeteriorationRate>2</DeteriorationRate>
     </statBases>
   </ThingDef>
 
@@ -52,6 +53,7 @@
       <MarketValue>18</MarketValue>
       <MedicalPotency>1.0</MedicalPotency>
       <MedicalQualityMax>1.0</MedicalQualityMax>
+      <DeteriorationRate>2</DeteriorationRate>
     </statBases>
   </ThingDef>
 
