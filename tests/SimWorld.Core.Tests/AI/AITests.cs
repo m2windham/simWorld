@@ -348,6 +348,27 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
+        public void A_wall_raised_on_the_next_cell_stops_a_walker_within_one_capped_step()
+        {
+            // The host's default game: a ring wall went up on the cell a hauler was about to step into, and
+            // the impassable cost (10000) was charged as walking time, so the hauler stood still with its
+            // wood for most of a day. RimWorld caps one cell's move at 450 ticks
+            // (Pawn_PathFollower.CostToMoveIntoCell), so the walker finds the wall and gives up quickly.
+            CoreMap map = NewMap(10, 1);
+            Pawn pawn = SpawnHuman(map, new IntVec3(0, 0, 0));
+            pawn.pather.StartPath(new IntVec3(9, 0, 0), PathEndMode.OnCell);
+            for (int i = 0; i < 200 && pawn.Position.x < 1; i++) pawn.pather.PatherTick();
+            Assert.Equal(new IntVec3(1, 0, 0), pawn.Position);
+
+            GenSpawn.Spawn(ThingMaker.MakeThing(DefDatabase<ThingDef>.GetNamed("Wall")), new IntVec3(3, 0, 0), map);
+            for (int i = 0; i < 500 && pawn.pather.Moving; i++) pawn.pather.PatherTick();
+
+            Assert.Equal(new IntVec3(2, 0, 0), pawn.Position);
+            Assert.False(pawn.pather.Moving, "The walker should have found the wall within one capped step.");
+            Assert.True(pawn.pather.Failed);
+        }
+
+        [Fact]
         public void Steady_state_pather_ticking_allocates_nothing()
         {
             CoreMap map = NewMap(300, 300);

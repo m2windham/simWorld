@@ -18,6 +18,10 @@ namespace SimWorld.AI
         /// <summary>√2, RimWorld's own scaling from a cardinal move cost to a diagonal one.</summary>
         private const float DiagonalMoveFactor = 1.41421356f;
 
+        /// <summary>The most one cell's move can take (RimWorld: the 450 clamp in
+        /// <c>Pawn_PathFollower.CostToMoveIntoCell</c>).</summary>
+        private const int MaxTicksPerCell = 450;
+
         private readonly Pawn pawn;
         private PawnPath? curPath;
         private LocalTargetInfo destination = LocalTargetInfo.Invalid;
@@ -152,7 +156,10 @@ namespace SimWorld.AI
             int baseCost = diagonal ? TicksPerMoveDiagonal : TicksPerMoveCardinal;
             // The real cost, not the perceived one (RimWorld: CostToMoveIntoCell reads
             // CalculatedCostAt(c, perceivedStatic: false)) — a fire is something to route round, not mud.
-            return baseCost + pawn.Map!.pathGrid.CalculatedCostAt(next);
+            // Capped at one step's worth, as RimWorld caps it (CostToMoveIntoCell: num > 450 -> 450). Uncapped,
+            // a wall raised on the next cell after the path was planned charged its impassable cost (10000)
+            // as walking time, and the walker stood frozen most of a day before PatherTick saw the wall.
+            return Math.Min(MaxTicksPerCell, baseCost + pawn.Map!.pathGrid.CalculatedCostAt(next));
         }
 
         public void ExposeData()
