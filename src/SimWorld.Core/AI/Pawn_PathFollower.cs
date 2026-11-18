@@ -22,6 +22,11 @@ namespace SimWorld.AI
         /// <c>Pawn_PathFollower.CostToMoveIntoCell</c>).</summary>
         private const int MaxTicksPerCell = 450;
 
+        /// <summary>How many cells ahead <see cref="NeedNewPath"/> looks for something that has gone solid since
+        /// the path was planned (RimWorld: the 20 in <c>Pawn_PathFollower.NeedNewPath</c>'s look-ahead loop;
+        /// recalled, not sourced).</summary>
+        private const int NeedNewPathLookAheadCells = 20;
+
         private readonly Pawn pawn;
         private PawnPath? curPath;
         private LocalTargetInfo destination = LocalTargetInfo.Invalid;
@@ -126,8 +131,7 @@ namespace SimWorld.AI
             IntVec3 next = curPath.Peek(0);
             if (!pawn.Map.pathGrid.Walkable(next))
             {
-                Failed = true;
-                StopDead();
+                PatherFailed();
                 return;
             }
 
@@ -140,12 +144,81 @@ namespace SimWorld.AI
             curPath.ConsumeNextNode();
             if (curPath.Finished)
             {
-                curPath.ReleaseToPool();
-                curPath = null;
-                moving = false;
+                PatherArrived();
                 return;
             }
+
+            // RimWorld: TryEnterNextPathCell asks NeedNewPath on every cell it enters and replans through
+            // TrySetNewPath (which fails the pather itself when no route is left). Without it a wall finished
+            // a few cells ahead was only found by walking up to it.
+            if (NeedNewPath() && !TrySetNewPath()) return;
+            if (curPath == null) return; // the new path started on an acceptable cell: arrived
             ticksLeftThisCell = CostToNextCell();
+        }
+
+        /// <summary>
+        /// Whether the path ahead has stopped being walkable since it was planned (RimWorld:
+        /// <c>Pawn_PathFollower.NeedNewPath</c>'s look-ahead over the next
+        /// <see cref="NeedNewPathLookAheadCells"/> nodes: an unwalkable cell, or a diagonal step whose corner
+        /// has since been walled). RimWorld's other reasons are not ported here: pawn collision, known
+        /// danger and forbidden or locked doors have no counterpart in this core (doors here are always
+        /// open), and its destination checks (target moved, target gone, region-heuristic paths) are left
+        /// to the job drivers that already handle them.
+        /// </summary>
+        private bool NeedNewPath()
+        {
+            if (curPath == null || !curPath.Found || curPath.Finished) return true;
+
+            PathGrid grid = pawn.Map!.pathGrid;
+            IntVec3 previous = pawn.Position;
+            int ahead = Math.Min(NeedNewPathLookAheadCells, curPath.NodesLeftCount);
+            for (int i = 0; i < ahead; i++)
+            {
+                IntVec3 c = curPath.Peek(i);
+                if (!grid.Walkable(c)) return true;
+                // The PathFinder's own corner rule (RimWorld: PathFinder.BlocksDiagonalMovement on both
+                // corners): a diagonal step needs both cardinal neighbours open.
+                if (c.x != previous.x && c.z != previous.z
+                    && (!grid.Walkable(new IntVec3(c.x, 0, previous.z)) || !grid.Walkable(new IntVec3(previous.x, 0, c.z))))
+                {
+                    return true;
+                }
+                previous = c;
+            }
+            return false;
+        }
+
+        /// <summary>Replans from where the pawn stands to the same destination (RimWorld:
+        /// <c>Pawn_PathFollower.TrySetNewPath</c>), failing the pather when there is no route left.</summary>
+        private bool TrySetNewPath()
+        {
+            PawnPath path = pawn.Map!.pathFinder.FindPath(pawn, pawn.Position, destination, peMode);
+            if (!path.Found)
+            {
+                PatherFailed();
+                return false;
+            }
+
+            curPath?.ReleaseToPool();
+            curPath = path;
+            if (path.Finished) PatherArrived();
+            return true;
+        }
+
+        /// <summary>RimWorld: <c>Pawn_PathFollower.PatherArrived</c> — stop on reaching an acceptable cell.</summary>
+        private void PatherArrived()
+        {
+            curPath?.ReleaseToPool();
+            curPath = null;
+            moving = false;
+        }
+
+        /// <summary>RimWorld: <c>Pawn_PathFollower.PatherFailed</c> — stop, and tell the job (through
+        /// <see cref="Failed"/>, which the goto toils fail on) that the route is gone.</summary>
+        private void PatherFailed()
+        {
+            Failed = true;
+            StopDead();
         }
 
         private int CostToNextCell()
