@@ -57,6 +57,17 @@ namespace SimWorld.Map.View
         /// </summary>
         public const int ChunkSize = 32;
 
+        /// <summary>
+        /// Fewest ticks between two deltas that carry a new <see cref="SnowLayer"/>. In a storm some cell crosses
+        /// a step almost every tick, so without this a host pulling a delta per frame was handed a fresh
+        /// 40,000-float list nearly every frame — garbage it could not draw (the host redraws snow at most twice
+        /// a second). A layer once handed out is never written again (a host may hold it across deltas), so the
+        /// cost is cut by sending fewer, not by reusing one buffer. One in-game second at normal speed; this
+        /// port's own number, not RimWorld's (RimWorld draws from its live grid). Pinned by
+        /// <c>MapViewSnowTests</c> as "at most one per interval, and the last change always arrives".
+        /// </summary>
+        public const int SnowResendIntervalTicks = 60;
+
         private static long nextSessionId = 1;
 
         private readonly int chunkSize;
@@ -65,6 +76,8 @@ namespace SimWorld.Map.View
         private int terrainVersion = 1;
         private int roofVersion = 1;
         private int snowVersion = 1;
+        private bool snowSent;
+        private int snowSentTick;
 
         internal MapViewTracker(int mapSizeX, int mapSizeZ, int chunkSize = ChunkSize)
         {
@@ -163,6 +176,18 @@ namespace SimWorld.Map.View
         public void Notify_RoofChanged() => roofVersion++;
 
         public void Notify_SnowChanged() => snowVersion++;
+
+        /// <summary>Whether a delta at <paramref name="ticksGame"/> may carry a new snow layer: none has been sent
+        /// yet, or <see cref="SnowResendIntervalTicks"/> have passed since the last (or the clock went back, as a
+        /// test or a load can make it).</summary>
+        internal bool SnowSendDue(int ticksGame) =>
+            !snowSent || ticksGame < snowSentTick || ticksGame - snowSentTick >= SnowResendIntervalTicks;
+
+        internal void Notify_SnowSent(int ticksGame)
+        {
+            snowSent = true;
+            snowSentTick = ticksGame;
+        }
 
         /// <summary>
         /// A Thing entered, left or moved within the cell — called from <see cref="ThingGrid"/>, which is the

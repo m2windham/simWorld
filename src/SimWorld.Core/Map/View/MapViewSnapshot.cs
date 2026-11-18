@@ -308,7 +308,13 @@ namespace SimWorld.Map.View
 
             bool terrainChanged = resync || held!.Terrain != tracker.TerrainVersion;
             bool roofsChanged = resync || held!.Roofs != tracker.RoofVersion;
-            bool snowChanged = resync || held!.Snow != tracker.SnowVersion;
+            // Snow is throttled (MapViewTracker.SnowResendIntervalTicks): a move inside the interval is not sent,
+            // and the delta reports the version the host already holds, so the move is still owed and goes out
+            // with the first delta after the interval, including after the storm stops and nothing moves again.
+            int ticksGame = Find.TickManager.TicksGame;
+            bool snowChanged = resync || (held!.Snow != tracker.SnowVersion && tracker.SnowSendDue(ticksGame));
+            if (snowChanged) tracker.Notify_SnowSent(ticksGame);
+            int snowVersion = snowChanged ? tracker.SnowVersion : held!.Snow;
 
             return new MapViewDelta(
                 hasMap: true,
@@ -326,7 +332,7 @@ namespace SimWorld.Map.View
                 snowChanged ? BuildSnow(map, tracker) : null,
                 changed,
                 BuildPawns(map),
-                new MapViewVersions(tracker.SessionId, tracker.TerrainVersion, tracker.RoofVersion, tracker.SnowVersion, chunkVersions));
+                new MapViewVersions(tracker.SessionId, tracker.TerrainVersion, tracker.RoofVersion, snowVersion, chunkVersions));
         }
 
         // ---- layers ----

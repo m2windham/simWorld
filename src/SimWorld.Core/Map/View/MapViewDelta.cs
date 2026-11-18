@@ -116,7 +116,11 @@ namespace SimWorld.Map.View
         public RoofLayer? Roofs { get; }
 
         /// <summary>The whole snow grid, or null when no cell's snow has moved visibly since the held versions
-        /// (see <see cref="MapViewTracker.SnowVersion"/> for what counts).</summary>
+        /// (see <see cref="MapViewTracker.SnowVersion"/> for what counts) or one was sent less than
+        /// <see cref="MapViewTracker.SnowResendIntervalTicks"/> ago. In the second case
+        /// <see cref="MapViewDelta.Versions"/> keeps the snow version the host held, so the change is sent later
+        /// rather than lost. A layer is never written after it is handed out: a host may hold it as long as it
+        /// likes.</summary>
         public SnowLayer? Snow { get; }
 
         /// <summary>Only the chunks whose contents moved, each complete in itself — a host rebuilds a changed
