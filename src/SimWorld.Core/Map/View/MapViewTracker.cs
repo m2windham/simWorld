@@ -64,6 +64,7 @@ namespace SimWorld.Map.View
 
         private int terrainVersion = 1;
         private int roofVersion = 1;
+        private int snowVersion = 1;
 
         internal MapViewTracker(int mapSizeX, int mapSizeZ, int chunkSize = ChunkSize)
         {
@@ -117,6 +118,13 @@ namespace SimWorld.Map.View
         /// re-pulled 40,000 terrain cells every time a roof fell would be paying for the wrong event.</summary>
         public int RoofVersion => roofVersion;
 
+        /// <summary>Bumped when some cell's snow moves visibly: across one of <see cref="Weather.SnowGrid"/>'s
+        /// fixed depth steps or into another <see cref="Weather.SnowCategory"/> (see
+        /// <c>SnowGrid.CheckVisualOrPathCostChange</c>). Not on every write — snow creeps up by tiny amounts on
+        /// every cell every few ticks while it falls, and a host re-pulling 40,000 depths for each of those
+        /// would be paying for changes it cannot draw.</summary>
+        public int SnowVersion => snowVersion;
+
         public int VersionOfChunk(int index) => chunkVersions[index];
 
         /// <summary>Restarts session ids from one, the way <c>Map.ResetMapIdCounter</c> restarts map ids and
@@ -153,6 +161,8 @@ namespace SimWorld.Map.View
         public void Notify_TerrainChanged() => terrainVersion++;
 
         public void Notify_RoofChanged() => roofVersion++;
+
+        public void Notify_SnowChanged() => snowVersion++;
 
         /// <summary>
         /// A Thing entered, left or moved within the cell — called from <see cref="ThingGrid"/>, which is the

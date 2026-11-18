@@ -22,14 +22,21 @@ namespace SimWorld.Weather
     /// snow and thing map meshes, and does it on a <c>Rand.Value &lt; 0.0125f</c> roll for small changes so
     /// the drawn snow creeps up without a remesh every touch. This core draws nothing (it is engine-free), and
     /// a presentation-only draw from the seeded stream would shift every roll after it for no simulated
-    /// effect — so that half is not ported, and no host-facing snow version exists yet either: the read model
-    /// (<see cref="Map.View.MapViewTracker"/>) has no snow layer to bump. The path-cost half, which is
-    /// simulation, is ported exactly.
+    /// effect — so the roll is not ported. In its place the host-facing snow version
+    /// (<see cref="Map.View.MapViewTracker.SnowVersion"/>) moves on a deterministic rule: when a cell crosses
+    /// one of <see cref="VisualSteps"/> fixed depth steps or changes <see cref="SnowCategory"/>. The path-cost
+    /// half, which is simulation, is ported exactly.
     /// </summary>
     public sealed class SnowGrid
     {
         /// <summary>Deepest snow can lie (RimWorld: <c>SnowGrid.MaxDepth</c>).</summary>
         public const float MaxDepth = 1f;
+
+        /// <summary>How many equal depth steps 0..<see cref="MaxDepth"/> is cut into for the host's redraw: a
+        /// cell crossing from one to another bumps <see cref="Map.View.MapViewTracker.SnowVersion"/>. Not a
+        /// RimWorld number — it replaces RimWorld's <c>Rand.Value &lt; 0.0125f</c> remesh roll (see the class
+        /// doc) with a rule that draws nothing from the stream.</summary>
+        public const int VisualSteps = 16;
 
         private readonly Map.Map map;
         private readonly float[] depthGrid;
@@ -127,17 +134,25 @@ namespace SimWorld.Weather
             CheckVisualOrPathCostChange(c, oldDepth, 0f);
         }
 
-        /// <summary>RimWorld: <c>SnowGrid.CheckVisualOrPathCostChange</c>, path-cost half (see the class doc
-        /// for the visual half). Only a change of <see cref="SnowCategory"/> moves what walking the cell costs,
-        /// so only that re-costs it — snow creeping up within one category touches nothing.</summary>
+        /// <summary>RimWorld: <c>SnowGrid.CheckVisualOrPathCostChange</c>. Only a change of
+        /// <see cref="SnowCategory"/> moves what walking the cell costs, so only that re-costs it. The visual
+        /// half bumps the host's snow version on that same change or on crossing a <see cref="VisualSteps"/>
+        /// step — never on a roll (see the class doc) — so snow creeping up within one step touches nothing.</summary>
         private void CheckVisualOrPathCostChange(IntVec3 c, float oldDepth, float newDepth)
         {
             if (oldDepth == newDepth) return;
-            if (SnowUtility.GetSnowCategory(oldDepth) != SnowUtility.GetSnowCategory(newDepth))
+            bool categoryChanged = SnowUtility.GetSnowCategory(oldDepth) != SnowUtility.GetSnowCategory(newDepth);
+            if (categoryChanged)
             {
                 map.pathGrid?.RecalculatePerceivedPathCostAt(c);
             }
+            if (categoryChanged || VisualStep(oldDepth) != VisualStep(newDepth))
+            {
+                map.mapView.Notify_SnowChanged();
+            }
         }
+
+        private static int VisualStep(float depth) => (int)(depth * VisualSteps);
 
         // ---- Scribe ----
 
@@ -167,6 +182,7 @@ namespace SimWorld.Weather
         {
             Array.Clear(depthGrid, 0, depthGrid.Length);
             totalDepth = 0.0;
+            map.mapView.Notify_SnowChanged();
             if (string.IsNullOrEmpty(encoded)) return;
 
             byte[] bytes;
