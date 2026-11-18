@@ -306,7 +306,7 @@ namespace SimWorld.World
         /// pawn does in <c>AI.WorkGiver_Repair</c>'s <c>t.Faction == pawn.Faction</c> check; it cannot tell its
         /// own walls from a ruin's, which is the cost of having no faction to tell them by.
         /// </summary>
-        private bool IsOwnStructure(Thing thing) => ReferenceEquals(thing.Faction, faction);
+        public bool IsOwnStructure(Thing thing) => ReferenceEquals(thing.Faction, faction);
 
         /// <summary>
         /// Writes what <see cref="InteriorMap"/> currently holds — every completed, artificial building,

@@ -112,7 +112,7 @@ namespace SimWorld.Director
 
             if (map != null)
             {
-                (int destroyed, int killed) = ShakeMap(map, severity, rand, source);
+                (int destroyed, int killed) = ShakeMap(map, settlement, severity, rand, source);
                 CreditStructures(source, destroyed);
                 SendLetter(settlement, destroyed, killed, watched: true);
                 return true;
@@ -155,9 +155,10 @@ namespace SimWorld.Director
         /// <summary>
         /// Destroys a <paramref name="severity"/> share of each known structure def actually standing on
         /// <paramref name="map"/>, and crushes anyone standing where one of them stood. Returns how many
-        /// structures were destroyed and how many people were killed doing it.
+        /// structures were destroyed and how many people were killed doing it. Only what is
+        /// <paramref name="settlement"/>'s own is laid out again (<see cref="PlaceRebuildBlueprint"/>).
         /// </summary>
-        private static (int Destroyed, int Killed) ShakeMap(Map.Map map, float severity, RandomStream rand, string? source)
+        private static (int Destroyed, int Killed) ShakeMap(Map.Map map, SimWorld.World.Settlement settlement, float severity, RandomStream rand, string? source)
         {
             int destroyedTotal = 0;
             int killedTotal = 0;
@@ -184,10 +185,11 @@ namespace SimWorld.Director
                     Rot4 rot = target.Rotation;
                     ThingDef built = target.def;
                     // Rebuilt in what it was built of, as RimWorld's auto-rebuild passes the destroyed thing's
-                    // Stuff — but only for a building somebody raised. A ruin's wall (no faction) was never the
-                    // settlement's choice of material: its sandstone or steel would leave a blueprint a tribe may
-                    // never be able to fill, so it gets the default stuff, as every rebuild did before stuff cost.
-                    ThingDef? builtStuff = target.Faction != null ? target.Stuff : null;
+                    // Stuff; and only the settlement's own, as RimWorld rebuilds only the player's buildings
+                    // (Building.Destroy: Faction == Faction.OfPlayer). A ruin's wall (no faction) falls and stays
+                    // down.
+                    ThingDef? builtStuff = target.Stuff;
+                    bool rebuild = settlement.IsOwnStructure(target);
                     target.TakeDamage(new DamageInfo(RoofCollapseDefOf.Crush, target.MaxHitPoints));
 
                     // Credited from whether the Thing is actually gone, never assumed from the hit alone: a
@@ -195,7 +197,7 @@ namespace SimWorld.Director
                     // never happened — the same "never over-claim" discipline CrushOnePawn applies to a death.
                     if (!target.Destroyed) continue;
                     destroyedTotal++;
-                    PlaceRebuildBlueprint(map, built, builtStuff, at, rot);
+                    if (rebuild) PlaceRebuildBlueprint(map, built, builtStuff, at, rot);
 
                     foreach (IntVec3 cell in footprint.Cells)
                     {
@@ -257,9 +259,11 @@ namespace SimWorld.Director
         /// <summary>
         /// RimWorld's auto-rebuild: a player building destroyed outright leaves a blueprint for itself where it
         /// stood, so the colony puts it back (RimWorld: <c>Building.Destroy</c>, on <c>KillFinalize</c>, when
-        /// <c>PlaySettings.autoRebuild</c> is on, through <c>GenConstruct.PlaceBlueprintForBuild</c>). Everything
-        /// this incident destroys on a map is the settlement's own (<see cref="KnownStructureDefs"/>), so no
-        /// faction check is needed here. Skipped where no blueprint is authored for the def or the cell can no
+        /// <c>PlaySettings.autoRebuild</c> is on and the building is the player's, through
+        /// <c>GenConstruct.PlaceBlueprintForBuild</c>). <see cref="ShakeMap"/> calls it only for the settlement's
+        /// own buildings, by the faction test the structure ledger and repair already use
+        /// (<see cref="SimWorld.World.Settlement.IsOwnStructure"/>): a quake also brings down the ruin walls
+        /// <see cref="KnownStructureDefs"/> matches, and nobody rebuilds a ruin. Skipped where no blueprint is authored for the def or the cell can no
         /// longer take one. <see cref="Building.SettlementConstructionInitiative"/> counts blueprints toward what
         /// the settlement wants, so it does not also lay a second one elsewhere.
         /// </summary>

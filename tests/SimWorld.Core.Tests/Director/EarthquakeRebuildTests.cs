@@ -39,9 +39,9 @@ namespace SimWorld.Tests.Director
 
         private static ThingDef Def(string name) => DefDatabase<ThingDef>.GetNamed(name);
 
-        private static void Shake(CoreMap map)
+        private static void Shake(CoreMap map, Faction? faction = null)
         {
-            var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Quaketown", 0);
+            var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, faction, "Quaketown", 0);
             var target = new CivilizationTarget(Find.Storyteller);
             target.SetSettlements(new[] { settlement });
             target.Map = map;
@@ -72,29 +72,41 @@ namespace SimWorld.Tests.Director
             Assert.All(blueprints, b => Assert.True(wallCells.Contains(b.Position) && !standing.Contains(b.Position)));
         }
 
-        /// <summary>A wall the settlement raised in granite is rebuilt in granite; a ruin's steel wall, which no
-        /// one there chose, is rebuilt in the default stuff (wood) rather than leaving a blueprint for steel a
-        /// tribe may never have.</summary>
+        /// <summary>A wall the settlement raised in granite is rebuilt in granite. A ruin's steel wall (no
+        /// faction) is not rebuilt at all: RimWorld rebuilds only the player's own buildings, by the same faction
+        /// test repair and the structure ledger use. Before, the quake left a blueprint on every fallen ruin wall
+        /// and the band's builders went out to raise the ruin again.</summary>
         [Fact]
-        public void A_fallen_wall_of_ours_is_rebuilt_in_its_own_stuff_and_a_ruins_in_the_default()
+        public void A_fallen_wall_of_ours_is_rebuilt_in_its_own_stuff_and_a_ruins_is_not_rebuilt()
         {
             CoreMap map = new CoreMap(30, 30, SimWorld.Map.TerrainDefOf.Soil);
             ThingDef wall = Def("Wall");
             var ours = new Faction(DefDatabase<FactionDef>.GetNamed("PlayerCivilization"), "Settlers", "F_Settlers");
             var walls = new List<Thing>();
-            for (int x = 2; x < 22; x++)
+            foreach (int z in new[] { 6, 10, 14 })
             {
-                bool owned = x % 2 == 0;
-                Thing w = ThingMaker.MakeThing(wall, owned ? Def("BlocksGranite") : Def("Steel"));
-                if (owned) w.SetFaction(ours);
-                walls.Add(GenSpawn.Spawn(w, new IntVec3(x, 0, 10), map));
+                for (int x = 2; x < 22; x++)
+                {
+                    bool owned = x % 2 == 0;
+                    Thing w = ThingMaker.MakeThing(wall, owned ? Def("BlocksGranite") : Def("Steel"));
+                    if (owned) w.SetFaction(ours);
+                    walls.Add(GenSpawn.Spawn(w, new IntVec3(x, 0, z), map));
+                }
             }
 
-            Shake(map);
+            Shake(map, ours);
 
+            // The quake brought down walls of both kinds (a destroyed thing's Position is reset, so by faction).
+            Assert.Contains(walls, w => w.Destroyed && w.Faction == null);
+            int oursFallen = walls.Count(w => w.Destroyed && w.Faction == ours);
+            Assert.True(oursFallen > 0);
             List<Blueprint> blueprints = BlueprintsFor(map, wall);
-            Assert.NotEmpty(blueprints);
-            Assert.All(blueprints, b => Assert.Same(b.Position.x % 2 == 0 ? Def("BlocksGranite") : Def("WoodLog"), b.stuffToUse));
+            Assert.Equal(oursFallen, blueprints.Count);
+            Assert.All(blueprints, b =>
+            {
+                Assert.True(b.Position.x % 2 == 0, "a blueprint stands where a ruin wall fell");
+                Assert.Same(Def("BlocksGranite"), b.stuffToUse);
+            });
         }
 
         [Fact]
