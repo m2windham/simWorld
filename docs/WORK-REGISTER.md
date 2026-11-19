@@ -1533,3 +1533,10 @@ host mirror 10, delta 10; seven seeds 99 houses (main 100), end population 197 (
 builds 7 against 9: a day-27 quake took 4 dwellings on a map with no wood left. Kept unmerged:
 `stuff-buildings-homefirst` (a74b95f), no founding dormitory; on seed 2024 the whole band of 20 died sleeping
 on open ground. Untraced, and a lethal path to check.
+
+2026-11-19 (quake-audit, suite 3146/3146 on the branch, fast-forwarded): the "same quake, wildly different
+damage" swing on seed 2024 was the storyteller bench crediting each firing with the previous firing's harm
+(every "Orphaned attribution" quake note in docs/perf/storyteller-* is this); the bench now opens a row before
+tallying. A quake-felled building is rebuilt in its own stuff while the map holds it, else in stuff it can
+supply (walls keep theirs). An entered settlement out of focus is shaken on its map, so credit equals real
+buildings lost. Sim output on seed 2024 and the host mirror unchanged.
