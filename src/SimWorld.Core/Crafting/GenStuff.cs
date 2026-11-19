@@ -65,6 +65,18 @@ namespace SimWorld.Crafting
             return fallback;
         }
 
+        /// <summary>
+        /// <paramref name="preferred"/> when <paramref name="def"/> can be made of it and a whole one's worth lies
+        /// on the map, else <see cref="AffordableStuffFor(Map.Map, ThingDef)"/>. For putting back something that
+        /// already stood: rebuilt in what it was made of while that can be finished, and otherwise in what the
+        /// settlement has, rather than a blueprint waiting forever on a stuff the map no longer holds.
+        /// </summary>
+        public static ThingDef? AffordableStuffFor(Map.Map map, ThingDef def, ThingDef? preferred)
+        {
+            if (preferred != null && CanMake(preferred, def) && HasOnMap(map, def, preferred)) return preferred;
+            return AffordableStuffFor(map, def);
+        }
+
         /// <summary>Whether a whole <paramref name="def"/>'s worth of <paramref name="stuff"/> lies on the map
         /// that no blueprint or frame already placed is still waiting for. Without the second half one planner
         /// pass laid three steel beds on one bed's worth of steel, and two of them waited for steel forever:

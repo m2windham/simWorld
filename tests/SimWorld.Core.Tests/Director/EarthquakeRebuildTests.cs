@@ -109,6 +109,34 @@ namespace SimWorld.Tests.Director
             });
         }
 
+        /// <summary>A wooden bed that falls on a map with no wood left but stone blocks on hand is rebuilt in
+        /// stone, as a new bed would be placed; while the wood is there it is rebuilt in wood. Before, the
+        /// rebuild always asked for the fallen bed's own stuff, and on a wood-poor map (storyteller seed 2024)
+        /// that blueprint waited forever.</summary>
+        [Theory]
+        [InlineData(true, "WoodLog")]
+        [InlineData(false, "BlocksGranite")]
+        public void A_fallen_bed_is_rebuilt_in_its_own_stuff_while_the_map_has_it_else_in_what_it_has(bool woodOnMap, string expected)
+        {
+            CoreMap map = new CoreMap(24, 24, SimWorld.Map.TerrainDefOf.Soil);
+            Thing placed = GenSpawn.Spawn(ThingMaker.MakeThing(Def("Bed"), Def("WoodLog")), new IntVec3(10, 0, 10), map, Rot4.North);
+            Thing blocks = ThingMaker.MakeThing(Def("BlocksGranite"));
+            blocks.stackCount = 50;
+            GenSpawn.Spawn(blocks, new IntVec3(3, 0, 3), map);
+            if (woodOnMap)
+            {
+                Thing wood = ThingMaker.MakeThing(Def("WoodLog"));
+                wood.stackCount = 50;
+                GenSpawn.Spawn(wood, new IntVec3(5, 0, 3), map);
+            }
+
+            Shake(map); // one bed: DestroyCount is at least one, so it falls
+
+            Assert.True(placed.Destroyed);
+            Blueprint blueprint = Assert.Single(BlueprintsFor(map, Def("Bed")));
+            Assert.Same(Def(expected), blueprint.stuffToUse);
+        }
+
         [Fact]
         public void A_fallen_bed_is_laid_out_again_the_way_it_faced()
         {

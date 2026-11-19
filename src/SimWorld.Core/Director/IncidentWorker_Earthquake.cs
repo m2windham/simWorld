@@ -186,7 +186,7 @@ namespace SimWorld.Director
                     Rot4 rot = target.Rotation;
                     ThingDef built = target.def;
                     // Rebuilt in what it was built of, as RimWorld's auto-rebuild passes the destroyed thing's
-                    // Stuff; and only the settlement's own, as RimWorld rebuilds only the player's buildings
+                    // Stuff, while the map can still finish it (PlaceRebuildBlueprint); and only the settlement's own, as RimWorld rebuilds only the player's buildings
                     // (Building.Destroy: Faction == Faction.OfPlayer). A ruin's wall (no faction) falls and stays
                     // down.
                     ThingDef? builtStuff = target.Stuff;
@@ -280,7 +280,13 @@ namespace SimWorld.Director
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(built);
             if (blueprintDef == null || !GenConstruct.CanPlaceBlueprintAt(built, at, map, out _, rot)) return;
             var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
-            blueprint.stuffToUse = stuff;
+            // In its own stuff while the map can still finish it, else in what the settlement has — the choice a
+            // new placement makes (SettlementConstructionInitiative.PlaceBlueprint). A wooden bed on a map with no
+            // wood left is rebuilt in stone rather than waiting forever. A wall keeps its own stuff, as a new
+            // wall does: StoneWallMaterials decides a wall's stuff by research, and a fallback would skip that.
+            blueprint.stuffToUse = stuff == null || StoneWallMaterials.IsWall(built)
+                ? stuff
+                : Crafting.GenStuff.AffordableStuffFor(map, built, stuff);
             GenSpawn.Spawn(blueprint, at, map, rot);
         }
 
