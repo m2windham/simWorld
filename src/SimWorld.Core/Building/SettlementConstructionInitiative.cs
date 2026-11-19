@@ -120,6 +120,7 @@ namespace SimWorld.Building
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (Find.TickManager.TicksGame % ConstructionInitiativeTuning.IntervalTicks != 0) return;
 
+            ReplanStalledSites(map);
             EnsureCompound(settlement, map);
             DwellingUtility.AssignHomes(settlement, map);
 
@@ -594,6 +595,87 @@ namespace SimWorld.Building
                 : string.Join(", ", waiting.Take(waiting.Count - 1)) + " and " + waiting[waiting.Count - 1];
             return settlement.name + " has run out of room in its home area: " + what
                 + " waiting for space. It will not build outside the home area; widen it to make room.";
+        }
+
+        /// <summary>
+        /// Re-plans a stuff-built site whose stuff is not there to finish it: a bed, door or bench blueprint or
+        /// frame (never a wall — <see cref="StoneWallMaterials"/> owns what a wall is made of) that still needs
+        /// more of its chosen stuff than the map holds within the band's reach plus what anyone is carrying.
+        /// The site is cancelled — a frame gives back all it was given (<see cref="Frame.Cancel"/>) — and
+        /// planned again on the same cell, turned the same way, in <see cref="GenStuff.AffordableStuffFor"/>'s
+        /// answer. A site whose answer is the stuff it already has is left alone, so nothing is churned.
+        /// <para/>
+        /// <b>SimWorld:</b> RimWorld leaves such a frame waiting for the player to cancel it. The settlement
+        /// is the player here, and a frame that lost its last steel to a failed attempt
+        /// (<see cref="Frame.FailConstruction"/> keeps half) or to a bed that took it first otherwise waited
+        /// for ever with timber stacked beside it. No draw.
+        /// </summary>
+        internal static int ReplanStalledSites(Map.Map map)
+        {
+            var sites = new List<Thing>(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint));
+            sites.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame));
+            IntVec3? band = SettlementReach.BandCell(map);
+
+            int replanned = 0;
+            foreach (Thing site in sites)
+            {
+                if (!site.Spawned) continue;
+                ThingDef entity;
+                ThingDef? stuff;
+                int need;
+                switch (site)
+                {
+                    case Blueprint bp:
+                        entity = bp.EntityToBuild;
+                        stuff = bp.stuffToUse;
+                        need = stuff == null ? 0 : bp.ThingCountNeeded(stuff);
+                        break;
+                    case Frame frame:
+                        entity = frame.EntityToBuild;
+                        stuff = frame.Stuff;
+                        need = stuff == null ? 0 : frame.MaterialStillNeeded(stuff);
+                        break;
+                    default:
+                        continue;
+                }
+                if (stuff == null || need <= 0 || !entity.MadeFromStuff || StoneWallMaterials.IsWall(entity)) continue;
+                if (StuffWithinReach(map, stuff, band) >= need) continue;
+
+                ThingDef? replacement = GenStuff.AffordableStuffFor(map, entity);
+                if (replacement == null || ReferenceEquals(replacement, stuff)) continue;
+
+                IntVec3 cell = site.Position;
+                Rot4 rot = site.Rotation;
+                if (site is Frame stalled) stalled.Cancel();
+                else site.Destroy(DestroyMode.Cancel);
+
+                ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(entity);
+                if (blueprintDef == null) continue;
+                var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
+                blueprint.stuffToUse = replacement;
+                GenSpawn.Spawn(blueprint, cell, map, rot);
+                replanned++;
+            }
+            return replanned;
+        }
+
+        /// <summary>Units of <paramref name="stuff"/> lying on <paramref name="map"/> where the band can walk to
+        /// them, plus whatever any pawn on the map is carrying.</summary>
+        private static int StuffWithinReach(Map.Map map, ThingDef stuff, IntVec3? band)
+        {
+            int units = 0;
+            IReadOnlyList<Thing> stacks = map.listerThings.ThingsOfDef(stuff);
+            for (int i = 0; i < stacks.Count; i++)
+            {
+                if (stacks[i].Spawned && SettlementReach.CanReach(map, band, stacks[i].Position)) units += stacks[i].stackCount;
+            }
+            IReadOnlyList<Pawns.Pawn> pawns = map.mapPawns.AllPawnsSpawned;
+            for (int i = 0; i < pawns.Count; i++)
+            {
+                Thing? carried = pawns[i].carryTracker?.CarriedThing;
+                if (carried != null && ReferenceEquals(carried.def, stuff)) units += carried.stackCount;
+            }
+            return units;
         }
 
         private static void PlaceBlueprint(Map.Map map, ThingDef entityDef, IntVec3 cell, Rot4 rot)

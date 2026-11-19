@@ -1557,3 +1557,12 @@ no seed below its starting band. Open: no early harvest (minimum harvest growth 
 founding stores run out around day 12 against a first harvest near day 20; no agave; malnutrition gentler
 than RimWorld's (0.113/day against ~0.453 recalled); no heatstroke or hypothermia; `tools/blueprint` needs
 the `marked` module.
+
+2026-11-19 (stalled-replan, suite 3159/3159 on the branch, fast-forwarded): the settlement re-plans a
+stuff-built bed, door or bench whose stuff can no longer be reached, cancelling and refunding it and placing
+it again in affordable stuff (deliberate difference: RimWorld leaves it for the player). Banking keeps a frame's
+remaining stuff (pin). work-by-skill is dropped for founding bands after three 21-seed measurements (disable:
+585 alive; ceil(n/3) coverage: fails houses; priority leads: 81 deaths, 535 alive, 2024 starved out); recorded
+as a deliberate difference. 21 seeds: houses 301, deaths 34, end population 600 (fixABC 301/32/605).
+Held: saveload-roundtrip (da981f6). Its haul-to-carry-tracker change collapses 40/201 (42 dead, 39 starved);
+an integration rerun of 40/201 gives 4 dead.

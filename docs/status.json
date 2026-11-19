@@ -1004,6 +1004,11 @@
           "done": true
         },
         {
+          "id": "work.byskill",
+          "label": "Deliberate difference: RimWorld's skill-based founding grid measured three ways on 21 seeds (disable, ceil(n/3) coverage, priority leads); each cost food labour and lives at band 20-40, so founding bands keep every capable work type on at 3. RimWorld's rules, recalled: GameInitData.PrepForMapGen turns a work type on for every starting colonist at AverageOfRelevantSkillsFor 6+, else the single best; Pawn_WorkSettings.EnableAndInitialize turns on a pawn's six best plus the alwaysStartActive ones. Measured against the drought-fixed baseline (301 houses, 32 deaths, 605 end population): ceil(n/3) coverage with the rest off 281 / 32 / 585, 20/110 starving 12; everyone on with priority-1 leads 288 / 81 / 535, 20/2024 starving out entirely; RimWorld's single best starved 13 on 20/2024 in the seven-seed set. Here Pawn_WorkSettings.EnableAndInitialize stays all-on at the default priority for every pawn; roles still emphasize on top of it.",
+          "done": true
+        },
+        {
           "id": "work.repairplantscut",
           "label": "Repair and PlantsCut wired (28 of 29 work givers now carry a real giverClass). Both translate away a Designation system this port does not have: Repair scans any damaged artificial building because Thing carries no faction field, PlantsCut derives its targets from growing zones and construction cells",
           "done": true
@@ -1730,6 +1735,11 @@
         {
           "id": "building.reach",
           "label": "Every settlement planner (compound siting, Fits, works placement, field growth, granary) sites only cells reachable from a citizen, and the band spawns on the largest open ground. Seed 2024 (46 sealed rock pockets) went from 89 unworked frames to 90 buildings and 642 field cells by day 10. Buildings carry a faction; repair skips ruins and other factions. StructureCount and the structure ledger count only the settlement faction's own buildings (2026-11-17); pocket tests fail if the Fits or works-placement reach gate is removed.",
+          "done": true
+        },
+        {
+          "id": "building.replanstalled",
+          "label": "Translation: the settlement re-plans a stuff-built site (bed, door, bench; never a wall) whose chosen stuff is no longer within the band's reach or in anyone's hands in the amount it still needs. SettlementConstructionInitiative.ReplanStalledSites cancels it (Frame.Cancel gives back everything delivered, as RimWorld's cancel does, recalled) and places it again on the same cell in GenStuff.AffordableStuffFor's answer, leaving it alone when that answer is the stuff it already has. RimWorld leaves such a frame for the player; here the settlement is the player. Found when a door frame lost its steel to a failed attempt and to a bed and waited fifteen days beside 47 logs. Banking was ruled out: it already keeps a frame's planned stuff (FrameStuffBankingTests, StalledSiteReplanTests).",
           "done": true
         }
       ]
