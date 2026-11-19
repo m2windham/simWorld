@@ -331,10 +331,16 @@ namespace SimWorld.Pawns
             Scribe_Values.Look(ref ageBiologicalTicks, "ageBiologicalTicks", 0L);
             Scribe_Values.Look(ref ageChronologicalTicks, "ageChronologicalTicks", 0L);
             Scribe_Values.Look(ref deathAgeBudgetTicks, "deathAgeBudgetTicks", long.MaxValue);
+            // Copied back only on LoadingVars, the one phase that reads the list. On every other phase the local
+            // still aliases the field itself, so a Clear() then AddRange() of it emptied the log: on save, and
+            // again on the cross-ref and post-load passes straight after a load.
             List<string>? reasons = lifespanAdjustmentReasons;
             Scribe_Collections.Look(ref reasons, "lifespanAdjustmentReasons", LookMode.Value);
-            lifespanAdjustmentReasons.Clear();
-            if (reasons != null) lifespanAdjustmentReasons.AddRange(reasons);
+            if (Scribe.mode == LoadSaveMode.LoadingVars)
+            {
+                lifespanAdjustmentReasons.Clear();
+                if (reasons != null) lifespanAdjustmentReasons.AddRange(reasons);
+            }
         }
     }
 }

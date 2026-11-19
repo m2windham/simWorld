@@ -12,5 +12,6 @@ namespace SimWorld.Crafting
     /// <summary>RimWorld: <c>RimWorld.CompMilkable</c>.</summary>
     public class CompMilkable : CompHasGatherableBodyResource
     {
+        protected override string FullnessSaveLabel => "milkFullness";
     }
 }

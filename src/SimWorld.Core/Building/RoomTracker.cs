@@ -219,7 +219,15 @@ namespace SimWorld.Building
             List<int>? seedZ;
             List<float>? seedTemp;
 
-            if (Scribe.mode == LoadSaveMode.Saving)
+            if (Scribe.mode == LoadSaveMode.Saving && pendingSeedX != null)
+            {
+                // Loaded, and saved again before a tick has rebuilt the rooms: the loaded temperatures are still
+                // waiting in the pending seeds, and the groups list is empty, so write the seeds back as they came.
+                seedX = pendingSeedX;
+                seedZ = pendingSeedZ;
+                seedTemp = pendingSeedTemp;
+            }
+            else if (Scribe.mode == LoadSaveMode.Saving)
             {
                 seedX = new List<int>();
                 seedZ = new List<int>();

@@ -104,10 +104,19 @@ namespace SimWorld.Crafting
         /// <c>GenRecipe</c>/<c>AnimalTuning</c>).</summary>
         protected virtual float GatherXp => 15f;
 
+        /// <summary>
+        /// The label <see cref="fullness"/> saves under. RimWorld's base <c>PostExposeData</c> writes every
+        /// subclass to <c>"fullness"</c>, and <c>ThingWithComps.ExposeData</c> runs every comp's
+        /// <c>PostExposeData</c> in the one Thing node (ours does the same), so an animal carrying two of these
+        /// comps — a muffalo is both milkable and shearable — writes the label twice and on load reads the first
+        /// value into both. Each subclass that can share an animal with another names its own.
+        /// </summary>
+        protected virtual string FullnessSaveLabel => "fullness";
+
         public override void PostExposeData()
         {
             base.PostExposeData();
-            Scribe_Values.Look(ref fullness, "fullness");
+            Scribe_Values.Look(ref fullness, FullnessSaveLabel);
         }
     }
 }

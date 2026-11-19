@@ -9,10 +9,9 @@ namespace SimWorld.AI
     /// <summary>
     /// Carries one item stack to a stockpile cell and merges or drops it there (RimWorld:
     /// <c>RimWorld.JobDriver_HaulToCell</c>). Target A is the item, target B the destination cell.
-    /// <b>Carrying is modelled abstractly</b>, the same way <see cref="JobDriver_Warden_Feed"/> does it: this
-    /// driver predates <see cref="Pawns.Pawn_CarryTracker"/> and has not been moved onto it, so the goods leave
-    /// the source cell the moment the pawn reaches it, with nothing visibly following the pawn to the stockpile
-    /// in between.
+    /// <b>Carrying a split-off count is modelled abstractly</b>, the same way <see cref="JobDriver_Warden_Feed"/>
+    /// does it: the goods leave the source cell the moment the pawn reaches it, and only a number on the job
+    /// follows the pawn to the stockpile.
     /// <para/>
     /// <b>The whole Thing travels, when the whole Thing is what moves.</b> This driver used to destroy the
     /// source and build a fresh Thing of the same def at the destination. That is lossless only for goods
@@ -23,34 +22,24 @@ namespace SimWorld.AI
     /// taken off the map and put back down at the destination; only a partial stack — which by definition is
     /// a stackable good, where one unit really is interchangeable with another — is still split off by count.
     /// <para/>
-    /// An interrupted whole-stack carry drops the goods at the pawn's feet (<see cref="Notify_Ending"/>)
-    /// instead of destroying them. <b>A split-off count does not:</b> it exists only as a number on the job, so
-    /// an interrupted partial carry loses it — the defect <see cref="Building.JobDriver_HaulToBuildingSite"/>
-    /// had until it carried through <see cref="Pawns.Pawn_CarryTracker"/>. A save taken mid-carry loses the
-    /// goods either way: no <see cref="JobDriver"/> in this port is Scribed, so nothing re-links a Thing that is
-    /// off the map when the save is written. Moving this driver onto the carry tracker closes both.
+    /// <b>The whole Thing is held in <see cref="Pawns.Pawn_CarryTracker"/></b>, not in this driver: no
+    /// <see cref="JobDriver"/> in this port is Scribed, so a Thing held in a driver field was in no save at all,
+    /// and the job's target A and the hauler's reservation — both saved, both pointing at it — loaded as null.
+    /// The carry tracker deep-saves what it holds, which registers its load id, so both references re-link. An
+    /// interrupted whole-stack carry drops the goods at the pawn's feet, as anything left in the carry tracker is
+    /// (<see cref="Pawn_JobTracker.EndCurrentJob"/>). <b>A split-off count does not:</b> it exists only as a
+    /// number on the job, so an interrupted partial carry loses it — the defect
+    /// <see cref="Building.JobDriver_HaulToBuildingSite"/> had until it carried the split-off piece through
+    /// the tracker too. Splitting here as well would close that, at the cost of a new Thing (and thing id) per
+    /// partial haul.
     /// </summary>
     public sealed class JobDriver_HaulToCell : JobDriver
     {
-        /// <summary>The Thing itself while it is off the map, for the whole-stack case; null when this job is
-        /// carrying a split-off count instead (or carrying nothing yet).</summary>
-        private Thing? carried;
-
         public override bool TryMakePreToilReservations()
         {
             if (pawn.Map == null) return false;
             return pawn.Map.reservationManager.CanReserve(pawn, job.GetTarget(TargetIndex.A))
                 && pawn.Map.reservationManager.CanReserve(pawn, job.GetTarget(TargetIndex.B));
-        }
-
-        public override void Notify_Ending()
-        {
-            base.Notify_Ending();
-            Thing? thing = carried;
-            carried = null;
-            if (thing == null || thing.Destroyed || thing.Spawned) return;
-            if (pawn.Map == null || !pawn.Spawned) return;
-            GenSpawn.Spawn(thing, pawn.Position, pawn.Map);
         }
 
         public override IEnumerable<Toil> MakeNewToils()
@@ -77,8 +66,12 @@ namespace SimWorld.AI
                 job.count = carriedCount;
                 if (carriedCount >= thing.stackCount)
                 {
-                    carried = thing;
-                    thing.DeSpawn();
+                    // The whole stack: TryStartCarry despawns this very Thing into the pawn's hands.
+                    if (pawn.carryTracker.TryStartCarry(thing, carriedCount) <= 0)
+                    {
+                        EndJobWith(JobCondition.Incompletable);
+                        return;
+                    }
                 }
                 else
                 {
@@ -96,8 +89,7 @@ namespace SimWorld.AI
                 ThingDef def = sourceThing.def;
 
                 Thing? existing = HaulAIUtility.ExistingStackAt(map, cell);
-                Thing? travelling = carried;
-                carried = null;
+                Thing? travelling = pawn.carryTracker.CarriedThing;
 
                 if (existing != null && existing.def == def)
                 {
@@ -105,13 +97,13 @@ namespace SimWorld.AI
                     // The merged-into stack is the survivor; a whole Thing that travelled here has been
                     // absorbed into it. (Only reachable for a stackable def: a stackLimit-1 Thing on the
                     // destination cell leaves CapacityAt at 0, and the pickup toil above refuses the job.)
-                    travelling?.Destroy(DestroyMode.Vanish);
+                    if (travelling != null) pawn.carryTracker.DestroyCarriedThing();
                     return;
                 }
 
                 if (travelling != null)
                 {
-                    GenSpawn.Spawn(travelling, cell, map);
+                    pawn.carryTracker.TryDropCarriedThing(cell, out _);
                     return;
                 }
 

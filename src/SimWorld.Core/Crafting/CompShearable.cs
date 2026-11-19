@@ -12,5 +12,6 @@ namespace SimWorld.Crafting
     /// <summary>RimWorld: <c>RimWorld.CompShearable</c>.</summary>
     public class CompShearable : CompHasGatherableBodyResource
     {
+        protected override string FullnessSaveLabel => "woolFullness";
     }
 }
