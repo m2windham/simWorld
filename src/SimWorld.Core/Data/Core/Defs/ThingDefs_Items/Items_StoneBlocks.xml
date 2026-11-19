@@ -12,11 +12,11 @@
     file, and a new file cannot conflict (CLAUDE.md). DefLoader.AddDirectory reads every XML under Defs/
     recursively, so this is loaded exactly as if it sat in the shared one.
 
-    Fields mirror BlocksSandstone exactly, MarketValue included. The three stones deliberately do NOT differ
-    here: the one difference RimWorld actually has between stone types is how much punishment the finished
-    structure takes, and that is expressed once, on the wall Defs in ThingDefs_Buildings/Buildings_Stonework.xml,
-    rather than smeared across block price, cutting time and durability with three invented numbers where one
-    sourced axis will do. RimWorld prices every Blocks* the same and works every Make_Blocks_* recipe for the
+    Fields mirror BlocksSandstone exactly, MarketValue included, but for one: the one difference RimWorld
+    actually has between stone types is how much punishment the finished structure takes, a MaxHitPoints
+    stuff factor (sandstone 1.4, granite 1.7, limestone 1.55, recalled), and each block carries its own so a
+    thing made from stuff (a Wall, Door, Bed or bench of blocks) takes it. The per-stone wall Defs in
+    ThingDefs_Buildings/Buildings_Stonework.xml still carry their own hit points and are not made from stuff. RimWorld prices every Blocks* the same and works every Make_Blocks_* recipe for the
     same 1600 ticks; this keeps both.
   -->
 
@@ -36,8 +36,10 @@
     <stuffProps>
       <categories><li>Stony</li></categories>
       <commonality>1</commonality>
+      <!-- RimWorld's granite MaxHitPoints factor, RECALLED (not checked from here). -->
       <statFactors>
         <Flammability>0</Flammability>
+        <MaxHitPoints>1.7</MaxHitPoints>
       </statFactors>
     </stuffProps>
   </ThingDef>
@@ -58,8 +60,10 @@
     <stuffProps>
       <categories><li>Stony</li></categories>
       <commonality>1</commonality>
+      <!-- RimWorld's limestone MaxHitPoints factor, RECALLED (not checked from here). -->
       <statFactors>
         <Flammability>0</Flammability>
+        <MaxHitPoints>1.55</MaxHitPoints>
       </statFactors>
     </stuffProps>
   </ThingDef>

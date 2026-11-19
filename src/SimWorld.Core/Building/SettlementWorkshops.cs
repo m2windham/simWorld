@@ -207,7 +207,10 @@ namespace SimWorld.Building
             bool placed = compound != null && compound.TryFindWorkSite(map, site, bench, out cell)
                 && (material.Count == 0 || WithinReach(cell, material, reach));
             if (!placed && material.Count > 0) placed = TryNear(map, bench, material[0], reach, out cell);
-            if (placed) GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), cell, map);
+            if (!placed) return;
+            var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
+            blueprint.stuffToUse = GenStuff.AffordableStuffFor(map, bench); // wood first, else what is on hand
+            GenSpawn.Spawn(blueprint, cell, map);
         }
 
         private static bool WithinReach(IntVec3 site, List<IntVec3> material, int reach)

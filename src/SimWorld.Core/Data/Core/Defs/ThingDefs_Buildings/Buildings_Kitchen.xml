@@ -18,8 +18,8 @@
     than it consumes — CookMealSimple turns 0.5 nutrition of raw food into a 0.9-nutrition meal — so a
     settlement that cannot cook needs nearly twice the raw supply to feed the same people.
 
-    Like TableStonecutter's pair, the bench carries no costList, so its Frame needs nothing delivered and
-    ConstructFinishFrames can finish it outright.
+    The stove carries no costList and is not made from stuff (RimWorld prices it in steel alone, which is not
+    ported), so its Frame needs nothing delivered and ConstructFinishFrames can finish it outright.
   -->
 
   <ThingDef>

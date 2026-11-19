@@ -9,7 +9,7 @@
     has to be bootstrappable — nothing can ever be researched to unlock the very bench research requires, so
     unlike FueledStove/TableButcher/TableStonecutter above (each gated by researchPrerequisites) this one
     carries none, the same way Wall/Door/Bed/StorageHut in Buildings_Structural.xml are ungated as things no
-    civilization should be blocked from ever reaching. MaxHitPoints/WorkToBuild/costList are this port's own
+    civilization should be blocked from ever reaching. MaxHitPoints/WorkToBuild are this port's own
     figures, not sourced from RimWorld (unreachable from this sandbox) — sized between Bed and StorageHut's
     own unsourced figures in that same file, for the same "somewhere plausible, not a literal to trust" reason
     their own comment gives; pinned by the construction pipeline test in tests/SimWorld.Core.Tests/Research,
@@ -33,9 +33,16 @@
       <MaxHitPoints>150</MaxHitPoints>
       <WorkToBuild>250</WorkToBuild>
     </statBases>
-    <costList>
-      <WoodLog>10</WoodLog>
-    </costList>
+    <!-- Made from stuff, as RimWorld's SimpleResearchBench is: Metallic, Woody or Stony stuff (RECALLED from
+         RimWorld's Buildings_Production.xml, not checked against the file from here). costStuffCount 10 is a
+         simWorld rate; RimWorld 75 (recalled). 10 is the WoodLog this port wrote by hand before; see
+         Buildings_Production.xml for why benches keep it. -->
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>10</costStuffCount>
   </ThingDef>
 
   <ThingDef>

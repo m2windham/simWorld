@@ -3,8 +3,8 @@
 
   <!--
     Walls and doors (system 16: Building). Ungated by research — a wood/stone wall is not a technology any
-    more than a club is (see research.unlocks-content's own note on the club). Costed in wood, the material
-    every settlement starts able to gather.
+    more than a club is (see research.unlocks-content's own note on the club). Made from stuff, wood by
+    default (GenStuff.DefaultStuffFor), the material every settlement starts able to gather.
   -->
 
   <ThingDef>
@@ -51,15 +51,21 @@
       <MaxHitPoints>150</MaxHitPoints>
       <Insulation>1</Insulation>
     </statBases>
-    <costList>
-      <WoodLog>4</WoodLog>
-    </costList>
+    <!-- Made from stuff, as RimWorld's Door is; the categories are the Wall's. costStuffCount 4 is a simWorld
+         rate; RimWorld 25 (recalled from its Buildings_Structure.xml, not checked against the file from here).
+         4 is what the door cost before it was made from stuff: see the Bed below for why these rates. -->
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>4</costStuffCount>
   </ThingDef>
 
   <!--
     Bed and StorageHut (building.initiative — SettlementConstructionInitiative's own buildable Defs): what a
-    settlement decides for itself it needs, not player-designed content. Ungated by research and wood-costed
-    like Wall/Door above, for the same reason. WorkToBuild/MaxHitPoints/costList are SimWorld's own figures —
+    settlement decides for itself it needs, not player-designed content. Ungated by research like Wall/Door
+    above, for the same reason. WorkToBuild/MaxHitPoints and StorageHut's costList are SimWorld's own figures —
     RimWorld's real bed/storage-structure costs were not sourceable from this sandbox — chosen to sit between
     Door and Heater in effort; pinned by ConstructionInitiativeTests' end-to-end build rather than trusted as
     a literal (CLAUDE.md's own rule for untraceable numbers).
@@ -101,9 +107,19 @@
            is ever above zero. -->
       <BedRestEffectiveness>1.07</BedRestEffectiveness>
     </statBases>
-    <costList>
-      <WoodLog>8</WoodLog>
-    </costList>
+    <!-- Made from stuff, as RimWorld's Bed is; the categories are the Wall's. costStuffCount 8 is a simWorld
+         rate; RimWorld 45 (recalled from its Furniture_Beds.xml, not checked against the file from here). A
+         settlement plans a dormitory bed for every citizen as well as a home for every household, which
+         RimWorld's colonies do not, and at 45 a 20-bed dormitory cost a wood-poor map (storyteller seed 2024,
+         about 420 wood all game) every home it could have built. 8 is what the bed cost before it was made
+         from stuff. MaxHitPoints above stays this port's own 80 and is scaled by the stuff's MaxHitPoints
+         factor like any other stuff-built thing. -->
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>8</costStuffCount>
   </ThingDef>
 
   <ThingDef>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SimWorld.Crafting;
 using SimWorld.Defs;
 using SimWorld.God;
 using SimWorld.Map;
@@ -213,9 +214,12 @@ namespace SimWorld.Building
             int storageTarget = StorageHutNeed.Target(settlement);
             if (storageTarget > 0) needs.Add(new Need(ConstructionThingDefOf.StorageHut, storageTarget));
 
-            // A home for each household, last: once everyone has a bed to sleep in (built, not planned), a
+            // A home for each household, last: once everyone has a bed to sleep in, built or planned, a
             // household without a dwelling is what the settlement builds next. See Shortfall for the throttle.
-            if (citizens > 0 && map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count + housed >= citizens)
+            // Planned counts: RimWorld builds whatever is designated in no fixed order, and waiting for every
+            // dormitory bed to stand starved a wood-poor map of homes that sleep four for less than one bed's
+            // worth of wood each.
+            if (citizens > 0 && CountBuiltOrPlanned(map, ConstructionThingDefOf.Bed) + housed >= citizens)
             {
                 int households = DwellingUtility.Households(settlement).Count;
                 if (households > 0) needs.Add(new Need(DwellingUtility.PreferredDwellingDef(), households));
@@ -596,7 +600,11 @@ namespace SimWorld.Building
         {
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(entityDef);
             if (blueprintDef == null) return; // No Blueprint content authored for this Def — nothing to place.
-            Thing blueprint = ThingMaker.MakeThing(blueprintDef);
+            var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
+            // A bed or a door is built of a stuff the settlement has a whole one's worth of, wood first. A
+            // wall is left at its default (wood): StoneWallMaterials already decides what a wall is built of,
+            // by research and by blocks on hand, and a Wall of blocks would get round its research gate.
+            if (!StoneWallMaterials.IsWall(entityDef)) blueprint.stuffToUse = GenStuff.AffordableStuffFor(map, entityDef);
             GenSpawn.Spawn(blueprint, cell, map, rot);
         }
     }

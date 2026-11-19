@@ -23,6 +23,12 @@
     <stuffProps>
       <categories><li>Woody</li></categories>
       <commonality>1.2</commonality>
+      <!-- RimWorld's wood MaxHitPoints factor, RECALLED (not checked against its Items_Resource.xml from here):
+           a wooden wall, door or bed has 0.65 of its def's hit points. Steel's factor is 1, so it needs no
+           entry. -->
+      <statFactors>
+        <MaxHitPoints>0.65</MaxHitPoints>
+      </statFactors>
     </stuffProps>
   </ThingDef>
 
@@ -106,8 +112,10 @@
     <stuffProps>
       <categories><li>Stony</li></categories>
       <commonality>1</commonality>
+      <!-- RimWorld's sandstone MaxHitPoints factor, RECALLED (not checked from here). -->
       <statFactors>
         <Flammability>0</Flammability>
+        <MaxHitPoints>1.4</MaxHitPoints>
       </statFactors>
     </stuffProps>
   </ThingDef>

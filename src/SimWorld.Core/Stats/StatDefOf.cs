@@ -37,6 +37,10 @@ namespace SimWorld.Stats
         /// factor, neither of which this pass's content needs (system 16: Building).</summary>
         public static StatDef WorkToBuild = null!;
 
+        /// <summary>Most hit points a Thing can have (RimWorld: <c>StatDefOf.MaxHitPoints</c>). Read through the
+        /// pipeline by <see cref="Things.Thing.MaxHitPoints"/> for a Thing made from stuff.</summary>
+        public static StatDef MaxHitPoints = null!;
+
         /// <summary>How strongly a wall/door resists a room's temperature equalising with the outdoors
         /// (system 16: Building; RimWorld has no single named equivalent — its real insulation math lives in
         /// <c>RoomTemperature</c> reading a wall's <c>StatCategoryDef</c> data directly rather than a stat this

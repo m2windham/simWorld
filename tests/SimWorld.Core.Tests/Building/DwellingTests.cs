@@ -125,16 +125,19 @@ namespace SimWorld.Tests.Building
         // ---- the need ----
 
         [Fact]
-        public void Every_household_gets_a_dwelling_once_everyone_has_a_bed_and_only_a_few_go_up_at_once()
+        public void Every_household_gets_a_dwelling_once_everyone_has_a_bed_planned_and_only_a_few_go_up_at_once()
         {
             CoreMap map = NewMap();
             Settlement settlement = Band(couples: 10, singles: 1);
 
-            // Everything else planned and nothing built yet: no dwelling while anyone lacks a built bed.
+            // Everything else planned and nothing built yet: a bed planned for everyone is enough for the
+            // first homes to be planned too. Waiting for every dormitory bed to stand starved a wood-poor
+            // map of homes (storyteller seed 2024); RimWorld builds whatever is designated, in no fixed order.
             for (int pass = 0; pass < 40; pass++) Pass(settlement, map, pass);
             Assert.Equal(settlement.Citizens.Count, map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>()
                 .Count(bp => ReferenceEquals(bp.EntityToBuild, ConstructionThingDefOf.Bed)));
-            Assert.Equal(0, DwellingBlueprints(map));
+            Assert.Empty(map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed));
+            Assert.InRange(DwellingBlueprints(map), 1, DwellingTuning.MaxUnderway);
 
             BuildEverythingPlanned(map);
             int peak = GrowUntilSettled(settlement, map, from: 40);
@@ -146,7 +149,7 @@ namespace SimWorld.Tests.Building
             Assert.Equal(households, dwellings.Select(d => d.householdId).OrderBy(i => i).ToList());
             Assert.Equal(settlement.Citizens.Count, DwellingUtility.HousedCitizens(settlement, map));
 
-            // The dormitory was not added to once the homes went up: one bed each, built before the houses.
+            // The dormitory was not added to once the homes went up: one bed each, planned before the houses.
             Assert.Equal(settlement.Citizens.Count, map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count);
         }
 

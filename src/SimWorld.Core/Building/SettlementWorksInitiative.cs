@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+using SimWorld.Crafting;
 using SimWorld.Defs;
 using SimWorld.Map;
 using SimWorld.Needs;
@@ -193,7 +194,7 @@ namespace SimWorld.Building
             if (compound == null || !compound.TryFindWorkSite(map, site, entityDef, out IntVec3 cell)) return false;
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(entityDef);
             if (blueprintDef == null) return false;
-            GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), cell, map);
+            GenSpawn.Spawn(MakeBlueprint(map, blueprintDef, entityDef), cell, map);
             return true;
         }
 
@@ -287,8 +288,17 @@ namespace SimWorld.Building
 
             if (!TryFindPlacementCell(map, entityDef, anchor, radius, out IntVec3 cell)) return false;
 
-            GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), cell, map);
+            GenSpawn.Spawn(MakeBlueprint(map, blueprintDef, entityDef), cell, map);
             return true;
+        }
+
+        /// <summary>A blueprint for <paramref name="entityDef"/> in a stuff the settlement can afford
+        /// (<see cref="GenStuff.AffordableStuffFor"/>; none for a def not made from stuff).</summary>
+        private static Blueprint MakeBlueprint(Map.Map map, ThingDef blueprintDef, ThingDef entityDef)
+        {
+            var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
+            blueprint.stuffToUse = GenStuff.AffordableStuffFor(map, entityDef);
+            return blueprint;
         }
 
         private static bool TryFindPlacementCell(Map.Map map, ThingDef entityDef, IntVec3? anchor, int radius, out IntVec3 cell)

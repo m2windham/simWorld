@@ -4,6 +4,7 @@ using SimWorld.Defs;
 using SimWorld.Health;
 using SimWorld.Map;
 using SimWorld.Sim;
+using SimWorld.Stats;
 
 namespace SimWorld.Things
 {
@@ -166,7 +167,16 @@ namespace SimWorld.Things
         /// <summary>Cells this Thing's footprint covers at its current position and rotation.</summary>
         public CellRect OccupiedRect() => GenAdj.OccupiedRect(position, rotation, Size);
 
-        public virtual int MaxHitPoints => def.BaseMaxHitPoints;
+        /// <summary>
+        /// Most hit points this Thing can have (RimWorld: <c>Verse.Thing.MaxHitPoints</c>,
+        /// <c>RoundToInt(GetStatValue(MaxHitPoints))</c>). A Thing made from stuff reads the full stat pipeline,
+        /// so its stuff's MaxHitPoints factor applies (a wooden wall has 0.65 of the def's, a granite one 1.7);
+        /// one with no stuff has no factor to apply and keeps the plain <see cref="ThingDef.BaseMaxHitPoints"/>
+        /// lookup, which is the same number without the per-call pipeline.
+        /// </summary>
+        public virtual int MaxHitPoints => stuffInt == null
+            ? def.BaseMaxHitPoints
+            : (int)Math.Round(this.GetStatValue(Stats.StatDefOf.MaxHitPoints), MidpointRounding.ToEven);
 
         /// <summary>
         /// Puts this Thing on <paramref name="map"/> at its current <see cref="Position"/>/<see cref="Rotation"/>
