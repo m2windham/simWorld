@@ -1540,3 +1540,9 @@ damage" swing on seed 2024 was the storyteller bench crediting each firing with 
 tallying. A quake-felled building is rebuilt in its own stuff while the map holds it, else in stuff it can
 supply (walls keep theirs). An entered settlement out of focus is shaken on its map, so credit equals real
 buildings lost. Sim output on seed 2024 and the host mirror unchanged.
+
+2026-11-19 (wide bench): the seven-seed set hid collapses. Decisions now use 21 threat-free seeds (band 20:
+99, 777, 2024, 12345, 31337, 101-110; band 40: 777, 12345, 201-204). Integration 27a80e0: houses 292, deaths 82,
+end population 546; whole bands starve under Drought on 20/102 (21 dead) and 20/110 (22 dead), and 40/201 loses
+10. work-by-skill (ceil(n/3) founding coverage + stalled-site replan): houses 282, deaths 86, end population 534,
+collapses on 20/102, 20/109 and 40/201 (38 of 40). Held behind a drought-starvation lane; bedless-remedy held too.
