@@ -87,7 +87,7 @@ namespace SimWorld.Tests.Conditions
             RunGame(10);
             Assert.NotNull(map.weatherManager.Climate);
             float noConditions = GenTemperature.OutdoorTemperatureAt(
-                map.weatherManager.Climate!, Find.TickManager.TicksGame, map.weatherManager.TemperatureOffset);
+                map.weatherManager.Climate!, Find.TickManager.TicksAbs, map.weatherManager.TemperatureOffset);
             Assert.Equal(noConditions, map.outdoorTemperature, 3);
             Assert.Empty(FireUtility.AllFires(map));
 
@@ -101,7 +101,7 @@ namespace SimWorld.Tests.Conditions
             Assert.Equal(
                 GameConditionDefOf.HeatWave.temperatureOffset,
                 map.outdoorTemperature - GenTemperature.OutdoorTemperatureAt(
-                    map.weatherManager.Climate!, Find.TickManager.TicksGame, map.weatherManager.TemperatureOffset),
+                    map.weatherManager.Climate!, Find.TickManager.TicksAbs, map.weatherManager.TemperatureOffset),
                 2);
 
             Assert.True(FireUtility.AllFires(map).Count > 0, "The storm ran over an open settlement and burned nothing.");
@@ -148,7 +148,7 @@ namespace SimWorld.Tests.Conditions
             Assert.Equal(
                 GameConditionDefOf.ColdSnap.temperatureOffset,
                 map.outdoorTemperature - GenTemperature.OutdoorTemperatureAt(
-                    map.weatherManager.Climate!, Find.TickManager.TicksGame, map.weatherManager.TemperatureOffset),
+                    map.weatherManager.Climate!, Find.TickManager.TicksAbs, map.weatherManager.TemperatureOffset),
                 2);
         }
 

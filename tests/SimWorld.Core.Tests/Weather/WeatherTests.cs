@@ -396,7 +396,7 @@ namespace SimWorld.Tests.Weather
 
             map.MapTick();
             Assert.Equal(
-                global::SimWorld.Weather.GenTemperature.OutdoorTemperatureAt(climate, Find.TickManager.TicksGame, map.weatherManager.TemperatureOffset),
+                global::SimWorld.Weather.GenTemperature.OutdoorTemperatureAt(climate, Find.TickManager.TicksAbs, map.weatherManager.TemperatureOffset),
                 map.outdoorTemperature,
                 3);
         }

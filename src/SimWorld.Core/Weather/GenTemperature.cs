@@ -42,10 +42,19 @@ namespace SimWorld.Weather
             if (map == null) throw new ArgumentNullException(nameof(map));
             World.World? world = Find.World;
             if (world == null || world.grid == null) return null;
-            if (map.tile < 0 || map.tile >= world.grid.TilesCount) return null;
+            return ForTile(world, map.tile);
+        }
 
-            Tile tile = world.grid.Tiles[map.tile];
-            (double latitude, double longitude) = world.grid.LongLatOf(map.tile);
+        /// <summary>The climate of world tile <paramref name="tileIndex"/>, or null when the index is not in
+        /// <paramref name="world"/>'s grid — what <see cref="TryResolve"/> answers for a map on that tile, for a
+        /// caller with a tile and no map yet (<c>Sim.Game.NewGame</c> picking its starting season).</summary>
+        public static MapClimate? ForTile(World.World world, int tileIndex)
+        {
+            if (world == null) throw new ArgumentNullException(nameof(world));
+            if (world.grid == null || tileIndex < 0 || tileIndex >= world.grid.TilesCount) return null;
+
+            Tile tile = world.grid.Tiles[tileIndex];
+            (double latitude, double longitude) = world.grid.LongLatOf(tileIndex);
             return new MapClimate
             {
                 biome = tile.biome,

@@ -286,6 +286,48 @@ namespace SimWorld.Building
                 if (map.settlementCompound != null && map.settlementCompound.Reserves(CellRect.SingleCell(candidate))) continue;
                 if (map.zoneManager.AddCell(field, candidate)) added++;
             }
+
+            if (added < budget) GrowFieldBeyondRadialReach(map, field, crop, seed, band, budget - added);
+        }
+
+        /// <summary>
+        /// The rest of a field the radial spiral could not find room for: the nearest sowable cells anywhere
+        /// on the map, by distance from where the field already is.
+        ///
+        /// <para/><b>Why.</b> <see cref="GenRadial.RadialPattern"/> stops at <see cref="GenRadial.MaxRadius"/>,
+        /// so on a map whose fertile ground lies in scattered patches the field stalled at whatever happened to
+        /// fall inside that circle and the settlement never asked for more. Measured on the threat-free bench,
+        /// band 20 seed 110, a desert: 2,502 cells on the map would take rice, 306 lay within the circle, the
+        /// field stopped at 211 of the 642 the mouths wanted, and all 22 starved. A player looking at that map
+        /// zones the gravel patches wherever they are; this does the same. It costs one scan of the map, and
+        /// only on a pass where the circle has already run dry — the same scan
+        /// <see cref="BestFertilityOn"/> already pays every pass.
+        /// </summary>
+        private static void GrowFieldBeyondRadialReach(
+            Map.Map map, Zone_Growing field, ThingDef crop, IntVec3 seed, IntVec3? band, int budget)
+        {
+            var candidates = new List<(int distSq, IntVec3 cell)>();
+            for (int x = 0; x < map.Size.x; x++)
+            {
+                for (int z = 0; z < map.Size.z; z++)
+                {
+                    var cell = new IntVec3(x, 0, z);
+                    if (!CanSowIn(map, cell, crop)) continue;
+                    if (map.settlementCompound != null && map.settlementCompound.Reserves(CellRect.SingleCell(cell))) continue;
+                    candidates.Add(((cell - seed).LengthHorizontalSquared, cell));
+                }
+            }
+            // Nearest first; ties by position, so the field is a pure function of the map (no Rand draw).
+            candidates.Sort((a, b) => a.distSq != b.distSq ? a.distSq.CompareTo(b.distSq)
+                : a.cell.x != b.cell.x ? a.cell.x.CompareTo(b.cell.x) : a.cell.z.CompareTo(b.cell.z));
+
+            int added = 0;
+            for (int i = 0; i < candidates.Count && added < budget; i++)
+            {
+                IntVec3 cell = candidates[i].cell;
+                if (!SettlementReach.CanReach(map, band, cell)) continue; // a field nobody can walk to
+                if (map.zoneManager.AddCell(field, cell)) added++;
+            }
         }
 
         /// <summary>Where a settlement with no field yet starts one: the first citizen standing on the map,

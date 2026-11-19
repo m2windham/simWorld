@@ -271,6 +271,11 @@ namespace SimWorld.Sim
             SimWorld.Factions.Faction playerFaction = ResolvePlayerFaction(scenario, world);
 
             int tile = startTile ?? PickStartingTile(world);
+
+            // The calendar starts at the opening of the starting tile's warm season, in either hemisphere, as
+            // RimWorld's does — not at tick 0, which is fall in the south. See Weather.TwelfthUtility.
+            SimWorld.Weather.MapClimate? startClimate = SimWorld.Weather.MapClimate.ForTile(world, tile);
+            if (startClimate != null) game.TickManager.SetGameStartAbsTick(SimWorld.Weather.TwelfthUtility.StartingTicksAbs(startClimate));
             int actualBandSize = bandSize ?? Rand.Current.Range(SimWorld.World.SettlementTuning.FoundingBandRange);
             var foundingRand = new RandomStream(SimWorld.World.GenText.StableStringHash(seedString + "|founding"));
 
@@ -385,6 +390,12 @@ namespace SimWorld.Sim
         /// (<see cref="SimWorld.World.Siting.FoundingGround"/>): the founding band is not set down on bare sand
         /// to starve. Only this founding path does that; later settlements may still land on hard ground.
         ///
+        /// <para/><b>And ground with a summer long enough to bring that crop in</b> (<see cref="GrowsLongEnoughToFound"/>).
+        /// A translation, not a port: RimWorld's player reads a tile's growing period in the world inspector before
+        /// settling, and this method is the one choosing. Without it a band of twenty was founded on a tundra
+        /// (bench, band 20 seed 102: a growing period of a few twelfths), sowed rice that stalled half grown when
+        /// the cold came, and starved to the last citizen.
+        ///
         /// <para/>Falls back to the best-scored habitable tile when no candidate clears the spacing — a
         /// crowded world should still start a game rather than refuse to, and the fallback is the behaviour
         /// this method had before the rule existed.
@@ -403,6 +414,8 @@ namespace SimWorld.Sim
             }
             int minDistance = SimWorld.World.Gen.WorldGenStep_Factions.MinSettlementDistance(grid.TilesCount);
 
+            float growingDaysNeeded = FoundingGrowingDaysNeeded();
+
             int best = -1;
             float bestScore = float.NegativeInfinity;
             bool bestFarms = false;
@@ -414,7 +427,8 @@ namespace SimWorld.Sim
             {
                 if (grid.Tiles[i].WaterCovered) continue;
                 float score = SimWorld.World.Siting.SiteScorer.Score(grid, i, weights);
-                bool farms = score > 0f && SimWorld.World.Siting.FoundingGround.CanFarm(grid.Tiles[i]);
+                bool farms = score > 0f && SimWorld.World.Siting.FoundingGround.CanFarm(grid.Tiles[i])
+                    && GrowsLongEnoughToFound(world, i, growingDaysNeeded);
 
                 if (Outranks(farms, score, bestFarmsIgnoringSpacing, bestScoreIgnoringSpacing))
                 {
@@ -441,6 +455,25 @@ namespace SimWorld.Sim
             if (best >= 0) return best;
             if (bestIgnoringSpacing >= 0) return bestIgnoringSpacing;
             throw new InvalidOperationException("World generation produced no habitable tile to found a settlement on.");
+        }
+
+        /// <summary>
+        /// Days of growing season a founding site needs: the slowest food crop's own growDays
+        /// (<see cref="SimWorld.Economy.SettlementLarderTuning.DaysToFirstHarvest"/>) times
+        /// <see cref="SimWorld.Building.FarmingTuning.FieldSizeMargin"/> — the margin the field is already sized by
+        /// because nothing on a real map grows at rate 1. Both are numbers this port had already committed to; this
+        /// one is our own (translation), pinned by behaviour rather than its value.
+        /// </summary>
+        public static float FoundingGrowingDaysNeeded() =>
+            SimWorld.Economy.SettlementLarderTuning.DaysToFirstHarvest * SimWorld.Building.FarmingTuning.FieldSizeMargin;
+
+        /// <summary>Whether <paramref name="tile"/>'s growing period (<see cref="SimWorld.Weather.TwelfthUtility.GrowingTwelfths"/>)
+        /// covers <paramref name="daysNeeded"/>. A tile with no climate to read is not held back by it.</summary>
+        public static bool GrowsLongEnoughToFound(SimWorld.World.World world, int tile, float daysNeeded)
+        {
+            SimWorld.Weather.MapClimate? climate = SimWorld.Weather.MapClimate.ForTile(world, tile);
+            if (climate == null) return true;
+            return SimWorld.Weather.TwelfthUtility.GrowingTwelfths(climate) * GenDate.DaysPerTwelfth >= daysNeeded;
         }
 
         /// <summary>A habitable tile (score above zero) whose ground a founding band can farm
