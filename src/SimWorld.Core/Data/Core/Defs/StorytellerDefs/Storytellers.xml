@@ -15,11 +15,15 @@
     <description>A balanced storyteller: rising tension with a fair, escalating rhythm.</description>
     <listOrder>0</listOrder>
     <persona>The Chronicle</persona>
+    <!-- RimWorld's own "starting factor" (rimworldwiki.com/wiki/Combat_power, read 2026-11-19): 0.7 up to day 10,
+         1.0 from day 40. RimWorld shares it across its narrators and grows threat through wealth instead; the page
+         gives no points between days 10 and 40, so the straight line between them is this port's assumption. The
+         curve this replaced, (0,1)(20,2)(100,4) here and (0,1)(40,1.5)(150,2.5) for Phoebe, was unsourced and stood
+         at 2.8x by day 51, which is what sent 27 raiders at a band of 18 on seed 12345. -->
     <pointsFactorFromDaysPassed>
       <points>
-        <li>(0, 1)</li>
-        <li>(20, 2)</li>
-        <li>(100, 4)</li>
+        <li>(10, 0.7)</li>
+        <li>(40, 1)</li>
       </points>
     </pointsFactorFromDaysPassed>
     <comps>
@@ -67,11 +71,11 @@
     <description>A gentler storyteller: longer quiet stretches and a more relaxed pace.</description>
     <listOrder>1</listOrder>
     <persona>The Chronicle</persona>
+    <!-- RimWorld's shared starting factor; see Cassandra_Classic. Replaces the unsourced (0,1)(40,1.5)(150,2.5). -->
     <pointsFactorFromDaysPassed>
       <points>
-        <li>(0, 1)</li>
-        <li>(40, 1.5)</li>
-        <li>(150, 2.5)</li>
+        <li>(10, 0.7)</li>
+        <li>(40, 1)</li>
       </points>
     </pointsFactorFromDaysPassed>
     <comps>
@@ -113,6 +117,13 @@
     <description>An unpredictable storyteller: no pattern, just chance.</description>
     <listOrder>2</listOrder>
     <persona>The Chronicle</persona>
+    <!-- RimWorld's shared starting factor; see Cassandra_Classic. -->
+    <pointsFactorFromDaysPassed>
+      <points>
+        <li>(10, 0.7)</li>
+        <li>(40, 1)</li>
+      </points>
+    </pointsFactorFromDaysPassed>
     <comps>
       <li Class="SimWorld.Director.StorytellerCompProperties_RandomMain">
         <mtbDays>1.35</mtbDays>
