@@ -1731,6 +1731,11 @@
           "id": "building.reach",
           "label": "Every settlement planner (compound siting, Fits, works placement, field growth, granary) sites only cells reachable from a citizen, and the band spawns on the largest open ground. Seed 2024 (46 sealed rock pockets) went from 89 unworked frames to 90 buildings and 642 field cells by day 10. Buildings carry a faction; repair skips ruins and other factions. StructureCount and the structure ledger count only the settlement faction's own buildings (2026-11-17); pocket tests fail if the Fits or works-placement reach gate is removed.",
           "done": true
+        },
+        {
+          "id": "building.replanstalled",
+          "label": "Translation: the settlement re-plans a stuff-built site (bed, door, bench; never a wall) whose chosen stuff is no longer within the band's reach or in anyone's hands in the amount it still needs. SettlementConstructionInitiative.ReplanStalledSites cancels it (Frame.Cancel gives back everything delivered, as RimWorld's cancel does, recalled) and places it again on the same cell in GenStuff.AffordableStuffFor's answer, leaving it alone when that answer is the stuff it already has. RimWorld leaves such a frame for the player; here the settlement is the player. Found when a door frame lost its steel to a failed attempt and to a bed and waited fifteen days beside 47 logs. Banking was ruled out: it already keeps a frame's planned stuff (FrameStuffBankingTests, StalledSiteReplanTests).",
+          "done": true
         }
       ]
     },
