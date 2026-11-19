@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SimWorld.Pawns;
+using SimWorld.Things;
 
 namespace SimWorld.AI
 {
@@ -33,6 +34,19 @@ namespace SimWorld.AI
         /// <summary>Cleanup hook run once, whatever the job's outcome (RimWorld: folds into <c>JobDriver.Cleanup</c>).</summary>
         public virtual void Notify_Ending()
         {
+        }
+
+        /// <summary>
+        /// A Thing this driver holds off the map, or null. The one piece of driver state a save cannot rebuild:
+        /// RimWorld saves its drivers (<c>JobDriver.ExposeData</c>), this port does not, so
+        /// <see cref="Pawn_JobTracker.ExposeData"/> deep-saves this instead and hands it to the driver it
+        /// rebuilds after a load. Without it the Thing is in no save, and the job target and reservation that
+        /// point at it load as null.
+        /// </summary>
+        public virtual Thing? HeldOffMap
+        {
+            get => null;
+            set { }
         }
 
         private Toil? CurToil => curToilIndex >= 0 && curToilIndex < toils.Count ? toils[curToilIndex] : null;

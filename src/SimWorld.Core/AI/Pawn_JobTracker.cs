@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using SimWorld.Health;
 using SimWorld.Pawns;
 using SimWorld.Sim;
+using SimWorld.Things;
 
 namespace SimWorld.AI
 {
@@ -19,6 +20,10 @@ namespace SimWorld.AI
 
         public Job? curJob;
         public JobDriver? curDriver;
+
+        /// <summary>A loaded driver's off-map Thing (<see cref="JobDriver.HeldOffMap"/>), kept until
+        /// <see cref="JobTrackerTick"/> rebuilds that driver after a load; null in live play.</summary>
+        private Thing? heldForLoadedDriver;
 
         private readonly List<Job> jobQueue = new List<Job>();
 
@@ -269,6 +274,8 @@ namespace SimWorld.AI
             if (curDriver == null)
             {
                 curDriver = curJob.def.MakeDriver(pawn, curJob);
+                curDriver.HeldOffMap = heldForLoadedDriver;
+                heldForLoadedDriver = null;
                 curDriver.Notify_Starting();
                 if (curJob == null) return; // Notify_Starting may itself have ended the job.
             }
@@ -286,6 +293,14 @@ namespace SimWorld.AI
             Job? job = curJob;
             Scribe_Deep.Look(ref job, "curJob");
             curJob = job;
+
+            // What the driver holds off the map (JobDriver.HeldOffMap), deep, since the driver itself is not
+            // saved. Between a load and the first tick there is no driver yet, so a save taken then writes the
+            // Thing still waiting for it. Passed through every phase, as Pawn_CarryTracker does, so the Thing's
+            // own cross-references resolve.
+            Thing? held = Scribe.mode == LoadSaveMode.Saving && curDriver != null ? curDriver.HeldOffMap : heldForLoadedDriver;
+            Scribe_Deep.Look(ref held, "curDriverHeldThing");
+            if (Scribe.mode != LoadSaveMode.Saving) heldForLoadedDriver = held;
 
             Scribe_Values.Look(ref lastDamageCheckTick, "lastDamageCheckTick", -99999);
 

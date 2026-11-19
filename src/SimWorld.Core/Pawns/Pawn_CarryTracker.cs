@@ -28,11 +28,10 @@ namespace SimWorld.Pawns
     /// cell near the drop point (the Thing lands on the pawn's cell, which is where every abstract carry in
     /// this port already drops), forbidding what a hostile pawn drops, ticking the carried Thing
     /// (<c>CarryHandsTick</c> — nothing carried here yet has a comp that ticks), and copying comp state such
-    /// as rot progress onto a split-off piece (<c>ThingComp.PostSplit</c>).
-    /// <see cref="Building.JobDriver_HaulToBuildingSite"/> carries through this tracker, and so does
-    /// <see cref="AI.JobDriver_HaulToCell"/> for a whole stack; the other abstract carries
-    /// (<see cref="AI.JobDriver_FoodDeliver"/>, <see cref="AI.JobDriver_ButcherCorpse"/>,
-    /// <see cref="AI.JobDriver_Warden_Feed"/>, and HaulToCell's split-off count) still keep their own.
+    /// as rot progress onto a split-off piece (<c>ThingComp.PostSplit</c>). Only
+    /// <see cref="Building.JobDriver_HaulToBuildingSite"/> carries through this tracker today; the other
+    /// abstract carries (<see cref="AI.JobDriver_HaulToCell"/>, <see cref="AI.JobDriver_FoodDeliver"/>,
+    /// <see cref="AI.JobDriver_ButcherCorpse"/>, <see cref="AI.JobDriver_Warden_Feed"/>) still keep their own.
     /// </summary>
     public sealed class Pawn_CarryTracker : IExposable
     {

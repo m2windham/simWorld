@@ -125,6 +125,12 @@ namespace SimWorld.Tests.Integration
             Assert.Equal(Def("RawBerries"), target!.def);
             Assert.Equal(8, target.stackCount);
             Assert.True(loaded.reservationManager.IsReservedBy(loadedHauler, target));
+
+            // The rebuilt driver gets the Thing back, so the berries are not lost once play resumes: they reach
+            // the stockpile or, if the resumed job gives up, the hauler's feet.
+            RunTicks(2000, loadedHauler);
+            List<Thing> onMap = loaded.listerThings.ThingsOfDef(Def("RawBerries")).Where(t => t.Spawned).ToList();
+            Assert.Equal(8, onMap.Sum(t => t.stackCount));
         }
     }
 }
