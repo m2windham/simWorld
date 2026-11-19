@@ -33,7 +33,7 @@ namespace SimWorld.Combat
     /// An unarmed strike or melee weapon swing (RimWorld: <c>Verse.Verb_MeleeAttack</c>). First the attacker's
     /// <see cref="CombatStats.MeleeHitChanceFor"/> is rolled; on a hit, the target dodges by
     /// <see cref="CombatStats.MeleeDodgeChanceFor"/> unless it is down, asleep or dead; otherwise the tool's
-    /// damage lands on a random part chosen by coverage, same as any other hit.
+    /// damage lands on a random outside part chosen by coverage.
     /// </summary>
     public class Verb_MeleeAttack : Verb
     {
@@ -67,7 +67,9 @@ namespace SimWorld.Combat
             }
 
             DamageDef damageDef = verbProps.meleeDamageDef ?? DamageDefOf.Blunt;
-            BodyPartRecord? part = target.health.hediffSet.GetRandomNotMissingPart(damageDef, BodyPartHeight.Undefined, BodyPartDepth.Undefined, Rand.Current);
+            // RimWorld: Verb_MeleeAttackDamage.DamageInfosToApply sets BodyPartDepth.Outside — a blow lands
+            // on skin, limb or head, never straight on the heart or brain. Only a projectile rolls any depth.
+            BodyPartRecord? part = target.health.hediffSet.GetRandomNotMissingPart(damageDef, BodyPartHeight.Undefined, BodyPartDepth.Outside, Rand.Current);
             float amount = verbProps.AdjustedMeleeDamageAmount();
             float armorPenetration = verbProps.AdjustedArmorPenetration;
             DamageResult damageResult = damageDef.Worker.Apply(new DamageInfo(damageDef, amount, armorPenetration, caster, part), target);
