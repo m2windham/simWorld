@@ -170,6 +170,29 @@ namespace SimWorld.Building
             }
         }
 
+        /// <summary>
+        /// Cancels this frame: destroys it and drops everything delivered to it as loose stacks on its cell
+        /// (RimWorld: cancelling a frame, <c>Destroy(DestroyMode.Cancel)</c>, gives back its whole
+        /// <c>resourceContainer</c> — recalled, not re-read). Unlike <see cref="FailConstruction"/> nothing is
+        /// lost and no blueprint is left behind; the caller decides what, if anything, is planned there next.
+        /// </summary>
+        public void Cancel()
+        {
+            Map.Map map = Map ?? throw new InvalidOperationException("Frame is not spawned.");
+            IntVec3 pos = Position;
+            var refunds = new List<KeyValuePair<ThingDef, int>>(resourceContainer);
+
+            Destroy(DestroyMode.Cancel);
+
+            foreach (KeyValuePair<ThingDef, int> kv in refunds)
+            {
+                if (kv.Value <= 0) continue;
+                Things.Thing stack = ThingMaker.MakeThing(kv.Key);
+                stack.stackCount = kv.Value;
+                GenSpawn.Spawn(stack, pos, map);
+            }
+        }
+
         public override void ExposeData()
         {
             base.ExposeData();
