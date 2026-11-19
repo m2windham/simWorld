@@ -1524,3 +1524,12 @@ left, a revenge muffalo destroying a neck, is faithful). Host mirror 10. Open: n
 (knives, blunt bone cracks), generic animal bite verbs, arrows deal Cut not Arrow, `CompTrap` depth unchecked,
 old wounds of unknown origin on founders. Stuff-buildings is decided (Doug gave full control: merge with a loosened
 bed gate) but still held: the gate is loosened, yet desert seed 2024 builds 0 dwellings against 5 on main.
+
+2026-11-18 (stuff-buildings merged, suite 3142/3142 on the branch; integration differs only in docs): doors,
+beds and benches are stuff-built (categories, `AffordableStuffFor`, the hit-point factor, `PlaceBlueprint`
+stuff) at simWorld rates: bed 8, door 4, benches 10, each marked beside RimWorld's recalled 45/25/75 (Doug:
+costs may use our own rates). Houses wait until every citizen's bed is built or planned, not built. Benches:
+host mirror 10, delta 10; seven seeds 99 houses (main 100), end population 197 (194), deaths 13 (15). Seed 2024
+builds 7 against 9: a day-27 quake took 4 dwellings on a map with no wood left. Kept unmerged:
+`stuff-buildings-homefirst` (a74b95f), no founding dormitory; on seed 2024 the whole band of 20 died sleeping
+on open ground. Untraced, and a lethal path to check.
