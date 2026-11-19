@@ -1574,3 +1574,9 @@ rebuild; `lifespanAdjustmentReasons` no longer wiped by every save; a hauler's o
 the job tracker (`curDriverHeldThing`), live play untouched (21 seeds identical to integration). Growing-zone
 diff not reproduced: a line-shift artefact of the lost temperatures. Gap: a loaded pawn whose job ends before
 its first tick still loses the held item.
+
+2026-11-19 (RC gate 1 met): all 25 system groups pass the Release-player verify run (host 6ac0bf1, build rc6
+against core b49674a, `-batchmode -nographics`, solo and populated scenarios, 61 days each, exit 0; save/load
+byte-identical in both). Groups marked `verified` in status.json. No window was ever created (MainWindowHandle 0
+across 5,446 polls; foreground untouched). Remaining gates: raid lethality (populated: 19 raid deaths in 61 days,
+lane running), frame timing on real hardware (needs Doug's go-ahead for a windowed run), the 9 open port items.

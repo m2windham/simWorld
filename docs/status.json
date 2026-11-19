@@ -204,7 +204,7 @@
       "translation": "Unchanged. Defs, Comps and patching are engine-neutral; every later module is data-driven through this layer.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Defs · Defs/Patches · Content (ModContentPack, ModLoadOrder)",
-      "status": "ported",
+      "status": "verified",
       "tests": 113,
       "items": [
         {
@@ -312,7 +312,8 @@
           "label": "PatchOperationFindMod.LoadedPackIdentifiers is thread-static. It was a plain static that DefLoader assigns at the start of a load and resets to empty in a finally, so two loads on different threads shared one slot: one loader's cleanup landing mid-patch left the pack list empty and a FindMod that should have matched silently took its nomatch branch. Content patching itself the wrong way reports nothing, which is why it surfaced only once, as FindMod_branches_on_which_packs_are_loaded reading “missing” for “present”.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "worldgen",
@@ -321,7 +322,7 @@
       "translation": "Implemented: planet generation at civilization scale — biomes, rivers and roads unchanged; the player's civilization alone at world gen, many rival civilizations seeded over time instead by World.EmergenceManager, population-scaled and era-seeded off the world's current era.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/World · Noise · Factions (minimal) · World.EmergenceManager",
-      "status": "ported",
+      "status": "verified",
       "tests": 59,
       "items": [
         {
@@ -374,7 +375,8 @@
           "label": "The founding band settles on a tile whose map can carry a sowable food crop (FoundingGround.CanFarm over GenStep_Terrain.BaseTerrainsFor), ranked ahead of the site score. Seed 2024 had founded on 98% sand and starved; it now founds on AridShrubland soil and holds 20 to day 60. BaseTerrainsFor reads the biome's terrainsByFertility bands (2026-11-18).",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "mapgen",
@@ -383,7 +385,7 @@
       "translation": "Settlement-site maps, many per civilization, generated on demand from the world tile via MapGen.MapGenerator.GenerateMapFor, rather than RimWorld's single fixed map. Rocky outcrops, ore veins and river channels are not sprinkled independently of the world map: their presence and rough scale are read directly from the tile's own Ore/Stone/river data, so a tile the world map promised ore or a river on always produces a map with ore or a river crossing it. Ruins (GenStep_Ruins) are a direct, hand-written stand-in for RimWorld's RuleDef/SymbolResolver ruin grammar rather than a port of that grammar itself: one ruin shape (a gap-and-rubble wall rectangle, sometimes roofed, sometimes looted, walls weathered off full hit points), not a composable rule library. GenStep_ScatterShrines (a single guarded unique-reward structure) and corpses inside a ruin are not ported at all — no Corpse Thing/system exists yet in this port, and a flavor-only stand-in was judged to misrepresent rather than simplify a dead pawn's identity; see GenStep_Ruins's own doc comment.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/MapGen",
-      "status": "ported",
+      "status": "verified",
       "tests": 28,
       "items": [
         {
@@ -441,7 +443,8 @@
           "label": "Terrain fertility ported to RimWorld's values: Soil 1.0, SoilRich 1.4, Gravel 0.7, Sand 0.1, MarshyTerrain 1.0, Marsh 0. Crops carry RimWorld's Ground sowTag; berry bushes are never sown. Map ground is painted from each biome's terrainsByFertility (TerrainThreshold, 2026-11-18); terrainPatchMakers and the elevation gravel band are not ported, so rich soil is rare (Soil/SoilRich cut at a recalled 0.87). Stuff-built things charge costStuffCount through CostListAdjusted(stuff); blueprints and frames carry their stuff.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "mapcore",
@@ -450,7 +453,7 @@
       "translation": "Unchanged. The Thing/Comp runtime and map grids every later system stands on; settlement maps are generated onto it.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things · src/SimWorld.Core/Map/View",
-      "status": "ported",
+      "status": "verified",
       "tests": 120,
       "items": [
         {
@@ -513,7 +516,8 @@
           "label": "ThingView.BuildProgress, asked for by the host (REQ-001): a Frame reads Frame.PercentComplete clamped to [0, 1], a Blueprint 0, anything else 1, and the delta stream carries it. Map/View does not bump a chunk for an in-place field write, so the construction driver notifies the chunk at each 5% step: at most ~20 redraws per build, and any stage threshold the host picks is seen within five points (MapViewTests).",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "pawngen",
@@ -522,7 +526,7 @@
       "translation": "Proposed: citizen generation. Birth and lineage drive most generation instead of 'wanderer joins'; backstories become life histories written by the sim.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Pawns · Pawns/Generation · Pawns/Genes",
-      "status": "ported",
+      "status": "verified",
       "tests": 91,
       "items": [
         {
@@ -595,7 +599,8 @@
           "label": "Founders go by unused names: RimWorld's GeneratePawnName_Shuffled nickname loop with NameUseChecker tracking nicknames; backstories that bar work are weighted down (SelectionWeightFactorFromWorkTagsDisabled). Bands with a repeated name: 46/50 to 7/50. Ported constants are recalled, not quoted. Open: small name banks and tribal backstory pool.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "simcore",
@@ -604,7 +609,7 @@
       "translation": "Unchanged. Tick engine, rare/long tick buckets, deterministic RNG streams, Scribe-style save/load. Bucket sizing scales with population.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Sim",
-      "status": "ported",
+      "status": "verified",
       "tests": 134,
       "items": [
         {
@@ -692,7 +697,8 @@
           "label": "Sim.Ablation: switch a named part of the simulation off so a run can be subtracted against one with it on. Ablates the EFFECT, never the selection — dropping an incident from the storyteller's candidate list would change which index its weighted roll lands on and shift every later draw, producing a large reproducible number about nothing. So an ablated incident is still selected, still fires, still spends its refire timer and still advances its own stream. `tools/bench --suite probe --without <names>` runs both arms twice and reports the difference in deaths, moments and mood swing.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "needs",
@@ -701,7 +707,7 @@
       "translation": "Unchanged per citizen. Adds aggregate 'public mood' rollups so the god view can read a city without opening every person.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Needs · Thoughts · MindState · Pawns",
-      "status": "ported",
+      "status": "verified",
       "tests": 121,
       "items": [
         {
@@ -824,7 +830,8 @@
           "label": "A settlement mourns its dead, including the ones nobody saw die. Only WitnessedDeathAlly had been ported, and an abstractly-resolved death fails three of its gates at once: no DamageInfo (so it reads non-violent), no map on an unspawned victim, no spawned witnesses. An unwatched settlement could lose people to violence indefinitely and no survivor would mourn — found by the probe, which showed mood swing 0.08 against a watched 0.21 after an ablation put a death squarely on the manhunter pack. KnowColonistDied is RimWorld's own second memory and is not gated on violence, which is what distinguishes bereavement from trauma. The witness gate is correct and untouched.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "health",
@@ -833,7 +840,7 @@
       "translation": "Unchanged.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
-      "status": "ported",
+      "status": "verified",
       "tests": 180,
       "items": [
         {
@@ -941,7 +948,8 @@
           "label": "Healroot is sown when medicine runs out (CropDemandDef HealrootForMedicine, CropDemandWorker_Medicine, sowMinSkill). cotton-1: medicine out day 10, field day 28, first harvest day 44.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "work",
@@ -950,7 +958,7 @@
       "translation": "Built: standing civilization-scale roles (RoleDef) replace a per-person priority grid. A role names the work types it emphasizes; Pawn_WorkSettings.ApplyRole sets those to the pawn's best priority (1) and leaves everything else at the default (3), rather than a player setting twelve numbers per citizen. Kept distinct from an EdictDef's own 'leaves no trace' guarantee (docs/spec/simworld-spec.md §10): a role is standing, not temporary, and does write into the priority grid — but Pawn_WorkSettings tracks every work type a caller set directly (SetPriority), and a role's own writes always skip those, so assigning or changing a role can never overwrite a person's own explicit choice; clearing a role (SetRole(null)) reverts every non-manual entry it touched back to default, the standing-policy mirror of an edict's guarantee. WorkPolicyUtility.ApplyRoleToPopulation is the civilization-scale lever — one call assigns a role across an entire settlement's citizens, the same 'act on the aggregate' shape GodManager gives edicts.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Work · Pawns · Stats",
-      "status": "translated",
+      "status": "verified",
       "tests": 86,
       "items": [
         {
@@ -1033,7 +1041,8 @@
           "label": "WorkGiver_Repair skips buildings outside the home area unless forced, as RimWorld does. Builders had been repairing map-gen ruins across the map; houses built by tick 60k rose from 68/120 to 104/120 over 6 seeds x 2 runtimes. Open: ruins inside the home area still get repaired until buildings carry a faction.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "ai",
@@ -1042,7 +1051,7 @@
       "translation": "Implemented: think tree and jobs unchanged; the god issues edicts and goals that enter the tree above routine work instead of draft orders. Pathfinding is now shared for full-agent populations: AI.RegionPathCorridorCache builds one region-graph BFS tree per unique destination (paid once, reused by every pawn walking there, invalidated wholesale when RegionAndRoomUpdater.Version moves) and PathFinder tries a corridor constrained to it before falling back to its original unconstrained A* — a corridor can never be wrong (any doubt falls back to the always-correct search) but its region-hop-count metric is not cell distance, so a hierarchical route can be longer than optimal, disclosed and bounded by PathSharingTests rather than hidden. Measured (docs/perf/baseline.md §9): before/after speedup grows with population, from ~1.5-2.5x at N=100-1,000 to 9.7x at N=10,000 — an asymptotic (roughly O(N²) to O(N)) improvement for the 'N pawns to a shared destination' case, not just a constant factor. Hunting carries two civilization-scale translations of its own. There is no Designation system, so AI.HuntingInitiative decides for the settlement: hunt while short of food, stop when not — the shape SettlementConstructionInitiative already set. And there was no Corpse class when hunting landed, so the hunt's last toil butchers at the kill site through the shipped recipe and HaulGeneral carries the meat home, reaching RimWorld's end state by the only route this port has. Combat AI, which the port had none of: the whole Combat module was complete, tested and unreachable from play, because no JobGiver or JobDriver anywhere ever attacked and the humanlike think tree had no danger tier at all. Who fights is SimWorld's own, since there is no draft to port: anyone armed engages a hostile within acquire radius, anyone at all fights back within melee reach (RimWorld 1:1), and the new TakeUpArms edict raises an unarmed citizen to the first rule. Violence-disabled refuses regardless. A grudge stays personal rather than RimWorld's hostile-to-everyone manhunter, so a provoked animal charges its hunter and walks past everyone else.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/AI",
-      "status": "ported",
+      "status": "verified",
       "tests": 202,
       "items": [
         {
@@ -1180,7 +1189,8 @@
           "label": "Mining bands no longer slow 10x: a newly opened cell joins its one bordering region instead of re-flooding, reachability is cached per region component (RimWorld's ReachabilityCache idea), and work scans test candidates nearest first. Same outcomes at a fixed tick; mining stretch 4,200 to 21,700 ticks/s. Regions stay uncapped (the 12x12 extentsLimit changed paths and broke the corridor cache).",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "director",
@@ -1189,7 +1199,7 @@
       "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth, population and era instead of one colony. Deaths are recorded on two axes rather than one: by cause, as RimWorld does, and by source — the incident that put the killer in the world. The second axis is a SimWorld addition and exists because a civilization-scale game cannot measure a threat by differencing two runs: ablating anything that spawns onto a live map diverges the whole world from that tick, and the noise in total deaths is larger than the cost being measured.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
-      "status": "ported",
+      "status": "verified",
       "tests": 234,
       "items": [
         {
@@ -1327,7 +1337,8 @@
           "label": "A building an earthquake destroys leaves a rebuild blueprint in place with its rotation (RimWorld auto-rebuild); a forced night quake on seed 12345 was rebuilt the same day with no deaths.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "combat",
@@ -1336,7 +1347,7 @@
       "translation": "Unchanged mechanics; armies are groups of full agents.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Combat · Map · Building · Factions · Health/Damage (armor)",
-      "status": "ported",
+      "status": "verified",
       "tests": 48,
       "items": [
         {
@@ -1369,7 +1380,8 @@
           "label": "Downed → captured → prisoner loop: CaptureUtility (downed + hostile-faction → Pawn_GuestTracker) and WardenUtility (resistance reduction → recruit, or release), GuestStatus/PrisonerInteractionModeDef kept as RimWorld's own names. Pawn_GuestTracker lives on the host Faction (Faction.prisoners), not on Pawn — Pawns/** is another lane's module and carries no such field; see Pawn_GuestTracker.cs's own remarks. The Warden WorkGiver/JobDriver that sends a colonist to actually carry this out is AI/Work content and code — see the ai system's own ai.warden entry.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "crafting",
@@ -1378,7 +1390,7 @@
       "translation": "Proposed: bills unchanged; guilds and industries act as bill queues at scale.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
-      "status": "ported",
+      "status": "verified",
       "tests": 105,
       "items": [
         {
@@ -1451,7 +1463,8 @@
           "label": "A settlement establishes, staffs and bills its own guilds. GuildManager.Establish and Guild.StatisticalMembers had no writer in src/ at all. GuildInitiative establishes only when the civilization knows one of the trade's recipes and somebody below Full tier can staff it, and reuses StonecutterInitiative.StandingBillFor so a guild asks for what a bench asks for and a zero-target bill is never queued. Proven end to end by a 14,000-tick test that calls no initiative, work giver, job driver or guild tick — just NewGame, EnterSettlement and ticks — and asserts the ledger's chunk count FALLS, since the only thing that can remove one is a guild consuming it.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "research",
@@ -1460,7 +1473,7 @@
       "translation": "Translated: a large authored tech tree detailing societal evolution across eras. Data model leaves room for procedural/endless tech later.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects) · tools/content/gen_techtree.py",
-      "status": "ported",
+      "status": "verified",
       "tests": 104,
       "items": [
         {
@@ -1553,7 +1566,8 @@
           "label": "A settlement could not research at all, for two reasons rather than one. ResearchBench had a Blueprint/Frame pair and nothing ever placed one — and exactly ONE line in all of src/ ever assigned ResearchManager.CurrentProj: GodManager.Activate, for five era-gated edicts capped by MaxActiveEdicts, against 245 authored projects, while WorkGiver_Research.ShouldSkip returns immediately on a null project. So the tech tree, the era ladder, the reachability study and the endless tail all stood on a project that was almost never set. SettlementWorksInitiative places the bench and ResearchAgenda picks the cheapest startable project when none is set — defName settling ties, never overriding the god's edict focus, extending the endless tail rather than stalling. Translation recorded: RimWorld's player picks the project by hand and this port's god does so only through edicts, so the agenda is SimWorld's own. ResearchBenchesWanted is 2, derived rather than invented: WorkGiver_Research reserves its bench so benches are researchers, and docs/research/tech-reachability.md sized the authored tree against two researcher-equivalents — population-scaling it would exhaust 245 projects inside the first in-game year.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "economy",
@@ -1562,7 +1576,7 @@
       "translation": "Decided: other civilizations are the factions (unchanged); trade routes between settlements replace RimWorld's orbital/caravan traders as the connective tissue, priced the same way CoalSupply already prices coal (a real path through the world pather, marked up by distance) and closed while the two settlements' factions are at war; goodwill becomes diplomacy through two new layers RimWorld has no equivalent of — an explicit War/Peace state per relation (Faction.DeclareWar/MakePeace, entry and exit acts rather than goodwill silently crossing a threshold) kept separate from the existing Hostile/Neutral/Ally goodwill-derived label, and Def-driven Treaty terms (non-aggression, trade access) a pair of factions can sign, each with its own duration and goodwill effect. Every number here (war/peace goodwill swings, route premium, treaty terms) is this port's own judgement call, not sourced from RimWorld — see the code's own comments for where and why.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
-      "status": "ported",
+      "status": "verified",
       "tests": 270,
       "items": [
         {
@@ -1635,7 +1649,8 @@
           "label": "SettlementStockInitiative.IssueFromStores — the crossing that was missing. The class states that a unit is either a Thing on a map or a count in Stores and never both, and its own doc said “all that was missing was the rule for crossing”; only map-to-ledger had been written. So WouldEatFromStores correctly refused a Spawned citizen while ProvisionFoundingBand sized rations counting them, and no map-gen step places food: watching a settlement locked its people out of rations stocked for them. Issuing tops the map up to the same NutritionWanted line banking keeps, bounded by the shortfall rather than the ledger, debiting as it spawns. Probe, 25-strong TribalStart: watched-minus-unwatched food went -0.44/-0.24/-0.12 to +0.10/+0.30, watched sustaining itself while unwatched declines between abstract refills.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "building",
@@ -1644,7 +1659,7 @@
       "translation": "Implemented: unchanged mechanics; settlements grow from citizen initiative plus god edicts rather than direct placement of every wall — SettlementConstructionInitiative decides what a settlement needs and places the blueprint, and an active edict (EdictDef.prioritizedConstruction) biases which unmet need gets filled first; see building.initiative. Where it places them: inside the player's painted home area when there is one, by the same on/off rule CleaningBounds reads, and otherwise around the hub GenStep_Roads carves — never the whole map. A home area too full to hold the need makes the settlement wait rather than spill outside it, so painting small stays a decision with a cost. Stockpile defaults follow RimWorld's ordinary preset in refusing corpses (StorageSettingsPreset excludes the Corpses category rather than copying RimWorld's eight-category allow-list, because this content has no Weapons, Apparel or Buildings category and an allow-list would silently refuse weapons). One deliberate deviation: Chunks stay allowed, where RimWorld's ordinary stockpile refuses them, because the masons' guild needs them banked. What the settlement builds on its own never walls off its own ground: autonomous placement refuses a site that would cut a region of the settlement off from the rest (PlacementConnectivityTests). RimWorld has no placement AI to port, so the rule is this port's, in the spirit of WorkGiver_Miner's roof-support judgment. Tree density (one per ~20 cells at full Timber) is this port's own figure, pinned as a trend, not a literal. Deliberate difference (drought-starvation lane): the settlement's field (FarmingInitiative) is not confined to GenRadial's 60-cell circle — once the circle runs dry it takes the nearest sowable cells anywhere on the map, as a player zones the fertile patches wherever they lie; RimWorld has no field-placing AI to port (FarmingFieldReachTests).",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Building",
-      "status": "translated",
+      "status": "verified",
       "tests": 199,
       "items": [
         {
@@ -1742,7 +1757,8 @@
           "label": "Translation: the settlement re-plans a stuff-built site (bed, door, bench; never a wall) whose chosen stuff is no longer within the band's reach or in anyone's hands in the amount it still needs. SettlementConstructionInitiative.ReplanStalledSites cancels it (Frame.Cancel gives back everything delivered, as RimWorld's cancel does, recalled) and places it again on the same cell in GenStuff.AffordableStuffFor's answer, leaving it alone when that answer is the stuff it already has. RimWorld leaves such a frame for the player; here the settlement is the player. Found when a door frame lost its steel to a failed attempt and to a bed and waited fifteen days beside 47 logs. Banking was ruled out: it already keeps a frame's planned stuff (FrameStuffBankingTests, StalledSiteReplanTests).",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "social",
@@ -1751,7 +1767,7 @@
       "translation": "Opinions and social interactions ported for this pass, RimWorld's compatibility-factor mechanic (a stable hash of the two pawns) included; ideoligions become the religions and ideologies of your civilization — memes/precepts feeding thoughts through the existing pipeline, rituals with a quality resolution, and precept-granted roles are built (social.ideology); per-citizen ideoligion membership (certainty, conversion, an outsider penalty) is not, and one Ideo stands in for a whole civilization's belief for now — see that item's own label. DLC systems (genes, psycasts, anomalies), still proposed, evaluated per era. RimWorld's Thought_Memory/Thought_MemorySocial split is folded into one Thought_Memory class with a nullable otherPawn and a ThoughtDef.IsSocial property, rather than a second thought class; RimWorld's spatial \"a friend is nearby\"/\"a rival is present\" situational thoughts read this port's stored relations instead (no Map/room concept reaches Social or Thoughts yet), via one generic, content-driven ThoughtWorker_HasDirectRelation.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Social · Social/Ideology",
-      "status": "ported",
+      "status": "verified",
       "tests": 75,
       "items": [
         {
@@ -1784,7 +1800,8 @@
           "label": "Three porting defects, and the first is structural. (1) MentalState_SocialFighting.MentalStateTick built a Verb_MeleeAttack and cast it at the other pawn AT DISTANCE ZERO - no map, no position, no reach check. RimWorld's mental state throws nothing: it is lifecycle only, and the blows come from a job (JobGiver_SocialFighting -> JobDefOf.SocialFight) that returns null unless both pawns are spawned on the same map and then has to walk across it. That is why citizens of a settlement NOBODY HAD EVER OPENED - with no map in existence - were injuring each other from nowhere, and why three to five of twenty-five founders were gone by day eight in a world none of it could have happened in. (2) The hand-built fists Tool used a 1-second cooldown against Tool's own 2-second default: the same punch at two speeds. Fists now come from AttackVerbUtility.NaturalWeaponFor, which is also RimWorld's reason a colonist with a knife on their belt still brawls bare-handed - the fight verb is drawn from verbTracker.AllVerbs, which holds natural tools and never the equipped weapon. (3) The escalation roll was a flat 15% behind two gates RimWorld does not have (opinion < -20 AND mood < 0.4), and its own doc claimed it was RimWorld's. Pawn_InteractionsTracker.SocialFightChance is 4% base scaled by continuous factors - manipulation and moving capacity, opinion, traits, age gap - now ported; the 4% comes from the wiki rather than a def and is flagged as a secondary source. HadCatharticFight and HadAngeringFight were missing outright, so a fight could only ever cost mood; RimWorld hands both parties one at 50/50 in PostEnd. Consequence, three seeds, eight days: an unwatched settlement went from losing 3-5 of 25 to losing NOBODY, with no injuries and no Pain anywhere. Stated at the site: an unwatched settlement can no longer brawl at all, since a fight now requires both parties spawned on one map.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "quests",
@@ -1793,7 +1810,7 @@
       "translation": "Built: scenarios become civilization starts (era, biome, rivals — quests.starts); quests become narrator-issued historical moments (quests.moments). A moment is the narrator noticing something worth remembering — a first, a record, a turning point — rather than a line per routine event; the Chronicle already recorded births, deaths, edicts and era transitions unconditionally, so the missing piece was deciding which of those matter more. Built as MomentCurator, owned by the Storyteller (src/SimWorld.Core/Director) since that is where the Chronicle itself lives — see that system's director.chronicle item for the mechanism and its own report for why the code sits there rather than under Quests.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Quests · Scenario · Letters (quests.moments' curator lives in src/SimWorld.Core/Director — see director.chronicle)",
-      "status": "translated",
+      "status": "verified",
       "tests": 46,
       "items": [
         {
@@ -1841,7 +1858,8 @@
           "label": "A tribute demand that can be answered. Quest_Tribute shipped for four batches as a script that set demandSilver from the threat points, sent a letter, waited out the offer and ended Fail — always, identically, whether the civilization was rich or destitute. Nothing read demandSilver, no coin moved either way, and refusing cost nothing, so 'or threatens reprisal' in its own description had no mechanism behind it: the exact mirror of the reward-sink defect, with value unable to leave the civilization as it had been unable to enter. QuestPart_Tribute answers out of the same seat a reward is paid into (QuestCivilization, extracted from the reward sink so both directions provably touch one ledger), and QuestNode_Tribute branches at runtime, which QuestNode_IsSet/IsTrue cannot — they branch during generation, before the quest has run. All or nothing, since a part-payment would need a fraction-to-goodwill rule nobody could source; paid if affordable, since there is no player-input model at this seam; the reprisal applied by the tribute part rather than through QuestPart_Reward, because that part feeds Quest.RewardsSummary and a reprisal is not a reward; and deliberately not scaled by questRewardValueFactor, which is a factor on reward value, not on a cost.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "demography",
@@ -1850,7 +1868,7 @@
       "translation": "SimWorld original — RimWorld has no equivalent to port. A colony of twelve never needs generations; a civilization does. Built on the ported age/life-stage clock rather than a compressed one. Citizen tiering (§11.3) is the same idea pushed further: a civilization needs most of its population cheap, not absent — RimWorld's world-pawn precedent (identity/ageing kept, needs/jobs/health frozen off-map) generalised from \"on the map or not\" to \"significant or not\". Migration (demography.migration) closes the module's last open seam: MigrationManager mirrors the birth formula's own shape (base × (0.5 + quality) × a situational factor) for arrivals, where quality is the same per-citizen mood/food signal births already read, plus an era factor — a more advanced settlement has more to offer. Arrivals generate one adult migrant per successful roll and found their household through the existing FamilyManager.FoundHousehold(founder, null, tick) hook (built for exactly this); a settlement's bare Statistical cohort grows by the same closed-form percentage idiom Settlement.GrowStatisticalCohort already uses for births-minus-deaths, never by materialising real Pawns for it. Departures remove a distressed family's living members together from a caller-owned population list — the same list-mutation contract FamilyManager.DemographyTick already uses — but Settlement itself exposes no public way to shrink StatisticalPopulation or remove a citizen (World/** is out of this lane's bounds to add one), so the Settlement-aware overload can only ever floor migration at zero, never make it negative; see MigrationManager's own doc for the stated limitation.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Pawns — Family · FamilyManager · Pawn_RelationsTracker · DemographyTuning · Pawn_TierTracker · MigrationManager · MigrationTuning",
-      "status": "translated",
+      "status": "verified",
       "tests": 51,
       "items": [
         {
@@ -1898,7 +1916,8 @@
           "label": "A migrant is an ordinary citizen. MigrationManager flagged every arrival with Notify_RoleChanged, which is never cleared and outranks every other reason in the Full-tier ordering — so arrivals accumulated permanently at the top, unbounded, at roughly 25 per settlement per century, filling the budget with people whose only distinction was having arrived",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "settlements",
@@ -1907,7 +1926,7 @@
       "translation": "The opening of the game and what a settlement is once it has an interior. Region-then-site founding, deposits derived from terrain, era-weighted site scoring, a settlement that is an entity rather than a def plus a tile, and rival civilizations that emerge from play — World.EmergenceManager — rather than existing at time zero. Every settlement anywhere, including world generation's own, is now a real Settlement founded through SettlementFounder; World.Settlements is typed Settlement, not a WorldObject mix. Closing the last gap in §11.2/§11.3's seam: Settlement.SyncCitizenSpawns places every Full-tier citizen (never Interval, never — by the tiering system's own design — a Statistical one) onto the interior map the instant it is entered, near whatever the settlement has already built, and reconciles that presence on a rare gated cadence after — dropping a citizen who died (off the map and off the roster, so population never keeps counting them) and moving one who leaves Full off the map without anyone tearing the interior itself down, since nothing in this codebase ever discards a generated map once cached. A citizen currently spawned is saved by reference to the one real copy the map's own Thing list already owns, never deep-saved a second time, so a round-tripped save neither duplicates nor loses anyone. Deliberate difference (drought-starvation lane): the founding tile (Game.PickStartingTile) must also have a growing period (TwelfthUtility.GrowingTwelfths, RimWorld's world-inspector 6-42 C range, recalled) of at least the slowest food crop's growDays times FarmingTuning.FieldSizeMargin, because RimWorld's player reads the growing period before settling and this port picks the tile itself; without it seed 102's band was founded on a tundra and starved (FoundingGrowingSeasonTests). The game itself now starts at the opening of the tile's warm season, as RimWorld's does (TwelfthUtility.FindStartingWarmTwelfth; a port, not a difference).",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/World (regions, deposits, siting, solo start, Settlement entity, SettlementFounder, EmergenceManager)",
-      "status": "ported",
+      "status": "verified",
       "tests": 60,
       "items": [
         {
@@ -1985,7 +2004,8 @@
           "label": "Settlement gains Structures, a Dictionary<ThingDef,int> ledger of completed buildings mirroring Stores exactly (SetStructureCount/AddStructure, same clamp-to-removed-key shape, same Scribe shape — LookMode.Def, LookMode.Value). The single accessor StructureCount(def) is the one source of truth: it reads a live InteriorMap directly when one exists and the ledger only when it does not, so the two numbers are never compared against each other and can never disagree — the ledger is never read while a map exists, only written to it (SyncStructureLedger, on the settlement's own SettlementTuning.CitizenMapSyncIntervalTicks cadence, tallying ThingRequestGroup.BuildingArtificial rather than naming individual Defs, since World may not reference Building's ConstructionThingDefOf/StoneWallMaterials to know which ones are walls or beds). SettlementRaidResolver.Muster is the first real consumer (see director.fortification). Tests: tests/SimWorld.Core.Tests/World/SettlementStructuresTests.cs.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "stats",
@@ -1994,7 +2014,7 @@
       "translation": "Unchanged.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Stats · Data/Core/Defs (StatDefs, StatCategoryDefs)",
-      "status": "ported",
+      "status": "verified",
       "tests": 24,
       "items": [
         {
@@ -2022,7 +2042,8 @@
           "label": "Closed properly, not by assertion: CompQuality (Things) gives QualityCategory a home on a live Thing; StatPart_Quality (Stats) is the first concrete StatPart this module ships, wired onto MarketValue's own content (Stats_Economy.xml); Thing.Stuff — plus ThingMaker applying it and StatRequest.For(Thing) reading it — finally gives the stuff factor/offset pass (real and tested since stats.pipeline, previously always fed StuffDef=null for a live Thing) something to read. Tests: tests/SimWorld.Core.Tests/Things/QualityAndStuffTests.cs (filed with CompQuality rather than under Stats, per this pass's test-directory ownership).",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "god",
@@ -2031,7 +2052,7 @@
       "translation": "SimWorld's own — RimWorld has no equivalent to port. The re-focus from §10: the player is not a colony overseer but a god directing one civilization, so the player's own verb changes from drafting individuals to issuing standing civilization-scale edicts and reading aggregate rollups. Kept in RimWorld's own declarative shapes throughout even though the concept is new: Def + Worker + Class= polymorphism for EdictDef/EdictWorker (mirroring WorkGiverDef/WorkGiver and ThoughtDef/ThoughtWorker), IExposable for GodManager, a Find service exactly like Find.Storyteller/Find.ResearchManager, and a think-tree job-giver node for the work push rather than a bespoke priority mechanism. The mood consequence reuses the existing situational-thought pipeline (ThoughtWorker_UnderEdict) instead of inventing a second one, so an edict's cost to public mood appears and disappears with activation on its own, the same way every other situational thought already does. Attention, the trigger the citizen tiering was built around, is defined as the god's focus: zero or one settlement the player has open, named across the host seam by its world tile because Settlement.name is not unique. God.AttentionManager applies focus changes immediately and reconciles periodically from GodManager.GodTick, so a settlement founded or a citizen born between focus changes is still placed at the right tier. A second, narrower translation rides with it: the Interval->Statistical settle is by elapsed insignificance (TieringTuning.IntervalSettleTicks, one game year, SimWorld's own — RimWorld has no middle tier to wait in), while promotion stays by significance alone.",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/God · EdictDef · EdictWorker · EdictWorker_ExemptMinors · ThoughtWorker_UnderEdict · GodManager · GodRollup · GodTuning; src/SimWorld.Core/AI/JobGiver_Edicts.cs · WorkGiverScanUtility.cs (shared with JobGiver_Work)",
-      "status": "translated",
+      "status": "verified",
       "tests": 133,
       "items": [
         {
@@ -2104,7 +2125,8 @@
           "label": "Player seam: roster fields, WorkPrioritiesOf/SetWorkPriority (ranked per citizen), 10 Alerts, Letters with DismissLetter, ChronicleSince; every death chronicled once; edicts report Suspended and 'nobody is allowed'. The host renders all five screens.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "offices",
@@ -2113,7 +2135,7 @@
       "translation": "SimWorld's own. Work.RoleDef already existed and says what a citizen does; what was missing is the seat — scarcity, a place, a selection rule and succession. An OfficeDef names a Work.RoleDef the way GuildDef already does, so a station is a role plus a seat. Wiring Work.RoleDef straight into Pawn_TierTracker.Notify_RoleChanged would have been wrong: WorkPolicyUtility.ApplyRoleToPopulation sweeps a whole settlement, so 'has a role' would have ranked the entire roster top and collapsed the ordering AttentionBudget spends its budget against. Selection is a pure function of ages, ids and opinions — nothing touches Rand at all, seeded or otherwise, so two runs from one save seat the same citizen. The module is stateless: the holder is the role-carrier, and its whole footprint in a file it does not own is one PostTickers line.",
       "translationState": "recorded",
       "module": "src/SimWorld.Core/Offices",
-      "status": "translated",
+      "status": "verified",
       "tests": 20,
       "items": [
         {
@@ -2141,7 +2163,8 @@
           "label": "STILL OPEN, re-verified. God/GodManager.cs:102 gates edict activation on IsActive, the MaxActiveEdicts slot and requiredEra/obsoleteEra, and nothing else. There are ZERO references to Offices anywhere under src/SimWorld.Core/God. Offices/OfficeManager.cs implements the full seat and leader logic; no edict consults it.",
           "done": false
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "weather",
@@ -2150,7 +2173,7 @@
       "translation": "Commonalities live on WeatherDef rather than BiomeDef.weatherCommonalities — the relationship is inverted so a biome added later needs no edit to any weather, and no biome file had to be touched. WeatherDef.temperatureOffset is SimWorld's own: RimWorld's swings are GameConditionDefs; that system landed a batch later and plugs into exactly this seam. Rain rolls against fire map-wide on Fire.ComplexCalcsInterval rather than inside each fire's own pass, same rate per fire without editing Fire.cs. Weather exists only where a Map exists — the settlement the player opened — because everything weather moves (a fire, a room, a plant, a mood) only exists on a generated map, so the god layer is deliberately not widened to carry it.",
       "translationState": "recorded",
       "module": "src/SimWorld.Core/Weather",
-      "status": "translated",
+      "status": "verified",
       "tests": 21,
       "items": [
         {
@@ -2173,7 +2196,8 @@
           "label": "Snow ported (2026-11-17): per-cell SnowGrid (depth 0-1, saved), snowfall during SnowGentle/SnowHard on unroofed cells and melt by outdoor or room temperature via SteadyEnvironmentEffects, snow categories add path cost, planting and wild regrowth blocked above depth 0.2, a painted snow-clear area with WorkGiver_ClearSnow/JobDriver_ClearSnow under Cleaning. Snow draws nothing from the shared Rand. Constants are recalled rather than sourced and marked in code. Deferred: snow rendering in the host, the rest of SteadyEnvironmentEffects (rain fire-out, deterioration, filth washing), hideAtSnowDepth.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     },
     {
       "id": "conditions",
@@ -2182,7 +2206,7 @@
       "translation": "Registration is civilization-scale by default, which is a translation rather than a port: the only IIncidentTarget here is one CivilizationTarget for the whole civilization, and the settlement an incident picks usually has no interior map, so a condition registered per-map would exist only while somebody was watching — fire, find no map, change nothing. The per-map manager is ported and real and parented to the world's, and is where a future settlement-local condition belongs. The condition names its incident rather than the incident naming the condition, inverting RimWorld's relationship so the Director's most shared file needs no new fields. No storm centre, and an unwatched flashstorm burns nothing: the raid lane could resolve abstractly because both sides were priced in combatPower, and there is no comparable currency for how much of a settlement a lightning fire takes.",
       "translationState": "recorded",
       "module": "src/SimWorld.Core/Conditions",
-      "status": "translated",
+      "status": "verified",
       "tests": 23,
       "items": [
         {
@@ -2210,7 +2234,8 @@
           "label": "Drought: a civilization-scale GameCondition_Drought (multiplicative growth factor, in (0,1), rolled per firing) aggregated by GameConditionManager.AggregateGrowthFactor and read at both scouted seams — Plant.TickLong for a watched map and SettlementSubsistence's production pass for an unwatched settlement — so the same defect reaches whichever half of the book the player is looking at. Its own IncidentWorker_Drought follows the NamedRand + Ablation discipline IncidentWorker_ManhunterPack established (composed before the ablation check, same draws either way), unlike the three conditions routed through the shared IncidentWorker_MakeGameCondition. Measured exactly, from a single run with no control arm, by a new Director.ResourceImpactLedger (nutrition denied, keyed by source defName, Scribed, outlives the condition that caused it, reads zero when ablated) hung off Storyteller beside the existing DeathLedger.",
           "done": true
         }
-      ]
+      ],
+      "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
     }
   ]
 }
