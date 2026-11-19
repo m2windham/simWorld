@@ -52,7 +52,7 @@ namespace SimWorld.AI
     /// record of intent the god view could show and a host could write into; one place for every work type to
     /// express "this thing, not that one", so mine/cut/hunt/tame stop each inventing their own predicate; and
     /// stability, since a designation persists while a live-read gate can flip mid-job (bounded here — a hunt
-    /// carries <see cref="HuntingTuning.HuntJobExpiryTicks"/> and the driver is not re-gated once started).
+    /// gives up after <see cref="JobDriver_Hunt.MaxHuntTicks"/> and the driver is not re-gated once started).
     /// That is a consolidation across six working givers, worth doing on its own terms and not a prerequisite
     /// for this.
     ///

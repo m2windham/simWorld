@@ -51,13 +51,9 @@ namespace SimWorld.AI
         // How long a hunt-provoked animal stays angry used to be RevengeAngerDurationTicks, the failed-tame
         // day. Both grudges are RimWorld's manhunter state and now share its recovery: Pawns.ManhunterRecovery.
 
-        /// <summary>
-        /// How long a single hunt may run before the job gives up, enforced through <see cref="Job.expiryInterval"/>
-        /// (already checked every tick by <see cref="Pawn_JobTracker.JobTrackerTick"/> — nothing new needed).
-        /// Prey flees (<see cref="JobGiver_AnimalFlee"/>) and a hunter re-paths after it, so without a
-        /// ceiling a hunt across open ground can run indefinitely. Half an in-game day.
-        /// </summary>
-        public const int HuntJobExpiryTicks = GenDate.TicksPerDay / 2;
+        // A hunt's time limit used to live here as HuntJobExpiryTicks, an invented half day set as the job's
+        // expiryInterval. RimWorld's own limit is JobDriver_Hunt's 5000 ticks from the job's start, failing
+        // the approach and shoot toils only; it is ported there as JobDriver_Hunt.MaxHuntTicks.
 
         /// <summary>
         /// How close a melee hunter must be to swing, in cells. A melee <see cref="Combat.VerbProperties"/>

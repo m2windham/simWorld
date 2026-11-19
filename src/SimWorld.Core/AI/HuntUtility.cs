@@ -121,64 +121,45 @@ namespace SimWorld.AI
         public static float EffectiveRange(Verb verb) => AttackVerbUtility.EffectiveRange(verb);
 
         /// <summary>
-        /// Whether the shot/swing that resolved this very tick actually drew blood. Gated on
-        /// <see cref="Verb.LastShotTick"/> because <c>LastShot</c>/<c>LastResult</c> persist after the tick
-        /// they were set on — without the gate one wound would be counted on every subsequent tick of the
-        /// hunt.
-        /// </summary>
-        public static bool WoundedThisTick(Verb verb)
-        {
-            if (verb == null) throw new ArgumentNullException(nameof(verb));
-            if (verb.LastShotTick != Find.TickManager.TicksGame) return false;
-            if (verb is Verb_LaunchProjectile ranged) return ranged.LastShot?.DamageResult?.wounded == true;
-            if (verb is Verb_MeleeAttack melee) return melee.LastResult?.Outcome == MeleeAttackOutcome.Hit;
-            return false;
-        }
-
-        /// <summary>
-        /// RimWorld's famous hunting revenge: wounded prey turns manhunter and comes for the hunter. Rolled
-        /// once per wounding hit at the race's own <see cref="RaceProperties.manhunterOnDamageChance"/> times
-        /// (1 − the hunter's <see cref="HuntingDefOf.HuntingStealth"/>), and expressed through the
+        /// RimWorld's famous hunting revenge: a wild animal hurt by a person turns manhunter and comes for
+        /// them. Rolled once per injury at <see cref="PawnUtility.GetManhunterOnDamageChance"/> (the race's
+        /// own <see cref="RaceProperties.manhunterOnDamageChance"/>, scaled up at close range and down by the
+        /// instigator's <see cref="HuntingDefOf.HuntingStealth"/>), and expressed through the
         /// <see cref="MindState.Pawn_MindState.angryAt"/> field the animals module already uses for a failed
         /// tame's identical consequence.
         /// <para/>
+        /// <b>Where it is rolled.</b> From <see cref="MindState.Pawn_MindState.Notify_DamageTaken"/>, as in
+        /// RimWorld, so a hunter's arrow, a colonist's punch and a stray shot all share this one path. It used
+        /// to be rolled only from inside <see cref="JobDriver_Hunt"/>, so an animal hurt any other way never
+        /// fought back. The hunt now only notices that its prey has turned on it and breaks off.
+        /// <para/>
         /// <b>The chance used to be invented.</b> It was 0.02 × wildness, a proxy for a race field this port
         /// did not carry, which let a chicken or a husky turn on a hunter (both are 0% in RimWorld) and held a
-        /// muffalo to 1.2% a hit against RimWorld's 10%. A skilled hunter provoked exactly as often as a novice.
-        /// Now the race decides whether revenge is possible at all and the hunter's Shooting and Animals skills
-        /// decide how often it happens. Not ported: RimWorld also scales the chance up when the hunter is close
-        /// (the wiki says distance matters but gives no formula), multiplies it by the storyteller difficulty's
-        /// manhunter factor (no such field here), and rolls it on any injury a humanlike deals rather than only
-        /// inside a hunt; and a herd animal's nearby kin can join in (wiki: within 25 cells), which nothing here
-        /// does yet.
+        /// muffalo to 1.2% a hit against RimWorld's 10%. Not ported: the storyteller difficulty's manhunter
+        /// factor (no such field here). A herd animal's nearby kin can join in: see
+        /// <see cref="MindState.Pawn_MindState.StartManhunterBecauseOfPawnAction"/>.
         /// <para/>
-        /// <b>The animal now fights back.</b> This doc used to end "the animal does not fight back": the
-        /// think tree tier that reads <c>angryAt</c> (<see cref="ThinkNode_ConditionalAngryAtHandler"/>)
-        /// routed it to <see cref="JobGiver_WanderAnywhere"/>, because nothing in this codebase had an attack
-        /// <see cref="Job"/> or an attack <see cref="ThinkNode_JobGiver"/> to route it to. The combat lane
-        /// added both, and that tier now leads with <see cref="JobGiver_Manhunter"/> — provoked prey turns
-        /// and comes for the hunter with real damage behind it. The other two consequences are unchanged: the
-        /// hunt breaks off (<see cref="JobDriver_Hunt"/> ends the job) and <see cref="IsSafeToHunt"/> refuses
-        /// that animal until the anger expires.
+        /// <b>The animal now fights back.</b> The think tree tier that reads <c>angryAt</c>
+        /// (<see cref="ThinkNode_ConditionalAngryAtHandler"/>) leads with <see cref="JobGiver_Manhunter"/>, so
+        /// provoked prey turns and comes for the hunter with real damage behind it, and
+        /// <see cref="IsSafeToHunt"/> refuses that animal until the anger expires.
         /// </summary>
         /// <returns>True if the animal was provoked by this hit.</returns>
-        public static bool TryProvokeRevenge(Pawn animal, Pawn hunter)
+        public static bool TryProvokeRevenge(Pawn animal, Pawn instigator)
         {
             if (animal == null) throw new ArgumentNullException(nameof(animal));
-            if (hunter == null) throw new ArgumentNullException(nameof(hunter));
-            if (animal.Dead || animal.mindState == null) return false;
-            // RimWorld's MentalStateHandler.TryStartMentalState refuses a downed pawn, and revenge is that
-            // call: an animal already on the ground cannot turn manhunter. Without this, a hunter's shots
-            // into downed prey kept rolling and could re-anger it where it lay.
-            if (animal.Downed) return false;
+            if (instigator == null) throw new ArgumentNullException(nameof(instigator));
+            // RimWorld's MentalStateHandler.TryStartMentalState refuses a dead or downed pawn and one already
+            // manhunting, and Notify_DamageTaken does not roll at all for a pawn already in a mental state:
+            // an animal already on the ground cannot turn, and one already angry keeps its first target.
+            if (!MindState.Pawn_MindState.CanStartManhunter(animal)) return false;
 
-            float chance = animal.RaceProps.manhunterOnDamageChance;
+            float distance = animal.Position.DistanceTo(instigator.Position);
+            float chance = PawnUtility.GetManhunterOnDamageChance(animal, distance, instigator);
             if (chance <= 0f) return false;
-            chance *= 1f - hunter.GetStatValue(HuntingDefOf.HuntingStealth);
             if (!Rand.Chance(chance)) return false;
 
-            animal.mindState.angryAt = hunter;
-            animal.mindState.angryUntilTick = Find.TickManager.TicksGame + ManhunterRecovery.RollDurationTicks();
+            animal.mindState.StartManhunterBecauseOfPawnAction(instigator);
             return true;
         }
     }

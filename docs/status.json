@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-11-18",
-  "testsTotal": 3120,
+  "testsTotal": 3129,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -159,6 +159,34 @@
       "state": "decided",
       "title": "Coal is its own deposit, and tradeable",
       "note": "Coal decided where industry went, so it gets its own category rather than hiding inside Ore: a site chosen in the neolithic for water and game may or may not turn out to be an industrial one, and the player will not know for centuries. Geography shapes rather than dictates — caravans can supply a settlement that lacks coal, at a cost, which is what actually happened and gives the ported trade system real work in the industrial era. Spec section 5b."
+    },
+    {
+      "id": "rc",
+      "date": "2026-11-18",
+      "state": "decided",
+      "title": "Release-candidate gate",
+      "note": "RC when all hold: (1) every system group is 'verified' - exercised by an automated check in a Release player build, not only headless; (2) no known lethal mechanic without a remedy and no untraced colonist deaths on the bench seeds; (3) all seven threat-free bench seeds run 60 days with no stall and the host seed reaches its 10-house baseline on Mono and CoreCLR; (4) frame timing in a Release player build within budget on real hardware; (5) the remaining port items are done or recorded as deliberate differences."
+    },
+    {
+      "id": "stuffbuildings",
+      "date": "2026-11-18",
+      "state": "decided",
+      "title": "Doors, beds and benches cost stuff; loosen the bed-before-house gate",
+      "note": "RimWorld costs win. The every-bed-before-any-house gate is ours, not RimWorld's, and starved seed 2024 of houses, so it is loosened rather than the costs cut."
+    },
+    {
+      "id": "workbyskill",
+      "date": "2026-11-18",
+      "state": "decided",
+      "title": "Founding work grid by skill",
+      "note": "Port RimWorld's skill-based founding work priorities for all work types (doctoring included); role resets return to it. Bench before merge."
+    },
+    {
+      "id": "blizzardprobe",
+      "date": "2026-11-18",
+      "state": "decided",
+      "title": "FrameCostProbe blizzard switch may ship",
+      "note": "Inert unless -framecost-blizzard is passed; it is a measurement tool, not gameplay."
     }
   ],
   "systems": [

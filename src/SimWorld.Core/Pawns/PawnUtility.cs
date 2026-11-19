@@ -1,4 +1,6 @@
+using System;
 using SimWorld.Factions;
+using SimWorld.Stats;
 
 namespace SimWorld.Pawns
 {
@@ -51,6 +53,25 @@ namespace SimWorld.Pawns
         /// </summary>
         public static bool ShouldSendNotificationAbout(Pawn? pawn) =>
             pawn != null && (IsColonist(pawn) || IsPrisonerOfColony(pawn));
+
+        /// <summary>
+        /// The chance that one injury <paramref name="instigator"/> deals turns <paramref name="pawn"/> on it
+        /// (RimWorld: <c>PawnUtility.GetManhunterOnDamageChance(Pawn, float, Thing)</c>): the race's
+        /// <see cref="RaceProperties.manhunterOnDamageChance"/>, up to three times that at point-blank range
+        /// and falling to one times it at 30 cells, then times (1 − the instigator's hunting stealth).
+        /// <para/>
+        /// <b>Recalled, not read from source:</b> the distance factor
+        /// <c>GenMath.LerpDoubleClamped(1, 30, 3, 1, distance)</c>. The wiki says only that a closer hunter
+        /// provokes more often. Not ported: the storyteller difficulty's <c>manhunterChanceOnDamageFactor</c>
+        /// (this port's <c>DifficultyDef</c> has no such field, so it reads as 1).
+        /// </summary>
+        public static float GetManhunterOnDamageChance(Pawn pawn, float distance, Pawn? instigator)
+        {
+            float chance = pawn.RaceProps.manhunterOnDamageChance;
+            chance *= GenMath.LerpDoubleClamped(1f, 30f, 3f, 1f, distance);
+            if (instigator != null) chance *= 1f - instigator.GetStatValue(AI.HuntingDefOf.HuntingStealth);
+            return Math.Min(chance, 1f);
+        }
 
         /// <summary>
         /// Substitutes a pawn's label into a content-authored message. The shipped convention is
