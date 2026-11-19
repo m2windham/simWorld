@@ -1004,6 +1004,11 @@
           "done": true
         },
         {
+          "id": "work.byskill",
+          "label": "Deliberate difference: RimWorld's skill-based founding grid measured three ways on 21 seeds (disable, ceil(n/3) coverage, priority leads); each cost food labour and lives at band 20-40, so founding bands keep every capable work type on at 3. RimWorld's rules, recalled: GameInitData.PrepForMapGen turns a work type on for every starting colonist at AverageOfRelevantSkillsFor 6+, else the single best; Pawn_WorkSettings.EnableAndInitialize turns on a pawn's six best plus the alwaysStartActive ones. Measured against the drought-fixed baseline (301 houses, 32 deaths, 605 end population): ceil(n/3) coverage with the rest off 281 / 32 / 585, 20/110 starving 12; everyone on with priority-1 leads 288 / 81 / 535, 20/2024 starving out entirely; RimWorld's single best starved 13 on 20/2024 in the seven-seed set. Here Pawn_WorkSettings.EnableAndInitialize stays all-on at the default priority for every pawn; roles still emphasize on top of it.",
+          "done": true
+        },
+        {
           "id": "work.repairplantscut",
           "label": "Repair and PlantsCut wired (28 of 29 work givers now carry a real giverClass). Both translate away a Designation system this port does not have: Repair scans any damaged artificial building because Thing carries no faction field, PlantsCut derives its targets from growing zones and construction cells",
           "done": true
