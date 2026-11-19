@@ -60,10 +60,10 @@ namespace SimWorld.Director
                 Props.numIncidentsRange.min, Props.numIncidentsRange.max, Props.acceptFractionByDaysPassedCurve);
 
             // minSpacingDays is a floor between two of this comp's incidents, not only a term in the MTB above.
-            // RimWorld's IncidentCycleUtility lays a cycle's incidents out at least that far apart (recalled, not
-            // read: the decompile was not reachable from here), so two big threats never land within a day of each
-            // other. The MTB alone allowed it: seed 12345 sent two raids 0.58 days apart against Cassandra's 1.5.
-            // Checked after the roll, so the roll itself is drawn exactly as before.
+            // RimWorld's IncidentCycleUtility lays a cycle's incidents out at least that far apart (read: RW 1.0
+            // decompile, RelaxToSatisfyMinDiff), so two big threats never land within a day of each other. The MTB
+            // alone allowed it: seed 12345 sent two raids 0.58 days apart against Cassandra's 1.5. Difference:
+            // RimWorld nudges a too-close hit later; this drops it. Checked after the roll, so the roll is drawn as before.
             if (count > 0 && TooSoonAfterLastOfCategory(target)) count = 0;
 
             for (int i = 0; i < count; i++)
