@@ -214,9 +214,12 @@ namespace SimWorld.Building
             int storageTarget = StorageHutNeed.Target(settlement);
             if (storageTarget > 0) needs.Add(new Need(ConstructionThingDefOf.StorageHut, storageTarget));
 
-            // A home for each household, last: once everyone has a bed to sleep in (built, not planned), a
+            // A home for each household, last: once everyone has a bed to sleep in, built or planned, a
             // household without a dwelling is what the settlement builds next. See Shortfall for the throttle.
-            if (citizens > 0 && map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count + housed >= citizens)
+            // Planned counts: RimWorld builds whatever is designated in no fixed order, and waiting for every
+            // dormitory bed to stand starved a wood-poor map of homes that sleep four for less than one bed's
+            // worth of wood each.
+            if (citizens > 0 && CountBuiltOrPlanned(map, ConstructionThingDefOf.Bed) + housed >= citizens)
             {
                 int households = DwellingUtility.Households(settlement).Count;
                 if (households > 0) needs.Add(new Need(DwellingUtility.PreferredDwellingDef(), households));
