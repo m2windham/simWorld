@@ -33,8 +33,6 @@ namespace SimWorld.Tests.Bench
             Find.FactionManager = new FactionManager();
             Find.LetterStack = new LetterStack();
             Find.God = new global::SimWorld.God.GodManager();
-            CorpseDefGenerator.EnsureGenerated();
-            NameUseChecker.Clear();
         }
 
         [Fact]
