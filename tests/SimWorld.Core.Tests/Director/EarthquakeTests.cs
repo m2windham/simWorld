@@ -259,6 +259,37 @@ namespace SimWorld.Tests.Director
                 "a watched settlement's own StructureCount did not reflect the quake's damage to its map");
         }
 
+        /// <summary>An entered settlement the player is not looking at loses real buildings off its map, and
+        /// what the quake credits is what actually came down. Before, it shook the abstract ledger instead,
+        /// which <see cref="Settlement.StructureCount"/> does not read while a map exists and the next sync
+        /// rewrites from the map: the letter and the ledger claimed a loss while every wall still stood.</summary>
+        [Fact]
+        public void An_entered_settlement_out_of_focus_loses_real_buildings_and_is_credited_exactly_those()
+        {
+            SimWorld.World.World world = WorldGenerator.GenerateWorld(
+                "earthquake-offfocus", 0.3f, OverallRainfall.Normal, OverallTemperature.Normal,
+                OverallPopulation.Normal, "EarthquakeTest", 2, soloStart: true);
+            Faction faction = world.factions.First();
+            int tile = BestScoredTile(world.grid);
+            Settlement settlement = SettlementFounder.Found(world, tile, faction, 20, new RandomStream(21), "OffFocusTown");
+
+            CoreMap map = settlement.EnterMap(world);
+            SpawnWalls(map, count: 30, owner: faction);
+            // Everything of the settlement's own standing on the map, walls and whatever founding put there.
+            List<Thing> own = map.listerThings.AllThings
+                .Where(t => t.def.category == ThingCategory.Building && settlement.IsOwnStructure(t))
+                .ToList();
+            Assert.False(Find.God.Attention.HasFocus, "fixture: nobody is looking at the settlement");
+
+            var target = new CivilizationTarget();
+            target.SetSettlements(new[] { settlement });
+            Assert.True(Earthquake.Worker.TryExecute(new IncidentParms { target = target }));
+
+            int fallen = own.Count(t => t.Destroyed);
+            Assert.True(fallen > 0, "the quake brought down none of the settlement's own buildings");
+            Assert.Equal(fallen, Find.Storyteller.resourceImpact.StructuresDestroyedBy("Earthquake"));
+        }
+
         // ---- deaths: credited from the ledger's own delta, never over-claimed ----
 
         [Fact]

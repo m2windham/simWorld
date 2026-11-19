@@ -20,12 +20,14 @@ namespace SimWorld.Director
     /// them, were blocked on a settlement having nothing to damage. <see cref="World.Settlement.Structures"/>
     /// unblocks all three; this is the first to spend it).
     ///
-    /// <para/><b>Where it lands is the player's decision, exactly as <see cref="IncidentWorker_ManhunterPack"/>
-    /// already established.</b> A watched settlement loses real buildings off its own map; an unwatched one
-    /// loses the same buildings out of <see cref="World.Settlement.Structures"/> directly — no map needed, no
-    /// map generated to stage the loss. The unwatched arm is the one this incident exists for: a threat that
-    /// only costs something while the player happens to be looking is free to ignore, and free-to-ignore is
-    /// the failure mode <c>docs/design/phase-2-pressure.md</c> is about.
+    /// <para/><b>It lands where the buildings are, whoever is looking.</b> A settlement with an interior map
+    /// loses real buildings off that map, watched or not; only one that has never been entered loses them out
+    /// of <see cref="World.Settlement.Structures"/> directly — no map generated to stage the loss. That ledger
+    /// is not read while a map exists (<see cref="World.Settlement.StructureCount"/>) and is rewritten from the
+    /// map on the next sync, so shaking the ledger of an entered but unfocused settlement once credited and
+    /// reported a loss of buildings that were all still standing. The unwatched arm is the one this incident
+    /// exists for: a threat that only costs something while the player happens to be looking is free to
+    /// ignore, and free-to-ignore is the failure mode <c>docs/design/phase-2-pressure.md</c> is about.
     ///
     /// <para/><b>Watched-map damage is direct <see cref="Thing.TakeDamage"/>, not
     /// <see cref="Building.RoofCollapserImmediate"/>.</b> That class is the obvious first reach — tested,
@@ -108,13 +110,15 @@ namespace SimWorld.Director
             }
 
             string? source = def?.defName;
-            Map.Map? map = ArrivalMapFor(civ, settlement);
+            // An entered settlement's buildings are on its map whether or not it has the focus; only a
+            // settlement with no map keeps them in the abstract ledger. See the class doc.
+            Map.Map? map = ArrivalMapFor(civ, settlement) ?? settlement.InteriorMap;
 
             if (map != null)
             {
                 (int destroyed, int killed) = ShakeMap(map, settlement, severity, rand, source);
                 CreditStructures(source, destroyed);
-                SendLetter(settlement, destroyed, killed, watched: true);
+                SendLetter(settlement, destroyed, killed, watched: IsWatched(settlement));
                 return true;
             }
 
@@ -360,9 +364,13 @@ namespace SimWorld.Director
             }
             else
             {
-                text = string.Format(CultureInfo.InvariantCulture,
-                    "Word reaches you late: an earthquake struck {0} while your attention was elsewhere, destroying {1} structures.",
-                    where, structuresLost);
+                text = killed > 0
+                    ? string.Format(CultureInfo.InvariantCulture,
+                        "Word reaches you late: an earthquake struck {0} while your attention was elsewhere, destroying {1} structures. {2} of your people were lost in the collapse.",
+                        where, structuresLost, killed)
+                    : string.Format(CultureInfo.InvariantCulture,
+                        "Word reaches you late: an earthquake struck {0} while your attention was elsewhere, destroying {1} structures.",
+                        where, structuresLost);
             }
 
             Find.LetterStack?.ReceiveLetter("Earthquake: " + where, text, LetterDefOf.NegativeEvent);
