@@ -1546,3 +1546,14 @@ buildings lost. Sim output on seed 2024 and the host mirror unchanged.
 end population 546; whole bands starve under Drought on 20/102 (21 dead) and 20/110 (22 dead), and 40/201 loses
 10. work-by-skill (ceil(n/3) founding coverage + stalled-site replan): houses 282, deaths 86, end population 534,
 collapses on 20/102, 20/109 and 40/201 (38 of 40). Held behind a drought-starvation lane; bedless-remedy held too.
+
+2026-11-19 (drought-starvation merged, suite 3155/3155 on the branch; integration differs only in docs): the
+collapses were not Drought. Every game started at absolute tick 0, so southern tiles founded into autumn and
+crops froze; a new game now starts at the tile's first twelfth averaging 16 C or warmer (RimWorld's rule,
+recalled), and outdoor temperature reads the calendar date. Founding sites need a growing period of at least
+21 grow days (difference, recorded); a field that runs out of its 60-cell circle takes the nearest sowable
+cells anywhere (difference, recorded). 21 seeds: houses 292 -> 301, deaths 82 -> 32, end population 546 -> 605,
+no seed below its starting band. Open: no early harvest (minimum harvest growth 1, RimWorld 0.65 recalled);
+founding stores run out around day 12 against a first harvest near day 20; no agave; malnutrition gentler
+than RimWorld's (0.113/day against ~0.453 recalled); no heatstroke or hypothermia; `tools/blueprint` needs
+the `marked` module.
