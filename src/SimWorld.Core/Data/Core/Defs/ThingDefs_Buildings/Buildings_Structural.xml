@@ -51,15 +51,15 @@
       <MaxHitPoints>150</MaxHitPoints>
       <Insulation>1</Insulation>
     </statBases>
-    <!-- Made from stuff, as RimWorld's Door is. costStuffCount 25 is RimWorld's, RECALLED from its
-         Buildings_Structure.xml (not checked against the file from here); the categories are the Wall's.
-         The hand-written 4 WoodLog it cost before is gone: RimWorld charges a door in stuff alone. -->
+    <!-- Made from stuff, as RimWorld's Door is; the categories are the Wall's. costStuffCount 4 is a simWorld
+         rate; RimWorld 25 (recalled from its Buildings_Structure.xml, not checked against the file from here).
+         4 is what the door cost before it was made from stuff: see the Bed below for why these rates. -->
     <stuffCategories>
       <li>Metallic</li>
       <li>Woody</li>
       <li>Stony</li>
     </stuffCategories>
-    <costStuffCount>25</costStuffCount>
+    <costStuffCount>4</costStuffCount>
   </ThingDef>
 
   <!--
@@ -107,16 +107,19 @@
            is ever above zero. -->
       <BedRestEffectiveness>1.07</BedRestEffectiveness>
     </statBases>
-    <!-- Made from stuff, as RimWorld's Bed is. costStuffCount 45 is RimWorld's single bed, RECALLED from its
-         Furniture_Beds.xml (not checked against the file from here), in place of the 8 WoodLog this port
-         wrote by hand; the categories are the Wall's. MaxHitPoints above stays this port's own 80 and is
-         scaled by the stuff's MaxHitPoints factor like any other stuff-built thing. -->
+    <!-- Made from stuff, as RimWorld's Bed is; the categories are the Wall's. costStuffCount 8 is a simWorld
+         rate; RimWorld 45 (recalled from its Furniture_Beds.xml, not checked against the file from here). A
+         settlement plans a dormitory bed for every citizen as well as a home for every household, which
+         RimWorld's colonies do not, and at 45 a 20-bed dormitory cost a wood-poor map (storyteller seed 2024,
+         about 420 wood all game) every home it could have built. 8 is what the bed cost before it was made
+         from stuff. MaxHitPoints above stays this port's own 80 and is scaled by the stuff's MaxHitPoints
+         factor like any other stuff-built thing. -->
     <stuffCategories>
       <li>Metallic</li>
       <li>Woody</li>
       <li>Stony</li>
     </stuffCategories>
-    <costStuffCount>45</costStuffCount>
+    <costStuffCount>8</costStuffCount>
   </ThingDef>
 
   <ThingDef>

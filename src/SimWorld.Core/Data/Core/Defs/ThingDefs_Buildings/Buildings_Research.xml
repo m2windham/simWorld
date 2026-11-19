@@ -33,15 +33,16 @@
       <MaxHitPoints>150</MaxHitPoints>
       <WorkToBuild>250</WorkToBuild>
     </statBases>
-    <!-- Made from stuff, as RimWorld's SimpleResearchBench is: costStuffCount 75 of Metallic, Woody or Stony
-         stuff, RECALLED from RimWorld's Buildings_Production.xml (not checked against the file from here), in
-         place of the 10 WoodLog this port wrote by hand. -->
+    <!-- Made from stuff, as RimWorld's SimpleResearchBench is: Metallic, Woody or Stony stuff (RECALLED from
+         RimWorld's Buildings_Production.xml, not checked against the file from here). costStuffCount 10 is a
+         simWorld rate; RimWorld 75 (recalled). 10 is the WoodLog this port wrote by hand before; see
+         Buildings_Production.xml for why benches keep it. -->
     <stuffCategories>
       <li>Metallic</li>
       <li>Woody</li>
       <li>Stony</li>
     </stuffCategories>
-    <costStuffCount>75</costStuffCount>
+    <costStuffCount>10</costStuffCount>
   </ThingDef>
 
   <ThingDef>

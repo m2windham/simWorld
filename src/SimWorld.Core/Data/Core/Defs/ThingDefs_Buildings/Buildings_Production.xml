@@ -14,10 +14,13 @@
     WorkGiverDef.fixedBillGiverDefs.
 
     Made from stuff: the butcher table, stonecutter's table, smithy and tailoring bench are each built of
-    costStuffCount 75 of Metallic, Woody or Stony stuff, as RimWorld's TableButcher, TableStonecutter,
-    FueledSmithy and HandTailoringBench are. 75 and the categories are RECALLED from RimWorld's
-    Buildings_Production.xml, not checked against the file from here; RimWorld's FueledSmithy may also
-    carry a small steel costList on top, which is not added. The fueled stove is not made from stuff in
+    Metallic, Woody or Stony stuff, as RimWorld's TableButcher, TableStonecutter, FueledSmithy and
+    HandTailoringBench are (categories RECALLED from RimWorld's Buildings_Production.xml, not checked against
+    the file from here). costStuffCount 10 is a simWorld rate; RimWorld 75 (recalled). A settlement here
+    plans its own benches beside a dormitory and a home per household, and at 75 each a wood-poor map
+    (storyteller seed 2024, about 420 wood all game) spent on benches the wood its homes needed; 10 is what
+    the research bench cost before benches were made from stuff. RimWorld's FueledSmithy may also carry a
+    small steel costList on top, which is not added. The fueled stove is not made from stuff in
     RimWorld (it is priced in steel alone) and is left as it was: no cost.
   -->
 
@@ -58,7 +61,7 @@
       <li>Woody</li>
       <li>Stony</li>
     </stuffCategories>
-    <costStuffCount>75</costStuffCount>
+    <costStuffCount>10</costStuffCount>
   </ThingDef>
 
   <ThingDef>
@@ -76,7 +79,7 @@
       <li>Woody</li>
       <li>Stony</li>
     </stuffCategories>
-    <costStuffCount>75</costStuffCount>
+    <costStuffCount>10</costStuffCount>
     <comps>
       <li Class="SimWorld.Things.CompProperties_BillGiver">
         <!-- RimWorld's own stonecutting table is worked under the "Crafting" work type, the same as a
@@ -102,7 +105,7 @@
       <li>Woody</li>
       <li>Stony</li>
     </stuffCategories>
-    <costStuffCount>75</costStuffCount>
+    <costStuffCount>10</costStuffCount>
     <comps>
       <li Class="SimWorld.Things.CompProperties_BillGiver">
         <workType>Smithing</workType>
@@ -122,7 +125,7 @@
       <li>Woody</li>
       <li>Stony</li>
     </stuffCategories>
-    <costStuffCount>75</costStuffCount>
+    <costStuffCount>10</costStuffCount>
     <comps>
       <li Class="SimWorld.Things.CompProperties_BillGiver">
         <workType>Tailoring</workType>
