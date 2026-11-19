@@ -1566,3 +1566,11 @@ remaining stuff (pin). work-by-skill is dropped for founding bands after three 2
 as a deliberate difference. 21 seeds: houses 301, deaths 34, end population 600 (fixABC 301/32/605).
 Held: saveload-roundtrip (da981f6). Its haul-to-carry-tracker change collapses 40/201 (42 dead, 39 starved);
 an integration rerun of 40/201 gives 4 dead.
+
+2026-11-19 (saveload-roundtrip, suite 3164/3164 on the branch, fast-forwarded): a played game saves the same
+file after a load (61 days, CoreCLR and Mono, byte-identical). Milk and wool comps save under their own labels
+(old saves load muffalo milk/wool at 0); loaded room temperatures are written back if saved before the rooms
+rebuild; `lifespanAdjustmentReasons` no longer wiped by every save; a hauler's off-map item is saved through
+the job tracker (`curDriverHeldThing`), live play untouched (21 seeds identical to integration). Growing-zone
+diff not reproduced: a line-shift artefact of the lost temperatures. Gap: a loaded pawn whose job ends before
+its first tick still loses the held item.
