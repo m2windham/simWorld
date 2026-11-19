@@ -187,6 +187,13 @@
       "state": "decided",
       "title": "FrameCostProbe blizzard switch may ship",
       "note": "Inert unless -framecost-blizzard is passed; it is a measurement tool, not gameplay."
+    },
+    {
+      "id": "costs",
+      "date": "2026-11-18",
+      "state": "decided",
+      "title": "Costs may use simWorld's own rates",
+      "note": "Doug: costs can be reworked at our own rates as needed or sensible. Mechanics stay RimWorld's; a changed number is marked in its def with the RimWorld value beside it."
     }
   ],
   "systems": [
