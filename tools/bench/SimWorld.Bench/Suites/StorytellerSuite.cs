@@ -77,7 +77,8 @@ namespace SimWorld.Bench.Suites
     /// <list type="bullet">
     /// <item><c>killed</c>, <c>razed</c> and <c>denied</c> come from <see cref="DeathLedger.BySource"/> and
     /// <see cref="ResourceImpactLedger"/>, which are keyed by the incident's own defName at the point the harm
-    /// happens. They are settled over the whole window from this firing until that def next fires, so a raid
+    /// happens. They are settled over the whole window from this firing (including the harm its worker did
+    /// before returning) until the pass in which that def next fires, so a raid
     /// whose casualties land over the following hours is still credited to the raid. A run ends with the last
     /// firing's window still open; whatever it had claimed by then is what it shows.</item>
     /// <item><c>quest</c>, <c>condition</c> and <c>sick</c> are measured over a tight window — the single tick
@@ -1215,7 +1216,8 @@ namespace SimWorld.Bench.Suites
     ///
     /// <para/><b>Two clocks, because two kinds of effect need two.</b> Quantities the port already keys by
     /// incident defName (deaths, structures, denied nutrition) are settled over a long window — from a firing
-    /// until that def next fires — because harm arrives after the incident does. Quantities that are not
+    /// including what its own worker did before returning, until the pass in which that def next fires —
+    /// because harm arrives after the incident does. Quantities that are not
     /// keyed at all (quests, game conditions, sickness) are measured over the single tick the storyteller pass
     /// ran on, and against what earlier firings in the same pass already claimed, because over any longer
     /// window something else could have moved them.
@@ -1250,6 +1252,10 @@ namespace SimWorld.Bench.Suites
         /// baseline is as close to the pass as a caller outside the tick loop can get.</summary>
         public void BeginInterval(int currentDay)
         {
+            // Close every open window here, before the pass: OnFired runs after its worker, so harm the
+            // worker did synchronously is already in the ledgers by then and must be left for that firing.
+            SettleAttributed();
+
             day = currentDay;
             intervalQuests = Find.QuestManager.QuestsListForReading.Count;
             intervalConditions = SnapshotConditions();
@@ -1259,10 +1265,6 @@ namespace SimWorld.Bench.Suites
         public void OnFired(FiringIncident fi)
         {
             if (fi?.def == null) return;
-
-            // Settle first: anything the ledgers have gained since the last settlement belongs to whichever
-            // firing was open then, never to this one.
-            SettleAttributed();
 
             int tick = Find.TickManager.TicksGame;
             bool fired = SucceededNow(fi, tick);
@@ -1281,6 +1283,13 @@ namespace SimWorld.Bench.Suites
 
             firings.Add(record);
             openBySource[record.DefName] = record;
+
+            // Settle after opening, never before: Storyteller.TryFire raises IncidentFired after the worker
+            // has run, so whatever this defName's ledgers gained since the last settle (BeginInterval, or the
+            // previous firing in this same pass) is this firing's own synchronous harm. Settling before
+            // opening handed an Earthquake's whole damage to the previous Earthquake, or to the orphan count
+            // when there was none, and left this row reading "no observable effect".
+            SettleAttributed();
 
             if (fired && !stub)
             {

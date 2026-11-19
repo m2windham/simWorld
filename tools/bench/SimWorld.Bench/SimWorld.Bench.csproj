@@ -17,4 +17,9 @@
     <ProjectReference Include="../../../src/SimWorld.Core/SimWorld.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- FiringLog's attribution is tested from the core suite (Bench/FiringLogAttributionTests). -->
+    <InternalsVisibleTo Include="SimWorld.Core.Tests" />
+  </ItemGroup>
+
 </Project>

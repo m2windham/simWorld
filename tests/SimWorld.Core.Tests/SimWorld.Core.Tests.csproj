@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/SimWorld.Core/SimWorld.Core.csproj" />
+    <ProjectReference Include="../../tools/bench/SimWorld.Bench/SimWorld.Bench.csproj" />
   </ItemGroup>
 
 </Project>
