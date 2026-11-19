@@ -88,6 +88,27 @@ namespace SimWorld.Weather
         /// starting twelfth (RimWorld: <c>GenTicks.ConfiguredTicksAbsAtGameStart</c>, less its hour offset).</summary>
         public static int StartingTicksAbs(MapClimate climate) => FindStartingWarmTwelfth(climate) * GenDate.TicksPerTwelfth;
 
+        /// <summary>Seasonal mean a twelfth needs to count toward a tile's growing period (RimWorld: the world
+        /// inspector's "growing period", <c>GenTemperature.TwelfthsInAverageTemperatureRange(tile, 6f, 42f)</c>;
+        /// both bounds recalled, not decompiled).</summary>
+        public const float GrowingPeriodMinTemperature = 6f;
+
+        /// <summary>Upper bound of the same range (recalled, as above).</summary>
+        public const float GrowingPeriodMaxTemperature = 42f;
+
+        /// <summary>How many twelfths of the year are warm enough to grow in on this climate (RimWorld: the
+        /// world inspector's growing period, which a player reads before settling a tile).</summary>
+        public static int GrowingTwelfths(MapClimate climate)
+        {
+            if (climate == null) throw new ArgumentNullException(nameof(climate));
+            int count = 0;
+            for (int i = 0; i < GenDate.TwelfthsPerYear; i++)
+            {
+                if (InRange(climate, i, GrowingPeriodMinTemperature, GrowingPeriodMaxTemperature)) count++;
+            }
+            return count;
+        }
+
         private static bool InRange(MapClimate climate, int twelfth, float min, float max)
         {
             float t = AverageTemperatureForTwelfth(climate, twelfth);
