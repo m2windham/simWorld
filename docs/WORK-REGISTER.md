@@ -1515,3 +1515,12 @@ Held, not merged: `stuff-buildings` (core-dwell eab6c79, a7075bb, suite 3132/313
 stuff as in RimWorld (bed 8 -> 45 wood, door 4 -> 25, benches 75). Host seed 10 -> 7 houses at day 1, delta
 10 -> 5 (10 by tick 90000); desert seed 2024 builds no dwelling in 60 days, because this port's own rule that
 houses wait for every citizen's dormitory bed meets 45-wood beds on a map with almost no wood. Needs Doug's call.
+
+2026-11-18 (melee-depth, suite 3130/3130 on the branch, fast-forwarded): the seed-2024 bite death was a port
+defect. `Verb_MeleeAttack` rolled hit parts at any depth, so a muffalo bite destroyed a standing hunter's heart
+at 87% health; melee now lands on outside parts only, as RimWorld's `SetBodyRegion(Undefined, Outside)` does
+(recalled). Seven seeds on CoreCLR: houses 96 -> 100, end population 178 -> 194, injury deaths 9 -> 1 (the one
+left, a revenge muffalo destroying a neck, is faithful). Host mirror 10. Open: no per-damage-type depth rules
+(knives, blunt bone cracks), generic animal bite verbs, arrows deal Cut not Arrow, `CompTrap` depth unchecked,
+old wounds of unknown origin on founders. Stuff-buildings is decided (Doug gave full control: merge with a loosened
+bed gate) but still held: the gate is loosened, yet desert seed 2024 builds 0 dwellings against 5 on main.
