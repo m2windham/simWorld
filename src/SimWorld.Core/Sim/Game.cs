@@ -271,6 +271,11 @@ namespace SimWorld.Sim
             SimWorld.Factions.Faction playerFaction = ResolvePlayerFaction(scenario, world);
 
             int tile = startTile ?? PickStartingTile(world);
+
+            // The calendar starts at the opening of the starting tile's warm season, in either hemisphere, as
+            // RimWorld's does — not at tick 0, which is fall in the south. See Weather.TwelfthUtility.
+            SimWorld.Weather.MapClimate? startClimate = SimWorld.Weather.MapClimate.ForTile(world, tile);
+            if (startClimate != null) game.TickManager.SetGameStartAbsTick(SimWorld.Weather.TwelfthUtility.StartingTicksAbs(startClimate));
             int actualBandSize = bandSize ?? Rand.Current.Range(SimWorld.World.SettlementTuning.FoundingBandRange);
             var foundingRand = new RandomStream(SimWorld.World.GenText.StableStringHash(seedString + "|founding"));
 

@@ -187,7 +187,7 @@ namespace SimWorld.Weather
             MapClimate? c = Climate;
             if (c == null) return;
             float offset = TemperatureOffset + map.gameConditionManager.AggregateTemperatureOffset();
-            map.outdoorTemperature = GenTemperature.OutdoorTemperatureAt(c, Find.TickManager.TicksGame, offset);
+            map.outdoorTemperature = GenTemperature.OutdoorTemperatureAt(c, Find.TickManager.TicksAbs, offset);
         }
 
         /// <summary>Rolls every unroofed fire against the rain — the call site

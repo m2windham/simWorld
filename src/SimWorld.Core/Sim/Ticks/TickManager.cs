@@ -50,6 +50,18 @@ namespace SimWorld.Sim
 
         public int GameStartAbsTick => gameStartAbsTick;
 
+        /// <summary>
+        /// Moves the calendar a game starts on (RimWorld: <c>GenTicks.ConfiguredTicksAbsAtGameStart</c>, read when
+        /// the TickManager is set up for a new game). Only before the first tick: after it, moving the calendar
+        /// would jump every season and date mid-game. <c>Sim.Game.NewGame</c> sets it once it knows the starting
+        /// tile (see <see cref="Weather.TwelfthUtility"/>).
+        /// </summary>
+        public void SetGameStartAbsTick(int startAbsTick)
+        {
+            if (ticksGameInt != 0) throw new InvalidOperationException("The game start tick can only be set before the first tick.");
+            gameStartAbsTick = startAbsTick;
+        }
+
         public TimeSpeed CurTimeSpeed
         {
             get => curTimeSpeed;
