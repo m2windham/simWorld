@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using SimWorld.Defs;
 using SimWorld.Sim;
 
 namespace SimWorld.Director
@@ -58,6 +59,13 @@ namespace SimWorld.Director
                 target, Rand.Current, Props.minDaysPassed, Props.onDays, Props.offDays, Props.minSpacingDays,
                 Props.numIncidentsRange.min, Props.numIncidentsRange.max, Props.acceptFractionByDaysPassedCurve);
 
+            // minSpacingDays is a floor between two of this comp's incidents, not only a term in the MTB above.
+            // RimWorld's IncidentCycleUtility lays a cycle's incidents out at least that far apart (recalled, not
+            // read: the decompile was not reachable from here), so two big threats never land within a day of each
+            // other. The MTB alone allowed it: seed 12345 sent two raids 0.58 days apart against Cassandra's 1.5.
+            // Checked after the roll, so the roll itself is drawn exactly as before.
+            if (count > 0 && TooSoonAfterLastOfCategory(target)) count = 0;
+
             for (int i = 0; i < count; i++)
             {
                 IncidentDef? explicitIncident = Props.incident;
@@ -82,6 +90,21 @@ namespace SimWorld.Director
 
                 yield return new FiringIncident(picked, this, parms);
             }
+        }
+
+        /// <summary>Whether an incident of this comp's category fired less than <see cref="StorytellerCompProperties_OnOffCycle.minSpacingDays"/>
+        /// ago, read from the target's saved <see cref="StoryState"/> so no new state is kept here.</summary>
+        private bool TooSoonAfterLastOfCategory(IIncidentTarget target)
+        {
+            if (Props.minSpacingDays <= 0f) return false;
+            IncidentCategoryDef category = Props.incident?.category ?? Props.category!;
+            int last = -1;
+            IReadOnlyList<IncidentDef> all = DefDatabase<IncidentDef>.AllDefsListForReading;
+            for (int i = 0; i < all.Count; i++)
+            {
+                if (all[i].category == category) last = System.Math.Max(last, target.StoryState.LastFireTick(all[i]));
+            }
+            return last >= 0 && Find.TickManager.TicksGame - last < Props.minSpacingDays * GenDate.TicksPerDay;
         }
     }
 }
