@@ -78,10 +78,9 @@ namespace SimWorld.Tests.Economy
             int tile = Enumerable.Range(0, world.grid.TilesCount)
                 .First(i => !world.grid.Tiles[i].WaterCovered && !taken.Contains(i));
 
-            Faction home = NewFaction("PlayerCivilization", "Home");
-            world.factions.Add(home);
-            // Ours: the trade commands only trade at the player's own settlements (Find.FactionManager.OfPlayer).
-            Find.FactionManager.Add(home);
+            // Ours: world generation already made the player's civilization, and the trade commands only trade
+            // at its settlements (Find.FactionManager.OfPlayer).
+            Faction home = Find.FactionManager.OfPlayer!;
 
             var settlement = new Settlement(WorldObjectDefOf.Settlement, tile, home, "Hearth", 0);
             world.worldObjects.Add(settlement);
@@ -302,6 +301,10 @@ namespace SimWorld.Tests.Economy
             Assert.Empty(errors);
 
             Find.World = loaded;
+            // What Game.ExposeData does on load: the faction index is rebuilt from the loaded world, so "ours"
+            // is the loaded player civilization rather than the object that was saved.
+            Find.FactionManager = new FactionManager();
+            foreach (Faction f in loaded.factions) Find.FactionManager.Add(f);
             TraderCaravan? reloaded = TraderArrival.At(settlement.tile);
 
             Assert.NotNull(reloaded);

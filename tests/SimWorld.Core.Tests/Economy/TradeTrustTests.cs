@@ -54,9 +54,8 @@ namespace SimWorld.Tests.Economy
             int tile = Enumerable.Range(0, world.grid.TilesCount)
                 .First(i => !world.grid.Tiles[i].WaterCovered && !taken.Contains(i));
 
-            Faction home = NewFaction("PlayerCivilization", "Home");
-            world.factions.Add(home);
-            Find.FactionManager.Add(home);
+            // World generation already made the player's civilization: that is "ours".
+            Faction home = Find.FactionManager.OfPlayer!;
 
             Faction owner = home;
             if (!ownerIsPlayer)
@@ -293,7 +292,7 @@ namespace SimWorld.Tests.Economy
             CoreWorld loaded = Scribe.Load<CoreWorld>(xml, "world", out IReadOnlyList<string> errors);
             Assert.Empty(errors);
 
-            Faction loadedHome = loaded.factions.Single(f => f.name == "Home");
+            Faction loadedHome = loaded.factions.Single(f => f.name == home.name);
             FactionRelation rel = loadedHome.Relations.Single(r => r.other?.name == "Riverfolk");
             Assert.Equal(home.RelationWith(seller)!.tradeTrustDay, rel.tradeTrustDay);
             Assert.Equal(350f, rel.tradeTrustValue);
