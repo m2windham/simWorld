@@ -379,6 +379,29 @@ namespace SimWorld.Tests.Designations
             Assert.Same(tree, NextJob(worker)!.GetTarget(TargetIndex.A).Thing);
         }
 
+        [Fact]
+        public void Taming_initiative_off_tames_only_the_marked_animal_though_the_larder_is_full()
+        {
+            CoreMap map = NewMap();
+            Pawn handler = Worker(map, 2, 2, WorkTypeDefOf.Handling);
+            for (int x = 0; x < 10; x++)
+            {
+                Thing meat = ThingMaker.MakeThing(Def("Meat_Generic"));
+                meat.stackCount = meat.def.stackLimit;
+                GenSpawn.Spawn(meat, new IntVec3(x, 0, 28), map);
+            }
+            Pawn unmarked = Animal(map, "Chicken", 5, 2);
+            Assert.True(TamingInitiative.WantsLivestock(map));
+            Assert.Same(unmarked, NextJob(handler)!.GetTarget(TargetIndex.A).Thing);
+
+            map.designationManager.SetSettlementInitiative(PlayerDesignationDefOf.Tame, false);
+            Assert.Null(NextJob(handler));
+
+            Pawn marked = Animal(map, "Chicken", 22, 22);
+            PlayerMark(map, PlayerDesignationDefOf.Tame, marked);
+            Assert.Same(marked, NextJob(handler)!.GetTarget(TargetIndex.A).Thing);
+        }
+
         // ---- housekeeping and save ----
 
         [Fact]

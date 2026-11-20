@@ -42,7 +42,7 @@ namespace SimWorld.Pawns
             {
                 animal.faction = tamer.faction;
                 // A tamed animal is no longer anybody's Tame (or Hunt) target (RimWorld removes the designation
-                // when the animal joins — recalled, not re-read).
+                // when the animal joins â€” recalled, not re-read).
                 animal.Map?.designationManager.RemoveAllDesignationsOn(animal);
                 animal.mindState.tameness = 1f;
                 ClearMind(animal);

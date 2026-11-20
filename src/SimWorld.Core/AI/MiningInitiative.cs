@@ -287,7 +287,7 @@ namespace SimWorld.AI
             }
         }
 
-        /// <summary>The settlement's own outstanding marks — the cap is on those; the player's do not use it up.</summary>
+        /// <summary>The settlement's own outstanding marks â€” the cap is on those; the player's do not use it up.</summary>
         private static int SettlementMarks(DesignationManager dm)
         {
             IReadOnlyList<Designation> mine = dm.SpawnedDesignationsOfDef(DesignationDefOf.Mine);

@@ -11,7 +11,7 @@ namespace SimWorld.Designations
         public DesignationDef def = null!;
         public LocalTargetInfo target;
 
-        /// <summary>Who placed it — see <see cref="DesignationSource"/>. Not in RimWorld, where only the player
+        /// <summary>Who placed it â€” see <see cref="DesignationSource"/>. Not in RimWorld, where only the player
         /// designates.</summary>
         public DesignationSource source;
 

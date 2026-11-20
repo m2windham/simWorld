@@ -23,13 +23,13 @@ namespace SimWorld.Designations
         /// <see cref="SettlementInitiativeOn"/>). Empty by default: every initiative runs.</summary>
         private List<DesignationDef> initiativeOff = new List<DesignationDef>();
 
-        /// <summary>How many designations aim at a Thing rather than a cell, so a despawn on a map with none —
-        /// every map a player has not touched — costs one comparison (<see cref="Notify_ThingDespawned"/>).</summary>
+        /// <summary>How many designations aim at a Thing rather than a cell, so a despawn on a map with none â€”
+        /// every map a player has not touched â€” costs one comparison (<see cref="Notify_ThingDespawned"/>).</summary>
         private int thingDesignationCount;
 
         public IReadOnlyList<Designation> AllDesignations => allDesignations;
 
-        /// <summary>Bumped on every change a reader could see — a mark added, removed or claimed, an initiative
+        /// <summary>Bumped on every change a reader could see â€” a mark added, removed or claimed, an initiative
         /// switched. Not saved: the read model pairs it with the map view's session id, which a load renews.</summary>
         public int Version { get; private set; }
 
@@ -82,12 +82,12 @@ namespace SimWorld.Designations
             }
         }
 
-        /// <summary>A non-building Thing left the map — a plant cut, an animal killed (its body is a corpse
-        /// now), an item picked up — and every mark aimed at it goes with it (RimWorld: <c>Thing.DeSpawn</c>
+        /// <summary>A non-building Thing left the map â€” a plant cut, an animal killed (its body is a corpse
+        /// now), an item picked up â€” and every mark aimed at it goes with it (RimWorld: <c>Thing.DeSpawn</c>
         /// calls <c>RemoveAllDesignationsOn</c>). Buildings take <see cref="Notify_BuildingDespawned"/>.</summary>
         public void Notify_ThingDespawned(Thing t) => RemoveAllDesignationsOn(t);
 
-        /// <summary>Whether any <paramref name="def"/> mark on this map was placed by the player — the cheap
+        /// <summary>Whether any <paramref name="def"/> mark on this map was placed by the player â€” the cheap
         /// refusal every <see cref="AI.WorkGiver_PlayerDesignated"/> makes before scanning.</summary>
         public bool AnyPlayerDesignationOfDef(DesignationDef def)
         {
@@ -100,7 +100,7 @@ namespace SimWorld.Designations
         }
 
         /// <summary>
-        /// Whether this settlement's own initiative for <paramref name="def"/>'s kind of work runs — the
+        /// Whether this settlement's own initiative for <paramref name="def"/>'s kind of work runs â€” the
         /// player's standing rule "only do what I mark". On by default. Off, the initiative-driven fallback
         /// for that kind stops (<see cref="AI.MiningInitiative"/> places no Mine marks and withdraws its own;
         /// <see cref="AI.WorkGiver_PlantsCut"/>, <see cref="AI.WorkGiver_Hunt"/> and
