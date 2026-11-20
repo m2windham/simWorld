@@ -57,6 +57,9 @@ namespace SimWorld.AI
             if (map == null) return true;
             if (!HuntUtility.HasHuntingWeapon(pawn)) return true;
             if (pawn.WorkTagIsDisabled(WorkTags.Violent)) return true;
+            // The player's standing rule "only hunt what I mark" (DesignationManager.SettlementInitiativeOn);
+            // the marked animals are WorkGiver_HunterHunt's either way.
+            if (!map.designationManager.SettlementInitiativeOn(Designations.PlayerDesignationDefOf.Hunt)) return true;
             return !HuntingInitiative.WantsMeat(map);
         }
 

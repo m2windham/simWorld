@@ -33,7 +33,9 @@ namespace SimWorld.AI
         public override bool ShouldSkip(Pawn pawn, bool forced = false)
         {
             Map.Map? map = pawn.Map;
-            return map == null || !TamingInitiative.WantsLivestock(map);
+            return map == null
+                || !map.designationManager.SettlementInitiativeOn(Designations.PlayerDesignationDefOf.Tame)
+                || !TamingInitiative.WantsLivestock(map);
         }
 
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)

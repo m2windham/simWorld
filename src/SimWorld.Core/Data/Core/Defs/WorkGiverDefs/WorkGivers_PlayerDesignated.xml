@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The givers that work the player's own designations (SimWorld.AI.WorkGiver_PlayerDesignated). Each sits at
+    the top of its work type, above the settlement's initiative-driven giver, so a pawn tries the player's
+    marks first and falls back to the settlement's own work when none is reachable. Each skips before any scan
+    while the map holds no player mark of its kind, so a map nobody designated plays exactly as it did before.
+    Its own file so WorkGivers.xml is untouched.
+  -->
+
+  <WorkGiverDef>
+    <defName>MineDesignated</defName>
+    <label>mine</label>
+    <verb>Mine</verb>
+    <gerund>mining</gerund>
+    <workType>Mining</workType>
+    <priorityInType>110</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_MinerDesignated</giverClass>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>PlantsCutDesignated</defName>
+    <label>cut plants</label>
+    <verb>Cut</verb>
+    <gerund>cutting</gerund>
+    <workType>PlantCutting</workType>
+    <priorityInType>110</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_PlantsCutDesignated</giverClass>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>HunterHunt</defName>
+    <label>hunt</label>
+    <verb>Hunt</verb>
+    <gerund>hunting</gerund>
+    <workType>Hunting</workType>
+    <priorityInType>110</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_HunterHunt</giverClass>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>Slaughter</defName>
+    <label>slaughter</label>
+    <verb>Slaughter</verb>
+    <gerund>slaughtering</gerund>
+    <workType>Handling</workType>
+    <priorityInType>120</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_Slaughter</giverClass>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>Tame</defName>
+    <label>tame</label>
+    <verb>Tame</verb>
+    <gerund>taming</gerund>
+    <workType>Handling</workType>
+    <priorityInType>110</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_Tamer</giverClass>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>Deconstruct</defName>
+    <label>deconstruct</label>
+    <verb>Deconstruct</verb>
+    <gerund>deconstructing</gerund>
+    <workType>Construction</workType>
+    <priorityInType>110</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_Deconstruct</giverClass>
+  </WorkGiverDef>
+
+  <WorkGiverDef>
+    <defName>HaulUrgently</defName>
+    <label>haul urgently</label>
+    <verb>Haul</verb>
+    <gerund>hauling</gerund>
+    <workType>Hauling</workType>
+    <priorityInType>120</priorityInType>
+    <giverClass>SimWorld.AI.WorkGiver_HaulUrgently</giverClass>
+  </WorkGiverDef>
+
+</Defs>

@@ -41,6 +41,9 @@ namespace SimWorld.Pawns
             if (Rand.Chance(chance))
             {
                 animal.faction = tamer.faction;
+                // A tamed animal is no longer anybody's Tame (or Hunt) target (RimWorld removes the designation
+                // when the animal joins — recalled, not re-read).
+                animal.Map?.designationManager.RemoveAllDesignationsOn(animal);
                 animal.mindState.tameness = 1f;
                 ClearMind(animal);
                 tamer.skills?.Learn(SkillDefOf.Animals, AnimalTuning.TameSuccessXp);

@@ -47,6 +47,12 @@ namespace SimWorld.AI
     {
         public override PathEndMode PathEndMode => PathEndMode.Touch;
 
+        /// <summary>Skips while the player has switched the settlement's own plant cutting off
+        /// (<see cref="Designations.DesignationManager.SettlementInitiativeOn"/>); the plants the player marked
+        /// are <see cref="WorkGiver_PlantsCutDesignated"/>'s either way.</summary>
+        public override bool ShouldSkip(Pawn pawn, bool forced = false) =>
+            pawn.Map == null || !pawn.Map.designationManager.SettlementInitiativeOn(Designations.PlayerDesignationDefOf.CutPlant);
+
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
             Map.Map? map = pawn.Map;

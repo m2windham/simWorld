@@ -11,15 +11,20 @@ namespace SimWorld.Designations
         public DesignationDef def = null!;
         public LocalTargetInfo target;
 
+        /// <summary>Who placed it — see <see cref="DesignationSource"/>. Not in RimWorld, where only the player
+        /// designates.</summary>
+        public DesignationSource source;
+
         /// <summary>For Scribe.</summary>
         public Designation()
         {
         }
 
-        public Designation(LocalTargetInfo target, DesignationDef def)
+        public Designation(LocalTargetInfo target, DesignationDef def, DesignationSource source = DesignationSource.Settlement)
         {
             this.target = target;
             this.def = def;
+            this.source = source;
         }
 
         public void ExposeData()
@@ -28,6 +33,8 @@ namespace SimWorld.Designations
             Scribe_Defs.Look(ref d, "def");
             def = d!; // a def that did not load leaves this null, and DesignationManager drops it at PostLoadInit
             Scribe_Targets.Look(ref target, "target");
+            // Defaulted, so a settlement's mark writes exactly what it wrote before this field existed.
+            Scribe_Values.Look(ref source, "source", DesignationSource.Settlement);
         }
 
         public override string ToString() => (def?.defName ?? "?") + " at " + target;
