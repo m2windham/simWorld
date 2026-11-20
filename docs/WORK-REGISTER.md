@@ -1591,3 +1591,8 @@ merge: houses 301, deaths 34, end population 600 (unchanged). Open, found not fi
 differently toward raid points; raid points cap 10,000 against RimWorld's 20,000; the day-4 first threat is a
 whole manhunter pack; raiders can stick at the map edge. Remaining gates: frame timing on real hardware (needs
 Doug's go-ahead for a windowed run), the 9 open port items.
+
+2026-11-20 (seam-catalogues, suite 3176/3176 on the branch, fast-forwarded): REQ 004 from the host. God view gains
+TreatyCatalogue.Treaties() and RoleCatalogue.Roles() (static, content-ordered), FactionRelationView.CanSignTreaty /
+TreatyReason from the same refusal helper SignTreaty uses, and WorkPriorityRow.RoleDefName. Read-only: bench seeds
+20/99 and 40/201 identical to integration apart from wall-clock rows.
