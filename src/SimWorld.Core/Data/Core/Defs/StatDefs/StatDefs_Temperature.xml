@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The comfortable temperature range and the apparel insulation that widens it (RimWorld:
+    ComfyTemperatureMin/ComfyTemperatureMax in Stats_Pawns_General, Insulation_Cold/Insulation_Heat in
+    Stats_Apparel). Health.TemperatureInjuryUtility reads the pair; ten degrees past either end is where
+    hypothermia and heatstroke start.
+
+    Sourced: a human's own range is 16..26 C (rimworldwiki Human infobox and Temperature page: "default human
+    lower/upper comfort limit without clothing modifiers"); those sit on the Human race def.
+    Recalled, not read: the defaults below (0 and 40, which only a race with no value of its own ever sees),
+    and that apparel feeds the pair through StatPart_ApparelStatOffset, cold insulation subtracted from the
+    minimum and heat insulation added to the maximum (the wiki only says apparel "will increase both
+    comfortable thresholds").
+  -->
+
+  <StatDef>
+    <defName>ComfyTemperatureMin</defName>
+    <label>minimum comfortable temperature</label>
+    <description>The lowest temperature at which this creature is comfortable. Ten degrees below it, hypothermia begins.</description>
+    <category>BasicsPawn</category>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>-2000</minValue>
+    <parts>
+      <li Class="SimWorld.Stats.StatPart_ApparelStatOffset">
+        <apparelStat>Insulation_Cold</apparelStat>
+        <subtract>true</subtract>
+      </li>
+    </parts>
+  </StatDef>
+
+  <StatDef>
+    <defName>ComfyTemperatureMax</defName>
+    <label>maximum comfortable temperature</label>
+    <description>The highest temperature at which this creature is comfortable. Ten degrees above it, heatstroke begins.</description>
+    <category>BasicsPawn</category>
+    <defaultBaseValue>40</defaultBaseValue>
+    <minValue>-2000</minValue>
+    <parts>
+      <li Class="SimWorld.Stats.StatPart_ApparelStatOffset">
+        <apparelStat>Insulation_Heat</apparelStat>
+      </li>
+    </parts>
+  </StatDef>
+
+  <StatDef>
+    <defName>Insulation_Cold</defName>
+    <label>insulation - cold</label>
+    <description>How many degrees this garment lowers its wearer's minimum comfortable temperature.</description>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>-2000</minValue>
+  </StatDef>
+
+  <StatDef>
+    <defName>Insulation_Heat</defName>
+    <label>insulation - heat</label>
+    <description>How many degrees this garment raises its wearer's maximum comfortable temperature.</description>
+    <defaultBaseValue>0</defaultBaseValue>
+    <minValue>-2000</minValue>
+  </StatDef>
+
+</Defs>

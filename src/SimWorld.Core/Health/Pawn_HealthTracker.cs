@@ -288,6 +288,12 @@ namespace SimWorld.Health
 
             if (pawn.RaceProps.IsFlesh)
             {
+                // RimWorld's OrganicStandard hediff givers: hypothermia and heatstroke from the air.
+                if (pawn.IsHashIntervalTick(TemperatureInjuryUtility.IntervalTicks))
+                {
+                    TemperatureInjuryUtility.TemperatureInterval(pawn);
+                    if (Dead) return;
+                }
                 if (pawn.IsHashIntervalTick(HealthTuning.HealInterval))
                 {
                     TryNaturalHealing();

@@ -101,6 +101,14 @@
           </subNodes>
         </li>
 
+        <!--
+          Seriously hypothermic or heatstruck: get to comfortable air and wait there (RimWorld:
+          JobGiver_SeekSafeTemperature, which sits beside the starving-eat giver among the very urgent needs —
+          that placement is recalled, not read). Gives nothing below the serious stage or with nowhere
+          comfortable to go, so it costs the tiers below nothing on an ordinary day.
+        -->
+        <li Class="SimWorld.AI.JobGiver_SeekSafeTemperature" />
+
         <li Class="SimWorld.AI.JobGiver_Work">
           <emergency>true</emergency>
         </li>

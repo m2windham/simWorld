@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Dealt by Health.TemperatureInjuryUtility to a frostbite-vulnerable part of a hypothermic pawn standing
+       in freezing air (RimWorld: DamageDefOf.Frostbite). Not external violence: nobody did it. -->
+  <DamageDef>
+    <defName>Frostbite</defName>
+    <label>frostbite</label>
+    <hediff>Frostbite</hediff>
+    <makesBlood>false</makesBlood>
+    <hasForcefulImpact>false</hasForcefulImpact>
+    <externalViolence>false</externalViolence>
+    <deathMessage>{0} has died of frostbite.</deathMessage>
+  </DamageDef>
+
+</Defs>

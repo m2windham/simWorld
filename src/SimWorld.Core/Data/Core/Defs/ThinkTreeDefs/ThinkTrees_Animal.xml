@@ -52,6 +52,9 @@
         <li Class="SimWorld.AI.JobGiver_AIFightEnemies" />
 
         <li Class="SimWorld.AI.JobGiver_AnimalFlee" />
+        <!-- Seriously cold or overheated: get to comfortable air (RimWorld: JobGiver_SeekSafeTemperature in
+             the animal tree too; its place here is recalled, not read). -->
+        <li Class="SimWorld.AI.JobGiver_SeekSafeTemperature" />
 
         <li Class="SimWorld.AI.ThinkNode_ConditionalHungry">
           <subNodes>

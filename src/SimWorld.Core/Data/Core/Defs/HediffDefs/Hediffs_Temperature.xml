@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Temperature injuries (RimWorld: Hypothermia, Heatstroke and Frostbite). Severity is driven from outside
+    the hediff by Health.TemperatureInjuryUtility; nothing here ticks on its own, and neither is tendable.
+    Lethal at 1 (wiki Temperature page: "fatal at 100% severity").
+
+    Stage thresholds and capacity effects are read from the rimworldwiki Ailments page's stage tables
+    (0.04 / 0.20 / 0.35 / 0.62). Recalled, not read: the hidden stage below 0.04 (the stage list has to start
+    at 0 for TemperatureInjuryStage's indices to line up: Hidden, Initial, Minor, Serious, Extreme) and
+    lifeThreatening on the extreme stage (the wiki table does not say).
+  -->
+
+  <HediffDef>
+    <defName>Hypothermia</defName>
+    <label>hypothermia</label>
+    <lethalSeverity>1</lethalSeverity>
+    <initialSeverity>0.001</initialSeverity>
+    <stages>
+      <li>
+        <label>shivering</label>
+        <becomeVisible>false</becomeVisible>
+      </li>
+      <li>
+        <minSeverity>0.04</minSeverity>
+        <label>shivering</label>
+        <capMods>
+          <li><capacity>Consciousness</capacity><offset>-0.05</offset></li>
+          <li><capacity>Manipulation</capacity><offset>-0.08</offset></li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.2</minSeverity>
+        <label>minor</label>
+        <capMods>
+          <li><capacity>Consciousness</capacity><offset>-0.1</offset></li>
+          <li><capacity>Manipulation</capacity><offset>-0.2</offset></li>
+          <li><capacity>Moving</capacity><offset>-0.1</offset></li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.35</minSeverity>
+        <label>serious</label>
+        <painOffset>0.15</painOffset>
+        <capMods>
+          <li><capacity>Consciousness</capacity><offset>-0.2</offset></li>
+          <li><capacity>Manipulation</capacity><offset>-0.5</offset></li>
+          <li><capacity>Moving</capacity><offset>-0.3</offset></li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.62</minSeverity>
+        <label>extreme</label>
+        <lifeThreatening>true</lifeThreatening>
+        <painOffset>0.3</painOffset>
+        <capMods>
+          <li><capacity>Consciousness</capacity><setMax>0.1</setMax></li>
+        </capMods>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>Heatstroke</defName>
+    <label>heatstroke</label>
+    <lethalSeverity>1</lethalSeverity>
+    <initialSeverity>0.001</initialSeverity>
+    <stages>
+      <li>
+        <label>initial</label>
+        <becomeVisible>false</becomeVisible>
+      </li>
+      <li>
+        <minSeverity>0.04</minSeverity>
+        <label>initial</label>
+        <capMods>
+          <li><capacity>Consciousness</capacity><offset>-0.05</offset></li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.2</minSeverity>
+        <label>minor</label>
+        <capMods>
+          <li><capacity>Consciousness</capacity><offset>-0.1</offset></li>
+          <li><capacity>Moving</capacity><offset>-0.1</offset></li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.35</minSeverity>
+        <label>serious</label>
+        <painOffset>0.15</painOffset>
+        <capMods>
+          <li><capacity>Consciousness</capacity><offset>-0.2</offset></li>
+          <li><capacity>Moving</capacity><offset>-0.3</offset></li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.62</minSeverity>
+        <label>extreme</label>
+        <lifeThreatening>true</lifeThreatening>
+        <painOffset>0.3</painOffset>
+        <capMods>
+          <li><capacity>Consciousness</capacity><setMax>0.1</setMax></li>
+        </capMods>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <!--
+    The wound hypothermia leaves on fingers, toes, ears and nose. Pain 0.0125 and scar pain 0.00625 per
+    severity, no bleeding, heals naturally, "lost to frostbite" when it destroys the part: rimworldwiki
+    injury table (Health Difficulties). Its 0.25 infection chance is from the same table as relayed by a
+    summary, not read cell by cell; the permanent-scar chance is left at the injury default (recalled).
+  -->
+  <HediffDef ParentName="InjuryBase">
+    <defName>Frostbite</defName>
+    <label>frostbite</label>
+    <comps>
+      <li Class="SimWorld.Health.HediffCompProperties_TendDuration" />
+      <li Class="SimWorld.Health.HediffCompProperties_Infecter">
+        <infectionChance>0.25</infectionChance>
+      </li>
+      <li Class="SimWorld.Health.HediffCompProperties_GetsPermanent">
+        <permanentLabel>frostbite scar</permanentLabel>
+      </li>
+    </comps>
+    <injuryProps>
+      <painPerSeverity>0.0125</painPerSeverity>
+      <averagePainPerSeverityPermanent>0.00625</averagePainPerSeverityPermanent>
+      <bleedRate>0</bleedRate>
+      <canMerge>true</canMerge>
+      <destroyedLabel>lost to frostbite</destroyedLabel>
+    </injuryProps>
+  </HediffDef>
+
+</Defs>
