@@ -111,11 +111,11 @@ namespace SimWorld.Tests.Director
         {
             NewStoryteller();
             CivilizationTarget target = NewTarget(Find.Storyteller, pawnCount: 3, wealth: 400000f);
-            Find.TickManager.DebugSetTicksGame(0);
+            Find.TickManager.DebugSetTicksGame(40 * GenDate.TicksPerDay); // the days-passed factor is 1 from day 40 on
 
             float points = StorytellerUtility.DefaultThreatPointsNow(target);
 
-            // wealth curve (2400) + 3 * colonist curve (140) = 2820, * threatScale(1) * adaptation(0.7 at day 0) * pointsFactor(1 at day 0)
+            // wealth curve (2400) + 3 * colonist curve (140) = 2820, * threatScale(1) * adaptation(0.7 at no adapt days) * pointsFactor(1 from day 40)
             Assert.Equal(2820f * 0.7f, points, 1);
         }
 
@@ -168,12 +168,12 @@ namespace SimWorld.Tests.Director
         {
             NewStoryteller("Cassandra_Classic", "Medium");
             CivilizationTarget mediumTarget = NewTarget(Find.Storyteller, pawnCount: 3, wealth: 700000f);
-            Find.TickManager.DebugSetTicksGame(0);
+            Find.TickManager.DebugSetTicksGame(40 * GenDate.TicksPerDay); // the days-passed factor is 1 from day 40 on
             float mediumPoints = StorytellerUtility.DefaultThreatPointsNow(mediumTarget);
 
             NewStoryteller("Cassandra_Classic", "Rough");
             CivilizationTarget roughTarget = NewTarget(Find.Storyteller, pawnCount: 3, wealth: 700000f);
-            Find.TickManager.DebugSetTicksGame(0);
+            Find.TickManager.DebugSetTicksGame(40 * GenDate.TicksPerDay); // the days-passed factor is 1 from day 40 on
             float roughPoints = StorytellerUtility.DefaultThreatPointsNow(roughTarget);
 
             DifficultyDef medium = DefDatabase<DifficultyDef>.GetNamed("Medium");
@@ -187,7 +187,7 @@ namespace SimWorld.Tests.Director
             NewStoryteller("Cassandra_Classic", "Extreme");
             CivilizationTarget target = NewTarget(Find.Storyteller, pawnCount: 5, wealth: 2000000f);
             for (int i = 0; i < 3600; i++) Find.Storyteller.adaptation.AdaptationTick(Find.Storyteller.difficulty); // push adaptation to its ceiling
-            Find.TickManager.DebugSetTicksGame(0);
+            Find.TickManager.DebugSetTicksGame(40 * GenDate.TicksPerDay); // the days-passed factor is 1 from day 40 on
 
             float points = StorytellerUtility.DefaultThreatPointsNow(target);
 

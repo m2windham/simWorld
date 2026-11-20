@@ -1336,6 +1336,16 @@
           "id": "director.quakerebuild",
           "label": "A building an earthquake destroys leaves a rebuild blueprint in place with its rotation (RimWorld auto-rebuild); a forced night quake on seed 12345 was rebuilt the same day with no deaths.",
           "done": true
+        },
+        {
+          "id": "director.threatspacing",
+          "label": "Two big threats can no longer land on top of each other. StorytellerComp_OnOffCycle read minSpacingDays only as a term in its MTB, so nothing stopped a second hit; seed 12345 (populated, band 20) sent two raids 0.58 days apart against Cassandra's 1.5. RimWorld 1.0's IncidentCycleUtility (josh-m/RW-Decompile, read) lays each cycle's hits out at least minSpacingDays apart (RelaxToSatisfyMinDiff). The port now refuses a hit that lands within minSpacingDays of the last incident of the comp's category, read from the saved StoryState, checked after the roll so the roll is drawn as before (OnOffCycleSpacingTests). Recorded difference: RimWorld nudges the hit later instead of dropping it, and draws its schedule per cycle from a seeded hash rather than per interval.",
+          "done": true
+        },
+        {
+          "id": "director.startingfactor",
+          "label": "Threat points no longer grow with the calendar. Every narrator's pointsFactorFromDaysPassed was unsourced and escalating (Cassandra (0,1)(20,2)(100,4): 2.8x on day 51), and it sent 27 raiders (1,080 points) at a band of 18 on seed 12345: all 18 went down inside 0.1 day and 16 bled out with nobody left standing to tend them. All three narrators now carry RimWorld's starting factor, 0.7 to day 10 and 1.0 from day 40 (rimworldwiki.com/wiki/Combat_power, read; the line between is this port's assumption); escalation comes from wealth, head count, adaptation and the era factor as in RimWorld. Same seed after: largest raid 431 points, 0 raid kills on the spot, 5 deaths in 60 days (ThreatStartingFactorTests). Known: this port's wealth counts stores only, so threats now grow more slowly than a RimWorld colony's would.",
+          "done": true
         }
       ],
       "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"

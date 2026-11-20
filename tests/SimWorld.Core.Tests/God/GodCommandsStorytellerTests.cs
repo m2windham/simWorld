@@ -315,21 +315,21 @@ namespace SimWorld.Tests.God
             EmptyGame();
             CivilizationTarget target = PosedCivilization();
             GodCommands.SetDifficulty("Medium");
-            // Day 100: far enough along that the two narrators' own pointsFactorFromDaysPassed curves have
-            // visibly parted (Cassandra escalates harder than Phoebe over a long game). At day 0 both are 1
-            // and the change would be invisible, which is the honest reason this test moves the clock.
-            Find.TickManager.DebugSetTicksGame(100 * GenDate.TicksPerDay);
+            // The narrators now share RimWorld's starting factor, so the two numbers may well be equal; what this
+            // pins is that the points are read through whichever narrator is current, which is the ratio of
+            // their own curves at the same day whatever those curves are.
+            Find.TickManager.DebugSetTicksGame(25 * GenDate.TicksPerDay);
+            int day = GenDate.DaysPassedAt(Find.TickManager.TicksGame);
 
             GodCommands.SetStoryteller("Cassandra_Classic");
             float underCassandra = StorytellerUtility.DefaultThreatPointsNow(target);
+            float cassandraCurve = Find.Storyteller.def.pointsFactorFromDaysPassed.Evaluate(day);
 
             Assert.Equal(GodCommandOutcome.Done, GodCommands.SetStoryteller("Phoebe_Chillax").Outcome);
             float underPhoebe = StorytellerUtility.DefaultThreatPointsNow(target);
+            float phoebeCurve = Find.Storyteller.def.pointsFactorFromDaysPassed.Evaluate(day);
 
-            Assert.True(underPhoebe < underCassandra,
-                "Phoebe escalates more gently than Cassandra by day 100: "
-                + underPhoebe.ToString() + " vs " + underCassandra.ToString());
-            Assert.InRange(underPhoebe / underCassandra, 0.3f, 0.9f);
+            Assert.Equal(phoebeCurve / cassandraCurve, underPhoebe / underCassandra, 3);
         }
 
         [Fact]
