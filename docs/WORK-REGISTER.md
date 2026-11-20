@@ -1580,3 +1580,14 @@ against core b49674a, `-batchmode -nographics`, solo and populated scenarios, 61
 byte-identical in both). Groups marked `verified` in status.json. No window was ever created (MainWindowHandle 0
 across 5,446 polls; foreground untouched). Remaining gates: raid lethality (populated: 19 raid deaths in 61 days,
 lane running), frame timing on real hardware (needs Doug's go-ahead for a windowed run), the 9 open port items.
+
+2026-11-20 (raid-lethality, merged 7621710, suite 3168/3168 on the merge): RC gate 2 met. Raid points used an
+unsourced days-passed factor reaching 2.775 by day 51; it is now RimWorld's starting factor (max 1.0, reached at
+day 40; read: rimworldwiki Combat_power; the day 10-40 interpolation is ours). The on/off cycle now enforces the
+minimum spacing between threats (read: RW 1.0 IncidentCycleUtility.RelaxToSatisfyMinDiff; difference, recorded:
+a too-close threat is dropped, not delayed). With threats, 20 seeds: deaths 254 -> 61, raid deaths 204 -> 16,
+end population 301 -> 512, seeds wiped 5 -> 0; all 21 seeds 69 deaths, 546 alive. Threat-free 21 seeds on the
+merge: houses 301, deaths 34, end population 600 (unchanged). Open, found not fixed: colony health counts
+differently toward raid points; raid points cap 10,000 against RimWorld's 20,000; the day-4 first threat is a
+whole manhunter pack; raiders can stick at the map edge. Remaining gates: frame timing on real hardware (needs
+Doug's go-ahead for a windowed run), the 9 open port items.
