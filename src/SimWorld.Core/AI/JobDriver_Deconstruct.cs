@@ -41,6 +41,13 @@ namespace SimWorld.AI
             work.tickAction = () =>
             {
                 Thing building = work.Job.GetTarget(TargetIndex.A).Thing!;
+                // Only a building comes down this way; anything else ordered here (MapCommands.OrderJob takes any
+                // job on any thing) ends the job rather than being destroyed.
+                if (building.def.category != ThingCategory.Building || building.def.mineable)
+                {
+                    EndJobWith(JobCondition.Incompletable);
+                    return;
+                }
                 int skillLevel = work.Pawn.skills?.GetSkill(SkillDefOf.Construction)?.Level ?? 0;
                 workDone += JobDriver_ConstructFinishFrame.BaseWorkPerTick
                     * JobDriver_ConstructFinishFrame.WorkSpeedFactorFromConstructionLevel.Evaluate(skillLevel);

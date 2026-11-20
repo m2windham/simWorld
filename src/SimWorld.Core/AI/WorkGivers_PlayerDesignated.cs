@@ -101,9 +101,10 @@ namespace SimWorld.AI
     }
 
     /// <summary>Mines player-designated rock (RimWorld: <c>WorkGiver_Miner</c>, read over the player's Mine
-    /// marks only; <see cref="WorkGiver_Miner"/> keeps the settlement's). No roof gate: RimWorld lets the player
-    /// dig out a roof's support and bring it down, and so does this — the settlement's own giver keeps its gate
-    /// because there nobody chose the risk.</summary>
+    /// marks only; <see cref="WorkGiver_Miner"/> keeps the settlement's). Keeps the settlement giver's roof gate,
+    /// a translation: RimWorld lets the player dig out a roof's support, but this port's
+    /// <see cref="JobDriver_Mine"/> refuses to remove a rock holding a roof up, so offering one would send a
+    /// miner back to it for ever. A marked rock holding a roof waits until the roof no longer rests on it.</summary>
     public sealed class WorkGiver_MinerDesignated : WorkGiver_PlayerDesignated
     {
         private static IReadOnlyList<DesignationDef>? defs;
@@ -115,6 +116,9 @@ namespace SimWorld.AI
             IntVec3 cell = des.target.Cell;
             return WorkGiver_Miner.MayBeAccessible(cell, map) ? WorkGiver_Miner.FirstMineable(cell, map) : null;
         }
+
+        protected override bool CanWork(Pawn pawn, Thing thing, DesignationDef def) =>
+            !Building.RoofCollapseUtility.WouldCollapseRoofIfRemoved(thing);
 
         protected override DesignationDef? PlayerDesignationOn(Map.Map map, Thing thing)
         {

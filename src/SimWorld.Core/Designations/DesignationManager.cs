@@ -87,6 +87,10 @@ namespace SimWorld.Designations
         /// calls <c>RemoveAllDesignationsOn</c>). Buildings take <see cref="Notify_BuildingDespawned"/>.</summary>
         public void Notify_ThingDespawned(Thing t) => RemoveAllDesignationsOn(t);
 
+        /// <summary>Whether the player has marked <paramref name="t"/> with <paramref name="def"/>.</summary>
+        public bool HasPlayerDesignationOn(Thing t, DesignationDef def) =>
+            DesignationOn(t, def)?.source == DesignationSource.Player;
+
         /// <summary>Whether any <paramref name="def"/> mark on this map was placed by the player — the cheap
         /// refusal every <see cref="AI.WorkGiver_PlayerDesignated"/> makes before scanning.</summary>
         public bool AnyPlayerDesignationOfDef(DesignationDef def)

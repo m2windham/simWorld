@@ -405,6 +405,41 @@ namespace SimWorld.Tests.Designations
             Assert.Same(marked, NextJob(handler)!.GetTarget(TargetIndex.A).Thing);
         }
 
+        [Fact]
+        public void The_settlements_own_hunters_and_tamers_leave_the_players_rival_mark_alone()
+        {
+            CoreMap map = NewMap();
+            Pawn hunter = Hunter(map, 2, 2);
+            Pawn toTame = Animal(map, "Chicken", 5, 2);
+            Pawn toHunt = Animal(map, "Chicken", 8, 2);
+            var hunt = (WorkGiver_Hunt)DefDatabase<WorkGiverDef>.GetNamed("Hunt").Worker;
+            var tame = (WorkGiver_TameAnimals)DefDatabase<WorkGiverDef>.GetNamed("TameAnimals").Worker;
+            Assert.True(hunt.HasJobOnThing(hunter, toTame));
+            Assert.True(tame.HasJobOnThing(hunter, toHunt));
+
+            PlayerMark(map, PlayerDesignationDefOf.Tame, toTame);
+            PlayerMark(map, PlayerDesignationDefOf.Hunt, toHunt);
+
+            Assert.False(hunt.HasJobOnThing(hunter, toTame));
+            Assert.False(tame.HasJobOnThing(hunter, toHunt));
+        }
+
+        [Fact]
+        public void Deconstruct_and_slaughter_ordered_on_a_person_do_no_harm()
+        {
+            CoreMap map = NewMap();
+            Pawn worker = Worker(map, 2, 2);
+            Pawn other = Worker(map, 3, 2);
+            worker.jobs.StartJob(new Job(DesignationJobDefOf.Deconstruct, other), JobCondition.InterruptForced);
+            RunTicks(400, worker, other);
+            Assert.False(other.Destroyed);
+            Assert.True(other.Spawned);
+
+            worker.jobs.StartJob(new Job(DesignationJobDefOf.Slaughter, other), JobCondition.InterruptForced);
+            RunTicks(400, worker, other);
+            Assert.False(other.Dead);
+        }
+
         // ---- housekeeping and save ----
 
         [Fact]

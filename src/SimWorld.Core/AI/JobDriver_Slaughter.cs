@@ -30,7 +30,8 @@ namespace SimWorld.AI
 
             yield return Toils_General.Do(() =>
             {
-                if (!(job.GetTarget(TargetIndex.A).Thing is Pawn victim) || victim.Dead || !victim.Spawned) return;
+                // Animals only: MapCommands.OrderJob takes any job on any thing, and a person is not slaughtered.
+                if (!(job.GetTarget(TargetIndex.A).Thing is Pawn victim) || !victim.RaceProps.Animal || victim.Dead || !victim.Spawned) return;
                 victim.health.Kill(new DamageInfo(DamageDefOf.Cut, 99999f, 999f, pawn), null);
             });
         }

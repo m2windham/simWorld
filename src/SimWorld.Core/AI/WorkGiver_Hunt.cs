@@ -78,6 +78,8 @@ namespace SimWorld.AI
         {
             if (!(thing is Pawn animal) || !HuntUtility.IsHuntableAnimal(animal)) return false;
             if (ReferenceEquals(animal, pawn)) return false;
+            // An animal the player marked for taming is not the settlement's meat.
+            if (pawn.Map!.designationManager.HasPlayerDesignationOn(animal, Designations.PlayerDesignationDefOf.Tame)) return false;
             if (!HuntUtility.IsSafeToHunt(pawn, animal)) return false;
             if (!Reachability.CanReach(pawn, animal, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, animal);
