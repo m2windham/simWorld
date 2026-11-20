@@ -75,7 +75,8 @@ namespace SimWorld.Economy
         /// <summary>
         /// Opens a <see cref="TradeSession"/> between <paramref name="settlement"/>'s real store ledger and
         /// <paramref name="caravan"/>'s real stock, with the settlement's best negotiator and whatever trade
-        /// treaty the two civilizations have signed already applied.
+        /// treaty the two civilizations have signed already applied, and the trust tier their goodwill puts them
+        /// in (<see cref="TradeTrust.TierBetween"/>) set as <see cref="TradeDeal.trustPriceFactor"/>.
         ///
         /// <para/>This is <see cref="SettlementTradeUtility.OpenSession"/> with its two open parameters
         /// filled, and nothing else. It is the caller the audit in <c>docs/design/player-first.md</c> §10
@@ -92,7 +93,9 @@ namespace SimWorld.Economy
                     ? settlement.faction.TradeAccessPriceGainWith(caravan.Faction)
                     : 0f;
 
-            return SettlementTradeUtility.OpenSession(settlement, caravan, BestNegotiator(settlement), treatyGain);
+            TradeSession session = SettlementTradeUtility.OpenSession(settlement, caravan, BestNegotiator(settlement), treatyGain);
+            session.deal.trustPriceFactor = TradeTrust.BuyPriceFactor(TradeTrust.TierBetween(settlement.faction, caravan.Faction));
+            return session;
         }
 
         /// <summary>

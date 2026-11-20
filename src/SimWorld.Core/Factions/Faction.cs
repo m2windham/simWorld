@@ -81,7 +81,7 @@ namespace SimWorld.Factions
             throw new InvalidOperationException("No relation recorded between " + this + " and " + other + ".");
         }
 
-        private FactionRelation GetOrAddRelation(Faction other)
+        internal FactionRelation GetOrAddRelation(Faction other)
         {
             FactionRelation? existing = RelationWith(other, allowNull: true);
             if (existing != null) return existing;

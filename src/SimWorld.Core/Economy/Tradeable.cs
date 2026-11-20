@@ -35,24 +35,29 @@ namespace SimWorld.Economy
             this.countInPlayer = countInPlayer;
         }
 
-        /// <summary>Per-unit price for buying or selling this good under the given terms.</summary>
-        public float PriceFor(TradeAction action, PriceType priceType = PriceType.Normal, float negotiatorGain = 0f, float settlementGain = 0f)
+        /// <summary>
+        /// Per-unit price for buying or selling this good under the given terms. <paramref name="trustPriceFactor"/>
+        /// is the trust tier's (<see cref="TradeTrust"/>): it feeds <see cref="TradeUtility"/>'s own
+        /// <c>priceFactorBuy</c> as-is and its <c>priceFactorSell</c> as the reciprocal, so a tier is one
+        /// multiplier inside the one price expression rather than a correction applied after it.
+        /// </summary>
+        public float PriceFor(TradeAction action, PriceType priceType = PriceType.Normal, float negotiatorGain = 0f, float settlementGain = 0f, float trustPriceFactor = 1f)
         {
             return action == TradeAction.Buy
-                ? TradeUtility.GetPricePlayerBuy(thingDef, priceType, 1f, negotiatorGain, settlementGain)
-                : TradeUtility.GetPricePlayerSell(thingDef, priceType, 1f, negotiatorGain, settlementGain);
+                ? TradeUtility.GetPricePlayerBuy(thingDef, priceType, trustPriceFactor, negotiatorGain, settlementGain)
+                : TradeUtility.GetPricePlayerSell(thingDef, priceType, 1f / trustPriceFactor, negotiatorGain, settlementGain);
         }
 
         /// <summary>Silver the player must pay for the pending buy on this line (0 when not buying).</summary>
-        public float CurTotalCurrencyCostForSource(PriceType priceType = PriceType.Normal, float negotiatorGain = 0f, float settlementGain = 0f)
+        public float CurTotalCurrencyCostForSource(PriceType priceType = PriceType.Normal, float negotiatorGain = 0f, float settlementGain = 0f, float trustPriceFactor = 1f)
         {
-            return countToTransfer > 0 ? PriceFor(TradeAction.Buy, priceType, negotiatorGain, settlementGain) * countToTransfer : 0f;
+            return countToTransfer > 0 ? PriceFor(TradeAction.Buy, priceType, negotiatorGain, settlementGain, trustPriceFactor) * countToTransfer : 0f;
         }
 
         /// <summary>Silver the player receives for the pending sell on this line (0 when not selling).</summary>
-        public float CurTotalCurrencyCostForDestination(PriceType priceType = PriceType.Normal, float negotiatorGain = 0f, float settlementGain = 0f)
+        public float CurTotalCurrencyCostForDestination(PriceType priceType = PriceType.Normal, float negotiatorGain = 0f, float settlementGain = 0f, float trustPriceFactor = 1f)
         {
-            return countToTransfer < 0 ? PriceFor(TradeAction.Sell, priceType, negotiatorGain, settlementGain) * -countToTransfer : 0f;
+            return countToTransfer < 0 ? PriceFor(TradeAction.Sell, priceType, negotiatorGain, settlementGain, trustPriceFactor) * -countToTransfer : 0f;
         }
     }
 }

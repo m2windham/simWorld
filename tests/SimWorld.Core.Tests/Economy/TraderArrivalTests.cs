@@ -80,6 +80,8 @@ namespace SimWorld.Tests.Economy
 
             Faction home = NewFaction("PlayerCivilization", "Home");
             world.factions.Add(home);
+            // Ours: the trade commands only trade at the player's own settlements (Find.FactionManager.OfPlayer).
+            Find.FactionManager.Add(home);
 
             var settlement = new Settlement(WorldObjectDefOf.Settlement, tile, home, "Hearth", 0);
             world.worldObjects.Add(settlement);
