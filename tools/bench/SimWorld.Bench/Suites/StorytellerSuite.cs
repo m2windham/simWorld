@@ -204,6 +204,8 @@ namespace SimWorld.Bench.Suites
             var samples = new List<CurveSample> { SampleCurve(0, game, home, rollup) };
 
             long ticks = 0;
+            var temperature = new TemperatureReading();
+            SimWorld.World.Settlement watched = home;
             try
             {
                 for (int day = 1; day <= days; day++)
@@ -220,12 +222,14 @@ namespace SimWorld.Bench.Suites
 
                         game.TickManager.DoSingleTick();
                         ticks++;
+                        if (Find.TickManager.TicksGame % TemperatureReading.SampleTicks == 0) temperature.Sample(watched);
                     }
 
                     log.SettleAttributed();
 
                     // Re-resolve: the roster changes under us and a settlement can in principle be lost.
                     SimWorld.World.Settlement current = PlayerSeat(game) ?? home;
+                    watched = current;
                     samples.Add(SampleCurve(day, game, current, rollup));
                 }
             }
@@ -237,6 +241,7 @@ namespace SimWorld.Bench.Suites
             log.SettleAttributed();
             sw.Stop();
             Console.WriteLine(DwellingReading.Line(PlayerSeat(game) ?? home));
+            Console.WriteLine(temperature.Line());
 
             // Read here, not at report time: the determinism re-run resets the game these belong to.
             var moments = new List<string>();

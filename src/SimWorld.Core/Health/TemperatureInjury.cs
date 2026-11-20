@@ -206,7 +206,8 @@ namespace SimWorld.Health
             }
             tmpFrostbiteParts.Clear();
             int amount = (int)System.Math.Ceiling(chosen.def.hitPoints * FrostbitePartHitPointsFraction);
-            pawn.TakeDamage(new DamageInfo(TemperatureDefOf.Frostbite, amount, 0f, null, chosen));
+            // Pawn damage has one funnel here, the damage worker (Thing.TakeDamage is the non-pawn path).
+            TemperatureDefOf.Frostbite.Worker.Apply(new DamageInfo(TemperatureDefOf.Frostbite, amount, 0f, null, chosen), pawn);
         }
     }
 }
