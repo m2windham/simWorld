@@ -367,13 +367,16 @@ namespace SimWorld.Tests.Designations
             Pawn worker = Worker(map, 2, 2, WorkTypeDefOf.Handling, WorkTypeDefOf.PlantCutting);
             var tame = (WorkGiver_TameAnimals)DefDatabase<WorkGiverDef>.GetNamed("TameAnimals").Worker;
             var cut = (WorkGiver_PlantsCut)DefDatabase<WorkGiverDef>.GetNamed("PlantsCut").Worker;
+            var chop = (WorkGiver_ConstructChopWood)DefDatabase<WorkGiverDef>.GetNamed("ConstructChopWood").Worker;
             Assert.False(cut.ShouldSkip(worker));
+            Assert.False(chop.ShouldSkip(worker));
 
             map.designationManager.SetSettlementInitiative(PlayerDesignationDefOf.Tame, false);
             map.designationManager.SetSettlementInitiative(PlayerDesignationDefOf.CutPlant, false);
 
             Assert.True(tame.ShouldSkip(worker));
             Assert.True(cut.ShouldSkip(worker));
+            Assert.True(chop.ShouldSkip(worker));
             Thing tree = Spawn(map, "Plant_TreePoplar", 10, 10);
             PlayerMark(map, PlayerDesignationDefOf.CutPlant, tree);
             Assert.Same(tree, NextJob(worker)!.GetTarget(TargetIndex.A).Thing);

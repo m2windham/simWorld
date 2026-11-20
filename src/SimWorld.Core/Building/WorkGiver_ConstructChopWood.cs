@@ -50,9 +50,13 @@ namespace SimWorld.Building
         public override PathEndMode PathEndMode => PathEndMode.Touch;
 
         /// <summary>A pawn who cannot cut plants never fells a tree, the check RimWorld's
-        /// <c>HandleBlockingThingJob</c> makes before handing a builder a cut.</summary>
+        /// <c>HandleBlockingThingJob</c> makes before handing a builder a cut. Also skips while the player has
+        /// switched the settlement's own plant cutting off ("only chop what I mark",
+        /// <see cref="Designations.DesignationManager.SettlementInitiativeOn"/>): felling for wood is that
+        /// initiative's translation of RimWorld's Chop Wood designation.</summary>
         public override bool ShouldSkip(Pawn pawn, bool forced = false) =>
-            pawn.Map == null || pawn.WorkTypeIsDisabled(WorkTypeDefOf.PlantCutting);
+            pawn.Map == null || pawn.WorkTypeIsDisabled(WorkTypeDefOf.PlantCutting)
+            || !pawn.Map.designationManager.SettlementInitiativeOn(Designations.PlayerDesignationDefOf.CutPlant);
 
         /// <summary>
         /// Every tree on a building site, and every tree ready to fell whose wood the sites are short of. The
