@@ -51,7 +51,7 @@ namespace SimWorld.Map.View
     /// back as a snapshot saying so. A null return would push every host into the same four null checks, and
     /// an exception would make "the player clicked a town with no interior" a crash.
     /// </summary>
-    public sealed class MapViewSnapshot
+    public sealed partial class MapViewSnapshot
     {
         private MapViewSnapshot(
             bool contentLoaded,
