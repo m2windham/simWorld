@@ -148,6 +148,7 @@ namespace SimWorld.Tests.Health
             // 46 degrees under: 0.002967 per 60 ticks, so a little over 20,000 ticks to reach 1.
             RunTicks(30000, p);
             Assert.True(p.Dead);
+            Assert.Equal(DeathCause.Exposure, p.health.CauseOfDeath);
             Assert.True(Severity(p, TemperatureDefOf.Hypothermia) >= 1f - Eps);
         }
 
@@ -158,6 +159,7 @@ namespace SimWorld.Tests.Health
             Pawn p = SpawnHuman(map, new IntVec3(5, 0, 5));
             RunTicks(40000, p);
             Assert.True(p.Dead);
+            Assert.Equal(DeathCause.Exposure, p.health.CauseOfDeath);
             Assert.True(Severity(p, TemperatureDefOf.Heatstroke) >= 1f - Eps);
         }
 
@@ -221,17 +223,17 @@ namespace SimWorld.Tests.Health
         public void Below_the_serious_stage_nobody_seeks_safe_temperature()
         {
             // Both places a giver could send it are on offer: comfortable air where it stands (a wait), and a
-            // warm room from a freezing doorway (a walk). At the minor stage it takes neither.
+            // warm house from a freezing doorstep (a walk). At the minor stage it takes neither.
             CoreMap map = NewMap(20f);
             Pawn inWarmth = SpawnHuman(map, new IntVec3(12, 0, 12), "InWarmth");
             SetSeverity(inWarmth, TemperatureDefOf.Hypothermia, 0.3f);
             Assert.False(new JobGiver_SeekSafeTemperature().TryIssueJobPackage(inWarmth).IsValid);
 
             CoreMap cold = NewMap(-20f);
-            IntVec3 doorway = BuildWarmPairAroundADoor(cold, 20f);
-            Pawn inDoorway = SpawnHuman(cold, doorway, "InDoorway");
-            SetSeverity(inDoorway, TemperatureDefOf.Hypothermia, 0.3f);
-            Assert.False(new JobGiver_SeekSafeTemperature().TryIssueJobPackage(inDoorway).IsValid);
+            IntVec3 doorstep = BuildHouse(cold, 20f);
+            Pawn onDoorstep = SpawnHuman(cold, doorstep, "OnDoorstep");
+            SetSeverity(onDoorstep, TemperatureDefOf.Hypothermia, 0.3f);
+            Assert.False(new JobGiver_SeekSafeTemperature().TryIssueJobPackage(onDoorstep).IsValid);
         }
 
         [Fact]
@@ -247,37 +249,32 @@ namespace SimWorld.Tests.Health
         }
 
         /// <summary>
-        /// Two sealed, roofed rooms sharing a wall with a door in it, warm inside, freezing outside. In this
-        /// port a door joins its two rooms into one thermal group and every door to the outdoors makes that
-        /// group track outdoor air, so a sealed pair is the only reachable warm air there is; a pawn standing
-        /// in the doorway reads outdoor air (a door cell belongs to no room, as in
-        /// <c>RotUtility.AmbientTemperatureAt</c>). Returns the doorway.
+        /// A walled, roofed house (5x5 inside) with one door to the outside, its air set to
+        /// <paramref name="inside"/>. A door keeps its room thermally separate, so the house holds its own
+        /// air against the outdoors. Returns the cell just outside the door.
         /// </summary>
-        private static IntVec3 BuildWarmPairAroundADoor(CoreMap map, float inside)
+        private static IntVec3 BuildHouse(CoreMap map, float inside)
         {
-            var left = new CellRect(1, 2, 5, 5);
-            var right = new CellRect(5, 2, 5, 5);
-            var door = new IntVec3(5, 0, 4);
-            foreach (IntVec3 c in left.EdgeCells.Concat(right.EdgeCells).Distinct())
+            var shell = new CellRect(1, 2, 7, 7);
+            var door = new IntVec3(7, 0, 5);
+            foreach (IntVec3 c in shell.EdgeCells)
             {
-                if (c == door) continue;
-                SpawnEdifice(map, c, "Wall");
+                SpawnEdifice(map, c, c == door ? "Door" : "Wall");
             }
-            SpawnEdifice(map, door, "Door");
-            foreach (IntVec3 c in left.Cells.Concat(right.Cells)) map.roofGrid.SetRoof(c, SimWorld.Map.RoofDefOf.RoofConstructed);
+            foreach (IntVec3 c in shell.Cells) map.roofGrid.SetRoof(c, SimWorld.Map.RoofDefOf.RoofConstructed);
             map.MapTick();
-            Room room = map.roomTracker.RoomAt(new IntVec3(3, 0, 4))!;
+            Room room = map.roomTracker.RoomAt(new IntVec3(4, 0, 5))!;
             Assert.False(room.Group.UsesOutdoorTemperature);
             room.Group.temperature = inside;
-            return door;
+            return new IntVec3(8, 0, 5);
         }
 
         [Fact]
         public void A_seriously_hypothermic_pawn_walks_to_comfortable_air_and_recovers_there()
         {
             CoreMap map = NewMap(-20f);
-            IntVec3 doorway = BuildWarmPairAroundADoor(map, 20f);
-            Pawn p = SpawnHuman(map, doorway);
+            IntVec3 doorstep = BuildHouse(map, 20f);
+            Pawn p = SpawnHuman(map, doorstep);
             SetSeverity(p, TemperatureDefOf.Hypothermia, 0.4f);
 
             ThinkResult result = new JobGiver_SeekSafeTemperature().TryIssueJobPackage(p);
@@ -293,7 +290,7 @@ namespace SimWorld.Tests.Health
                 RunTicks(1, p);
             }
             Assert.False(p.Dead);
-            Assert.NotEqual(doorway, p.Position);
+            Assert.NotEqual(doorstep, p.Position);
             Assert.False(TemperatureInjuryUtility.HasTemperatureInjury(p, TemperatureInjuryStage.Serious));
         }
 
@@ -301,8 +298,8 @@ namespace SimWorld.Tests.Health
         public void The_humanlike_tree_sends_a_seriously_cold_citizen_to_warm_air()
         {
             CoreMap map = NewMap(-20f);
-            IntVec3 doorway = BuildWarmPairAroundADoor(map, 20f);
-            Pawn p = SpawnHuman(map, doorway);
+            IntVec3 doorstep = BuildHouse(map, 20f);
+            Pawn p = SpawnHuman(map, doorstep);
             SetSeverity(p, TemperatureDefOf.Hypothermia, 0.4f);
             p.jobs.EndCurrentJob(JobCondition.InterruptForced, startNewJob: false);
             p.jobs.TryFindAndStartJob();
@@ -313,7 +310,7 @@ namespace SimWorld.Tests.Health
         public void With_no_comfortable_air_in_reach_the_giver_gives_nothing()
         {
             CoreMap map = NewMap(-20f);
-            BuildWarmPairAroundADoor(map, -20f);
+            BuildHouse(map, -20f);
             Pawn p = SpawnHuman(map, new IntVec3(12, 0, 12));
             SetSeverity(p, TemperatureDefOf.Hypothermia, 0.4f);
             Assert.False(new JobGiver_SeekSafeTemperature().TryIssueJobPackage(p).IsValid);
@@ -323,8 +320,8 @@ namespace SimWorld.Tests.Health
         public void A_seriously_heatstruck_pawn_seeks_cooler_air_too()
         {
             CoreMap map = NewMap(45f);
-            IntVec3 doorway = BuildWarmPairAroundADoor(map, 22f);
-            Pawn p = SpawnHuman(map, doorway);
+            IntVec3 doorstep = BuildHouse(map, 22f);
+            Pawn p = SpawnHuman(map, doorstep);
             SetSeverity(p, TemperatureDefOf.Heatstroke, 0.4f);
             ThinkResult result = new JobGiver_SeekSafeTemperature().TryIssueJobPackage(p);
             Assert.Equal(SafeTemperatureJobDefOf.GotoSafeTemperature, result.Job!.def);

@@ -342,31 +342,6 @@ namespace SimWorld.Tests.Building
         }
 
         [Fact]
-        public void Two_rooms_joined_only_by_a_door_share_one_room_group()
-        {
-            CoreMap map = NewMap(12, 8);
-            // A single outer shell (x:1..9, z:1..5) split by one dividing wall column at x=5, with one cell
-            // of that column (5,3) a Door instead of a Wall — the only cell either sub-room's flood fill
-            // reaches on that side, so both rooms record the very same Door instance as a boundary edifice.
-            var outer = new CellRect(1, 1, 9, 5);
-            foreach (IntVec3 c in outer.EdgeCells) SpawnBuilding(map, c, "Wall");
-            foreach (int z in new[] { 1, 2, 4, 5 }) SpawnBuilding(map, new IntVec3(5, 0, z), "Wall");
-            SpawnBuilding(map, new IntVec3(5, 0, 3), "Door");
-            foreach (IntVec3 c in outer.Cells) map.roofGrid.SetRoof(c, SimWorld.Map.RoofDefOf.RoofConstructed);
-
-            map.MapTick();
-            Room? left = map.roomTracker.RoomAt(new IntVec3(3, 0, 3));
-            Room? right = map.roomTracker.RoomAt(new IntVec3(7, 0, 3));
-            Assert.NotNull(left);
-            Assert.NotNull(right);
-            Assert.NotSame(left, right); // still two distinct Rooms
-            Assert.Same(left!.Group, right!.Group); // but one RoomGroup
-
-            left.Group.temperature = 17f;
-            Assert.Equal(17f, right.Temperature);
-        }
-
-        [Fact]
         public void A_bigger_room_equalises_slower_than_a_smaller_one()
         {
             float FinalTempAfter(int width)
@@ -389,8 +364,11 @@ namespace SimWorld.Tests.Building
             Assert.True(big > small, "A larger enclosed volume should have cooled less in the same time.");
         }
 
+        // Two rooms behind one door used to share a RoomGroup here; doors now keep rooms thermally separate
+        // (DoorTemperatureTests.Two_rooms_behind_one_door_are_separate_thermal_units).
+
         [Fact]
-        public void Higher_insulation_equalises_slower()
+        public void A_door_bounded_room_equalises_faster_than_a_walled_one()
         {
             float FinalTempWithBoundary(string boundaryDefName)
             {
@@ -406,8 +384,8 @@ namespace SimWorld.Tests.Building
                 return room.Temperature;
             }
 
-            // Walls (Insulation 100) vs. an all-door boundary (Insulation 1): the door-bounded room should
-            // equalise toward the outdoors noticeably faster.
+            // Walls exchange at RimWorld's wall rate; every door, even shut, exchanges with the air on both
+            // sides every 375 ticks' worth, so an all-door boundary lets the outdoors in noticeably faster.
             float wallBounded = FinalTempWithBoundary("Wall");
             float doorBounded = FinalTempWithBoundary("Door");
             Assert.True(doorBounded < wallBounded);

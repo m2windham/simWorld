@@ -26,5 +26,9 @@ namespace SimWorld.Pawns
         Disease,
         Injury,
         Unknown,
+
+        /// <summary>Hypothermia or heatstroke: the air killed them. Last, so the death ledger's positional
+        /// save (<c>countsByCause</c>) still loads older games, which simply have no entry for it.</summary>
+        Exposure,
     }
 }
