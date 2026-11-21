@@ -1596,3 +1596,9 @@ Doug's go-ahead for a windowed run), the 9 open port items.
 TreatyCatalogue.Treaties() and RoleCatalogue.Roles() (static, content-ordered), FactionRelationView.CanSignTreaty /
 TreatyReason from the same refusal helper SignTreaty uses, and WorkPriorityRow.RoleDefName. Read-only: bench seeds
 20/99 and 40/201 identical to integration apart from wall-clock rows.
+
+2026-11-20 (seam-map-reads, merged 4d33207, suite 3194/3194 on the merge): REQ 005 from the host. Map view gains
+MapViewSnapshot.CaptureLevers() -> SettlementLevers (benches with bills and recipes, zones with stockpile filters,
+home and snow-clear masks, medical care, citizens under orders), LeverCatalogue (bill givers, storable things,
+orderable jobs) and DefLabels (LabelOf/DescriptionOf/IsKnown). Read-only: bench seeds 20/99 and 40/201 identical
+to integration apart from wall-clock rows.
