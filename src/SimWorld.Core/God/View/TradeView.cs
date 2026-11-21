@@ -105,6 +105,7 @@ namespace SimWorld.God.View
             int? factionGoodwill,
             string trustTier,
             bool trustAllowsTrade,
+            string trustReason,
             float trustBuyPriceFactor,
             float trustSellPriceFactor,
             int goodwillIfAllSilverGifted,
@@ -126,6 +127,7 @@ namespace SimWorld.God.View
             FactionGoodwill = factionGoodwill;
             TrustTier = trustTier;
             TrustAllowsTrade = trustAllowsTrade;
+            TrustReason = trustReason;
             TrustBuyPriceFactor = trustBuyPriceFactor;
             TrustSellPriceFactor = trustSellPriceFactor;
             GoodwillIfAllSilverGifted = goodwillIfAllSilverGifted;
@@ -185,6 +187,13 @@ namespace SimWorld.God.View
         /// <summary>False when the tier refuses trade (at war or hostile): <see cref="GodCommands.BuyFromTrader"/>
         /// and <see cref="GodCommands.SellToTrader"/> will be refused, and only a gift is accepted.</summary>
         public bool TrustAllowsTrade { get; }
+
+        /// <summary>A sentence a view can show without composing one: the exact refusal
+        /// <see cref="GodCommands.BuyFromTrader"/> and <see cref="GodCommands.SellToTrader"/> give on trust
+        /// grounds right now when <see cref="TrustAllowsTrade"/> is false, and "Ready to trade." when it is true —
+        /// always populated, as <see cref="FactionRelationView.TreatyReason"/> is. Read from the same
+        /// <c>GodCommands.TradeTrustRefusal</c> the commands refuse by, so the two can never disagree.</summary>
+        public string TrustReason { get; }
 
         /// <summary>The tier's multiplier on every buy price, already inside
         /// <see cref="TradeLineView.UnitBuyPrice"/>. Reported so the player can see why a price moved, never to
@@ -290,6 +299,7 @@ namespace SimWorld.God.View
                 goodwill,
                 TradeTrust.Row(tier).Label,
                 TradeTrust.Row(tier).AllowsTrade,
+                GodCommands.TradeTrustRefusal(host.faction, caravan.Faction) ?? "Ready to trade.",
                 TradeTrust.BuyPriceFactor(tier),
                 TradeTrust.SellPriceFactor(tier),
                 GiftGoodwill(host, caravan, EconomyThingDefOf.Silver, silver),

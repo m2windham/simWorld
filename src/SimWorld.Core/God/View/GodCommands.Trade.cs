@@ -245,16 +245,8 @@ namespace SimWorld.God.View
             // and it is accepted from anyone (see GiftToTrader).
             if (!gift)
             {
-                TradeTrustTier tier = TradeTrust.TierBetween(player, caravan.Faction);
-                if (!TradeTrust.Row(tier).AllowsTrade)
-                {
-                    string them = caravan.Faction?.name ?? "The caravan";
-                    return GodCommandResult.Refused(
-                        player.WarWith(caravan.Faction!)
-                            ? them + " will not trade with us: we are at war."
-                            : them + " will not trade with us: they are hostile (goodwill "
-                              + TradeQuantity(player.GoodwillWith(caravan.Faction!)) + ").");
-                }
+                string? distrust = TradeTrustRefusal(player, caravan.Faction);
+                if (distrust != null) return GodCommandResult.Refused(distrust);
             }
 
             if (string.IsNullOrEmpty(thingDefName))
@@ -284,6 +276,23 @@ namespace SimWorld.God.View
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Why a caravan of <paramref name="theirs"/> will not buy or sell with <paramref name="ours"/> right now,
+        /// or null when the trust tier allows trade (<c>Economy.TradeTrust.TierBetween</c>). The one place both
+        /// <see cref="BuyFromTrader"/> / <see cref="SellToTrader"/> and <see cref="VisitingTraderView.TrustReason"/>
+        /// read the answer from, so the Trade screen can never show a reason the command does not give.
+        /// </summary>
+        internal static string? TradeTrustRefusal(Faction? ours, Faction? theirs)
+        {
+            TradeTrustTier tier = TradeTrust.TierBetween(ours, theirs);
+            if (TradeTrust.Row(tier).AllowsTrade) return null;
+            string them = theirs?.name ?? "The caravan";
+            return ours!.WarWith(theirs!)
+                ? them + " will not trade with us: we are at war."
+                : them + " will not trade with us: they are hostile (goodwill "
+                  + TradeQuantity(ours.GoodwillWith(theirs!)) + ").";
         }
 
         private static string TradeQuantity(int value) => value.ToString(CultureInfo.InvariantCulture);

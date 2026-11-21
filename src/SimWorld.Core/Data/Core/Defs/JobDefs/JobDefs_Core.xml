@@ -33,6 +33,7 @@
 
   <JobDef>
     <defName>Mine</defName>
+    <label>mine</label>
     <driverClass>SimWorld.AI.JobDriver_Mine</driverClass>
     <reportString>mining.</reportString>
   </JobDef>
@@ -61,6 +62,7 @@
 
   <JobDef>
     <defName>Harvest</defName>
+    <label>harvest</label>
     <driverClass>SimWorld.Building.JobDriver_Harvest</driverClass>
     <reportString>harvesting.</reportString>
   </JobDef>
@@ -97,6 +99,7 @@
 
   <JobDef>
     <defName>TendPatient</defName>
+    <label>tend patient</label>
     <driverClass>SimWorld.AI.JobDriver_TendPatient</driverClass>
     <reportString>tending to a patient.</reportString>
   </JobDef>

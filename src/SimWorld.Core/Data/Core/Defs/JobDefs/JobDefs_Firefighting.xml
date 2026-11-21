@@ -6,6 +6,7 @@
 
   <JobDef>
     <defName>BeatFire</defName>
+    <label>beat fire</label>
     <driverClass>SimWorld.AI.JobDriver_BeatFire</driverClass>
     <reportString>beating out a fire.</reportString>
   </JobDef>
