@@ -1602,3 +1602,11 @@ MapViewSnapshot.CaptureLevers() -> SettlementLevers (benches with bills and reci
 home and snow-clear masks, medical care, citizens under orders), LeverCatalogue (bill givers, storable things,
 orderable jobs) and DefLabels (LabelOf/DescriptionOf/IsKnown). Read-only: bench seeds 20/99 and 40/201 identical
 to integration apart from wall-clock rows.
+
+2026-11-20 (player-designations, merged df45e23, suite 3218/3218 on the merge): Doug, "the player does indeed need
+agency; fall back to simulation in case of idle". Player designations Mine, CutPlant, HarvestPlant, Hunt, Tame,
+Slaughter, Deconstruct, HaulUrgently (no Forbid: the port has no CompForbiddable), worked by seven player-only
+givers at the top of their work types; a pawn with no reachable player mark falls through to the settlement's
+initiative givers unchanged. Per-settlement initiative switches (Mine, CutPlant, Hunt, Tame). MapCommands.Designate /
+RemoveDesignations / SetSettlementInitiative; MapViewSnapshot.DesignationsOf(). 21 seeds identical to int762 with no
+player marks. Recalled, not read: deconstruct refund 50%, slaughter 180 ticks. Phase 2 (initiatives place marks) open.
