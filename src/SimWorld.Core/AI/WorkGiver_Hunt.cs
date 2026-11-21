@@ -57,6 +57,9 @@ namespace SimWorld.AI
             if (map == null) return true;
             if (!HuntUtility.HasHuntingWeapon(pawn)) return true;
             if (pawn.WorkTagIsDisabled(WorkTags.Violent)) return true;
+            // The player's standing rule "only hunt what I mark" (DesignationManager.SettlementInitiativeOn);
+            // the marked animals are WorkGiver_HunterHunt's either way.
+            if (!map.designationManager.SettlementInitiativeOn(Designations.PlayerDesignationDefOf.Hunt)) return true;
             return !HuntingInitiative.WantsMeat(map);
         }
 
@@ -75,6 +78,8 @@ namespace SimWorld.AI
         {
             if (!(thing is Pawn animal) || !HuntUtility.IsHuntableAnimal(animal)) return false;
             if (ReferenceEquals(animal, pawn)) return false;
+            // An animal the player marked for taming is not the settlement's meat.
+            if (pawn.Map!.designationManager.HasPlayerDesignationOn(animal, Designations.PlayerDesignationDefOf.Tame)) return false;
             if (!HuntUtility.IsSafeToHunt(pawn, animal)) return false;
             if (!Reachability.CanReach(pawn, animal, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, animal);

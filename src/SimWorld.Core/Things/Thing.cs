@@ -225,6 +225,7 @@ namespace SimWorld.Things
             if (def.IsEdifice) m.edificeGrid.DeRegister(this, mode);
             m.listerThings.Remove(this);
             if (def.category == ThingCategory.Building) m.designationManager.Notify_BuildingDespawned(this, occupied);
+            else m.designationManager.Notify_ThingDespawned(this);
             map = null;
             position = IntVec3.Invalid;
             foreach (IntVec3 c in occupied.Cells)

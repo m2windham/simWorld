@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Jobs worked off the player's designations (SimWorld.AI.WorkGiver_Slaughter, WorkGiver_Deconstruct).
+       Bound by SimWorld.AI.DesignationJobDefOf. -->
+
+  <JobDef>
+    <defName>Slaughter</defName>
+    <driverClass>SimWorld.AI.JobDriver_Slaughter</driverClass>
+    <reportString>slaughtering.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>Deconstruct</defName>
+    <driverClass>SimWorld.AI.JobDriver_Deconstruct</driverClass>
+    <reportString>deconstructing.</reportString>
+  </JobDef>
+
+</Defs>

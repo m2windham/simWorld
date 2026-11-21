@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The rest of RimWorld's Designations.xml that this port has a worker for, placed by the player through
+    SimWorld.Map.View.MapCommands.Designate (Mine, in Designations.xml, is placed by a settlement as well).
+    All aim at a Thing, as RimWorld's do. Forbid/Unforbid are left out: there is no CompForbiddable here.
+  -->
+
+  <DesignationDef>
+    <defName>CutPlant</defName>
+    <targetType>Thing</targetType>
+  </DesignationDef>
+
+  <DesignationDef>
+    <defName>HarvestPlant</defName>
+    <targetType>Thing</targetType>
+  </DesignationDef>
+
+  <DesignationDef>
+    <defName>Hunt</defName>
+    <targetType>Thing</targetType>
+  </DesignationDef>
+
+  <DesignationDef>
+    <defName>Tame</defName>
+    <targetType>Thing</targetType>
+  </DesignationDef>
+
+  <DesignationDef>
+    <defName>Slaughter</defName>
+    <targetType>Thing</targetType>
+  </DesignationDef>
+
+  <DesignationDef>
+    <defName>Deconstruct</defName>
+    <targetType>Thing</targetType>
+  </DesignationDef>
+
+  <DesignationDef>
+    <defName>HaulUrgently</defName>
+    <targetType>Thing</targetType>
+  </DesignationDef>
+
+</Defs>

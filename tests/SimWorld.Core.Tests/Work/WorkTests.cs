@@ -39,15 +39,17 @@ namespace SimWorld.Tests.Work
             Assert.Empty(Content.Result.Errors);
             Assert.Equal(12, DefDatabase<SkillDef>.DefCount);
             Assert.Equal(20, DefDatabase<WorkTypeDef>.DefCount);
-            // 33: the snow lane (system: weather) added CleanClearSnow in its own
-            // WorkGiverDefs/WorkGivers_Snow.xml. Before that, 32 — the Patient and PatientBedRest work types got their two givers, in their own
+            // 40: player designations added seven designation-driven givers (MineDesignated, PlantsCutDesignated,
+            // HunterHunt, Slaughter, Tame, Deconstruct, HaulUrgently) in their own
+            // WorkGiverDefs/WorkGivers_PlayerDesignated.xml. Before that, 33 — the snow lane (system: weather) added
+            // CleanClearSnow in its own WorkGiverDefs/WorkGivers_Snow.xml. Before that, 32 — the Patient and PatientBedRest work types got their two givers, in their own
             // WorkGiverDefs/WorkGivers_Patient.xml. Before that, 30 — the beds lane (system 16: Building) added ConstructChopWood in its own
             // WorkGiverDefs/WorkGivers_ChopWood.xml. Before that, 29 — the corpse module (system: corpses)
             // added ButcherCorpses in its own WorkGiverDefs/WorkGivers_Butchery.xml and wired HaulCorpses,
             // which had been a WorkGiver_Pending placeholder since there was no Corpse class for it to find.
             // Before that, 28 — the capture loop (system 12: Factions) adding WardenAttemptRecruit and wiring
             // WardenFeed. Work/** owns none of that content; only this literal count moves.
-            Assert.Equal(33, DefDatabase<WorkGiverDef>.DefCount);
+            Assert.Equal(40, DefDatabase<WorkGiverDef>.DefCount);
         }
 
         [Fact]

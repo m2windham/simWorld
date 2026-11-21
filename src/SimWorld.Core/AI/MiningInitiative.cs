@@ -66,8 +66,15 @@ namespace SimWorld.AI
             if (settlement == null) throw new ArgumentNullException(nameof(settlement));
             if (map == null) throw new ArgumentNullException(nameof(map));
             DesignationManager dm = map.designationManager;
+            // Switched off by the player: the settlement takes back every mark of its own and places none
+            // (DesignationManager.SettlementInitiativeOn). The player's own marks are untouched.
+            if (!dm.SettlementInitiativeOn(DesignationDefOf.Mine))
+            {
+                WithdrawAll(map);
+                return;
+            }
             Withdraw(map);
-            int room = MiningTuning.MaxOutstandingDesignations - dm.SpawnedDesignationsOfDef(DesignationDefOf.Mine).Count;
+            int room = MiningTuning.MaxOutstandingDesignations - SettlementMarks(dm);
             if (room <= 0) return;
 
             SettlementCompound? compound = map.settlementCompound;
@@ -264,9 +271,32 @@ namespace SimWorld.AI
             IReadOnlyList<Designation> mine = dm.SpawnedDesignationsOfDef(DesignationDefOf.Mine);
             for (int i = mine.Count - 1; i >= 0; i--)
             {
+                if (mine[i].source != DesignationSource.Settlement) continue;
                 Thing? rock = WorkGiver_Miner.FirstMineable(mine[i].target.Cell, map);
                 if (rock == null || RoofCollapseUtility.WouldCollapseRoofIfRemoved(rock)) dm.RemoveDesignation(mine[i]);
             }
+        }
+
+        private static void WithdrawAll(Map.Map map)
+        {
+            DesignationManager dm = map.designationManager;
+            IReadOnlyList<Designation> mine = dm.SpawnedDesignationsOfDef(DesignationDefOf.Mine);
+            for (int i = mine.Count - 1; i >= 0; i--)
+            {
+                if (mine[i].source == DesignationSource.Settlement) dm.RemoveDesignation(mine[i]);
+            }
+        }
+
+        /// <summary>The settlement's own outstanding marks — the cap is on those; the player's do not use it up.</summary>
+        private static int SettlementMarks(DesignationManager dm)
+        {
+            IReadOnlyList<Designation> mine = dm.SpawnedDesignationsOfDef(DesignationDefOf.Mine);
+            int n = 0;
+            for (int i = 0; i < mine.Count; i++)
+            {
+                if (mine[i].source == DesignationSource.Settlement) n++;
+            }
+            return n;
         }
 
         /// <summary>Undesignated mineable rock a miner could stand next to now, nearest <paramref name="anchor"/>
