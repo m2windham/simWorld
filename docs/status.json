@@ -1,8 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-11-18",
-  "testsTotal": 3218,
+  "updated": "2026-11-20",
+  "testsTotal": 3239,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -194,6 +194,13 @@
       "state": "decided",
       "title": "Costs may use simWorld's own rates",
       "note": "Doug: costs can be reworked at our own rates as needed or sensible. Mechanics stay RimWorld's; a changed number is marked in its def with the RimWorld value beside it."
+    },
+    {
+      "id": "trade-trust",
+      "date": "2026-11-20",
+      "state": "decided",
+      "title": "Trade runs on reputation (faction goodwill)",
+      "note": "Doug: trade runs on a reputation/trust system. Trust is the existing faction goodwill, not a second number. Only the player's own settlements trade. Tiers from goodwill: at war or hostile, no trade and no caravans; wary (<0) worse prices; neutral (0-74) plain prices; trusted (>=75) better prices and more frequent caravans. Completed trades raise goodwill a little (pooled per day, capped); RimWorld's gift mechanic is ported as GiftToTrader."
     }
   ],
   "systems": [
@@ -1593,11 +1600,11 @@
       "id": "economy",
       "n": 15,
       "rimworld": "Economy, Trade & Factions",
-      "translation": "Decided: other civilizations are the factions (unchanged); trade routes between settlements replace RimWorld's orbital/caravan traders as the connective tissue, priced the same way CoalSupply already prices coal (a real path through the world pather, marked up by distance) and closed while the two settlements' factions are at war; goodwill becomes diplomacy through two new layers RimWorld has no equivalent of — an explicit War/Peace state per relation (Faction.DeclareWar/MakePeace, entry and exit acts rather than goodwill silently crossing a threshold) kept separate from the existing Hostile/Neutral/Ally goodwill-derived label, and Def-driven Treaty terms (non-aggression, trade access) a pair of factions can sign, each with its own duration and goodwill effect. Every number here (war/peace goodwill swings, route premium, treaty terms) is this port's own judgement call, not sourced from RimWorld — see the code's own comments for where and why.",
+      "translation": "Decided: other civilizations are the factions (unchanged); trade routes between settlements replace RimWorld's orbital/caravan traders as the connective tissue, priced the same way CoalSupply already prices coal (a real path through the world pather, marked up by distance) and closed while the two settlements' factions are at war; goodwill becomes diplomacy through two new layers RimWorld has no equivalent of — an explicit War/Peace state per relation (Faction.DeclareWar/MakePeace, entry and exit acts rather than goodwill silently crossing a threshold) kept separate from the existing Hostile/Neutral/Ally goodwill-derived label, and Def-driven Treaty terms (non-aggression, trade access) a pair of factions can sign, each with its own duration and goodwill effect. Every number here (war/peace goodwill swings, route premium, treaty terms) is this port's own judgement call, not sourced from RimWorld — see the code's own comments for where and why. Trade runs on reputation (Doug, 2026-11-20): trust is faction goodwill, read through Economy.TradeTrust and banded by the one table Economy.TradeTrustTuning.Tiers. Differences from RimWorld, all marked in that file: (1) price tiers - wary (goodwill < 0) buys at x1.15 and sells at /1.15, trusted (>= 75, RimWorld's Ally line) at x0.9 and /0.9, neutral at x1; RimWorld has no goodwill-based prices. The factor rides TradeUtility's own priceFactorBuy/priceFactorSell through TradeDeal.trustPriceFactor, so quote and charge are one expression. (2) Hostile is RimWorld's (goodwill <= -75: no trade, no caravans) plus simWorld's own war state. (3) A trusted faction is entered twice in the caravan-faction draw (RimWorld draws uniformly); this changes whose caravan comes, not how many. (4) A completed trade raises goodwill by 1 per 200 silver, pooled across the in-game day and capped at 2 per faction per day, so one-unit spam earns exactly what one big trade does (RimWorld: trading moves no goodwill). (5) Gifts port FactionGiftUtility as recalled, not read (value / 40, curve (-100,1),(75,1),(100,0.25) in 0.25 steps); the one change is that the result stops at the goodwill left to gain instead of RimWorld's 200 cap, which lands identically. Gifts are accepted from hostile and warring civilizations, as in RimWorld; never from a permanent enemy. Natural goodwill drift (Faction.FactionTick, already ported) applies unchanged, so trust above a faction's natural range decays at goodwillDailyFall. Defect fixed with it: BuyFromTrader/SellToTrader traded at any settlement and spent that settlement's silver; they now refuse a settlement that is not Find.FactionManager.OfPlayer's, and the trade view lists only caravans at our settlements.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "verified",
-      "tests": 270,
+      "tests": 291,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1667,6 +1674,16 @@
         {
           "id": "economy.ledgertomap",
           "label": "SettlementStockInitiative.IssueFromStores — the crossing that was missing. The class states that a unit is either a Thing on a map or a count in Stores and never both, and its own doc said “all that was missing was the rule for crossing”; only map-to-ledger had been written. So WouldEatFromStores correctly refused a Spawned citizen while ProvisionFoundingBand sized rations counting them, and no map-gen step places food: watching a settlement locked its people out of rations stocked for them. Issuing tops the map up to the same NutritionWanted line banking keeps, bounded by the shortfall rather than the ledger, debiting as it spawns. Probe, 25-strong TribalStart: watched-minus-unwatched food went -0.44/-0.24/-0.12 to +0.10/+0.30, watched sustaining itself while unwatched declines between abstract refills.",
+          "done": true
+        },
+        {
+          "id": "economy.tradetrust",
+          "label": "Trade on reputation: goodwill tiers (hostile/wary/neutral/trusted) price every caravan trade through one factor in the existing price path, hostile or warring civilizations neither trade nor send caravans, trusted ones are drawn twice as often, completed trades raise goodwill (pooled per day, capped), GiftToTrader ports RimWorld's gift goodwill, and the trade commands refuse settlements that are not ours (TradeTrustTests)",
+          "done": true
+        },
+        {
+          "id": "economy.treatyatwar",
+          "label": "While at war only a treaty carrying nonAggression can be signed (Faction.SignTreaty refuses the rest; a trade agreement could otherwise be recorded between two civilizations still fighting). The seam's refusal is per treaty: FactionRelationView.TreatyOffers, from the same GodCommands.TreatyRefusal the command checks; the per-civilization CanSignTreaty/TreatyReason stay treaty-independent for compatibility (TreatyAtWarTests)",
           "done": true
         }
       ],

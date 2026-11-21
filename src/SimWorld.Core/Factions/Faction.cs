@@ -81,7 +81,7 @@ namespace SimWorld.Factions
             throw new InvalidOperationException("No relation recorded between " + this + " and " + other + ".");
         }
 
-        private FactionRelation GetOrAddRelation(Faction other)
+        internal FactionRelation GetOrAddRelation(Faction other)
         {
             FactionRelation? existing = RelationWith(other, allowNull: true);
             if (existing != null) return existing;
@@ -266,7 +266,9 @@ namespace SimWorld.Factions
         /// <see cref="TreatyDef.nonAggression"/> and the two are currently at war — calls
         /// <see cref="MakePeace"/> first (signing a non-aggression pact while at war is itself how a war
         /// ends here; RimWorld has no equivalent act). Refuses (returns false, changes nothing) for a
-        /// permanent-enemy pair, which can never hold any treaty.
+        /// permanent-enemy pair, which can never hold any treaty, and for a treaty without
+        /// <see cref="TreatyDef.nonAggression"/> while the two are at war: such a treaty cannot end the war, and
+        /// recording it would leave a trade agreement in force between two civilizations still fighting.
         /// </summary>
         public bool SignTreaty(Faction other, TreatyDef def, string? reason = null)
         {
@@ -274,6 +276,7 @@ namespace SimWorld.Factions
             if (def == null) throw new ArgumentNullException(nameof(def));
             if (ReferenceEquals(other, this)) return false;
             if (this.def.permanentEnemy || other.def.permanentEnemy) return false;
+            if (!def.nonAggression && WarWith(other)) return false;
 
             if (def.nonAggression && WarWith(other))
             {

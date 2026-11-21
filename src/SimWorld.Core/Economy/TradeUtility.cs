@@ -9,7 +9,9 @@ namespace SimWorld.Economy
     /// constants are private and version-dependent; this reproduces their shape — the player buys at a
     /// markup and sells at a discount off market value, both bent further by the good's <see cref="PriceType"/>
     /// and by negotiator/settlement price-gain factors — as a documented approximation rather than exact
-    /// decompiled values. No faction-based price modifiers exist (RimWorld does not have any either).
+    /// decompiled values. RimWorld has no faction-based price modifiers; simWorld adds exactly one, the trust
+    /// tier's factor (<see cref="TradeTrust"/>), and it enters through <c>priceFactorBuy</c>/<c>priceFactorSell</c>
+    /// below rather than as a second expression.
     /// </summary>
     public static class TradeUtility
     {

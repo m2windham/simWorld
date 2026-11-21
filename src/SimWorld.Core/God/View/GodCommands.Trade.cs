@@ -3,6 +3,8 @@ using System.Globalization;
 
 using SimWorld.Defs;
 using SimWorld.Economy;
+using SimWorld.Factions;
+using SimWorld.Sim;
 
 namespace SimWorld.God.View
 {
@@ -35,6 +37,15 @@ namespace SimWorld.God.View
     /// project holds every command to, and trade is where it bites hardest: selling your winter stores at a
     /// discount because a caravan is here now and winter is not is one of the better decisions in this game to
     /// be allowed to regret.
+    ///
+    /// <para/><b>Two refusals added with trade-on-reputation (Doug, 2026-11-20).</b> A settlement that is not
+    /// the player's (<c>Find.FactionManager.OfPlayer</c>) is refused — the commands used to trade at any
+    /// settlement and spend that settlement's silver, so the player could spend a rival's treasury, which was
+    /// a defect and not a balance choice. And a caravan whose civilization is at war with us or hostile
+    /// (<c>Economy.TradeTrust.TierBetween</c>) will not trade, as a hostile faction will not in RimWorld. Every
+    /// other tier trades, at the tier's price factor, which is already inside the quoted and the charged price
+    /// alike (<c>Economy.TradeDeal.trustPriceFactor</c>); a completed trade raises goodwill a little
+    /// (<c>Economy.TradeTrust.RecordTrade</c>, simWorld's own — RimWorld's trading moves none).
     ///
     /// <para/><b>The one seam limitation, stated rather than hidden.</b> <see cref="GodCommandOutcome"/> has
     /// no member for "no such good", and it lives in <c>GodCommands.cs</c>, a file three other lanes are in
@@ -100,9 +111,10 @@ namespace SimWorld.God.View
             }
 
             VisitingTraderTrade.WriteStockBack(caravan, session);
+            int trust = TradeTrust.RecordTrade(settlement.faction, caravan.Faction, (float)Math.Round(cost));
             return GodCommandResult.Done(
                 settlement.name + " bought " + TradeQuantity(count) + " " + def.LabelCap + " for "
-                + TradeSilverAmount(cost) + " silver.");
+                + TradeSilverAmount(cost) + " silver." + TrustGainNote(caravan, trust));
         }
 
         /// <summary>
@@ -173,9 +185,10 @@ namespace SimWorld.God.View
             }
 
             VisitingTraderTrade.WriteStockBack(caravan, session);
+            int trust = TradeTrust.RecordTrade(settlement.faction, caravan.Faction, owed);
             return GodCommandResult.Done(
                 settlement.name + " sold " + TradeQuantity(count) + " " + def.LabelCap + " for "
-                + TradeQuantity(owed) + " silver.");
+                + TradeQuantity(owed) + " silver." + TrustGainNote(caravan, trust));
         }
 
         /// <summary>
@@ -189,7 +202,8 @@ namespace SimWorld.God.View
             int count,
             out World.Settlement settlement,
             out TraderCaravan caravan,
-            out ThingDef def)
+            out ThingDef def,
+            bool gift = false)
         {
             settlement = null!;
             caravan = null!;
@@ -198,6 +212,18 @@ namespace SimWorld.God.View
             World.Settlement? found = AttentionManager.SettlementAt(settlementTile);
             if (found == null) return GodCommandResult.UnknownSettlement(settlementTile);
             settlement = found;
+
+            // Ours means the player's civilization, Find.FactionManager.OfPlayer — the same reading every other
+            // command on this seam makes (GodCommands.Diplomacy). Before this check, any settlement on the map
+            // would do, and a buy spent that settlement's silver: the player could empty a rival's treasury.
+            Faction? player = Find.FactionManager.OfPlayer;
+            if (player == null) return GodCommandResult.Refused("No player civilization exists yet.");
+            if (!ReferenceEquals(settlement.faction, player))
+            {
+                return GodCommandResult.Refused(
+                    settlement.name + " is not one of ours — its stores and its silver are "
+                    + (settlement.faction?.name ?? "nobody's") + "'s to trade, not ours.");
+            }
 
             // Departed caravans are swept from the write paths and never from a read — see
             // Economy.TraderArrival.PruneDeparted for why the sweep cannot live in a world tick and why the
@@ -215,6 +241,22 @@ namespace SimWorld.God.View
             }
             caravan = present;
 
+            // Hostility refuses a trade and never a gift: in RimWorld a gift is how a soured relation is mended,
+            // and it is accepted from anyone (see GiftToTrader).
+            if (!gift)
+            {
+                TradeTrustTier tier = TradeTrust.TierBetween(player, caravan.Faction);
+                if (!TradeTrust.Row(tier).AllowsTrade)
+                {
+                    string them = caravan.Faction?.name ?? "The caravan";
+                    return GodCommandResult.Refused(
+                        player.WarWith(caravan.Faction!)
+                            ? them + " will not trade with us: we are at war."
+                            : them + " will not trade with us: they are hostile (goodwill "
+                              + TradeQuantity(player.GoodwillWith(caravan.Faction!)) + ").");
+                }
+            }
+
             if (string.IsNullOrEmpty(thingDefName))
             {
                 return GodCommandResult.Refused("No good was named.");
@@ -229,7 +271,7 @@ namespace SimWorld.God.View
             }
             def = resolved;
 
-            if (ReferenceEquals(def, EconomyThingDefOf.Silver))
+            if (!gift && ReferenceEquals(def, EconomyThingDefOf.Silver))
             {
                 return GodCommandResult.Refused(
                     "Silver is what a trade is paid in, not something to trade for it.");
@@ -245,6 +287,12 @@ namespace SimWorld.God.View
         }
 
         private static string TradeQuantity(int value) => value.ToString(CultureInfo.InvariantCulture);
+
+        /// <summary>The sentence a completed trade or gift adds when it moved goodwill; empty when it did not.</summary>
+        private static string TrustGainNote(TraderCaravan caravan, int gained) =>
+            gained > 0 && caravan.Faction != null
+                ? " Goodwill with " + caravan.Faction.name + " rose by " + TradeQuantity(gained) + "."
+                : "";
 
         private static string TradeSilverAmount(float value) => value.ToString("F0", CultureInfo.InvariantCulture);
     }

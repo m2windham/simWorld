@@ -102,7 +102,7 @@ namespace SimWorld.God.View
             TreatyDef? def = ResolveTreaty(treatyDefName);
             if (def == null) return GodCommandResult.Refused("No treaty named '" + treatyDefName + "'.");
 
-            string? refusal = TreatyRefusal(player, target);
+            string? refusal = TreatyRefusal(player, target, def);
             if (refusal != null) return GodCommandResult.Refused(refusal);
 
             if (DiplomacyActions.SignTreaty(player, target, def, "Signed by the player"))
@@ -128,6 +128,26 @@ namespace SimWorld.God.View
             if (ReferenceEquals(target, player)) return "A civilization cannot sign a treaty with itself.";
             if (target.def.permanentEnemy) return target.name + " is a permanent enemy — no treaty is possible.";
             if (player.def.permanentEnemy) return player.name + " is a permanent enemy of every civilization — no treaty is possible.";
+            return null;
+        }
+
+        /// <summary>
+        /// Why <paramref name="player"/> cannot sign <paramref name="treaty"/> with <paramref name="target"/>
+        /// right now, or null when it can: every treaty-independent refusal of
+        /// <see cref="TreatyRefusal(Faction, Faction)"/>, then the one rule in <see cref="Faction.SignTreaty"/>
+        /// that does look at which treaty it is — while at war, only a treaty carrying
+        /// <see cref="TreatyDef.nonAggression"/> may be signed, because only that kind ends the war. What
+        /// <see cref="SignTreaty"/> checks and what <see cref="FactionRelationView.TreatyOffers"/> shows, per treaty.
+        /// </summary>
+        internal static string? TreatyRefusal(Faction player, Faction target, TreatyDef treaty)
+        {
+            string? refusal = TreatyRefusal(player, target);
+            if (refusal != null) return refusal;
+            if (!treaty.nonAggression && player.WarWith(target))
+            {
+                return "We are at war with " + target.name + " — only a pact of non-aggression can end it, and "
+                    + treaty.LabelCap + " is not one.";
+            }
             return null;
         }
 
