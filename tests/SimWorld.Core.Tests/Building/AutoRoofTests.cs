@@ -70,6 +70,27 @@ namespace SimWorld.Tests.Building
         }
 
         [Fact]
+        public void A_dwelling_is_a_bed_on_open_ground_not_a_room_so_it_is_never_roofed()
+        {
+            // A dwelling (House_*) is one standable, fillPercent-0 building its household sleeps in, not walls
+            // round a floor (Building.Dwelling). Its cells stay part of the outdoor room, so nothing encloses it
+            // and the auto-roof has no room to mark.
+            CoreMap map = NewMap(20f);
+            Thing hut = Spawn(map, new IntVec3(6, 0, 6), "House_Paleo", NewFaction("Settlers"));
+            map.MapTick();
+
+            foreach (IntVec3 c in hut.OccupiedRect().Cells)
+            {
+                Room? room = map.roomTracker.RoomAt(c);
+                Assert.NotNull(room);
+                Assert.True(room!.Group.UsesOutdoorTemperature);
+                Assert.False(map.roofGrid.Roofed(c));
+            }
+            Assert.Single(map.roomTracker.Rooms);
+            Assert.Equal(0, map.areaManager.BuildRoof.TrueCount);
+        }
+
+        [Fact]
         public void A_ruin_with_no_owner_is_not_marked()
         {
             CoreMap map = NewMap(20f);
