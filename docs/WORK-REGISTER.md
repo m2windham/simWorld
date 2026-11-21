@@ -1610,3 +1610,12 @@ givers at the top of their work types; a pawn with no reachable player mark fall
 initiative givers unchanged. Per-settlement initiative switches (Mine, CutPlant, Hunt, Tame). MapCommands.Designate /
 RemoveDesignations / SetSettlementInitiative; MapViewSnapshot.DesignationsOf(). 21 seeds identical to int762 with no
 player marks. Recalled, not read: deconstruct refund 50%, slaughter 180 ticks. Phase 2 (initiatives place marks) open.
+
+2026-11-20 (trade-trust, merged 2bef8ee, suite 3239/3239 on the merge): Doug, "let trade be on a reputation or
+trust system". Trust is faction goodwill. Only our own settlements trade (defect fixed: the seam could spend a rival
+settlement's silver). Tiers in Economy/TradeTrustTuning.cs (ours, RimWorld behaviour beside each): hostile (at war
+or <= -75) refuses and sends no caravans; wary (-74..-1) buy x1.15 / sell /1.15; neutral 1; trusted (>= 75) buy x0.9
+/ sell /0.9 and double weight in the caravan-faction draw. Trades raise goodwill 1 per 200 silver, capped 2/day per
+faction; GodCommands.GiftToTrader ports RimWorld gifts (numbers recalled, not read). SignTreaty refuses a treaty
+without non-aggression while at war; FactionRelationView.TreatyOffers gives a reason per treaty. 21 seeds identical
+to int762.
