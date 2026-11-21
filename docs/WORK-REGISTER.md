@@ -1619,3 +1619,15 @@ or <= -75) refuses and sends no caravans; wary (-74..-1) buy x1.15 / sell /1.15;
 faction; GodCommands.GiftToTrader ports RimWorld gifts (numbers recalled, not read). SignTreaty refuses a treaty
 without non-aggression while at war; FactionRelationView.TreatyOffers gives a reason per treaty. 21 seeds identical
 to int762.
+
+2026-11-20 23:52 (RC gate 4 met): Release player (host a202ca1, core bb5abc9, Mono, D3D12) windowed at 1920x1080 on
+the RX 6650 XT, PC otherwise idle, FrameCostProbe at tick 600 paused, pivot (100,100), 200 sampled frames per
+ViewSize, two runs. Medians (p90), run 1 / run 2:
+  VS 6:  frame 2.89 (2.95) / 2.90 (2.96) ms, GPU 2.80 / 2.80 ms, CPU main 0.56 / 0.58 ms
+  VS 12: frame 3.43 (3.50) / 3.43 (3.50) ms, GPU 3.34 / 3.34 ms
+  VS 30: frame 4.28 (4.34) / 4.26 (4.33) ms, GPU 4.17 / 4.16 ms
+  VS 60: frame 5.10 (5.18) / 5.13 (5.22) ms, GPU 5.00 / 5.02 ms, CPU main 1.15 / 1.21 ms; 278 draw calls, 5.81M tris
+Budget 16.7 ms (60 fps): about 3x margin at VS 60, GPU-bound. Outputs H:\dev\_builds\rcperf\run1, run2.
+Found: every windowed player exits with an access violation in UnityPlayer.dll (offset 0x109401) after a clean
+shutdown log, on D3D12 and D3D11, with or without the probe, and in builds back to 2026-11-15. Batchmode exits 0.
+Open; a host lane is investigating. Remaining RC gates: the 9 open port items.
