@@ -1631,3 +1631,9 @@ Budget 16.7 ms (60 fps): about 3x margin at VS 60, GPU-bound. Outputs H:\dev\_bu
 Found: every windowed player exits with an access violation in UnityPlayer.dll (offset 0x109401) after a clean
 shutdown log, on D3D12 and D3D11, with or without the probe, and in builds back to 2026-11-15. Batchmode exits 0.
 Open; a host lane is investigating. Remaining RC gates: the 9 open port items.
+
+2026-11-21 (labels-and-trust-reason, suite 3246/3246 on the branch, fast-forwarded): REQ 006 from the host.
+VisitingTraderView.TrustReason ("Ready to trade." or the refusal) from the same helper BuyFromTrader/SellToTrader
+refuse through. Labels for the orderable JobDefs (from their reportStrings) and the DesignationDefs (recalled
+designator labels); a content test now requires a label on every order, mark, buildable, bench recipe, research
+project, work type and storable thing the seam offers. Bench 20/99 and 40/201 identical apart from wall-clock rows.
