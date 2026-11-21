@@ -52,7 +52,9 @@ namespace SimWorld.Building
         private readonly Map.Map map;
         private readonly List<Room> rooms = new List<Room>();
         private readonly List<RoomGroup> groups = new List<RoomGroup>();
-        private readonly Dictionary<IntVec3, Room> cellToRoom = new Dictionary<IntVec3, Room>();
+        private Dictionary<IntVec3, Room> cellToRoom = new Dictionary<IntVec3, Room>();
+        private Dictionary<IntVec3, Room> previousCellToRoom = new Dictionary<IntVec3, Room>();
+        private readonly HashSet<RoomGroup> tmpPreviousGroups = new HashSet<RoomGroup>();
         private readonly List<CompHeatPusherPowered> heatPushers = new List<CompHeatPusherPowered>();
         private readonly List<Door> doors = new List<Door>();
         private readonly List<RoomGroup> tmpDoorGroups = new List<RoomGroup>();
@@ -95,6 +97,16 @@ namespace SimWorld.Building
                 RegenerateAllRooms();
                 dirty = false;
                 ReapplyPendingTemperatures();
+
+                // RimWorld: Room.Notify_RoomShapeOrContainedBedsChanged queues each changed room, and
+                // RoomGroupTempTracker.RoomChanged resolves the queue. Every room here is rebuilt at once, so
+                // each one is offered; AutoBuildRoofAreaSetter refuses what is open to the map's edge, too big,
+                // or not a settlement's.
+                for (int i = 0; i < rooms.Count; i++)
+                {
+                    if (!rooms[i].touchesMapEdge) map.autoBuildRoofAreaSetter.TryGenerateAreaFor(rooms[i]);
+                }
+                map.autoBuildRoofAreaSetter.ResolveQueuedGenerateRoofs();
             }
 
             float outdoor = map.outdoorTemperature;
@@ -190,8 +202,11 @@ namespace SimWorld.Building
         /// neighbour cell counts once, so a room touching the door on two sides counts twice; outdoor air
         /// counts toward the mean but never moves; each room moves its gap times <paramref name="rate"/> over
         /// its cell count, all scaled back together so that none overshoots the mean).
+        /// <para/>At a door's rates (1/34 and 1/375) the scale-back never binds, since no room moves more than its
+        /// gap; RimWorld keeps it for the faster callers of the same method (its vent passes a rate of 14).
+        /// Internal so a test can hold it to that at such a rate.
         /// </summary>
-        private void EqualizeThroughDoor(Door door, float rate)
+        internal void EqualizeThroughDoor(Door door, float rate)
         {
             tmpDoorGroups.Clear();
             float sum = 0f;
@@ -238,6 +253,8 @@ namespace SimWorld.Building
         /// can, for the reason in this class's remarks).</summary>
         private void RegenerateAllRooms()
         {
+            // The rooms being replaced, kept for the temperature carry-over in BuildRoomGroups.
+            (previousCellToRoom, cellToRoom) = (cellToRoom, previousCellToRoom);
             rooms.Clear();
             groups.Clear();
             cellToRoom.Clear();
@@ -311,12 +328,50 @@ namespace SimWorld.Building
                 group.AddRoom(room);
                 groups.Add(group);
                 RegenerateEqualizationData(group, room);
+                if (!group.UsesOutdoorTemperature && TryGetAverageCachedRoomGroupTemp(group, out float carried))
+                {
+                    group.temperature = carried;
+                }
                 foreach (Thing edifice in room.boundaryEdifices)
                 {
                     if (edifice is Door door && seenDoors.Add(door)) doors.Add(door);
                 }
             }
             doors.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
+        }
+
+        /// <summary>
+        /// The air a rebuilt group starts with: the mean of the groups its cells belonged to before the rebuild,
+        /// each weighted by its whole cell count (RimWorld: <c>TemperatureCache.TryGetAverageCachedRoomGroupTemp</c>,
+        /// read from <c>josh-m/RW-Decompile/Verse/TemperatureCache.cs</c>, over the per-cell
+        /// <c>CachedTempInfo</c> it records before regions are rebuilt). An outdoor group counts at outdoor air.
+        /// False when none of its cells had a room, as when a wall's footprint opens up; the group then keeps the
+        /// outdoor air it was made with, as RimWorld's does.
+        /// <para/>Without this every rebuild — any edifice placed or removed anywhere on the map, and now any
+        /// roof built — reset every enclosed room to outdoor air, so a house kept its own temperature only
+        /// until somebody finished a frame.
+        /// </summary>
+        private bool TryGetAverageCachedRoomGroupTemp(RoomGroup group, out float result)
+        {
+            tmpPreviousGroups.Clear();
+            int cells = 0;
+            float weighted = 0f;
+            for (int r = 0; r < group.rooms.Count; r++)
+            {
+                List<IntVec3> roomCells = group.rooms[r].cells;
+                for (int i = 0; i < roomCells.Count; i++)
+                {
+                    if (!previousCellToRoom.TryGetValue(roomCells[i], out Room? old)) continue;
+                    RoomGroup oldGroup = old.Group;
+                    if (!tmpPreviousGroups.Add(oldGroup)) continue;
+                    int n = oldGroup.CellCount;
+                    cells += n;
+                    weighted += oldGroup.Temperature * n;
+                }
+            }
+            tmpPreviousGroups.Clear();
+            result = cells > 0 ? weighted / cells : 0f;
+            return cells > 0;
         }
 
         /// <summary>Roof shares and wall cells for the roof and wall terms (RimWorld:

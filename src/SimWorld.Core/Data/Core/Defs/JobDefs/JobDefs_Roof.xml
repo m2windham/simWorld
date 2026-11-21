@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Roofing a cell of the build-roof area (RimWorld: JobDefOf.BuildRoof). Its own file, per CLAUDE.md; bound
+       by SimWorld.Building.RoofJobDefOf and issued by SimWorld.Building.WorkGiver_BuildRoof. -->
+
+  <JobDef>
+    <defName>BuildRoof</defName>
+    <driverClass>SimWorld.Building.JobDriver_BuildRoof</driverClass>
+    <reportString>building roof.</reportString>
+  </JobDef>
+
+</Defs>

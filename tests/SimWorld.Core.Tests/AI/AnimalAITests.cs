@@ -69,9 +69,15 @@ namespace SimWorld.Tests.AI
             Assert.IsType<ThinkNode_ConditionalAngryAtHandler>(root.subNodes[1]);
             Assert.IsType<JobGiver_AIFightEnemies>(root.subNodes[2]);
             Assert.IsType<JobGiver_AnimalFlee>(root.subNodes[3]);
-            Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[4]);
-            Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[5]);
-            Assert.IsType<JobGiver_WanderAnywhere>(root.subNodes[6]);
+            // A tame animal's critical needs, then hunger and rest: RimWorld 1.0's Animal.xml puts
+            // SeekSafeTemperature in the ThinkNode_ConditionalOfPlayerFaction block, ahead of the
+            // SatisfyBasicNeeds subtree. A wild animal never reaches it.
+            var ofPlayer = Assert.IsType<ThinkNode_ConditionalOfPlayerFaction>(root.subNodes[4]);
+            Assert.IsType<JobGiver_SeekSafeTemperature>(Assert.Single(ofPlayer.subNodes));
+            Assert.IsType<ThinkNode_ConditionalHungry>(root.subNodes[5]);
+            Assert.IsType<ThinkNode_ConditionalTired>(root.subNodes[6]);
+            Assert.IsType<JobGiver_WanderAnywhere>(root.subNodes[7]);
+            Assert.Equal(8, root.subNodes.Count);
 
             // No colonist-work tiers at all: an animal never does routine work or takes a directed order.
             Assert.DoesNotContain(root.subNodes, n => n is JobGiver_Work || n is JobGiver_DirectedOrder || n is global::SimWorld.AI.JobGiver_Edicts);

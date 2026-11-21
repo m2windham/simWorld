@@ -77,6 +77,20 @@
         <li Class="SimWorld.AI.ThinkNode_Duty" />
 
         <!--
+          Seriously hypothermic or heatstruck: get to comfortable air and wait there
+          (JobGiver_SeekSafeTemperature). Placement read from RimWorld 1.0 Core/Defs/ThinkTreeDefs/Humanlike.xml
+          (RimWorld-zh/RimWorld-Core): it is the second node of the colonist block that follows the prisoner
+          block, after JobGiver_SeekAllowedArea and before JobGiver_DropUnusedInventory, emergency
+          JobGiver_Work and the starving-only GetFood. The B18 dump (RimWorld-zh/RimWorld-Defs-Templates) has the
+          same three nodes ahead of starving and emergency work. Neither SeekAllowedArea nor DropUnusedInventory
+          is ported, and the lord-duty node sits above that block in RimWorld, so here it goes directly below
+          ThinkNode_Duty and above starving and emergency work. RimWorld gates the block on
+          ThinkNode_ConditionalColonist; every citizen here is the settlement's own, as for the two tiers below.
+          Gives nothing below the serious stage or with nowhere comfortable to go.
+        -->
+        <li Class="SimWorld.AI.JobGiver_SeekSafeTemperature" />
+
+        <!--
           Emergency work — firefighting and urgent tending — above every need but starvation. RimWorld's
           humanlike tree has this pair in this order in its colonist block ("starving? eat", then JobGiver_Work
           with emergency=true), both above MainColonistBehaviorCore, the priority sorter where eating, sleeping,
@@ -100,14 +114,6 @@
             <li Class="SimWorld.AI.JobGiver_GetFood" />
           </subNodes>
         </li>
-
-        <!--
-          Seriously hypothermic or heatstruck: get to comfortable air and wait there (RimWorld:
-          JobGiver_SeekSafeTemperature, which sits beside the starving-eat giver among the very urgent needs —
-          that placement is recalled, not read). Gives nothing below the serious stage or with nowhere
-          comfortable to go, so it costs the tiers below nothing on an ordinary day.
-        -->
-        <li Class="SimWorld.AI.JobGiver_SeekSafeTemperature" />
 
         <li Class="SimWorld.AI.JobGiver_Work">
           <emergency>true</emergency>

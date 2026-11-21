@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using SimWorld.Defs;
 using SimWorld.Map;
@@ -166,10 +167,12 @@ namespace SimWorld.Building
         /// straight-line of <paramref name="c"/>, asking at each one whether it or one of its four cardinal
         /// neighbours, itself still inside the distance, holds roof.
         ///
-        /// <para/>RimWorld's third parameter (<c>assumeNonNoRoofCellsAreRoofed</c>) is not ported: it exists
-        /// to answer the question against the player's own no-roof <c>Area</c>, and this port has no player
-        /// at that seam to draw one. <paramref name="ignoring"/> is this port's own, for
-        /// <see cref="WouldCollapseRoofIfRemoved"/>; passing null is RimWorld's question exactly.
+        /// <para/><paramref name="assumeNonNoRoofCellsAreRoofed"/> is RimWorld's third parameter: the fill may
+        /// also travel through any cell outside the player's no-roof area, roofed or not, which is how
+        /// <see cref="AutoBuildRoofAreaSetter"/> asks whether a roof <i>would</i> be held up once its neighbours
+        /// are built. Nobody paints a no-roof area here, so with it set every cell counts.
+        /// <paramref name="ignoring"/> is this port's own, for <see cref="WouldCollapseRoofIfRemoved"/>; passing
+        /// null is RimWorld's question exactly.
         ///
         /// <para/>The first step of the fill — the root cell and its four cardinal neighbours — is unrolled
         /// ahead of the queue. It is not an optimisation of the algorithm but of its <i>allocation</i>: inside
@@ -177,7 +180,7 @@ namespace SimWorld.Building
         /// the set are never built at all. That case is almost all of them, and it is the one a work scan pays
         /// for on every candidate.
         /// </summary>
-        public static bool WithinRangeOfRoofHolder(IntVec3 c, Map.Map map, Thing? ignoring = null)
+        public static bool WithinRangeOfRoofHolder(IntVec3 c, Map.Map map, Thing? ignoring = null, bool assumeNonNoRoofCellsAreRoofed = false)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (!GenGrid.InBounds(c, map)) return false;
@@ -202,7 +205,7 @@ namespace SimWorld.Building
                 int index = WindowIndex(d.x, d.z);
                 if (stamp[index] == generation) continue;
                 stamp[index] = generation;
-                if (GenGrid.InBounds(neighbour, map) && map.roofGrid.Roofed(neighbour)) queue[tail++] = neighbour;
+                if (GenGrid.InBounds(neighbour, map) && (assumeNonNoRoofCellsAreRoofed || map.roofGrid.Roofed(neighbour))) queue[tail++] = neighbour;
             }
 
             while (head < tail)
@@ -221,7 +224,38 @@ namespace SimWorld.Building
                     int index = WindowIndex(dx, dz);
                     if (stamp[index] == generation) continue;
                     stamp[index] = generation;
-                    if (map.roofGrid.Roofed(neighbour)) queue[tail++] = neighbour;
+                    if (assumeNonNoRoofCellsAreRoofed || map.roofGrid.Roofed(neighbour)) queue[tail++] = neighbour;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// True if <paramref name="c"/> reaches something holding roof up by any path along roofed cells, with no
+        /// distance limit (RimWorld: <c>RoofCollapseUtility.ConnectedToRoofHolder</c>). With
+        /// <paramref name="assumeRoofAtRoot"/> the start cell counts as roofed, which is how
+        /// <see cref="WorkGiver_BuildRoof"/> asks it of a cell about to be roofed. A holder counts on a walked cell
+        /// or cardinally beside one.
+        /// </summary>
+        public static bool ConnectedToRoofHolder(IntVec3 c, Map.Map map, bool assumeRoofAtRoot)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (!GenGrid.InBounds(c, map)) return false;
+            if (!assumeRoofAtRoot && !map.roofGrid.Roofed(c)) return false;
+
+            var seen = new HashSet<IntVec3> { c };
+            var queue = new Queue<IntVec3>();
+            queue.Enqueue(c);
+            while (queue.Count > 0)
+            {
+                IntVec3 x = queue.Dequeue();
+                if (HoldsRoof(x, map)) return true;
+                for (int i = 0; i < GenAdj.CardinalDirections.Length; i++)
+                {
+                    IntVec3 n = x + GenAdj.CardinalDirections[i];
+                    if (!GenGrid.InBounds(n, map)) continue;
+                    if (HoldsRoof(n, map)) return true;
+                    if (map.roofGrid.Roofed(n) && seen.Add(n)) queue.Enqueue(n);
                 }
             }
             return false;

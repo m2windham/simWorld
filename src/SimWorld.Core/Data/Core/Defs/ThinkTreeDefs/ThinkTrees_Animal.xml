@@ -52,9 +52,20 @@
         <li Class="SimWorld.AI.JobGiver_AIFightEnemies" />
 
         <li Class="SimWorld.AI.JobGiver_AnimalFlee" />
-        <!-- Seriously cold or overheated: get to comfortable air (RimWorld: JobGiver_SeekSafeTemperature in
-             the animal tree too; its place here is recalled, not read). -->
-        <li Class="SimWorld.AI.JobGiver_SeekSafeTemperature" />
+
+        <!--
+          A tame animal's critical needs: seriously cold or overheated, get to comfortable air. Read from
+          RimWorld 1.0 Core/Defs/ThinkTreeDefs/Animal.xml (RimWorld-zh/RimWorld-Core): JobGiver_SeekSafeTemperature
+          is the last node of the ThinkNode_ConditionalOfPlayerFaction block, after the trained behaviours,
+          PatientGoToBed and SeekAllowedArea, and that block comes after the melee reaction above and before
+          eat-random and the SatisfyBasicNeeds subtree that holds hunger and rest. A wild animal does not get
+          it. None of the block's other nodes is ported, so the block holds only this one.
+        -->
+        <li Class="SimWorld.AI.ThinkNode_ConditionalOfPlayerFaction">
+          <subNodes>
+            <li Class="SimWorld.AI.JobGiver_SeekSafeTemperature" />
+          </subNodes>
+        </li>
 
         <li Class="SimWorld.AI.ThinkNode_ConditionalHungry">
           <subNodes>

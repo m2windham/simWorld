@@ -74,6 +74,11 @@ namespace SimWorld.Map
         /// (system 16: Building).</summary>
         public Building.RoomTracker roomTracker = null!;
 
+        /// <summary>Marks the build-roof area over a room its builders just closed in (RimWorld:
+        /// <c>Map.autoBuildRoofAreaSetter</c>; see <see cref="Building.AutoBuildRoofAreaSetter"/>). Fed by
+        /// <see cref="roomTracker"/>; holds nothing between ticks, so nothing to save.</summary>
+        public Building.AutoBuildRoofAreaSetter autoBuildRoofAreaSetter = null!;
+
         /// <summary>Every player-designated Zone on this map, one zone per cell (system 16: Building — zones).</summary>
         public Building.ZoneManager zoneManager = null!;
 
@@ -184,6 +189,10 @@ namespace SimWorld.Map
         /// </summary>
         public void MapTick()
         {
+            // RimWorld runs this first in Map.MapPreTick. Its queue is filled and emptied inside the room
+            // tracker's own rebuild below, so this finds it empty; kept for RimWorld's shape.
+            autoBuildRoofAreaSetter.AutoBuildRoofAreaSetterTick_First();
+
             // Before the weather, which reads gameConditionManager.AggregateTemperatureOffset() as part of
             // the offset it hands GenTemperature: a heat wave that ends on this tick must already be gone
             // when that number is taken, not one tick later.
@@ -262,6 +271,7 @@ namespace SimWorld.Map
             pathFinder = new PathFinder(this);
             powerNetManager = new Building.PowerNetManager(this);
             roomTracker = new Building.RoomTracker(this);
+            autoBuildRoofAreaSetter = new Building.AutoBuildRoofAreaSetter(this);
             zoneManager = new Building.ZoneManager(this);
             areaManager = new Building.AreaManager(this);
             designationManager = new Designations.DesignationManager();

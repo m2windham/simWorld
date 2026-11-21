@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Roof building (RimWorld 1.0 Core/Defs/WorkGiverDefs/WorkGivers.xml: BuildRoofs, Construction,
+       priorityInType 100, scanCells, Manipulation). Its own file rather than an addition to WorkGivers.xml
+       (CLAUDE.md). 100 is RimWorld's value and keeps RimWorld's order: above finishing frames (95 here). The
+       cells come from SimWorld.Building.AutoBuildRoofAreaSetter; see SimWorld.Building.WorkGiver_BuildRoof. -->
+
+  <WorkGiverDef>
+    <defName>BuildRoofs</defName>
+    <label>build roofs</label>
+    <verb>build roof</verb>
+    <gerund>building roof</gerund>
+    <workType>Construction</workType>
+    <priorityInType>100</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_BuildRoof</giverClass>
+    <scanThings>false</scanThings>
+    <scanCells>true</scanCells>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+  </WorkGiverDef>
+
+</Defs>

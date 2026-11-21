@@ -64,8 +64,10 @@ namespace SimWorld.Tests.Health
             // (Damages_Surgery.xml — the one shipped damage that is not violence) and Crush
             // (Damages_Crush.xml — what a ceiling does, and the reason a roof collapse no longer reports
             // itself as a beating; see Building.RoofCollapserImmediate), and Deterioration
-            // (Damages_Deterioration.xml — what weather does to things left outside).
-            Assert.Equal(10, DefDatabase<DamageDef>.DefCount);
+            // (Damages_Deterioration.xml — what weather does to things left outside), and Frostbite
+            // (Damages_Temperature.xml — what deep cold does to fingers and toes).
+            Assert.Equal(11, DefDatabase<DamageDef>.DefCount);
+            Assert.NotNull(DefDatabase<DamageDef>.GetNamed("Frostbite"));
             Assert.True(DefDatabase<HediffDef>.DefCount >= 16);
             Assert.NotNull(HediffDefOf.MissingBodyPart);
             Assert.NotNull(PawnCapacityDefOf.Moving);
