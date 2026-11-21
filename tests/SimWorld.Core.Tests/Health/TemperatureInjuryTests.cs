@@ -220,10 +220,18 @@ namespace SimWorld.Tests.Health
         [Fact]
         public void Below_the_serious_stage_nobody_seeks_safe_temperature()
         {
-            CoreMap map = NewMap(-20f);
-            Pawn p = SpawnHuman(map, new IntVec3(5, 0, 5));
-            SetSeverity(p, TemperatureDefOf.Hypothermia, 0.3f);
-            Assert.False(new JobGiver_SeekSafeTemperature().TryIssueJobPackage(p).IsValid);
+            // Both places a giver could send it are on offer: comfortable air where it stands (a wait), and a
+            // warm room from a freezing doorway (a walk). At the minor stage it takes neither.
+            CoreMap map = NewMap(20f);
+            Pawn inWarmth = SpawnHuman(map, new IntVec3(12, 0, 12), "InWarmth");
+            SetSeverity(inWarmth, TemperatureDefOf.Hypothermia, 0.3f);
+            Assert.False(new JobGiver_SeekSafeTemperature().TryIssueJobPackage(inWarmth).IsValid);
+
+            CoreMap cold = NewMap(-20f);
+            IntVec3 doorway = BuildWarmPairAroundADoor(cold, 20f);
+            Pawn inDoorway = SpawnHuman(cold, doorway, "InDoorway");
+            SetSeverity(inDoorway, TemperatureDefOf.Hypothermia, 0.3f);
+            Assert.False(new JobGiver_SeekSafeTemperature().TryIssueJobPackage(inDoorway).IsValid);
         }
 
         [Fact]
