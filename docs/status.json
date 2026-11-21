@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-11-18",
-  "testsTotal": 3176,
+  "testsTotal": 3194,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -454,7 +454,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things · src/SimWorld.Core/Map/View",
       "status": "verified",
-      "tests": 120,
+      "tests": 138,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -514,6 +514,11 @@
         {
           "id": "mapcore.buildprogress",
           "label": "ThingView.BuildProgress, asked for by the host (REQ-001): a Frame reads Frame.PercentComplete clamped to [0, 1], a Blueprint 0, anything else 1, and the delta stream carries it. Map/View does not bump a chunk for an in-place field write, so the construction driver notifies the chunk at each 5% step: at most ~20 redraws per build, and any stage threshold the host picks is seen within five points (MapViewTests).",
+          "done": true
+        },
+        {
+          "id": "mapcore.leverreads",
+          "label": "Map/View lever reads, asked for by the host (REQ-005): every standing-rule and order command on MapCommands can now be read back. MapViewSnapshot.CaptureLevers() (focus, tile or map overloads) returns SettlementLevers - each bill-giving bench with its bills in BillStack order (recipe, suspended, repeat mode, count left or target, paused) and its recipes with research state; every zone with kind, label and cells, stockpiles with their filter restricted to storable things; the home and snow-clear areas as cell masks; the map's medical care; and per humanlike pawn whether the job in hand is a player order and how many wait queued. A separate capture rather than snapshot fields, because these change only when someone acts and two are 40,000-cell masks the per-frame delta should not carry. It never calls Bill.ShouldDoNow, which rewrites a TargetCount bill's paused flag. LeverCatalogue lists bench recipes, storable things and ten directly orderable jobs with their target kind (checked against each driver, not a JobDef field: content has none); DefLabels.LabelOf/DescriptionOf turn any seam defName into content's own label, ThingDef first when a name is shared across def types (MapViewLeversTests).",
           "done": true
         }
       ],

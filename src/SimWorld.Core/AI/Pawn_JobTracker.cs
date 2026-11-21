@@ -60,6 +60,21 @@ namespace SimWorld.AI
             return null;
         }
 
+        /// <summary>How many player-forced jobs wait in the queue — exactly what <see cref="DequeueDirectedOrder"/>
+        /// would still hand out. A read for <c>Map.View</c>'s orders line; it changes nothing.</summary>
+        internal int DirectedOrderCount
+        {
+            get
+            {
+                int n = 0;
+                for (int i = 0; i < jobQueue.Count; i++)
+                {
+                    if (jobQueue[i].playerForced) n++;
+                }
+                return n;
+            }
+        }
+
         /// <summary>Starts <paramref name="newJob"/> immediately, ending whatever was running first.</summary>
         public void StartJob(Job newJob, JobCondition lastJobEndCondition = JobCondition.InterruptForced)
         {
