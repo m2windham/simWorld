@@ -131,7 +131,7 @@ namespace SimWorld.Tests.Building
             Assert.True(d.IsComplete(map));
             Assert.Equal(d.def.BedCount, d.Beds(map).Count);
             Room room = BedRoom(map, d);
-            Assert.False(room.TouchesOutside);
+            Assert.False(room.touchesMapEdge); // closed round; open to the sky until roofed
             Assert.Equal(d.Interior.OrderBy(c => c.x).ThenBy(c => c.z), room.Cells.OrderBy(c => c.x).ThenBy(c => c.z));
             Assert.All(d.Beds(map), b => Assert.Same(room, map.roomTracker.RoomAt(b.Position)));
             Assert.All(d.Interior, c => Assert.True(map.areaManager.BuildRoof[c], $"{c} should be marked"));
@@ -149,7 +149,7 @@ namespace SimWorld.Tests.Building
             Assert.Equal(north.Interior.Count, south.Interior.Count);
             Assert.Equal(north.footprint.minZ, north.Parts.Single(p => p.Kind == DwellingPartKind.Door).Cell.z);
             Assert.Equal(south.footprint.maxZ, south.Parts.Single(p => p.Kind == DwellingPartKind.Door).Cell.z);
-            Assert.False(BedRoom(map, south).TouchesOutside);
+            Assert.False(BedRoom(map, south).touchesMapEdge);
             Assert.All(south.Beds(map), b => Assert.Equal(Rot4.South, b.Rotation));
         }
 
@@ -306,7 +306,10 @@ namespace SimWorld.Tests.Building
                 Assert.NotSame(cold.Group, hot.Group);
                 cold.Group.temperature = 30f;
                 hot.Group.temperature = 30f;
-                Run(map, 2500);
+                // Powered by hand: no generator fits beside a cooler set into a wall without opening the wall, and
+                // this pins the cooler, not the power net. Ten rare ticks, nothing else moving the air.
+                cooler.GetComp<CompPowerTrader>()!.powerOn = true;
+                for (int i = 0; i < 10; i++) cooler.TickRare();
                 return (cold.Temperature, hot.Temperature);
             }
 
@@ -314,8 +317,8 @@ namespace SimWorld.Tests.Building
             Assert.True(cold < 25f, $"cold side {cold}");
             Assert.True(hot > 35f, $"hot side {hot}");
             (float offCold, float offHot) = After(switchedOn: false);
-            Assert.InRange(offCold, 29f, 31f);
-            Assert.InRange(offHot, 29f, 31f);
+            Assert.Equal(30f, offCold, 3);
+            Assert.Equal(30f, offHot, 3);
         }
 
         // ---- the switch ----
@@ -340,6 +343,9 @@ namespace SimWorld.Tests.Building
             Pawn hand = NewHuman("Hand");
             hand.faction = settlers;
             GenSpawn.Spawn(hand, new IntVec3(3, 0, 3), map);
+            map.MapTick();
+            Assert.True(map.reservationManager.CanReserve(hand, fire), "reserve");
+            Assert.True(Reachability.CanReach(hand, fire, PathEndMode.Touch), "reach");
             Assert.True(new WorkGiver_Flick().HasJobOnThing(hand, fire));
             for (int i = 0; i < 3000 && flick.SwitchIsOn; i++)
             {
@@ -359,7 +365,8 @@ namespace SimWorld.Tests.Building
             Assert.False(fuel.ShouldAutoRefuelNowIgnoringFuelPct);
 
             flick.SetWantSwitchOn(true);
-            flick.DoFlick();
+            flick.DoFlick(); // what JobDriver_Flick does, and then it takes the mark off
+            FlickUtility.UpdateFlickDesignation(fire);
             Assert.True(fuel.ShouldAutoRefuelNowIgnoringFuelPct);
             Run(map, 2500);
             Assert.True(fuel.Fuel < before - 15f + 0.01f);
@@ -392,13 +399,16 @@ namespace SimWorld.Tests.Building
             CoreMap map = NewMap(20f);
             map.weatherManager.Climate = new MapClimate { averageTemperature = 20f, latitude = 0f, longitude = 0f };
             float calm = SettlementClimate.Outlook(map).DailyMean;
+            // Half a day on: the sun has swung the air by up to twice RimWorld's daily amplitude, the outlook only by
+            // the season's drift over those hours.
             Find.TickManager.DebugSetTicksGame(Find.TickManager.TicksGame + GenDate.TicksPerDay / 2);
-            Assert.Equal(calm, SettlementClimate.Outlook(map).DailyMean, 2);
+            float later = SettlementClimate.Outlook(map).DailyMean;
+            Assert.InRange(later - calm, -0.5f, 0.5f);
 
             map.gameConditionManager.RegisterCondition(GameConditionMaker.MakeConditionForDays(GameConditionDefOf.HeatWave, 2f));
             float wave = SettlementClimate.Outlook(map).DailyMean;
-            Assert.Equal(map.gameConditionManager.AggregateTemperatureOffset(), wave - calm, 2);
-            Assert.True(wave > calm + 10f);
+            Assert.Equal(map.gameConditionManager.AggregateTemperatureOffset(), wave - later, 2);
+            Assert.True(wave > later + 10f);
         }
 
         /// <summary>A settlement of two households housed in finished town houses, everything known that the
@@ -478,13 +488,17 @@ namespace SimWorld.Tests.Building
             Finish("WindbreakShelters", "PitDwellings");
             CoreMap map = new CoreMap(120, 120, SimWorld.Map.TerrainDefOf.Soil);
             var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Pits", 0);
-            Pawn a = NewHuman("A"), b = NewHuman("B");
-            settlement.AddCitizen(a);
-            settlement.AddCitizen(b);
-            Find.FamilyManager.FoundHousehold(a, b, 0);
+            // A band big enough for a compound: houses stand on its street.
+            for (int i = 0; i < 10; i++)
+            {
+                Pawn x = NewHuman("A" + i), y = NewHuman("B" + i);
+                settlement.AddCitizen(x);
+                settlement.AddCitizen(y);
+                Find.FamilyManager.FoundHousehold(x, y, 0);
+            }
             Pawn builder = NewHuman("Builder");
 
-            for (int pass = 0; pass < 60; pass++)
+            for (int pass = 0; pass < 200; pass++)
             {
                 Find.TickManager.DebugSetTicksGame(pass * ConstructionInitiativeTuning.IntervalTicks);
                 SettlementConstructionInitiative.TickSettlement(settlement, map);
@@ -494,12 +508,16 @@ namespace SimWorld.Tests.Building
                 }
             }
 
-            Dwelling pit = Assert.Single(DwellingUtility.DwellingsOn(map));
-            Assert.Same(ShelterKit.Rung("House_Meso"), pit.def);
-            Assert.True(pit.IsComplete(map));
-            Assert.Equal(a.relations.familyId, pit.householdId);
-            Assert.All(pit.Parts.Where(p => p.Kind == DwellingPartKind.Wall), p => Assert.Same(ShelterThingDefOf.WallEarth, map.edificeGrid[p.Cell]!.def));
-            Assert.Equal(2, DwellingUtility.HousedCitizens(settlement, map));
+            IReadOnlyList<Dwelling> pits = DwellingUtility.DwellingsOn(map);
+            Assert.Equal(10, pits.Count);
+            foreach (Dwelling pit in pits)
+            {
+                Assert.Same(ShelterKit.Rung("House_Meso"), pit.def);
+                Assert.True(pit.IsComplete(map));
+                Assert.NotEqual(Pawn_RelationsTracker.None, pit.householdId);
+                Assert.All(pit.Parts.Where(p => p.Kind == DwellingPartKind.Wall), p => Assert.Same(ShelterThingDefOf.WallEarth, map.edificeGrid[p.Cell]!.def));
+            }
+            Assert.Equal(20, DwellingUtility.HousedCitizens(settlement, map));
         }
 
         public static IEnumerable<object[]> Rungs() => Ladder.Select(n => new object[] { n });

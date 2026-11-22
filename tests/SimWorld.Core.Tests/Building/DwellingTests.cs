@@ -102,7 +102,9 @@ namespace SimWorld.Tests.Building
             return peakUnderway;
         }
 
-        private static Thing TheDoor(CoreMap map) => Assert.Single(map.listerThings.ThingsOfDef(CompoundThingDefOf.Door));
+        /// <summary>The ring's door; every house has a door of its own too.</summary>
+        private static Thing TheDoor(CoreMap map) =>
+            Assert.Single(map.listerThings.ThingsOfDef(CompoundThingDefOf.Door), d => d.Position == map.settlementCompound!.DoorCell);
 
         // ---- the ladder ----
 
@@ -199,7 +201,7 @@ namespace SimWorld.Tests.Building
         public void A_house_whose_household_is_gone_goes_to_the_next_household_without_one()
         {
             CoreMap map = NewMap();
-            Settlement settlement = Band(couples: 2);
+            Settlement settlement = Band(couples: 10);
             GrowUntilSettled(settlement, map);
             Dwelling first = DwellingUtility.DwellingsOn(map).First();
             int gone = first.householdId;
@@ -213,7 +215,7 @@ namespace SimWorld.Tests.Building
             DwellingUtility.AssignHomes(settlement, map);
 
             Assert.Equal(newcomer.relations.familyId, first.householdId);
-            Assert.Equal(2, DwellingUtility.DwellingsOn(map).Count);
+            Assert.Equal(10, DwellingUtility.DwellingsOn(map).Count);
         }
 
         // ---- the layout ----
@@ -366,7 +368,7 @@ namespace SimWorld.Tests.Building
         public void A_house_that_loses_a_wall_is_planned_back_and_its_household_keeps_it()
         {
             CoreMap map = NewMap();
-            Settlement settlement = Band(couples: 2);
+            Settlement settlement = Band(couples: 10);
             GrowUntilSettled(settlement, map);
             Dwelling d = DwellingUtility.DwellingsOn(map).First();
             int household = d.householdId;

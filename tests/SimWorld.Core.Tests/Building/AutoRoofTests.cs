@@ -81,7 +81,7 @@ namespace SimWorld.Tests.Building
 
             Assert.NotEmpty(hut.Interior);
             Room room = map.roomTracker.RoomAt(hut.Interior.First())!;
-            Assert.False(room.TouchesOutside);
+            Assert.False(room.touchesMapEdge); // closed round; open to the sky until roofed
             Assert.Equal(hut.Interior.OrderBy(c => c.x).ThenBy(c => c.z), room.Cells.OrderBy(c => c.x).ThenBy(c => c.z));
             foreach (IntVec3 c in hut.footprint.Cells) Assert.True(map.areaManager.BuildRoof[c], $"{c} should be marked");
             Assert.Equal(hut.footprint.Area, map.areaManager.BuildRoof.TrueCount);
