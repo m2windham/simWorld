@@ -13,7 +13,8 @@ Sections marked _planned_ have no code yet.
 - Emergent story from simulation, not scripted narrative.
 - Data-driven content: designers add content via XML Defs, not code.
 - Deterministic simulation: same seed + same inputs → same outcome.
-- 1:1 RimWorld mechanics first, translated to civilization scale second.
+- RimWorld's ideas, shaped by the arc: each mechanic is sourced from RimWorld and
+  takes the form its era calls for (`CLAUDE.md`, "Port the idea, shaped by the arc").
 - Engine-free core: no `UnityEngine` reference anywhere in `SimWorld.Core`.
 
 ## 2. Layered Architecture

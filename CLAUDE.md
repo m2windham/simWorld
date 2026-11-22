@@ -18,9 +18,19 @@ Build output goes to `artifacts/`, not `bin/` and `obj/`.
 
 - **The core is engine-free.** No `UnityEngine` reference in `SimWorld.Core`,
   ever. Unity consumes it as a local package.
-- **Port RimWorld 1:1 first, translate second.** Keep RimWorld's names, call
-  shapes and constants. Where a number could not be sourced, say so in a comment
-  and pin the behaviour with a test rather than the literal value.
+- **Port the idea, shaped by the arc.** RimWorld is the source, simWorld's plan
+  is the shape: one settlement rising through eight eras. Before building, name
+  the RimWorld mechanic and the problem it solves, then ask how that problem
+  looks across the eras. Keep RimWorld's names, call shapes and constants
+  wherever they still fit; where they do not, the arc wins. A literal 1:1 port is
+  right when the era does not change the answer (pathing, needs, health), and
+  wrong when it does (shelter, climate control, building, defence). Where a
+  number could not be sourced, say so in a comment and pin the behaviour with a
+  test rather than the literal value.
+- **Brief every piece of work by the era it serves.** A lane names which eras
+  it affects and how a run moving through them is better for it. Colony detail
+  that serves no era is parked, however faithful. A 60-day bench is not evidence
+  about the arc; a long run through the ages is.
 - **Translations are recorded, not improvised.** A civilization-scale change to a
   system goes in that system's `translation` field in `docs/status.json`.
 - **Determinism is a feature.** All randomness goes through a seeded
