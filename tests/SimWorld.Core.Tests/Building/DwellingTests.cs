@@ -122,9 +122,11 @@ namespace SimWorld.Tests.Building
         [Fact]
         public void A_band_that_has_not_learned_windbreaks_sleeps_in_its_dormitory()
         {
+            // Ten households: a band big enough for a compound, so the only thing standing between it and houses
+            // is the research (a smaller band gets no compound and so no houses whatever it knows).
             CoreMap map = NewMap();
             var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Camp", 0);
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Pawn a = NewHuman("A" + i), b = NewHuman("B" + i);
                 settlement.AddCitizen(a);
@@ -132,8 +134,9 @@ namespace SimWorld.Tests.Building
                 Find.FamilyManager.FoundHousehold(a, b, 0);
             }
             GrowUntilSettled(settlement, map);
+            Assert.NotNull(map.settlementCompound);
             Assert.Empty(DwellingUtility.DwellingsOn(map));
-            Assert.Equal(6, DormitoryBeds(map));
+            Assert.Equal(20, DormitoryBeds(map));
         }
 
         // ---- the need ----
@@ -166,6 +169,22 @@ namespace SimWorld.Tests.Building
 
             // The dormitory was not added to once the homes went up: one bed each, planned before the houses.
             Assert.Equal(settlement.Citizens.Count, DormitoryBeds(map));
+        }
+
+        [Fact]
+        public void A_house_bed_is_no_dormitory_bed_so_newcomers_without_a_house_get_dormitory_beds()
+        {
+            CoreMap map = NewMap();
+            Settlement settlement = Band(couples: 10, singles: 1);
+            GrowUntilSettled(settlement, map);
+            int housed = DwellingUtility.HousedCitizens(settlement, map);
+            Assert.Equal(settlement.Citizens.Count, housed);
+
+            // Thirty loners arrive: no household, so no house. Each wants a dormitory bed, and the beds standing in
+            // the houses are not theirs to count against that.
+            for (int i = 0; i < 30; i++) settlement.AddCitizen(NewHuman("Newcomer" + i));
+            GrowUntilSettled(settlement, map, from: 400);
+            Assert.Equal(settlement.Citizens.Count - housed, DormitoryBeds(map));
         }
 
         [Fact]
