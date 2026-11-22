@@ -112,6 +112,49 @@ namespace SimWorld.MapGen
                 ThingDef veinDef = MineableUtility.RandomVeinDef(rand) ?? MapGenThingDefOf.MineableSteel;
                 Thing ore = ThingMaker.MakeThing(veinDef);
                 GenSpawn.Spawn(ore, cell, map);
+                GrowLump(map, rand, rock, cell, veinDef);
+            }
+        }
+
+        /// <summary>
+        /// Grows the vein seeded at <paramref name="seed"/> to its Def's
+        /// <see cref="ThingDef.mineableScatterLumpSizeRange"/> through adjacent plain rock (RimWorld:
+        /// <c>GenStep_ScatterLumpsMineable</c> fills a <c>GridShapeMaker.IrregularLump</c>). Each step takes a
+        /// random cell of the lump's rock frontier, so the shape is irregular and seeded. Never overwrites another
+        /// vein; stops early where the rock runs out. A one-cell range draws nothing, so content that sets no
+        /// range generates exactly the map it did before. (crafting.materialladder)
+        /// </summary>
+        private static void GrowLump(Map.Map map, RandomStream rand, bool[] rock, IntVec3 seed, ThingDef veinDef)
+        {
+            IntRange size = veinDef.mineableScatterLumpSizeRange;
+            if (size.max <= 1) return;
+            int target = rand.Range(size);
+            var frontier = new List<IntVec3>();
+            int grown = 1;
+            AddFrontier(map, rock, seed, frontier);
+            while (grown < target && frontier.Count > 0)
+            {
+                int pick = rand.Range(0, frontier.Count);
+                IntVec3 c = frontier[pick];
+                frontier[pick] = frontier[frontier.Count - 1];
+                frontier.RemoveAt(frontier.Count - 1);
+                Thing? existing = map.edificeGrid[c];
+                if (existing == null || existing.def.mineableScatterCommonality > 0f) continue; // taken, or a vein
+                existing.Destroy();
+                GenSpawn.Spawn(ThingMaker.MakeThing(veinDef), c, map);
+                grown++;
+                AddFrontier(map, rock, c, frontier);
+            }
+        }
+
+        private static void AddFrontier(Map.Map map, bool[] rock, IntVec3 c, List<IntVec3> frontier)
+        {
+            for (int i = 0; i < GenAdj.CardinalDirections.Length; i++)
+            {
+                IntVec3 nb = c + GenAdj.CardinalDirections[i];
+                if (!GenGrid.InBounds(nb, map) || !rock[map.cellIndices.CellToIndex(nb.x, nb.z)]) continue;
+                Thing? edifice = map.edificeGrid[nb];
+                if (edifice != null && edifice.def.mineableScatterCommonality <= 0f && !frontier.Contains(nb)) frontier.Add(nb);
             }
         }
 

@@ -154,6 +154,34 @@ namespace SimWorld.Tests.Crafting
             }
         }
 
+        [Fact]
+        public void A_vein_comes_out_of_the_ground_as_a_lump_not_a_single_cell()
+        {
+            Assert.Equal(new IntRange(30, 40), Def("MineableSteel").mineableScatterLumpSizeRange);
+            Assert.True(Def("MineableCopper").mineableScatterLumpSizeRange.min > 1);
+            Assert.Equal(IntRange.One, Def("MineableGold").mineableScatterLumpSizeRange); // off the ladder: as before
+
+            var tile = new global::SimWorld.World.Tile
+            {
+                biome = DefDatabase<global::SimWorld.World.BiomeDef>.GetNamed("TemperateForest"),
+                hilliness = global::SimWorld.World.Hilliness.Mountainous,
+                elevation = 100f,
+                rainfall = 1200f,
+            };
+            tile.deposits.Add(new global::SimWorld.World.TileDeposit(global::SimWorld.World.DepositDefOf.Ore, 0.8f));
+            CoreMap map = global::SimWorld.MapGen.MapGenerator.GenerateMap(tile, 1, "ladder-lumps", new IntVec2(60, 60));
+
+            List<Thing> iron = map.listerThings.ThingsOfDef(Def("MineableSteel")).ToList();
+            Assert.True(iron.Count >= 30, "Expected at least one iron seam's worth of cells, found " + iron.Count + ".");
+            Assert.Contains(iron, v => GenAdj.CardinalDirections.Any(d =>
+                GenGrid.InBounds(v.Position + d, map) && map.edificeGrid[v.Position + d]?.def == v.def));
+
+            // Same seed, same seams.
+            CoreMap again = global::SimWorld.MapGen.MapGenerator.GenerateMap(tile, 1, "ladder-lumps", new IntVec2(60, 60));
+            Assert.Equal(iron.Select(v => v.Position).OrderBy(c => c.x).ThenBy(c => c.z),
+                again.listerThings.ThingsOfDef(Def("MineableSteel")).Select(v => v.Position).OrderBy(c => c.x).ThenBy(c => c.z));
+        }
+
         // ---- each recipe chain, worked through the real bill giver ----
 
         [Theory]

@@ -39,6 +39,8 @@
     <mineableThing>Flint</mineableThing>
     <mineableYield>25</mineableYield>
     <mineableScatterCommonality>0.30</mineableScatterCommonality>
+    <!-- Unsourced (vanilla has no flint vein): a pocket, not a seam. crafting.materialladder -->
+    <mineableScatterLumpSizeRange>6~12</mineableScatterLumpSizeRange>
     <statBases>
       <MaxHitPoints>250</MaxHitPoints>
     </statBases>
@@ -77,6 +79,8 @@
     <mineableThing>CopperOre</mineableThing>
     <mineableYield>45</mineableYield>
     <mineableScatterCommonality>0.30</mineableScatterCommonality>
+    <!-- Unsourced (vanilla has no copper): smaller than steel's 30~40 seam, larger than silver's 4~12. crafting.materialladder -->
+    <mineableScatterLumpSizeRange>12~20</mineableScatterLumpSizeRange>
     <statBases>
       <MaxHitPoints>300</MaxHitPoints>
     </statBases>
@@ -89,6 +93,8 @@
     <mineableThing>Tin</mineableThing>
     <mineableYield>30</mineableYield>
     <mineableScatterCommonality>0.15</mineableScatterCommonality>
+    <!-- Vanilla silver's 4~12 for the scarce alloying metal. crafting.materialladder -->
+    <mineableScatterLumpSizeRange>4~12</mineableScatterLumpSizeRange>
     <statBases>
       <MaxHitPoints>300</MaxHitPoints>
     </statBases>

@@ -96,6 +96,8 @@
       vein. The gradient across the whole table, not this number, is what the mining module's tests assert.
     -->
     <mineableScatterCommonality>3.0</mineableScatterCommonality>
+    <!-- RimWorld MineableSteel: 30~40. crafting.materialladder -->
+    <mineableScatterLumpSizeRange>30~40</mineableScatterLumpSizeRange>
     <statBases>
       <MaxHitPoints>300</MaxHitPoints>
     </statBases>
