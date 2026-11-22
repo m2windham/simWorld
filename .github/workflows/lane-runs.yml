@@ -1,16 +1,16 @@
-name: lane-runs
+name: early-heat
 
 # Full suites, 21-seed benches and era arcs for lane branches, so they stay off the dev PC.
-# Runs only on a push to ci/lane-runs; edit the refs below to choose what is measured.
+# Runs only on a push to ci/early-heat; edit the refs below to choose what is measured.
 on:
   push:
-    branches: [ci/lane-runs]
+    branches: [ci/early-heat]
 
 permissions:
   contents: read
 
 concurrency:
-  group: lane-runs
+  group: early-heat
   cancel-in-progress: true
 
 jobs:
@@ -19,8 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: food, sha: 258626bd23d295bee358eba30717fc402cfa6431 }
-          - { name: unlocks, sha: 5b1c7014eb42183cb7b79e611c6d33cef82d787e }
+          - { name: heat, sha: 56b9b53435b3f441a5dc4d3d33665cd36bef3d06 }
+          - { name: raidletter, sha: fdf7c71ed5d1a0d8c74e318a1fc2bf3695519fae }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -45,10 +45,9 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: prefood, sha: e6c4e2ed310fc729c0e6bcbdf5d5623afd155a35 }
-          - { name: food, sha: 258626bd23d295bee358eba30717fc402cfa6431 }
-          - { name: unlocks, sha: 5b1c7014eb42183cb7b79e611c6d33cef82d787e }
-        threats: ["false", "true"]
+          - { name: shellsonly, sha: 3f8935fafe9a55a6e4fc767392ebc91f5ad55189 }
+          - { name: heat, sha: 56b9b53435b3f441a5dc4d3d33665cd36bef3d06 }
+        threats: ["false"]
         shard:
           - { n: 1, runs: "20:105 20:99 20:777 20:2024 20:12345 20:31337 20:101" }
           - { n: 2, runs: "20:102 20:103 20:104 20:106 20:107 20:108 20:109 20:110" }
@@ -81,10 +80,10 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: food, sha: 258626bd23d295bee358eba30717fc402cfa6431 }
-          - { name: unlocks, sha: 5b1c7014eb42183cb7b79e611c6d33cef82d787e }
-        threats: ["false", "true"]
-    name: arc ${{ matrix.ref.name }} threats=${{ matrix.threats }}
+          - { name: heat, sha: 56b9b53435b3f441a5dc4d3d33665cd36bef3d06 }
+        threats: ["false"]
+        pop: ["20:99", "40:201"]
+    name: arc ${{ matrix.ref.name }} ${{ matrix.pop }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
     steps:
@@ -94,9 +93,11 @@ jobs:
         with: { global-json-file: global.json }
       - run: dotnet build tools/bench/SimWorld.Bench -c Release
       - name: Arc, 10 years
+        env:
+          POP: ${{ matrix.pop }}
         run: |
           set -o pipefail
-          timeout 300m dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite arc --days 600 --arc-every 30 --solo false --threats ${{ matrix.threats }} --band 20 --seed 99 2>&1 | tee arc.txt || echo "arc ended with $?"
+          timeout 300m dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite arc --days 600 --arc-every 30 --solo false --threats ${{ matrix.threats }} --band "${POP%%:*}" --seed "${POP##*:}" 2>&1 | tee arc.txt || echo "arc ended with $?"
       - uses: actions/upload-artifact@v4
         if: always()
-        with: { name: "arc-${{ matrix.ref.name }}-threats-${{ matrix.threats }}", path: arc.txt }
+        with: { name: "arc-${{ matrix.ref.name }}-${{ strategy.job-index }}", path: arc.txt }
