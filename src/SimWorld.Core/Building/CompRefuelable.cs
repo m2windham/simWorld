@@ -107,8 +107,20 @@ namespace SimWorld.Building
         public void ConsumeFuel(float amount)
         {
             if (fuel <= 0f) return;
+            int step = FuelViewStep;
             fuel -= amount;
             if (fuel <= 0f) fuel = 0f;
+            NotifyViewIfStepped(step);
+        }
+
+        /// <summary>The fuel level as the map view buckets it (ThingView.FuelFraction): -1 empty, else the 5% step.
+        /// Fuel burns every tick; re-sending the chunk on every write would drag its rocks across the seam each
+        /// frame, so the view hears of a step crossed or the fire going out, as a Frame's progress does.</summary>
+        private int FuelViewStep => fuel <= 0f || TargetFuelLevel <= 0f ? -1 : (int)(FuelPercentOfTarget * 20f);
+
+        private void NotifyViewIfStepped(int before)
+        {
+            if (FuelViewStep != before) parent?.Map?.mapView.Notify_ChunkChangedAt(parent.Position);
         }
 
         /// <summary>Takes from <paramref name="fuelThings"/> what it needs to fill up, destroying what it uses
@@ -132,8 +144,10 @@ namespace SimWorld.Building
 
         public void Refuel(float amount)
         {
+            int step = FuelViewStep;
             fuel += amount;
             if (fuel > Props.fuelCapacity) fuel = Props.fuelCapacity;
+            NotifyViewIfStepped(step);
         }
 
         public void Notify_UsedThisTick() => ConsumeFuel(ConsumptionRatePerTick);

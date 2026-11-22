@@ -27,6 +27,7 @@ namespace SimWorld.Map.View
     /// if (delta.Snow != null) RedrawSnow(delta.Snow);
     /// foreach (MapViewChunk chunk in delta.ChangedChunks) RebuildChunk(chunk);
     /// DrawPawns(delta.Pawns);
+    /// LabelHouses(delta.Dwellings);
     /// held = delta.Versions;
     /// </code>
     /// The steady state of that loop is: no terrain, no roofs, no snow, no changed chunks, and one short list of
@@ -60,6 +61,8 @@ namespace SimWorld.Map.View
             SnowLayer? snow,
             IReadOnlyList<MapViewChunk> changedChunks,
             IReadOnlyList<PawnView> pawns,
+            IReadOnlyList<DwellingView> dwellings,
+            float outdoorTemperature,
             MapViewVersions versions)
         {
             HasMap = hasMap;
@@ -77,6 +80,8 @@ namespace SimWorld.Map.View
             Snow = snow;
             ChangedChunks = changedChunks;
             Pawns = pawns;
+            Dwellings = dwellings;
+            OutdoorTemperature = outdoorTemperature;
             Versions = versions;
         }
 
@@ -131,6 +136,14 @@ namespace SimWorld.Map.View
         /// <summary>Every spawned pawn, always, complete. See this class's own remarks.</summary>
         public IReadOnlyList<PawnView> Pawns { get; }
 
+        /// <summary>Every house on the map, always, complete: the same list <see cref="MapViewSnapshot.Dwellings"/>
+        /// carries, re-read on every delta like the pawns (see <see cref="DwellingView"/>). A house missing from it
+        /// is no longer planned.</summary>
+        public IReadOnlyList<DwellingView> Dwellings { get; }
+
+        /// <summary>The map's outdoor air, degrees C, at <see cref="TicksGame"/>.</summary>
+        public float OutdoorTemperature { get; }
+
         /// <summary>Hand this back on the next call.</summary>
         public MapViewVersions Versions { get; }
 
@@ -151,6 +164,8 @@ namespace SimWorld.Map.View
                 snow: null,
                 Array.Empty<MapViewChunk>(),
                 Array.Empty<PawnView>(),
+                Array.Empty<DwellingView>(),
+                0f,
                 new MapViewVersions(0L, 0, 0, 0, Array.Empty<int>()));
     }
 }

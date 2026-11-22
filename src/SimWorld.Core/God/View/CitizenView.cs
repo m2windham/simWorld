@@ -297,8 +297,14 @@ namespace SimWorld.God.View
         private static string? HouseholdNameOf(Pawn pawn)
         {
             int? id = HouseholdIdOf(pawn);
-            if (id == null) return null;
-            Family? family = Find.FamilyManager.GetFamily(id.Value);
+            return id == null ? null : HouseholdNameOf(id.Value);
+        }
+
+        /// <summary>The name a household goes by on this seam, shared with the map view's dwelling plots
+        /// (<c>DwellingView.HouseholdName</c>) so the two never word the same household differently.</summary>
+        internal static string? HouseholdNameOf(int familyId)
+        {
+            Family? family = Find.FamilyManager.GetFamily(familyId);
             if (family == null) return null;
             return family.surname.Length > 0
                 ? family.surname
