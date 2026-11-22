@@ -45,6 +45,8 @@
       <growDays>3</growDays>
       <harvestedThingDef>RawBerries</harvestedThingDef>
       <harvestYield>8</harvestYield>
+      <!-- RimWorld's 65%, as for the crops (Plants_Cultivated.xml). -->
+      <harvestMinGrowth>0.65</harvestMinGrowth>
     </plant>
   </ThingDef>
 

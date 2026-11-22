@@ -57,9 +57,11 @@ namespace SimWorld.AI
     /// for this.
     ///
     /// <para/><b>The rule, and it is one sentence: a settlement keeps as much livestock as its surplus feeds,
-    /// and while it is short of food the animals on its land are meat rather than livestock.</b> Both halves
-    /// read the same number <see cref="HuntingInitiative.WantsMeat"/> reads, so the two verbs can never both
-    /// be on:
+    /// and while it is short of food the animals on its land are meat rather than livestock.</b> The surplus
+    /// is food on the map above the larder wanted in hand; the hunting gate reads that same larder against
+    /// the map <i>and</i> the ledger (<see cref="HuntingInitiative.ShortOfFood(Settlement?, Map.Map)"/>).
+    /// The map is part of that total, so a positive surplus means the settlement is not short, and the two
+    /// verbs can never both be on:
     /// <list type="number">
     /// <item><b>Food first.</b> <see cref="HuntingInitiative.WantsMeat"/> true ⇒ no taming at all. This is
     /// the ordering fix, and note what it is <i>not</i>: nothing here touches <c>naturalPriority</c>.
@@ -112,9 +114,8 @@ namespace SimWorld.AI
             if (map == null) throw new ArgumentNullException(nameof(map));
 
             // Short of food (or holding exactly the larder it wants and nothing over): an animal standing on
-            // this land is meat, not livestock. This is HuntingInitiative.WantsMeat expressed as the sign of
-            // the same subtraction rather than asked again — the two gates are one number, and asking twice
-            // would walk the map's items twice on every job search for no second answer.
+            // this land is meat, not livestock. A positive map surplus implies the map-plus-ledger total the
+            // hunting gate reads is above the same larder too, so the two gates cannot both be open.
             float surplus = Surplus(settlement, map);
             if (surplus <= 0f) return false;
 
@@ -127,8 +128,9 @@ namespace SimWorld.AI
 
         /// <summary>
         /// Reachable food above the larder the settlement wants in hand — <see cref="HuntingInitiative"/>'s
-        /// two figures, subtracted. Negative is exactly <see cref="HuntingInitiative.WantsMeat"/>, which is
-        /// why the two verbs can never both be on: one wants this below zero and the other above it.
+        /// two figures, subtracted. Positive implies <see cref="HuntingInitiative.WantsMeat"/> is false (the
+        /// hunting gate adds the ledger to the same map figure), which is why the two verbs can never both
+        /// be on.
         /// </summary>
         public static float Surplus(Settlement? settlement, Map.Map map)
         {

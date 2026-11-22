@@ -50,6 +50,15 @@ namespace SimWorld.Building
         /// <c>Director.DifficultyUtility.CropYieldFactor</c> and to a plant cut before it was ripe.
         /// </summary>
         public const float FieldSizeMargin = 3f;
+
+        /// <summary>
+        /// The most a short growing period may enlarge the field over <see cref="FieldSizeMargin"/>: the margin
+        /// is divided by the share of the year the tile grows in (<see cref="FarmingInitiative.GrowingShareOfYear(Map.Map)"/>),
+        /// and that share is floored at one over this, so a tile that grows for a twelfth or none does not
+        /// want an unbounded field. Unsourced (a RimWorld player sizes fields by eye); pinned by
+        /// <c>FarmingSeasonTests</c> as "a shorter growing period wants a bigger field, and not an unbounded one".
+        /// </summary>
+        public const float MaxColdFieldFactor = 3f;
     }
 
     /// <summary>
@@ -194,7 +203,35 @@ namespace SimWorld.Building
             float burnedPerDay = wantedInHand / HuntingTuning.DaysOfFoodWanted;
 
             int breakEven = (int)Math.Ceiling(burnedPerDay / perCellPerDay);
-            return (int)Math.Ceiling(breakEven * FarmingTuning.FieldSizeMargin);
+            return (int)Math.Ceiling(breakEven * FarmingTuning.FieldSizeMargin / GrowingShareOfYear(map));
+        }
+
+        /// <summary>
+        /// The share of the year a crop grows in on this map's tile: its growing twelfths
+        /// (<see cref="Weather.TwelfthUtility.GrowingTwelfths"/>, the growing period RimWorld's world inspector
+        /// shows a player before settling) over the twelve, floored at 1 / <see cref="FarmingTuning.MaxColdFieldFactor"/>.
+        /// 1 on a map with no climate (no world tile), so the field is then sized exactly as before.
+        ///
+        /// <para/><b>Why.</b> <see cref="FarmingTuning.FieldSizeMargin"/> sizes the field to out-grow the mouths
+        /// while it grows, and a field only grows in its growing period. The winter has to be eaten out of what
+        /// the summer put by, so a tile that grows for half the year has to grow twice what it eats while it
+        /// can. Measured on the 60-day bench, band 40 seed 201: the store was empty on day 40,
+        /// about two weeks before the second crop, sown into autumn, ripened. A RimWorld player on such a tile
+        /// sows for the winter. Read once per pass from the tile's climate, not from today's weather, so a
+        /// cold snap or a heat wave does not repaint the field.
+        /// </summary>
+        public static float GrowingShareOfYear(Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            return GrowingShareOfYear(Weather.MapClimate.TryResolve(map));
+        }
+
+        /// <summary><see cref="GrowingShareOfYear(Map.Map)"/> for a climate (null: none).</summary>
+        public static float GrowingShareOfYear(Weather.MapClimate? climate)
+        {
+            if (climate == null) return 1f;
+            float share = (float)Weather.TwelfthUtility.GrowingTwelfths(climate) / GenDate.TwelfthsPerYear;
+            return Math.Max(share, 1f / FarmingTuning.MaxColdFieldFactor);
         }
 
         /// <summary>
