@@ -462,7 +462,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things · src/SimWorld.Core/Map/View",
       "status": "verified",
-      "tests": 138,
+      "tests": 147,
       "items": [
         {
           "id": "mapcore.geometry",
