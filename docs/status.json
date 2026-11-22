@@ -1,7 +1,7 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-11-20",
+  "updated": "2026-11-21",
   "testsTotal": 3246,
   "stack": {
     "language": "C#",
@@ -311,8 +311,8 @@
         },
         {
           "id": "defs.wiringaudit.untouched.gaps",
-          "label": "CORRECTED. Three of the named gaps are closed: a mental break now sends a letter (MindState/MentalState.cs:54 into LetterStack.ReceiveLetter, with MentalBreakLetterTests); ShouldHaveNeed now consults colonistsOnly/colonistAndPrisonersOnly/neverOnPrisoner (Needs/Pawn_NeedsTracker.cs:81) rather than only intelligence and rest; and DamageDef.externalViolence is read (Health/Pawn_HealthTracker.cs:439, Director/StorytellerDeathEvents.cs:53). Still genuinely unread: HediffStage.mentalBreakMtbDays, HediffStage.forgetMemoryThoughtMtbDays, RecipeDef.workSpeedStat (Crafting/RecipeDef.cs:72) and ThingDef.costStuffCount. Also stale INSIDE the fixture: tests/Wiring/dormant-seams.txt:155 says 'Sixteen are marked Real gap' and the file today contains thirteen. The drift is not confined to this tracker.",
-          "done": false
+          "label": "CLOSED, re-verified 2026-11-21. The four fields the last correction still called unread are read now (0a36e1d): HediffStage.mentalBreakMtbDays and forgetMemoryThoughtMtbDays fire mental breaks and forgotten memories in Health/HediffStageMtbEvents.cs:39-46, called from Pawn_HealthTracker.cs:287; RecipeDef.workSpeedStat paces a bill in Crafting/JobDriver_DoBill.cs:54 (WorkSpeedFor); ThingDef.costStuffCount is divided by the stuff's volume in Building/ThingDef.Building.cs:55 (CostListAdjusted, read by blueprints, frames and deconstruction). The earlier closures stand: mental-break letters, ShouldHaveNeed's colonist and prisoner flags, DamageDef.externalViolence. The fixture drift is gone too: tests/SimWorld.Core.Tests/Wiring/dormant-seams.txt lists none of the four and no longer carries the stale 'Sixteen are marked Real gap' count; its seven remaining Real gap entries are that fixture's own to-do list, not this item.",
+          "done": true
         },
         {
           "id": "defs.packidentifierrace",
@@ -1173,8 +1173,8 @@
         },
         {
           "id": "ai.pathingshape",
-          "label": "STILL OPEN, re-verified. AI/RegionPathCorridorCache.cs narrows a pawn's A* to the regions on one BFS tree over the region graph, and does nothing to subdivide an oversized region; no region-size cap or splitting exists anywhere in Map/ (RegionMaker, RegionGrid). The root cause the label names - one region holding tens of thousands of cells defeats the narrowing - is architecturally present in current code, and the safe fallback at RegionPathCorridorCache.cs:89 still behaves as described.",
-          "done": false
+          "label": "Deliberate difference: regions are not capped at RimWorld's 12x12. RimWorld's RegionMaker confines each region to the 12x12 square of the map grid its root falls in; here a region grows by geometry alone, so on open ground one region can hold tens of thousands of cells and AI/RegionPathCorridorCache's narrowing does little there (correct, only slower). Reason: that cache confines each A* to a corridor of whole regions picked by hop count, and with 12x12 regions those corridors were poor - measured: a path through a house went from 16 steps to 22, a raider closed 70 of 153 cells, a band's run diverged - so a cap waits on reworking the cache first. The cost the cap exists to avoid, re-flooding a huge region per mined rock, is avoided by RegionAndRoomUpdater joining a newly opened cell to the region it borders. Recorded in Map/RegionMaker.cs:14-25 (re-verified 2026-11-21); pinned by Region_flood_fill_does_not_fragment_a_large_open_area in Map/RegionTests.cs.",
+          "done": true
         },
         {
           "id": "ai.joygivers",
@@ -1472,7 +1472,12 @@
         },
         {
           "id": "crafting.stonework.gaps",
-          "label": "CORRECTED AND NARROWED. Three of the label's claims are no longer true: ResearchBench and Sculpture ARE placed now (Building/SettlementWorksInitiative.cs:153), the ore ladder IS named by content (Buildings_Sculpture.xml gives SculptureGold/SculptureJade costLists naming Gold and Jade), and mined chunks DO reach Settlement.Stores (Economy/SettlementStockInitiative.cs:185, BankStoredGoods). What remains true is narrower and is the real gap: Smithy, TableTailor and TableButcher have no Blueprint_/Frame_ pair anywhere in content - of the seventeen pairs that exist, none is for those three - so those benches can never be raised. That, not any missing recipe or initiative, is why nothing in this port produces Steel or Cloth: the complete set of things any recipe can make is three stone blocks, three meals, pemmican, one shirt and one knife.",
+          "label": "CLOSED, re-verified 2026-11-21. The gap the last correction narrowed this to is gone: Smithy, TableTailor and TableButcher now have Blueprint_/Frame_ pairs (Buildings_Workshops.xml, 389b53b), and Building/SettlementWorkshops.cs, run from SettlementWorksInitiative.cs:138, raises them - the butcher table outright, the tailor's table and the smithy once a citizen lacks what one of their available recipes makes (a157ae2) - and keeps a stockpile of their material beside them (e717378). Earlier corrections stand: ResearchBench and Sculpture are placed, gold and jade have sculptures, mined chunks reach Settlement.Stores. What is still thin - nothing smelts, and the recipe list is short - is not a port gap; it is the arc's material ladder, tracked as crafting.materialladder.",
+          "done": true
+        },
+        {
+          "id": "crafting.materialladder",
+          "label": "RESHAPED FOR THE ARC, not a port item and not counted against RC condition 5. Material ladder per era: smelting copper, bronze, iron and steel; era-specific smithy output. Re-verified 2026-11-21: no bench or recipe in content smelts anything ('smelt' appears only in era and research descriptions), and the Smithy's one recipe is Make_MeleeWeapon_Knife - the whole recipe set is three stone blocks, three meals, pemmican, one shirt, one knife, butchering and three surgeries. RimWorld has no per-era ladder to port (recalled, not read: its metals come out of the ground ready to use and its smelter only reclaims slag and old gear), so this is the arc's question of what a smith makes in each of the eight eras, with Copper+Tin to Bronze (crafting.oreconsumers) as its first rung.",
           "done": false
         },
         {
@@ -1482,8 +1487,8 @@
         },
         {
           "id": "crafting.billcreators",
-          "label": "CORRECTED. 'Cooking, smithing and tailoring have real recipes, a real giver and no bill-creator' is now false as to cooking: Crafting/CookingInitiative.cs:300 queues a real non-zero-target bill (BillStack.AddBill at :319) and places FueledStove's blueprint, whose pair was added in Buildings_Kitchen.xml. Smithing and tailoring remain exactly as described, and they are blocked one level further down than this label suggests - see crafting.stonework.gaps: their benches have no blueprint pair, so a bill-creator alone would not help them.",
-          "done": false
+          "label": "CLOSED, re-verified 2026-11-21. Cooking, smithing and tailoring each have a bill-creator now. Cooking: Crafting/CookingInitiative.cs queues its bills and places FueledStove's blueprint, as before. Smithing and tailoring: Crafting/OutfittingInitiative.cs, ticked from Map/Map.cs:226, puts a bill on every built bench for each available apparel or weapon recipe, sized to the citizens who lack its product (BillStack.AddBill; Crafting/OutfittingInitiativeTests.cs). The benches it needs are raised by Building/SettlementWorkshops.cs - see crafting.stonework.gaps.",
+          "done": true
         },
         {
           "id": "crafting.guildinitiative",
@@ -1580,8 +1585,8 @@
         },
         {
           "id": "research.endless.indexceiling",
-          "label": "STILL OPEN, re-verified. Defs/DefDatabase.cs:178 still narrows Def.index with checked((ushort)...) and no guard, and Research/EndlessResearch.cs:189 still mints projects into the database with no upper bound as ages progress. A repo-wide grep for 65535, ushort.MaxValue or a mitigating cap finds nothing outside DefDatabase itself.",
-          "done": false
+          "label": "CLOSED, re-verified 2026-11-21 (851439a). ResearchManager.MaxEndlessAges computes the last whole endless age whose minted projects still fit a ushort Def.index, and minting stops there (Research/ResearchManager.cs:557, :601) instead of throwing halfway through an age; DefDatabase refuses a def past the per-type ceiling with a named 'registry is full' error before the checked narrowing can overflow. Pinned by Research/EndlessCeilingTests.cs and Defs/DefIndexCeilingTests.cs.",
+          "done": true
         },
         {
           "id": "research.endless.isolation",
@@ -1829,8 +1834,8 @@
         },
         {
           "id": "social.dlc",
-          "label": "DELIBERATE EXCLUSION, re-verified and accurate as written. Genes ship in trimmed form (archite genes not ported, biostatCpx recorded but not enforced as a cap, Pawns/Genes/GeneDef.cs:9). Mechanitor bandwidth, psycasts and containment have zero matches anywhere in src/. A forward-looking scope note for DLC-tier systems, not an open task.",
-          "done": false
+          "label": "Deliberate difference: RimWorld's DLC-tier systems are out of scope. Genes ship in trimmed form (archite genes not ported, biostatCpx recorded but not enforced as a cap, Pawns/Genes/GeneDef.cs); mechanitor bandwidth, psycasts and Anomaly containment are not ported and have no code in src/ (re-verified 2026-11-21; 'containment' appears only as a word in an endless research track's name list). Reason: they are expansion systems layered on a colony, and none of them is what the eight-era arc is built from. A scope note, not an open task.",
+          "done": true
         },
         {
           "id": "social.socialfight",
@@ -2129,8 +2134,8 @@
         },
         {
           "id": "god.view",
-          "label": "DELIBERATE EXCLUSION, and the item is really about the other repo. This repo ships the read model only - God/View/GodViewSnapshot and Map/View/MapViewSnapshot are engine-free value snapshots with no rendering data, by rule. The presentation surface now exists and is not here: github.com/m2windham/simWorld.Host renders both the civilization view and a settlement interior against these seams. Nothing in this repository is outstanding for this item.",
-          "done": false
+          "label": "Deliberate difference: rendering does not live in this repository. The core is engine-free by rule and ships the read model only - God/View/GodViewSnapshot and Map/View/MapViewSnapshot are value snapshots with no rendering data. The presentation surface is github.com/m2windham/simWorld.Host, which renders both the civilization view and a settlement interior against these seams, and whose Release player carried RC gates 1 and 4. Nothing in this repository is outstanding for this item.",
+          "done": true
         },
         {
           "id": "god.era-transitions",
@@ -2197,8 +2202,8 @@
         },
         {
           "id": "offices.edicts",
-          "label": "STILL OPEN, re-verified. God/GodManager.cs:102 gates edict activation on IsActive, the MaxActiveEdicts slot and requiredEra/obsoleteEra, and nothing else. There are ZERO references to Offices anywhere under src/SimWorld.Core/God. Offices/OfficeManager.cs implements the full seat and leader logic; no edict consults it.",
-          "done": false
+          "label": "CLOSED, re-verified 2026-11-21 (6022737). EdictDef.requiredOffice names the office an edict needs; GodManager.CanActivate refuses the edict while no living citizen holds that office (God/GodManager.cs:169, IsSeated at :129), and an issued edict whose office falls vacant is suspended, then resumed when the seat is filled, with a chronicle line each way (:260-277). GreatWorksMandate requires a seated Steward (Edicts.xml). Pinned by God/EdictOfficeTests.cs and God/EdictStallAndSuspensionTests.cs.",
+          "done": true
         }
       ],
       "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
@@ -2263,8 +2268,8 @@
         },
         {
           "id": "conditions.maplocal",
-          "label": "DELIBERATE EXCLUSION, re-verified and accurate as written. The per-map GameConditionManager and its scope machinery exist and work (Conditions/GameConditionManager.cs:25); every shipped incident - HeatWave, ColdSnap, Flashstorm - registers at world scope only. No content path reaches map-scope registration. A real seam that shipped content does not yet use, not a defect.",
-          "done": false
+          "label": "Deliberate difference: every shipped game condition is world-scoped. The per-map GameConditionManager and its scope chain exist and work (Conditions/GameConditionManager.cs; a map's manager reads through to the world's), but HeatWave, ColdSnap and Flashstorm (IncidentWorker_MakeGameCondition.Scope) and Drought (IncidentWorker_Drought) all register on Find.World.gameConditionManager, and nothing registers at map scope (re-verified 2026-11-21). Reason: a condition was scoped to the civilization, which spans settlements. With one settlement that reason has weakened - world scope and map scope cover the same map - and the player sees no difference; the map-scope seam stays for content that wants it.",
+          "done": true
         },
         {
           "id": "conditions.drought",

@@ -1637,3 +1637,14 @@ VisitingTraderView.TrustReason ("Ready to trade." or the refusal) from the same 
 refuse through. Labels for the orderable JobDefs (from their reportStrings) and the DesignationDefs (recalled
 designator labels); a content test now requires a label on every order, mark, buildable, bench recipe, research
 project, work type and storable thing the seam offers. Bench 20/99 and 40/201 identical apart from wall-clock rows.
+
+2026-11-21 (RC gate 5 met, docs only): the 9 open port items in status.json reconciled, each re-read against the
+code. Five were stale and are closed: defs.wiringaudit.untouched.gaps (all four fields read since 0a36e1d),
+crafting.billcreators (OutfittingInitiative queues smithing and tailoring bills), crafting.stonework.gaps
+(workshop blueprints 389b53b, raised by SettlementWorkshops a157ae2), research.endless.indexceiling (851439a),
+offices.edicts (6022737). Four are recorded as deliberate differences with their reasons: ai.pathingshape (no
+12x12 region cap until the corridor cache is reworked; Map/RegionMaker.cs), social.dlc, god.view (rendering is
+the host's), conditions.maplocal (world scope; with one settlement the player sees no difference). The thin
+remainder of stonework is a new arc item, crafting.materialladder (smelting copper, bronze, iron, steel; per-era
+smithy output), not a port item and left open. That was the last remaining RC gate named above; the
+windowed-quit crash stays open.
