@@ -70,11 +70,13 @@ namespace SimWorld.God.View
     /// <summary>One citizen's row of the work tab.</summary>
     public sealed class WorkPriorityRow
     {
-        internal WorkPriorityRow(int thingId, string name, bool manualPriorities, IReadOnlyList<WorkPriorityCell> cells)
+        internal WorkPriorityRow(int thingId, string name, bool manualPriorities, string? roleDefName,
+            IReadOnlyList<WorkPriorityCell> cells)
         {
             ThingId = thingId;
             Name = name;
             ManualPriorities = manualPriorities;
+            RoleDefName = roleDefName;
             Cells = cells;
         }
 
@@ -90,6 +92,11 @@ namespace SimWorld.God.View
         /// priority through <see cref="GodCommands.SetWorkPriority"/>.
         /// </summary>
         public bool ManualPriorities { get; }
+
+        /// <summary>Their standing work role (<c>Pawn_WorkSettings.Role</c>, a <see cref="RoleOption.DefName"/>),
+        /// or null for none — the rule that put this row's emphasized cells at the top. The same reading as
+        /// <see cref="CitizenLine.RoleDefName"/>.</summary>
+        public string? RoleDefName { get; }
 
         /// <summary>One cell per <see cref="WorkPriorityTable.WorkTypes"/> column, in the same order.</summary>
         public IReadOnlyList<WorkPriorityCell> Cells { get; }
@@ -166,7 +173,8 @@ namespace SimWorld.God.View
                     int priority = reason != null || p.workSettings == null ? 0 : p.workSettings.GetPriority(types[i]);
                     cells.Add(new WorkPriorityCell(types[i].defName, priority, reason != null, reason));
                 }
-                rows.Add(new WorkPriorityRow(p.thingIDNumber, p.Label, p.workSettings?.useWorkPriorities ?? false, cells));
+                rows.Add(new WorkPriorityRow(
+                    p.thingIDNumber, p.Label, p.workSettings?.useWorkPriorities ?? false, p.workSettings?.Role?.defName, cells));
             }
 
             return new WorkPriorityTable(ticksGame, settlement.tile, columns, rows);

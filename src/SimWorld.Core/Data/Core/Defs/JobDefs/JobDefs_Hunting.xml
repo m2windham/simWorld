@@ -13,6 +13,7 @@
 
   <JobDef>
     <defName>Hunt</defName>
+    <label>hunt</label>
     <driverClass>SimWorld.AI.JobDriver_Hunt</driverClass>
     <reportString>hunting.</reportString>
   </JobDef>

@@ -23,8 +23,12 @@ namespace SimWorld.AI
     {
         public override PathEndMode PathEndMode => PathEndMode.Touch;
 
+        /// <summary>Also skips while the player has switched the settlement's mining initiative off
+        /// (<see cref="DesignationManager.SettlementInitiativeOn"/>); the player's own marks are
+        /// <see cref="WorkGiver_MinerDesignated"/>'s either way.</summary>
         public override bool ShouldSkip(Pawn pawn, bool forced = false) =>
-            pawn.Map == null || !pawn.Map.designationManager.AnySpawnedDesignationOfDef(DesignationDefOf.Mine);
+            pawn.Map == null || !pawn.Map.designationManager.AnySpawnedDesignationOfDef(DesignationDefOf.Mine)
+            || !pawn.Map.designationManager.SettlementInitiativeOn(DesignationDefOf.Mine);
 
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
@@ -33,6 +37,7 @@ namespace SimWorld.AI
             IReadOnlyList<Designation> designations = map.designationManager.SpawnedDesignationsOfDef(DesignationDefOf.Mine);
             for (int i = 0; i < designations.Count; i++)
             {
+                if (designations[i].source != DesignationSource.Settlement) continue;
                 IntVec3 cell = designations[i].target.Cell;
                 if (!MayBeAccessible(cell, map)) continue;
                 Thing? mineable = FirstMineable(cell, map);
@@ -43,7 +48,7 @@ namespace SimWorld.AI
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
             if (!thing.def.mineable || thing.Destroyed || !thing.Spawned) return false;
-            if (pawn.Map!.designationManager.DesignationAt(thing.Position, DesignationDefOf.Mine) == null) return false;
+            if (pawn.Map!.designationManager.DesignationAt(thing.Position, DesignationDefOf.Mine)?.source != DesignationSource.Settlement) return false;
             if (!pawn.Map.reservationManager.CanReserve(pawn, thing)) return false;
             // Before the reachability check, not after, and the order is load-bearing in its own right: a
             // rejecting predicate multiplies whatever runs before it in the scan, and Reachability.CanReach is a

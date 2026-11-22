@@ -98,18 +98,57 @@ namespace SimWorld.God.View
 
             Faction? target = ResolveCivilization(civilizationId);
             if (target == null) return GodCommandResult.Refused("No civilization named '" + civilizationId + "'.");
-            if (ReferenceEquals(target, player)) return GodCommandResult.Refused("A civilization cannot sign a treaty with itself.");
 
             TreatyDef? def = ResolveTreaty(treatyDefName);
             if (def == null) return GodCommandResult.Refused("No treaty named '" + treatyDefName + "'.");
+
+            string? refusal = TreatyRefusal(player, target, def);
+            if (refusal != null) return GodCommandResult.Refused(refusal);
 
             if (DiplomacyActions.SignTreaty(player, target, def, "Signed by the player"))
             {
                 return GodCommandResult.Done(def.LabelCap + " signed with " + target.name + ".");
             }
 
-            // Faction.SignTreaty's one and only refusal.
-            return GodCommandResult.Refused(target.name + " is a permanent enemy — no treaty is possible.");
+            // Unreachable while TreatyRefusal mirrors Faction.SignTreaty; DiplomacyCommandsTests pins the two to
+            // agree, so a new rule there that this does not know about fails a test rather than landing here.
+            return GodCommandResult.Refused(target.name + " refused the treaty.");
+        }
+
+        /// <summary>
+        /// Why <paramref name="player"/> cannot sign any treaty with <paramref name="target"/> right now, or null
+        /// when it can — <see cref="Faction.SignTreaty"/>'s refusal conditions (the same faction on both sides, or
+        /// a permanent enemy on either), in words. The one place both <see cref="SignTreaty"/> and
+        /// <see cref="FactionRelationView.TreatyReason"/> read the answer from, so the Diplomacy screen can never
+        /// offer a treaty the command then refuses, nor hide one it would sign. Treaty-independent because
+        /// <see cref="Faction.SignTreaty"/> is: no rule there looks at which treaty it is.
+        /// </summary>
+        internal static string? TreatyRefusal(Faction player, Faction target)
+        {
+            if (ReferenceEquals(target, player)) return "A civilization cannot sign a treaty with itself.";
+            if (target.def.permanentEnemy) return target.name + " is a permanent enemy — no treaty is possible.";
+            if (player.def.permanentEnemy) return player.name + " is a permanent enemy of every civilization — no treaty is possible.";
+            return null;
+        }
+
+        /// <summary>
+        /// Why <paramref name="player"/> cannot sign <paramref name="treaty"/> with <paramref name="target"/>
+        /// right now, or null when it can: every treaty-independent refusal of
+        /// <see cref="TreatyRefusal(Faction, Faction)"/>, then the one rule in <see cref="Faction.SignTreaty"/>
+        /// that does look at which treaty it is — while at war, only a treaty carrying
+        /// <see cref="TreatyDef.nonAggression"/> may be signed, because only that kind ends the war. What
+        /// <see cref="SignTreaty"/> checks and what <see cref="FactionRelationView.TreatyOffers"/> shows, per treaty.
+        /// </summary>
+        internal static string? TreatyRefusal(Faction player, Faction target, TreatyDef treaty)
+        {
+            string? refusal = TreatyRefusal(player, target);
+            if (refusal != null) return refusal;
+            if (!treaty.nonAggression && player.WarWith(target))
+            {
+                return "We are at war with " + target.name + " — only a pact of non-aggression can end it, and "
+                    + treaty.LabelCap + " is not one.";
+            }
+            return null;
         }
 
         private static Faction? ResolveCivilization(string civilizationId)

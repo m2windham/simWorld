@@ -76,7 +76,8 @@ namespace SimWorld.God.View
     {
         internal FactionRelationView(
             string civilizationId, string name, string civilizationDefName, string civilizationLabel,
-            bool defeated, int goodwill, DiplomaticStanding standing, bool atWar, IReadOnlyList<TreatyView> treaties)
+            bool defeated, int goodwill, DiplomaticStanding standing, bool atWar, IReadOnlyList<TreatyView> treaties,
+            bool canSignTreaty, string treatyReason, IReadOnlyList<TreatyOfferView> treatyOffers)
         {
             CivilizationId = civilizationId;
             Name = name;
@@ -87,6 +88,9 @@ namespace SimWorld.God.View
             Standing = standing;
             AtWar = atWar;
             Treaties = treaties;
+            CanSignTreaty = canSignTreaty;
+            TreatyReason = treatyReason;
+            TreatyOffers = treatyOffers;
         }
 
         /// <summary>The handle to pass back to every <c>GodCommands</c> diplomacy method — a
@@ -119,6 +123,23 @@ namespace SimWorld.God.View
 
         public IReadOnlyList<TreatyView> Treaties { get; }
 
+        /// <summary>Whether any treaty at all can be signed with them — the treaty-independent refusals only
+        /// (the same faction, a permanent enemy). Kept for compatibility: since a treaty without non-aggression
+        /// is refused while at war, whether <i>a particular</i> treaty can be signed is
+        /// <see cref="TreatyOffers"/>'s, read from the same <c>GodCommands.TreatyRefusal</c> the command
+        /// checks.</summary>
+        public bool CanSignTreaty { get; }
+
+        /// <summary>A sentence a view can show without composing one: the refusal when
+        /// <see cref="CanSignTreaty"/> is false (today only "permanent enemy"), and "Ready to sign." when it is
+        /// true — always populated, as <see cref="EdictOption.Reason"/> is.</summary>
+        public string TreatyReason { get; }
+
+        /// <summary>Every treaty in <see cref="TreatyCatalogue.Treaties"/>, in that order, with whether
+        /// <see cref="GodCommands.SignTreaty"/> would sign it with them right now and why not — the per-treaty
+        /// answer, produced by the same <c>GodCommands.TreatyRefusal</c> the command checks.</summary>
+        public IReadOnlyList<TreatyOfferView> TreatyOffers { get; }
+
         /// <summary>Every other non-hidden civilization's relation with <paramref name="player"/>, in
         /// <paramref name="all"/>'s own order. Empty (not throwing) when <paramref name="player"/> is null — no
         /// player civilization yet means nothing to read a relation from, the same "not started" reading
@@ -134,6 +155,7 @@ namespace SimWorld.God.View
                 if (ReferenceEquals(other, player)) continue;
 
                 FactionRelation? relation = player.RelationWith(other, allowNull: true);
+                string? treatyRefusal = GodCommands.TreatyRefusal(player, other);
                 views.Add(new FactionRelationView(
                     other.loadID,
                     other.name,
@@ -143,7 +165,10 @@ namespace SimWorld.God.View
                     player.GoodwillWith(other),
                     ToStanding(player.RelationKindWith(other)),
                     player.WarWith(other),
-                    TreatyView.AllOf(relation, now)));
+                    TreatyView.AllOf(relation, now),
+                    treatyRefusal == null,
+                    treatyRefusal ?? "Ready to sign.",
+                    TreatyOfferView.AllFor(player, other)));
             }
             return views;
         }

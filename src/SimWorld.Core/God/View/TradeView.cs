@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using SimWorld.Defs;
 using SimWorld.Economy;
+using SimWorld.Factions;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 
@@ -32,7 +33,8 @@ namespace SimWorld.God.View
             int countTraderHas,
             int countSettlementHas,
             float unitBuyPrice,
-            float unitSellPrice)
+            float unitSellPrice,
+            int goodwillIfAllGifted)
         {
             DefName = defName;
             Label = label;
@@ -40,6 +42,7 @@ namespace SimWorld.God.View
             CountSettlementHas = countSettlementHas;
             UnitBuyPrice = unitBuyPrice;
             UnitSellPrice = unitSellPrice;
+            GoodwillIfAllGifted = goodwillIfAllGifted;
         }
 
         /// <summary>The handle to pass back to <see cref="GodCommands.BuyFromTrader"/> /
@@ -64,6 +67,12 @@ namespace SimWorld.God.View
         /// <see cref="UnitBuyPrice"/> — a trader lives on that gap, and the gap is
         /// <c>Economy.TradeUtility</c>'s, not this view's.</summary>
         public float UnitSellPrice { get; }
+
+        /// <summary>Goodwill <see cref="GodCommands.GiftToTrader"/> would win if the settlement gave the caravan
+        /// all <see cref="CountSettlementHas"/> of this, computed by the same
+        /// <c>Economy.TradeTrust.GiftGoodwillChange</c> the command applies. Zero when there is none to give, the
+        /// caravan belongs to no civilization, or the gift is too small to move goodwill.</summary>
+        public int GoodwillIfAllGifted { get; }
     }
 
     /// <summary>
@@ -93,6 +102,13 @@ namespace SimWorld.God.View
             string? negotiatorName,
             float negotiatorPriceGain,
             float treatyPriceGain,
+            int? factionGoodwill,
+            string trustTier,
+            bool trustAllowsTrade,
+            string trustReason,
+            float trustBuyPriceFactor,
+            float trustSellPriceFactor,
+            int goodwillIfAllSilverGifted,
             IReadOnlyList<TradeLineView> goods)
         {
             SettlementTile = settlementTile;
@@ -108,6 +124,13 @@ namespace SimWorld.God.View
             NegotiatorName = negotiatorName;
             NegotiatorPriceGain = negotiatorPriceGain;
             TreatyPriceGain = treatyPriceGain;
+            FactionGoodwill = factionGoodwill;
+            TrustTier = trustTier;
+            TrustAllowsTrade = trustAllowsTrade;
+            TrustReason = trustReason;
+            TrustBuyPriceFactor = trustBuyPriceFactor;
+            TrustSellPriceFactor = trustSellPriceFactor;
+            GoodwillIfAllSilverGifted = goodwillIfAllSilverGifted;
             Goods = goods;
         }
 
@@ -153,13 +176,47 @@ namespace SimWorld.God.View
         /// <summary>The same, from an active trade-access treaty between the two civilizations.</summary>
         public float TreatyPriceGain { get; }
 
+        /// <summary>Goodwill between our civilization and the caravan's, -100 to 100. Trust is this number, not
+        /// a second one (<c>Economy.TradeTrust</c>). Null for a caravan of no civilization.</summary>
+        public int? FactionGoodwill { get; }
+
+        /// <summary>The trust tier that goodwill puts them in: "Hostile", "Wary", "Neutral" or "Trusted"
+        /// (<c>Economy.TradeTrustTuning.Tiers</c>). "Neutral" for a caravan of no civilization.</summary>
+        public string TrustTier { get; }
+
+        /// <summary>False when the tier refuses trade (at war or hostile): <see cref="GodCommands.BuyFromTrader"/>
+        /// and <see cref="GodCommands.SellToTrader"/> will be refused, and only a gift is accepted.</summary>
+        public bool TrustAllowsTrade { get; }
+
+        /// <summary>A sentence a view can show without composing one: the exact refusal
+        /// <see cref="GodCommands.BuyFromTrader"/> and <see cref="GodCommands.SellToTrader"/> give on trust
+        /// grounds right now when <see cref="TrustAllowsTrade"/> is false, and "Ready to trade." when it is true —
+        /// always populated, as <see cref="FactionRelationView.TreatyReason"/> is. Read from the same
+        /// <c>GodCommands.TradeTrustRefusal</c> the commands refuse by, so the two can never disagree.</summary>
+        public string TrustReason { get; }
+
+        /// <summary>The tier's multiplier on every buy price, already inside
+        /// <see cref="TradeLineView.UnitBuyPrice"/>. Reported so the player can see why a price moved, never to
+        /// be applied again.</summary>
+        public float TrustBuyPriceFactor { get; }
+
+        /// <summary>The same on the sell side, already inside <see cref="TradeLineView.UnitSellPrice"/>: the
+        /// reciprocal of <see cref="TrustBuyPriceFactor"/>.</summary>
+        public float TrustSellPriceFactor { get; }
+
+        /// <summary>Goodwill <see cref="GodCommands.GiftToTrader"/> would win if the settlement gave all its
+        /// silver (<see cref="SettlementSilver"/>), by the same function the command applies.</summary>
+        public int GoodwillIfAllSilverGifted { get; }
+
         /// <summary>Every good either side has, trader stock first in the order the caravan generated it, then
         /// the settlement's own goods the caravan did not bring, by defName. Ordered, never a set: two
         /// identically-seeded runs draw the same table in the same order.</summary>
         public IReadOnlyList<TradeLineView> Goods { get; }
 
         /// <summary>
-        /// Every caravan standing at a settlement of the running world right now.
+        /// Every caravan standing at one of our settlements right now: the player's civilization,
+        /// <c>Find.FactionManager.OfPlayer</c>, the same reading the commands refuse by. A caravan at a rival's
+        /// settlement is theirs to trade with, so it is not on our table.
         ///
         /// <para/>A caravan whose settlement no longer exists is skipped rather than reported with a missing
         /// host: there is nobody there to trade with, which is the same thing
@@ -168,11 +225,13 @@ namespace SimWorld.God.View
         internal static List<VisitingTraderView> PresentNow()
         {
             var views = new List<VisitingTraderView>();
+            Faction? player = Find.FactionManager.OfPlayer;
             List<TraderCaravan> caravans = TraderArrival.PresentNow();
             for (int i = 0; i < caravans.Count; i++)
             {
                 World.Settlement? host = AttentionManager.SettlementAt(caravans[i].tile);
                 if (host == null) continue;
+                if (player == null || !ReferenceEquals(host.faction, player)) continue;
                 views.Add(Of(host, caravans[i]));
             }
             return views;
@@ -193,7 +252,7 @@ namespace SimWorld.God.View
             {
                 Tradeable line = deal.tradeables[i];
                 listed.Add(line.thingDef);
-                goods.Add(LineOf(line, deal));
+                goods.Add(LineOf(line, deal, host, caravan));
             }
 
             // What the settlement could sell that the caravan did not turn up carrying. A trader buys what it
@@ -213,10 +272,15 @@ namespace SimWorld.God.View
             extras.Sort(static (a, b) => string.CompareOrdinal(a.defName, b.defName));
             for (int i = 0; i < extras.Count; i++)
             {
-                goods.Add(LineOf(new Tradeable(extras[i], 0, host.StoreCountOf(extras[i])), deal));
+                goods.Add(LineOf(new Tradeable(extras[i], 0, host.StoreCountOf(extras[i])), deal, host, caravan));
             }
 
             Pawn? negotiator = VisitingTraderTrade.BestNegotiator(host);
+            TradeTrustTier tier = TradeTrust.TierBetween(host.faction, caravan.Faction);
+            int? goodwill = host.faction != null && caravan.Faction != null && !ReferenceEquals(host.faction, caravan.Faction)
+                ? host.faction.GoodwillWith(caravan.Faction)
+                : (int?)null;
+            int silver = host.StoreCountOf(EconomyThingDefOf.Silver);
 
             return new VisitingTraderView(
                 host.tile,
@@ -228,20 +292,33 @@ namespace SimWorld.God.View
                 caravan.DepartureTick,
                 caravan.TicksUntilDeparture,
                 caravan.StockOf(EconomyThingDefOf.Silver),
-                host.StoreCountOf(EconomyThingDefOf.Silver),
+                silver,
                 negotiator?.Label,
                 deal.negotiatorGain,
                 deal.settlementGain,
+                goodwill,
+                TradeTrust.Row(tier).Label,
+                TradeTrust.Row(tier).AllowsTrade,
+                GodCommands.TradeTrustRefusal(host.faction, caravan.Faction) ?? "Ready to trade.",
+                TradeTrust.BuyPriceFactor(tier),
+                TradeTrust.SellPriceFactor(tier),
+                GiftGoodwill(host, caravan, EconomyThingDefOf.Silver, silver),
                 goods);
         }
 
-        private static TradeLineView LineOf(Tradeable line, TradeDeal deal) =>
+        private static TradeLineView LineOf(Tradeable line, TradeDeal deal, World.Settlement host, TraderCaravan caravan) =>
             new TradeLineView(
                 line.thingDef.defName,
                 line.thingDef.LabelCap,
                 line.countOffered,
                 line.countInPlayer,
-                line.PriceFor(TradeAction.Buy, deal.priceType, deal.negotiatorGain, deal.settlementGain),
-                line.PriceFor(TradeAction.Sell, deal.priceType, deal.negotiatorGain, deal.settlementGain));
+                deal.UnitPrice(line, TradeAction.Buy),
+                deal.UnitPrice(line, TradeAction.Sell),
+                GiftGoodwill(host, caravan, line.thingDef, line.countInPlayer));
+
+        /// <summary>The goodwill <see cref="GodCommands.GiftToTrader"/> would win for <paramref name="count"/> of
+        /// <paramref name="def"/>: the same value (market value times count) handed to the same function.</summary>
+        private static int GiftGoodwill(World.Settlement host, TraderCaravan caravan, ThingDef def, int count) =>
+            count > 0 ? TradeTrust.GiftGoodwillChange(host.faction, caravan.Faction, TradeUtility.BaseMarketValue(def) * count) : 0;
     }
 }

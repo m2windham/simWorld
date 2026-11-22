@@ -1,8 +1,9 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-  "updated": "2026-11-18",
-  "testsTotal": 3221,
+
+  "updated": "2026-11-21",
+  "testsTotal": 3246,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -194,6 +195,13 @@
       "state": "decided",
       "title": "Costs may use simWorld's own rates",
       "note": "Doug: costs can be reworked at our own rates as needed or sensible. Mechanics stay RimWorld's; a changed number is marked in its def with the RimWorld value beside it."
+    },
+    {
+      "id": "trade-trust",
+      "date": "2026-11-20",
+      "state": "decided",
+      "title": "Trade runs on reputation (faction goodwill)",
+      "note": "Doug: trade runs on a reputation/trust system. Trust is the existing faction goodwill, not a second number. Only the player's own settlements trade. Tiers from goodwill: at war or hostile, no trade and no caravans; wary (<0) worse prices; neutral (0-74) plain prices; trusted (>=75) better prices and more frequent caravans. Completed trades raise goodwill a little (pooled per day, capped); RimWorld's gift mechanic is ported as GiftToTrader."
     }
   ],
   "systems": [
@@ -304,8 +312,8 @@
         },
         {
           "id": "defs.wiringaudit.untouched.gaps",
-          "label": "CORRECTED. Three of the named gaps are closed: a mental break now sends a letter (MindState/MentalState.cs:54 into LetterStack.ReceiveLetter, with MentalBreakLetterTests); ShouldHaveNeed now consults colonistsOnly/colonistAndPrisonersOnly/neverOnPrisoner (Needs/Pawn_NeedsTracker.cs:81) rather than only intelligence and rest; and DamageDef.externalViolence is read (Health/Pawn_HealthTracker.cs:439, Director/StorytellerDeathEvents.cs:53). Still genuinely unread: HediffStage.mentalBreakMtbDays, HediffStage.forgetMemoryThoughtMtbDays, RecipeDef.workSpeedStat (Crafting/RecipeDef.cs:72) and ThingDef.costStuffCount. Also stale INSIDE the fixture: tests/Wiring/dormant-seams.txt:155 says 'Sixteen are marked Real gap' and the file today contains thirteen. The drift is not confined to this tracker.",
-          "done": false
+          "label": "CLOSED, re-verified 2026-11-21. The four fields the last correction still called unread are read now (0a36e1d): HediffStage.mentalBreakMtbDays and forgetMemoryThoughtMtbDays fire mental breaks and forgotten memories in Health/HediffStageMtbEvents.cs:39-46, called from Pawn_HealthTracker.cs:287; RecipeDef.workSpeedStat paces a bill in Crafting/JobDriver_DoBill.cs:54 (WorkSpeedFor); ThingDef.costStuffCount is divided by the stuff's volume in Building/ThingDef.Building.cs:55 (CostListAdjusted, read by blueprints, frames and deconstruction). The earlier closures stand: mental-break letters, ShouldHaveNeed's colonist and prisoner flags, DamageDef.externalViolence. The fixture drift is gone too: tests/SimWorld.Core.Tests/Wiring/dormant-seams.txt lists none of the four and no longer carries the stale 'Sixteen are marked Real gap' count; its seven remaining Real gap entries are that fixture's own to-do list, not this item.",
+          "done": true
         },
         {
           "id": "defs.packidentifierrace",
@@ -454,7 +462,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Map · Things · src/SimWorld.Core/Map/View",
       "status": "verified",
-      "tests": 120,
+      "tests": 138,
       "items": [
         {
           "id": "mapcore.geometry",
@@ -514,6 +522,11 @@
         {
           "id": "mapcore.buildprogress",
           "label": "ThingView.BuildProgress, asked for by the host (REQ-001): a Frame reads Frame.PercentComplete clamped to [0, 1], a Blueprint 0, anything else 1, and the delta stream carries it. Map/View does not bump a chunk for an in-place field write, so the construction driver notifies the chunk at each 5% step: at most ~20 redraws per build, and any stage threshold the host picks is seen within five points (MapViewTests).",
+          "done": true
+        },
+        {
+          "id": "mapcore.leverreads",
+          "label": "Map/View lever reads, asked for by the host (REQ-005): every standing-rule and order command on MapCommands can now be read back. MapViewSnapshot.CaptureLevers() (focus, tile or map overloads) returns SettlementLevers - each bill-giving bench with its bills in BillStack order (recipe, suspended, repeat mode, count left or target, paused) and its recipes with research state; every zone with kind, label and cells, stockpiles with their filter restricted to storable things; the home and snow-clear areas as cell masks; the map's medical care; and per humanlike pawn whether the job in hand is a player order and how many wait queued. A separate capture rather than snapshot fields, because these change only when someone acts and two are 40,000-cell masks the per-frame delta should not carry. It never calls Bill.ShouldDoNow, which rewrites a TargetCount bill's paused flag. LeverCatalogue lists bench recipes, storable things and ten directly orderable jobs with their target kind (checked against each driver, not a JobDef field: content has none); DefLabels.LabelOf/DescriptionOf turn any seam defName into content's own label, ThingDef first when a name is shared across def types (MapViewLeversTests).",
           "done": true
         }
       ],
@@ -955,11 +968,11 @@
       "id": "work",
       "n": 9,
       "rimworld": "Skills & Work",
-      "translation": "Built: standing civilization-scale roles (RoleDef) replace a per-person priority grid. A role names the work types it emphasizes; Pawn_WorkSettings.ApplyRole sets those to the pawn's best priority (1) and leaves everything else at the default (3), rather than a player setting twelve numbers per citizen. Kept distinct from an EdictDef's own 'leaves no trace' guarantee (docs/spec/simworld-spec.md §10): a role is standing, not temporary, and does write into the priority grid — but Pawn_WorkSettings tracks every work type a caller set directly (SetPriority), and a role's own writes always skip those, so assigning or changing a role can never overwrite a person's own explicit choice; clearing a role (SetRole(null)) reverts every non-manual entry it touched back to default, the standing-policy mirror of an edict's guarantee. WorkPolicyUtility.ApplyRoleToPopulation is the civilization-scale lever — one call assigns a role across an entire settlement's citizens, the same 'act on the aggregate' shape GodManager gives edicts.",
+      "translation": "Built: standing civilization-scale roles (RoleDef) replace a per-person priority grid. A role names the work types it emphasizes; Pawn_WorkSettings.ApplyRole sets those to the pawn's best priority (1) and leaves everything else at the default (3), rather than a player setting twelve numbers per citizen. Kept distinct from an EdictDef's own 'leaves no trace' guarantee (docs/spec/simworld-spec.md §10): a role is standing, not temporary, and does write into the priority grid — but Pawn_WorkSettings tracks every work type a caller set directly (SetPriority), and a role's own writes always skip those, so assigning or changing a role can never overwrite a person's own explicit choice; clearing a role (SetRole(null)) reverts every non-manual entry it touched back to default, the standing-policy mirror of an edict's guarantee. WorkPolicyUtility.ApplyRoleToPopulation is the civilization-scale lever — one call assigns a role across an entire settlement's citizens, the same 'act on the aggregate' shape GodManager gives edicts. Player designations (Phase 1): the player's marks are worked before the settlement's own work of that type, and a per-settlement switch per kind (Mine, CutPlant, Hunt, Tame) turns the settlement's own initiative off - 'only do what I mark'. Not in RimWorld, where only the player designates: here a designation records who placed it, and the settlement's initiatives remain the fallback when the player marks nothing (idle play is simulation).",
       "translationState": "implemented",
       "module": "src/SimWorld.Core/Work · Pawns · Stats",
       "status": "verified",
-      "tests": 86,
+      "tests": 110,
       "items": [
         {
           "id": "work.skills",
@@ -1039,6 +1052,11 @@
         {
           "id": "work.repairhome",
           "label": "WorkGiver_Repair skips buildings outside the home area unless forced, as RimWorld does. Builders had been repairing map-gen ruins across the map; houses built by tick 60k rose from 68/120 to 104/120 over 6 seeds x 2 runtimes. Open: ruins inside the home area still get repaired until buildings carry a faction.",
+          "done": true
+        },
+        {
+          "id": "work.playerdesignations",
+          "label": "Player designations (Phase 1). RimWorld's designation layer opened to the player: DesignationDefs Mine, CutPlant, HarvestPlant, Hunt, Tame, Slaughter, Deconstruct, HaulUrgently with RimWorld's target types and designator validity rules (Designations/DesignatorUtility; Hunt/Tame need a live wild animal, Slaughter the settlement's own, Deconstruct refuses rock and other factions' buildings, Mine needs a mineable edifice; Hunt<->Tame and CutPlant<->HarvestPlant replace each other). Every Designation carries a source (Settlement/Player, Scribed, defaulting to Settlement so old saves load unchanged). Seven designation-driven givers (AI/WorkGivers_PlayerDesignated: WorkGiver_MinerDesignated, PlantsCutDesignated, HunterHunt, Tamer, Slaughter, Deconstruct, HaulUrgently; WorkGivers_PlayerDesignated.xml) sit at the top of their work type and scan only player marks, so a pawn works the player's marks first and falls back to the unchanged initiative givers; each ShouldSkips before any scan while no player mark of its kind exists. New JobDriver_Slaughter and JobDriver_Deconstruct (50% refund, work clamp 20..3000, recalled). Per-settlement initiative switch (DesignationManager.SettlementInitiativeOn, Scribed only when off) for Mine, CutPlant, Hunt, Tame: off withdraws MiningInitiative's marks and skips WorkGiver_Miner, WorkGiver_PlantsCut, WorkGiver_ConstructChopWood, WorkGiver_Hunt and WorkGiver_TameAnimals; player marks are still worked. Seam: MapCommands.Designate(defName, cells|thingId), RemoveDesignations(defName?, cells|thingId), SetSettlementInitiative(defName, on); MapViewSnapshot.DesignationsOf() -> DesignationsView (DesignationView per mark, InitiativeSwitchView per kind, SessionId+Version for change detection). Skipped: Forbid/Unforbid (no CompForbiddable in this port). Designations are cleared on Thing.DeSpawn (RemoveAllDesignationsOn) and on a successful tame. Zero player marks: the 21-seed threat-free storyteller bench matches the int762 baseline per seed.",
           "done": true
         }
       ],
@@ -1156,8 +1174,8 @@
         },
         {
           "id": "ai.pathingshape",
-          "label": "STILL OPEN, re-verified. AI/RegionPathCorridorCache.cs narrows a pawn's A* to the regions on one BFS tree over the region graph, and does nothing to subdivide an oversized region; no region-size cap or splitting exists anywhere in Map/ (RegionMaker, RegionGrid). The root cause the label names - one region holding tens of thousands of cells defeats the narrowing - is architecturally present in current code, and the safe fallback at RegionPathCorridorCache.cs:89 still behaves as described.",
-          "done": false
+          "label": "Deliberate difference: regions are not capped at RimWorld's 12x12. RimWorld's RegionMaker confines each region to the 12x12 square of the map grid its root falls in; here a region grows by geometry alone, so on open ground one region can hold tens of thousands of cells and AI/RegionPathCorridorCache's narrowing does little there (correct, only slower). Reason: that cache confines each A* to a corridor of whole regions picked by hop count, and with 12x12 regions those corridors were poor - measured: a path through a house went from 16 steps to 22, a raider closed 70 of 153 cells, a band's run diverged - so a cap waits on reworking the cache first. The cost the cap exists to avoid, re-flooding a huge region per mined rock, is avoided by RegionAndRoomUpdater joining a newly opened cell to the region it borders. Recorded in Map/RegionMaker.cs:14-25 (re-verified 2026-11-21); pinned by Region_flood_fill_does_not_fragment_a_large_open_area in Map/RegionTests.cs.",
+          "done": true
         },
         {
           "id": "ai.joygivers",
@@ -1455,7 +1473,12 @@
         },
         {
           "id": "crafting.stonework.gaps",
-          "label": "CORRECTED AND NARROWED. Three of the label's claims are no longer true: ResearchBench and Sculpture ARE placed now (Building/SettlementWorksInitiative.cs:153), the ore ladder IS named by content (Buildings_Sculpture.xml gives SculptureGold/SculptureJade costLists naming Gold and Jade), and mined chunks DO reach Settlement.Stores (Economy/SettlementStockInitiative.cs:185, BankStoredGoods). What remains true is narrower and is the real gap: Smithy, TableTailor and TableButcher have no Blueprint_/Frame_ pair anywhere in content - of the seventeen pairs that exist, none is for those three - so those benches can never be raised. That, not any missing recipe or initiative, is why nothing in this port produces Steel or Cloth: the complete set of things any recipe can make is three stone blocks, three meals, pemmican, one shirt and one knife.",
+          "label": "CLOSED, re-verified 2026-11-21. The gap the last correction narrowed this to is gone: Smithy, TableTailor and TableButcher now have Blueprint_/Frame_ pairs (Buildings_Workshops.xml, 389b53b), and Building/SettlementWorkshops.cs, run from SettlementWorksInitiative.cs:138, raises them - the butcher table outright, the tailor's table and the smithy once a citizen lacks what one of their available recipes makes (a157ae2) - and keeps a stockpile of their material beside them (e717378). Earlier corrections stand: ResearchBench and Sculpture are placed, gold and jade have sculptures, mined chunks reach Settlement.Stores. What is still thin - nothing smelts, and the recipe list is short - is not a port gap; it is the arc's material ladder, tracked as crafting.materialladder.",
+          "done": true
+        },
+        {
+          "id": "crafting.materialladder",
+          "label": "RESHAPED FOR THE ARC, not a port item and not counted against RC condition 5. Material ladder per era: smelting copper, bronze, iron and steel; era-specific smithy output. Re-verified 2026-11-21: no bench or recipe in content smelts anything ('smelt' appears only in era and research descriptions), and the Smithy's one recipe is Make_MeleeWeapon_Knife - the whole recipe set is three stone blocks, three meals, pemmican, one shirt, one knife, butchering and three surgeries. RimWorld has no per-era ladder to port (recalled, not read: its metals come out of the ground ready to use and its smelter only reclaims slag and old gear), so this is the arc's question of what a smith makes in each of the eight eras, with Copper+Tin to Bronze (crafting.oreconsumers) as its first rung.",
           "done": false
         },
         {
@@ -1465,8 +1488,8 @@
         },
         {
           "id": "crafting.billcreators",
-          "label": "CORRECTED. 'Cooking, smithing and tailoring have real recipes, a real giver and no bill-creator' is now false as to cooking: Crafting/CookingInitiative.cs:300 queues a real non-zero-target bill (BillStack.AddBill at :319) and places FueledStove's blueprint, whose pair was added in Buildings_Kitchen.xml. Smithing and tailoring remain exactly as described, and they are blocked one level further down than this label suggests - see crafting.stonework.gaps: their benches have no blueprint pair, so a bill-creator alone would not help them.",
-          "done": false
+          "label": "CLOSED, re-verified 2026-11-21. Cooking, smithing and tailoring each have a bill-creator now. Cooking: Crafting/CookingInitiative.cs queues its bills and places FueledStove's blueprint, as before. Smithing and tailoring: Crafting/OutfittingInitiative.cs, ticked from Map/Map.cs:226, puts a bill on every built bench for each available apparel or weapon recipe, sized to the citizens who lack its product (BillStack.AddBill; Crafting/OutfittingInitiativeTests.cs). The benches it needs are raised by Building/SettlementWorkshops.cs - see crafting.stonework.gaps.",
+          "done": true
         },
         {
           "id": "crafting.guildinitiative",
@@ -1563,8 +1586,8 @@
         },
         {
           "id": "research.endless.indexceiling",
-          "label": "STILL OPEN, re-verified. Defs/DefDatabase.cs:178 still narrows Def.index with checked((ushort)...) and no guard, and Research/EndlessResearch.cs:189 still mints projects into the database with no upper bound as ages progress. A repo-wide grep for 65535, ushort.MaxValue or a mitigating cap finds nothing outside DefDatabase itself.",
-          "done": false
+          "label": "CLOSED, re-verified 2026-11-21 (851439a). ResearchManager.MaxEndlessAges computes the last whole endless age whose minted projects still fit a ushort Def.index, and minting stops there (Research/ResearchManager.cs:557, :601) instead of throwing halfway through an age; DefDatabase refuses a def past the per-type ceiling with a named 'registry is full' error before the checked narrowing can overflow. Pinned by Research/EndlessCeilingTests.cs and Defs/DefIndexCeilingTests.cs.",
+          "done": true
         },
         {
           "id": "research.endless.isolation",
@@ -1583,11 +1606,11 @@
       "id": "economy",
       "n": 15,
       "rimworld": "Economy, Trade & Factions",
-      "translation": "Decided: other civilizations are the factions (unchanged); trade routes between settlements replace RimWorld's orbital/caravan traders as the connective tissue, priced the same way CoalSupply already prices coal (a real path through the world pather, marked up by distance) and closed while the two settlements' factions are at war; goodwill becomes diplomacy through two new layers RimWorld has no equivalent of — an explicit War/Peace state per relation (Faction.DeclareWar/MakePeace, entry and exit acts rather than goodwill silently crossing a threshold) kept separate from the existing Hostile/Neutral/Ally goodwill-derived label, and Def-driven Treaty terms (non-aggression, trade access) a pair of factions can sign, each with its own duration and goodwill effect. Every number here (war/peace goodwill swings, route premium, treaty terms) is this port's own judgement call, not sourced from RimWorld — see the code's own comments for where and why.",
+      "translation": "Decided: other civilizations are the factions (unchanged); trade routes between settlements replace RimWorld's orbital/caravan traders as the connective tissue, priced the same way CoalSupply already prices coal (a real path through the world pather, marked up by distance) and closed while the two settlements' factions are at war; goodwill becomes diplomacy through two new layers RimWorld has no equivalent of — an explicit War/Peace state per relation (Faction.DeclareWar/MakePeace, entry and exit acts rather than goodwill silently crossing a threshold) kept separate from the existing Hostile/Neutral/Ally goodwill-derived label, and Def-driven Treaty terms (non-aggression, trade access) a pair of factions can sign, each with its own duration and goodwill effect. Every number here (war/peace goodwill swings, route premium, treaty terms) is this port's own judgement call, not sourced from RimWorld — see the code's own comments for where and why. Trade runs on reputation (Doug, 2026-11-20): trust is faction goodwill, read through Economy.TradeTrust and banded by the one table Economy.TradeTrustTuning.Tiers. Differences from RimWorld, all marked in that file: (1) price tiers - wary (goodwill < 0) buys at x1.15 and sells at /1.15, trusted (>= 75, RimWorld's Ally line) at x0.9 and /0.9, neutral at x1; RimWorld has no goodwill-based prices. The factor rides TradeUtility's own priceFactorBuy/priceFactorSell through TradeDeal.trustPriceFactor, so quote and charge are one expression. (2) Hostile is RimWorld's (goodwill <= -75: no trade, no caravans) plus simWorld's own war state. (3) A trusted faction is entered twice in the caravan-faction draw (RimWorld draws uniformly); this changes whose caravan comes, not how many. (4) A completed trade raises goodwill by 1 per 200 silver, pooled across the in-game day and capped at 2 per faction per day, so one-unit spam earns exactly what one big trade does (RimWorld: trading moves no goodwill). (5) Gifts port FactionGiftUtility as recalled, not read (value / 40, curve (-100,1),(75,1),(100,0.25) in 0.25 steps); the one change is that the result stops at the goodwill left to gain instead of RimWorld's 200 cap, which lands identically. Gifts are accepted from hostile and warring civilizations, as in RimWorld; never from a permanent enemy. Natural goodwill drift (Faction.FactionTick, already ported) applies unchanged, so trust above a faction's natural range decays at goodwillDailyFall. Defect fixed with it: BuyFromTrader/SellToTrader traded at any settlement and spent that settlement's silver; they now refuse a settlement that is not Find.FactionManager.OfPlayer's, and the trade view lists only caravans at our settlements.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Factions · Economy · Caravans",
       "status": "verified",
-      "tests": 270,
+      "tests": 291,
       "items": [
         {
           "id": "economy.goodwill",
@@ -1657,6 +1680,16 @@
         {
           "id": "economy.ledgertomap",
           "label": "SettlementStockInitiative.IssueFromStores — the crossing that was missing. The class states that a unit is either a Thing on a map or a count in Stores and never both, and its own doc said “all that was missing was the rule for crossing”; only map-to-ledger had been written. So WouldEatFromStores correctly refused a Spawned citizen while ProvisionFoundingBand sized rations counting them, and no map-gen step places food: watching a settlement locked its people out of rations stocked for them. Issuing tops the map up to the same NutritionWanted line banking keeps, bounded by the shortfall rather than the ledger, debiting as it spawns. Probe, 25-strong TribalStart: watched-minus-unwatched food went -0.44/-0.24/-0.12 to +0.10/+0.30, watched sustaining itself while unwatched declines between abstract refills.",
+          "done": true
+        },
+        {
+          "id": "economy.tradetrust",
+          "label": "Trade on reputation: goodwill tiers (hostile/wary/neutral/trusted) price every caravan trade through one factor in the existing price path, hostile or warring civilizations neither trade nor send caravans, trusted ones are drawn twice as often, completed trades raise goodwill (pooled per day, capped), GiftToTrader ports RimWorld's gift goodwill, and the trade commands refuse settlements that are not ours (TradeTrustTests)",
+          "done": true
+        },
+        {
+          "id": "economy.treatyatwar",
+          "label": "While at war only a treaty carrying nonAggression can be signed (Faction.SignTreaty refuses the rest; a trade agreement could otherwise be recorded between two civilizations still fighting). The seam's refusal is per treaty: FactionRelationView.TreatyOffers, from the same GodCommands.TreatyRefusal the command checks; the per-civilization CanSignTreaty/TreatyReason stay treaty-independent for compatibility (TreatyAtWarTests)",
           "done": true
         }
       ],
@@ -1812,8 +1845,8 @@
         },
         {
           "id": "social.dlc",
-          "label": "DELIBERATE EXCLUSION, re-verified and accurate as written. Genes ship in trimmed form (archite genes not ported, biostatCpx recorded but not enforced as a cap, Pawns/Genes/GeneDef.cs:9). Mechanitor bandwidth, psycasts and containment have zero matches anywhere in src/. A forward-looking scope note for DLC-tier systems, not an open task.",
-          "done": false
+          "label": "Deliberate difference: RimWorld's DLC-tier systems are out of scope. Genes ship in trimmed form (archite genes not ported, biostatCpx recorded but not enforced as a cap, Pawns/Genes/GeneDef.cs); mechanitor bandwidth, psycasts and Anomaly containment are not ported and have no code in src/ (re-verified 2026-11-21; 'containment' appears only as a word in an endless research track's name list). Reason: they are expansion systems layered on a colony, and none of them is what the eight-era arc is built from. A scope note, not an open task.",
+          "done": true
         },
         {
           "id": "social.socialfight",
@@ -2112,8 +2145,8 @@
         },
         {
           "id": "god.view",
-          "label": "DELIBERATE EXCLUSION, and the item is really about the other repo. This repo ships the read model only - God/View/GodViewSnapshot and Map/View/MapViewSnapshot are engine-free value snapshots with no rendering data, by rule. The presentation surface now exists and is not here: github.com/m2windham/simWorld.Host renders both the civilization view and a settlement interior against these seams. Nothing in this repository is outstanding for this item.",
-          "done": false
+          "label": "Deliberate difference: rendering does not live in this repository. The core is engine-free by rule and ships the read model only - God/View/GodViewSnapshot and Map/View/MapViewSnapshot are value snapshots with no rendering data. The presentation surface is github.com/m2windham/simWorld.Host, which renders both the civilization view and a settlement interior against these seams, and whose Release player carried RC gates 1 and 4. Nothing in this repository is outstanding for this item.",
+          "done": true
         },
         {
           "id": "god.era-transitions",
@@ -2180,8 +2213,8 @@
         },
         {
           "id": "offices.edicts",
-          "label": "STILL OPEN, re-verified. God/GodManager.cs:102 gates edict activation on IsActive, the MaxActiveEdicts slot and requiredEra/obsoleteEra, and nothing else. There are ZERO references to Offices anywhere under src/SimWorld.Core/God. Offices/OfficeManager.cs implements the full seat and leader logic; no edict consults it.",
-          "done": false
+          "label": "CLOSED, re-verified 2026-11-21 (6022737). EdictDef.requiredOffice names the office an edict needs; GodManager.CanActivate refuses the edict while no living citizen holds that office (God/GodManager.cs:169, IsSeated at :129), and an issued edict whose office falls vacant is suspended, then resumed when the seat is filled, with a chronicle line each way (:260-277). GreatWorksMandate requires a seated Steward (Edicts.xml). Pinned by God/EdictOfficeTests.cs and God/EdictStallAndSuspensionTests.cs.",
+          "done": true
         }
       ],
       "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
@@ -2246,8 +2279,8 @@
         },
         {
           "id": "conditions.maplocal",
-          "label": "DELIBERATE EXCLUSION, re-verified and accurate as written. The per-map GameConditionManager and its scope machinery exist and work (Conditions/GameConditionManager.cs:25); every shipped incident - HeatWave, ColdSnap, Flashstorm - registers at world scope only. No content path reaches map-scope registration. A real seam that shipped content does not yet use, not a defect.",
-          "done": false
+          "label": "Deliberate difference: every shipped game condition is world-scoped. The per-map GameConditionManager and its scope chain exist and work (Conditions/GameConditionManager.cs; a map's manager reads through to the world's), but HeatWave, ColdSnap and Flashstorm (IncidentWorker_MakeGameCondition.Scope) and Drought (IncidentWorker_Drought) all register on Find.World.gameConditionManager, and nothing registers at map scope (re-verified 2026-11-21). Reason: a condition was scoped to the civilization, which spans settlements. With one settlement that reason has weakened - world scope and map scope cover the same map - and the player sees no difference; the map-scope seam stays for content that wants it.",
+          "done": true
         },
         {
           "id": "conditions.drought",

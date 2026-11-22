@@ -11,7 +11,7 @@ namespace SimWorld.Director
     /// <summary>
     /// Real trader generation <b>and a real arrival</b> (RimWorld:
     /// <c>RimWorld.IncidentWorker_TraderCaravanArrival</c>), replacing <see cref="IncidentWorker_Placeholder"/>
-    /// for <c>TraderCaravanArrival</c>. Picks a faction not hostile to the player that actually has something
+    /// for <c>TraderCaravanArrival</c>. Picks a faction not hostile to (nor at war with) the player that actually has something
     /// to sell — <see cref="FactionDef.caravanTraderKinds"/> non-empty — then a <see cref="TraderKindDef"/>
     /// from that faction's list (<see cref="FactionDef.RandomTraderKind"/>, weighted by
     /// <see cref="TraderKindDef.commonality"/>), generates real stock for it through
@@ -103,6 +103,14 @@ namespace SimWorld.Director
             return TraderArrival.Land(host, kind, faction, stock, Rand.Current);
         }
 
+        /// <summary>
+        /// One uniform draw over <see cref="CandidateFactions"/>, in which each faction appears as many times as
+        /// its trust tier's <see cref="TradeTrustTierRow.ArrivalWeight"/> — so a trusted partner's caravans come
+        /// more often (simWorld's own; RimWorld draws every eligible faction equally). While no candidate is
+        /// trusted every weight is 1 and the list, and so the draw, is exactly RimWorld's uniform one.
+        /// <para/>This shifts <i>whose</i> caravan arrives, not how many arrive: the arrival rate is the
+        /// storyteller's, and a caravan drawn for a trusted faction is one not drawn for somebody else.
+        /// </summary>
         private static Faction? ResolveFaction(IncidentParms parms)
         {
             if (parms.faction != null) return parms.faction;
@@ -110,16 +118,17 @@ namespace SimWorld.Director
             return candidates.Count == 0 ? null : Rand.Element((IReadOnlyList<Faction>)candidates);
         }
 
-        /// <summary>Not hostile to the player and actually has a trader kind to arrive as (RimWorld's own <c>RandomNonHostileFaction</c> pick has no "and can trade" half — this port's own tightening, since a fired incident that immediately fails to produce a trader is worse than not firing at all).</summary>
+        /// <summary>Not hostile to the player and actually has a trader kind to arrive as (RimWorld's own <c>RandomNonHostileFaction</c> pick has no "and can trade" half — this port's own tightening, since a fired incident that immediately fails to produce a trader is worse than not firing at all). "Not hostile" is <see cref="TradeTrust.TierBetween"/>'s <see cref="TradeTrustTier.Hostile"/>, which is RimWorld's Hostile plus simWorld's own war state. Yields each faction once per <see cref="TradeTrustTierRow.ArrivalWeight"/> — see <see cref="ResolveFaction"/>.</summary>
         private static IEnumerable<Faction> CandidateFactions()
         {
             Faction? player = Find.FactionManager.OfPlayer;
             if (player == null) yield break;
             foreach (Faction f in Find.FactionManager.GetFactions())
             {
-                if (ReferenceEquals(f, player) || f.HostileTo(player)) continue;
+                if (ReferenceEquals(f, player)) continue;
                 if (f.def.caravanTraderKinds == null || f.def.caravanTraderKinds.Count == 0) continue;
-                yield return f;
+                int weight = TradeTrust.Row(TradeTrust.TierBetween(player, f)).ArrivalWeight;
+                for (int i = 0; i < weight; i++) yield return f;
             }
         }
     }

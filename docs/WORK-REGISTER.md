@@ -1591,3 +1591,60 @@ merge: houses 301, deaths 34, end population 600 (unchanged). Open, found not fi
 differently toward raid points; raid points cap 10,000 against RimWorld's 20,000; the day-4 first threat is a
 whole manhunter pack; raiders can stick at the map edge. Remaining gates: frame timing on real hardware (needs
 Doug's go-ahead for a windowed run), the 9 open port items.
+
+2026-11-20 (seam-catalogues, suite 3176/3176 on the branch, fast-forwarded): REQ 004 from the host. God view gains
+TreatyCatalogue.Treaties() and RoleCatalogue.Roles() (static, content-ordered), FactionRelationView.CanSignTreaty /
+TreatyReason from the same refusal helper SignTreaty uses, and WorkPriorityRow.RoleDefName. Read-only: bench seeds
+20/99 and 40/201 identical to integration apart from wall-clock rows.
+
+2026-11-20 (seam-map-reads, merged 4d33207, suite 3194/3194 on the merge): REQ 005 from the host. Map view gains
+MapViewSnapshot.CaptureLevers() -> SettlementLevers (benches with bills and recipes, zones with stockpile filters,
+home and snow-clear masks, medical care, citizens under orders), LeverCatalogue (bill givers, storable things,
+orderable jobs) and DefLabels (LabelOf/DescriptionOf/IsKnown). Read-only: bench seeds 20/99 and 40/201 identical
+to integration apart from wall-clock rows.
+
+2026-11-20 (player-designations, merged df45e23, suite 3218/3218 on the merge): Doug, "the player does indeed need
+agency; fall back to simulation in case of idle". Player designations Mine, CutPlant, HarvestPlant, Hunt, Tame,
+Slaughter, Deconstruct, HaulUrgently (no Forbid: the port has no CompForbiddable), worked by seven player-only
+givers at the top of their work types; a pawn with no reachable player mark falls through to the settlement's
+initiative givers unchanged. Per-settlement initiative switches (Mine, CutPlant, Hunt, Tame). MapCommands.Designate /
+RemoveDesignations / SetSettlementInitiative; MapViewSnapshot.DesignationsOf(). 21 seeds identical to int762 with no
+player marks. Recalled, not read: deconstruct refund 50%, slaughter 180 ticks. Phase 2 (initiatives place marks) open.
+
+2026-11-20 (trade-trust, merged 2bef8ee, suite 3239/3239 on the merge): Doug, "let trade be on a reputation or
+trust system". Trust is faction goodwill. Only our own settlements trade (defect fixed: the seam could spend a rival
+settlement's silver). Tiers in Economy/TradeTrustTuning.cs (ours, RimWorld behaviour beside each): hostile (at war
+or <= -75) refuses and sends no caravans; wary (-74..-1) buy x1.15 / sell /1.15; neutral 1; trusted (>= 75) buy x0.9
+/ sell /0.9 and double weight in the caravan-faction draw. Trades raise goodwill 1 per 200 silver, capped 2/day per
+faction; GodCommands.GiftToTrader ports RimWorld gifts (numbers recalled, not read). SignTreaty refuses a treaty
+without non-aggression while at war; FactionRelationView.TreatyOffers gives a reason per treaty. 21 seeds identical
+to int762.
+
+2026-11-20 23:52 (RC gate 4 met): Release player (host a202ca1, core bb5abc9, Mono, D3D12) windowed at 1920x1080 on
+the RX 6650 XT, PC otherwise idle, FrameCostProbe at tick 600 paused, pivot (100,100), 200 sampled frames per
+ViewSize, two runs. Medians (p90), run 1 / run 2:
+  VS 6:  frame 2.89 (2.95) / 2.90 (2.96) ms, GPU 2.80 / 2.80 ms, CPU main 0.56 / 0.58 ms
+  VS 12: frame 3.43 (3.50) / 3.43 (3.50) ms, GPU 3.34 / 3.34 ms
+  VS 30: frame 4.28 (4.34) / 4.26 (4.33) ms, GPU 4.17 / 4.16 ms
+  VS 60: frame 5.10 (5.18) / 5.13 (5.22) ms, GPU 5.00 / 5.02 ms, CPU main 1.15 / 1.21 ms; 278 draw calls, 5.81M tris
+Budget 16.7 ms (60 fps): about 3x margin at VS 60, GPU-bound. Outputs H:\dev\_builds\rcperf\run1, run2.
+Found: every windowed player exits with an access violation in UnityPlayer.dll (offset 0x109401) after a clean
+shutdown log, on D3D12 and D3D11, with or without the probe, and in builds back to 2026-11-15. Batchmode exits 0.
+Open; a host lane is investigating. Remaining RC gates: the 9 open port items.
+
+2026-11-21 (labels-and-trust-reason, suite 3246/3246 on the branch, fast-forwarded): REQ 006 from the host.
+VisitingTraderView.TrustReason ("Ready to trade." or the refusal) from the same helper BuyFromTrader/SellToTrader
+refuse through. Labels for the orderable JobDefs (from their reportStrings) and the DesignationDefs (recalled
+designator labels); a content test now requires a label on every order, mark, buildable, bench recipe, research
+project, work type and storable thing the seam offers. Bench 20/99 and 40/201 identical apart from wall-clock rows.
+
+2026-11-21 (RC gate 5 met, docs only): the 9 open port items in status.json reconciled, each re-read against the
+code. Five were stale and are closed: defs.wiringaudit.untouched.gaps (all four fields read since 0a36e1d),
+crafting.billcreators (OutfittingInitiative queues smithing and tailoring bills), crafting.stonework.gaps
+(workshop blueprints 389b53b, raised by SettlementWorkshops a157ae2), research.endless.indexceiling (851439a),
+offices.edicts (6022737). Four are recorded as deliberate differences with their reasons: ai.pathingshape (no
+12x12 region cap until the corridor cache is reworked; Map/RegionMaker.cs), social.dlc, god.view (rendering is
+the host's), conditions.maplocal (world scope; with one settlement the player sees no difference). The thin
+remainder of stonework is a new arc item, crafting.materialladder (smelting copper, bronze, iron, steel; per-era
+smithy output), not a port item and left open. That was the last remaining RC gate named above; the
+windowed-quit crash stays open.

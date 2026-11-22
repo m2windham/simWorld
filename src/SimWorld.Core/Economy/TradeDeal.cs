@@ -23,6 +23,20 @@ namespace SimWorld.Economy
 
         public float settlementGain;
 
+        /// <summary>The trust tier's price factor between the two civilizations (<see cref="TradeTrust"/>), 1 when
+        /// none applies. Set by <see cref="VisitingTraderTrade.OpenSessionWith"/>; read by every price this deal
+        /// quotes or charges, through <see cref="UnitPrice"/>.</summary>
+        public float trustPriceFactor = 1f;
+
+        /// <summary>One unit of <paramref name="line"/> in direction <paramref name="action"/> under this deal's
+        /// terms — the expression <see cref="NetPlayerSilverCost"/> charges, exposed so a quote can be read off
+        /// the same call rather than rebuilt from the deal's fields.</summary>
+        public float UnitPrice(Tradeable line, TradeAction action)
+        {
+            if (line == null) throw new ArgumentNullException(nameof(line));
+            return line.PriceFor(action, priceType, negotiatorGain, settlementGain, trustPriceFactor);
+        }
+
         public Tradeable? CurrencyTradeable => silverTradeable;
 
         public void AddTradeable(Tradeable tradeable)
@@ -38,8 +52,8 @@ namespace SimWorld.Economy
             for (int i = 0; i < tradeables.Count; i++)
             {
                 Tradeable t = tradeables[i];
-                total += t.CurTotalCurrencyCostForSource(priceType, negotiatorGain, settlementGain);
-                total -= t.CurTotalCurrencyCostForDestination(priceType, negotiatorGain, settlementGain);
+                total += t.CurTotalCurrencyCostForSource(priceType, negotiatorGain, settlementGain, trustPriceFactor);
+                total -= t.CurTotalCurrencyCostForDestination(priceType, negotiatorGain, settlementGain, trustPriceFactor);
             }
             return total;
         }

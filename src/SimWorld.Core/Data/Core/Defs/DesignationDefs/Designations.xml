@@ -4,10 +4,12 @@
   <!--
     RimWorld's Designations.xml, cut to the defs this port has a worker for. Placed by a settlement
     (SimWorld.AI.MiningInitiative) rather than by a player; the icon, sound and designator fields stay in the host.
+    The label is RimWorld's designator label (recalled; Designations.xml itself has none).
   -->
 
   <DesignationDef>
     <defName>Mine</defName>
+    <label>mine</label>
     <targetType>Cell</targetType>
     <removeIfBuildingDespawned>true</removeIfBuildingDespawned>
   </DesignationDef>

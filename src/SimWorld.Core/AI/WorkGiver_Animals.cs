@@ -33,7 +33,9 @@ namespace SimWorld.AI
         public override bool ShouldSkip(Pawn pawn, bool forced = false)
         {
             Map.Map? map = pawn.Map;
-            return map == null || !TamingInitiative.WantsLivestock(map);
+            return map == null
+                || !map.designationManager.SettlementInitiativeOn(Designations.PlayerDesignationDefOf.Tame)
+                || !TamingInitiative.WantsLivestock(map);
         }
 
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
@@ -50,6 +52,8 @@ namespace SimWorld.AI
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
             if (!(thing is Pawn animal) || !IsWildAnimal(animal) || !thing.Spawned) return false;
+            // An animal the player marked for the hunt is not the settlement's livestock.
+            if (pawn.Map!.designationManager.HasPlayerDesignationOn(animal, Designations.PlayerDesignationDefOf.Hunt)) return false;
 
             // Not one that has turned on somebody. RimWorld's WorkGiver_InteractAnimal refuses an animal that
             // cannot be casually interacted with, and one in an aggressive mental state cannot be (recalled,

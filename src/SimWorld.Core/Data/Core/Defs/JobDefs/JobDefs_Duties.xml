@@ -9,6 +9,7 @@
 
   <JobDef>
     <defName>Goto</defName>
+    <label>go to</label>
     <driverClass>SimWorld.AI.JobDriver_Goto</driverClass>
     <reportString>going somewhere.</reportString>
   </JobDef>

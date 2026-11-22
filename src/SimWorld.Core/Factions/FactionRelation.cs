@@ -47,6 +47,16 @@ namespace SimWorld.Factions
         /// <summary>Every treaty ever signed between these two factions, expired ones included (see <see cref="Treaty.IsActive"/> — this list is never pruned, so it also doubles as this relation's own treaty history).</summary>
         public List<Treaty> treaties = new List<Treaty>();
 
+        /// <summary>The in-game day (<c>TicksGame / Economy.TradeTrustTuning.TradeDayTicks</c>) that
+        /// <see cref="tradeTrustValue"/> is pooling, or -1 before any trade. Kept on the trading civilization's
+        /// own side of the relation only — see <c>Economy.TradeTrust.RecordTrade</c>.</summary>
+        public int tradeTrustDay = -1;
+
+        /// <summary>Silver of completed trade booked with <see cref="other"/> on <see cref="tradeTrustDay"/>, the
+        /// pool <c>Economy.TradeTrustTuning.TradeGoodwillDailyCap</c> is measured against (simWorld's own;
+        /// RimWorld: trading moves no goodwill).</summary>
+        public float tradeTrustValue;
+
         /// <summary>For Scribe's deep-load construction.</summary>
         public FactionRelation()
         {
@@ -68,6 +78,8 @@ namespace SimWorld.Factions
             Scribe_Values.Look(ref kind, "kind", FactionRelationKind.Neutral);
             Scribe_Values.Look(ref warState, "warState", WarState.Peace);
             Scribe_Values.Look(ref warStartTick, "warStartTick");
+            Scribe_Values.Look(ref tradeTrustDay, "tradeTrustDay", -1);
+            Scribe_Values.Look(ref tradeTrustValue, "tradeTrustValue");
 
             List<Treaty>? t = new List<Treaty>(treaties);
             Scribe_Collections.Look(ref t, "treaties", LookMode.Deep);
