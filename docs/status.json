@@ -1,9 +1,8 @@
 {
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
-
   "updated": "2026-11-21",
-  "testsTotal": 3324,
+  "testsTotal": 3348,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1415,11 +1414,11 @@
       "id": "crafting",
       "n": 13,
       "rimworld": "Crafting & Production",
-      "translation": "Proposed: bills unchanged; guilds and industries act as bill queues at scale.",
+      "translation": "Proposed: bills unchanged; guilds and industries act as bill queues at scale. Material ladder (crafting.materialladder): RimWorld mines finished steel and its smelter only reclaims slag and old gear; here a vein yields ore and the era's furnace makes the metal (copper, bronze, iron, steel), because the arc's ages are told by what a settlement can smelt. The settlement is the player: it raises the furnace, queues the smelting and arms its people from the smithy's demand alone, so nothing is smelted that no bill will take, and a citizen trades up to a better blade (a bow only for forged metal, and only by one who fights better than shoots).",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "verified",
-      "tests": 105,
+      "tests": 129,
       "items": [
         {
           "id": "crafting.bills",
@@ -1478,8 +1477,8 @@
         },
         {
           "id": "crafting.materialladder",
-          "label": "RESHAPED FOR THE ARC, not a port item and not counted against RC condition 5. Material ladder per era: smelting copper, bronze, iron and steel; era-specific smithy output. Re-verified 2026-11-21: no bench or recipe in content smelts anything ('smelt' appears only in era and research descriptions), and the Smithy's one recipe is Make_MeleeWeapon_Knife - the whole recipe set is three stone blocks, three meals, pemmican, one shirt, one knife, butchering and three surgeries. RimWorld has no per-era ladder to port (recalled, not read: its metals come out of the ground ready to use and its smelter only reclaims slag and old gear), so this is the arc's question of what a smith makes in each of the eight eras, with Copper+Tin to Bronze (crafting.oreconsumers) as its first rung.",
-          "done": false
+          "label": "BUILT 2026-11-22 (branch material-ladder). Ore comes out of the ground, an era's furnace makes metal of it through bills, and every metal is stuff for walls, doors and blades. Content: CopperOre and IronOre (Items_Metals.xml) are what MineableCopper and MineableSteel now yield; Bronze and Iron are new Metallic stuff beside Copper (now stuff) and Steel; Flint is Lithic stuff for knapped knives. Benches (Buildings_Smelting.xml): SmeltingFurnace (Copper research), Bloomery (Iron), ElectricSmelter (Electricity; RimWorld's cost, work and 700 W, not yet gated on power). Recipes (Recipes_Smelting.xml): Smelt_Copper, Make_Bronze (copper + tin), Make_Bronze_Arsenical (copper ore alone, the no-tin road), Smelt_Iron, Make_Steel_Cementation, Smelt_Steel (RimWorld's 15-steel smelt at its 400 work). Blades (Weapons_MeleeLadder.xml, Recipes_Smithing.xml): the knife is now stuff-made from flint to steel, plus RimWorld's Spear (BronzeWeapons) and LongSword (SteelWeapons) at their vanilla tools. Ladder veins grow into lumps (ThingDef.mineableScatterLumpSizeRange, RimWorld's 30~40 for iron). The settlement decides by itself (Crafting/MaterialLadder.cs, Crafting/SmeltingInitiative.cs ticked from Map.cs): each smithy holds one weapon bill, for its best available blade in the sharpest metal the era and the ground allow, sized to the unarmed, the worse-armed and the bow carriers who fight better than they shoot; the furnace for that metal is raised beside the smithy, its bill and its intermediates queued to the shortfall, the ore designated by MiningInitiative, and ore and metal kept at the forge rather than the granary. Spare metal goes into doors, and iron or steel into walls, through MaterialLadder.BestBuildingMetal / UpgradeBlueprints (the shared hook for the shelter lane). Tests: Crafting/MaterialLadderTests.cs, 24; 12 settlement-choice guards mutation-proved. Open: SharpDamageMultiplier is content the melee verb does not read yet (combat); the electric smelter is not gated on power; bricks wait for clay; slag is not ported; a tile with no Ore deposit has no veins, so its settlement stays in stone and bow whatever it researches - trade in metal is the missing road.",
+          "done": true
         },
         {
           "id": "crafting.oreconsumers",
