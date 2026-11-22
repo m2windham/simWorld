@@ -14,6 +14,11 @@
     Stats_Economy.xml's new StatPart_Quality actually has something to multiply, and stuffCategories so the
     stuff factor/offset half of the stat pipeline (StatWorker's own remarks) has something made-from-stuff to
     read once a real Thing exists with a Stuff set.
+
+    Insulation_Cold/Insulation_Heat (degrees off the wearer's ComfyTemperatureMin/Max) are this port's own
+    flat values. RimWorld derives them from the stuff times a per-garment StuffEffectMultiplier; its rough
+    ordering (shirt and pants a few degrees, tribal robe about a dozen, parka about thirty of cold) is
+    recalled, not read.
   -->
 
   <ThingDef Name="BaseApparel" Abstract="True">
@@ -43,6 +48,8 @@
       <MarketValue>8</MarketValue>
       <ArmorRating_Sharp>0.02</ArmorRating_Sharp>
       <Insulation>0.08</Insulation>
+      <Insulation_Cold>4</Insulation_Cold>
+      <Insulation_Heat>2</Insulation_Heat>
     </statBases>
     <apparel>
       <bodyPartGroups>
@@ -71,6 +78,8 @@
       <MarketValue>8</MarketValue>
       <ArmorRating_Sharp>0.02</ArmorRating_Sharp>
       <Insulation>0.08</Insulation>
+      <Insulation_Cold>3</Insulation_Cold>
+      <Insulation_Heat>1</Insulation_Heat>
     </statBases>
     <apparel>
       <bodyPartGroups>
@@ -100,6 +109,8 @@
       <ArmorRating_Sharp>0.05</ArmorRating_Sharp>
       <ArmorRating_Blunt>0.05</ArmorRating_Blunt>
       <Insulation>0.2</Insulation>
+      <Insulation_Cold>12</Insulation_Cold>
+      <Insulation_Heat>6</Insulation_Heat>
     </statBases>
     <apparel>
       <bodyPartGroups>
@@ -129,6 +140,7 @@
       <ArmorRating_Sharp>0.08</ArmorRating_Sharp>
       <ArmorRating_Blunt>0.05</ArmorRating_Blunt>
       <Insulation>0.6</Insulation>
+      <Insulation_Cold>30</Insulation_Cold>
     </statBases>
     <apparel>
       <bodyPartGroups>

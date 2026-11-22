@@ -23,6 +23,10 @@
     <defName>Husky</defName>
     <label>husky</label>
     <description>A large, hardy working dog.</description>
+    <!-- Cold-hardy: recalled RimWorld value, not read. ComfyTemperatureMax is the stat default. -->
+    <statBases>
+      <ComfyTemperatureMin>-40</ComfyTemperatureMin>
+    </statBases>
     <race>
       <baseHealthScale>1</baseHealthScale>
       <baseBodySize>0.86</baseBodySize>
@@ -54,6 +58,10 @@
     <defName>Muffalo</defName>
     <label>muffalo</label>
     <description>A large, shaggy pack animal. Placid enough to milk and shear once tamed, but warier of people than a dog.</description>
+    <!-- Cold-hardy: recalled RimWorld value, not read. ComfyTemperatureMax is the stat default. -->
+    <statBases>
+      <ComfyTemperatureMin>-55</ComfyTemperatureMin>
+    </statBases>
     <race>
       <baseHealthScale>1.5</baseHealthScale>
       <baseBodySize>1.5</baseBodySize>

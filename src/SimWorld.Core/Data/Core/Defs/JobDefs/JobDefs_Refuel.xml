@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Topping up a refuelable building (RimWorld 1.0 Core/Defs/JobDefs/Jobs_Misc.xml: Refuel). Its own file,
+       per CLAUDE.md; bound by SimWorld.Building.RefuelJobDefOf and issued by SimWorld.Building.WorkGiver_Refuel. -->
+
+  <JobDef>
+    <defName>Refuel</defName>
+    <driverClass>SimWorld.Building.JobDriver_Refuel</driverClass>
+    <reportString>refueling TargetA.</reportString>
+  </JobDef>
+
+</Defs>

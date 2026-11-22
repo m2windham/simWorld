@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- A switch marked to be flipped (RimWorld 1.0 Core/Defs/DesignationDefs: Flick, a thing designation). Its own
+       file (CLAUDE.md); placed by Building.FlickUtility and worked by Building.WorkGiver_Flick. -->
+
+  <DesignationDef>
+    <defName>Flick</defName>
+    <label>flick</label>
+    <targetType>Thing</targetType>
+  </DesignationDef>
+
+</Defs>

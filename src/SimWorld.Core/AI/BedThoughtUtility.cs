@@ -61,10 +61,8 @@ namespace SimWorld.AI
             memories.TryGainMemory(IsOwnHome(pawn, bed) ? SleepThoughtDefOf.SleptInBedroom : SleepThoughtDefOf.SleptInBarracks);
         }
 
-        private static bool IsOwnHome(Pawn pawn, Thing bed) =>
-            bed is Dwelling dwelling
-            && pawn.relations != null
-            && pawn.relations.familyId != Pawn_RelationsTracker.None
-            && dwelling.householdId == pawn.relations.familyId;
+        /// <summary>A bed in the sleeper's own household's house (shelter lane: a house is real walls round
+        /// beds now, and the bed is what the pawn lies in).</summary>
+        private static bool IsOwnHome(Pawn pawn, Thing bed) => DwellingUtility.IsOwnHomeBed(pawn, bed);
     }
 }

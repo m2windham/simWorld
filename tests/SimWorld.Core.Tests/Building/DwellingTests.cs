@@ -20,10 +20,12 @@ using CoreMap = SimWorld.Map.Map;
 namespace SimWorld.Tests.Building
 {
     /// <summary>
-    /// Households and their dwellings (<see cref="Dwelling"/>, <see cref="DwellingUtility"/>, and the village
-    /// plots of <see cref="SettlementCompound"/>): built when a household lacks one, each household sleeping
-    /// in its own, laid out along a street out of the compound's door, and never on the ring. Assertions read
-    /// the map — what stands where, who sleeps on which cell — not the compound's rectangles.
+    /// Households and their houses (<see cref="Dwelling"/>, <see cref="DwellingUtility"/>,
+    /// <see cref="DwellingPlanner"/>, and the village plots of <see cref="SettlementCompound"/>): a house of real
+    /// walls, a door and beds planned when a household lacks one, each household sleeping in its own, laid out
+    /// along a street out of the compound's door, never on the ring, and put back up when it is knocked down.
+    /// Assertions read the map: what stands where, who sleeps in which bed. The rung plans themselves, their
+    /// rooms and their air, are <see cref="ShelterRoomTests"/>.
     /// </summary>
     [Collection("GlobalDefs")]
     public class DwellingTests : ContentTestBase
@@ -36,9 +38,14 @@ namespace SimWorld.Tests.Building
 
         private static CoreMap NewMap(int x = 120, int z = 120) => new CoreMap(x, z, TerrainDefOf.Soil);
 
+        /// <summary>The first rung is learned, not given: a band builds no house before it knows windbreaks.</summary>
+        private static void KnowWindbreaks() =>
+            Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed("WindbreakShelters"));
+
         /// <summary>A band of <paramref name="couples"/> households of two, as SettlementFounder pairs one.</summary>
         private static Settlement Band(int couples, int singles = 0)
         {
+            KnowWindbreaks();
             var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Village", 0);
             for (int i = 0; i < couples; i++)
             {
@@ -71,8 +78,12 @@ namespace SimWorld.Tests.Building
             }
         }
 
-        private static int DwellingBlueprints(CoreMap map) =>
-            map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>().Count(bp => DwellingUtility.IsDwelling(bp.EntityToBuild));
+        private static int DwellingBlueprints(CoreMap map) => DwellingUtility.CountUnderway(map);
+
+        private static bool InAHouse(CoreMap map, Thing t) => DwellingUtility.DwellingAt(map, t.Position) != null;
+
+        private static int DormitoryBeds(CoreMap map) =>
+            map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count(b => !InAHouse(map, b));
 
         /// <summary>Passes, building whatever each one planned, until a pass plans nothing. Returns the most
         /// dwellings ever planned at once.</summary>
@@ -91,35 +102,41 @@ namespace SimWorld.Tests.Building
             return peakUnderway;
         }
 
-        private static Thing TheDoor(CoreMap map) => Assert.Single(map.listerThings.ThingsOfDef(CompoundThingDefOf.Door));
+        /// <summary>The ring's door; every house has a door of its own too.</summary>
+        private static Thing TheDoor(CoreMap map) =>
+            Assert.Single(map.listerThings.ThingsOfDef(CompoundThingDefOf.Door), d => d.Position == map.settlementCompound!.DoorCell);
 
-        // ---- content ----
-
-        [Fact]
-        public void The_four_dwellings_are_four_by_five_buildings_named_for_the_hosts_art()
-        {
-            foreach (string name in new[] { "House_Paleo", "House_Meso", "House_Neo", "House_Chalco" })
-            {
-                ThingDef def = Def(name);
-                Assert.True(DwellingUtility.IsDwelling(def));
-                Assert.Equal(new IntVec2(4, 5), def.size);
-                Assert.Equal(typeof(Dwelling), def.thingClass);
-                Assert.Equal(Traversability.Standable, def.passability);
-                Assert.NotNull(GenConstruct.BlueprintDefFor(def));
-                Assert.NotNull(GenConstruct.FrameDefFor(def));
-                Assert.Equal(4, BedUtility.GetSleepingSlotsCount(def.size));
-            }
-        }
+        // ---- the ladder ----
 
         [Theory]
-        [InlineData(null, "House_Paleo")]
+        [InlineData(null, null)]
+        [InlineData("WindbreakShelters", "House_Paleo")]
         [InlineData("PitDwellings", "House_Meso")]
         [InlineData("Shelter", "House_Neo")]
-        [InlineData("Copper", "House_Chalco")]
-        public void The_newest_dwelling_the_civilization_knows_is_the_one_it_builds(string? project, string expected)
+        public void The_newest_house_the_civilization_knows_is_the_one_it_builds_and_none_before_the_first(string? project, string? expected)
         {
             if (project != null) Find.ResearchManager.FinishProject(DefDatabase<ResearchProjectDef>.GetNamed(project));
-            Assert.Same(Def(expected), DwellingUtility.PreferredDwellingDef());
+            Assert.Equal(expected, DwellingUtility.PreferredDwellingDef()?.defName);
+        }
+
+        [Fact]
+        public void A_band_that_has_not_learned_windbreaks_sleeps_in_its_dormitory()
+        {
+            // Ten households: a band big enough for a compound, so the only thing standing between it and houses
+            // is the research (a smaller band gets no compound and so no houses whatever it knows).
+            CoreMap map = NewMap();
+            var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Camp", 0);
+            for (int i = 0; i < 10; i++)
+            {
+                Pawn a = NewHuman("A" + i), b = NewHuman("B" + i);
+                settlement.AddCitizen(a);
+                settlement.AddCitizen(b);
+                Find.FamilyManager.FoundHousehold(a, b, 0);
+            }
+            GrowUntilSettled(settlement, map);
+            Assert.NotNull(map.settlementCompound);
+            Assert.Empty(DwellingUtility.DwellingsOn(map));
+            Assert.Equal(20, DormitoryBeds(map));
         }
 
         // ---- the need ----
@@ -135,22 +152,39 @@ namespace SimWorld.Tests.Building
             // map of homes (storyteller seed 2024); RimWorld builds whatever is designated, in no fixed order.
             for (int pass = 0; pass < 40; pass++) Pass(settlement, map, pass);
             Assert.Equal(settlement.Citizens.Count, map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>()
-                .Count(bp => ReferenceEquals(bp.EntityToBuild, ConstructionThingDefOf.Bed)));
+                .Count(bp => ReferenceEquals(bp.EntityToBuild, ConstructionThingDefOf.Bed) && !InAHouse(map, bp)));
             Assert.Empty(map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed));
             Assert.InRange(DwellingBlueprints(map), 1, DwellingTuning.MaxUnderway);
 
             BuildEverythingPlanned(map);
             int peak = GrowUntilSettled(settlement, map, from: 40);
 
-            List<Dwelling> dwellings = DwellingUtility.DwellingsOn(map);
+            IReadOnlyList<Dwelling> dwellings = DwellingUtility.DwellingsOn(map);
             Assert.Equal(11, dwellings.Count);
+            Assert.All(dwellings, d => Assert.True(d.IsComplete(map)));
             Assert.InRange(peak, 1, DwellingTuning.MaxUnderway);
             var households = settlement.Citizens.Select(p => p.relations.familyId).Distinct().OrderBy(i => i).ToList();
             Assert.Equal(households, dwellings.Select(d => d.householdId).OrderBy(i => i).ToList());
             Assert.Equal(settlement.Citizens.Count, DwellingUtility.HousedCitizens(settlement, map));
 
             // The dormitory was not added to once the homes went up: one bed each, planned before the houses.
-            Assert.Equal(settlement.Citizens.Count, map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count);
+            Assert.Equal(settlement.Citizens.Count, DormitoryBeds(map));
+        }
+
+        [Fact]
+        public void A_house_bed_is_no_dormitory_bed_so_newcomers_without_a_house_get_dormitory_beds()
+        {
+            CoreMap map = NewMap();
+            Settlement settlement = Band(couples: 10, singles: 1);
+            GrowUntilSettled(settlement, map);
+            int housed = DwellingUtility.HousedCitizens(settlement, map);
+            Assert.Equal(settlement.Citizens.Count, housed);
+
+            // Thirty loners arrive: no household, so no house. Each wants a dormitory bed, and the beds standing in
+            // the houses are not theirs to count against that.
+            for (int i = 0; i < 30; i++) settlement.AddCitizen(NewHuman("Newcomer" + i));
+            GrowUntilSettled(settlement, map, from: 400);
+            Assert.Equal(settlement.Citizens.Count - housed, DormitoryBeds(map));
         }
 
         [Fact]
@@ -161,7 +195,7 @@ namespace SimWorld.Tests.Building
             for (int i = 0; i < 20; i++) settlement.AddCitizen(NewHuman("Loner" + i));
             GrowUntilSettled(settlement, map);
             Assert.Empty(DwellingUtility.DwellingsOn(map));
-            Assert.Equal(20, map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count);
+            Assert.Equal(20, DormitoryBeds(map));
         }
 
         [Fact]
@@ -177,7 +211,7 @@ namespace SimWorld.Tests.Building
             Find.FamilyManager.FoundHousehold(a, b, 0);
             GrowUntilSettled(settlement, map, from: 500);
 
-            List<Dwelling> dwellings = DwellingUtility.DwellingsOn(map);
+            IReadOnlyList<Dwelling> dwellings = DwellingUtility.DwellingsOn(map);
             Assert.Equal(11, dwellings.Count);
             Assert.Contains(dwellings, d => d.householdId == a.relations.familyId);
         }
@@ -186,7 +220,7 @@ namespace SimWorld.Tests.Building
         public void A_house_whose_household_is_gone_goes_to_the_next_household_without_one()
         {
             CoreMap map = NewMap();
-            Settlement settlement = Band(couples: 2);
+            Settlement settlement = Band(couples: 10);
             GrowUntilSettled(settlement, map);
             Dwelling first = DwellingUtility.DwellingsOn(map).First();
             int gone = first.householdId;
@@ -200,13 +234,13 @@ namespace SimWorld.Tests.Building
             DwellingUtility.AssignHomes(settlement, map);
 
             Assert.Equal(newcomer.relations.familyId, first.householdId);
-            Assert.Equal(2, DwellingUtility.DwellingsOn(map).Count);
+            Assert.Equal(10, DwellingUtility.DwellingsOn(map).Count);
         }
 
         // ---- the layout ----
 
         [Fact]
-        public void Dwellings_line_a_street_out_of_the_door_and_open_onto_it()
+        public void Houses_line_a_street_out_of_the_door_and_their_doors_open_onto_it()
         {
             CoreMap map = NewMap();
             Settlement settlement = Band(couples: 20);
@@ -214,22 +248,24 @@ namespace SimWorld.Tests.Building
 
             Thing door = TheDoor(map);
             int streetZ = door.Position.z;
-            List<Dwelling> dwellings = DwellingUtility.DwellingsOn(map);
+            IReadOnlyList<Dwelling> dwellings = DwellingUtility.DwellingsOn(map);
             Assert.Equal(20, dwellings.Count);
 
             var taken = new HashSet<IntVec3>();
             foreach (Dwelling d in dwellings)
             {
-                CellRect rect = d.OccupiedRect();
-                Assert.All(rect.Cells, c => Assert.True(taken.Add(c), "two dwellings share " + c));
+                CellRect rect = d.footprint;
+                Assert.All(rect.Cells, c => Assert.True(taken.Add(c), "two houses share " + c));
 
-                // North of the street a house is turned North, south of it South, and either way its front —
-                // authored toward -Z at North, so behind its facing — is the row next to the street.
+                // North of the street a house is turned North, south of it South, and either way its front row,
+                // with its door in it, is the one next to the street.
                 bool north = rect.minZ > streetZ;
-                Assert.Equal(north ? Rot4.North : Rot4.South, d.Rotation);
+                Assert.Equal(north ? Rot4.North : Rot4.South, d.rot);
                 int frontRow = north ? rect.minZ - 1 : rect.maxZ + 1;
-                Assert.True(Math.Abs(frontRow - streetZ) <= 1, d + " at " + rect + " does not open onto the street at z " + streetZ);
-                Assert.Equal(frontRow, (d.Position - d.Rotation.FacingCell * 3).z < rect.minZ ? rect.minZ - 1 : rect.maxZ + 1);
+                Assert.True(Math.Abs(frontRow - streetZ) <= 1, d.def.defName + " at " + rect + " does not open onto the street at z " + streetZ);
+                IntVec3 houseDoor = d.Parts.Single(p => p.Kind == DwellingPartKind.Door).Cell;
+                Assert.Equal(north ? rect.minZ : rect.maxZ, houseDoor.z);
+                Assert.IsType<Door>(map.edificeGrid[houseDoor]);
 
                 // The street in front of it is open ground.
                 for (int x = rect.minX; x <= rect.maxX; x++)
@@ -241,10 +277,10 @@ namespace SimWorld.Tests.Building
             }
 
             // Houses on both sides of the street, and both sides of the compound.
-            Assert.Contains(dwellings, d => d.Rotation == Rot4.North);
-            Assert.Contains(dwellings, d => d.Rotation == Rot4.South);
-            Assert.Contains(dwellings, d => d.Position.x > door.Position.x);
-            Assert.Contains(dwellings, d => d.Position.x < door.Position.x - 10);
+            Assert.Contains(dwellings, d => d.rot == Rot4.North);
+            Assert.Contains(dwellings, d => d.rot == Rot4.South);
+            Assert.Contains(dwellings, d => d.footprint.minX > door.Position.x);
+            Assert.Contains(dwellings, d => d.footprint.maxX < door.Position.x - 10);
         }
 
         [Fact]
@@ -289,7 +325,7 @@ namespace SimWorld.Tests.Building
             {
                 Pawn resident = settlement.Citizens.First(p => p.relations.familyId == d.householdId);
                 GenSpawn.Spawn(resident, door.Position + new IntVec3(-2, 0, 0), map); // inside the ring
-                IntVec3 slot = d.GetSleepingSlotPos(DwellingUtility.SleepingSlotIndexFor(resident, d));
+                IntVec3 slot = d.Beds(map).First().GetSleepingSlotPos(0);
                 Assert.True(Reachability.CanReach(resident, new LocalTargetInfo(slot), PathEndMode.OnCell), "cannot get home to " + slot);
                 resident.Position = slot;
                 Assert.True(Reachability.CanReach(resident, new LocalTargetInfo(edge), PathEndMode.OnCell), "cannot leave " + slot);
@@ -300,31 +336,25 @@ namespace SimWorld.Tests.Building
         // ---- sleeping ----
 
         [Fact]
-        public void Each_household_sleeps_in_its_own_dwelling_on_its_own_slot()
+        public void Each_household_sleeps_in_its_own_house_and_whoever_it_has_no_bed_for_in_the_dormitory()
         {
             CoreMap map = NewMap(60, 60);
             Settlement settlement = Band(couples: 3, singles: 0);
-            // A household of five: four slots, so one of them sleeps in the dormitory bed.
+            // A household of five in a windbreak hut of two beds: three of them sleep in the dormitory.
             Pawn a = settlement.Citizens[0];
-            var kids = new List<Pawn>();
             for (int i = 0; i < 3; i++)
             {
                 Pawn kid = NewHuman("Kid" + i);
                 kid.relations.familyId = a.relations.familyId;
                 settlement.AddCitizen(kid);
-                kids.Add(kid);
             }
 
-            var houses = new List<Dwelling>();
-            for (int i = 0; i < 3; i++)
-            {
-                var house = (Dwelling)ThingMaker.MakeThing(Def("House_Paleo"));
-                GenSpawn.Spawn(house, new IntVec3(10 + 8 * i, 0, 30), map);
-                houses.Add(house);
-            }
-            Thing bed = ThingMaker.MakeThing(ConstructionThingDefOf.Bed);
-            GenSpawn.Spawn(bed, new IntVec3(10, 0, 10), map);
+            DwellingDef hut = ShelterKit.Rung("House_Paleo");
+            for (int i = 0; i < 3; i++) ShelterKit.Raise(map, hut, new IntVec3(20 + 6 * i, 0, 30));
+            var dormitory = new List<Thing>();
+            for (int i = 0; i < 4; i++) dormitory.Add(GenSpawn.Spawn(ThingMaker.MakeThing(ConstructionThingDefOf.Bed), new IntVec3(10 + 2 * i, 0, 10), map));
             DwellingUtility.AssignHomes(settlement, map);
+            Assert.All(DwellingUtility.DwellingsOn(map), d => Assert.NotEqual(Pawn_RelationsTracker.None, d.householdId));
 
             List<Pawn> sleepers = settlement.Citizens.ToList();
             for (int i = 0; i < sleepers.Count; i++)
@@ -332,21 +362,45 @@ namespace SimWorld.Tests.Building
                 GenSpawn.Spawn(sleepers[i], new IntVec3(5 + i, 0, 20), map);
                 sleepers[i].needs.rest!.CurLevel = 0.05f;
             }
-            RunTicks(400, sleepers.ToArray());
+            RunTicks(600, sleepers.ToArray());
 
-            var slots = new HashSet<IntVec3>();
+            var beds = new HashSet<Thing>();
             foreach (Pawn p in sleepers)
             {
                 Assert.True(p.Asleep, p + " is not asleep");
-                Thing? where = p.jobs.curJob?.GetTarget(TargetIndex.A).Thing;
-                Assert.NotNull(where);
-                Assert.Same(where, p.CurrentBed());
-                Assert.True(slots.Add(p.Position), "two sleepers share " + p.Position);
-                if (where is Dwelling home) Assert.Equal(p.relations.familyId, home.householdId);
+                Thing? bed = p.jobs.curJob?.GetTarget(TargetIndex.A).Thing;
+                Assert.NotNull(bed);
+                Assert.Same(bed, p.CurrentBed());
+                Assert.True(beds.Add(bed!), "two sleepers share " + bed);
+                Dwelling? home = DwellingUtility.DwellingOfBed(bed!);
+                if (home != null) Assert.Equal(p.relations.familyId, home.householdId);
                 Assert.True(p.needs.rest!.lastRestEffectiveness > 1f);
             }
-            // The household of five: four in the house, one in the dormitory.
-            Assert.Equal(1, sleepers.Count(p => ReferenceEquals(p.jobs.curJob?.GetTarget(TargetIndex.A).Thing, bed)));
+            Pawn[] big = sleepers.Where(p => p.relations.familyId == a.relations.familyId).ToArray();
+            Assert.Equal(2, big.Count(p => DwellingUtility.IsOwnHomeBed(p, p.CurrentBed()!)));
+            Assert.Equal(3, big.Count(p => dormitory.Contains(p.CurrentBed()!)));
+        }
+
+        // ---- standing ----
+
+        [Fact]
+        public void A_house_that_loses_a_wall_is_planned_back_and_its_household_keeps_it()
+        {
+            CoreMap map = NewMap();
+            Settlement settlement = Band(couples: 10);
+            GrowUntilSettled(settlement, map);
+            Dwelling d = DwellingUtility.DwellingsOn(map).First();
+            int household = d.householdId;
+            IntVec3 wallCell = d.Parts.First(p => p.Kind == DwellingPartKind.Wall).Cell;
+
+            map.edificeGrid[wallCell]!.Destroy(DestroyMode.KillFinalize);
+            Assert.False(d.IsComplete(map));
+            Pass(settlement, map, 1000);
+
+            Assert.Equal(household, d.householdId);
+            Assert.Contains(map.thingGrid.ThingsListAt(wallCell), t => t is Blueprint);
+            BuildEverythingPlanned(map);
+            Assert.True(d.IsComplete(map));
         }
 
         // ---- determinism and saving ----
@@ -364,7 +418,8 @@ namespace SimWorld.Tests.Building
                 CoreMap map = NewMap();
                 GrowUntilSettled(Band(couples: 10), map);
                 return map.listerThings.AllThings.Where(t => t.def.category == ThingCategory.Building)
-                    .Select(t => t.def.defName + "@" + t.Position + "/" + t.Rotation + (t is Dwelling d ? "#" + d.householdId : ""))
+                    .Select(t => t.def.defName + "@" + t.Position + "/" + t.Rotation)
+                    .Concat(DwellingUtility.DwellingsOn(map).Select(d => d.def.defName + "@" + d.footprint + "/" + d.rot + "#" + d.householdId))
                     .OrderBy(s => s, StringComparer.Ordinal).ToList();
             }
 
@@ -391,7 +446,7 @@ namespace SimWorld.Tests.Building
             Assert.Empty(errors);
 
             static List<string> Homes(CoreMap map) => DwellingUtility.DwellingsOn(map)
-                .Select(d => d.def.defName + "@" + d.Position + "/" + d.Rotation + "#" + d.householdId).ToList();
+                .Select(d => d.def.defName + "@" + d.footprint + "/" + d.rot + "#" + d.householdId).ToList();
             Assert.Equal(Homes(original), Homes(loaded));
             Assert.All(DwellingUtility.DwellingsOn(loaded), d => Assert.NotEqual(Pawn_RelationsTracker.None, d.householdId));
 

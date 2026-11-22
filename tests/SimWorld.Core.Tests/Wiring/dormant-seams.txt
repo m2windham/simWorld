@@ -27,6 +27,7 @@
 
 # ---- notify: a hook nothing raises ----
 
+notify SimWorld.Building.CompRefuelable.Notify_UsedThisTick | RimWorld's per-use burn, raised by a refuelable that burns only while used (consumeFuelOnlyWhenUsed); the campfire and passive cooler both burn continuously, as in RimWorld, so nothing here uses it.
 notify SimWorld.Scenario.ScenPart.Notify_PawnGenerated | Blocked on pawn generation calling back into the scenario; the method's own doc says nothing calls it yet and it exists for the shape RimWorld gives every ScenPart.
 
 
@@ -37,6 +38,8 @@ worker SimWorld.Director.IncidentDef.workerClass = SimWorld.Director.IncidentWor
 
 # ---- content-silent: code reads it, no shipped Def sets it ----
 
+content-silent SimWorld.Building.CompProperties_Refuelable.consumeFuelOnlyWhenUsed | RimWorld sets it only on turrets and similar used-to-burn buildings; the campfire and passive cooler burn continuously, as RimWorld ships them.
+content-silent SimWorld.Building.CompProperties_Refuelable.minimumFueledThreshold | RimWorld leaves it 0 on the campfire and passive cooler too; read so a later refuelable that needs a minimum gets RimWorld's behaviour.
 content-silent SimWorld.Combat.VerbProperties.meleeArmorPenetrationBase | Melee verbs are built at runtime from a Tool (Combat/Tools.cs), which fills this in; no VerbProperties declared in content carries a melee verb of its own.
 content-silent SimWorld.Combat.VerbProperties.meleeDamageBaseAmount | Same as meleeArmorPenetrationBase: every melee verb in play comes from a Tool, so the content-declared field stays zero and AdjustedMeleeDamageAmount never reads a real value from XML.
 content-silent SimWorld.Combat.VerbProperties.minRange | No shipped weapon has a minimum range, so the too-close check in VerbProperties can never refuse a shot. Wired and waiting for content that needs it.
@@ -157,6 +160,9 @@ unwritten SimWorld.Pawns.Pawn.environment | Per-pawn override of the environment
 # prisoners and the letter stack all exist now, and four declarations in src/ still say they do not. That
 # is the §4 lesson (a recorded reason is evidence, not a verdict) arriving on schedule.
 
+untouched SimWorld.Building.CompProperties_TempControl.lowPowerConsumptionFactor | RimWorld's idle draw for the electric Cooler; this port's CompPowerTrader.PowerOutput is derived, not set, and no settlement builds power to draw from.
+untouched SimWorld.Building.CompProperties_TempControl.maxTargetTemperature | RimWorld reads it only in the target-temperature gizmo, which is the host's; the Cooler keeps its default target.
+untouched SimWorld.Building.CompProperties_TempControl.minTargetTemperature | RimWorld reads it only in the target-temperature gizmo, which is the host's; the Cooler keeps its default target.
 untouched SimWorld.Combat.Tool.chanceFactor | Per-tool selection weight. Nothing picks between a pawn's tools — Tools.cs turns each into a verb and the caller takes the first — so there is no weighted draw for this to weight.
 untouched SimWorld.Combat.Tool.linkedBodyPartsGroup | Ties a tool to the part that wields it, so a severed hand loses the punch. Needs the same tool-selection step chanceFactor does; both land together.
 untouched SimWorld.Defs.StatDef.hideAtValue | Presentation: whether a stat is omitted from a readout at a given value. Its consumer is God/View's stat panel, which today reports every stat it is asked for.
@@ -171,7 +177,6 @@ untouched SimWorld.Economy.TraderKindDef.tradeCurrency | Every trade settles in 
 untouched SimWorld.Factions.FactionDef.allowedArrivalTemperatureRange | Real gap — the declaration says "no weather/temperature system exists to gate arrivals against it" and that has expired: Weather/GenTemperature ships. Nothing gates an arriving caravan on the band it declares.
 untouched SimWorld.Health.AddedBodyPartProps.betterThanNatural | Prosthetics that beat the original part. No surgery installs an added part yet, so nothing can ask whether this one is an upgrade; lands with the bionics module.
 untouched SimWorld.Health.BodyPartDef.alive | Separates flesh from a mechanical part for rot, bleeding and corpse checks. Every shipped part is alive and no site branches on it; lands with bionics, alongside betterThanNatural.
-untouched SimWorld.Health.BodyPartDef.frostbiteVulnerability | Temperature exists now but cold injury does not: there is no frostbite hediff or worker for this to weight. Lands with the hypothermia module.
 untouched SimWorld.Health.BodyPartDef.socketed | Marks a part that takes an implant without amputation. Surgery is unbuilt, so nothing asks the question this answers.
 untouched SimWorld.Health.DamageDef.consideredHelpful | Marks surgical and tending damage so it never reads as an attack. Only hostile damage defs ship, so no site has had to tell the two apart.
 untouched SimWorld.Health.DamageDef.harmAllLayersUntilOutside | Real gap — the declaration's "data only until apparel exists" has expired: Pawn_ApparelTracker and Combat/Armor.cs both ship, so an explosion punching every layer down to the skin is buildable today and armour simply never sees the flag.

@@ -124,6 +124,14 @@ namespace SimWorld.Building
             EnsureCompound(settlement, map);
             DwellingUtility.AssignHomes(settlement, map);
 
+            // Houses are planned whole, on their own plots, and kept standing (shelter lane): see DwellingPlanner.
+            // Once every citizen has a bed, built or planned, a household without a house is what comes next.
+            int citizenCount = settlement.Citizens.Count;
+            bool dormitoryCovered = citizenCount > 0
+                && CountBuiltOrPlanned(map, ConstructionThingDefOf.Bed) + DwellingUtility.HousedCitizens(settlement, map) >= citizenCount;
+            DwellingPlanner.Plan(settlement, map, dormitoryCovered);
+            SettlementClimate.Tick(settlement, map);
+
             List<Need> needs = ComputeNeeds(settlement, map);
             if (needs.Count == 0) return;
 
@@ -215,17 +223,6 @@ namespace SimWorld.Building
             int storageTarget = StorageHutNeed.Target(settlement);
             if (storageTarget > 0) needs.Add(new Need(ConstructionThingDefOf.StorageHut, storageTarget));
 
-            // A home for each household, last: once everyone has a bed to sleep in, built or planned, a
-            // household without a dwelling is what the settlement builds next. See Shortfall for the throttle.
-            // Planned counts: RimWorld builds whatever is designated in no fixed order, and waiting for every
-            // dormitory bed to stand starved a wood-poor map of homes that sleep four for less than one bed's
-            // worth of wood each.
-            if (citizens > 0 && CountBuiltOrPlanned(map, ConstructionThingDefOf.Bed) + housed >= citizens)
-            {
-                int households = DwellingUtility.Households(settlement).Count;
-                if (households > 0) needs.Add(new Need(DwellingUtility.PreferredDwellingDef(), households));
-            }
-
             return needs;
         }
 
@@ -250,12 +247,6 @@ namespace SimWorld.Building
             if (compound != null && OnlyOnTheRing(need.EntityDef))
             {
                 return compound.CountFree(map, need.EntityDef, HomeIfAny(map));
-            }
-            if (DwellingUtility.IsDwelling(need.EntityDef))
-            {
-                // Every rung fills the one need, and only DwellingTuning.MaxUnderway go up at a time.
-                int wanted = need.Target - DwellingUtility.CountBuiltOrPlanned(map);
-                return Math.Min(wanted, DwellingTuning.MaxUnderway - DwellingUtility.CountUnderway(map));
             }
             return need.Target - CountBuiltOrPlanned(map, need.EntityDef);
         }
@@ -304,23 +295,34 @@ namespace SimWorld.Building
         {
             IReadOnlyList<ThingDef> fills = StoneWallMaterials.EquivalentsOf(entityDef);
 
+            // A house's beds and walls are its household's, planned with the house (DwellingPlanner), and never
+            // count toward the dormitory's beds or the settlement's walls (shelter lane).
             int count = 0;
-            for (int i = 0; i < fills.Count; i++) count += map.listerThings.ThingsOfDef(fills[i]).Count;
+            for (int i = 0; i < fills.Count; i++)
+            {
+                IReadOnlyList<Thing> built = map.listerThings.ThingsOfDef(fills[i]);
+                for (int j = 0; j < built.Count; j++)
+                {
+                    if (!InADwelling(map, built[j])) count++;
+                }
+            }
 
             IReadOnlyList<Thing> blueprints = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
             for (int i = 0; i < blueprints.Count; i++)
             {
-                if (blueprints[i] is Blueprint bp && Fills(fills, bp.EntityToBuild)) count++;
+                if (blueprints[i] is Blueprint bp && Fills(fills, bp.EntityToBuild) && !InADwelling(map, bp)) count++;
             }
 
             IReadOnlyList<Thing> frames = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame);
             for (int i = 0; i < frames.Count; i++)
             {
-                if (frames[i] is Frame f && Fills(fills, f.EntityToBuild)) count++;
+                if (frames[i] is Frame f && Fills(fills, f.EntityToBuild) && !InADwelling(map, f)) count++;
             }
 
             return count;
         }
+
+        private static bool InADwelling(Map.Map map, Thing t) => t.Spawned && DwellingUtility.DwellingAt(map, t.Position) != null;
 
         /// <summary>Whether an active edict prioritises this need. Matched across
         /// <see cref="StoneWallMaterials.EquivalentsOf"/> for the same reason

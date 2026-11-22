@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The dwelling ladder (shelter lane): each rung a house plan of real walls, a door and beds, raised by builders
+    through the blueprint and frame pipeline and lived in by one household (Building.DwellingDef, Building.Dwelling).
+    The defNames are the host's art families (House_<Era>), kept from the ladder of single-building homes this
+    replaces. Layout rows run back to front: the last row faces the street.
+
+    What keeps a household alive through a heat wave or a cold snap is RimWorld's room temperature model, read
+    from the 1.0 decompile (Verse.RoomGroupTempTracker) and ported in Building.RoomTracker: a built roof and every
+    wall cell trade heat with the outdoor air, a door trades with whatever is beyond it, and earth overhead pulls a
+    room warmer than 15 C back toward 15. So a small room above ground follows the weather within hours, and the
+    rungs differ in what they put between their people and it:
+
+      House_Paleo        WindbreakShelters   SticksAndStones  windbreak hut: wood, constructed roof, 2 beds.
+                                                              Out of the wind and the rain; in a heat wave it
+                                                              is as hot as outdoors, so it needs its hearth
+                                                              for the cold and has nothing for the heat.
+      House_Meso         PitDwellings        SticksAndStones  pit house: earth banks (ThingDef.earthBanked) and
+                                                              an earthen roof (RoofDef.isEarthen), 3 beds. The
+                                                              earth on every side pulls it toward 15 C, so only
+                                                              its door trades with the heat outside.
+      House_Neo          Shelter             Agrarian         longhouse: the pit house made long, 4 beds.
+      House_Chalco       Copper+Windcatchers Bronze           town house: above ground in the era's wall (wood,
+                                                              or stone once Masonry and cut blocks allow), 4
+                                                              beds, a hearth and a cooler spot. A settlement only
+                                                              comes out of the ground once it can cool a house.
+      House_Classical    Sanitation          Classical        courtyard house: a walled court open to the street
+                                                              through a gateway, the bedroom off it, 4 beds.
+      House_Medieval     GuildHalls          Medieval         stone town house: one large room, 5 beds; the
+                                                              larger the room, the less wall per cell of air.
+      House_Industrial   UrbanSanitation     Industrial       terrace house: a parlour between the street and
+                                                              the bedroom, so the bedroom's door opens onto air
+                                                              that has already been inside. Cut stone stands in
+                                                              for brick, which has no material in this content.
+      House_Information  Suburbs             Information      suburban house: the terrace plan in steel where the
+                                                              settlement has steel.
+      House_Exotic       Arcologies          Exotic           arcology apartment: one room, 5 beds, steel.
+
+    Every rung keeps a hearth spot and every above-ground rung a cooler spot: SettlementClimate builds a campfire
+    or a passive cooler there when the season or a heat wave or cold snap calls for one, and switches it off when
+    it does not. The earth-sheltered rungs have no cooler spot: they need none.
+
+    Sizes, bed counts and which research opens which rung are this port's own; RimWorld has no houses. The rungs'
+    thermal standing is pinned by ShelterRoomTests as a comparison, not as temperatures.
+  -->
+
+  <DwellingDef>
+    <defName>House_Paleo</defName>
+    <label>windbreak hut</label>
+    <description>Branch and hide walls round two sleeping pallets: out of the wind, and somewhere to come back to.</description>
+    <rung>0</rung>
+    <era>SticksAndStones</era>
+    <researchPrerequisites>
+      <li>WindbreakShelters</li>
+    </researchPrerequisites>
+    <layout>
+      <li>####</li>
+      <li>#bb#</li>
+      <li>#BB#</li>
+      <li>#.h#</li>
+      <li>#D##</li>
+    </layout>
+  </DwellingDef>
+
+  <DwellingDef>
+    <defName>House_Meso</defName>
+    <label>pit house</label>
+    <description>A floor dug into the ground, the spoil banked round it and heaped over a timber roof: cool in the heat of the day.</description>
+    <rung>1</rung>
+    <era>SticksAndStones</era>
+    <researchPrerequisites>
+      <li>PitDwellings</li>
+    </researchPrerequisites>
+    <wallDef>WallEarth</wallDef>
+    <roofDef>RoofEarth</roofDef>
+    <layout>
+      <li>######</li>
+      <li>#bbb.#</li>
+      <li>#BBB.#</li>
+      <li>#...h#</li>
+      <li>#....#</li>
+      <li>##D###</li>
+    </layout>
+  </DwellingDef>
+
+  <DwellingDef>
+    <defName>House_Neo</defName>
+    <label>longhouse</label>
+    <description>A long house half sunk into the ground under a turf roof, room for a household and its hearth.</description>
+    <rung>2</rung>
+    <era>Agrarian</era>
+    <researchPrerequisites>
+      <li>Shelter</li>
+    </researchPrerequisites>
+    <wallDef>WallEarth</wallDef>
+    <roofDef>RoofEarth</roofDef>
+    <layout>
+      <li>#######</li>
+      <li>#bbbb.#</li>
+      <li>#BBBB.#</li>
+      <li>#....h#</li>
+      <li>#.....#</li>
+      <li>###D###</li>
+    </layout>
+  </DwellingDef>
+
+  <DwellingDef>
+    <defName>House_Chalco</defName>
+    <label>town house</label>
+    <description>Walls standing in the open air, a hearth for the winter and wet jars in a draught for the summer.</description>
+    <rung>3</rung>
+    <era>Bronze</era>
+    <researchPrerequisites>
+      <li>Copper</li>
+      <li>Windcatchers</li>
+    </researchPrerequisites>
+    <layout>
+      <li>######</li>
+      <li>#bbbb#</li>
+      <li>#BBBB#</li>
+      <li>#c..h#</li>
+      <li>#....#</li>
+      <li>##D###</li>
+    </layout>
+  </DwellingDef>
+
+  <DwellingDef>
+    <defName>House_Classical</defName>
+    <label>courtyard house</label>
+    <description>A walled court open to the street, and the household's room off it.</description>
+    <rung>4</rung>
+    <era>Classical</era>
+    <researchPrerequisites>
+      <li>Sanitation</li>
+    </researchPrerequisites>
+    <layout>
+      <li>#######</li>
+      <li>#bbbbc#</li>
+      <li>#BBBBh#</li>
+      <li>###D###</li>
+      <li>#,,,,,#</li>
+      <li>#,,,,,#</li>
+      <li>###,###</li>
+    </layout>
+  </DwellingDef>
+
+  <DwellingDef>
+    <defName>House_Medieval</defName>
+    <label>stone town house</label>
+    <description>A large room of stone, a hearth at one end and the household's beds along the back wall.</description>
+    <rung>5</rung>
+    <era>Medieval</era>
+    <researchPrerequisites>
+      <li>GuildHalls</li>
+    </researchPrerequisites>
+    <layout>
+      <li>#######</li>
+      <li>#bbbbb#</li>
+      <li>#BBBBB#</li>
+      <li>#c...h#</li>
+      <li>#.....#</li>
+      <li>###D###</li>
+    </layout>
+  </DwellingDef>
+
+  <DwellingDef>
+    <defName>House_Industrial</defName>
+    <label>terrace house</label>
+    <description>A parlour on the street and the bedroom behind it, in cut stone where the brickworks would be.</description>
+    <rung>6</rung>
+    <era>Industrial</era>
+    <researchPrerequisites>
+      <li>UrbanSanitation</li>
+    </researchPrerequisites>
+    <layout>
+      <li>#######</li>
+      <li>#bbbbc#</li>
+      <li>#BBBBh#</li>
+      <li>###D###</li>
+      <li>#.....#</li>
+      <li>#.....#</li>
+      <li>###D###</li>
+    </layout>
+  </DwellingDef>
+
+  <DwellingDef>
+    <defName>House_Information</defName>
+    <label>suburban house</label>
+    <description>A detached house on its own plot: a front room and a bedroom behind it, framed in steel.</description>
+    <rung>7</rung>
+    <era>Information</era>
+    <researchPrerequisites>
+      <li>Suburbs</li>
+    </researchPrerequisites>
+    <wallStuff>Steel</wallStuff>
+    <layout>
+      <li>#######</li>
+      <li>#bbbbc#</li>
+      <li>#BBBBh#</li>
+      <li>###D###</li>
+      <li>#.....#</li>
+      <li>#.....#</li>
+      <li>###D###</li>
+    </layout>
+  </DwellingDef>
+
+  <DwellingDef>
+    <defName>House_Exotic</defName>
+    <label>arcology apartment</label>
+    <description>One household's share of a structure built to composite tolerances.</description>
+    <rung>8</rung>
+    <era>Exotic</era>
+    <researchPrerequisites>
+      <li>Arcologies</li>
+    </researchPrerequisites>
+    <wallStuff>Steel</wallStuff>
+    <layout>
+      <li>#######</li>
+      <li>#bbbbb#</li>
+      <li>#BBBBB#</li>
+      <li>#c...h#</li>
+      <li>#.....#</li>
+      <li>###D###</li>
+    </layout>
+  </DwellingDef>
+
+</Defs>

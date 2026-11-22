@@ -102,15 +102,17 @@ namespace SimWorld.Tests.Health
         }
 
         [Fact]
-        public void Exactly_one_shipped_damage_is_not_violence()
+        public void Only_surgery_and_frostbite_are_shipped_damage_that_is_not_violence()
         {
             // The distinction has to exist in content or the reader is decoration. It is a surgeon's knife,
             // and it is the one the port already used to kill patients with — as plain Cut, which is why a
             // botched operation would have read as a murder the moment anything consulted this flag.
+            // Frostbite is the second: nobody did it (RimWorld 1.0 Damages_Environmental.xml has it
+            // externalViolence false too).
             List<string> nonViolent = DefDatabase<DamageDef>.AllDefsListForReading
-                .Where(d => !d.externalViolence).Select(d => d.defName).ToList();
+                .Where(d => !d.externalViolence).Select(d => d.defName).OrderBy(n => n, System.StringComparer.Ordinal).ToList();
 
-            Assert.Equal(new[] { "SurgicalCut" }, nonViolent);
+            Assert.Equal(new[] { "Frostbite", "SurgicalCut" }, nonViolent);
         }
 
         // ---- the storyteller ----

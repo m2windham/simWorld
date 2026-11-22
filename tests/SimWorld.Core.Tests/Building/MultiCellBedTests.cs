@@ -546,7 +546,7 @@ namespace SimWorld.Tests.Building
                     if (!p.Spawned || !p.Asleep || p.jobs.curJob?.def != JobDefOf.LayDown) continue;
                     Thing? bed = p.jobs.curJob.GetTarget(TargetIndex.A).Thing;
                     if (bed == null) continue;
-                    Assert.Equal(bed.GetSleepingSlotPos(DwellingUtility.SleepingSlotIndexFor(p, bed)), p.Position); // a dwelling gives each member a slot
+                    Assert.Equal(bed.GetSleepingSlotPos(0), p.Position);
                     sleptInABed++;
                 }
 

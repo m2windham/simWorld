@@ -176,6 +176,26 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
+    <defName>Windcatchers</defName>
+    <label>windcatchers</label>
+    <description>Wet clay jars set in the draught a roof tower catches cool a room through the hottest days; the wadding must be kept wet and renewed.</description>
+    <baseCost>570</baseCost>
+    <techLevel>Medieval</techLevel>
+    <tab>Main</tab>
+    <era>Bronze</era>
+    <tags>
+      <li>Bronze</li>
+      <li>ConstructionSettlement</li>
+    </tags>
+    <prerequisites>
+      <li>Pottery</li>
+      <li>Copper</li>
+    </prerequisites>
+    <researchViewX>29</researchViewX>
+    <researchViewY>2</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
     <defName>Plow</defName>
     <label>plow</label>
     <description>An animal-drawn blade turns soil faster and deeper than any hoe.</description>
@@ -191,7 +211,7 @@
       <li>AnimalHusbandry</li>
       <li>Bronze</li>
     </prerequisites>
-    <researchViewX>29</researchViewX>
+    <researchViewX>30</researchViewX>
     <researchViewY>3</researchViewY>
   </ResearchProjectDef>
 
@@ -210,7 +230,7 @@
     <prerequisites>
       <li>SelectiveBreeding</li>
     </prerequisites>
-    <researchViewX>30</researchViewX>
+    <researchViewX>31</researchViewX>
     <researchViewY>3</researchViewY>
   </ResearchProjectDef>
 
@@ -229,7 +249,7 @@
     <prerequisites>
       <li>UrbanPlanning</li>
     </prerequisites>
-    <researchViewX>31</researchViewX>
+    <researchViewX>32</researchViewX>
     <researchViewY>4</researchViewY>
   </ResearchProjectDef>
 
@@ -248,7 +268,7 @@
     <prerequisites>
       <li>Kingship</li>
     </prerequisites>
-    <researchViewX>32</researchViewX>
+    <researchViewX>33</researchViewX>
     <researchViewY>4</researchViewY>
   </ResearchProjectDef>
 
@@ -267,7 +287,7 @@
     <prerequisites>
       <li>Writing</li>
     </prerequisites>
-    <researchViewX>33</researchViewX>
+    <researchViewX>34</researchViewX>
     <researchViewY>4</researchViewY>
   </ResearchProjectDef>
 
@@ -286,7 +306,7 @@
     <prerequisites>
       <li>Writing</li>
     </prerequisites>
-    <researchViewX>34</researchViewX>
+    <researchViewX>35</researchViewX>
     <researchViewY>5</researchViewY>
   </ResearchProjectDef>
 
@@ -305,7 +325,7 @@
     <prerequisites>
       <li>Writing</li>
     </prerequisites>
-    <researchViewX>35</researchViewX>
+    <researchViewX>36</researchViewX>
     <researchViewY>5</researchViewY>
   </ResearchProjectDef>
 
@@ -324,7 +344,7 @@
     <prerequisites>
       <li>Kingship</li>
     </prerequisites>
-    <researchViewX>36</researchViewX>
+    <researchViewX>37</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -343,7 +363,7 @@
     <prerequisites>
       <li>Priesthood</li>
     </prerequisites>
-    <researchViewX>37</researchViewX>
+    <researchViewX>38</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -362,7 +382,7 @@
     <prerequisites>
       <li>Writing</li>
     </prerequisites>
-    <researchViewX>38</researchViewX>
+    <researchViewX>39</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -381,7 +401,7 @@
     <prerequisites>
       <li>Bronze</li>
     </prerequisites>
-    <researchViewX>39</researchViewX>
+    <researchViewX>40</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -401,7 +421,7 @@
       <li>Cart</li>
       <li>BronzeWeapons</li>
     </prerequisites>
-    <researchViewX>40</researchViewX>
+    <researchViewX>41</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -420,7 +440,7 @@
     <prerequisites>
       <li>BronzeWeapons</li>
     </prerequisites>
-    <researchViewX>41</researchViewX>
+    <researchViewX>42</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -439,7 +459,7 @@
     <prerequisites>
       <li>Sailing</li>
     </prerequisites>
-    <researchViewX>42</researchViewX>
+    <researchViewX>43</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -459,7 +479,7 @@
       <li>Bronze</li>
       <li>Writing</li>
     </prerequisites>
-    <researchViewX>43</researchViewX>
+    <researchViewX>44</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -478,7 +498,7 @@
     <prerequisites>
       <li>HerbalRemedies</li>
     </prerequisites>
-    <researchViewX>44</researchViewX>
+    <researchViewX>45</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -497,7 +517,7 @@
     <prerequisites>
       <li>Pottery</li>
     </prerequisites>
-    <researchViewX>45</researchViewX>
+    <researchViewX>46</researchViewX>
     <researchViewY>10</researchViewY>
   </ResearchProjectDef>
 
@@ -516,7 +536,7 @@
     <prerequisites>
       <li>Bronze</li>
     </prerequisites>
-    <researchViewX>46</researchViewX>
+    <researchViewX>47</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -535,7 +555,7 @@
     <prerequisites>
       <li>Wheel</li>
     </prerequisites>
-    <researchViewX>47</researchViewX>
+    <researchViewX>48</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -554,7 +574,7 @@
     <prerequisites>
       <li>Cart</li>
     </prerequisites>
-    <researchViewX>48</researchViewX>
+    <researchViewX>49</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -574,7 +594,7 @@
       <li>Woodworking</li>
       <li>Bronze</li>
     </prerequisites>
-    <researchViewX>49</researchViewX>
+    <researchViewX>50</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 

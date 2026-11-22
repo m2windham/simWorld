@@ -102,12 +102,11 @@ namespace SimWorld.Bench.Suites
                 .Select(g => g.Key + ":" + g.Count());
             sb.AppendLine("  wood on map " + woodOnMap + ", stored " + woodStored + "; jobs " + string.Join(" ", jobs));
             sb.AppendLine("  dwellings:");
-            foreach (Thing t in map.listerThings.AllThings.Where(t => DwellingUtility.IsDwelling(BuiltDef(t))).OrderBy(t => t.thingIDNumber))
+            foreach (Dwelling d in DwellingUtility.DwellingsOn(map))
             {
-                ThingDef def = BuiltDef(t)!;
-                CellRect rect = GenAdj.OccupiedRect(t.Position, t.Rotation, def.size);
-                bool onPlot = plots.Any(p => p.Plot == rect && p.Rot == t.Rotation);
-                sb.AppendLine("    " + t.def.defName + " at " + Cell(t.Position) + " rot " + t.Rotation + " covers " + Rect(rect) + (onPlot ? " ON PLOT" : " off-plot"));
+                bool onPlot = plots.Any(p => p.Rot == d.rot && !p.Plot.ClipInsideRect(d.footprint).IsEmpty);
+                sb.AppendLine("    " + d.def.defName + " rot " + d.rot + " covers " + Rect(d.footprint) + (d.IsComplete(map) ? " complete" : " going up")
+                    + (onPlot ? " ON PLOT" : " off-plot"));
             }
 
             int beds = 0, inCompound = 0, inRoom = 0, outdoors = 0;
@@ -144,7 +143,7 @@ namespace SimWorld.Bench.Suites
             return sb.ToString();
         }
 
-        /// <summary>North up: # wall, D door, b bed, H dwelling, + other building, B blueprint/frame, ~ rock or
+        /// <summary>North up: # wall, D door, b bed, H a house's wall, + other building, B blueprint/frame, ~ rock or
         /// other unwalkable, T tree, f field, . home area, blank outside it.</summary>
         private static string Picture(CoreMap map, CellRect view)
         {
@@ -160,8 +159,8 @@ namespace SimWorld.Bench.Suites
                     Thing? e = map.edificeGrid[c];
                     char ch;
                     if (here.Any(t => t is Blueprint || t is Frame)) ch = 'B';
-                    else if (e != null && DwellingUtility.IsDwelling(e.def)) ch = 'H';
                     else if (e != null && ReferenceEquals(e.def, CompoundThingDefOf.Door)) ch = 'D';
+                    else if (e != null && DwellingUtility.DwellingAt(map, c) != null && e.def.Fillage == FillCategory.Full) ch = 'H';
                     else if (e != null && StoneWallMaterials.IsWall(e.def)) ch = '#';
                     else if (e != null && ReferenceEquals(e.def, ConstructionThingDefOf.Bed)) ch = 'b';
                     else if (!map.pathGrid.Walkable(c)) ch = '~';

@@ -55,6 +55,11 @@ namespace SimWorld.Pawns
                     return DeathCause.Starvation;
                 }
 
+                if (culprit.def == TemperatureDefOf.Hypothermia || culprit.def == TemperatureDefOf.Heatstroke)
+                {
+                    return DeathCause.Exposure;
+                }
+
                 if (IsImmunizable(culprit.def)) return DeathCause.Disease;
 
                 // BloodLoss and anything else lethal that is not an infection: the wound finished the job.

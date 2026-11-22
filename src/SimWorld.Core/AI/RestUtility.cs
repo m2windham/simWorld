@@ -48,7 +48,7 @@ namespace SimWorld.AI
             IReadOnlyList<Thing> here = pawn.Map.thingGrid.ThingsListAt(pawn.Position);
             for (int i = 0; i < here.Count; i++)
             {
-                if (here[i].def == ConstructionThingDefOf.Bed || DwellingUtility.IsSleepingSlotOf(here[i], pawn.Position)) return here[i];
+                if (here[i].def == ConstructionThingDefOf.Bed) return here[i];
             }
             return null;
         }
@@ -71,6 +71,10 @@ namespace SimWorld.AI
                 // RimWorld: RestUtility.IsValidBedFor refuses a bed that is on fire (bedThing.IsBurning()).
                 if (bed.IsBurning()) continue;
                 if (!map.reservationManager.CanReserve(pawn, bed)) continue;
+                // A bed in a household's house is that household's (shelter lane): nobody else sleeps in it,
+                // as a RimWorld pawn does not take a bed another colonist owns.
+                Dwelling? home = DwellingUtility.DwellingOfBed(bed);
+                if (home != null && home.householdId != (pawn.relations?.familyId ?? Pawns.Pawn_RelationsTracker.None)) continue;
                 int distSq = (bed.Position - pawn.Position).LengthHorizontalSquared;
                 if (distSq >= bestDistSq) continue;
                 if (!Reachability.CanReach(pawn, bed, PathEndMode.OnCell)) continue;

@@ -100,7 +100,7 @@ namespace SimWorld.Building
     }
 
     /// <summary>Owns every <see cref="Area"/> on a map (RimWorld: <c>Verse.AreaManager</c>), trimmed to the
-    /// two Areas this port ships.</summary>
+    /// three Areas this port ships.</summary>
     public sealed class AreaManager
     {
         public Area Home { get; }
@@ -110,10 +110,16 @@ namespace SimWorld.Building
         /// <see cref="Weather.WorkGiver_ClearSnow"/>.</summary>
         public Area SnowClear { get; }
 
+        /// <summary>Where a roof is to be built (RimWorld: <c>RimWorld.Area_BuildRoof</c>,
+        /// <c>AreaManager.BuildRoof</c>): marked by <see cref="AutoBuildRoofAreaSetter"/> over a room its builders
+        /// closed in, read by <see cref="WorkGiver_BuildRoof"/>. Cells stay marked once roofed, as RimWorld's do.</summary>
+        public Area BuildRoof { get; }
+
         public AreaManager(Map.Map map)
         {
             Home = new Area(map, "Home area");
             SnowClear = new Area(map, "Snow clear");
+            BuildRoof = new Area(map, "Build roof");
         }
 
         /// <summary>The home area keeps writing at the map's own level, where saves made before the snow-clear
@@ -127,6 +133,17 @@ namespace SimWorld.Building
                 try
                 {
                     SnowClear.ExposeData();
+                }
+                finally
+                {
+                    Scribe.ExitNode();
+                }
+            }
+            if (Scribe.EnterNode("buildRoofArea"))
+            {
+                try
+                {
+                    BuildRoof.ExposeData();
                 }
                 finally
                 {

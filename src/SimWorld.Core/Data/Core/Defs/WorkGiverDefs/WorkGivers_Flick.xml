@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Flick (RimWorld 1.0 Core/Defs/WorkGiverDefs/WorkGivers.xml: BasicWorker, priorityInType 500). Its own
+       file (CLAUDE.md). RimWorld's canBeDoneWhileDrafted is not carried: nothing here drafts. -->
+
+  <WorkGiverDef>
+    <defName>Flick</defName>
+    <label>flick switches</label>
+    <verb>flick switch on</verb>
+    <gerund>flicking switch on</gerund>
+    <workType>BasicWorker</workType>
+    <priorityInType>500</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_Flick</giverClass>
+  </WorkGiverDef>
+
+</Defs>

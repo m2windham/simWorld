@@ -15,6 +15,9 @@
       <!-- The stats module's own default already matches this; set explicitly so a future non-Human
            statBases override reads as deliberate, not an oversight. -->
       <MentalBreakThreshold>0.35</MentalBreakThreshold>
+      <!-- 16..26 C: rimworldwiki Human infobox, "Comfortable Temp Range". -->
+      <ComfyTemperatureMin>16</ComfyTemperatureMin>
+      <ComfyTemperatureMax>26</ComfyTemperatureMax>
     </statBases>
     <race>
       <intelligence>Humanlike</intelligence>

@@ -3,12 +3,10 @@ using System.Collections.Generic;
 namespace SimWorld.Building
 {
     /// <summary>
-    /// One or more <see cref="Room"/>s pooled into a single thermal unit (RimWorld: <c>Verse.RoomGroup</c>).
-    /// Real RimWorld's Room stops at a closed door but RoomGroup joins rooms connected only by one back into
-    /// sharing a temperature, since a door is not a wall. This port's <see cref="Door"/> has no closed state
-    /// at all (see its own remarks) — every Door is always open — so the practical effect here is that a
-    /// doorway carries zero insulation of its own rather than merely "some": it still separates two Rooms
-    /// (their geometry differs) but never keeps their temperatures apart.
+    /// A thermal unit (RimWorld: <c>Verse.RoomGroup</c>). Since doors became thermal barriers every group here
+    /// holds exactly one <see cref="Room"/>; the class stays because the temperature, its equalisation data
+    /// and every reader (<c>room.Group.Temperature</c>) hang off it. Heat crosses a <see cref="Door"/> only
+    /// through <see cref="RoomTracker"/>'s door exchange.
     /// </summary>
     public sealed class RoomGroup
     {
@@ -16,9 +14,24 @@ namespace SimWorld.Building
 
         internal readonly List<Room> rooms = new List<Room>();
 
-        /// <summary>Valid only while <see cref="UsesOutdoorTemperature"/> is false; equalises toward the
-        /// map's outdoor temperature every tick, pushed by any <see cref="CompHeatPusherPowered"/> inside.</summary>
+        /// <summary>Valid only while <see cref="UsesOutdoorTemperature"/> is false; equalises toward
+        /// outdoor air and its neighbours every tick (see <see cref="RoomTracker"/>), pushed by any <see cref="CompHeatPusherPowered"/> inside.</summary>
         internal float temperature;
+
+        /// <summary>Share of cells under thin (constructed or thin rock) roof, and under thick rock or earthen roof.</summary>
+        internal float thinRoofShare;
+
+        internal float thickRoofShare;
+
+        /// <summary>Wall cells bounding this group that are earth-banked (<see cref="Defs.ThingDef.earthBanked"/>):
+        /// sampled as the deep earth, not the air beyond, so they have no entry in <see cref="wallBeyondCells"/>.</summary>
+        internal int earthBankedWallCells;
+
+        /// <summary>The far side of each wall cell bounding this group, one entry per wall cell.</summary>
+        internal readonly List<SimWorld.Map.IntVec3> wallBeyondCells = new List<SimWorld.Map.IntVec3>();
+
+        /// <summary>This tick's roof and wall change, computed for every group before any is applied.</summary>
+        internal float pendingDelta;
 
         public IReadOnlyList<Room> Rooms => rooms;
 
@@ -47,6 +60,15 @@ namespace SimWorld.Building
         }
 
         public float Temperature => UsesOutdoorTemperature ? map.outdoorTemperature : temperature;
+
+        /// <summary>Adds <paramref name="energy"/> spread over the group's cells; refused (false) by a group
+        /// that is outdoor air (RimWorld: <c>RoomGroup.PushHeat</c>).</summary>
+        public bool PushHeat(float energy)
+        {
+            if (UsesOutdoorTemperature) return false;
+            temperature += energy / CellCount;
+            return true;
+        }
 
         internal RoomGroup(Map.Map map)
         {

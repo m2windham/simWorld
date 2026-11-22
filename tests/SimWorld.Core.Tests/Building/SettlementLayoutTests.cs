@@ -61,12 +61,16 @@ namespace SimWorld.Tests.Building
             Settlement settlement = game.World!.worldObjects.OfType<Settlement>().First();
             GodCommands.OpenSettlement(settlement.tile);
             CoreMap map = settlement.InteriorMap!;
+            // The first house is learned (shelter lane): a band that knows windbreaks from the start, so the
+            // street is laid out inside the day this test watches.
+            Find.ResearchManager.FinishProject(DefDatabase<SimWorld.Research.ResearchProjectDef>.GetNamed("WindbreakShelters"));
             for (int i = 0; i < 60000; i++) game.TickManager.DoSingleTick();
 
             SettlementCompound compound = Assert.IsType<SettlementCompound>(map.settlementCompound);
-            List<Thing> beds = AllOf(map, d => ReferenceEquals(d, ConstructionThingDefOf.Bed));
-            List<Thing> dwellings = AllOf(map, DwellingUtility.IsDwelling);
-            output.WriteLine("compound " + compound.Interior + ", " + beds.Count + " beds, " + dwellings.Count + " dwellings");
+            List<Thing> beds = AllOf(map, d => ReferenceEquals(d, ConstructionThingDefOf.Bed))
+                .Where(b => DwellingUtility.DwellingAt(map, b.Position) == null).ToList();
+            IReadOnlyList<Dwelling> dwellings = DwellingUtility.DwellingsOn(map);
+            output.WriteLine("compound " + compound.Interior + ", " + beds.Count + " dormitory beds, " + dwellings.Count + " dwellings");
 
             Assert.NotEmpty(beds);
             Assert.All(beds, b => Assert.True(compound.Interior.Contains(b.Position), b.def.defName + " at " + b.Position + " is outside the ring's interior " + compound.Interior));
@@ -75,8 +79,8 @@ namespace SimWorld.Tests.Building
             Assert.NotEmpty(dwellings);
             Assert.All(dwellings, d =>
             {
-                CellRect rect = GenAdj.OccupiedRect(d.Position, d.Rotation, BuiltDef(d)!.size);
-                Assert.True(plots.Any(p => p.Plot == rect && p.Rot == d.Rotation), d.def.defName + " at " + d.Position + " " + d.Rotation + " is not on a street plot");
+                Assert.True(plots.Any(p => p.Rot == d.rot && p.Plot.ClipInsideRect(d.footprint) == d.footprint),
+                    d.def.defName + " at " + d.footprint + " " + d.rot + " is not on a street plot");
             });
 
             // The yard is the benches' (they may stand on it by now), never rock.

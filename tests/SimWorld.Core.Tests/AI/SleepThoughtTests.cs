@@ -52,9 +52,7 @@ namespace SimWorld.Tests.AI
         public void A_household_sleeping_at_home_is_in_its_bedroom_and_a_dormitory_sleeper_in_barracks()
         {
             var map = new CoreMap(60, 60, TerrainDefOf.Soil);
-            var house = (Dwelling)ThingMaker.MakeThing(DwellingThingDefOf.House_Paleo);
-            house.householdId = 7;
-            GenSpawn.Spawn(house, new IntVec3(30, 0, 30), map);
+            SimWorld.Tests.Building.ShelterKit.Raise(map, SimWorld.Tests.Building.ShelterKit.Rung("House_Paleo"), new IntVec3(30, 0, 30), householdId: 7);
             GenSpawn.Spawn(ThingMaker.MakeThing(ConstructionThingDefOf.Bed), new IntVec3(10, 0, 10), map);
 
             Pawn a = Tired(map, "A", 7, new IntVec3(20, 0, 20));
@@ -91,19 +89,18 @@ namespace SimWorld.Tests.AI
         public void Another_households_dwelling_is_barracks_and_only_the_latest_sleep_is_remembered()
         {
             var map = new CoreMap(40, 40, TerrainDefOf.Soil);
-            var house = (Dwelling)ThingMaker.MakeThing(DwellingThingDefOf.House_Paleo);
-            house.householdId = 3;
-            GenSpawn.Spawn(house, new IntVec3(20, 0, 20), map);
+            Dwelling house = SimWorld.Tests.Building.ShelterKit.Raise(map, SimWorld.Tests.Building.ShelterKit.Rung("House_Paleo"), new IntVec3(20, 0, 20), householdId: 3);
+            Thing houseBed = house.Beds(map)[0];
             Pawn guest = NewHuman("Guest");
             guest.relations.familyId = 4;
             GenSpawn.Spawn(guest, new IntVec3(5, 0, 5), map);
 
             BedThoughtUtility.ApplyBedThoughts(guest, null);
-            BedThoughtUtility.ApplyBedThoughts(guest, house);
+            BedThoughtUtility.ApplyBedThoughts(guest, houseBed);
             Assert.Equal(new[] { SleepThoughtDefOf.SleptInBarracks }, SleepMemories(guest));
 
             guest.relations.familyId = 3;
-            BedThoughtUtility.ApplyBedThoughts(guest, house);
+            BedThoughtUtility.ApplyBedThoughts(guest, houseBed);
             Assert.Equal(new[] { SleepThoughtDefOf.SleptInBedroom }, SleepMemories(guest));
         }
     }

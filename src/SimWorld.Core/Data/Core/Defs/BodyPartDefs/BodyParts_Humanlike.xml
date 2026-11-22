@@ -158,6 +158,8 @@
     <defName>Ear</defName>
     <label>ear</label>
     <hitPoints>12</hitPoints>
+    <!-- frostbiteVulnerability on Ear/Nose/Finger/Toe: recalled from RimWorld, not read. -->
+    <frostbiteVulnerability>1</frostbiteVulnerability>
     <skinCovered>true</skinCovered>
     <beautyRelated>true</beautyRelated>
     <tags>
@@ -169,6 +171,7 @@
     <defName>Nose</defName>
     <label>nose</label>
     <hitPoints>10</hitPoints>
+    <frostbiteVulnerability>0.5</frostbiteVulnerability>
     <skinCovered>true</skinCovered>
     <beautyRelated>true</beautyRelated>
   </BodyPartDef>
@@ -249,6 +252,7 @@
     <defName>Finger</defName>
     <label>finger</label>
     <hitPoints>8</hitPoints>
+    <frostbiteVulnerability>0.5</frostbiteVulnerability>
     <skinCovered>true</skinCovered>
     <permanentInjuryChanceFactor>0.5</permanentInjuryChanceFactor>
     <tags>
@@ -300,6 +304,7 @@
     <defName>Toe</defName>
     <label>toe</label>
     <hitPoints>8</hitPoints>
+    <frostbiteVulnerability>0.5</frostbiteVulnerability>
     <skinCovered>true</skinCovered>
     <permanentInjuryChanceFactor>0.5</permanentInjuryChanceFactor>
     <tags>

@@ -62,6 +62,10 @@ namespace SimWorld.Building
     {
         private CellRect interior;
 
+        /// <summary>The households' houses laid out on the village's plots, in the order they were planned
+        /// (shelter lane; see <see cref="Dwelling"/> and <see cref="DwellingPlanner"/>).</summary>
+        internal List<Dwelling> dwellings = new List<Dwelling>();
+
         /// <summary>For Scribe.</summary>
         private SettlementCompound()
         {
@@ -71,6 +75,10 @@ namespace SimWorld.Building
         {
             this.interior = interior;
         }
+
+        /// <summary>A compound round <paramref name="interior"/>, unplanned: for tests that need a village's plots
+        /// and houses without a settlement to plan them.</summary>
+        internal static SettlementCompound WithInterior(CellRect interior) => new SettlementCompound(interior);
 
         /// <summary>The ground inside the wall: the bed block.</summary>
         public CellRect Interior => interior;
@@ -166,7 +174,9 @@ namespace SimWorld.Building
         // door, so the benches stand beside the storage, on the way in.
         // ---------------------------------------------------------------------------------------------
 
-        private static IntVec2 DwellingSize => DwellingThingDefOf.House_Paleo.size;
+        /// <summary>A plot holds the largest house on the ladder (<see cref="DwellingUtility.PlotSize"/>), so a plot
+        /// laid out in the first age still takes a house of the last.</summary>
+        private static IntVec2 DwellingSize => DwellingUtility.PlotSize;
 
         /// <summary>The row the street is centred on: the door's.</summary>
         public int StreetZ => DoorCell.z;
@@ -247,14 +257,6 @@ namespace SimWorld.Building
         /// <summary>The west edge of the first plot west of the compound, past a one-cell alley beside the
         /// storage on that side.</summary>
         private int FirstWestPlotX => Footprint.minX - 1 - DwellingSize.x;
-
-        private IEnumerable<IntVec3> DwellingCells(Map.Map map)
-        {
-            foreach ((CellRect plot, Rot4 rot) in DwellingPlots(int.MaxValue, map.Size))
-            {
-                yield return PlacementCellFor(plot, rot, DwellingSize);
-            }
-        }
 
         private static CellRect Union(CellRect a, CellRect b)
         {
@@ -402,7 +404,6 @@ namespace SimWorld.Building
         public Rot4 RotationAt(ThingDef entityDef, IntVec3 cell)
         {
             if (ReferenceEquals(entityDef, CompoundThingDefOf.Door)) return cell == DoorCell ? Rot4.East : Rot4.North;
-            if (DwellingUtility.IsDwelling(entityDef)) return DwellingRotationAt(cell);
             if (!ReferenceEquals(entityDef, ConstructionThingDefOf.StorageHut)) return Rot4.North;
 
             CellRect ring = Ring;
@@ -429,27 +430,9 @@ namespace SimWorld.Building
             foreach (IntVec3 c in Village.ExpandedBy(AutoHomeAreaMaker.BorderWidth).ClipInsideMap(map).Cells) home[c] = true;
         }
 
-        /// <summary>A dwelling on one of the village's plots south of the street is turned South, so it opens
-        /// onto the street; anywhere else, North, like everything else. Only the exact cell a plot is placed
-        /// from counts: a dwelling the fallback draw put south of the street was checked turned North.</summary>
-        private Rot4 DwellingRotationAt(IntVec3 cell)
-        {
-            if (cell.z >= StreetZ) return Rot4.North;
-            IntVec2 size = DwellingSize;
-            int step = size.x + 1;
-            int east = FirstEastPlotX, west = FirstWestPlotX;
-            int minX;
-            if (cell.x >= east) minX = east + (cell.x - east) / step * step;
-            else if (cell.x < west + size.x) minX = west - (west + size.x - 1 - cell.x) / step * step;
-            else return Rot4.North;
-            var plot = new CellRect(minX, StreetZ - 1 - size.z, size.x, size.z);
-            return plot.Contains(cell) && PlacementCellFor(plot, Rot4.South, size) == cell ? Rot4.South : Rot4.North;
-        }
-
         private IEnumerable<IntVec3> CellsFor(Map.Map map, ThingDef entityDef)
         {
             if (ReferenceEquals(entityDef, ConstructionThingDefOf.Bed)) return BedCells;
-            if (DwellingUtility.IsDwelling(entityDef)) return DwellingCells(map);
             if (ReferenceEquals(entityDef, CompoundThingDefOf.Door)) return new[] { DoorCell };
             if (ReferenceEquals(entityDef, ConstructionThingDefOf.StorageHut)) return StorageCells;
             if (StoneWallMaterials.IsWall(entityDef)) return WallCells;
@@ -462,9 +445,6 @@ namespace SimWorld.Building
             foreach (IntVec3 c in rect.Cells)
             {
                 if (within != null && !within[c]) return false;
-                // A house is lived in: none on deep water or rock, which nothing else here needs saying for
-                // (a bed's or a wall's cell is the compound's own, already checked open when it was planned).
-                if (DwellingUtility.IsDwelling(entityDef) && (!GenGrid.InBounds(c, map) || !map.pathGrid.Walkable(c))) return false;
             }
             if (!GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out _, rot)) return false;
             // A site the band cannot walk to stays empty (SettlementReach): a plot or yard can run past the
@@ -669,6 +649,9 @@ namespace SimWorld.Building
             Scribe_Values.Look(ref interior.minZ, "minZ");
             Scribe_Values.Look(ref interior.width, "width");
             Scribe_Values.Look(ref interior.height, "height");
+            List<Dwelling>? list = dwellings;
+            Scribe_Collections.Look(ref list, "dwellings", LookMode.Deep);
+            dwellings = list ?? new List<Dwelling>();
         }
     }
 }

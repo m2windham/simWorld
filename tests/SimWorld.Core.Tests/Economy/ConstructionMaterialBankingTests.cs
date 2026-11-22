@@ -54,8 +54,8 @@ namespace SimWorld.Tests.Economy
         public void Wood_a_house_blueprint_needs_stays_on_the_map()
         {
             (Settlement settlement, CoreMap map) = WoodInTheGranary(50);
-            Assert.Contains(Def("House_Paleo").costList!, e => ReferenceEquals(e.thingDef, Wood)); // fixture: a house costs wood
-            GenSpawn.Spawn(ThingMaker.MakeThing(Def("Blueprint_House_Paleo")), new IntVec3(12, 0, 12), map);
+            Assert.Contains(Def("Campfire").costList!, e => ReferenceEquals(e.thingDef, Wood)); // fixture: a hearth costs wood
+            GenSpawn.Spawn(ThingMaker.MakeThing(Def("Blueprint_Campfire")), new IntVec3(12, 0, 12), map);
 
             Assert.Equal(0, SettlementStockInitiative.BankStoredGoods(settlement, map));
             Assert.Equal(0, settlement.StoreCountOf(Wood));
@@ -66,7 +66,7 @@ namespace SimWorld.Tests.Economy
         public void Wood_a_frame_still_lacks_stays_on_the_map_and_banks_once_it_has_all_it_needs()
         {
             (Settlement settlement, CoreMap map) = WoodInTheGranary(50);
-            var frame = (Frame)ThingMaker.MakeThing(Def("Frame_House_Paleo"));
+            var frame = (Frame)ThingMaker.MakeThing(Def("Frame_Campfire"));
             GenSpawn.Spawn(frame, new IntVec3(12, 0, 12), map);
 
             Assert.Equal(0, SettlementStockInitiative.BankStoredGoods(settlement, map));

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- A seriously hypothermic or heatstruck pawn getting to comfortable air and staying there
+       (RimWorld: JobDefOf.GotoSafeTemperature and Wait_SafeTemperature). Bound by
+       SimWorld.AI.SafeTemperatureJobDefOf; given by JobGiver_SeekSafeTemperature. -->
+
+  <JobDef>
+    <defName>GotoSafeTemperature</defName>
+    <driverClass>SimWorld.AI.JobDriver_GotoSafeTemperature</driverClass>
+    <reportString>seeking safe temperature.</reportString>
+  </JobDef>
+
+  <JobDef>
+    <defName>Wait_SafeTemperature</defName>
+    <driverClass>SimWorld.AI.JobDriver_WaitSafeTemperature</driverClass>
+    <reportString>waiting for safe temperature.</reportString>
+  </JobDef>
+
+</Defs>
