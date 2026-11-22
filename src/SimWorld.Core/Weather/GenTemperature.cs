@@ -138,6 +138,14 @@ namespace SimWorld.Weather
             return (float)Math.Cos((dayPct - 0.5f) * TwoPi) * TemperatureTuning.DailyTempVariationAmplitude;
         }
 
+        /// <summary>The annual mean plus the season, without the sun or the weather (RimWorld:
+        /// <c>TileTemperaturesComp.GetSeasonalTemp</c>).</summary>
+        public static float SeasonalTemperatureAt(MapClimate climate, long absTicks)
+        {
+            if (climate == null) throw new ArgumentNullException(nameof(climate));
+            return climate.averageTemperature + OffsetFromSeasonCycle(absTicks, climate.latitude, climate.longitude);
+        }
+
         /// <summary>The annual mean plus the season, the sun and whatever is overhead — the number
         /// <see cref="Map.Map.outdoorTemperature"/> is set to.</summary>
         public static float OutdoorTemperatureAt(MapClimate climate, long absTicks, float weatherOffset)

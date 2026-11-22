@@ -71,15 +71,21 @@
     <minEra>Industrial</minEra>
   </IncidentDef>
 
+  <!-- HeatWave and ColdSnap: the worker's season gate and minRefireDays 30 are RimWorld 1.0's
+       (IncidentWorker_HeatWave/_ColdSnap, josh-m/RW-Decompile; Incidents_Map_Misc.xml, RimWorld-zh/RimWorld-Core).
+       earliestDay 5 stands for minDaysPassed 5 on Cassandra's and Phoebe's home Misc comp (Storytellers.xml);
+       this port's storyteller comps carry no such field, and Randy's 1 is not told apart. baseChance stays this
+       port's own (RimWorld 3 and 2). -->
   <IncidentDef>
     <defName>HeatWave</defName>
     <label>heat wave</label>
     <description>A heat wave raises the temperature.</description>
     <category>Misc</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
-    <workerClass>SimWorld.Conditions.IncidentWorker_MakeGameCondition</workerClass>
+    <workerClass>SimWorld.Conditions.IncidentWorker_HeatWave</workerClass>
     <baseChance>0.5</baseChance>
-    <minRefireDays>15</minRefireDays>
+    <earliestDay>5</earliestDay>
+    <minRefireDays>30</minRefireDays>
   </IncidentDef>
 
   <IncidentDef>
@@ -88,9 +94,10 @@
     <description>A cold snap drops the temperature.</description>
     <category>Misc</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
-    <workerClass>SimWorld.Conditions.IncidentWorker_MakeGameCondition</workerClass>
+    <workerClass>SimWorld.Conditions.IncidentWorker_ColdSnap</workerClass>
     <baseChance>0.5</baseChance>
-    <minRefireDays>15</minRefireDays>
+    <earliestDay>5</earliestDay>
+    <minRefireDays>30</minRefireDays>
   </IncidentDef>
 
   <IncidentDef>
