@@ -32,13 +32,13 @@ namespace SimWorld.Tests.Building
         {
         }
 
-        /// <summary>A pit house dug but for its door and beds, all three still to be supplied, a storage hut begun
-        /// beside the builder, and <paramref name="logs"/> logs on the ground.</summary>
+        /// <summary>A pit house dug but for its door and its beds, which are nearer the builder than the door is; a
+        /// storage hut begun nearer still; and <paramref name="logs"/> logs on the ground.</summary>
         private static (CoreMap, Dwelling, Pawn) Site(int logs, bool doorIsFrame, string doorStuff = "WoodLog")
         {
             var map = new CoreMap(44, 30, TerrainDefOf.Soil);
             DwellingDef def = ShelterKit.Rung("House_Meso");
-            var dwelling = new Dwelling(def, new CellRect(HouseCorner.x, HouseCorner.z, def.Size.x, def.Size.z), Rot4.North);
+            var dwelling = new Dwelling(def, new CellRect(HouseCorner.x, HouseCorner.z, def.Size.x, def.Size.z), Rot4.South);
             ShelterKit.Compound(map).dwellings.Add(dwelling);
             foreach ((DwellingPartKind kind, IntVec3 cell, Rot4 rot) in dwelling.Parts)
             {

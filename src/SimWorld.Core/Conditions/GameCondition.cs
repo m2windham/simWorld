@@ -168,8 +168,7 @@ namespace SimWorld.Conditions
         public override float TemperatureOffset()
         {
             if (def == null) return 0f;
-            float strength = Math.Min(1f, (float)TicksPassed / LerpTicks);
-            if (!Permanent) strength = Math.Min(strength, (float)TicksLeft / LerpTicks);
+            float strength = Math.Min(1f, Math.Min((float)TicksPassed / LerpTicks, (float)TicksLeft / LerpTicks));
             return def.temperatureOffset * Math.Max(0f, strength);
         }
     }

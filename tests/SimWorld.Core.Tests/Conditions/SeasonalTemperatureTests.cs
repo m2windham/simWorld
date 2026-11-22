@@ -25,14 +25,14 @@ namespace SimWorld.Tests.Conditions
         {
         }
 
-        /// <summary>A civilization seated on a tile whose mean for the season is <paramref name="seasonal"/> now, past
-        /// the opening days.</summary>
-        private static CivilizationTarget SeatedWhere(float seasonal)
+        /// <summary>A civilization seated on a tile whose mean for the season is <paramref name="seasonal"/> on
+        /// <paramref name="day"/>.</summary>
+        private static CivilizationTarget SeatedWhere(float seasonal, int day = 20)
         {
             WorldGrid grid = WorldGrid.Generate(1);
             var world = new CoreWorld { grid = grid };
             Find.World = world;
-            Find.TickManager.DebugSetTicksGame(GenDate.TicksPerDay * 20);
+            Find.TickManager.DebugSetTicksGame(GenDate.TicksPerDay * day);
             const int Tile = 3;
             MapClimate climate = MapClimate.ForTile(world, Tile)!;
             grid.Tiles[Tile].temperature =
@@ -62,6 +62,15 @@ namespace SimWorld.Tests.Conditions
         }
 
         [Fact]
+        public void A_civilization_with_no_settlement_has_no_season_to_rule_either_out()
+        {
+            SeatedWhere(30f);
+            var unsettled = new CivilizationTarget();
+            Assert.True(CanFire(ConditionIncidentDefOf.HeatWave, unsettled));
+            Assert.True(CanFire(ConditionIncidentDefOf.ColdSnap, unsettled));
+        }
+
+        [Fact]
         public void Neither_comes_in_the_first_five_days_nor_again_within_thirty()
         {
             CivilizationTarget hot = SeatedWhere(30f);
@@ -79,9 +88,10 @@ namespace SimWorld.Tests.Conditions
             Find.TickManager.DebugSetTicksGame(GenDate.TicksPerDay * 35);
             Assert.True(CanFire(ConditionIncidentDefOf.HeatWave, hot));
 
-            CivilizationTarget cool = SeatedWhere(10f);
-            Find.TickManager.DebugSetTicksGame(GenDate.TicksPerDay * 4);
+            CivilizationTarget cool = SeatedWhere(10f, day: 4);
             Assert.False(CanFire(ConditionIncidentDefOf.ColdSnap, cool));
+            Find.TickManager.DebugSetTicksGame(GenDate.TicksPerDay * 5);
+            Assert.True(CanFire(ConditionIncidentDefOf.ColdSnap, cool));
             Assert.Equal(ConditionIncidentDefOf.HeatWave.minRefireDays, ConditionIncidentDefOf.ColdSnap.minRefireDays);
         }
 
