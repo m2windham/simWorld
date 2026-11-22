@@ -81,6 +81,9 @@ namespace SimWorld.Bench
         /// an Editor that does not reload its domain (default 1).</summary>
         public int LayoutPlays { get; set; } = 1;
 
+        /// <summary>--suite arc: days between samples (default 60, one game year).</summary>
+        public int ArcEvery { get; set; } = 60;
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }
