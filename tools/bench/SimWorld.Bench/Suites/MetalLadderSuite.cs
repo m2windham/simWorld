@@ -14,6 +14,7 @@ using SimWorld.Research;
 using SimWorld.Scenario;
 using SimWorld.Sim;
 using SimWorld.Things;
+using SimWorld.Work;
 
 namespace SimWorld.Bench.Suites
 {
