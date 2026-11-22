@@ -282,6 +282,42 @@ namespace SimWorld.Tests.Building
             Assert.True(earth < wood - 2f, $"earth {earth} vs wood {wood}");
         }
 
+        [Fact]
+        public void A_powered_cooler_in_a_wall_cools_the_room_behind_it_and_heats_the_one_it_faces()
+        {
+            // RimWorld's Building_Cooler: cold side south of it (turned North), hot side north, a quarter more heat
+            // out than it takes in.
+            (float Cold, float Hot) After(bool switchedOn)
+            {
+                CoreMap map = NewMap(30f);
+                var shell = new CellRect(5, 5, 7, 9);
+                foreach (IntVec3 c in shell.EdgeCells) GenSpawn.Spawn(ThingMaker.MakeThing(ShelterThingDefOf.WallEarth), c, map);
+                var coolerCell = new IntVec3(8, 0, 9);
+                for (int x = shell.minX + 1; x < shell.maxX; x++)
+                {
+                    var c = new IntVec3(x, 0, 9);
+                    if (c != coolerCell) GenSpawn.Spawn(ThingMaker.MakeThing(ShelterThingDefOf.WallEarth), c, map);
+                }
+                var cooler = (ThingWithComps)GenSpawn.Spawn(ThingMaker.MakeThing(DefDatabase<ThingDef>.GetNamed("Cooler")), coolerCell, map, Rot4.North);
+                if (!switchedOn) cooler.GetComp<CompFlickable>()!.SwitchIsOn = false;
+                foreach (IntVec3 c in shell.Cells) map.roofGrid.SetRoof(c, RoofDefOf.RoofConstructed);
+                map.MapTick();
+                Room cold = map.roomTracker.RoomAt(new IntVec3(8, 0, 7))!, hot = map.roomTracker.RoomAt(new IntVec3(8, 0, 11))!;
+                Assert.NotSame(cold.Group, hot.Group);
+                cold.Group.temperature = 30f;
+                hot.Group.temperature = 30f;
+                Run(map, 2500);
+                return (cold.Temperature, hot.Temperature);
+            }
+
+            (float cold, float hot) = After(switchedOn: true);
+            Assert.True(cold < 25f, $"cold side {cold}");
+            Assert.True(hot > 35f, $"hot side {hot}");
+            (float offCold, float offHot) = After(switchedOn: false);
+            Assert.InRange(offCold, 29f, 31f);
+            Assert.InRange(offHot, 29f, 31f);
+        }
+
         // ---- the switch ----
 
         [Fact]

@@ -119,4 +119,63 @@
     <entityToBuild>Campfire</entityToBuild>
   </ThingDef>
 
+  <!-- Cooler: RimWorld 1.0's (Buildings_Temperature.xml), beside this port's Heater: Impassable, fill 1, set into
+       a wall, WorkToBuild 1600, MaxHitPoints 100, Flammability 0.7, a Rare ticker, 200 W, RimWorld's
+       CompFlickable, a temp control of -21 per second, gated on AirConditioning (Industrial). Not carried:
+       ComponentIndustrial 3 of its cost (this content has no component item; 90 steel stands), canPlaceOverWall
+       and PlaceWorker_Cooler (nothing here places it over a wall), breakdowns, constructionSkillPrerequisite.
+       No settlement builds one: none builds power (Building.Building_Cooler). -->
+
+  <ThingDef>
+    <defName>Cooler</defName>
+    <label>cooler</label>
+    <description>An air-cooling machine that fits into a wall. Cool air comes out one side, while hot exhaust comes out the other. Can be used to cool down rooms during summer, or to create a walk-in freezer.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building_Cooler</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <pathCost>10000</pathCost>
+    <tickerType>Rare</tickerType>
+    <statBases>
+      <WorkToBuild>1600</WorkToBuild>
+      <MaxHitPoints>100</MaxHitPoints>
+      <Flammability>0.7</Flammability>
+    </statBases>
+    <costList>
+      <Steel>90</Steel>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Building.CompProperties_PowerTrader">
+        <basePowerConsumption>200</basePowerConsumption>
+      </li>
+      <li Class="SimWorld.Building.CompProperties_Flickable" />
+      <li Class="SimWorld.Building.CompProperties_TempControl">
+        <energyPerSecond>-21</energyPerSecond>
+      </li>
+    </comps>
+    <researchPrerequisites>
+      <li>AirConditioning</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Cooler</defName>
+    <label>cooler (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Cooler</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Cooler</defName>
+    <label>cooler (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <pathCost>10000</pathCost>
+    <entityToBuild>Cooler</entityToBuild>
+  </ThingDef>
+
 </Defs>

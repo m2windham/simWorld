@@ -96,8 +96,8 @@ namespace SimWorld.Building
     /// A heat pusher that stops while its building has no power or no fuel (RimWorld:
     /// <c>Verse.CompHeatPusherPowered</c>, which is what the passive cooler's def names as its comp class).
     /// Renamed because this port's <see cref="CompHeatPusherPowered"/> already means the heater's flat push.
-    /// The gate is RimWorld's less two parts the port has no system for: the flick switch
-    /// (<c>FlickUtility.WantsToBeOn</c>) and breakdowns (<c>CompBreakdownable</c>).
+    /// The gate is RimWorld's, the flick switch (<see cref="FlickUtility.WantsToBeOn"/>, shelter lane) included,
+    /// less breakdowns (<c>CompBreakdownable</c>), which the port has no system for.
     /// </summary>
     public class CompHeatPusherGated : CompHeatPusher
     {
