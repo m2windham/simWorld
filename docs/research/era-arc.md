@@ -499,3 +499,231 @@ years of a surviving settlement takes more than a day (§6).
   be the right tool.
 - **Cost on a quiet machine.** Runs B to E overlapped with each other and with
   other lanes' work. The probes are the clean figure.
+
+## 9. After era-survival (2026-11-22)
+
+The `era-survival` lane took five of the defects above. Each is listed with the
+cause found, what changed, and the test that pins it. Runs A and D were then
+repeated with the fixes in place. Every era is affected: the era-turn fix and
+the research sitting touch every era from Agrarian on, and the store ceiling
+and ring walls hold from the first year.
+
+### 9.1 Era turns are announced (§5.1, §7.3 gap 1)
+
+The cause was as §5.1 described. `ResearchPerformed` now leaves the finishing
+amount to `FinishProject`: the `progress[currentProj] = newProgress;` line
+moved below the finish check, and the finishing branch returns. That is the
+only change to `ResearchManager`.
+`EraTransitionTests.Research_work_that_finishes_an_era_announces_it` turns an
+era through `ResearchPerformed`, the path research work uses. It asserts the
+event, the chronicle line, one letter and the `MomentCurator` moment.
+
+### 9.2 People starved at the research bench (§4)
+
+A diagnostic rerun of run A was stopped at about day 100. Of the people who were
+starving, seven were on a `Research` job with food at 0.00. The map held about
+128 nutrition, which was its full reserve, and the ledger held about 4,300.
+The food was in reach. Nobody left the bench to get it.
+
+`JobDriver_Research`'s toil was `ToilCompleteMode.Never`, so a research job
+ran until the project finished. A project costs thousands of points and takes
+months, and nothing else interrupts a running work job. RimWorld's toil is a
+`Delay` of 4000 ticks (`defaultDuration = 4000`). This value comes from memory
+of the decompile and was not checked against the source in this lane. After
+the sitting the think tree is asked again and hunger can win. This is a
+defect, not faithful behaviour: RimWorld researchers stop to eat.
+`ResearchWorkTests.A_hungry_researcher_on_a_long_project_leaves_the_bench_to_eat`
+pins it.
+
+The ledger draining to zero in years 12 and 13 was not reproduced. Neither
+rerun lasted that long, and the bank was still full at the end of both
+(§9.6).
+
+### 9.3 Storage huts: the food store had no ceiling (§3.3)
+
+The huts tracked the ledger exactly. By day 60 of the diagnostic run the
+ledger held 857 stacks (RawRice 40,181 units, RawBerries 19,637, and others),
+so the need was 286 huts and 287 stood. The need never saturated because the
+food kept coming in. `FarmingInitiative` sizes the field at three times
+break-even (`FieldSizeMargin`), foraging and hunting add to that, and banked
+food never spoils (`CompRottable` is only on corpses). Stock grew by about
+1,500 to 3,000 nutrition a year, and at 3.75 nutrition per raw-food stack
+that is many huts.
+
+The field now lies fallow (`Zone_Growing.allowSow = false`) while map plus
+ledger hold a year of what the settlement eats
+(`FarmingTuning.DaysOfFoodStored` = `GenDate.DaysPerYear`). It is sown again
+once the store falls below that. This is the RimWorld player's sowing toggle,
+and `SettlementSubsistence` already describes the store as "a working larder,
+not an ever-growing pile". `StorageHutNeed` is unchanged: its job is to house
+what is stored.
+`FarmingInitiativeTests.A_store_holding_a_years_food_stops_sowing_and_an_emptied_one_starts_again`
+pins the fallow rule.
+
+### 9.4 Walls (§3.2, §7.2)
+
+The settlement's own ring walls were not eroding. In the diagnostic run they
+stayed at 39. Earthquakes on days 58 and 92 knocked walls down, and the
+quake's rebuild blueprints and `SettlementCompound.CountFree` put them back.
+The walls that fell, 48 to 38, were the map's factionless ruin walls. Nothing
+repairs or rebuilds those, and RimWorld does not either. Buildings never
+deteriorate in RimWorld or here (`CanEverDeteriorate` covers items only).
+
+There was no product fix. The arc suite had counted ruins and own walls under
+one name. It now lists ruins as `Wall (ruin)`.
+`SettlementCompoundTests.A_ring_wall_destroyed_by_anything_is_laid_out_again_where_it_stood`
+pins replacement.
+
+### 9.5 Medical research unlocks nothing: a gap for the era-unlocks lane (§7.3 gap 4)
+
+Tending works. The diagnostic run saw tend quality between 0.2 and 0.7. But no
+medical project changes it:
+
+- HerbalRemedies, BoneSetting, Surgery, Anatomy, Hospitals, Antiseptics,
+  GermTheory, Vaccination and Microscope gate no medicine, recipe, bed or
+  stat. Surgery appears only in `RecipeWorker` doc comments.
+- The only code that reads the `MedicineHealth` tag is a newborn's lifespan
+  budget in `Pawn_AgeTracker`.
+- `MedicineIndustrial` has no recipe.
+- No hospital bed ships. The one `Bed` has `MedicalTendQualityOffset` 0.
+- Healroot is ungated.
+
+So an Industrial settlement tends with herbal medicine (potency 0.6, quality
+cap 0.7), as a Paleolithic one does. This is recorded in `docs/status.json`
+(`health.medicalresearch`, not done) for the era-unlocks lane. This lane did
+not build it.
+
+### 9.6 Runs A and D again
+
+Same settings as §1.2: band 20, seed 99, solo, threats off (A) and on (D), 600
+days asked, built from `b5db21a`. Run A finished all 10 years. Run D was
+stopped by its process ID at the 2-hour cap, after the year-9 sample.
+
+Era turns, from the `EraReached` event, against the day `CurrentEra` changed:
+
+| era | A before (§2) | A after | D before (§2) | D after |
+| --- | --- | --- | --- | --- |
+| Agrarian | d41, no event | d43, event d43 | d42, no event | d43, event d43 |
+| Bronze | d76, no event | d75, event d75 | d78, no event | d85, event d85 |
+| Classical | d135, no event | d148, event d148 | d133, no event | d150, event d150 |
+| Medieval | d213, no event | d229, event d229 | d206, no event | d221, event d221 |
+| Industrial | d573, no event | d525, event d525 | d549, no event | d516, event d516 |
+
+Every turn now writes an "Era reached: X, after the Y." moment. Run A's
+moments list holds five of them, plus "New edicts available" lines on the
+turns that open edicts. Run A kept 34 moments in 10 years, 21 of them
+after year 1. Before the fixes it kept 12 after year 1, over 15 years. Run D
+kept 32 in 9 years, 15 of them after year 1.
+
+Run A, threats off, year by year:
+
+| year | era | pop | starvation | disease | injury | exposure | food in stores | storage huts |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Agrarian | 22 | 0 | 0 | 0 | 0 | 2,105 | 208 |
+| 2 | Bronze | 19 | 0 | 2 | 0 | 2 | 2,028 | 219 |
+| 4 | Medieval | 22 | 0 | 4 | 2 | 3 | 2,665 | 277 |
+| 6 | Medieval | 21 | 0 | 6 | 2 | 6 | 3,033 | 323 |
+| 8 | Medieval | 21 | 0 | 7 | 3 | 8 | 3,474 | 382 |
+| 10 | Industrial | 25 | 0 | 8 | 4 | 8 | 3,603 | 404 |
+
+Run D, threats on, solo:
+
+| year | era | pop | starvation | disease | injury | exposure | food in stores | storage huts |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Agrarian | 26 | 0 | 0 | 0 | 0 | 2,301 | 223 |
+| 3 | Classical | 27 | 0 | 2 | 0 | 4 | 2,666 | 301 |
+| 5 | Medieval | 26 | 0 | 5 | 0 | 7 | 2,531 | 319 |
+| 7 | Medieval | 26 | 0 | 6 | 1 | 9 | 2,688 | 363 |
+| 9 | Industrial | 23 | 0 | 9 | 3 | 13 | 2,128 | 363 |
+
+Against the measurements before the fixes (§3.3, §4):
+
+- **Starvation: none in either run.** Before: run A had 4 deaths by year 6
+  with about 5,000 nutrition banked, and run D had 3 by year 5 with 6,106.
+- **Storage huts are bounded.** In run A they grow with the people, at 12.6
+  huts per person in year 4 and 16.2 in year 10. Before, run A reached 661
+  huts for 9 people in year 8. In run D the count sat at 363 from year 7 to
+  year 9. The food store levels off at about 145 to 165 nutrition per person
+  in run A from year 6, and drops back in run D. These counts are still not
+  small. Raw food fills a stack with only 3.75 nutrition, so a year of food is
+  hundreds of stacks. The store also runs above the one-year line, because
+  hunting and foraging continue while the field lies fallow.
+  `HuntingInitiative.WantsMeat` reads only the map. Its doc comment already
+  says it should read the ledger once food can be issued from it, which is
+  now the case. That change was left for the owner of the food economy.
+- **Disease still kills.** Run A had 8 disease deaths by year 10, against 26
+  before. Run D had 9 by year 9. The drop comes from people being fed, not
+  from medicine (§9.5).
+- **The population holds.** Run A had 25 people at year 10, against 7 before.
+  Run D had 23 at year 9, against 13 to 15 before. Neither run went extinct
+  within its window. The window is shorter than the original runs (16 and 18
+  years), so this says nothing yet about their later collapse.
+- **Exposure is now the largest cause in run D**, with 13 deaths by year 9.
+  Exposure is the shelter lane's, and the pre-fix doc had no column for it.
+
+### 9.7 21-seed 60-day bench, threats off
+
+These are survival numbers from a 60-day bench. They show the fixes did not
+break the colony scale. They are not evidence about the arc (§9.6 is). The
+columns are houses, deaths and end population, compared against the shelter
+lane's result on the same runner.
+
+| seed | shelter h/d/pop | era-survival h/d/pop | era-survival deaths by cause |
+| --- | --- | --- | --- |
+| 20/99 | 11/2/19 | 12/3/19 | Disease 2, Injury 1; incidents: Disease_Plague 1 |
+| 20/101 | 12/1/24 | 12/5/19 | Disease 3, Injury 2; incidents: Disease_Plague 1, Earthquake 2 |
+| 20/102 | 11/1/22 | 12/4/19 | Disease 1, Injury 3; incidents: Earthquake 3 |
+| 20/103 | 11/2/20 | 11/2/22 | Disease 2 |
+| 20/104 | 13/4/21 | 12/0/24 | none |
+| 20/105 | 11/1/22 | 10/4/18 | Disease 4 |
+| 20/106 | 12/4/18 | 11/1/21 | Disease 1 |
+| 20/107 | 11/3/20 | 10/0/20 | none |
+| 20/108 | 11/2/21 | 11/1/22 | Disease 1 |
+| 20/109 | 11/2/22 | 10/3/18 | Disease 3 |
+| 20/110 | 0/13/9 | 2/2/18 | Disease 2 |
+| 20/777 | 11/4/17 | 10/2/19 | Disease 2 |
+| 20/2024 | 5/0/26 | 2/3/20 | Disease 2, Injury 1; incidents: Disease_Plague 1 |
+| 20/12345 | 10/1/19 | 12/3/21 | Disease 3; incidents: Disease_Plague 2 |
+| 20/31337 | 0/2/19 | 12/1/23 | Injury 1 |
+| 40/201 | 21/2/43 | 21/10/34 | Starvation 8, Disease 1, Injury 1 |
+| 40/202 | 19/3/40 | 20/2/42 | Disease 2 |
+| 40/203 | 20/2/46 | 20/3/41 | Disease 3; incidents: Disease_Plague 2 |
+| 40/204 | 21/1/42 | 21/4/42 | Disease 4 |
+| 40/777 | 20/2/42 | 20/0/47 | none |
+| 40/12345 | 20/3/40 | 20/6/38 | Disease 6 |
+| total, 21 seeds | **261/55/552** | **271/59/547** | |
+
+Across the 21 seeds there are 10 more houses, 4 more deaths and 5 fewer
+people at the end. One seed, band 40 seed 201, carries more than the whole
+difference: 8 deaths from starvation, against none in the shelter run.
+Without that seed the totals are 250/49/513 against 240/53/509.
+
+**Seed 40/201 is a famine with nothing left to eat, not hunger beside a full
+store.** Two lane-private copies of `b5db21a` were run on this seed, each
+with one fix turned off. With the store ceiling off, the result was unchanged:
+the same 8 starvation deaths. With the research sitting off, nobody starved
+(2 disease deaths). So the sitting change triggers it. A daily dump from both
+runs shows the mechanism:
+
+| | sitting on (this lane) | sitting off |
+| --- | --- | --- |
+| ledger food, day 30 | 358 | 554 |
+| ledger empty | day 36 | day 40 |
+| map food gone | day 40 | day 44 |
+| harvest (wealth jumps) | about day 54 | |
+| deaths | 8 starved, days 49 to 50 | none by day 51 |
+
+In both runs the founding provisions ran out about two weeks before the
+first harvest. After that, 39 people sat at food 0.00 with nothing on the map
+or in the ledger, and spent the time on `Clean` and `LayDown`. Nobody hunted
+or foraged. With the sitting on, the ledger empties four days sooner, and malnutrition
+kills before the crop comes in. The most likely reason is that researchers
+who leave the bench also eat. With the sitting off they stayed at the bench
+and ate nothing. The runs also differ by one person at day 30 (40 people
+against 39). Neither cause was traced pawn by pawn.
+
+The underlying gap is in the food economy, not in this lane's change. The
+founding provision (`SettlementLarderTuning.ProvisionNutritionPerMouth`, first
+harvest plus 4 days) did not cover the time to the first harvest on this map,
+and a settlement with no food at all sends nobody out to find any. Both
+belong to whoever owns the food economy. This lane did not change either.
