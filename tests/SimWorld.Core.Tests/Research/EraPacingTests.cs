@@ -88,11 +88,15 @@ namespace SimWorld.Tests.Research
         }
 
         [Fact]
-        public void Every_era_is_priced_above_RimWorlds_colony_rate()
+        public void The_first_era_is_the_bands_starting_kit_and_every_later_era_is_priced_above_RimWorlds_rate()
         {
-            // The finding the multiplier answers: at RimWorld's prices the arc went by in months. A factor at
-            // or under 1 would hand an era straight back to that.
-            foreach (EraDef era in OrderedEras())
+            // The first era gates the first house and stove. Priced up, a founding band waited two months for a
+            // roof and one bench seed lost everyone to a heat wave, so it stays at RimWorld's price. Every era
+            // after it is priced above, the finding the multiplier answers: at RimWorld's prices the arc went by
+            // in months.
+            List<EraDef> eras = OrderedEras();
+            Assert.Equal(1f, eras[0].researchCostFactor);
+            foreach (EraDef era in eras.Skip(1))
             {
                 Assert.True(era.researchCostFactor > 1f, $"{era.defName} is priced at {era.researchCostFactor}x.");
             }

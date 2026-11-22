@@ -32,6 +32,10 @@
     researchCostFactor multiplies every project in the era, on top of RimWorld's tech-level factor. Derived,
     not tuned per seed: the time a settlement spends with era X current is the time it takes to research the
     era after it (cheapest-first within the frontier window sweeps nearly all of it), so
+    SticksAndStones itself is the band's starting kit, not something it waits for: fire, shelter and cooking
+    gate the first house and stove, and priced up they left a founding band without a roof for two months
+    (era-pacing 60-day bench: 20/2024 lost all 21 people to a day-18 heat wave with no house built). It keeps
+    factor 1, is researched in its first days as before, and the two years go to Agrarian:
       factor(X+1) = years(X) x 60 x points per day at scholars(X) / (authored cost of X+1 x tech factor)
     with the tech factor RimWorld's 1.5x per tech level above the researcher's. Points per day are measured,
     not modelled. Research is the lowest-priority work (WorkTypeDef naturalPriority 300, as in RimWorld), so a
@@ -41,7 +45,8 @@
       two benches: about 390 a bench (docs/research/era-arc.md runs A-D: some 147,000 effective points to the
                    Medieval turn by day 150-213)
       three or more: assumed 390 a bench as well. Not measured: no played run has had three benches.
-      SticksAndStones + Agrarian   16,600 x 1.0, 2 y,   600/day -> 4.3 (both)
+      SticksAndStones               4,500 x 1.0, the starting kit       -> 1.0
+      Agrarian                     12,100 x 1.0, 2 y,   600/day -> 6.0
       Bronze                       21,110 x 1.5, 3 y,   600/day -> 3.4
       Classical                    38,060 x 1.0, 4 y,   600/day -> 3.8
       Medieval                     60,930 x 1.0, 5 y,   600/day -> 3.0
@@ -59,7 +64,7 @@
     <order>0</order>
     <techLevel>Neolithic</techLevel>
     <threatPointsFactor>1.0</threatPointsFactor>
-    <researchCostFactor>4.3</researchCostFactor>
+    <researchCostFactor>1.0</researchCostFactor>
     <citizensPerScholar>25</citizensPerScholar>
   </EraDef>
 
@@ -70,7 +75,7 @@
     <order>1</order>
     <techLevel>Neolithic</techLevel>
     <threatPointsFactor>1.15</threatPointsFactor>
-    <researchCostFactor>4.3</researchCostFactor>
+    <researchCostFactor>6.0</researchCostFactor>
     <citizensPerScholar>25</citizensPerScholar>
   </EraDef>
 
