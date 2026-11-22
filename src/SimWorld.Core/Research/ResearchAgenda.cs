@@ -78,7 +78,7 @@ namespace SimWorld.Research
         }
 
         /// <summary>
-        /// The cheapest project the civilization could start right now (<see cref="ResearchProjectDef.CanStartNow"/>
+        /// The cheapest project, priced at its era's factor (<see cref="EraPacing.CostFactorFor"/>), the civilization could start right now (<see cref="ResearchProjectDef.CanStartNow"/>
         /// — not finished, every visible and hidden prerequisite finished) and that is not in an era past the
         /// frontier (<see cref="EraPacing.IsPastFrontier"/>), ties broken by <c>defName</c>.
         /// Null when nothing at all is startable. Reads <see cref="ResearchManager.AllProjects"/> live and
@@ -102,8 +102,16 @@ namespace SimWorld.Research
 
         private static bool IsCheaperThan(ResearchProjectDef candidate, ResearchProjectDef incumbent)
         {
-            if (candidate.baseCost != incumbent.baseCost) return candidate.baseCost < incumbent.baseCost;
+            float candidateCost = PricedCost(candidate);
+            float incumbentCost = PricedCost(incumbent);
+            if (candidateCost != incumbentCost) return candidateCost < incumbentCost;
             return string.CompareOrdinal(candidate.defName, incumbent.defName) < 0;
         }
+
+        // Cheapest by what the project will actually take, its era's price included. Ranked by baseCost alone,
+        // a 200-point Agrarian project priced at 1,200 went ahead of the 300-point first-era projects that
+        // gate the first house, and a founding band waited for its roof into the first heat wave.
+        private static float PricedCost(ResearchProjectDef project) =>
+            project.baseCost * EraPacing.CostFactorFor(project);
     }
 }

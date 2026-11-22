@@ -189,6 +189,26 @@ namespace SimWorld.Tests.Research
         }
 
         [Fact]
+        public void The_band_finishes_its_starting_kit_before_it_studies_the_next_era()
+        {
+            // The first era gates the first house and stove, and is priced at RimWorld's rate while the next
+            // is priced up. Cheapest-first by base cost alone studied four Agrarian projects in the middle of the
+            // first era and left the house research for after the first heat wave (era-arc.md §10).
+            EraDef first = OrderedEras()[0];
+            int firstCount = first.Projects.Count;
+            for (int step = 0; step < firstCount; step++)
+            {
+                ResearchProjectDef? chosen = ResearchAgenda.EnsureProject();
+                Assert.NotNull(chosen);
+                Assert.True(chosen!.era == first,
+                    $"Step {step}: chose {chosen.defName} ({chosen.era?.defName}) with the first era unfinished.");
+                manager.SetProjectFinishedForSetup(chosen);
+            }
+
+            Assert.All(first.Projects, p => Assert.True(manager.IsFinished(p), p.defName));
+        }
+
+        [Fact]
         public void An_unfinished_era_holds_back_a_cheaper_project_from_the_era_after_it()
         {
             // The drift run B showed (era-arc.md §2.1): Information's spine unfinished, a cheaper Exotic project

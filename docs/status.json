@@ -1517,7 +1517,7 @@
       "translationState": "decided",
       "module": "src/SimWorld.Core/Research · Data/Core/Defs (tabs, eras, projects) · tools/content/gen_techtree.py",
       "status": "verified",
-      "tests": 112,
+      "tests": 117,
       "items": [
         {
           "id": "research.dag",
