@@ -70,6 +70,14 @@ namespace SimWorld.Health
             if (map == null) throw new ArgumentNullException(nameof(map));
             Settlement? settlement = HuntingInitiative.SettlementFor(map);
             if (settlement == null) return;
+            Run(settlement, map);
+        }
+
+        /// <summary>One pass for <paramref name="settlement"/> on <paramref name="map"/>, its interior.</summary>
+        public static void Run(Settlement settlement, Map.Map map)
+        {
+            if (settlement == null) throw new ArgumentNullException(nameof(settlement));
+            if (map == null) throw new ArgumentNullException(nameof(map));
             int living = LivingCitizens(settlement);
             if (living == 0) return;
 
