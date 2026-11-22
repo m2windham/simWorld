@@ -36,12 +36,24 @@ namespace SimWorld.AI
     /// <see cref="ResearchManager.CurrentProj"/> already being null when this toil starts (a debug
     /// command or another researcher's finish cleared it out from under this pawn) — succeeded, not
     /// incompletable, either way: the pawn did nothing wrong.
+    /// <para/>
+    /// <b>One sitting, then the think tree is asked again.</b> The research toil runs for
+    /// <see cref="ResearchToilDurationTicks"/> and the job then ends, as RimWorld's does
+    /// (<c>defaultCompleteMode = Delay</c>, <c>defaultDuration = 4000</c>; recalled from the decompile, not
+    /// checked against it from here). Nothing else ends a research job: no need interrupts a running work job
+    /// in this port or in RimWorld, which relies on the job ending. With a toil that ran until the project
+    /// finished, a researcher on a project of a few thousand points sat at the bench for months of game time
+    /// and starved there with food in the granary (<c>docs/research/era-arc.md</c>, "after era-survival").
     /// </summary>
     public sealed class JobDriver_Research : JobDriver
     {
         /// <summary>RimWorld: <c>JobDriver_Research</c>'s own per-tick Intellectual xp gain — see this
         /// class's own remarks for where that number comes from in this codebase.</summary>
         public const float IntellectualXpPerTick = 0.1f;
+
+        /// <summary>Ticks of one research sitting before the job ends and the pawn's needs get a say
+        /// (RimWorld: <c>JobDriver_Research</c>'s research toil <c>defaultDuration</c>). See the class doc.</summary>
+        public const int ResearchToilDurationTicks = 4000;
 
         public override bool TryMakePreToilReservations() =>
             pawn.Map != null && pawn.Map.reservationManager.CanReserve(pawn, job.GetTarget(TargetIndex.A));
@@ -53,7 +65,7 @@ namespace SimWorld.AI
             Toil gotoBench = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.InteractionCell);
             yield return gotoBench;
 
-            var research = new Toil { defaultCompleteMode = ToilCompleteMode.Never };
+            var research = new Toil { defaultCompleteMode = ToilCompleteMode.Delay, defaultDuration = ResearchToilDurationTicks };
             research.tickAction = () =>
             {
                 ResearchManager manager = Find.ResearchManager;

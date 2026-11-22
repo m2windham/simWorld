@@ -31,6 +31,17 @@ namespace SimWorld.Building
         public const int MaxCellsPerPass = 60;
 
         /// <summary>
+        /// Days of food a settlement holds before it stops sowing its food field: a year
+        /// (<see cref="GenDate.DaysPerYear"/>). RimWorld's player turns sowing off a zone
+        /// (<c>Zone_Growing.allowSow</c>) when the freezer is full; there is no player here, so the settlement
+        /// does it, the way <c>Farming.CropDemandFields</c> already stops sowing a field nobody needs. A year
+        /// because a harvest has to carry a settlement through its winter, and a stock that is never drawn on
+        /// past that is a pile, not a larder. Unsourced (RimWorld has no figure: the player decides); pinned
+        /// by <c>FarmingInitiativeTests</c> as "a full store stops sowing and an emptied one starts it again".
+        /// </summary>
+        public const int DaysOfFoodStored = GenDate.DaysPerYear;
+
+        /// <summary>
         /// Margin on the field size, over the arithmetic that says exactly how many cells feed the mouths.
         /// <see cref="Plant.TickLong"/> grows a crop at fertility × light × temperature, and every one of
         /// those is below 1 for most of a real day on real ground, so a field sized at exactly the
@@ -131,6 +142,17 @@ namespace SimWorld.Building
             int wanted = FieldCellsWantedFor(settlement, map);
             if (wanted <= 0) return;
 
+            // A store already holding a year's food sows nothing more: what stands is harvested and the
+            // field lies fallow until the store is drawn down. Without this the field (sized at
+            // FieldSizeMargin times what the mouths burn) out-produced them every year, banked food never
+            // spoils, and the ledger and the storage huts sized from it grew for as long as the game ran.
+            if (StoreIsFull(settlement, map))
+            {
+                Zone_Growing? fallow = FieldOf(map);
+                if (fallow != null) fallow.allowSow = false;
+                return;
+            }
+
             ThingDef? crop = CropFor(map);
             if (crop == null) return;
 
@@ -173,6 +195,19 @@ namespace SimWorld.Building
 
             int breakEven = (int)Math.Ceiling(burnedPerDay / perCellPerDay);
             return (int)Math.Ceiling(breakEven * FarmingTuning.FieldSizeMargin);
+        }
+
+        /// <summary>
+        /// Whether the food the settlement holds — on its map and in its ledger
+        /// (<see cref="HuntingInitiative.NutritionAvailable"/>; a null settlement reads the map alone) — covers
+        /// <see cref="FarmingTuning.DaysOfFoodStored"/> days of what its mouths burn.
+        /// </summary>
+        public static bool StoreIsFull(Settlement? settlement, Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            float burnedPerDay = HuntingInitiative.NutritionWanted(settlement, map) / HuntingTuning.DaysOfFoodWanted;
+            if (burnedPerDay <= 0f) return false;
+            return HuntingInitiative.NutritionAvailable(settlement, map) >= burnedPerDay * FarmingTuning.DaysOfFoodStored;
         }
 
         /// <summary>Nutrition one sown cell of <paramref name="crop"/> returns per day once it is cycling —

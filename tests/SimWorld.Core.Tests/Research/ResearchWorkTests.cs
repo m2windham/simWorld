@@ -230,6 +230,30 @@ namespace SimWorld.Tests.Research
             Assert.NotEqual(ResearchWorkDefOf.Research, pawn.jobs.curJob?.def);
         }
 
+        [Fact]
+        public void A_hungry_researcher_on_a_long_project_leaves_the_bench_to_eat()
+        {
+            // The starvation the era-arc runs measured beside a full granary: a project costs far more than
+            // one sitting, and the research toil used to run until it finished, so nothing let hunger in.
+            CoreMap map = NewMap(10, 10);
+            Pawn pawn = SpawnHuman(map, new IntVec3(0, 0, 0));
+            Thing bench = SpawnBench(map, new IntVec3(4, 0, 0));
+            Thing meal = ThingMaker.MakeThing(Def("MealSimple"));
+            meal.stackCount = 5;
+            GenSpawn.Spawn(meal, new IntVec3(8, 0, 8), map);
+            // A fixture project far beyond any test's ticks, so only the sitting can end the job.
+            var longProject = new ResearchProjectDef { defName = "TestLongProject", baseCost = 1e6f, tab = ResearchTabDefOf.Main };
+            Find.ResearchManager.CurrentProj = longProject;
+
+            pawn.jobs.StartJob(new Job(ResearchWorkDefOf.Research, bench));
+            pawn.needs.food!.CurLevel = 0.05f * pawn.needs.food.MaxLevel;
+
+            RunTicks(JobDriver_Research.ResearchToilDurationTicks + 2000, pawn);
+
+            Assert.True(Find.ResearchManager.GetProgress(longProject) > 0f, "the researcher never researched");
+            Assert.True(meal.Destroyed || meal.stackCount < 5, "a starving researcher stayed at the bench beside food");
+        }
+
         // ---- Scribe round trip, mid-research ----
 
         [Fact]

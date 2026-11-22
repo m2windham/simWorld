@@ -72,6 +72,38 @@ namespace SimWorld.Tests.Building
         }
 
         [Fact]
+        public void A_store_holding_a_years_food_stops_sowing_and_an_emptied_one_starts_again()
+        {
+            // The stopping rule the field lacked: sized above what the mouths burn and with nothing in store
+            // ever spoiling, the harvest piled up for as long as a game ran (docs/research/era-arc.md §3.3).
+            CoreMap map = NewMap();
+            SettlementWith(map, 5);
+            FarmingInitiative.Run(map);
+            Zone_Growing field = FarmingInitiative.FieldOf(map)!;
+            Assert.True(field.allowSow);
+
+            ThingDef meal = Def("MealSimple");
+            float burnedPerDay = HuntingInitiative.NutritionWanted(null, map) / HuntingTuning.DaysOfFoodWanted;
+            int units = (int)System.Math.Ceiling(burnedPerDay * FarmingTuning.DaysOfFoodStored / meal.ingestible!.nutrition);
+            var stacks = new List<Thing>();
+            for (int x = 0; units > 0; x++)
+            {
+                Thing stack = ThingMaker.MakeThing(meal);
+                stack.stackCount = System.Math.Min(units, meal.stackLimit);
+                units -= stack.stackCount;
+                GenSpawn.Spawn(stack, new IntVec3(x % map.Size.x, 0, map.Size.z - 1 - x / map.Size.x), map);
+                stacks.Add(stack);
+            }
+
+            FarmingInitiative.Run(map);
+            Assert.False(field.allowSow, "a settlement holding a year's food went on sowing");
+
+            stacks[0].Destroy();
+            FarmingInitiative.Run(map);
+            Assert.True(field.allowSow, "a settlement short of a year's food left its field fallow");
+        }
+
+        [Fact]
         public void The_crop_it_chooses_is_one_that_actually_feeds_people()
         {
             CoreMap map = NewMap();
