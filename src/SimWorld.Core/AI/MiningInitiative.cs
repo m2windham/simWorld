@@ -165,6 +165,9 @@ namespace SimWorld.AI
                     }
                 }
             }
+            // A weapon bill takes any stuff on the ladder, so it names no fixed def above; the ladder says which
+            // mined stuff (flint, for a stone-age knife) it is short of (crafting.materialladder).
+            foreach (KeyValuePair<ThingDef, int> raw in MaterialLadder.RawWanted(map)) Add(needs, raw.Key, raw.Value);
             return needs;
         }
 

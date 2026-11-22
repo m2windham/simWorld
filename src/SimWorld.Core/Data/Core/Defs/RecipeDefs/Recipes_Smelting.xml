@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Smelting (system: crafting.materialladder): ore to metal, metal to alloy. Its own file, per CLAUDE.md. The
+    ladder these make up, and why the vein is ore rather than RimWorld's straight-out-of-the-rock steel, is in
+    ThingDefs_Items/Items_Metals.xml; the benches are ThingDefs_Buildings/Buildings_Smelting.xml.
+
+    SOURCED: RimWorld's one smelting recipe, ExtractMetalFromSlag (Core Recipes_Production.xml, read): one slag
+    chunk to 15 Steel, workAmount 400, no workSkill, worked at the ElectricSmelter. Smelt_Steel is that recipe
+    with ore where the slag was — same 400, same 15, same bench — and every recipe here follows it in having
+    no workSkill.
+
+    UNSOURCED (no RimWorld recipe exists to read): every other amount. What is deliberate is the shape —
+      - each era's metal costs more ore and more work than the last made it (copper 15 ore and 400, iron 20
+        and 800, cementation steel a further 1200 on top of the iron);
+      - tin bronze is nine parts copper to one of tin, the historical alloy;
+      - arsenical bronze needs no tin but wastes ore (25 for 10), so a settlement with tin prefers tin bronze
+        and one without still reaches the bronze age — tin is the rarest vein on the map
+        (Buildings_Mineable.xml), and RimWorld has no tin at all;
+      - the electric smelter is the cheapest steel there is, which is what an industrial revolution is.
+    Crafting.SmeltingInitiative picks between two recipes for one metal by newest research first and then by
+    metal out per unit in; the tests pin those choices, never these numbers.
+
+    NOT PORTED: ChunkSlagSteel. RimWorld's slag comes from the wrecks a crashed colony lands among; this game
+    has no wreck to scatter it, and a smelting byproduct nothing on the map would ever use was colony detail
+    that serves no era. Recorded in docs/status.json.
+  -->
+
+  <RecipeDef>
+    <defName>Smelt_Copper</defName>
+    <researchPrerequisites>
+      <li>Copper</li>
+    </researchPrerequisites>
+    <label>smelt copper</label>
+    <jobString>Smelting copper.</jobString>
+    <workAmount>400</workAmount>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>CopperOre</li></thingDefs></filter>
+        <count>15</count>
+      </li>
+    </ingredients>
+    <products><Copper>10</Copper></products>
+    <recipeUsers><li>SmeltingFurnace</li><li>Bloomery</li><li>ElectricSmelter</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Bronze</defName>
+    <researchPrerequisites>
+      <li>Bronze</li>
+    </researchPrerequisites>
+    <label>cast bronze</label>
+    <jobString>Casting bronze.</jobString>
+    <workAmount>400</workAmount>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Copper</li></thingDefs></filter>
+        <count>9</count>
+      </li>
+      <li>
+        <filter><thingDefs><li>Tin</li></thingDefs></filter>
+        <count>1</count>
+      </li>
+    </ingredients>
+    <products><Bronze>10</Bronze></products>
+    <recipeUsers><li>SmeltingFurnace</li><li>Bloomery</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Bronze_Arsenical</defName>
+    <researchPrerequisites>
+      <li>Bronze</li>
+    </researchPrerequisites>
+    <label>smelt arsenical bronze</label>
+    <jobString>Smelting arsenical bronze.</jobString>
+    <workAmount>600</workAmount>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>CopperOre</li></thingDefs></filter>
+        <count>25</count>
+      </li>
+    </ingredients>
+    <products><Bronze>10</Bronze></products>
+    <recipeUsers><li>SmeltingFurnace</li><li>Bloomery</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Smelt_Iron</defName>
+    <researchPrerequisites>
+      <li>Iron</li>
+    </researchPrerequisites>
+    <label>smelt iron</label>
+    <jobString>Smelting iron.</jobString>
+    <workAmount>800</workAmount>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>IronOre</li></thingDefs></filter>
+        <count>20</count>
+      </li>
+    </ingredients>
+    <products><Iron>10</Iron></products>
+    <recipeUsers><li>Bloomery</li><li>ElectricSmelter</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Steel_Cementation</defName>
+    <researchPrerequisites>
+      <li>Steel</li>
+    </researchPrerequisites>
+    <label>make cementation steel</label>
+    <jobString>Making steel.</jobString>
+    <workAmount>1200</workAmount>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Iron</li></thingDefs></filter>
+        <count>10</count>
+      </li>
+    </ingredients>
+    <products><Steel>8</Steel></products>
+    <recipeUsers><li>Bloomery</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Smelt_Steel</defName>
+    <researchPrerequisites>
+      <li>Electricity</li>
+    </researchPrerequisites>
+    <label>smelt steel</label>
+    <jobString>Smelting steel.</jobString>
+    <workAmount>400</workAmount>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>IronOre</li></thingDefs></filter>
+        <count>20</count>
+      </li>
+    </ingredients>
+    <products><Steel>15</Steel></products>
+    <recipeUsers><li>ElectricSmelter</li></recipeUsers>
+  </RecipeDef>
+
+</Defs>

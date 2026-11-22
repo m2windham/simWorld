@@ -91,14 +91,15 @@ namespace SimWorld.Tests.Things
             Pawn miner = SpawnMiner(map, new IntVec3(0, 0, 0), miningLevel: 10);
             Mineable vein = SpawnVein(map, new IntVec3(2, 0, 2));
 
-            Assert.Equal(0, AmountOnMap(map, "Steel"));
+            Assert.Equal(0, AmountOnMap(map, "IronOre"));
 
             miner.jobs.StartJob(new Job(JobDefOf.Mine, vein));
             RunTicks(2000, miner);
 
             Assert.True(vein.Destroyed, "The vein should have been mined out.");
-            Assert.True(AmountOnMap(map, "Steel") > 0,
-                "Mining a steel vein should leave steel on the map. Before this module it left nothing at all.");
+            // The vein is iron ore since crafting.materialladder: a bloomery makes iron and steel of it.
+            Assert.True(AmountOnMap(map, "IronOre") > 0,
+                "Mining an ore vein should leave ore on the map. Before this module it left nothing at all.");
         }
 
         [Fact]
@@ -112,7 +113,7 @@ namespace SimWorld.Tests.Things
             miner.jobs.StartJob(new Job(JobDefOf.Mine, vein));
             RunTicks(2000, miner);
 
-            IReadOnlyList<Thing> steel = map.listerThings.ThingsOfDef(Def("Steel"));
+            IReadOnlyList<Thing> steel = map.listerThings.ThingsOfDef(Def("IronOre"));
             Assert.Single(steel);
             Assert.Equal(cell, steel[0].Position);
         }
@@ -131,7 +132,7 @@ namespace SimWorld.Tests.Things
             miner.jobs.StartJob(new Job(JobDefOf.Mine, vein));
             RunTicks(2000, miner);
 
-            int gained = AmountOnMap(map, "Steel");
+            int gained = AmountOnMap(map, "IronOre");
             Assert.InRange(gained, 1, inTheRock);
         }
 
@@ -312,7 +313,7 @@ namespace SimWorld.Tests.Things
             RunTicks(2000, loadedPawn);
 
             Assert.True(loadedVein.Destroyed);
-            Assert.True(AmountOnMap(loaded, "Steel") > 0,
+            Assert.True(AmountOnMap(loaded, "IronOre") > 0,
                 "A job that survived a save/load should pay out on completion exactly as an unsaved one does.");
         }
 
@@ -365,8 +366,9 @@ namespace SimWorld.Tests.Things
             // below is a floor, not a target: the point is that the ore table is a table.
             Assert.True(veins.Count >= 8, "Only " + veins.Count + " ore veins in content.");
 
-            // Every era on this project's own ladder has something in the ground.
-            foreach (string mineral in new[] { "Flint", "Salt", "Copper", "Tin", "Steel", "Silver", "Gold", "Coal", "Uranium", "Plasteel" })
+            // Every era on this project's own ladder has something in the ground. Copper and steel are made, not
+            // dug, since crafting.materialladder: what the ground holds is their ore.
+            foreach (string mineral in new[] { "Flint", "Salt", "CopperOre", "Tin", "IronOre", "Silver", "Gold", "Coal", "Uranium", "Plasteel" })
             {
                 Assert.True(mineables.Any(d => d.mineableThing?.defName == mineral),
                     "Nothing in content is mined for " + mineral + ".");

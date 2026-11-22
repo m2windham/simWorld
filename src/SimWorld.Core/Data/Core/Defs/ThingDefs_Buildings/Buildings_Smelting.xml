@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The benches that turn ore into metal (system: crafting.materialladder), one per era of the ladder in
+    ThingDefs_Items/Items_Metals.xml. Its own file, per CLAUDE.md, blueprint and frame pairs included.
+
+    RimWorld has exactly one of these, the ElectricSmelter (Core Buildings_Production.xml, read): costList
+    170 Steel + 2 ComponentIndustrial, WorkToBuild 3500, MaxHitPoints 180, a 700 W CompPowerTrader, Electricity.
+    It is ported as the industrial rung. The two before it are this port's own, because RimWorld never had to
+    get from a stone age to steel:
+
+      SmeltingFurnace  Copper   a clay shaft furnace: copper from its ore, and bronze
+      Bloomery         Iron     a hotter, taller furnace: iron from its ore, and steel from iron
+      ElectricSmelter  Electricity  RimWorld's own: steel straight from ore, and copper
+
+    Costs and work are UNSOURCED for the first two (no RimWorld building to read them from), chosen in the band
+    the shipped benches sit in (Buildings_Production.xml: 10 stuff, about this much work). The furnace and the
+    bloomery cost wood, not stuff: the clay they are mostly made of is dug where they stand, and a stone one
+    would wait on Masonry, which the tree puts after Bronze. The electric smelter is priced at RimWorld's 170
+    steel scaled by this port's bench rate (Buildings_Production.xml: 10 against RimWorld's 75) to 50, with no
+    components, which this port does not have.
+
+    All three are worked under Smithing, like the smithy: a furnace is a smith's work in every era this game
+    has. Size, passability and fill are left at the defaults every bench in this port ships with (RimWorld's
+    smelter is 3x1 and pass-through-only).
+
+    NOT MODELLED: power. The electric smelter carries RimWorld's CompPowerTrader so it draws on a grid, but
+    nothing in this port gates a bill on power (WorkGiver_DoBill has no power check, and no settlement
+    initiative builds a generator), so today it smelts unpowered. Recorded in docs/status.json.
+  -->
+
+  <ThingDef>
+    <defName>SmeltingFurnace</defName>
+    <label>smelting furnace</label>
+    <description>A clay shaft furnace blown with bellows of hide. Copper runs out of malachite in it, and copper and tin run together into bronze.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <researchPrerequisites>
+      <li>Copper</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>150</MaxHitPoints>
+      <WorkToBuild>600</WorkToBuild>
+      <MarketValue>200</MarketValue>
+    </statBases>
+    <costList>
+      <WoodLog>25</WoodLog>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_BillGiver">
+        <workType>Smithing</workType>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Bloomery</defName>
+    <label>bloomery</label>
+    <description>A tall charcoal furnace that never quite melts iron, only sweats it out of the ore as a spongy bloom to be hammered. Later, packed with charcoal for days, it turns that iron into steel.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <researchPrerequisites>
+      <li>Iron</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>180</MaxHitPoints>
+      <WorkToBuild>1000</WorkToBuild>
+      <MarketValue>260</MarketValue>
+    </statBases>
+    <costList>
+      <WoodLog>35</WoodLog>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_BillGiver">
+        <workType>Smithing</workType>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>ElectricSmelter</defName>
+    <label>electric smelter</label>
+    <description>Extracts usable metal from ore with heat and strong electromagnets. Consumes a lot of power.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <researchPrerequisites>
+      <li>Electricity</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>180</MaxHitPoints>
+      <WorkToBuild>3500</WorkToBuild>
+      <MarketValue>700</MarketValue>
+    </statBases>
+    <costList>
+      <Steel>50</Steel>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_BillGiver">
+        <workType>Smithing</workType>
+      </li>
+      <li Class="SimWorld.Building.CompProperties_PowerTrader">
+        <basePowerConsumption>700</basePowerConsumption>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_SmeltingFurnace</defName>
+    <label>smelting furnace (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>SmeltingFurnace</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_SmeltingFurnace</defName>
+    <label>smelting furnace (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>SmeltingFurnace</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Bloomery</defName>
+    <label>bloomery (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Bloomery</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Bloomery</defName>
+    <label>bloomery (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>Bloomery</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_ElectricSmelter</defName>
+    <label>electric smelter (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>ElectricSmelter</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_ElectricSmelter</defName>
+    <label>electric smelter (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>ElectricSmelter</entityToBuild>
+  </ThingDef>
+
+</Defs>

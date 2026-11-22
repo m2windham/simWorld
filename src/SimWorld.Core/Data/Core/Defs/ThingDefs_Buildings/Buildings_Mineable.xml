@@ -72,7 +72,9 @@
     <defName>MineableCopper</defName>
     <label>copper ore vein</label>
     <description>Green-stained rock shot through with native copper. The vein that ends the stone age wherever it is found.</description>
-    <mineableThing>Copper</mineableThing>
+    <!-- Ore, smelted to copper at a furnace (crafting.materialladder, Items_Metals.xml). It dropped finished
+         Copper before that, which left the bronze age nothing to smelt. -->
+    <mineableThing>CopperOre</mineableThing>
     <mineableYield>45</mineableYield>
     <mineableScatterCommonality>0.30</mineableScatterCommonality>
     <statBases>

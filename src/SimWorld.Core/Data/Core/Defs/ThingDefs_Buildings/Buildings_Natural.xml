@@ -78,9 +78,17 @@
   -->
   <ThingDef ParentName="BaseNaturalRock">
     <defName>MineableSteel</defName>
-    <label>steel ore vein</label>
-    <description>A vein of metal-bearing rock, ready to be mined for steel.</description>
-    <mineableThing>Steel</mineableThing>
+    <label>iron ore vein</label>
+    <description>A vein of iron-bearing rock. A bloomery makes iron of it, and iron becomes steel.</description>
+    <!--
+      Iron ore, not Steel (crafting.materialladder). RimWorld's MineableSteel is "compacted steel, the remains of
+      some ancient, collapsed structure" (Core Buildings_Natural.xml) and gives Steel straight out of the rock,
+      which is right for a colony that lands in the industrial age and wrong for one that has to reach steel
+      through six eras: with it, every neolithic smithy forged steel knives. The defName stays RimWorld's (it is
+      bound by MapGenThingDefOf and is still the vein that dwarfs the rest); what comes out of it is IronOre,
+      smelted at a bloomery once Iron is researched. See ThingDefs_Items/Items_Metals.xml for the whole ladder.
+    -->
+    <mineableThing>IronOre</mineableThing>
     <mineableYield>60</mineableYield>
     <!--
       The commonality every other vein in Buildings_Mineable.xml is weighted against, and by a wide margin

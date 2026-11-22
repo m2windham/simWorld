@@ -90,8 +90,13 @@ namespace SimWorld.Tests.AI
 
             MiningInitiative.Run(NewSettlement(), map);
 
+            // Steel is smelted from iron ore since crafting.materialladder, so the need is read back through the
+            // first recipe (by defName) that makes steel straight from a mined yield.
             int need = Def("Battery").costList!.Single(c => c.thingDef == Def("Steel")).count;
-            int cells = CellsFor(Def("Steel"), need);
+            var smelt = DefDatabase<global::SimWorld.Crafting.RecipeDef>.GetNamed("Smelt_Steel");
+            int perIteration = smelt.products!.Single().count;
+            int orePerIteration = (int)smelt.ingredients!.Single().count;
+            int cells = CellsFor(Def("IronOre"), (need + perIteration - 1) / perIteration * orePerIteration);
             List<IntVec3> designated = Designated(map);
             Assert.Equal(cells, designated.Count);
             Assert.All(designated, c => Assert.Equal("MineableSteel", map.edificeGrid[c]!.def.defName));
