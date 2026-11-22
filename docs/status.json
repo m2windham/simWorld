@@ -854,7 +854,7 @@
       "id": "health",
       "n": 8,
       "rimworld": "Health System",
-      "translation": "Unchanged.",
+      "translation": "Body, hediffs, capacities, immunity and tending unchanged. Medicine by era (2026-11-22): RimWorld gives medicine one research step, bought by a colony that already has modern steel, components and neutroamine. Here it is four stages of the arc. SticksAndStones to Bronze: herbal medicine, grown and tended with as before. Classical (Medicine): a sick-house, RimWorld's hospital bed made of any stuff, one per 10 citizens, in the compound's dormitory. Medieval: Hospitals doubles the beds (one per 5), and Pharmacology brings the drug lab (the apothecary's bench) and industrial medicine from 2 herbal, RimWorld's herbal + neutroamine + 3 cloth having no neutroamine here. Industrial and later change no treatment yet. MedicalInitiative places the beds and bench and keeps one dose a citizen on bill; nobody orders either.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "verified",
@@ -967,7 +967,17 @@
         },
         {
           "id": "health.medicalresearch",
-          "label": "GAP, for the era-unlocks lane: medical research changes no treatment. HerbalRemedies, BoneSetting, Anatomy, Hospitals, Antiseptics, GermTheory and Vaccination gate no medicine, recipe, bed or stat; the only reader of the MedicineHealth tag is a newborn's lifespan budget (Pawn_AgeTracker). MedicineIndustrial has no recipe and no hospital bed ships (MedicalTendQualityOffset is 0 on the one Bed). A Medieval or Information settlement tends with herbal medicine (potency 0.6, quality cap 0.7) exactly as a Paleolithic one does.",
+          "label": "Medical research changes treatment: Medicine (Classical) brings hospital beds (tend quality +0.10, BedRestEffectiveness 1.11, rimworldwiki), Hospitals (Medieval) twice as many, Pharmacology (Medieval) the drug lab and Make_MedicineIndustrial. Patients and rescuers take a free hospital bed before an ordinary one; sleepers never do. The settlement builds and stocks them itself (MedicalInitiative, MedicalBeds; MedicineByEraTests). RimWorld's hospital-bed stats and drug-lab recipe were read on rimworldwiki; the beds-per-citizen figures, the build costs and the target stock are this port's own. Nothing above Classical has been seen in a played arc.",
+          "done": true
+        },
+        {
+          "id": "health.medicineshared",
+          "label": "Doctors share a medicine stack: a tend claims one dose (MedicineUtility.MaxClaimants 10, PerClaim 1) where it claimed the whole stack and hid the supply from every other doctor. RimWorld's maxPawns 10, recalled from the decompile and not checked.",
+          "done": true
+        },
+        {
+          "id": "health.medicalresearch.later",
+          "label": "OPEN: HerbalRemedies, BoneSetting, WoundCare, Midwifery, Anatomy, Antiseptics, Anesthesia, Microscope, GermTheory, Vaccination and Biochemistry still change no treatment.",
           "done": false
         }
       ],
@@ -1381,7 +1391,7 @@
       "id": "combat",
       "n": 12,
       "rimworld": "Combat",
-      "translation": "Unchanged mechanics; armies are groups of full agents.",
+      "translation": "Unchanged mechanics; armies are groups of full agents. Settlement defence by threat and era (2026-11-22): RimWorld's player drafts colonists and lays traps against the raid they expect. Nobody drafts here, so SettlementDefence reads the raid the storyteller would buy now (DefaultThreatPointsNow / 40 combat power a raider, RaidResolutionTuning's figure) and sizes a watch of the best fighters and a trap line round the village to it: TrapSpike from Trapping (Agrarian), TrapIED from Gunpowder (Medieval) with steel on the map, nothing before.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Combat · Map · Building · Factions · Health/Damage (armor)",
       "status": "verified",
@@ -1416,6 +1426,16 @@
           "id": "combat.capture",
           "label": "Downed → captured → prisoner loop: CaptureUtility (downed + hostile-faction → Pawn_GuestTracker) and WardenUtility (resistance reduction → recruit, or release), GuestStatus/PrisonerInteractionModeDef kept as RimWorld's own names. Pawn_GuestTracker lives on the host Faction (Faction.prisoners), not on Pawn — Pawns/** is another lane's module and carries no such field; see Pawn_GuestTracker.cs's own remarks. The Warden WorkGiver/JobDriver that sends a colonist to actually carry this out is AI/Work content and code — see the ai system's own ai.warden entry.",
           "done": true
+        },
+        {
+          "id": "combat.settlementdefence",
+          "label": "SettlementDefence: a watch and a trap line as large as the raid expected (SettlementDefenceTests). Blueprints and frames for TrapSpike and TrapIED; a built trap takes its builder's faction, so it no longer springs on its own people (CompTrap.Faction was never set). The watch changes only unarmed fighters: an armed citizen already engages at 40 cells, and founding bands come armed.",
+          "done": true
+        },
+        {
+          "id": "combat.settlementdefence.gatestowers",
+          "label": "OPEN: gates, towers, and gathering the armed to hold a position (RimWorld's drafting) are not built. Walls by era material come from material-ladder.",
+          "done": false
         }
       ],
       "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
@@ -1748,6 +1768,11 @@
           "id": "building.power",
           "label": "CompPower/CompPowerTransmitter/CompPowerTrader/CompPowerPlant/CompPowerBattery; PowerNetManager builds/merges/splits PowerNets incrementally off cardinal adjacency as comps spawn/despawn (never a full-map rebuild); brownout is a real RimWorld whole-net simultaneous cutoff once batteries are exhausted, not the brief's described per-trader priority order (see this system's report)",
           "done": true
+        },
+        {
+          "id": "building.powerinitiative",
+          "label": "OPEN (era-unlocks priority 3, not started): no initiative places WoodFiredGenerator, Battery or PowerConduit, and no bill checks power (WorkGiver_DoBill), so the electric smelter runs unpowered.",
+          "done": false
         },
         {
           "id": "building.temperature",
