@@ -256,13 +256,15 @@ namespace SimWorld.Tests.God
         {
             Assert.Equal(GodCommandOutcome.Done, GodCommands.SetResearchProject("Fire").Outcome);
             Find.ResearchManager.ResearchPerformed(37f, null);
+            float progress = Find.ResearchManager.GetProgress(Project("Fire")); // 37 points, less the era's cost factor
+            Assert.True(progress > 0f);
 
             string xml = Scribe.SaveToString(Find.ResearchManager, "research");
             ResearchManager loaded = Scribe.Load<ResearchManager>(xml, "research", out IReadOnlyList<string> errors);
 
             Assert.Empty(errors);
             Assert.Equal(Project("Fire"), loaded.CurrentProj);
-            Assert.Equal(37f, loaded.GetProgress(Project("Fire")));
+            Assert.Equal(progress, loaded.GetProgress(Project("Fire")));
         }
 
         // ---- the read side: a player picks from what they can see ----
@@ -271,7 +273,8 @@ namespace SimWorld.Tests.God
         public void The_research_overview_reports_the_current_project_and_its_progress()
         {
             GodCommands.SetResearchProject("Fire");
-            Find.ResearchManager.ResearchPerformed(25f, null); // 25 of Fire's 100-point cost
+            // 25 of Fire's 100-point cost, after the cost factor (tech level and era pacing) the manager divides by.
+            Find.ResearchManager.ResearchPerformed(25f * Project("Fire").CostFactor(Find.ResearchManager.ResearcherTechLevel), null);
 
             ResearchOverview overview = GodViewSnapshot.Capture().Research;
 

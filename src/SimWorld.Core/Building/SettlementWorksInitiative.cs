@@ -30,8 +30,8 @@ namespace SimWorld.Building
     /// <para/><b>Why a third initiative rather than a need on
     /// <see cref="SettlementConstructionInitiative"/>.</b> That class computes bed, wall and store from
     /// <see cref="Settlement.Citizens"/> and <see cref="Settlement.Stores"/>, and its targets are all
-    /// per-capita. Neither of these is: two benches is a civilization-wide figure the tech tree was balanced
-    /// against (<see cref="WorksInitiativeTuning.ResearchBenchesWanted"/>), and a sculpture count is a
+    /// per-capita. Neither of these is: the bench count is set by the era as well as the headcount
+    /// (<see cref="WorksInitiativeTuning.ResearchBenchesWanted(Settlement)"/>), and a sculpture count is a
     /// property of a place rather than of a headcount (<see cref="SculptureMaterials.SculpturesWantedOf"/>).
     /// Adding them there would also mean editing a file other lanes are working in, for no gain — CLAUDE.md's
     /// own rule, and the reason the shipped initiatives are already three files rather than one.
@@ -134,7 +134,7 @@ namespace SimWorld.Building
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (settlement.Citizens.Count == 0) return;
 
-            EnsureResearchBenches(map);
+            EnsureResearchBenches(settlement, map);
             SettlementWorkshops.Run(settlement, map);
             EnsureArt(map);
         }
@@ -147,16 +147,17 @@ namespace SimWorld.Building
 
         /// <summary>
         /// Raises a research bench when the settlement is short of
-        /// <see cref="WorksInitiativeTuning.ResearchBenchesWanted"/> — one blueprint per gated call, so a
+        /// <see cref="WorksInitiativeTuning.ResearchBenchesWanted(Settlement)"/>, which grows with its people and
+        /// its era — one blueprint per gated call, so a
         /// settlement grows into its works rather than stamping all of them out in a single pass (the same
         /// shape <c>SettlementConstructionInitiative</c>'s per-tick cap gives its own needs). Placed anywhere
         /// the map will take it: <see cref="AI.WorkGiver_Research"/> asks only that a scholar can reach it.
         /// </summary>
-        private static void EnsureResearchBenches(Map.Map map)
+        private static void EnsureResearchBenches(Settlement settlement, Map.Map map)
         {
             ThingDef bench = ResearchWorkDefOf.ResearchBench;
             if (!bench.IsResearchFinished) return; // Ungated in shipped content; honoured anyway, not assumed.
-            if (CountBuiltOrPlanned(map, bench) >= WorksInitiativeTuning.ResearchBenchesWanted) return;
+            if (CountBuiltOrPlanned(map, bench) >= WorksInitiativeTuning.ResearchBenchesWanted(settlement)) return;
 
             if (TryPlaceOnWorkSite(map, SettlementCompound.WorkSite.Research, bench)) return;
             TryPlaceBlueprint(map, bench, anchor: null, radius: 0);

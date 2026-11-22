@@ -33,6 +33,15 @@ namespace SimWorld.Research
     /// <c>defName</c> settles a tie so two runs of the same civilization never diverge on Def load order —
     /// determinism is a feature.
     ///
+    /// <para/><b>Cheapest-first, but never past the era being worked toward.</b> Played over the long run,
+    /// pure cheapest-first cleared five eras in under four years and then wandered: by year 8 one run was
+    /// studying an Exotic project while Information's spine waited (<c>docs/research/era-arc.md</c> §2.1). So
+    /// the shelf is the frontier era (<see cref="EraPacing.FrontierEra"/>, the earliest one not yet complete)
+    /// and everything before it. Within that the choice is still cheapest-first, so a civilization sweeps up
+    /// what its own age has to offer while it finishes the spine that turns it, and only reaches further once
+    /// the age has turned. Every spine prerequisite sits in the same era or an earlier one (the generator
+    /// validates that), so the frontier always has something startable until it is complete.
+    ///
     /// <para/><b>Nothing left to study is not a dead end.</b> When no authored project can be started the
     /// agenda asks <see cref="ResearchManager.EnsureSomethingToResearch"/> to mint the next endless age
     /// (research.endless) and looks once more, so a civilization that finished the ladder keeps going instead
@@ -70,7 +79,8 @@ namespace SimWorld.Research
 
         /// <summary>
         /// The cheapest project the civilization could start right now (<see cref="ResearchProjectDef.CanStartNow"/>
-        /// — not finished, every visible and hidden prerequisite finished), ties broken by <c>defName</c>.
+        /// — not finished, every visible and hidden prerequisite finished) and that is not in an era past the
+        /// frontier (<see cref="EraPacing.IsPastFrontier"/>), ties broken by <c>defName</c>.
         /// Null when nothing at all is startable. Reads <see cref="ResearchManager.AllProjects"/> live and
         /// caches nothing: projects are minted into it while a game runs (research.endless), so a cache here
         /// would go stale the first time an age opened.
@@ -78,11 +88,13 @@ namespace SimWorld.Research
         public static ResearchProjectDef? NextProject()
         {
             IReadOnlyList<ResearchProjectDef> all = Find.ResearchManager.AllProjects;
+            EraDef? frontier = EraPacing.FrontierEra();
             ResearchProjectDef? best = null;
             for (int i = 0; i < all.Count; i++)
             {
                 ResearchProjectDef candidate = all[i];
                 if (!candidate.CanStartNow) continue;
+                if (EraPacing.IsPastFrontier(candidate, frontier)) continue;
                 if (best == null || IsCheaperThan(candidate, best)) best = candidate;
             }
             return best;

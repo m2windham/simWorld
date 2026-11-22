@@ -179,17 +179,17 @@ namespace SimWorld.Tests.Building
         }
 
         [Fact]
-        public void It_stops_at_the_number_the_tech_tree_was_balanced_for()
+        public void It_stops_at_the_number_its_people_and_era_want()
         {
             Settlement settlement = PeopledSettlement();
             CoreMap map = NewMap();
 
-            for (int i = 0; i < WorksInitiativeTuning.ResearchBenchesWanted + 5; i++)
+            for (int i = 0; i < WorksInitiativeTuning.ResearchBenchesWanted(settlement) + 5; i++)
             {
                 SettlementWorksInitiative.Run(settlement, map);
             }
 
-            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted, BlueprintCount(map, ResearchWorkDefOf.ResearchBench));
+            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted(settlement), BlueprintCount(map, ResearchWorkDefOf.ResearchBench));
         }
 
         [Fact]
@@ -197,7 +197,7 @@ namespace SimWorld.Tests.Building
         {
             Settlement settlement = PeopledSettlement();
             CoreMap map = NewMap();
-            for (int i = 0; i < WorksInitiativeTuning.ResearchBenchesWanted; i++)
+            for (int i = 0; i < WorksInitiativeTuning.ResearchBenchesWanted(settlement); i++)
             {
                 Spawn(map, new IntVec3(i * 2, 0, 0), "ResearchBench");
             }
@@ -468,7 +468,7 @@ namespace SimWorld.Tests.Building
             int benches = BlueprintCount(map, ResearchWorkDefOf.ResearchBench);
             int art = Blueprints(map).Count(bp => SculptureMaterials.IsSculpture(bp.EntityToBuild));
 
-            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted, benches);
+            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted(settlement), benches);
             Assert.Equal(SculptureMaterials.SculpturesWantedOf(ArtThingDefOf.Sculpture), art);
 
             for (int i = 0; i < 10; i++) SettlementWorksInitiative.Run(settlement, map);
