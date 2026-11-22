@@ -109,6 +109,7 @@ namespace SimWorld.Bench.Suites
             Console.WriteLine();
             foreach (string f in firsts) Console.WriteLine("- " + f);
             Console.WriteLine();
+            if (home.InteriorMap is Map.Map end) Diagnose(end);
             Console.WriteLine("ledger: deaths " + game.Storyteller.deaths + "; citizens " + home.Citizens.Count);
             Console.WriteLine(DwellingReading.Line(home));
             Console.WriteLine("### throughput");
@@ -173,6 +174,54 @@ namespace SimWorld.Bench.Suites
                 + string.Join(", ", benches) + " | " + string.Join(", ", bills) + " | "
                 + string.Join(", ", carried.Select(kv => kv.Value + " " + kv.Key)) + " | "
                 + string.Join(", ", built2.Select(kv => kv.Value + " " + kv.Key)) + " |");
+        }
+
+        /// <summary>Why a queued smelting bill is or is not being worked: the bench, each ore stack and its
+        /// distance, and how many citizens could take the bill now.</summary>
+        private static void Diagnose(Map.Map map)
+        {
+            Console.WriteLine("### smelting diagnostic");
+            Console.WriteLine();
+            List<Pawn> citizens = OutfittingInitiative.CitizensOn(map);
+            int smiths = citizens.Count(c => c.workSettings != null && c.workSettings.WorkIsActive(WorkTypeDefOf.Smithing));
+            Console.WriteLine("- citizens " + citizens.Count + ", with smithing active " + smiths);
+            foreach (string b in Benches)
+            {
+                foreach (Thing bench in map.listerThings.ThingsOfDef(DefDatabase<ThingDef>.GetNamed(b)))
+                {
+                    CompBillGiver? comp = (bench as ThingWithComps)?.GetComp<CompBillGiver>();
+                    if (comp == null) continue;
+                    foreach (Bill bill in comp.BillStack.Bills)
+                    {
+                        var bp = bill as Bill_Production;
+                        int allowed = citizens.Count(c => bill.PawnAllowedToStartAnew(c));
+                        Console.WriteLine("- " + b + " @" + bench.Position + " " + bill.recipe.defName + " doNow=" + (bp?.ShouldDoNow() ?? false)
+                            + " suspended=" + bill.suspended + " allowedPawns=" + allowed);
+                        foreach (IngredientCount ing in bill.recipe.ingredients ?? new List<IngredientCount>())
+                        {
+                            foreach (ThingDef d in ing.filter.AllowedThingDefs)
+                            {
+                                if (!bill.ingredientFilter.Allows(d)) continue;
+                                foreach (Thing s in map.listerThings.ThingsOfDef(d))
+                                {
+                                    Zone? z = map.zoneManager.ZoneAt(s.Position);
+                                    Console.WriteLine("    " + d.defName + " x" + s.stackCount + " @" + s.Position + " dist "
+                                        + Math.Sqrt((s.Position - bench.Position).LengthHorizontalSquared).ToString("F1", CultureInfo.InvariantCulture)
+                                        + " zone " + (z is Zone_Stockpile sp ? sp.label : z == null ? "-" : z.GetType().Name));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            foreach (Zone z in map.zoneManager.AllZones)
+            {
+                if (z is Zone_Stockpile sp && sp.label != null && sp.label.EndsWith(" stock", StringComparison.Ordinal))
+                {
+                    Console.WriteLine("- zone '" + sp.label + "' cells " + sp.Cells.Count + " first " + (sp.Cells.Count > 0 ? sp.Cells[0].ToString() : "-"));
+                }
+            }
+            Console.WriteLine();
         }
 
         private static string Counts(Map.Map map, string[] defs) =>

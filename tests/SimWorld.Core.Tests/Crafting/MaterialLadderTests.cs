@@ -67,6 +67,13 @@ namespace SimWorld.Tests.Crafting
             return p;
         }
 
+        private static Pawn Skilled(Pawn p, int melee, int shooting)
+        {
+            p.skills!.GetSkill(SkillDefOf.Melee)!.Level = melee;
+            p.skills.GetSkill(SkillDefOf.Shooting)!.Level = shooting;
+            return p;
+        }
+
         private static Settlement NewSettlement() => new Settlement(WorldObjectDefOf.Settlement, 0, null, "Forgeton", 0);
 
         private static List<string> DesignatedVeins(CoreMap map) =>
@@ -249,7 +256,7 @@ namespace SimWorld.Tests.Crafting
             ThingWithComps smithy = Bench(map, "Smithy", 20, 20);
             Spawn(map, "MineableCopper", 33, 33);
             Citizen(map, 2, 2, "MeleeWeapon_Knife", "Flint");
-            Citizen(map, 3, 2, "Bow_Short", name: "Hunter"); // a bow is not traded for a blade
+            Skilled(Citizen(map, 3, 2, "Bow_Short", name: "Hunter"), melee: 3, shooting: 8); // the hunter keeps the bow
 
             OutfittingInitiative.Run(map);
 
@@ -341,26 +348,53 @@ namespace SimWorld.Tests.Crafting
         }
 
         [Fact]
-        public void A_citizen_trades_a_worse_blade_for_a_better_one_but_never_a_bow_or_an_equal()
+        public void A_citizen_trades_a_worse_blade_for_a_better_one_and_only_a_fighter_puts_down_a_bow_for_metal()
         {
             CoreMap map = NewMap();
             Thing bronzeSpear = Spawn(map, "MeleeWeapon_Spear", 5, 5, stuff: "Bronze");
             Thing flintKnife = ThingMaker.MakeThing(Def("MeleeWeapon_Knife"), Def("Flint"));
             Thing bow = ThingMaker.MakeThing(Def("Bow_Short"));
             Thing otherSpear = ThingMaker.MakeThing(Def("MeleeWeapon_Spear"), Def("Bronze"));
+            Pawn hunter = Skilled(NewHuman("Hunter"), melee: 3, shooting: 8);
+            Pawn fighter = Skilled(NewHuman("Fighter"), melee: 8, shooting: 3);
+            Pawn even = Skilled(NewHuman("Even"), melee: 5, shooting: 5);
 
             Assert.True(MaterialLadder.IsBetterWeapon(bronzeSpear, null));
             Assert.True(MaterialLadder.IsBetterWeapon(bronzeSpear, flintKnife));
             Assert.False(MaterialLadder.IsBetterWeapon(flintKnife, bronzeSpear));
-            Assert.False(MaterialLadder.IsBetterWeapon(bronzeSpear, bow));
             Assert.False(MaterialLadder.IsBetterWeapon(bronzeSpear, otherSpear));
+            Assert.False(MaterialLadder.IsBetterWeapon(bronzeSpear, bow));
+            Assert.False(MaterialLadder.IsBetterWeapon(bronzeSpear, bow, hunter));
+            Assert.False(MaterialLadder.IsBetterWeapon(bronzeSpear, bow, even)); // a tie keeps the bow
+            Assert.True(MaterialLadder.IsBetterWeapon(bronzeSpear, bow, fighter));
+            Assert.False(MaterialLadder.IsBetterWeapon(flintKnife, bow, fighter)); // only forged metal replaces a bow
+            Assert.False(MaterialLadder.IsBetterWeapon(bow, flintKnife, fighter));
 
-            // Through the real think node: the flint-armed citizen goes for the spear, the archer does not.
+            // Through the real think node: the flint-armed citizen and the bow-carrying fighter go for the
+            // spear, the hunter does not.
             var giver = new JobGiver_PickUpOpportunisticWeapon { maxDistance = 30f };
             Pawn knapper = Citizen(map, 2, 2, "MeleeWeapon_Knife", "Flint", "Knapper");
-            Pawn archer = Citizen(map, 3, 2, "Bow_Short", name: "Archer");
+            Pawn archer = Skilled(Citizen(map, 3, 2, "Bow_Short", name: "Archer"), melee: 3, shooting: 8);
+            Pawn spearman = Skilled(Citizen(map, 4, 2, "Bow_Short", name: "Spearman"), melee: 8, shooting: 3);
             Assert.Same(bronzeSpear, giver.TryIssueJobPackage(knapper).Job?.targetA.Thing);
             Assert.Null(giver.TryIssueJobPackage(archer).Job);
+            Assert.Same(bronzeSpear, giver.TryIssueJobPackage(spearman).Job?.targetA.Thing);
+        }
+
+        [Fact]
+        public void A_bronze_age_smithy_counts_the_bow_carrying_fighters_but_not_the_hunters()
+        {
+            Know("StoneTools", "Copper", "Bronze", "BronzeWeapons");
+            CoreMap map = NewMap();
+            ThingWithComps smithy = Bench(map, "Smithy", 20, 20);
+            Spawn(map, "MineableCopper", 33, 33);
+            Skilled(Citizen(map, 2, 2, "Bow_Short", name: "Hunter"), melee: 2, shooting: 9);
+            Skilled(Citizen(map, 3, 2, "Bow_Short", name: "Fighter1"), melee: 9, shooting: 2);
+            Skilled(Citizen(map, 4, 2, "Bow_Short", name: "Fighter2"), melee: 7, shooting: 6);
+
+            OutfittingInitiative.Run(map);
+
+            Assert.Equal(2, BillOn(smithy, "Make_MeleeWeapon_Spear")!.targetCount);
         }
 
         [Fact]

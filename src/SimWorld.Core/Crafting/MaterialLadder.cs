@@ -123,12 +123,38 @@ namespace SimWorld.Crafting
         /// <summary>Whether a citizen holding <paramref name="current"/> should trade it for
         /// <paramref name="candidate"/>: never away from a ranged weapon (a bow is a hunter's tool, not a worse
         /// knife), always from empty hands, otherwise only for a strictly better melee weapon.</summary>
-        public static bool IsBetterWeapon(Thing candidate, Thing? current)
+        public static bool IsBetterWeapon(Thing candidate, Thing? current, Pawn? holder = null)
         {
             if (candidate == null) throw new ArgumentNullException(nameof(candidate));
             if (current == null) return true;
-            if (!IsMeleeWeapon(current.def) || !IsMeleeWeapon(candidate.def)) return false;
+            if (!IsMeleeWeapon(candidate.def)) return false;
+            if (!IsMeleeWeapon(current.def)) return holder != null && TradesBowForBlade(holder, candidate.Stuff);
             return WeaponScore(candidate) > WeaponScore(current) * TradeUpMargin;
+        }
+
+        /// <summary>
+        /// Whether <paramref name="pawn"/>, holding a ranged weapon, would put it down for a melee weapon made of
+        /// <paramref name="bladeStuff"/>. Every founder carries a bow (a hunting band: Tribesperson's
+        /// weaponTags), so without this a settlement never wants a blade and the smith has nobody to arm. The
+        /// bow is a hunter's tool (HuntUtility.HasHuntingWeapon), so it stays with whoever shoots at least as
+        /// well as they fight — the RimWorld player's own rule for who gets the bow — and only a forged metal
+        /// blade replaces it: a flint knife is a tool, not an answer to a bow. The bow left on the ground is
+        /// there for the next unarmed citizen. Translation recorded in crafting.materialladder.
+        /// </summary>
+        public static bool TradesBowForBlade(Pawn pawn, ThingDef? bladeStuff)
+        {
+            if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+            return bladeStuff?.stuffProps?.categories != null && bladeStuff.stuffProps.categories.Contains(MaterialLadderDefOf.Metallic)
+                && FightsBetterThanShoots(pawn);
+        }
+
+        /// <summary>Melee skill strictly above Shooting: a tie keeps the bow, since hunting needs one.</summary>
+        public static bool FightsBetterThanShoots(Pawn pawn)
+        {
+            if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+            SkillRecord? melee = pawn.skills?.GetSkill(SkillDefOf.Melee);
+            SkillRecord? shooting = pawn.skills?.GetSkill(SkillDefOf.Shooting);
+            return melee != null && shooting != null && melee.Level > shooting.Level;
         }
 
         /// <summary>A weapon recipe this class plans: its product is a stuff-made melee weapon that takes its
@@ -358,7 +384,8 @@ namespace SimWorld.Crafting
                 if (p.equipment == null || p.WorkTagIsDisabled(WorkTags.Violent)) continue;
                 Thing? held = p.equipment.Primary;
                 if (held == null) n++;
-                else if (!unarmedOnly && IsMeleeWeapon(held.def) && plan.Score > WeaponScore(held) * TradeUpMargin) n++;
+                else if (unarmedOnly) continue;
+                else if (IsMeleeWeapon(held.def) ? plan.Score > WeaponScore(held) * TradeUpMargin : TradesBowForBlade(p, plan.Stuff)) n++;
             }
             return n;
         }

@@ -24,7 +24,9 @@ namespace SimWorld.AI
     /// for the people who already carry a worse one. So a citizen of the player's civilization (or a pawn of
     /// none, as a test's is) holding a melee weapon also takes up a strictly better one
     /// (<see cref="Crafting.MaterialLadder.IsBetterWeapon"/>), and drops the old one where it stands
-    /// (<c>JobDriver_Equip</c>). A ranged weapon is never traded for a blade; a raider never trades up.
+    /// (<c>JobDriver_Equip</c>). A ranged weapon is traded only for a forged metal blade, and only by a citizen
+    /// who fights better than they shoot (<see cref="Crafting.MaterialLadder.TradesBowForBlade"/>), so the
+    /// hunters keep their bows; a raider never trades up.
     /// </summary>
     public sealed class JobGiver_PickUpOpportunisticWeapon : ThinkNode_JobGiver
     {
@@ -45,7 +47,7 @@ namespace SimWorld.AI
             for (int i = 0; i < items.Count; i++)
             {
                 if (items[i] is not ThingWithComps weapon || !weapon.def.IsWeapon || !weapon.Spawned) continue;
-                if (held != null && !Crafting.MaterialLadder.IsBetterWeapon(weapon, held)) continue;
+                if (held != null && !Crafting.MaterialLadder.IsBetterWeapon(weapon, held, pawn)) continue;
                 int distSq = (weapon.Position - pawn.Position).LengthHorizontalSquared;
                 if (distSq > maxDistSq || distSq >= bestDistSq) continue;
                 if (!pawn.Map.reservationManager.CanReserve(pawn, weapon)) continue;
@@ -57,7 +59,7 @@ namespace SimWorld.AI
         }
 
         private static bool MayTradeUp(Pawn pawn, Thing held) =>
-            Crafting.MaterialLadder.IsMeleeWeapon(held.def)
+            (Crafting.MaterialLadder.IsMeleeWeapon(held.def) || Crafting.MaterialLadder.FightsBetterThanShoots(pawn))
             && (pawn.Faction == null || ReferenceEquals(pawn.Faction, Sim.Find.FactionManager.OfPlayer));
     }
 }
