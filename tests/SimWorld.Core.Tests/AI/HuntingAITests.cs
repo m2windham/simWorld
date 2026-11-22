@@ -189,19 +189,13 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
-        public void A_full_abstract_ledger_does_not_close_the_gate_and_that_is_the_correction()
+        public void Food_in_the_ledger_closes_the_gate_now_that_the_ledger_is_issued_to_the_map()
         {
-            // This test used to assert the opposite, and asserting the opposite is what kept hunting from
-            // ever happening in a real game. Settlement.Stores is the ledger Economy.SettlementLarder feeds
-            // citizens out of — and it feeds only citizens who are NOT spawned. A founding band is credited
-            // hundreds of nutrition there against a want of a hundred and sixty, and nothing ever draws it
-            // down while somebody is watching the settlement, so a gate that counted it was shut from tick
-            // zero for ever: measured false on 12,000 of 12,000 samples across twelve in-game days.
-            //
-            // A hunt is map work. It is done by people standing on a map, it feeds people standing on a map,
-            // and the meat lands on that map, so the food that answers it is the food on that map. See
-            // HuntingInitiative.WantsMeat for the whole argument and for the one change — an unbanking pass,
-            // which nothing in this codebase has — that would make counting the ledger correct again.
+            // This test has asserted both answers. First that a full ledger closes the gate; then, once that
+            // was measured to keep a founded band from ever hunting beside rations nobody could reach, that it
+            // does not. Economy.SettlementStockInitiative.IssueFromStores now tops the map up out of the
+            // ledger every pass, so ledger food is food the hunters' own people eat, and a settlement that
+            // hunted past it hunted with a year's food in its granary (docs/research/era-arc.md §9.6).
             CoreMap map = NewMap(8, 8);
             Settlement settlement = PlainSettlement();
             settlement.AddCitizen(NewHuman("Eater"));
@@ -210,11 +204,31 @@ namespace SimWorld.Tests.AI
             int meals = (int)(wanted / Def("MealSimple").ingestible!.nutrition) + 50;
             settlement.SetStoreCount(Def("MealSimple"), meals);
 
-            Assert.True(HuntingInitiative.NutritionAvailable(settlement, map) > wanted,
-                "the civilization-scale total does count the ledger — that figure is unchanged");
-            Assert.True(HuntingInitiative.WantsMeat(settlement, map),
-                "a granary its own people cannot eat out of must not persuade a settlement it is fed");
             Assert.Equal(0f, HuntingInitiative.NutritionReachable(map), 3);
+            Assert.False(HuntingInitiative.WantsMeat(settlement, map),
+                "a granary the settlement draws on is food: nobody hunts beside it");
+
+            settlement.SetStoreCount(Def("MealSimple"), 0);
+            Assert.True(HuntingInitiative.WantsMeat(settlement, map), "and an emptied one sends the hunters out again");
+        }
+
+        [Theory]
+        [InlineData(0.5f, true)]   // half the larder between map and ledger: short
+        [InlineData(1.5f, false)]  // half again over it: not
+        public void The_gate_reads_the_map_and_the_ledger_together(float shareOfWant, bool short_)
+        {
+            CoreMap map = NewMap(10, 10);
+            Settlement settlement = PlainSettlement();
+            settlement.AddCitizen(NewHuman("Eater"));
+
+            float wanted = HuntingInitiative.NutritionWanted(settlement, map);
+            float per = Def("Meat_Generic").ingestible!.nutrition;
+            int units = (int)(wanted * shareOfWant / per);
+            SpawnItem(map, new IntVec3(5, 0, 5), "Meat_Generic", units / 2);
+            settlement.SetStoreCount(Def("Meat_Generic"), units - units / 2);
+
+            Assert.Equal(short_, HuntingInitiative.WantsMeat(settlement, map));
+            Assert.Equal(short_, HuntingInitiative.ShortOfFood(settlement, map));
         }
 
         [Fact]

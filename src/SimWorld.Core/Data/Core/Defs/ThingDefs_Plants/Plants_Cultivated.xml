@@ -24,6 +24,11 @@
       <sowTags>
         <li>Ground</li>
       </sowTags>
+      <!-- RimWorld: a plant can be harvested from 65% growth, at half its yield ("Plants that are harvested at
+           the first possible moment (at growth 65%) will only grant half of the total normal yield",
+           rimworldwiki.com/wiki/Plants). The growers still wait for a ripe crop; an unripe one is taken only
+           while the settlement is short of food (WorkGiver_GrowerHarvest), as a player designates it. -->
+      <harvestMinGrowth>0.65</harvestMinGrowth>
     </plant>
   </ThingDef>
 

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using SimWorld.AI;
+using SimWorld.Defs;
 using SimWorld.God.View;
 using SimWorld.Pawns;
 using SimWorld.Scenario;
@@ -165,6 +166,14 @@ namespace SimWorld.Tests.Integration
             Settlement settlement = game.World!.worldObjects.OfType<Settlement>().First();
             GodCommands.OpenSettlement(settlement.tile);
             SimWorld.Map.Map map = settlement.InteriorMap!;
+
+            // A band whose founding rations are gone. The hunting gate counts the ledger (it is issued to the
+            // map: Economy.SettlementStockInitiative.IssueFromStores), so a band still carrying its rations
+            // does not hunt; this test is about one that has to.
+            foreach (ThingDef food in settlement.Stores.Keys.Where(d => d.IsNutritionGivingIngestible).ToList())
+            {
+                settlement.SetStoreCount(food, 0);
+            }
 
             // The two preconditions a hunt needs, asserted separately so a failure names which one is gone.
             Assert.True(WildAnimalsOn(map).Count > 0, "no prey on a freshly generated interior");

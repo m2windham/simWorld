@@ -53,12 +53,10 @@ namespace SimWorld.AI
     /// <c>StorageTarget</c>) would therefore <i>never close</i>: hunting would raise the map ledger while the
     /// store ledger it was watching stayed flat, and the settlement would hunt forever.
     /// <para/>
-    /// <b>This class's first answer was to count both, and that was the wrong half of the trap.</b> Counting
-    /// both made the gate terminate in principle and never open in practice, because the ledger a watched
-    /// settlement holds is food its own people cannot eat — measured, false on every sample across twelve
-    /// in-game days on a founded settlement. The gate reads the map half alone now
-    /// (<see cref="NutritionReachable"/>); <see cref="WantsMeat"/>'s own doc carries the measurement, the
-    /// argument, and the one change that would make counting both correct again.
+    /// <b>This class's first answer was to count both; its second read the map alone; it counts both
+    /// again.</b> Counting both was wrong while the ledger was food its own people could not eat, and right
+    /// once <c>Economy.SettlementStockInitiative</c> began issuing ledger food back to the map.
+    /// <see cref="WantsMeat"/>'s own doc carries both measurements.
     /// <para/>
     /// <b>Who counts as an eater.</b> <see cref="Settlement.Citizens"/> only — never
     /// <see cref="Settlement.StatisticalPopulation"/> — the same line
@@ -91,59 +89,56 @@ namespace SimWorld.AI
 
         /// <summary>
         /// Whether <paramref name="settlement"/> (null: the map's own population) is short enough of food to
-        /// want a hunt. Strictly "less in reach than wanted" — no hysteresis band, so the gate reopens the
-        /// moment food falls back below the target rather than waiting for a second threshold.
+        /// want a hunt: <see cref="ShortOfFood(Settlement?, Map.Map)"/>, the one reading of the food economy's
+        /// shortage every famine response shares. Strictly "less held than wanted", no hysteresis band, so the
+        /// gate reopens the moment food falls back below the target.
         ///
-        /// <para/><b>It reads <see cref="NutritionReachable"/>, not <see cref="NutritionAvailable"/>, and
-        /// that correction is the reason hunting could never happen.</b> Measured over twelve in-game days on
-        /// a settlement founded the ordinary way, this returned false on every sample: a founding band is
-        /// credited <c>Economy.SettlementLarderTuning.ProvisionNutritionPerMouth</c> into
-        /// <see cref="Settlement.Stores"/> — hundreds of nutrition against a want of a hundred and sixty —
-        /// and <b>nothing draws that ledger down while the settlement has a map</b>, because
-        /// <c>Economy.SettlementLarder</c> feeds only citizens who are <i>not</i> spawned. So the hunters
-        /// were reading a granary their own people cannot eat out of, and concluding they were rich. Shut
-        /// from tick zero, permanently, for every settlement anyone opens.
-        ///
-        /// <para/><b>The fix states the seam rather than moving a threshold.</b> A hunt is map work: it is
-        /// done by people standing on a map, it feeds people standing on a map, and the meat it produces
-        /// lands on that map. The food that answers it is therefore the food on that map. The abstract ledger
-        /// is the other book — <c>Economy.SettlementLarder</c> spends it, <c>Economy.SettlementSubsistence</c>
-        /// fills it, and both deal exclusively with citizens who have no map — and hunting is not in it.
-        /// This also makes the gate agree exactly with the one other reader of these two figures:
-        /// <c>Economy.SettlementStockInitiative</c> banks only what is <i>above</i>
-        /// <see cref="NutritionWanted"/> measured against the map alone, so one number now has two signs —
-        /// below the reserve the settlement hunts, above it the surplus is banked and
-        /// <see cref="TamingInitiative"/> spends it on livestock. Before this they were two numbers that
-        /// disagreed.
-        ///
-        /// <para/><b>What is genuinely still open, named rather than hidden by this.</b> There is no
-        /// <i>unbanking</i> pass anywhere: nothing ever turns a count in <see cref="Settlement.Stores"/> back
-        /// into a <c>Thing</c> on a map, so a watched settlement can hold a full granary and starve beside
-        /// it. That is a real defect and it is not this one — it belongs to the module that owns the ledger's
-        /// two writers. <b>The day it lands, this method should go back to reading
-        /// <see cref="NutritionAvailable"/></b>, because the ledger will then be food the hunters' own people
-        /// can actually eat, and counting it will be the truth instead of the trap it is today.
+        /// <para/><b>It reads the map and the ledger, and for two years it read the map alone.</b> The map-only
+        /// reading was right when it was written: a founding band's rations sat in
+        /// <see cref="Settlement.Stores"/>, nothing issued them, and a gate that counted them was shut from
+        /// tick zero while the band went hungry beside them (measured: false on every one of 12,000 samples).
+        /// This method's doc said then that the day ledger food could be issued to the map, the gate should
+        /// read <see cref="NutritionAvailable"/> again. <c>Economy.SettlementStockInitiative.IssueFromStores</c>
+        /// is that day: it keeps the map topped up to <see cref="NutritionWanted"/> out of the ledger on
+        /// every pass. Which made the map-only gate wrong the other way. The map is held <i>at</i> the
+        /// target, so every mouthful eaten between two passes dropped it just under, and the settlement hunted
+        /// while a year's food stood in its granary. Measured on the era arc (band 20, seed 99, threats off,
+        /// ten years): hunting carried the store above the year the fields stop at, and the storage huts that
+        /// house it reached 404 for 25 people (<c>docs/research/era-arc.md</c> §9.6).
         /// </summary>
-        public static bool WantsMeat(Settlement? settlement, Map.Map map)
+        public static bool WantsMeat(Settlement? settlement, Map.Map map) => ShortOfFood(settlement, map);
+
+        /// <summary>Whether the settlement that owns <paramref name="map"/> (or, with none, the people on it)
+        /// is short of food, resolving the owner itself.</summary>
+        public static bool ShortOfFood(Map.Map map) => ShortOfFood(SettlementFor(map), map);
+
+        /// <summary>
+        /// Whether everything <paramref name="settlement"/> holds to eat, on its map and in its ledger
+        /// (<see cref="NutritionAvailable"/>), is less than <see cref="HuntingTuning.DaysOfFoodWanted"/> days
+        /// of what its people eat (<see cref="NutritionWanted"/>). Read by the hunting gate and by the
+        /// growers' early harvest (<c>Building.WorkGiver_GrowerHarvest</c>): both are what a RimWorld player
+        /// does when the larder runs low (designate a hunt, designate an unripe crop for harvest), and with no
+        /// player the settlement does them on this one figure, so they start and stop together.
+        /// </summary>
+        public static bool ShortOfFood(Settlement? settlement, Map.Map map)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
-            return NutritionReachable(map) < NutritionWanted(settlement, map);
+            return NutritionAvailable(settlement, map) < NutritionWanted(settlement, map);
         }
 
         /// <summary>
         /// Nutrition a pawn standing on <paramref name="map"/> could actually walk to and eat: everything
-        /// edible lying on it, and nothing else. The figure <see cref="WantsMeat"/> gates on — see that
-        /// method for why the abstract ledger is deliberately not in it — and the same one
-        /// <c>Economy.SettlementStockInitiative</c> measures its banking reserve against.
+        /// edible lying on it, and nothing else. The figure <c>Economy.SettlementStockInitiative</c> measures
+        /// its banking reserve against and <see cref="TamingInitiative"/> its surplus. Not the hunting gate's
+        /// any more: see <see cref="WantsMeat"/>.
         /// </summary>
         public static float NutritionReachable(Map.Map map) => NutritionAvailable(null, map);
 
         /// <summary>
         /// Nutrition the settlement holds at civilization scale: everything edible lying on
         /// <paramref name="map"/> plus everything edible in <paramref name="settlement"/>'s abstract
-        /// <see cref="Settlement.Stores"/> ledger. The honest total of both books — used for "how much food
-        /// does this town have", never for "should somebody go hunting", which is
-        /// <see cref="NutritionReachable"/>'s question and that method's own doc explains why.
+        /// <see cref="Settlement.Stores"/> ledger. The honest total of both books, and the figure
+        /// <see cref="ShortOfFood(Settlement?, Map.Map)"/> reads.
         /// </summary>
         public static float NutritionAvailable(Settlement? settlement, Map.Map map)
         {

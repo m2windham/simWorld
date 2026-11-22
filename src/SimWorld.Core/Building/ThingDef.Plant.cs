@@ -25,9 +25,10 @@ namespace SimWorld.Defs
 
         /// <summary>
         /// Minimum <see cref="Building.Plant.Growth"/> before a harvest job will target this plant at all.
-        /// <b>Deviation:</b> defaults to 1 (fully grown only) — this port has no separate "ripe" life stage
-        /// the way RimWorld's real early-harvest-allowed species do, so early harvest is not modelled; a
-        /// content author can still lower this per species once that distinction exists.
+        /// <b>Deviation:</b> defaults to 1 (fully grown only), where RimWorld harvests a plant from 65% growth (wiki, Plants); content
+        /// sets RimWorld's 0.65 on the crops and the berry bush and 0.4 on trees. Ripeness is
+        /// <see cref="Building.Plant.FullyGrown"/>: the growers wait for it, and take a food plant between
+        /// this and ripe only while the settlement is short of food (<see cref="Building.WorkGiver_GrowerHarvest"/>).
         /// </summary>
         public float harvestMinGrowth = 1f;
 

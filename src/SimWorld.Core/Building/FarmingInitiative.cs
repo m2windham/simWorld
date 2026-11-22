@@ -50,6 +50,15 @@ namespace SimWorld.Building
         /// <c>Director.DifficultyUtility.CropYieldFactor</c> and to a plant cut before it was ripe.
         /// </summary>
         public const float FieldSizeMargin = 3f;
+
+        /// <summary>
+        /// The most a cold season may enlarge the field over <see cref="FieldSizeMargin"/>: the margin is
+        /// divided by the season's temperature growth factor (<see cref="FarmingInitiative.SeasonGrowthFactor"/>)
+        /// and that factor is floored at one over this. Without a floor a twelfth at or below freezing would
+        /// want an infinite field. Unsourced (a RimWorld player sizes fields by eye); pinned by
+        /// <c>FarmingInitiativeTests</c> as "a cold season wants a bigger field, and not an unbounded one".
+        /// </summary>
+        public const float MaxColdFieldFactor = 3f;
     }
 
     /// <summary>
@@ -194,7 +203,38 @@ namespace SimWorld.Building
             float burnedPerDay = wantedInHand / HuntingTuning.DaysOfFoodWanted;
 
             int breakEven = (int)Math.Ceiling(burnedPerDay / perCellPerDay);
-            return (int)Math.Ceiling(breakEven * FarmingTuning.FieldSizeMargin);
+            return (int)Math.Ceiling(breakEven * FarmingTuning.FieldSizeMargin / SeasonGrowthFactor(map));
+        }
+
+        /// <summary>
+        /// How fast a crop sown now will grow for temperature, 0..1: <see cref="PlantUtility.GrowthRateFactor_Temperature"/>
+        /// of the mean seasonal temperature over this twelfth and the next (the span a crop sown today grows
+        /// through), floored at 1 / <see cref="FarmingTuning.MaxColdFieldFactor"/>. 1 on a map with no
+        /// climate (no world tile), so the field is then sized exactly as before.
+        ///
+        /// <para/><b>Why.</b> <see cref="FarmingTuning.FieldSizeMargin"/> covers growth below rate 1 on a
+        /// warm day; it does not cover a cold season. Measured on the 60-day bench, band 40 seed 201: the
+        /// second crop was sown on day 19 into an autumn that grew it at about a seventh of its nominal rate
+        /// (22% to 60% in 17 days), the 1,281-cell field sized for summer fed about half of what 40 people
+        /// eat, and the store ran dry on day 40 with the crop at 72%. A RimWorld player sows more ahead of
+        /// the cold; this sizes the field for the season the crop will grow in. A warm season (the factor at
+        /// 1, which a game's starting twelfth always is) leaves the field as it was.
+        /// </summary>
+        public static float SeasonGrowthFactor(Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            return SeasonGrowthFactor(Weather.MapClimate.TryResolve(map), Find.TickManager.TicksAbs);
+        }
+
+        /// <summary><see cref="SeasonGrowthFactor(Map.Map)"/> for a climate (null: none) at an absolute tick.</summary>
+        public static float SeasonGrowthFactor(Weather.MapClimate? climate, long ticksAbs)
+        {
+            if (climate == null) return 1f;
+            int twelfth = (int)(ticksAbs / GenDate.TicksPerTwelfth % GenDate.TwelfthsPerYear);
+            int next = (twelfth + 1) % GenDate.TwelfthsPerYear;
+            float mean = (Weather.TwelfthUtility.AverageTemperatureForTwelfth(climate, twelfth)
+                + Weather.TwelfthUtility.AverageTemperatureForTwelfth(climate, next)) / 2f;
+            return Math.Max(PlantUtility.GrowthRateFactor_Temperature(mean), 1f / FarmingTuning.MaxColdFieldFactor);
         }
 
         /// <summary>
