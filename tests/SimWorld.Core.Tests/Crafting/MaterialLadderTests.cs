@@ -530,6 +530,24 @@ namespace SimWorld.Tests.Crafting
             Assert.Equal("Iron", wall.stuffToUse!.defName);
         }
 
+        [Fact]
+        public void Steel_through_cementation_keeps_the_iron_smelting_under_it()
+        {
+            Know("StoneTools", "Copper", "Bronze", "BronzeWeapons", "Iron", "IronWeapons", "Steel");
+            CoreMap map = NewMap();
+            Bench(map, "Smithy", 20, 20);
+            Bench(map, "Bloomery", 22, 20);
+            Spawn(map, "IronOre", 23, 22, 75);
+            Spawn(map, "IronOre", 24, 22, 75);
+            Spawn(map, "Iron", 25, 22, 42);
+            for (int i = 0; i < 3; i++) Citizen(map, 2 + i, 2, "MeleeWeapon_Spear", "Iron", "Spearman" + i);
+
+            OutfittingInitiative.Run(map);
+            SmeltingInitiative.Run(map);
+
+            Assert.Equal(new[] { "Make_Steel_Cementation", "Smelt_Iron" }, MetallurgyBills(map).OrderBy(s => s, StringComparer.Ordinal));
+        }
+
         // ---- save ----
 
         [Fact]
