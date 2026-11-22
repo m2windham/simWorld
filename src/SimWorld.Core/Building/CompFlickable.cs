@@ -37,7 +37,13 @@ namespace SimWorld.Building
         public bool SwitchIsOn
         {
             get => switchOnInt;
-            set => switchOnInt = value;
+            set
+            {
+                if (switchOnInt == value) return;
+                switchOnInt = value;
+                // The map view draws the switch (ThingView.SwitchedOn); a flip is a field write the chunk cannot see.
+                parent?.Map?.mapView.Notify_ChunkChangedAt(parent.Position);
+            }
         }
 
         public bool WantSwitchOn => wantSwitchOn;

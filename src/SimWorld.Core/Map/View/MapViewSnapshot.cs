@@ -71,6 +71,8 @@ namespace SimWorld.Map.View
             SnowLayer snow,
             IReadOnlyList<MapViewChunk> chunks,
             IReadOnlyList<PawnView> pawns,
+            IReadOnlyList<DwellingView> dwellings,
+            float outdoorTemperature,
             MapViewVersions versions)
         {
             ContentLoaded = contentLoaded;
@@ -90,6 +92,8 @@ namespace SimWorld.Map.View
             Snow = snow;
             Chunks = chunks;
             Pawns = pawns;
+            Dwellings = dwellings;
+            OutdoorTemperature = outdoorTemperature;
             Versions = versions;
         }
 
@@ -146,6 +150,15 @@ namespace SimWorld.Map.View
 
         /// <summary>Every spawned pawn. Never chunked — see <see cref="MapViewTracker"/>.</summary>
         public IReadOnlyList<PawnView> Pawns { get; }
+
+        /// <summary>Every household house planned on the map, finished or going up, in the order planned
+        /// (<c>DwellingUtility.DwellingsOn</c>). Re-read whole on every capture and every delta, like the pawns:
+        /// see <see cref="DwellingView"/>.</summary>
+        public IReadOnlyList<DwellingView> Dwellings { get; }
+
+        /// <summary>The map's outdoor air, degrees C, at <see cref="TicksGame"/>. A room's own air is on its house
+        /// (<see cref="DwellingView.IndoorTemperature"/>) or one click away (<see cref="TemperatureAt(IntVec3)"/>).</summary>
+        public float OutdoorTemperature { get; }
 
         /// <summary>What to hand back to <see cref="CaptureChanges(int, MapViewVersions)"/> next time.</summary>
         public MapViewVersions Versions { get; }
@@ -266,6 +279,8 @@ namespace SimWorld.Map.View
                 BuildSnow(map, tracker),
                 chunks,
                 BuildPawns(map),
+                BuildDwellings(map),
+                map.outdoorTemperature,
                 new MapViewVersions(tracker.SessionId, tracker.TerrainVersion, tracker.RoofVersion, tracker.SnowVersion, chunkVersions));
         }
 
@@ -332,6 +347,8 @@ namespace SimWorld.Map.View
                 snowChanged ? BuildSnow(map, tracker) : null,
                 changed,
                 BuildPawns(map),
+                BuildDwellings(map),
+                map.outdoorTemperature,
                 new MapViewVersions(tracker.SessionId, tracker.TerrainVersion, tracker.RoofVersion, snowVersion, chunkVersions));
         }
 
@@ -377,7 +394,7 @@ namespace SimWorld.Map.View
                 if (!index.TryGetValue(def, out int slot))
                 {
                     slot = palette.Count;
-                    palette.Add(new RoofView(def.defName, def.isNatural, def.isThickRoof));
+                    palette.Add(new RoofView(def.defName, def.isNatural, def.isThickRoof, def.isEarthen));
                     index[def] = slot;
                 }
                 cells[i] = slot;
@@ -445,6 +462,10 @@ namespace SimWorld.Map.View
             float buildProgress = t is Building.Frame frame
                 ? Clamp01(frame.PercentComplete)
                 : t is Building.Blueprint ? 0f : 1f;
+            var withComps = t as ThingWithComps;
+            bool? switchedOn = withComps?.GetComp<Building.CompFlickable>()?.SwitchIsOn;
+            Building.CompRefuelable? refuelable = withComps?.GetComp<Building.CompRefuelable>();
+            float fuel = refuelable == null ? -1f : Clamp01(refuelable.FuelPercentOfTarget);
 
             return new ThingView(
                 t.thingIDNumber,
@@ -459,7 +480,17 @@ namespace SimWorld.Map.View
                 t.def.altitudeLayer,
                 health,
                 growth,
-                buildProgress);
+                buildProgress,
+                switchedOn,
+                fuel);
+        }
+
+        private static List<DwellingView> BuildDwellings(SimWorld.Map.Map map)
+        {
+            IReadOnlyList<Building.Dwelling> dwellings = Building.DwellingUtility.DwellingsOn(map);
+            var views = new List<DwellingView>(dwellings.Count);
+            for (int i = 0; i < dwellings.Count; i++) views.Add(DwellingView.Of(map, dwellings[i]));
+            return views;
         }
 
         private static List<PawnView> BuildPawns(SimWorld.Map.Map map)
@@ -562,6 +593,8 @@ namespace SimWorld.Map.View
                 new SnowLayer(0, 0, 0, Array.Empty<float>()),
                 Array.Empty<MapViewChunk>(),
                 Array.Empty<PawnView>(),
+                Array.Empty<DwellingView>(),
+                0f,
                 new MapViewVersions(0L, 0, 0, 0, noCells));
         }
     }

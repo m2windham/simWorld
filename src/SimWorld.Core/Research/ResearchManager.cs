@@ -97,11 +97,14 @@ namespace SimWorld.Research
             float applied = factor > 0f ? amount / factor : amount;
             applied *= Director.DifficultyUtility.ResearchSpeedFactor;
             float newProgress = GetProgress(currentProj) + applied;
-            progress[currentProj] = newProgress;
+            // FinishProject writes the finished progress itself and reads the era before that write, so the
+            // finishing amount must not be written here first or it never sees an era crossing.
             if (newProgress >= currentProj.baseCost)
             {
                 FinishProject(currentProj, false, researcher);
+                return;
             }
+            progress[currentProj] = newProgress;
         }
 
         /// <summary>

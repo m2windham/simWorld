@@ -60,11 +60,12 @@ namespace SimWorld.Map.View
     /// </summary>
     public readonly struct RoofView
     {
-        internal RoofView(string defName, bool isNatural, bool isThickRoof)
+        internal RoofView(string defName, bool isNatural, bool isThickRoof, bool isEarthen)
         {
             DefName = defName;
             IsNatural = isNatural;
             IsThickRoof = isThickRoof;
+            IsEarthen = isEarthen;
         }
 
         public string DefName { get; }
@@ -75,6 +76,10 @@ namespace SimWorld.Map.View
         /// <summary>Overhead mountain: deep rock that cannot be removed by ordinary means and that the player
         /// most needs to see before building under it.</summary>
         public bool IsThickRoof { get; }
+
+        /// <summary>Earth heaped on a built roof, a pit house's sod (<c>RoofDef.isEarthen</c>, REQ 007 ask 3): drawn
+        /// as a heap rather than as thatch or tile, without the host naming <c>RoofEarth</c>.</summary>
+        public bool IsEarthen { get; }
     }
 
     /// <summary>
@@ -184,7 +189,7 @@ namespace SimWorld.Map.View
             int thingId, string defName, string? stuffDefName, IntVec3 position, Rot4 rotation,
             IntVec3 occupiedMin, IntVec2 occupiedSize, int stackCount,
             ThingCategory category, AltitudeLayer altitude, float healthFraction, float plantGrowth,
-            float buildProgress)
+            float buildProgress, bool? switchedOn, float fuelFraction)
         {
             ThingId = thingId;
             DefName = defName;
@@ -199,6 +204,8 @@ namespace SimWorld.Map.View
             HealthFraction = healthFraction;
             PlantGrowth = plantGrowth;
             BuildProgress = buildProgress;
+            SwitchedOn = switchedOn;
+            FuelFraction = fuelFraction;
         }
 
         /// <summary>The Thing's stable id (<c>Thing.thingIDNumber</c>). A handle, not a reference: it survives
@@ -264,6 +271,20 @@ namespace SimWorld.Map.View
         /// for a <c>Blueprint</c> (no materials delivered yet), and 1 for anything else — a finished building
         /// included, so the host can use this one field regardless of which stage a site is in.</summary>
         public float BuildProgress { get; }
+
+        /// <summary>For anything with a switch (<c>CompFlickable</c>: the electric cooler, the passive cooler, the
+        /// campfire), whether it is switched on now: the switch as it stands, not what was asked of it, since a
+        /// pawn has to walk over and flip it. Null for anything with no switch (REQ 007 ask 4).</summary>
+        public bool? SwitchedOn { get; }
+
+        /// <summary>For anything that burns fuel (<c>CompRefuelable</c>: a campfire, a passive cooler), its fuel
+        /// over the level a refuel fills to, 0-1; 0 is a cold hearth. -1 for anything that burns none (REQ 007
+        /// ask 4). Fuel burns down every tick, so the chunk is re-sent only when this crosses a 5% step or runs
+        /// out (<c>CompRefuelable</c>), the same bargain <see cref="BuildProgress"/> makes.</summary>
+        public float FuelFraction { get; }
+
+        /// <summary>True when <see cref="FuelFraction"/> means something.</summary>
+        public bool BurnsFuel => FuelFraction >= 0f;
     }
 
     /// <summary>
