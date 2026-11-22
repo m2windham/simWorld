@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-11-21",
-  "testsTotal": 3348,
+  "testsTotal": 3349,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1418,7 +1418,7 @@
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "verified",
-      "tests": 129,
+      "tests": 130,
       "items": [
         {
           "id": "crafting.bills",
@@ -1477,7 +1477,7 @@
         },
         {
           "id": "crafting.materialladder",
-          "label": "BUILT 2026-11-22 (branch material-ladder). Ore comes out of the ground, an era's furnace makes metal of it through bills, and every metal is stuff for walls, doors and blades. Content: CopperOre and IronOre (Items_Metals.xml) are what MineableCopper and MineableSteel now yield; Bronze and Iron are new Metallic stuff beside Copper (now stuff) and Steel; Flint is Lithic stuff for knapped knives. Benches (Buildings_Smelting.xml): SmeltingFurnace (Copper research), Bloomery (Iron), ElectricSmelter (Electricity; RimWorld's cost, work and 700 W, not yet gated on power). Recipes (Recipes_Smelting.xml): Smelt_Copper, Make_Bronze (copper + tin), Make_Bronze_Arsenical (copper ore alone, the no-tin road), Smelt_Iron, Make_Steel_Cementation, Smelt_Steel (RimWorld's 15-steel smelt at its 400 work). Blades (Weapons_MeleeLadder.xml, Recipes_Smithing.xml): the knife is now stuff-made from flint to steel, plus RimWorld's Spear (BronzeWeapons) and LongSword (SteelWeapons) at their vanilla tools. Ladder veins grow into lumps (ThingDef.mineableScatterLumpSizeRange, RimWorld's 30~40 for iron). The settlement decides by itself (Crafting/MaterialLadder.cs, Crafting/SmeltingInitiative.cs ticked from Map.cs): each smithy holds one weapon bill, for its best available blade in the sharpest metal the era and the ground allow, sized to the unarmed, the worse-armed and the bow carriers who fight better than they shoot; the furnace for that metal is raised beside the smithy, its bill and its intermediates queued to the shortfall, the ore designated by MiningInitiative, and ore and metal kept at the forge rather than the granary. Spare metal goes into doors, and iron or steel into walls, through MaterialLadder.BestBuildingMetal / UpgradeBlueprints (the shared hook for the shelter lane). Tests: Crafting/MaterialLadderTests.cs, 24; 12 settlement-choice guards mutation-proved. Open: SharpDamageMultiplier is content the melee verb does not read yet (combat); the electric smelter is not gated on power; bricks wait for clay; slag is not ported; a tile with no Ore deposit has no veins, so its settlement stays in stone and bow whatever it researches - trade in metal is the missing road.",
+          "label": "BUILT 2026-11-22 (branch material-ladder). Ore comes out of the ground, an era's furnace makes metal of it through bills, and every metal is stuff for walls, doors and blades. Content: CopperOre and IronOre (Items_Metals.xml) are what MineableCopper and MineableSteel now yield; Bronze and Iron are new Metallic stuff beside Copper (now stuff) and Steel; Flint is Lithic stuff for knapped knives. Benches (Buildings_Smelting.xml): SmeltingFurnace (Copper research), Bloomery (Iron), ElectricSmelter (Electricity; RimWorld's cost, work and 700 W, not yet gated on power). Recipes (Recipes_Smelting.xml): Smelt_Copper, Make_Bronze (copper + tin), Make_Bronze_Arsenical (copper ore alone, the no-tin road), Smelt_Iron, Make_Steel_Cementation, Smelt_Steel (RimWorld's 15-steel smelt at its 400 work). Blades (Weapons_MeleeLadder.xml, Recipes_Smithing.xml): the knife is now stuff-made from flint to steel, plus RimWorld's Spear (BronzeWeapons) and LongSword (SteelWeapons) at their vanilla tools. Ladder veins grow into lumps (ThingDef.mineableScatterLumpSizeRange, RimWorld's 30~40 for iron). The settlement decides by itself (Crafting/MaterialLadder.cs, Crafting/SmeltingInitiative.cs ticked from Map.cs): each smithy holds one weapon bill, for its best available blade in the sharpest metal the era and the ground allow, sized to the unarmed, the worse-armed and the bow carriers who fight better than they shoot; the furnace for that metal is raised beside the smithy, its bill and its intermediates queued to the shortfall, the ore designated by MiningInitiative, and ore and metal kept at the forge rather than the granary. Spare metal goes into doors, and iron or steel into walls, through MaterialLadder.BestBuildingMetal / UpgradeBlueprints (the shared hook for the shelter lane). Tests: Crafting/MaterialLadderTests.cs, 25; 12 settlement-choice guards mutation-proved. Open: SharpDamageMultiplier is content the melee verb does not read yet (combat); the electric smelter is not gated on power; bricks wait for clay; slag is not ported; a tile with no Ore deposit has no veins, so its settlement stays in stone and bow whatever it researches - trade in metal is the missing road.",
           "done": true
         },
         {
