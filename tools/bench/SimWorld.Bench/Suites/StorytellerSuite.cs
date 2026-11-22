@@ -241,6 +241,7 @@ namespace SimWorld.Bench.Suites
             log.SettleAttributed();
             sw.Stop();
             Console.WriteLine(DwellingReading.Line(PlayerSeat(game) ?? home));
+            Console.WriteLine(EraUnlocksReading.Line(PlayerSeat(game) ?? home));
             Console.WriteLine(temperature.Line());
 
             // Read here, not at report time: the determinism re-run resets the game these belong to.

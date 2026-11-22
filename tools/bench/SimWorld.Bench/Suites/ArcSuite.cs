@@ -125,6 +125,7 @@ namespace SimWorld.Bench.Suites
                 erasSeen = eras.Count;
 
                 IReadOnlyList<ChronicleEntry> moments = game.Storyteller.Moments;
+                Console.WriteLine("  " + EraUnlocksReading.Line(current));
                 for (int m = momentsSeen; m < moments.Count; m++) Console.WriteLine("  moment " + Moment(moments[m]));
                 momentsSeen = moments.Count;
 

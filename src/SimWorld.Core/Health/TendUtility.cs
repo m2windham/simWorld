@@ -108,6 +108,7 @@ namespace SimWorld.Health
             if (toTend.Count > 0)
             {
                 patient.health.Notify_HediffChanged(null);
+                TendTally.Record(medicine?.def, patient.CurrentBed()?.def);
                 if (medicine != null)
                 {
                     if (medicine.stackCount > 1) medicine.stackCount--;
