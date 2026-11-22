@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    How keen an edge a material takes (system: crafting.materialladder; RimWorld: StatDefOf.SharpDamageMultiplier,
+    a statBase on every stuff in Core's Items_Resource_Stuff.xml — steel 1, plasteel 1.1, silver 0.85, gold 0.75,
+    wood 0.40, and the stone blocks 0.5 to 0.65, all read from that file). RimWorld multiplies a Cut or Stab
+    tool's damage by its weapon's stuff's value. Its own file, per CLAUDE.md.
+
+    What reads it here: Crafting.MaterialLadder, which ranks one weapon against another by it (a bronze spear
+    against a flint knife) so the settlement smiths the best weapon its era and stock allow and a citizen trades
+    up to it. What does NOT read it yet: the melee verb. VerbProperties.AdjustedMeleeDamageAmount still returns
+    the tool's base power, so a steel and a flint knife hit equally hard in a fight; applying this stat there is
+    the combat module's change, recorded as open in docs/status.json, and the value already sits on every stuff
+    for the day it lands.
+  -->
+
+  <StatDef>
+    <defName>SharpDamageMultiplier</defName>
+    <label>sharp damage multiplier</label>
+    <description>How much a cutting or stabbing weapon made of this material multiplies its damage by.</description>
+    <defaultBaseValue>1</defaultBaseValue>
+    <minValue>0</minValue>
+  </StatDef>
+
+</Defs>

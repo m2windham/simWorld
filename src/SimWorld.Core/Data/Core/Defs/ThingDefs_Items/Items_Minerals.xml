@@ -39,9 +39,13 @@
     already ramps what a coal deposit is worth from nothing through Classical to a great deal in Industrial,
     which is era-dependent in a way a single MarketValue cannot be.
 
-    None of these carries stuffProps. They are commodities, not building materials — the same call
-    Items_Resource.xml already made for Coal, and made deliberately: adding new Metallic stuffs would change
-    what every stuff-picking caller in the game rolls.
+    None of these carried stuffProps when this file was written: they were commodities, not building
+    materials. Two now do (crafting.materialladder, see Items_Metals.xml). Copper is Metallic stuff — but what a
+    vein gives up is CopperOre now, and copper is what a furnace makes of it. Flint is Lithic stuff, a category
+    of its own that only blades name, so a knapped edge never becomes a wall. The worry this note used to
+    record — that a new Metallic stuff changes what every stuff-picking caller rolls — was checked: nothing in
+    src/ rolls a random stuff; GenStuff picks wood, steel, granite, cloth in that order and only then load
+    order, and only among stuffs with a whole one's worth on the map.
   -->
 
   <!--
@@ -63,7 +67,13 @@
     <statBases>
       <MarketValue>0.4</MarketValue>
       <Flammability>0</Flammability>
+      <!-- RimWorld's sharpest stone, granite blocks' 0.65 (Core Various_Stone.xml); flint is not RimWorld's. -->
+      <SharpDamageMultiplier>0.65</SharpDamageMultiplier>
     </statBases>
+    <stuffProps>
+      <categories><li>Lithic</li></categories>
+      <commonality>1</commonality>
+    </stuffProps>
   </ThingDef>
 
   <ThingDef ParentName="BaseMineral">
@@ -91,12 +101,22 @@
   <ThingDef ParentName="BaseMineral">
     <defName>Copper</defName>
     <label>copper</label>
-    <description>The first metal worked at scale — soft enough to hammer cold, common enough to find, and the half of bronze that a settlement can usually dig up itself.</description>
+    <description>The first metal worked at scale — smelted out of its ore in a clay furnace, soft enough to hammer cold, and the half of bronze that a settlement can usually dig up itself.</description>
     <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
     <statBases>
       <MarketValue>1.6</MarketValue>
       <Flammability>0</Flammability>
+      <SharpDamageMultiplier>0.8</SharpDamageMultiplier>
     </statBases>
+    <!-- Metallic stuff (crafting.materialladder); the numbers and why are in Items_Metals.xml. -->
+    <stuffProps>
+      <categories><li>Metallic</li></categories>
+      <commonality>0.3</commonality>
+      <statFactors>
+        <MaxHitPoints>0.7</MaxHitPoints>
+        <Flammability>0</Flammability>
+      </statFactors>
+    </stuffProps>
   </ThingDef>
 
   <ThingDef ParentName="BaseMineral">

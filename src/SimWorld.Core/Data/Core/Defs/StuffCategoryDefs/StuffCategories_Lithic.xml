@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Knapped stone (system: crafting.materialladder). Not a RimWorld category: RimWorld starts at a tech level
+    with steel in the ground, so its neolithic knife is Metallic and its stone is only ever Stony blocks, which
+    build walls. A knapped flint edge is neither — it makes a blade and nothing else — so it gets a category
+    of its own that a knife or a spear names and a wall, a door or a bed does not. Flint in
+    ThingDefs_Items/Items_Minerals.xml is the one stuff in it.
+  -->
+
+  <StuffCategoryDef>
+    <defName>Lithic</defName>
+    <label>knapped stone</label>
+  </StuffCategoryDef>
+
+</Defs>

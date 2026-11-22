@@ -23,6 +23,15 @@
       <li>NeolithicMeleeWeapon</li>
     </weaponTags>
     <statBases><MarketValue>30</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
+    <!-- Made from stuff (crafting.materialladder), as RimWorld's knife is (Metallic, costStuffCount 30, Core
+         MeleeNeolithic.xml, read), plus Lithic so a stone-age smithy can knap one from flint. 10 is the steel
+         this knife already cost, this port's rate. A knife made without a stuff (a raider's, a scenario's)
+         is ranked as steel, RimWorld's default melee stuff (Crafting.MaterialLadder). -->
+    <stuffCategories>
+      <li>Lithic</li>
+      <li>Metallic</li>
+    </stuffCategories>
+    <costStuffCount>10</costStuffCount>
     <tools>
       <li>
         <label>blade</label>

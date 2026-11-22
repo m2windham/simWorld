@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The blades a settlement smiths as its metal improves (system: crafting.materialladder), after the knife
+    (Weapons_Melee.xml). Its own file, per CLAUDE.md.
+
+    Both are RimWorld's own, tools read from Core MeleeNeolithic.xml (spear) and MeleeMedieval.xml (longsword):
+    power, cooldownTime and armorPenetration as shipped there. What moves is the gate. RimWorld puts both behind
+    LongBlades; this game's tree has a weapon project per metal, so the spear is the bronze age's weapon
+    (BronzeWeapons) and the longsword the medieval one (SteelWeapons). The gladius (RimWorld: Smithing) was
+    considered for the iron age and left out: by RimWorld's own tool numbers it is a slightly worse weapon than
+    the spear, so a settlement choosing the best weapon would never make one — an iron age here carries iron
+    spears and knives.
+
+    costStuffCount and WorkToMake are RimWorld's scaled by this port's knife (10 stuff against RimWorld's 30; 550
+    work against 1800): spear 75 -> 25 and 12000 -> 3700, longsword 100 -> 33 and 18000 -> 5500. Stuff
+    categories are Metallic only, where RimWorld also allows Woody: a wooden spear is a stone-age weapon, and
+    the stone age here has the knife. MarketValue is unsourced and only ordered against the knife.
+  -->
+
+  <ThingDef>
+    <defName>MeleeWeapon_Spear</defName>
+    <researchPrerequisites>
+      <li>BronzeWeapons</li>
+    </researchPrerequisites>
+    <label>spear</label>
+    <description>A long shaft with a cast metal point. The weapon that let a line of farmers stand against anything.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Neolithic</techLevel>
+    <statBases><MarketValue>70</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
+    <stuffCategories>
+      <li>Metallic</li>
+    </stuffCategories>
+    <costStuffCount>25</costStuffCount>
+    <tools>
+      <li>
+        <label>shaft</label>
+        <capacities><li>Blunt</li></capacities>
+        <power>13</power>
+        <cooldownTime>2.6</cooldownTime>
+      </li>
+      <li>
+        <label>point</label>
+        <capacities><li>Stab</li></capacities>
+        <power>23</power>
+        <cooldownTime>2.6</cooldownTime>
+        <armorPenetration>0.50</armorPenetration>
+      </li>
+    </tools>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>MeleeWeapon_LongSword</defName>
+    <researchPrerequisites>
+      <li>SteelWeapons</li>
+    </researchPrerequisites>
+    <label>longsword</label>
+    <description>A long, straight, double-edged blade of good steel. Only a people who can make steel in quantity can arm a household with these.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Medieval</techLevel>
+    <statBases><MarketValue>120</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
+    <stuffCategories>
+      <li>Metallic</li>
+    </stuffCategories>
+    <costStuffCount>33</costStuffCount>
+    <tools>
+      <li>
+        <label>pommel</label>
+        <capacities><li>Blunt</li></capacities>
+        <power>9</power>
+        <cooldownTime>2</cooldownTime>
+      </li>
+      <li>
+        <label>point</label>
+        <capacities><li>Stab</li></capacities>
+        <power>23</power>
+        <cooldownTime>2.6</cooldownTime>
+      </li>
+      <li>
+        <label>edge</label>
+        <capacities><li>Cut</li></capacities>
+        <power>23</power>
+        <cooldownTime>2.6</cooldownTime>
+      </li>
+    </tools>
+  </ThingDef>
+
+</Defs>

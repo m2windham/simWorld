@@ -21,10 +21,14 @@
     <workSkill>Crafting</workSkill>
     <ingredients>
       <li>
-        <filter><thingDefs><li>Steel</li></thingDefs></filter>
+        <!-- Any blade stuff on the ladder (crafting.materialladder): knapped from flint in the stone age, cast
+             or forged from each metal after. Steel alone, before, meant a neolithic smithy forged steel. Which
+             one a bill actually takes is Crafting.MaterialLadder's call, through the bill's own filter. -->
+        <filter><thingDefs><li>Flint</li><li>Copper</li><li>Bronze</li><li>Iron</li><li>Steel</li></thingDefs></filter>
         <count>10</count>
       </li>
     </ingredients>
+    <productHasIngredientStuff>true</productHasIngredientStuff>
     <products><MeleeWeapon_Knife>1</MeleeWeapon_Knife></products>
     <recipeUsers><li>Smithy</li></recipeUsers>
   </RecipeDef>

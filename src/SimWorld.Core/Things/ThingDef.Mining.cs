@@ -37,9 +37,8 @@ namespace SimWorld.Defs
         /// plain rock: rock is placed as the mountain itself, not scattered into it. Read by
         /// <see cref="SimWorld.Things.MineableUtility.RandomVeinDef"/>.
         /// <para/>
-        /// RimWorld's companion <c>mineableScatterLumpSizeRange</c> is deliberately not ported: this port's
-        /// <c>GenStep_RocksAndMountains</c> places single-cell veins rather than lumps, so a size range would
-        /// be content nothing reads — exactly the kind of seam the wiring audit exists to catch.
+        /// RimWorld's companion <c>mineableScatterLumpSizeRange</c> is ported in <c>ThingDef.MiningLumps.cs</c>
+        /// (crafting.materialladder) and read by <c>GenStep_RocksAndMountains</c>, which grows each vein to it.
         /// </summary>
         public float mineableScatterCommonality;
     }
