@@ -52,15 +52,20 @@ namespace SimWorld.AI
             // is already in bed, over and over, every LookForOtherJobsIntervalTicks.
             if (patient.InBed()) return false;
             if (!DoctorUtility.IsCaredForBy(pawn, patient)) return false;
-            if (RestUtility.FindBedFor(pawn) == null) return false;
+            if (BedForPatient(pawn) == null) return false;
             if (!Reachability.CanReach(pawn, patient, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, patient);
         }
 
         public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
-            Thing? bed = RestUtility.FindBedFor(pawn);
+            Thing? bed = BedForPatient(pawn);
             return bed != null ? new Job(JobDefOf.Rescue, thing, bed) : null;
         }
+
+        /// <summary>A hospital bed first, then any bed (RimWorld: <c>RestUtility.FindPatientBedFor</c> tries
+        /// medical beds before the rest; see <see cref="Health.MedicalBeds"/>).</summary>
+        private static Thing? BedForPatient(Pawn rescuer) =>
+            Health.MedicalBeds.FindHospitalBedFor(rescuer) ?? RestUtility.FindBedFor(rescuer);
     }
 }

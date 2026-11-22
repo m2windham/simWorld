@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Medicine by era (system: health, item health.medicalresearch). Own file, per CLAUDE.md: additive content.
+
+    HospitalBed is RimWorld's hospital bed (Core Furniture_Beds.xml): a bed for the sick that tends better and
+    heals faster. Its two medical stats are RimWorld's values as recalled from that file, not checked against it
+    from here: ImmunityGainSpeedFactor 1.11 (this port's BedRestEffectiveness, the stat Bed carries at RimWorld's
+    regular-bed 1.07) and MedicalTendQualityOffset 0.10. RimWorld gates it on ComplexFurniture and costs it in
+    steel and components; here it is gated on the arc's own Medicine project (Classical: "healing becomes
+    knowledge passed on"), the sick-house of the classical world, and made of whatever stuff the settlement
+    can afford, as Bed is. WorkToBuild and costStuffCount are this port's own, a little over Bed's.
+
+    DrugLab is RimWorld's drug lab, the bench its industrial medicine is made at. RimWorld gates it on
+    DrugProduction; here it is the arc's Pharmacology (Medieval: "measured dosing turns folk remedy into a
+    reproducible medicine"). Same shape as Smithy: stuff-built, one bill-giver comp.
+  -->
+
+  <ThingDef>
+    <defName>HospitalBed</defName>
+    <label>hospital bed</label>
+    <description>A raised, clean bed kept for the sick and the wounded. A patient in one is tended better and recovers faster.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <size>(1,2)</size>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <researchPrerequisites>
+      <li>Medicine</li>
+    </researchPrerequisites>
+    <statBases>
+      <MaxHitPoints>120</MaxHitPoints>
+      <WorkToBuild>400</WorkToBuild>
+      <BedRestEffectiveness>1.11</BedRestEffectiveness>
+      <MedicalTendQualityOffset>0.10</MedicalTendQualityOffset>
+    </statBases>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>12</costStuffCount>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_HospitalBed</defName>
+    <label>hospital bed (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>HospitalBed</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_HospitalBed</defName>
+    <label>hospital bed (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>HospitalBed</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>DrugLab</defName>
+    <researchPrerequisites>
+      <li>Pharmacology</li>
+    </researchPrerequisites>
+    <label>apothecary's bench</label>
+    <description>A bench of stills, mortars and measures, where remedies are made to a recipe instead of by guesswork.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <statBases><MarketValue>300</MarketValue></statBases>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>10</costStuffCount>
+    <comps>
+      <li Class="SimWorld.Things.CompProperties_BillGiver">
+        <workType>Crafting</workType>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_DrugLab</defName>
+    <label>apothecary's bench (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>DrugLab</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_DrugLab</defName>
+    <label>apothecary's bench (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Standable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>DrugLab</entityToBuild>
+  </ThingDef>
+
+</Defs>

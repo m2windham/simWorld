@@ -238,6 +238,10 @@ namespace SimWorld.Map
             Crafting.SmeltingInitiative.TickMap(this);
             // The rock it wants dug: Mine designations by need (AI.MiningInitiative, same cadence).
             AI.MiningInitiative.TickMap(this);
+            // What the era knows, put to use: the sick-house, the apothecary and its medicine bill
+            // (Health.MedicalInitiative), and the watch and traps sized by the threat (Defence.SettlementDefence).
+            Health.MedicalInitiative.TickMap(this);
+            Defence.SettlementDefence.TickMap(this);
 
             // Raids: each lord notices who it has lost and whether that, or the clock, ends the assault.
             lordManager.LordManagerTick();

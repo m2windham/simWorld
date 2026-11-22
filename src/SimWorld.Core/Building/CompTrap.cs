@@ -73,7 +73,11 @@ namespace SimWorld.Building
 
         private void TrySpring(Pawn p)
         {
-            if (Faction != null && ReferenceEquals(p.faction, Faction)) return;
+            // With no faction set on the comp, the trap is its building's: a trap a settlement built is that
+            // settlement's (Frame hands the builder's faction to the building) and never springs on its own
+            // people. Nothing set the comp's own field, so every built trap sprang on whoever stepped on it.
+            Factions.Faction? owner = Faction ?? parent.Faction;
+            if (owner != null && ReferenceEquals(p.faction, owner)) return;
 
             armed = false;
 

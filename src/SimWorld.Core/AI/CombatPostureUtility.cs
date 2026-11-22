@@ -89,6 +89,9 @@ namespace SimWorld.AI
         public static bool IsMustered(Pawn pawn)
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
+            // The settlement's own watch, sized by the threat it draws, musters the same way the edict does
+            // (Defence.SettlementDefence): the standing draft a settlement keeps without being told to.
+            if (Defence.SettlementDefence.IsOnWatch(pawn)) return true;
             EdictDef takeUpArms = CombatAIDefOf.TakeUpArms;
             return takeUpArms != null && Find.God.IsActive(takeUpArms) && takeUpArms.Worker.AppliesTo(pawn);
         }

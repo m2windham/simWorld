@@ -48,7 +48,8 @@ namespace SimWorld.AI
             IReadOnlyList<Thing> here = pawn.Map.thingGrid.ThingsListAt(pawn.Position);
             for (int i = 0; i < here.Count; i++)
             {
-                if (here[i].def == ConstructionThingDefOf.Bed) return here[i];
+                // Either kind of bed: a patient in a hospital bed is in bed (Health.MedicalBeds).
+                if (Health.MedicalBeds.IsBed(here[i].def)) return here[i];
             }
             return null;
         }

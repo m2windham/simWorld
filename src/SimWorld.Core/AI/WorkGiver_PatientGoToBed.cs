@@ -36,13 +36,21 @@ namespace SimWorld.AI
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
+            // A hospital bed the patient can take comes first, as RimWorld's FindPatientBedFor tries medical
+            // beds before any other; only with none free does the nearest ordinary bed do (Health.MedicalBeds).
+            Thing? hospital = MedicalBeds.FindHospitalBedFor(pawn);
+            if (hospital != null)
+            {
+                yield return hospital;
+                yield break;
+            }
             IReadOnlyList<Thing> beds = map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed);
             for (int i = 0; i < beds.Count; i++) yield return beds[i];
         }
 
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
-            if (thing.def != ConstructionThingDefOf.Bed || !thing.Spawned || thing.Map != pawn.Map) return false;
+            if (!MedicalBeds.IsBed(thing.def) || !thing.Spawned || thing.Map != pawn.Map) return false;
             if (!pawn.Map!.reservationManager.CanReserve(pawn, thing)) return false;
             return Reachability.CanReach(pawn, thing, PathEndMode.OnCell);
         }
