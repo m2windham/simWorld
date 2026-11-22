@@ -74,7 +74,19 @@ namespace SimWorld.Bench.Suites
             var finished = new List<(int Day, ResearchProjectDef Def)>();
             var eras = new List<(int Day, string From, string To)>();
             int day = 0;
-            research.ProjectFinished += def => finished.Add((day, def));
+            // The era turn is read two ways: the engine's own EraReached event, and the derived
+            // CurrentEra read straight after every finished project (ProjectFinished is raised after the
+            // progress write). The first probe run had the derived era move with no event raised, so the
+            // timeline must not depend on the event alone.
+            var derived = new List<(int Day, string From, string To)>();
+            string lastEra = research.CurrentEra?.defName ?? "-";
+            research.ProjectFinished += def =>
+            {
+                finished.Add((day, def));
+                string now = Find.ResearchManager.CurrentEra?.defName ?? "-";
+                if (now != lastEra) derived.Add((day, lastEra, now));
+                lastEra = now;
+            };
             research.EraReached += (from, to) => eras.Add((day, from?.defName ?? "-", to.defName));
 
             int finishedAtStart = DefDatabase<ResearchProjectDef>.AllDefsListForReading.Count(research.IsFinished);
@@ -125,7 +137,7 @@ namespace SimWorld.Bench.Suites
             }
             total.Stop();
 
-            EmitEraTimeline(eras, finished, research);
+            EmitEraTimeline(eras, derived, finished, research);
             EmitResearchByEra(finished);
             EmitPopulation(samples);
             EmitBuildings(samples);
@@ -339,19 +351,22 @@ namespace SimWorld.Bench.Suites
         private static string Year(int day) => Report.Num(day / (double)GenDate.DaysPerYear, 1);
 
         private static void EmitEraTimeline(
-            List<(int Day, string From, string To)> eras, List<(int Day, ResearchProjectDef Def)> finished, ResearchManager research)
+            List<(int Day, string From, string To)> eras, List<(int Day, string From, string To)> derived,
+            List<(int Day, ResearchProjectDef Def)> finished, ResearchManager research)
         {
             Report.SubHeading("1. era timeline");
             var rows = new List<string[]>();
             foreach (EraDef era in DefDatabase<EraDef>.AllDefsListForReading.OrderBy(e => e.order))
             {
                 int reached = eras.FindIndex(e => e.To == era.defName);
+                int turned = derived.FindIndex(e => e.To == era.defName);
                 List<(int Day, ResearchProjectDef Def)> own = finished.Where(f => f.Def.era == era).ToList();
                 rows.Add(new[]
                 {
                     era.defName,
+                    turned >= 0 ? Report.Int(derived[turned].Day) : "-",
+                    turned >= 0 ? Year(derived[turned].Day) : "-",
                     reached >= 0 ? Report.Int(eras[reached].Day) : "-",
-                    reached >= 0 ? Year(eras[reached].Day) : "-",
                     era.IsComplete ? "yes" : "no",
                     Report.Num(era.Progress * 100, 0) + "%",
                     Report.Int(own.Count) + " / " + Report.Int(era.Projects.Count),
@@ -360,9 +375,10 @@ namespace SimWorld.Bench.Suites
                 });
             }
             Report.Table(
-                new[] { "era", "reached day", "year", "complete", "progress", "finished in run / projects", "first", "last" },
+                new[] { "era", "became current day", "year", "EraReached day", "complete", "progress", "finished in run / projects", "first", "last" },
                 rows);
-            Report.Note("`reached` is `ResearchManager.EraReached`, which fires when an era's spine is complete. "
+            Report.Note("`became current` is the day `ResearchManager.CurrentEra` first read this era, checked after "
+                + "every finished project. `EraReached` is the engine's own event for the same crossing. "
                 + "Current era at the end: " + (research.CurrentEra?.defName ?? "-") + ".");
         }
 
