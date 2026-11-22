@@ -4,12 +4,12 @@
   <!--
     Making medicine (system: health, item health.medicalresearch). Own file, per CLAUDE.md.
 
-    RimWorld's Make_MedicineIndustrial (Core Recipes_Production / DrugLab, research MedicineProduction) takes one
-    herbal medicine, one neutroamine and three cloth, as recalled and not checked against the file from here.
+    RimWorld makes industrial medicine at the drug lab (research Medicine production) from one herbal medicine, one
+    neutroamine and three cloth, 700 work (rimworldwiki.com/wiki/Medicine).
     This port has no neutroamine and a settlement only weaves cloth once a citizen lacks a shirt, so the
     translation is two herbal doses distilled into one: the healroot a settlement already grows is the input,
     and what changes with Pharmacology is what it can turn it into (potency 0.6 and quality cap 0.7 for herbal,
-    1.0 and 1.0 for this). workAmount is this port's own.
+    1.0 and 1.0 for this). workAmount is RimWorld's.
   -->
 
   <RecipeDef>

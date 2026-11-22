@@ -171,6 +171,29 @@ namespace SimWorld.Tests.Defence
             Assert.False(comp.armed);
         }
 
+        [Fact]
+        public void A_citizen_builds_the_trap_and_it_stands_armed_and_owned()
+        {
+            CoreMap map = NewMap(20);
+            Faction ours = NewFaction("Ours");
+            Finish("Trapping");
+            GenSpawn.Spawn(ThingMaker.MakeThing(GenConstruct.BlueprintDefFor(DefenceDefOf.TrapSpike)!), new IntVec3(10, 0, 10), map);
+            Thing wood = ThingMaker.MakeThing(Def("WoodLog"));
+            wood.stackCount = 30;
+            GenSpawn.Spawn(wood, new IntVec3(6, 0, 10), map);
+            Pawn builder = NewHuman("Builder");
+            builder.SetFaction(ours);
+            GenSpawn.Spawn(builder, new IntVec3(4, 0, 10), map);
+            builder.workSettings.DisableAll();
+            builder.workSettings.SetPriority(SimWorld.Work.WorkTypeDefOf.Construction, 3);
+
+            RunTicks(6000, builder);
+
+            Thing trap = Assert.Single(map.listerThings.ThingsOfDef(DefenceDefOf.TrapSpike));
+            Assert.Same(ours, trap.Faction);
+            Assert.True(((ThingWithComps)trap).GetComp<CompTrap>()!.armed, "the trap sprang on the citizen who built it");
+        }
+
         // ---- the watch in the running game ----
 
         [Fact]

@@ -4,13 +4,13 @@
   <!--
     Medicine by era (system: health, item health.medicalresearch). Own file, per CLAUDE.md: additive content.
 
-    HospitalBed is RimWorld's hospital bed (Core Furniture_Beds.xml): a bed for the sick that tends better and
-    heals faster. Its two medical stats are RimWorld's values as recalled from that file, not checked against it
-    from here: ImmunityGainSpeedFactor 1.11 (this port's BedRestEffectiveness, the stat Bed carries at RimWorld's
-    regular-bed 1.07) and MedicalTendQualityOffset 0.10. RimWorld gates it on ComplexFurniture and costs it in
-    steel and components; here it is gated on the arc's own Medicine project (Classical: "healing becomes
-    knowledge passed on"), the sick-house of the classical world, and made of whatever stuff the settlement
-    can afford, as Bed is. WorkToBuild and costStuffCount are this port's own, a little over Bed's.
+    HospitalBed is RimWorld's hospital bed: a bed for the sick that tends better and heals faster. Its two medical
+    stats are RimWorld's (rimworldwiki.com/wiki/Hospital_bed: tend quality offset +10%, immunity gain x1.11, which
+    is this port's BedRestEffectiveness, the stat Bed carries at RimWorld's regular-bed 1.07). RimWorld gates it on
+    its Hospital bed project (behind Sterile materials and Microelectronics) and costs it 40 metallic stuff, 80
+    steel and 5 components, 150 hit points. The arc shapes the gate and the price: it is the sick-house the arc's
+    Medicine project (Classical) brings, so it is made of any stuff, as Bed is. MaxHitPoints, WorkToBuild and
+    costStuffCount are this port's own, a little over Bed's. The vitals monitor link is not ported.
 
     DrugLab is RimWorld's drug lab, the bench its industrial medicine is made at. RimWorld gates it on
     DrugProduction; here it is the arc's Pharmacology (Medieval: "measured dosing turns folk remedy into a

@@ -37,7 +37,8 @@ namespace SimWorld.AI
             if (pawn.Map == null) return false;
             if (!pawn.Map.reservationManager.CanReserve(pawn, job.GetTarget(TargetIndex.A))) return false;
             LocalTargetInfo medicineTarget = job.GetTarget(TargetIndex.B);
-            if (medicineTarget.HasThing && !pawn.Map.reservationManager.CanReserve(pawn, medicineTarget)) return false;
+            if (medicineTarget.HasThing && !pawn.Map.reservationManager.CanReserve(
+                pawn, medicineTarget, MedicineUtility.MaxClaimants, MedicineUtility.PerClaim)) return false;
             return true;
         }
 
@@ -58,7 +59,9 @@ namespace SimWorld.AI
             bool hasMedicine = job.GetTarget(TargetIndex.B).HasThing;
             if (hasMedicine)
             {
-                yield return Toils_Reserve.Reserve(TargetIndex.B);
+                // One dose, not the stack: claiming all of it hid the settlement's whole supply from every
+                // other doctor for as long as this one took to walk to it (MedicineUtility.MaxClaimants).
+                yield return Toils_Reserve.Reserve(TargetIndex.B, MedicineUtility.MaxClaimants, MedicineUtility.PerClaim);
 
                 Toil gotoMedicine = Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.ClosestTouch);
                 gotoMedicine.FailOnDespawnedOrNull(TargetIndex.B);

@@ -48,6 +48,12 @@ namespace SimWorld.Defence
     /// cornered. Their arms are the material ladder's (<see cref="MaterialLadder"/>, <see cref="OutfittingInitiative"/>):
     /// a flint knife in the first age, bronze and iron blades after.
     ///
+    /// <para/><b>What the watch does not do.</b> An armed citizen already engages at that radius without being
+    /// told (<see cref="CombatPostureUtility"/>, rule 1), so the watch changes what an <i>unarmed</i> fighter does
+    /// and nothing else. A founding band comes armed, and a tooled settlement stays armed, so in an ordinary run it
+    /// changes little. Gathering armed citizens to hold a position together, which is what drafting buys a RimWorld
+    /// player, is not built.
+    ///
     /// <para/><b>The trap line, by era.</b> Traps are laid evenly on a ring
     /// <see cref="TrapRingOffset"/> cells outside the village (<see cref="SettlementCompound.Village"/>), where a
     /// raid walks in: the best trap the settlement knows and can pay for (<see cref="BestTrapDef"/>), spike

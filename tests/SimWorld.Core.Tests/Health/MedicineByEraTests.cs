@@ -222,6 +222,46 @@ namespace SimWorld.Tests.Health
                 > TendUtility.CalculateBaseTendQuality(doctor, patient, herbal.def));
         }
 
+        [Fact]
+        public void Herbal_medicine_near_the_bench_becomes_medicine_by_a_citizens_hand()
+        {
+            (Settlement settlement, CoreMap map) = Settled(1);
+            Finish("Pharmacology");
+            SpawnBuilding(map, MedicalEraDefOf.DrugLab, new IntVec3(8, 0, 8));
+            Thing herbal = ThingMaker.MakeThing(MedicineDefOf.MedicineHerbal);
+            herbal.stackCount = 4;
+            GenSpawn.Spawn(herbal, new IntVec3(6, 0, 8), map);
+            Pawn crafter = settlement.Citizens[0];
+            crafter.workSettings.DisableAll();
+            crafter.workSettings.SetPriority(WorkTypeDefOf.Crafting, 3);
+
+            MedicalInitiative.Run(settlement, map);
+            RunTicks(6000, crafter);
+
+            Assert.True(map.listerThings.ThingsOfDef(MedicineDefOf.MedicineIndustrial).Sum(t => t.stackCount) >= 1,
+                "no medicine was made; job: " + crafter.jobs.curJob?.def.defName);
+        }
+
+        [Fact]
+        public void One_doctor_at_a_stack_does_not_hide_the_rest_of_it_from_another()
+        {
+            CoreMap map = NewMap();
+            Pawn first = NewHuman("First");
+            GenSpawn.Spawn(first, new IntVec3(2, 0, 2), map);
+            Pawn second = NewHuman("Second");
+            GenSpawn.Spawn(second, new IntVec3(2, 0, 3), map);
+            Pawn patient = NewHuman("Patient");
+            GenSpawn.Spawn(patient, new IntVec3(3, 0, 2), map);
+            Thing herbal = ThingMaker.MakeThing(MedicineDefOf.MedicineHerbal);
+            herbal.stackCount = 5;
+            GenSpawn.Spawn(herbal, new IntVec3(10, 0, 10), map);
+
+            // What the tend driver itself claims on the stack while one doctor walks to it.
+            Assert.Same(herbal, MedicineUtility.FindBestMedicine(first, patient));
+            Assert.True(map.reservationManager.Reserve(first, herbal, MedicineUtility.MaxClaimants, MedicineUtility.PerClaim));
+            Assert.Same(herbal, MedicineUtility.FindBestMedicine(second, patient));
+        }
+
         // ---- save and load ----
 
         [Fact]

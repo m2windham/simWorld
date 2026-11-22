@@ -17,6 +17,15 @@ namespace SimWorld.Health
     /// </summary>
     public static class MedicineUtility
     {
+        /// <summary>How many doctors may claim one stack of medicine at once (RimWorld:
+        /// <c>JobDriver_TendPatient</c> and <c>HealthAIUtility.FindBestMedicine</c> reserve it for up to 10
+        /// pawns; recalled from the decompile, not checked from here).</summary>
+        public const int MaxClaimants = 10;
+
+        /// <summary>Doses each of them claims: the flat <see cref="AI.JobDriver_TendPatient.MedicinePerTend"/>
+        /// this port spends on a tend, rather than the whole stack.</summary>
+        public const int PerClaim = AI.JobDriver_TendPatient.MedicinePerTend;
+
         /// <summary>
         /// The most potent medicine <paramref name="healer"/> can reach and reserve that
         /// <paramref name="patient"/>'s settlement's own <see cref="MedicalCareCategory"/> still allows —
@@ -42,7 +51,7 @@ namespace SimWorld.Health
                 Thing candidate = items[i];
                 if (!candidate.Spawned || !candidate.def.IsMedicine) continue;
                 if (!care.AllowsMedicine(candidate.def)) continue;
-                if (!map.reservationManager.CanReserve(healer, candidate)) continue;
+                if (!map.reservationManager.CanReserve(healer, candidate, MaxClaimants, PerClaim)) continue;
                 if (!Reachability.CanReach(healer, candidate, PathEndMode.ClosestTouch)) continue;
 
                 float potency = candidate.def.GetStatValue(HealthStatDefOf.MedicalPotency);
