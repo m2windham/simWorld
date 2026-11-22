@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Earth heaped on a built roof: a pit house's sod (shelter lane). Not RimWorld's; see RoofDef.isEarthen. It is
+       what WorkGiver_BuildRoof lays over a dwelling whose DwellingDef names it, and RoomTracker counts it with
+       thick rock in RimWorld's deep pull toward 15 C. Not natural and not thick: it is built, and it comes down
+       like RoofConstructed when its holders fall. -->
+
+  <RoofDef>
+    <defName>RoofEarth</defName>
+    <label>earthen roof</label>
+    <isEarthen>true</isEarthen>
+  </RoofDef>
+
+</Defs>

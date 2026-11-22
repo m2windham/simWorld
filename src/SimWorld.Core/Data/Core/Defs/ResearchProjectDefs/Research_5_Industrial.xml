@@ -646,6 +646,25 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
+    <defName>AirConditioning</defName>
+    <label>air conditioning</label>
+    <description>Build coolers to make people comfortable in hot weather, or to construct freezers for storing perishable goods.</description>
+    <baseCost>3600</baseCost>
+    <techLevel>Industrial</techLevel>
+    <tab>Main</tab>
+    <era>Industrial</era>
+    <tags>
+      <li>Industrial</li>
+      <li>EnergyIndustry</li>
+    </tags>
+    <prerequisites>
+      <li>Electricity</li>
+    </prerequisites>
+    <researchViewX>83</researchViewX>
+    <researchViewY>10</researchViewY>
+  </ResearchProjectDef>
+
+  <ResearchProjectDef>
     <defName>Railways</defName>
     <label>railways</label>
     <description>A steam engine on steel rails hauls more freight, faster, than any road ever carried.</description>
@@ -661,7 +680,7 @@
       <li>SteamEngine</li>
       <li>SteelFraming</li>
     </prerequisites>
-    <researchViewX>83</researchViewX>
+    <researchViewX>84</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -680,7 +699,7 @@
     <prerequisites>
       <li>SteamEngine</li>
     </prerequisites>
-    <researchViewX>84</researchViewX>
+    <researchViewX>85</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 
@@ -699,7 +718,7 @@
     <prerequisites>
       <li>Geometry</li>
     </prerequisites>
-    <researchViewX>85</researchViewX>
+    <researchViewX>86</researchViewX>
     <researchViewY>12</researchViewY>
   </ResearchProjectDef>
 
@@ -718,7 +737,7 @@
     <prerequisites>
       <li>Electricity</li>
     </prerequisites>
-    <researchViewX>86</researchViewX>
+    <researchViewX>87</researchViewX>
     <researchViewY>12</researchViewY>
   </ResearchProjectDef>
 

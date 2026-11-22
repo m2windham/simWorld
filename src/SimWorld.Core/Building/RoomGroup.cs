@@ -18,10 +18,14 @@ namespace SimWorld.Building
         /// outdoor air and its neighbours every tick (see <see cref="RoomTracker"/>), pushed by any <see cref="CompHeatPusherPowered"/> inside.</summary>
         internal float temperature;
 
-        /// <summary>Share of cells under thin (constructed or thin rock) roof, and under thick rock roof.</summary>
+        /// <summary>Share of cells under thin (constructed or thin rock) roof, and under thick rock or earthen roof.</summary>
         internal float thinRoofShare;
 
         internal float thickRoofShare;
+
+        /// <summary>Wall cells bounding this group that are earth-banked (<see cref="Defs.ThingDef.earthBanked"/>):
+        /// sampled as the deep earth, not the air beyond, so they have no entry in <see cref="wallBeyondCells"/>.</summary>
+        internal int earthBankedWallCells;
 
         /// <summary>The far side of each wall cell bounding this group, one entry per wall cell.</summary>
         internal readonly List<SimWorld.Map.IntVec3> wallBeyondCells = new List<SimWorld.Map.IntVec3>();

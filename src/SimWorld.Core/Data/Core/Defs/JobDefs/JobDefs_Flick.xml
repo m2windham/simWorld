@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Flipping a switch (RimWorld 1.0 Core/Defs/JobDefs: Flick). Its own file, per CLAUDE.md. -->
+
+  <JobDef>
+    <defName>Flick</defName>
+    <driverClass>SimWorld.Building.JobDriver_Flick</driverClass>
+    <reportString>flicking TargetA.</reportString>
+  </JobDef>
+
+</Defs>

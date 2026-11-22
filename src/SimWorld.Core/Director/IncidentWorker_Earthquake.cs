@@ -298,7 +298,7 @@ namespace SimWorld.Director
 
         /// <summary>Every structure def this incident (and <see cref="Building.AbstractSettlementConstruction"/>
         /// before it) knows how to count: every wall material, plus the two other completed buildings a
-        /// settlement raises, and every dwelling. Not read off <see cref="World.Settlement.Structures"/> directly — every consumer
+        /// settlement raises, and a pit house's earth bank. Not read off <see cref="World.Settlement.Structures"/> directly — every consumer
         /// goes through <see cref="World.Settlement.StructureCount"/>, per that method's own doc — so this
         /// names the defs rather than enumerating whatever the ledger happens to hold.</summary>
         private static IReadOnlyList<ThingDef> KnownStructureDefs()
@@ -308,8 +308,8 @@ namespace SimWorld.Director
                 ConstructionThingDefOf.Bed,
                 ConstructionThingDefOf.StorageHut,
             };
-            // A household's dwelling is a bed its sleepers lie on, so a home shares the risk a dormitory carries.
-            defs.AddRange(DwellingUtility.Ladder);
+            // A house is walls and beds now (shelter lane), already on this list but for a pit house's dug bank.
+            defs.Add(Building.ShelterThingDefOf.WallEarth);
             return defs;
         }
 

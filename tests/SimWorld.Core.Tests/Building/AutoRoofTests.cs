@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using SimWorld.Building;
 using SimWorld.Defs;
 using SimWorld.Factions;
@@ -70,24 +71,20 @@ namespace SimWorld.Tests.Building
         }
 
         [Fact]
-        public void A_dwelling_is_a_bed_on_open_ground_not_a_room_so_it_is_never_roofed()
+        public void A_dwelling_is_walls_round_its_beds_so_its_room_is_marked_for_roof()
         {
-            // A dwelling (House_*) is one standable, fillPercent-0 building its household sleeps in, not walls
-            // round a floor (Building.Dwelling). Its cells stay part of the outdoor room, so nothing encloses it
-            // and the auto-roof has no room to mark.
+            // A dwelling is real walls, a door and beds (shelter lane, Building.DwellingDef), so the settlement
+            // that built it has a room to roof, as RimWorld's auto-roof roofs any room a colony walls in.
             CoreMap map = NewMap(20f);
-            Thing hut = Spawn(map, new IntVec3(6, 0, 6), "House_Paleo", NewFaction("Settlers"));
+            Dwelling hut = ShelterKit.Raise(map, ShelterKit.Rung("House_Paleo"), new IntVec3(6, 0, 6), NewFaction("Settlers"));
             map.MapTick();
 
-            foreach (IntVec3 c in hut.OccupiedRect().Cells)
-            {
-                Room? room = map.roomTracker.RoomAt(c);
-                Assert.NotNull(room);
-                Assert.True(room!.Group.UsesOutdoorTemperature);
-                Assert.False(map.roofGrid.Roofed(c));
-            }
-            Assert.Single(map.roomTracker.Rooms);
-            Assert.Equal(0, map.areaManager.BuildRoof.TrueCount);
+            Assert.NotEmpty(hut.Interior);
+            Room room = map.roomTracker.RoomAt(hut.Interior.First())!;
+            Assert.False(room.TouchesOutside);
+            Assert.Equal(hut.Interior.OrderBy(c => c.x).ThenBy(c => c.z), room.Cells.OrderBy(c => c.x).ThenBy(c => c.z));
+            foreach (IntVec3 c in hut.footprint.Cells) Assert.True(map.areaManager.BuildRoof[c], $"{c} should be marked");
+            Assert.Equal(hut.footprint.Area, map.areaManager.BuildRoof.TrueCount);
         }
 
         [Fact]
@@ -179,8 +176,8 @@ namespace SimWorld.Tests.Building
         public void Heat_comes_through_a_thin_roof_and_not_through_thick_rock()
         {
             // Same shell, same walls, same 45 C outside; only the roof differs. Thick rock passes no outdoor heat
-            // (it only warms a room colder than 15 C), so whatever the thin-roofed room gains beyond it came
-            // through the roof.
+            // and pulls a room warmer than 15 C back toward 15 (RimWorld's RoomGroupTempTracker), so whatever the
+            // thin-roofed room gains beyond it came through the roof.
             float After(RoofDef roof)
             {
                 CoreMap map = NewMap(45f);
@@ -195,7 +192,6 @@ namespace SimWorld.Tests.Building
 
             float thin = After(SimWorld.Map.RoofDefOf.RoofConstructed);
             float thick = After(SimWorld.Map.RoofDefOf.RoofRockThick);
-            Assert.True(thick > 25.5f, $"walls alone should still warm it, was {thick}");
             Assert.True(thin > thick + 0.5f, $"thin {thin} vs thick {thick}");
         }
 

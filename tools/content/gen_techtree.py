@@ -124,11 +124,7 @@ ERA_STICKSANDSTONES = [
     dict(defName="BoneSetting", label="bone setting", track="MedicineHealth", prereqs=["HerbalRemedies"],
          desc="A splint bound tight and held still lets a broken bone knit instead of crippling for good."),
     dict(defName="Rafts", label="rafts", track="TransportExploration", prereqs=["Woodworking"],
-         desc="Lashed logs float a load a swimmer could never carry across a river."),    # RimWorld 1.0's PassiveCooler (Core/Defs/ResearchProjectDefs/ResearchProjects_1.xml: Neolithic, no
-    # prerequisites, a ClassicStart and TribalStart project). A root here for the same reason; its cost is
-    # this era's band, not RimWorld's 400.
-    dict(defName="PassiveCooler", label="passive cooler", track="ConstructionSettlement", prereqs=[],
-         desc="Make passive coolers, to cool indoor spaces without using electricity."),
+         desc="Lashed logs float a load a swimmer could never carry across a river."),
 ]
 
 ERA_AGRARIAN = [
@@ -249,6 +245,11 @@ ERA_BRONZE = [
          desc="Practiced technique around childbirth turns a dangerous moment into a survivable one, more often."),
     dict(defName="Kilns", label="kilns", track="EnergyIndustry", prereqs=["Pottery"],
          desc="Kilns that hold 1000°C turn clay into watertight vessels and open the road to metals."),
+    # RimWorld 1.0's PassiveCooler research (ResearchProjects_1.xml: Neolithic, no prerequisites) is a tribal
+    # start's. Here it waits for the age that builds above ground: the shelter lane gates the passive cooler,
+    # and the town house that needs one, on this. A wet-jar cooler needs fired pots, so Pottery comes first.
+    dict(defName="Windcatchers", label="windcatchers", track="ConstructionSettlement", prereqs=["Pottery", "Copper"],
+         desc="Wet clay jars set in the draught a roof tower catches cool a room through the hottest days; the wadding must be kept wet and renewed."),
 ]
 
 ERA_CLASSICAL = [
@@ -462,6 +463,10 @@ ERA_INDUSTRIAL = [
          desc="Algebra rewritten for true and false lets any argument, in principle, be checked like a sum."),
     dict(defName="Telegraphy", label="telegraphy", track="InformationComputation", prereqs=["Electricity"],
          desc="A coded electric pulse down a wire carries a message across a continent in minutes, not weeks."),
+    # RimWorld 1.0's AirConditioning (ResearchProjects_2_Electricity.xml: Industrial, prerequisite Electricity),
+    # which unlocks its powered Cooler.
+    dict(defName="AirConditioning", label="air conditioning", track="EnergyIndustry", prereqs=["Electricity"],
+         desc="Build coolers to make people comfortable in hot weather, or to construct freezers for storing perishable goods."),
 ]
 
 ERA_INFORMATION = [

@@ -106,6 +106,8 @@ namespace SimWorld.Building
             get
             {
                 if (!base.ShouldPushHeatNow) return false;
+                // RimWorld's CompHeatPusherPowered asks FlickUtility.WantsToBeOn first.
+                if (!FlickUtility.WantsToBeOn(parent)) return false;
                 CompPowerTrader? power = parent.GetComp<CompPowerTrader>();
                 if (power != null && !power.powerOn) return false;
                 CompRefuelable? refuelable = parent.GetComp<CompRefuelable>();

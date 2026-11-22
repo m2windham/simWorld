@@ -206,22 +206,6 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
-    <defName>PassiveCooler</defName>
-    <label>passive cooler</label>
-    <description>Make passive coolers, to cool indoor spaces without using electricity.</description>
-    <baseCost>100</baseCost>
-    <techLevel>Neolithic</techLevel>
-    <tab>Main</tab>
-    <era>SticksAndStones</era>
-    <tags>
-      <li>SticksAndStones</li>
-      <li>ConstructionSettlement</li>
-    </tags>
-    <researchViewX>11</researchViewX>
-    <researchViewY>2</researchViewY>
-  </ResearchProjectDef>
-
-  <ResearchProjectDef>
     <defName>TribalCustom</defName>
     <label>tribal custom</label>
     <description>Unwritten rules, held in speech and memory, that settle disputes before they become blood feuds.</description>
@@ -236,7 +220,7 @@
     <prerequisites>
       <li>Language</li>
     </prerequisites>
-    <researchViewX>12</researchViewX>
+    <researchViewX>11</researchViewX>
     <researchViewY>4</researchViewY>
   </ResearchProjectDef>
 
@@ -252,7 +236,7 @@
       <li>SticksAndStones</li>
       <li>KnowledgeWriting</li>
     </tags>
-    <researchViewX>13</researchViewX>
+    <researchViewX>12</researchViewX>
     <researchViewY>5</researchViewY>
   </ResearchProjectDef>
 
@@ -271,7 +255,7 @@
     <prerequisites>
       <li>Language</li>
     </prerequisites>
-    <researchViewX>14</researchViewX>
+    <researchViewX>13</researchViewX>
     <researchViewY>5</researchViewY>
   </ResearchProjectDef>
 
@@ -290,7 +274,7 @@
     <prerequisites>
       <li>Language</li>
     </prerequisites>
-    <researchViewX>15</researchViewX>
+    <researchViewX>14</researchViewX>
     <researchViewY>5</researchViewY>
   </ResearchProjectDef>
 
@@ -309,7 +293,7 @@
     <prerequisites>
       <li>Language</li>
     </prerequisites>
-    <researchViewX>16</researchViewX>
+    <researchViewX>15</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -328,7 +312,7 @@
     <prerequisites>
       <li>StoneTools</li>
     </prerequisites>
-    <researchViewX>17</researchViewX>
+    <researchViewX>16</researchViewX>
     <researchViewY>6</researchViewY>
   </ResearchProjectDef>
 
@@ -347,7 +331,7 @@
     <prerequisites>
       <li>StoneTools</li>
     </prerequisites>
-    <researchViewX>18</researchViewX>
+    <researchViewX>17</researchViewX>
     <researchViewY>7</researchViewY>
   </ResearchProjectDef>
 
@@ -366,7 +350,7 @@
     <prerequisites>
       <li>Language</li>
     </prerequisites>
-    <researchViewX>19</researchViewX>
+    <researchViewX>18</researchViewX>
     <researchViewY>8</researchViewY>
   </ResearchProjectDef>
 
@@ -385,7 +369,7 @@
     <prerequisites>
       <li>Foraging</li>
     </prerequisites>
-    <researchViewX>20</researchViewX>
+    <researchViewX>19</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -404,7 +388,7 @@
     <prerequisites>
       <li>HerbalRemedies</li>
     </prerequisites>
-    <researchViewX>21</researchViewX>
+    <researchViewX>20</researchViewX>
     <researchViewY>9</researchViewY>
   </ResearchProjectDef>
 
@@ -423,7 +407,7 @@
     <prerequisites>
       <li>Woodworking</li>
     </prerequisites>
-    <researchViewX>22</researchViewX>
+    <researchViewX>21</researchViewX>
     <researchViewY>11</researchViewY>
   </ResearchProjectDef>
 

@@ -136,7 +136,9 @@ namespace SimWorld.Building
                 if (!GenGrid.InBounds(c, map)) continue;
                 if (!map.areaManager.BuildRoof[c] || map.roofGrid.Roofed(c)) continue;
                 if (!RoofCollapseUtility.WithinRangeOfRoofHolder(c, map)) continue;
-                map.roofGrid.SetRoof(c, RoofDefOf.RoofConstructed);
+                // RimWorld lays RoofConstructed everywhere; a house that names its own roof (a pit house's
+                // earth) gets that instead (shelter lane, DwellingDef.roofDef).
+                map.roofGrid.SetRoof(c, DwellingUtility.RoofFor(map, c));
             }
         }
     }

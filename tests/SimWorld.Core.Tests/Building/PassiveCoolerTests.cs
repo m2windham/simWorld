@@ -25,7 +25,7 @@ namespace SimWorld.Tests.Building
         {
         }
 
-        private static ThingDef Cooler => CoolingThingDefOf.PassiveCooler;
+        private static ThingDef Cooler => ShelterThingDefOf.PassiveCooler;
 
         private static CoreMap NewMap(float outdoor, int size = 20) =>
             new CoreMap(size, size, SimWorld.Map.TerrainDefOf.Soil) { outdoorTemperature = outdoor };
@@ -81,7 +81,8 @@ namespace SimWorld.Tests.Building
             Assert.Equal(50f, fuel.fuelCapacity);
             Assert.Equal(1f, fuel.initialFuelPercent);
             Assert.True(fuel.fuelFilter.Allows(DefDatabase<ThingDef>.GetNamed("WoodLog")));
-            Assert.Contains(DefDatabase<SimWorld.Research.ResearchProjectDef>.GetNamed("PassiveCooler"), Cooler.researchPrerequisites!);
+            // Translation (shelter lane): gated on the Bronze age's Windcatchers, not RimWorld's Neolithic PassiveCooler.
+            Assert.Contains(DefDatabase<SimWorld.Research.ResearchProjectDef>.GetNamed("Windcatchers"), Cooler.researchPrerequisites!);
         }
 
         [Fact]

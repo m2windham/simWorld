@@ -688,11 +688,12 @@ namespace SimWorld.Tests.Building
                 if (ringUpTick < 0) continue;
 
                 // Inside the ring, or in a house the band built on its street: a household that has a home
-                // sleeps there and leaves the dormitory (DwellingUtility.FindDwellingFor), and with timber to
+                // sleeps there and leaves the dormitory (DwellingUtility.FindDwellingBedFor), and with timber to
                 // spare the houses can be up before the first night. Counting only the ring then ran all fifteen
                 // days looking for a sleeper who was, correctly, at home.
                 sleptInside += settlement.Citizens.Count(p => p.Spawned && p.Asleep
-                    && (compound.Interior.Contains(p.Position) || SimWorld.AI.RestUtility.CurrentBed(p) is Dwelling));
+                    && (compound.Interior.Contains(p.Position)
+                        || (SimWorld.AI.RestUtility.CurrentBed(p) is Thing slept && DwellingUtility.IsDwellingBed(slept))));
                 if (sleptInside > 0) break;
             }
 

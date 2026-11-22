@@ -28,7 +28,10 @@ namespace SimWorld.Building
         public const float ThinRoofEqualizationRate = 5e-5f;
 
         /// <summary>RimWorld: per-tick pull toward <see cref="DeepEqualizationTemperature"/> under thick rock
-        /// roof, only while the room is colder than that.</summary>
+        /// roof, only while the room is warmer than that (<c>RoomGroupTempTracker.DeepEqualizationTempChangePerInterval</c>,
+        /// read from <c>josh-m/RW-Decompile/Verse/RoomGroupTempTracker.cs</c>: <c>num = 15f - temperature; if
+        /// (num &gt; 0f) return 0f;</c>). The earth cools a hot room and never warms a cold one. This port had it
+        /// the other way round until the shelter lane read the source.</summary>
         public const float DeepEqualizationRate = 5e-5f;
 
         /// <summary>RimWorld: the temperature thick rock settles a cold room toward.</summary>
@@ -156,9 +159,15 @@ namespace SimWorld.Building
         {
             float t = group.temperature;
             float delta = AdjustedOutdoorDifference(outdoor - t) * group.thinRoofShare * ThinRoofEqualizationRate;
-            if (t < DeepEqualizationTemperature)
+            if (t > DeepEqualizationTemperature)
             {
-                delta += (DeepEqualizationTemperature - t) * group.thickRoofShare * DeepEqualizationRate;
+                // RimWorld's deep term, over thick rock roof and (SimWorld) earthen roof. Earth-banked walls join
+                // it at the wall rate: the far side of a dug wall is the same earth the roof is, so it is sampled
+                // as the deep temperature under the same rule rather than as outdoor air (translation: a pit house,
+                // see ThingDef.earthBanked).
+                float deep = group.thickRoofShare * DeepEqualizationRate
+                    + group.earthBankedWallCells * WallEqualizationRate / Math.Max(1, group.CellCount);
+                delta += (DeepEqualizationTemperature - t) * deep;
             }
 
             List<IntVec3> beyond = group.wallBeyondCells;
@@ -382,12 +391,13 @@ namespace SimWorld.Building
             int thick = 0, thin = 0;
             var walls = new HashSet<IntVec3>();
             group.wallBeyondCells.Clear();
+            group.earthBankedWallCells = 0;
             foreach (IntVec3 cell in room.cells)
             {
                 RoofDef? roof = map.roofGrid.RoofAt(cell);
                 if (roof != null)
                 {
-                    if (roof.isThickRoof) thick++;
+                    if (roof.isThickRoof || roof.isEarthen) thick++;
                     else thin++;
                 }
                 for (int d = 0; d < 4; d++)
@@ -397,7 +407,8 @@ namespace SimWorld.Building
                     if (!GenGrid.InBounds(wall, map) || !IsFullEdifice(wall)) continue;
                     if (map.edificeGrid[wall] is Door) continue;
                     if (!walls.Add(wall)) continue;
-                    group.wallBeyondCells.Add(wall + dir);
+                    if (map.edificeGrid[wall]!.def.earthBanked) group.earthBankedWallCells++;
+                    else group.wallBeyondCells.Add(wall + dir);
                 }
             }
             int n = Math.Max(1, room.cells.Count);

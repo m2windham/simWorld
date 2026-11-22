@@ -108,7 +108,7 @@ namespace SimWorld.Tests.Building
         [Fact]
         public void A_def_not_made_from_stuff_costs_its_costList_whatever_stuff_is_passed()
         {
-            ThingDef hut = Def("House_Paleo");
+            ThingDef hut = Def("Campfire");
             Assert.False(hut.MadeFromStuff);
             Assert.Equal(hut.costList!.Select(e => (e.thingDef, e.count)), hut.CostListAdjusted(Granite).Select(e => (e.thingDef, e.count)));
         }

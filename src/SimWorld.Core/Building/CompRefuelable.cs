@@ -79,7 +79,11 @@ namespace SimWorld.Building
         public bool ShouldAutoRefuelNow =>
             FuelPercentOfTarget <= Props.autoRefuelPercent && !IsFull && TargetFuelLevel > 0f && ShouldAutoRefuelNowIgnoringFuelPct;
 
-        public bool ShouldAutoRefuelNowIgnoringFuelPct => !parent.IsBurning();
+        /// <summary>RimWorld also refuses while a flickable is switched off, and while it is marked for flicking
+        /// or deconstruction; the flick half is ported (shelter lane), the deconstruct half is not.</summary>
+        public bool ShouldAutoRefuelNowIgnoringFuelPct =>
+            !parent.IsBurning() && FlickUtility.WantsToBeOn(parent)
+            && parent.Map?.designationManager.DesignationOn(parent, FlickDesignationDefOf.Flick) == null;
 
         public override void Initialize(CompProperties props)
         {
@@ -96,7 +100,8 @@ namespace SimWorld.Building
         public override void CompTick()
         {
             base.CompTick();
-            if (!Props.consumeFuelOnlyWhenUsed) ConsumeFuel(ConsumptionRatePerTick);
+            // RimWorld: no burn while a flickable is switched off (CompRefuelable.CompTick reads flickComp).
+            if (!Props.consumeFuelOnlyWhenUsed && FlickUtility.WantsToBeOn(parent)) ConsumeFuel(ConsumptionRatePerTick);
         }
 
         public void ConsumeFuel(float amount)

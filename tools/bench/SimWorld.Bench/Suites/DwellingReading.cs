@@ -15,10 +15,12 @@ namespace SimWorld.Bench.Suites
             var dwellings = DwellingUtility.DwellingsOn(map);
             var households = DwellingUtility.Households(settlement);
             int housedHouseholds = dwellings.Count(d => households.ContainsKey(d.householdId));
-            return "dwellings: " + dwellings.Count + " built, " + DwellingUtility.CountUnderway(map) + " under way; households "
+            int built = dwellings.Count(d => d.IsComplete(map));
+            string rungs = string.Join(",", dwellings.GroupBy(d => d.def.defName).OrderBy(g => g.Min(d => d.def.rung)).Select(g => g.Key + "x" + g.Count()));
+            return "dwellings: " + built + " built, " + DwellingUtility.CountUnderway(map) + " under way [" + rungs + "]; households "
                 + housedHouseholds + "/" + households.Count + " housed; citizens housed "
                 + DwellingUtility.HousedCitizens(settlement, map) + "/" + settlement.Citizens.Count(p => !p.Dead)
-                + "; dormitory beds " + map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count;
+                + "; beds " + map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count;
         }
     }
 }

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Shelter (shelter lane): the parts a dwelling is built of that the port did not already have.
+
+    WallEarth: a pit house's dug bank (ThingDef.earthBanked). Not RimWorld's. Costs no material, only labour
+    (it is dug, then the spoil is banked and faced), so it goes up through the no-cost frame path
+    (JobDriver_PlaceNoCostFrame). WorkToBuild and MaxHitPoints are this port's own, unsourced: a bank takes
+    longer to raise than a wooden wall and is harder to knock down. It does not burn.
+
+    Campfire: RimWorld 1.0's (Core/Defs/ThingDefs_Buildings/Buildings_Temperature.xml, read from a copy of
+    the 1.0 data): PassThroughOnly, pathCost 50, fillPercent 0.20, MaxHitPoints 80, WorkToBuild 200,
+    Flammability 0, 20 WoodLog, a Refuelable comp burning 10 wood a day from a 20-wood tank, and a heat pusher
+    of 21 per second up to 28 C. RimWorld's comp class Verse.CompHeatPusherPowered is
+    SimWorld.Building.CompHeatPusherGated here (see Buildings_Temperature.xml). Not carried: cooking (its
+    recipes, Building_WorkTable, the interaction cell), rain burn (fuelConsumptionPerTickInRain), the glower,
+    the fire overlay and the gather spot. Translations: it is gated on Fire, where RimWorld's has no
+    prerequisite, because this tree starts before fire; and it carries RimWorld's CompFlickable, which
+    RimWorld's campfire does not, so a settlement can put its hearth out when the cold has passed (RimWorld's
+    CompRefuelable already stops burning and refuelling while a flickable is switched off).
+  -->
+
+  <ThingDef>
+    <defName>WallEarth</defName>
+    <label>earth bank</label>
+    <description>Packed earth dug out of the floor and banked round it: the wall of a house half sunk into the ground.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <pathCost>10000</pathCost>
+    <earthBanked>true</earthBanked>
+    <statBases>
+      <MaxHitPoints>400</MaxHitPoints>
+      <WorkToBuild>400</WorkToBuild>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_WallEarth</defName>
+    <label>earth bank (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>WallEarth</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_WallEarth</defName>
+    <label>earth bank (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>1</fillPercent>
+    <pathCost>10000</pathCost>
+    <entityToBuild>WallEarth</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Campfire</defName>
+    <label>campfire</label>
+    <description>Produces heat, and burns out after a few days. As with all heat sources, it must be placed indoors so it has a closed space to heat. Refuelable.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>PassThroughOnly</passability>
+    <pathCost>50</pathCost>
+    <tickerType>Normal</tickerType>
+    <fillPercent>0.20</fillPercent>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <WorkToBuild>200</WorkToBuild>
+      <Flammability>0</Flammability>
+    </statBases>
+    <costList>
+      <WoodLog>20</WoodLog>
+    </costList>
+    <comps>
+      <li Class="SimWorld.Building.CompProperties_Refuelable">
+        <fuelConsumptionRate>10.0</fuelConsumptionRate>
+        <fuelCapacity>20.0</fuelCapacity>
+        <fuelFilter>
+          <thingDefs>
+            <li>WoodLog</li>
+          </thingDefs>
+        </fuelFilter>
+        <initialFuelPercent>1</initialFuelPercent>
+      </li>
+      <li Class="SimWorld.Building.CompProperties_HeatPusher">
+        <compClass>SimWorld.Building.CompHeatPusherGated</compClass>
+        <heatPerSecond>21</heatPerSecond>
+        <heatPushMaxTemperature>28</heatPushMaxTemperature>
+      </li>
+      <li Class="SimWorld.Building.CompProperties_Flickable" />
+    </comps>
+    <researchPrerequisites>
+      <li>Fire</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Campfire</defName>
+    <label>campfire (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Campfire</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Campfire</defName>
+    <label>campfire (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>PassThroughOnly</passability>
+    <pathCost>50</pathCost>
+    <fillPercent>0.20</fillPercent>
+    <entityToBuild>Campfire</entityToBuild>
+  </ThingDef>
+
+</Defs>

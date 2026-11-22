@@ -62,6 +62,10 @@ namespace SimWorld.Building
     {
         private CellRect interior;
 
+        /// <summary>The households' houses laid out on the village's plots, in the order they were planned
+        /// (shelter lane; see <see cref="Dwelling"/> and <see cref="DwellingPlanner"/>).</summary>
+        internal List<Dwelling> dwellings = new List<Dwelling>();
+
         /// <summary>For Scribe.</summary>
         private SettlementCompound()
         {
@@ -71,6 +75,10 @@ namespace SimWorld.Building
         {
             this.interior = interior;
         }
+
+        /// <summary>A compound round <paramref name="interior"/>, unplanned: for tests that need a village's plots
+        /// and houses without a settlement to plan them.</summary>
+        internal static SettlementCompound WithInterior(CellRect interior) => new SettlementCompound(interior);
 
         /// <summary>The ground inside the wall: the bed block.</summary>
         public CellRect Interior => interior;
@@ -85,42 +93,19 @@ namespace SimWorld.Building
         /// <summary>The gap in the east side of the ring, halfway up it.</summary>
         public IntVec3 DoorCell => new IntVec3(interior.maxX + 1, 0, interior.minZ + interior.height / 2);
 
-        /// <summary>
-        /// Where the dormitory's passive coolers go: the place of one bed at the back of the block, against the
-        /// west wall on the door's row, out of the way in. Two cells, because one passive cooler holds the
-        /// largest dormitory (80 cells) only to about 29 C in 45 C air and two to about 17 C (measured by
-        /// <c>PassiveCoolerTests</c>), and only the second is comfortable to a citizen. Kept for them whether or
-        /// not one is ever built, so a bed never takes the place; that bed is left out of <see cref="BedCells"/>.
-        /// A cooler cools the whole room the same wherever it stands (<see cref="RoomGroup.PushHeat"/>), so
-        /// where is only about traffic. Translation: RimWorld's player puts coolers wherever they like.
-        /// </summary>
-        public IEnumerable<IntVec3> CoolerCells
-        {
-            get
-            {
-                int bedZ = ConstructionThingDefOf.Bed.size.z;
-                int z = interior.minZ + (DoorCell.z - interior.minZ) / bedZ * bedZ;
-                for (int i = 0; i < bedZ; i++) yield return new IntVec3(interior.minX, 0, z + i);
-            }
-        }
-
-        /// <summary>Where each bed goes, as the cell it is placed on, south-west first and row by row, less the
-        /// one whose place is the coolers' (<see cref="CoolerCells"/>). A bed is placed unrotated (<see cref="RotationAt"/>
-        /// turns only the door and the storage): it covers this cell and the one north of it, and is slept in
-        /// on this one.</summary>
+        /// <summary>Where each bed goes, as the cell it is placed on, south-west first and row by row. A bed
+        /// is placed unrotated (<see cref="RotationAt"/> turns only the door and the storage): it covers this
+        /// cell and the one north of it, and is slept in on this one.</summary>
         public IEnumerable<IntVec3> BedCells
         {
             get
             {
                 IntVec2 bed = ConstructionThingDefOf.Bed.size;
-                var coolers = new HashSet<IntVec3>(CoolerCells);
                 for (int z = interior.minZ; z + bed.z - 1 <= interior.maxZ; z += bed.z)
                 {
                     for (int x = interior.minX; x + bed.x - 1 <= interior.maxX; x += bed.x)
                     {
-                        var site = new IntVec3(x, 0, z);
-                        if (coolers.Contains(site)) continue;
-                        yield return site;
+                        yield return new IntVec3(x, 0, z);
                     }
                 }
             }
@@ -189,7 +174,9 @@ namespace SimWorld.Building
         // door, so the benches stand beside the storage, on the way in.
         // ---------------------------------------------------------------------------------------------
 
-        private static IntVec2 DwellingSize => DwellingThingDefOf.House_Paleo.size;
+        /// <summary>A plot holds the largest house on the ladder (<see cref="DwellingUtility.PlotSize"/>), so a plot
+        /// laid out in the first age still takes a house of the last.</summary>
+        private static IntVec2 DwellingSize => DwellingUtility.PlotSize;
 
         /// <summary>The row the street is centred on: the door's.</summary>
         public int StreetZ => DoorCell.z;
@@ -270,14 +257,6 @@ namespace SimWorld.Building
         /// <summary>The west edge of the first plot west of the compound, past a one-cell alley beside the
         /// storage on that side.</summary>
         private int FirstWestPlotX => Footprint.minX - 1 - DwellingSize.x;
-
-        private IEnumerable<IntVec3> DwellingCells(Map.Map map)
-        {
-            foreach ((CellRect plot, Rot4 rot) in DwellingPlots(int.MaxValue, map.Size))
-            {
-                yield return PlacementCellFor(plot, rot, DwellingSize);
-            }
-        }
 
         private static CellRect Union(CellRect a, CellRect b)
         {
@@ -376,7 +355,7 @@ namespace SimWorld.Building
 
         /// <summary>
         /// The next free site for <paramref name="entityDef"/>, in the order the layout fills. False when the
-        /// compound has no site left for it, or never had one (it places beds, walls, its door, its passive coolers,
+        /// compound has no site left for it, or never had one (it places beds, walls, its door,
         /// storage and dwellings; the work yard has <see cref="TryFindWorkSite"/>). With <paramref name="within"/>, a site must lie wholly inside that area.
         /// </summary>
         public bool TryFindCell(Map.Map map, ThingDef entityDef, Area? within, out IntVec3 cell)
@@ -425,7 +404,6 @@ namespace SimWorld.Building
         public Rot4 RotationAt(ThingDef entityDef, IntVec3 cell)
         {
             if (ReferenceEquals(entityDef, CompoundThingDefOf.Door)) return cell == DoorCell ? Rot4.East : Rot4.North;
-            if (DwellingUtility.IsDwelling(entityDef)) return DwellingRotationAt(cell);
             if (!ReferenceEquals(entityDef, ConstructionThingDefOf.StorageHut)) return Rot4.North;
 
             CellRect ring = Ring;
@@ -452,29 +430,10 @@ namespace SimWorld.Building
             foreach (IntVec3 c in Village.ExpandedBy(AutoHomeAreaMaker.BorderWidth).ClipInsideMap(map).Cells) home[c] = true;
         }
 
-        /// <summary>A dwelling on one of the village's plots south of the street is turned South, so it opens
-        /// onto the street; anywhere else, North, like everything else. Only the exact cell a plot is placed
-        /// from counts: a dwelling the fallback draw put south of the street was checked turned North.</summary>
-        private Rot4 DwellingRotationAt(IntVec3 cell)
-        {
-            if (cell.z >= StreetZ) return Rot4.North;
-            IntVec2 size = DwellingSize;
-            int step = size.x + 1;
-            int east = FirstEastPlotX, west = FirstWestPlotX;
-            int minX;
-            if (cell.x >= east) minX = east + (cell.x - east) / step * step;
-            else if (cell.x < west + size.x) minX = west - (west + size.x - 1 - cell.x) / step * step;
-            else return Rot4.North;
-            var plot = new CellRect(minX, StreetZ - 1 - size.z, size.x, size.z);
-            return plot.Contains(cell) && PlacementCellFor(plot, Rot4.South, size) == cell ? Rot4.South : Rot4.North;
-        }
-
         private IEnumerable<IntVec3> CellsFor(Map.Map map, ThingDef entityDef)
         {
             if (ReferenceEquals(entityDef, ConstructionThingDefOf.Bed)) return BedCells;
-            if (DwellingUtility.IsDwelling(entityDef)) return DwellingCells(map);
             if (ReferenceEquals(entityDef, CompoundThingDefOf.Door)) return new[] { DoorCell };
-            if (ReferenceEquals(entityDef, CoolingThingDefOf.PassiveCooler)) return CoolerCells;
             if (ReferenceEquals(entityDef, ConstructionThingDefOf.StorageHut)) return StorageCells;
             if (StoneWallMaterials.IsWall(entityDef)) return WallCells;
             return Array.Empty<IntVec3>();
@@ -486,9 +445,6 @@ namespace SimWorld.Building
             foreach (IntVec3 c in rect.Cells)
             {
                 if (within != null && !within[c]) return false;
-                // A house is lived in: none on deep water or rock, which nothing else here needs saying for
-                // (a bed's or a wall's cell is the compound's own, already checked open when it was planned).
-                if (DwellingUtility.IsDwelling(entityDef) && (!GenGrid.InBounds(c, map) || !map.pathGrid.Walkable(c))) return false;
             }
             if (!GenConstruct.CanPlaceBlueprintAt(entityDef, cell, map, out _, rot)) return false;
             // A site the band cannot walk to stays empty (SettlementReach): a plot or yard can run past the
@@ -598,16 +554,14 @@ namespace SimWorld.Building
         /// <summary>
         /// The interior a ring of <paramref name="wallBudget"/> cells closes round, chosen to hold the most
         /// beds. False when that is fewer beds than there are citizens.
-        /// One bed's place in every block is kept for the passive coolers (<see cref="CoolerCells"/>), so the
-        /// biggest ring holds one bed fewer than its interior would.
         /// <para/>
         /// <b>The need model is not changed, only spent in one place.</b> The initiative already wants a
         /// wall count per citizen. A ring round a <c>w</c> by <c>h</c> interior is <c>2(w + h) + 4</c> cells, so
         /// that count fixes <c>w + h</c>, and this picks the split with the most room for beds. One ring cell
         /// is the door, so the settlement builds one wall fewer than it wanted and one door. At the founding
         /// band's size the wall count is at <see cref="ConstructionInitiativeTuning.MaxWallShelterCount"/> and
-        /// the ring it closes holds a bed for all but the largest band <c>SettlementTuning.FoundingBandRange</c>
-        /// founds, which is one short since the coolers took a bed's place. Pinned by <c>SettlementCompoundTests</c> as "every citizen's bed fits inside", never as
+        /// the ring it closes holds a bed for the largest band <c>SettlementTuning.FoundingBandRange</c>
+        /// founds. Pinned by <c>SettlementCompoundTests</c> as "every citizen's bed fits inside", never as
         /// those literals.
         /// <para/>
         /// A band too small for its walls to go round its beds gets no compound and places as before. A
@@ -624,7 +578,7 @@ namespace SimWorld.Building
             for (int h = bed.z; h < span; h += bed.z)
             {
                 int w = span - h;
-                int holds = (w / bed.x) * (h / bed.z) - 1; // one bed's place is the coolers' (CoolerCells)
+                int holds = (w / bed.x) * (h / bed.z);
                 if (holds <= beds) continue;
                 beds = holds;
                 width = w;
@@ -695,6 +649,9 @@ namespace SimWorld.Building
             Scribe_Values.Look(ref interior.minZ, "minZ");
             Scribe_Values.Look(ref interior.width, "width");
             Scribe_Values.Look(ref interior.height, "height");
+            List<Dwelling>? list = dwellings;
+            Scribe_Collections.Look(ref list, "dwellings", LookMode.Deep);
+            dwellings = list ?? new List<Dwelling>();
         }
     }
 }

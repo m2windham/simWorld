@@ -5,7 +5,12 @@
        field as RimWorld ships it. Not carried: graphics, sounds, the designation category and hotkey, and
        PlaceWorker_CoolerSimple (it only draws the room the cooler would cool). RimWorld's comp class
        Verse.CompHeatPusherPowered is SimWorld.Building.CompHeatPusherGated here: the port's
-       CompHeatPusherPowered is the heater's own flat push. -->
+       CompHeatPusherPowered is the heater's own flat push.
+       Translations (shelter lane): RimWorld gates it on its PassiveCooler project, a Neolithic root; here it
+       waits for Windcatchers, the Bronze age's, because a settlement that lives dug into the earth does not
+       need one and one that builds above ground does. And it carries RimWorld's CompFlickable, which RimWorld's
+       passive cooler does not, so a settlement can stop it drinking wood out of season: RimWorld's
+       CompRefuelable stops burning and refuelling while a flickable is switched off. -->
 
   <ThingDef>
     <defName>PassiveCooler</defName>
@@ -41,9 +46,10 @@
         </fuelFilter>
         <initialFuelPercent>1</initialFuelPercent>
       </li>
+      <li Class="SimWorld.Building.CompProperties_Flickable" />
     </comps>
     <researchPrerequisites>
-      <li>PassiveCooler</li>
+      <li>Windcatchers</li>
     </researchPrerequisites>
   </ThingDef>
 
