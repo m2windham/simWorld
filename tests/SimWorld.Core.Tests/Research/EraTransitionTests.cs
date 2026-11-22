@@ -117,6 +117,39 @@ namespace SimWorld.Tests.Research
         }
 
         [Fact]
+        public void Research_work_that_finishes_an_era_announces_it()
+        {
+            // The played path: points from a research job, through ResearchPerformed, finishing the era's
+            // last spine project. The other tests here call FinishProject directly, which never caught that
+            // ResearchPerformed wrote the finishing progress before FinishProject read the era it was leaving.
+            var reached = new List<EraDef>();
+            manager.EraReached += (from, to) => reached.Add(to);
+
+            EraDef first = OrderedEras()[0];
+            EraDef second = OrderedEras()[1];
+            CompleteEra(first);
+            ResearchProjectDef last = second.SpineProjects[second.SpineProjects.Count - 1];
+            foreach (ResearchProjectDef project in second.Projects)
+            {
+                if (project != last && !manager.IsFinished(project)) manager.FinishProject(project);
+            }
+            Assert.Equal(first, manager.CurrentEra);
+
+            manager.CurrentProj = last;
+            float factor = last.CostFactor(manager.ResearcherTechLevel);
+            manager.ResearchPerformed(last.baseCost * factor * 0.5f, null);
+            Assert.Empty(reached);
+            manager.ResearchPerformed(last.baseCost * factor, null);
+
+            Assert.True(manager.IsFinished(last));
+            Assert.Equal(new[] { second }, reached);
+            Assert.Contains(EraTransitionUtility.ChronicleLine(first, second), ChronicleHeadlines());
+            Assert.Single(EraLetters());
+            Assert.Contains(Find.Storyteller.Moments,
+                e => e.incidentDefName == EraTransitionUtility.ChronicleLine(first, second));
+        }
+
+        [Fact]
         public void Reaching_an_era_records_a_chronicle_line_and_a_letter()
         {
             CompleteEra(OrderedEras()[0]);
