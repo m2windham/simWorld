@@ -11,7 +11,8 @@ In short:
 
 - **Research climbs fast, then slows.** A band of 20 is Medieval in 2.5 to 3.5
   game years and Industrial in 5.4 to 9.6. The best seed reached Information
-  at year 8.6. No run came near Exotic.
+  at year 8.6, and run D at year 15.9. No run came near Exotic: none finished
+  any of its seven spine projects.
 - **Nothing else changes with the era.** The settlement builds the same dozen
   kinds of building in Industrial and Information as in its second year. The
   last new kind is Bronze-gated. Of 245 research projects, 14 gate anything at
@@ -20,12 +21,13 @@ In short:
   `EraReached`, so there is no era letter, no chronicle line and no "Era
   reached" moment (§5.1).
 - **The settlement does not grow into a civilization.** No run went past 51
-  people, and no citizen ever left Full tier. Two of five runs went extinct:
-  one through disease and hunger, and one through a single raid.
+  people, and no citizen ever left Full tier. Three of five runs went
+  extinct: two through disease and hunger (one of them in the Information
+  age), and one through a single raid.
 - **Long runs are expensive, and they get more expensive as they go.** A game
   year cost 4 to 5 minutes for a small, quiet settlement. It cost 30 to 45
-  minutes for one of 35 to 50 people after a few years. Neither 40-year target
-  for a surviving seed fitted in 3 hours.
+  minutes for one of 35 to 50 people after a few years. Neither surviving seed
+  got near 40 years in 3 hours.
 
 ## 1. Method
 
@@ -70,8 +72,8 @@ dotnet run -c Release --project tools/bench/SimWorld.Bench -- \
 | probe | 20 | 99 | solo | off | 1 y, 3 y | 1 y, 3 y | done |
 | A | 20 | 99 | solo | off | 40 y | 16 y | extinction |
 | B | 20 | 2024 | solo | off | 40 y | 9 y | 3 h wall-clock cap |
-| C | 40 | 201 | solo | off | 40 y | 5 y | 3 h wall-clock cap |
-| D | 20 | 99 | solo | on | 40 y | TODO | TODO |
+| C | 40 | 201 | solo | off | 40 y | 5 y | 3 h 15 min wall-clock cap, in year 6 |
+| D | 20 | 99 | solo | on | 40 y | 18 y | extinction |
 | E | 20 | 99 | populated | on | 40 y | 4 y | extinction |
 
 "Threats off" is Medium with big and intro threats disallowed, the same
@@ -103,8 +105,8 @@ its spine finished.
 | Classical | d135 (y2.2) | d98 (y1.6) | d121 (y2.0) | d133 (y2.2) | d139 (y2.3) |
 | Medieval | d213 (y3.5) | d150 (y2.5) | d183 (y3.0) | d206 (y3.4) | extinct y4 at 3/13 spine |
 | Industrial | d573 (y9.6) | d322 (y5.4) | not by y5 (12/16 spine) | d549 (y9.2) | |
-| Information | extinct y16 at 17/21 spine | d516 (y8.6) | | TODO | |
-| Exotic | | not by y9 (0/7 spine) | | | |
+| Information | extinct y16 at 17/21 spine | d516 (y8.6) | | d954 (y15.9) | |
+| Exotic | | not by y9 (0/7 spine) | | extinct y18 at 0/7 spine | |
 
 Days spent in each era:
 
@@ -114,7 +116,7 @@ Days spent in each era:
 | Bronze | 59 | 42 | 51 | 55 |
 | Classical | 78 | 52 | 62 | 73 |
 | Medieval | 360 | 172 | > 117 | 343 |
-| Industrial | > 387 | 194 | | TODO |
+| Industrial | > 387 | 194 | | 405 |
 
 Research finished per game year, run A:
 
@@ -219,7 +221,7 @@ Kinds of building standing, against the era:
 | A | 2 | Bronze | 13 | Industrial |
 | B | 2 | Classical | 12 | Information |
 | C | 2 | Bronze | 12 | Medieval |
-| D | 2 | Bronze | 13 | TODO |
+| D | 2 | Bronze | 13, falling to 12 as the empty settlement decayed | Information |
 | E | 2 | Bronze | 12, then 5 after the raid | Classical |
 
 **Does what gets built change with the era? No.** In every run the last new
@@ -255,7 +257,7 @@ grow because stock grows, not because the era changes:
 | A | 20 | 25 (y1) | 0 (y16) | 35 | 9 | 2 | 0 | extinct in Industrial |
 | B | 20 | 39 (y9) | 39 | 11 | 1 | 5 | 0 | growing slowly at cutoff |
 | C | 40 | 51 (y5) | 51 | 5 | 1 | 5 | 0 | growing slowly at cutoff |
-| D | 20 | 22 (y1) | TODO | TODO | TODO | TODO | 0 | TODO |
+| D | 20 | 22 (y1) | 0 (y18) | 24 | 15 | 8 | 0 | extinct in Information |
 | E | 20 | 20 | 0 (y4) | 11 | 3 | 14 | 0 | extinct in Classical |
 
 No citizen in any run ever ran at Interval or Statistical tier, because no
@@ -284,7 +286,10 @@ Disease is the main cause in every threat-free run.
 **People starve beside full stores.** In run A, four people starved in years 5
 and 6 while the store ledger held about 5,000 nutrition and the map held 90 to
 100. In run E the last three died, of starvation and injury, with 6,040
-nutrition in the ledger. Run D shows the same thing. These runs do not show
+nutrition in the ledger. Run D shows the same thing: three people starved by
+year 5 with 6,106 nutrition banked. In runs A and D the ledger then emptied
+within about a year (D: 1,184 at year 12, 6 at year 13), and the rest starved
+outright. These runs do not show
 why ledger food did not reach the people who needed it. The ledger-to-map
 crossing exists (`SettlementStockInitiative`), so this is a measured symptom
 whose cause is not yet known.
@@ -329,7 +334,7 @@ then falls almost silent:
 | A | 17 | 12 | 15 |
 | B | 17 | 8 | 8 |
 | C | 18 | 5 | 4 |
-| D | 18 | TODO | TODO |
+| D | 18 | 14 | 17 |
 | E | 23 | 7 | 3 |
 
 The worst days in these runs left almost nothing behind:
@@ -338,8 +343,10 @@ The worst days in these runs left almost nothing behind:
   disease had already been seen.
 - In run E, one raid between days 120 and 180 killed 10 of 15 people. The only moment
   from it is "Raiders from Steel reach have given up and are leaving."
-- The extinction of runs A and E is not a moment. The last moment in run E is
-  a death on day 154; the settlement then died out, recorded as nothing.
+- None of the three extinctions is a moment. The last moment in run E is a
+  death on day 154, and in run D a death on day 888, about three years before
+  the last person died in the Information age. Each settlement died out,
+  recorded as nothing.
 
 ### 5.3 Threats
 
@@ -348,12 +355,15 @@ year 6, and fell as the population did. They are driven by wealth, and wealth
 here is mostly the store ledger, which is what the storage huts hold.
 
 With threats on in a solo world (run D), points rose from 147 to 614 by year
-1 and about 3,000 by year 10. Wealth reached 92,000. No raid ever came,
-because no rival existed. The threats that did fire were manhunters (day 4),
+1 and about 3,000 by year 10. Wealth reached 99,000. In 18 years no raid
+came, because no rival existed. The threats that did fire were manhunters (day 4),
 disease, weather and toxic fallout. Run D's injury deaths (8 by year 8) are
-about four times run A's (2), and its population ran 13 to 15 against run A's
-7 to 9 at the same years. The difference came mostly from the disease draws
-landing differently, not from threats.
+about four times run A's (2), yet its population ran 13 to 15 against run
+A's 7 to 9 at the same years. The two runs diverge from day 4, so the gap
+cannot be put down to threats alone. Run D ended the way run A did: the bank
+emptied in year 13, and starvation (15 deaths in all) and disease (24) took
+the last eight people by year 18, two and a half years after Information
+turned.
 
 With threats on in a populated world (run E), the first raid came on day 11
 and fled. Between days 120 and 180, in Classical, with the points reading about 750,
@@ -379,8 +389,8 @@ processes throughout. The "mine" column counts my own concurrent runs.
 | probe 3 y | 4.4 | 4.5 | | | | 13.5 min | 1 |
 | A | 3.2 | 3.8 | 4.6 | 3.9 | 2.1 to 5.6 | 66 min for 16 y | 2 to 4 |
 | B | 6.7 | 10.2 | 16.6 | 42.6 | 35.4 | 179 min for 9 y | 2 to 4 |
-| C (band 40) | 14.0 | 24.0 | 44.8 | | | about 180 min for 5 y | 3 to 4 |
-| D | 4.5 | 13.5 | 9.2 | 8.5 | TODO | TODO | 3 to 4 |
+| C (band 40) | 14.0 | 24.0 | 44.8 | | over 70 in y6 | 195 min for 5 y, y6 unfinished | 3 to 4 |
+| D | 4.5 | 13.5 | 9.2 | 8.5 | 2.6 to 11.5 | 151 min for 18 y | 2 to 4 |
 | E | 10.1 | 15.8 | | | | 36 min for 4 y | 4 |
 
 What the table supports:
@@ -393,11 +403,13 @@ What the table supports:
 - Cost also rises with time at a fixed population. Run B went from 6.7 to
   42.6 minutes a year while its population grew by half. More concurrent load
   during that window explains part of the rise but not all of it.
-- A settlement does not get cheap when it empties. Run A cost 5.5 minutes a
-  year with five people, against 3.2 with 25 in year 1, while 661 storage
-  huts stood on its map. One more of my runs was going by then, so part of
-  that is load. Per-year cost tracks what has piled up on the
-  map as well as who lives there.
+- A settlement does not get cheap just because it empties. Run A cost 5.5
+  minutes a year with five people, against 3.2 with 25 in year 1, while 661
+  storage huts stood on its map. One more of my runs was going by then, so
+  part of that is load. Run D did get cheaper at the very end, 2.6 to 4.6
+  minutes a year with two people or none, as its huts decayed from 675 to
+  306. Per-year cost tracks what has piled up on the map as well as who
+  lives there.
 
 At these rates a settlement that collapses, like run A, fits 16 years into
 about an hour. One that survives, like run B at 35 to 45 minutes a year by
@@ -457,9 +469,9 @@ turned (§5.1).
    answer.** Population peaks at 25 to 51, and disease is the main killer in
    every threat-free run. Herbal remedies, germ theory, antiseptics,
    vaccination and hospitals were all researched in run A before its people
-   died of infection. Two of five runs went extinct: run A in Industrial,
-   run E in Classical. People starve beside thousands of units of banked
-   food (§4).
+   died of infection. Three of five runs went extinct: run A in Industrial,
+   run D in Information, run E in Classical. People starve beside thousands
+   of units of banked food (§4).
 
 5. **Threat scales with the ladder and with hoarded stock. Defence scales with
    neither.** Threat points come mostly from the store ledger, which the
@@ -470,8 +482,8 @@ turned (§5.1).
    spend them.
 
 Two smaller findings belong beside these. The chronicle does not record its
-own worst days: a raid that killed two thirds of the people, and an
-extinction, left almost nothing (§5.2). And the bench cannot afford the arc:
+own worst days: a raid that killed two thirds of the people, and three
+extinctions, left almost nothing (§5.2). And the bench cannot afford the arc:
 cost grows with population and with what piles up on the map, so 30 to 50
 years of a surviving settlement takes more than a day (§6).
 
