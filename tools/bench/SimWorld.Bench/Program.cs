@@ -93,6 +93,9 @@ namespace SimWorld.Bench
                 case "metal":
                     MetalLadderSuite.Run(opt);
                     break;
+                case "arc":
+                    ArcSuite.Run(opt);
+                    break;
                 case "layout":
                     for (int play = 0; play < opt.LayoutPlays; play++) LayoutSuite.Run(opt);
                     break;
@@ -197,6 +200,9 @@ namespace SimWorld.Bench
                         break;
                     case "--band":
                         opt.Band = ParseInt(Next(args, ref i), "--band");
+                        break;
+                    case "--arc-every":
+                        opt.ArcEvery = ParseInt(Next(args, ref i), "--arc-every");
                         break;
                     case "--threats":
                         opt.Threats = ParseBool(Next(args, ref i), "--threats");
@@ -340,6 +346,7 @@ OPTIONS
   --threats <true|false>  for --suite storyteller: false runs the same world with big and intro threats
                           disallowed and everything else as Medium, the baseline a threat reading is read
                           against (default true).
+  --arc-every <N>         for --suite arc: sample interval in days (default 60, one game year).
   --layout-seed <s>       for --suite layout and band: new-game seed string (default simworld-host, the Unity host's).
   --layout-ticks <N>      for --suite layout and mining: ticks to run before reporting (default 60000).
   --layout-every <N>      for --suite layout: also print a brief line every N ticks (default 0, never).
@@ -392,6 +399,10 @@ SUITES
                 often anything happened, the longest quiet stretch, and --suite probe's own ""was it
                 interesting"" columns beside them. It changes no tuning constant and is not a target. Not in
                 `all`: slow, and run on purpose.
+  arc           OUTCOMES, not time: one watched, played settlement (as --suite storyteller sets it up) ticked
+                for --days and sampled every --arc-every days: era turns, research finished, population and
+                full-pawn count, buildings by def and by the era of their research gate, deaths by cause, food,
+                moments, threat points and wall clock per interval. Not in `all`: slow, and run on purpose.
   all           Runs every suite in sequence (scaling first; attribution's N is derived from its result).
 
 EXAMPLES
