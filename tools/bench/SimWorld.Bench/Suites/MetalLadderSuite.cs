@@ -186,6 +186,16 @@ namespace SimWorld.Bench.Suites
             List<Pawn> citizens = OutfittingInitiative.CitizensOn(map);
             int smiths = citizens.Count(c => c.workSettings != null && c.workSettings.WorkIsActive(WorkTypeDefOf.Smithing));
             Console.WriteLine("- citizens " + citizens.Count + ", with smithing active " + smiths);
+            var veins = new SortedDictionary<string, int[]>(StringComparer.Ordinal);
+            foreach (Thing rock in map.listerThings.ThingsInGroup(ThingRequestGroup.Building))
+            {
+                if (!rock.def.mineable || rock.def.mineableThing == null || !rock.Spawned) continue;
+                string key = rock.def.mineableThing.defName;
+                if (!veins.TryGetValue(key, out int[]? n)) veins[key] = n = new int[2];
+                n[0]++;
+                if (SimWorld.AI.WorkGiver_Miner.MayBeAccessible(rock.Position, map)) n[1]++;
+            }
+            Console.WriteLine("- vein cells (all/accessible): " + string.Join(", ", veins.Select(kv => kv.Key + " " + kv.Value[0] + "/" + kv.Value[1])));
             foreach (string b in Benches)
             {
                 foreach (Thing bench in map.listerThings.ThingsOfDef(DefDatabase<ThingDef>.GetNamed(b)))

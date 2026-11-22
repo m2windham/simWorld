@@ -329,6 +329,33 @@ namespace SimWorld.Tests.Crafting
         }
 
         [Fact]
+        public void Ore_and_metal_leave_the_granary_for_the_forge_once_a_furnace_stock_pile_takes_them()
+        {
+            Know("StoneTools", "Copper", "Bronze", "BronzeWeapons");
+            CoreMap map = NewMap();
+            Bench(map, "Smithy", 20, 20);
+            Bench(map, "SmeltingFurnace", 24, 20);
+            Spawn(map, "MineableCopper", 33, 33);
+            var granary = new Zone_Stockpile { label = global::SimWorld.Economy.SettlementStockTuning.GranaryLabel };
+            granary.filter.SetFromPreset(StorageSettingsPreset.DefaultStockpile);
+            map.zoneManager.RegisterZone(granary);
+            map.zoneManager.AddCell(granary, new IntVec3(5, 0, 35));
+            Thing ore = Spawn(map, "CopperOre", 5, 35, 30);
+            Citizen(map, 2, 2, "MeleeWeapon_Knife", "Flint");
+            Assert.True(HaulAIUtility.IsInValidStorage(ore));
+
+            OutfittingInitiative.Run(map);
+            SmeltingInitiative.Run(map);
+
+            Assert.False(granary.filter.Allows(Def("CopperOre")));
+            Assert.False(granary.filter.Allows(Def("Copper")));
+            // Bronze only leaves once a pile that takes it stands (the smithy's): never into a gap.
+            Assert.True(granary.filter.Allows(Def("Bronze")));
+            Assert.False(HaulAIUtility.IsInValidStorage(ore)); // so a hauler takes it to the furnace's pile
+            Assert.True(granary.filter.Allows(Def("WoodLog")));
+        }
+
+        [Fact]
         public void Copper_already_on_hand_is_not_smelted_again()
         {
             Know("StoneTools", "Copper", "Bronze", "BronzeWeapons");

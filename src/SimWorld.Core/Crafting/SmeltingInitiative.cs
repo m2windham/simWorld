@@ -72,7 +72,66 @@ namespace SimWorld.Crafting
                 SetBill(bench.GetComp<CompBillGiver>()!, step.Key, step.Value);
             }
             DeleteOtherBills(map, plan);
+            KeepMetalworkAtTheForge(map);
             MaterialLadder.UpgradeBlueprints(map);
+        }
+
+        /// <summary>
+        /// Takes ore and metal out of the granary's filter once a bench stock pile beside a furnace or the smithy
+        /// takes them, so haulers carry them there (a stack in storage that allows it is never moved again:
+        /// <c>HaulAIUtility.IsInValidStorage</c>). The bill's ingredient reach is a port-wide 12 cells
+        /// (<see cref="WorkGiver_DoBill.IngredientSearchRadius"/>; RimWorld's default is 999), and the granary sits
+        /// wherever the compound put it: measured on seed 105, 24 iron ore lay in the granary 21 cells from the
+        /// bloomery for sixty days while its bill stood. A runtime change to the zone, which Scribes with it; no
+        /// edit to the stock initiative that owns the granary. Returns how many defs were withdrawn this pass.
+        /// </summary>
+        public static int KeepMetalworkAtTheForge(Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            Zone_Stockpile? granary = Economy.SettlementStockInitiative.GranaryOf(map);
+            if (granary == null) return 0;
+
+            var benchStock = new List<Zone_Stockpile>();
+            IReadOnlyList<Zone> zones = map.zoneManager.AllZones;
+            for (int z = 0; z < zones.Count; z++)
+            {
+                if (zones[z] is Zone_Stockpile pile && pile.CellCount > 0 && !ReferenceEquals(pile, granary)
+                    && pile.label != null && pile.label.EndsWith(" stock", StringComparison.Ordinal))
+                {
+                    benchStock.Add(pile);
+                }
+            }
+            if (benchStock.Count == 0) return 0;
+
+            int withdrawn = 0;
+            IReadOnlyList<RecipeDef> recipes = DefDatabase<RecipeDef>.AllDefsListForReading;
+            for (int r = 0; r < recipes.Count; r++)
+            {
+                if (!MaterialLadder.IsMetallurgy(recipes[r])) continue;
+                foreach (IngredientCount ingredient in recipes[r].ingredients!)
+                {
+                    if (Guild.FixedDefOf(ingredient) is ThingDef input) withdrawn += Withdraw(granary, benchStock, input);
+                }
+                foreach (ThingDefCountClass product in recipes[r].products!)
+                {
+                    withdrawn += Withdraw(granary, benchStock, product.thingDef);
+                }
+            }
+            return withdrawn;
+        }
+
+        private static int Withdraw(Zone_Stockpile granary, List<Zone_Stockpile> benchStock, ThingDef def)
+        {
+            if (!granary.filter.Allows(def)) return 0;
+            for (int i = 0; i < benchStock.Count; i++)
+            {
+                if (benchStock[i].filter.Allows(def))
+                {
+                    granary.filter.SetAllow(def, false);
+                    return 1;
+                }
+            }
+            return 0;
         }
 
         /// <summary>
