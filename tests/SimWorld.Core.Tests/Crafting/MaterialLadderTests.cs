@@ -548,6 +548,26 @@ namespace SimWorld.Tests.Crafting
             Assert.Equal(new[] { "Make_Steel_Cementation", "Smelt_Iron" }, MetallurgyBills(map).OrderBy(s => s, StringComparer.Ordinal));
         }
 
+        [Fact]
+        public void A_furnace_works_the_smelting_bill_while_the_cementation_bill_waits_for_iron()
+        {
+            Know("StoneTools", "Copper", "Bronze", "BronzeWeapons", "Iron", "IronWeapons", "Steel");
+            CoreMap map = NewMap();
+            Bench(map, "Smithy", 20, 20);
+            ThingWithComps bloomery = Bench(map, "Bloomery", 22, 20);
+            Spawn(map, "IronOre", 23, 22, 75);
+            Spawn(map, "IronOre", 24, 22, 75);
+            Pawn smith = Citizen(map, 2, 2, "MeleeWeapon_Spear", "Iron", "Smith");
+            for (int i = 0; i < 2; i++) Citizen(map, 3 + i, 2, "MeleeWeapon_Spear", "Iron", "Spearman" + i);
+
+            OutfittingInitiative.Run(map);
+            SmeltingInitiative.Run(map);
+
+            BillStack stack = bloomery.GetComp<CompBillGiver>()!.BillStack;
+            Assert.Equal(new[] { "Smelt_Iron", "Make_Steel_Cementation" }, stack.Bills.Select(bill => bill.recipe.defName));
+            Assert.Equal("Smelt_Iron", WorkGiver_DoBill.FindBill(smith, bloomery.GetComp<CompBillGiver>()!)?.recipe.defName);
+        }
+
         // ---- save ----
 
         [Fact]

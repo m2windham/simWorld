@@ -72,6 +72,7 @@ namespace SimWorld.Crafting
                 SetBill(bench.GetComp<CompBillGiver>()!, step.Key, step.Value);
             }
             DeleteOtherBills(map, plan);
+            PutStockedBillsFirst(map);
             KeepMetalworkAtTheForge(map);
             MaterialLadder.UpgradeBlueprints(map);
         }
@@ -357,6 +358,43 @@ namespace SimWorld.Crafting
                     comp.BillStack.Delete(bill);
                 }
             }
+        }
+
+        /// <summary>
+        /// Moves each furnace's metallurgy bills whose inputs are all on the map above those still waiting on
+        /// theirs. <c>WorkGiver_DoBill.FindBill</c> takes the first bill a pawn may start and gives up if its
+        /// ingredients are missing, where RimWorld's <c>TryStartNewDoBillJob</c> goes on to the next bill. So a
+        /// cementation bill with no iron above the smelting bill that would make the iron stalls the chain
+        /// (measured: seed 31337, 1,253 iron ore unsmelted beside the bloomery from day 150). Reordering each
+        /// pass keeps the fix inside this lane; the shared work giver is left as it is.
+        /// </summary>
+        internal static void PutStockedBillsFirst(Map.Map map)
+        {
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            for (int b = 0; b < buildings.Count; b++)
+            {
+                if (!(buildings[b] is ThingWithComps bench) || bench.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;
+                BillStack stack = comp.BillStack;
+                int top = 0;
+                for (int i = 0; i < stack.Count; i++)
+                {
+                    Bill bill = stack[i];
+                    if (!MaterialLadder.IsMetallurgy(bill.recipe) || !InputsOnMap(map, bill.recipe)) continue;
+                    for (int moves = i - top; moves > 0; moves--) stack.Reorder(bill, -1);
+                    top++;
+                }
+            }
+        }
+
+        private static bool InputsOnMap(Map.Map map, RecipeDef recipe)
+        {
+            if (recipe.ingredients == null) return false;
+            foreach (IngredientCount ingredient in recipe.ingredients)
+            {
+                ThingDef? input = Guild.FixedDefOf(ingredient);
+                if (input == null || MaterialLadder.OnMap(map, input) < (int)Math.Ceiling(ingredient.count)) return false;
+            }
+            return true;
         }
 
         /// <summary>The built bench a recipe's bill belongs on, without placing anything.</summary>
