@@ -218,7 +218,9 @@ namespace SimWorld.Bench.Suites
             {
                 foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial))
                 {
-                    Bump(s.Built, t.def.defName);
+                    // A ruin's building (no faction) is not the settlement's: nobody repairs or rebuilds it,
+                    // so counted with the settlement's own it read as the settlement's walls eroding.
+                    Bump(s.Built, home.IsOwnStructure(t) ? t.def.defName : t.def.defName + " (ruin)");
                 }
                 foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint))
                 {

@@ -296,6 +296,37 @@ namespace SimWorld.Tests.Building
                 t => Assert.All(t.OccupiedRect().Cells, c => Assert.True(map.areaManager.Home[c], t.def.defName + " at " + c + " is outside the home area")));
         }
 
+        [Fact]
+        public void A_ring_wall_destroyed_by_anything_is_laid_out_again_where_it_stood()
+        {
+            // docs/research/era-arc.md read eroding walls off every artificial building on the map, ruins
+            // included. The settlement's own ring is what it keeps: whatever brings one of its walls down, not
+            // only an earthquake (which lays its own rebuild blueprint), the gap is planned over again.
+            int citizens = SettlementTuning.FoundingBandRange.min;
+            CoreMap map = NewMap(120, 120);
+            Settlement settlement = Band(citizens);
+            int pass = 0;
+            for (; pass < 200; pass++)
+            {
+                RunPasses(settlement, map, 1, pass);
+                if (map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).Count == 0) break;
+                BuildEverythingPlanned(map);
+            }
+            List<Thing> walls = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial)
+                .Where(t => StoneWallMaterials.IsWall(t.def)).ToList();
+            Assert.NotEmpty(walls);
+            int standing = walls.Count;
+            IntVec3 fallen = walls[0].Position;
+
+            walls[0].Destroy(DestroyMode.KillFinalize);
+            Assert.Equal(standing - 1, Sites(map, StoneWallMaterials.IsWall).Count);
+
+            RunPasses(settlement, map, 1, pass + 1);
+
+            Assert.Equal(standing, Sites(map, StoneWallMaterials.IsWall).Count);
+            Assert.Contains(fallen, CellsOf(Sites(map, StoneWallMaterials.IsWall)));
+        }
+
         // ---- which way things are turned ----
 
         /// <summary>Stored wood enough for the settlement to want <paramref name="huts"/> storage huts.</summary>
