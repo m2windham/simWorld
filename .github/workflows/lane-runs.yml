@@ -19,8 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: heat, sha: 56b9b53435b3f441a5dc4d3d33665cd36bef3d06 }
-          - { name: raidletter, sha: fdf7c71ed5d1a0d8c74e318a1fc2bf3695519fae }
+          - { name: merged, sha: 991c53b0dc6c2de99952ab7cac695ce049284c09 }
+          - { name: unlocks2, sha: 57765637b926d8badb50e92b07a99a0cc61d26d8 }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -45,9 +45,9 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: shellsonly, sha: 3f8935fafe9a55a6e4fc767392ebc91f5ad55189 }
-          - { name: heat, sha: 56b9b53435b3f441a5dc4d3d33665cd36bef3d06 }
-        threats: ["false"]
+          - { name: merged, sha: 991c53b0dc6c2de99952ab7cac695ce049284c09 }
+          - { name: unlocks2, sha: 57765637b926d8badb50e92b07a99a0cc61d26d8 }
+        threats: ["false", "true"]
         shard:
           - { n: 1, runs: "20:105 20:99 20:777 20:2024 20:12345 20:31337 20:101" }
           - { n: 2, runs: "20:102 20:103 20:104 20:106 20:107 20:108 20:109 20:110" }
@@ -79,25 +79,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ref:
-          - { name: heat, sha: 56b9b53435b3f441a5dc4d3d33665cd36bef3d06 }
-        threats: ["false"]
-        pop: ["20:99", "40:201"]
-    name: arc ${{ matrix.ref.name }} ${{ matrix.pop }}
+        run:
+          - { name: base-40-201-off, sha: 258626bd23d295bee358eba30717fc402cfa6431, threats: "false", pop: "40:201" }
+          - { name: merged-40-201-off, sha: 991c53b0dc6c2de99952ab7cac695ce049284c09, threats: "false", pop: "40:201" }
+          - { name: merged-20-99-on, sha: 991c53b0dc6c2de99952ab7cac695ce049284c09, threats: "true", pop: "20:99" }
+          - { name: unlocks2-20-99-on, sha: 57765637b926d8badb50e92b07a99a0cc61d26d8, threats: "true", pop: "20:99" }
+          - { name: unlocks2-20-99-off, sha: 57765637b926d8badb50e92b07a99a0cc61d26d8, threats: "false", pop: "20:99" }
+    name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
     steps:
       - uses: actions/checkout@v4
-        with: { ref: "${{ matrix.ref.sha }}" }
+        with: { ref: "${{ matrix.run.sha }}" }
       - uses: actions/setup-dotnet@v4
         with: { global-json-file: global.json }
       - run: dotnet build tools/bench/SimWorld.Bench -c Release
       - name: Arc, 10 years
         env:
-          POP: ${{ matrix.pop }}
+          POP: ${{ matrix.run.pop }}
         run: |
           set -o pipefail
-          timeout 300m dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite arc --days 600 --arc-every 30 --solo false --threats ${{ matrix.threats }} --band "${POP%%:*}" --seed "${POP##*:}" 2>&1 | tee arc.txt || echo "arc ended with $?"
+          timeout 300m dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite arc --days 600 --arc-every 30 --solo false --threats ${{ matrix.run.threats }} --band "${POP%%:*}" --seed "${POP##*:}" 2>&1 | tee arc.txt || echo "arc ended with $?"
       - uses: actions/upload-artifact@v4
         if: always()
-        with: { name: "arc-${{ matrix.ref.name }}-${{ strategy.job-index }}", path: arc.txt }
+        with: { name: "arc-${{ matrix.run.name }}", path: arc.txt }
