@@ -32,17 +32,22 @@
     researchCostFactor multiplies every project in the era, on top of RimWorld's tech-level factor. Derived,
     not tuned per seed: the time a settlement spends with era X current is the time it takes to research the
     era after it (cheapest-first within the frontier window sweeps nearly all of it), so
-      factor(X+1) = years(X) x 60 x scholars(X) x 350 / (authored cost of X+1 x tech factor)
-    where 350 is the research points one scholar earned per day in the played runs (era-arc.md runs A-D:
-    about 147,000 effective points to the Medieval turn by day 150-213 with two scholars), and the tech factor
-    is RimWorld's 1.5x per tech level above the researcher's:
-      SticksAndStones + Agrarian   16,600 x 1.0, 2 y x 1 scholar  -> 2.5 (both)
-      Bronze                       21,110 x 1.5, 3 y x 1 scholar  -> 2.0
-      Classical                    38,060 x 1.0, 4 y x 1 scholar  -> 2.2
-      Medieval                     60,930 x 1.0, 5 y x 1 scholar  -> 1.7
-      Industrial                  120,210 x 1.5, 6 y x 2 scholars -> 1.4
-      Information                 161,370 x 1.5, 7 y x 3 scholars -> 1.8
-      Exotic                      163,680 x 2.0, 8 y x 4 scholars -> 2.0
+      factor(X+1) = years(X) x 60 x points per day at scholars(X) / (authored cost of X+1 x tech factor)
+    with the tech factor RimWorld's 1.5x per tech level above the researcher's. Points per day are measured,
+    not modelled. Research is the lowest-priority work (WorkTypeDef naturalPriority 300, as in RimWorld), so a
+    bench is staffed by whoever has nothing more pressing:
+      one bench:   about 600 points a day once its researcher has learned (era-pacing probe, band 20 seed 99,
+                   with era-survival's 4,000-tick sittings merged: 358, 520, then 660-680 a day by month)
+      two benches: about 390 a bench (docs/research/era-arc.md runs A-D: some 147,000 effective points to the
+                   Medieval turn by day 150-213)
+      three or more: assumed 390 a bench as well. Not measured: no played run has had three benches.
+      SticksAndStones + Agrarian   16,600 x 1.0, 2 y,   600/day -> 4.3 (both)
+      Bronze                       21,110 x 1.5, 3 y,   600/day -> 3.4
+      Classical                    38,060 x 1.0, 4 y,   600/day -> 3.8
+      Medieval                     60,930 x 1.0, 5 y,   600/day -> 3.0
+      Industrial                  120,210 x 1.5, 6 y,   780/day -> 1.55
+      Information                 161,370 x 1.5, 7 y, 1,170/day -> 2.0
+      Exotic                      163,680 x 2.0, 8 y, 1,560/day -> 2.3
     Generated endless projects carry the last era's factor (Research.EraPacing.CostFactorFor). EraPacingTests
     recomputes the nominal years from the loaded content and pins them to the intent, not these literals.
   -->
@@ -54,7 +59,7 @@
     <order>0</order>
     <techLevel>Neolithic</techLevel>
     <threatPointsFactor>1.0</threatPointsFactor>
-    <researchCostFactor>2.5</researchCostFactor>
+    <researchCostFactor>4.3</researchCostFactor>
     <citizensPerScholar>25</citizensPerScholar>
   </EraDef>
 
@@ -65,7 +70,7 @@
     <order>1</order>
     <techLevel>Neolithic</techLevel>
     <threatPointsFactor>1.15</threatPointsFactor>
-    <researchCostFactor>2.5</researchCostFactor>
+    <researchCostFactor>4.3</researchCostFactor>
     <citizensPerScholar>25</citizensPerScholar>
   </EraDef>
 
@@ -76,7 +81,7 @@
     <order>2</order>
     <techLevel>Medieval</techLevel>
     <threatPointsFactor>1.35</threatPointsFactor>
-    <researchCostFactor>2.0</researchCostFactor>
+    <researchCostFactor>3.4</researchCostFactor>
     <citizensPerScholar>20</citizensPerScholar>
   </EraDef>
 
@@ -87,7 +92,7 @@
     <order>3</order>
     <techLevel>Medieval</techLevel>
     <threatPointsFactor>1.6</threatPointsFactor>
-    <researchCostFactor>2.2</researchCostFactor>
+    <researchCostFactor>3.8</researchCostFactor>
     <citizensPerScholar>18</citizensPerScholar>
   </EraDef>
 
@@ -98,7 +103,7 @@
     <order>4</order>
     <techLevel>Medieval</techLevel>
     <threatPointsFactor>1.9</threatPointsFactor>
-    <researchCostFactor>1.7</researchCostFactor>
+    <researchCostFactor>3.0</researchCostFactor>
     <citizensPerScholar>12</citizensPerScholar>
   </EraDef>
 
@@ -109,7 +114,7 @@
     <order>5</order>
     <techLevel>Industrial</techLevel>
     <threatPointsFactor>2.3</threatPointsFactor>
-    <researchCostFactor>1.4</researchCostFactor>
+    <researchCostFactor>1.55</researchCostFactor>
     <citizensPerScholar>8</citizensPerScholar>
   </EraDef>
 
@@ -120,7 +125,7 @@
     <order>6</order>
     <techLevel>Spacer</techLevel>
     <threatPointsFactor>2.8</threatPointsFactor>
-    <researchCostFactor>1.8</researchCostFactor>
+    <researchCostFactor>2.0</researchCostFactor>
     <citizensPerScholar>6</citizensPerScholar>
   </EraDef>
 
@@ -131,7 +136,7 @@
     <order>7</order>
     <techLevel>Archotech</techLevel>
     <threatPointsFactor>3.4</threatPointsFactor>
-    <researchCostFactor>2.0</researchCostFactor>
+    <researchCostFactor>2.3</researchCostFactor>
     <citizensPerScholar>5</citizensPerScholar>
   </EraDef>
 

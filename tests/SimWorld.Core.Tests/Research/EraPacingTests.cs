@@ -35,9 +35,10 @@ namespace SimWorld.Tests.Research
         /// <summary>The settlement the costs were derived for (<c>Eras.xml</c>): a founding band grown a little.</summary>
         private const int NominalCitizens = 25;
 
-        /// <summary>Points one scholar earned per day in the played runs (<c>docs/research/era-arc.md</c> runs A-D,
-        /// the derivation in <c>Eras.xml</c>).</summary>
-        private const float PointsPerScholarDay = 350f;
+        /// <summary>Research points a settlement earns per day with <paramref name="benches"/> benches, as measured
+        /// (the derivation in <c>Eras.xml</c>): about 600 with one, about 390 a bench with two, and 390 a bench
+        /// assumed beyond that.</summary>
+        private static float PointsPerDay(int benches) => benches == 1 ? 600f : 390f * benches;
 
         private const float DaysPerYear = 60f;
 
@@ -137,7 +138,7 @@ namespace SimWorld.Tests.Research
                 float cost = EffectiveCost(next, current.techLevel);
                 if (i == 0) cost += EffectiveCost(current, current.techLevel);
                 int scholars = WorksInitiativeTuning.ResearchBenchesWanted(NominalCitizens, current);
-                float years = cost / (scholars * PointsPerScholarDay) / DaysPerYear;
+                float years = cost / PointsPerDay(scholars) / DaysPerYear;
                 total += years;
 
                 Assert.True(years >= IntendedYears[i] * 0.9f && years <= IntendedYears[i] * 1.1f,
@@ -174,7 +175,8 @@ namespace SimWorld.Tests.Research
                 Assert.NotNull(chosen);
                 if (chosen!.era == null) break; // the ladder is done; the endless tail has opened
                 Assert.True(seen.Add(chosen), chosen.defName + " was handed out twice.");
-                Assert.True(frontier != null && chosen.era.order <= frontier.order,
+                // With no frontier the ladder is complete and its leftover leaves are fair game.
+                Assert.True(frontier == null || chosen.era.order <= frontier.order,
                     $"Step {step}: chose {chosen.defName} ({chosen.era.defName}) while working toward {frontier?.defName}.");
                 manager.SetProjectFinishedForSetup(chosen);
             }
@@ -185,20 +187,24 @@ namespace SimWorld.Tests.Research
         [Fact]
         public void An_unfinished_era_holds_back_a_cheaper_project_from_the_era_after_it()
         {
-            // The drift run B showed: Information's spine unfinished, an Exotic project on the shelf.
+            // The drift run B showed (era-arc.md §2.1): Information's spine unfinished, a cheaper Exotic project
+            // on the shelf, and cheapest-first took the Exotic one. Found from content rather than named: an
+            // Information spine project which, left as the only thing unfinished up to Information, still lets
+            // an Exotic project cheaper than it be started.
             EraDef information = DefDatabase<EraDef>.GetNamed("Information");
             EraDef exotic = DefDatabase<EraDef>.GetNamed("Exotic");
 
             ResearchProjectDef? held = null;
-            foreach (ResearchProjectDef spine in information.SpineProjects)
+            ResearchProjectDef? cheaperAhead = null;
+            foreach (ResearchProjectDef spine in information.SpineProjects.OrderByDescending(p => p.baseCost))
             {
                 Find.ResearchManager = new ResearchManager();
-                ResearchManager fresh = Find.ResearchManager;
                 foreach (ResearchProjectDef p in DefDatabase<ResearchProjectDef>.AllDefsListForReading)
                 {
-                    if (p.era != null && p.era.order <= information.order && p != spine) fresh.SetProjectFinishedForSetup(p);
+                    if (p.era != null && p.era.order <= information.order && p != spine) Find.ResearchManager.SetProjectFinishedForSetup(p);
                 }
-                if (exotic.Projects.Any(p => p.CanStartNow))
+                cheaperAhead = exotic.Projects.FirstOrDefault(p => p.CanStartNow && p.baseCost < spine.baseCost);
+                if (cheaperAhead != null)
                 {
                     held = spine;
                     break;
