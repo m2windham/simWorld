@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Smithing the ladder's blades (system: crafting.materialladder) at the smithy, beside the knife in
+    Recipes_Crafting.xml. Its own file, per CLAUDE.md. RimWorld makes both through a recipeMaker at its
+    FueledSmithy with a Crafting skill requirement (spear 4, longsword 5, Core MeleeNeolithic/MeleeMedieval.xml,
+    read); this port's knife recipe carries none, and these follow it rather than gate a settlement's arms on
+    who happens to be a good smith. workAmount is the weapon's WorkToMake as scaled in
+    ThingDefs_Weapons/Weapons_MeleeLadder.xml; the ingredient count is its costStuffCount.
+
+    Metals only: which one a bill takes is Crafting.MaterialLadder's decision, written into the bill's own
+    ingredient filter — the best the settlement's era and stock allow.
+  -->
+
+  <RecipeDef>
+    <defName>Make_MeleeWeapon_Spear</defName>
+    <researchPrerequisites>
+      <li>BronzeWeapons</li>
+    </researchPrerequisites>
+    <label>smith a spear</label>
+    <jobString>Smithing a spear.</jobString>
+    <workAmount>3700</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Copper</li><li>Bronze</li><li>Iron</li><li>Steel</li></thingDefs></filter>
+        <count>25</count>
+      </li>
+    </ingredients>
+    <productHasIngredientStuff>true</productHasIngredientStuff>
+    <products><MeleeWeapon_Spear>1</MeleeWeapon_Spear></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_MeleeWeapon_LongSword</defName>
+    <researchPrerequisites>
+      <li>SteelWeapons</li>
+    </researchPrerequisites>
+    <label>smith a longsword</label>
+    <jobString>Smithing a longsword.</jobString>
+    <workAmount>5500</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Iron</li><li>Steel</li></thingDefs></filter>
+        <count>33</count>
+      </li>
+    </ingredients>
+    <productHasIngredientStuff>true</productHasIngredientStuff>
+    <products><MeleeWeapon_LongSword>1</MeleeWeapon_LongSword></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+</Defs>

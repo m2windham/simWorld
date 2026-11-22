@@ -727,3 +727,204 @@ founding provision (`SettlementLarderTuning.ProvisionNutritionPerMouth`, first
 harvest plus 4 days) did not cover the time to the first harvest on this map,
 and a settlement with no food at all sends nobody out to find any. Both
 belong to whoever owns the food economy. This lane did not change either.
+
+## 10. Era pacing (2026-11-22)
+
+Added by the `era-pacing` lane. Sections 1 to 8 measured and fixed nothing.
+This section records a fix and measures it against them. It serves all eight
+eras: each era should last long enough for the settlement to build in it and
+live in it, and research should come from the settlement.
+
+### 10.1 Intent and translation
+
+The intent: each era lasts long enough to be built in and lived in, and the
+ladder spans a long game. Tech-reachability used a 50-year horizon. The horizon
+decision in `docs/status.json` says years are not the currency, because a
+quiet century costs nothing to pass on the abstracted clock. That is what makes
+a long arc playable, not a reason against one.
+
+Translated: the years a settlement of 25 spends with each era current.
+
+| era current | intended years | intended turn of the next era |
+| --- | --- | --- |
+| SticksAndStones | 2 | Agrarian, day 120 (y2) |
+| Agrarian | 3 | Bronze, day 300 (y5) |
+| Bronze | 4 | Classical, day 540 (y9) |
+| Classical | 5 | Medieval, day 840 (y14) |
+| Medieval | 6 | Industrial, day 1,200 (y20) |
+| Industrial | 7 | Information, day 1,620 (y27) |
+| Information | 8 | Exotic, day 2,100 (y35) |
+
+Exotic is then lived in from year 35, with the endless tail behind it. The
+translation is in the research `translation` field of `docs/status.json`.
+Nothing is gated on wall-clock.
+
+### 10.2 What was built
+
+RimWorld paces a colony with three things: project cost, the tech-level cost
+factor, and how many researchers work benches. The player picks the project.
+Each lever was kept and shaped for the arc:
+
+- **Benches grow with the settlement and the era.** Each era has a
+  `citizensPerScholar`: 25 for SticksAndStones and Agrarian, then 20, 18, 12,
+  8, 6 and 5. The settlement wants one bench per that many citizens, rounded,
+  and at least one (`WorksInitiativeTuning.ResearchBenchesWanted`). This
+  replaces the flat 2 of §2.1. The ratios are not sourced, so the tests pin
+  only the trend: never fewer benches with more people or a later era, and
+  more for a band of 40 than for a band of 20 in every era.
+- **Each era carries a cost factor.** `EraDef.researchCostFactor` multiplies
+  every project in the era. It sits inside `ResearchProjectDef.CostFactor`,
+  beside RimWorld's tech-level factor, so it acts where RimWorld's own
+  multiplier acts and `baseCost` stays the authored relative price. Generated
+  endless projects take the last era's factor, so the tail does not open
+  cheaper than Exotic. `ResearchPerformed` is not touched; it already divides
+  by `CostFactor`.
+- **The agenda does not reach past the era it is working toward.**
+  `ResearchAgenda` is still cheapest-first. It no longer takes a project from
+  an era past the earliest incomplete one (`EraPacing.FrontierEra`). Run B's
+  drift into `Xenobotany` while Information was unfinished (§2.1) is now a
+  test case, found from content rather than by name.
+- **Cheapest means cheapest at the era's price.** The agenda ranks by
+  `baseCost` times the era factor, not `baseCost` alone. Ranked by base cost,
+  a 200-point Agrarian project (1,200 at its price) went ahead of the
+  300-point first-era projects that gate the first house (§10.4).
+- **The first era is the band's starting kit.** SticksAndStones keeps
+  RimWorld's price (factor 1.0): fire, cooking, `PitDwellings` and
+  `WindbreakShelters` gate the first stove and house, and the band should
+  have them in its first fortnight. The two intended years go to Agrarian.
+
+### 10.3 How the factors were derived
+
+While era X is current, the settlement researches the era after it. The
+frontier agenda sweeps nearly all of that era, leaves included. So:
+
+```text
+factor(X+1) = years(X) x 60 x points per day at benches(X)
+              / (authored cost of X+1 x tech factor)
+```
+
+Points per day were measured, not modelled, and the first calibration was
+wrong. It assumed 350 points a scholar-day, read from runs A to D (147,000
+effective points to the Medieval turn, by day 150 to 213, on two benches). A
+probe on this branch showed one bench earning 380 to 700 points a day,
+rising as its researcher learned. Research is the lowest-priority work type
+(`naturalPriority` 300, as in RimWorld), so a bench is staffed by spare hands.
+One bench is nearly always staffed; a second is staffed less. The 350 was a
+two-bench average.
+
+The rates used, measured with `era-survival`'s 4,000-tick research sittings
+merged in, since both land in integration:
+
+| benches | points a day | source |
+| --- | --- | --- |
+| 1 | about 600 | band 20 seed 99 probe: 358, 520, then 660 to 680 a day by month |
+| 2 | about 390 a bench | runs A to D; band 40 seed 201 probe: 350 to 380 a bench |
+| 3 or more | 390 a bench, assumed | not measured: no run has had three benches |
+
+| era | authored cost | tech factor | benches paying for it | factor |
+| --- | --- | --- | --- | --- |
+| SticksAndStones | 4,500 | 1.0 | the starting kit, not paced | 1.0 |
+| Agrarian | 12,100 | 1.0 | 1 | 6.0 |
+| Bronze | 21,110 | 1.5 | 1 | 3.4 |
+| Classical | 38,060 | 1.0 | 1 | 3.8 |
+| Medieval | 60,930 | 1.0 | 1 | 3.0 |
+| Industrial | 120,210 | 1.5 | 2 | 1.55 |
+| Information | 161,370 | 1.5 | 3 | 2.0 |
+| Exotic | 163,680 | 2.0 | 4 | 2.3 |
+
+`EraPacingTests` recomputes each nominal era length from the loaded content
+and pins it within 10% of the intent, so a project added to an era, or a
+ratio changed, fails a test rather than a ten-hour run.
+
+### 10.4 Before and after
+
+`--suite arc`, threats off, solo world, sampled every 30 days, capped at 10
+game years or 2.5 hours. "After" is `era-pacing` at `b7e4118`: this lane
+merged with integration at `6193a4d`, so `era-survival` is in it and
+`material-ladder` is not. "Before" is §2. Turn days are rebuilt from each
+project's finish day and the era spines, as in §1.1. Each one is a day after
+the run's own "Era reached" moment, the gap between a finish inside a day and
+the day it is sampled.
+
+| era turned | intended | A before (20/99) | after 20/99 | B before (20/2024) | after 20/2024 | C before (40/201) | after 40/201 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Agrarian | d120 | d41 | d133 | d30 | d161 | d38 | d116 |
+| Bronze | d300 | d76 | d279 | d56 | d337 | d70 | d231 |
+| Classical | d540 | d135 | d486 | d98 | d547 | d121 | d379 |
+| Medieval | d840 | d213 | not by d600 (6/13 spine) | d150 | not by d600 (2/13 spine) | d183 | not by d420 (2/13 spine) |
+| stopped | | | 10 y, 105 min | | 10 y, 2 h 11 min | | 7 y, 2.5 h cap |
+
+Days with each era current (SticksAndStones counted from day 0):
+
+| era | intended | before (A, B, C) | after 20/99 | after 20/2024 | after 40/201 |
+| --- | --- | --- | --- | --- | --- |
+| SticksAndStones | 120 | 30 to 41 | 133 | 161 | 116 |
+| Agrarian | 180 | 26 to 35 | 146 | 176 | 115 |
+| Bronze | 240 | 42 to 59 | 207 | 210 | 148 |
+
+What this shows:
+
+- **The opening is on intent.** Agrarian turned on day 116 to 161 against
+  120, where it had turned on day 30 to 41. In the band-20 runs Agrarian and
+  Bronze lasted 146 to 210 days against 180 and 240, where they had lasted 26
+  to 59: 2 to 19% short. The single bench earns a little more than 600 once
+  its researcher matures, so that is a calibration point to move, not a shape
+  problem. Classical turned on day 486 and 547 against 540.
+- **The starting kit comes first.** SticksAndStones was finished on day 7
+  to 11, and the house research on day 12 to 14. Before the priced ranking it
+  came on day 26 to 30, behind four Agrarian projects.
+- **Each era is researched whole before the next turns.** The frontier
+  agenda finishes an era's leaves while its spine is worked, and the next
+  era's projects wait until it is the frontier.
+- **The turns are announced.** Every turn in all three runs wrote an "Era
+  reached" moment, nine in all.
+- **A band of 40 researches faster, though not by much.** Run 40/201 turned
+  each era 17 to 168 days ahead of the band-20 seeds, on two benches against
+  one, and its Agrarian and Bronze eras lasted 115 and 148 days. A second
+  bench adds about 25%, not 100%, because it is staffed by spare hands
+  (§10.3).
+
+#### The 60-day bench
+
+The 21-seed threat-free 60-day bench, on the same build, against the shelter
+baseline it was briefed with. It is not evidence about the arc; it checks
+that the opening did not break the colony scale.
+
+| build | houses built | deaths | people at day 60 |
+| --- | --- | --- | --- |
+| baseline (shelter) | 261 | 55 | 552 |
+| first era at 4.3, stopped after 17 seeds (baseline on those 17: 180, 47, 381) | 186 | 73 | 363 |
+| first era at 1.0, agenda by base cost | 248 | 114 | 502 |
+| first era at 1.0, agenda by priced cost (`b7e4118`) | 286 | 52 | 575 |
+
+The two rejected builds are why the starting kit is unpaced and the agenda
+ranks by priced cost. In both, seeds without a roof by the first heat wave
+(days 15 to 21) lost every citizen to heatstroke: 20/2024 with the first era
+priced up, and 20/103 and 20/12345 with the house research queued behind
+Agrarian.
+
+One seed got worse on the final build: 40/201 lost 20 people to starvation
+from day 49, after a drought on day 24 and a heat wave on day 38. It is not
+this lane's. Integration alone (`6193a4d`, with no era pacing) starves the
+same seed from the same day (8 of 10 deaths). The food-economy lane's build
+removes it.
+
+### 10.5 What this did not determine
+
+- **Medieval onward, measured.** No run reached Medieval: the intended turn is
+  year 14, and the bench affords 5 to 10 years in 2.5 hours. The later eras
+  are paced by the derivation and the content test, not by a played run.
+- **Three or more benches.** The late factors assume 390 points a bench. If a
+  third bench is staffed as thinly as a second, the late eras run longer than
+  intended. That is the next thing to measure, and the lever is
+  `citizensPerScholar` or the rate in the derivation, not a per-seed tune.
+- **A bigger settlement researches more, but weakly.** Two benches earn about
+  1.3 times what one does. A settlement that wants research to scale with
+  people would need researchers who do not lose their bench to every other
+  job. That is a work-priority question this lane did not take on.
+- **The rate depends on `era-survival`.** The calibration was measured on the
+  merged build. On this branch alone the single-bench rate was about the
+  same (383 to 705 a day against 358 to 683).
+- **`material-ladder` and later lanes.** The runs above predate
+  `material-ladder` (`638addc`). Anything that changes how many spare hands a
+  settlement has changes its research rate, and so the era lengths.

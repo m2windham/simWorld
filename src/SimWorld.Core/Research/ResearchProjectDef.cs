@@ -78,13 +78,15 @@ namespace SimWorld.Research
         }
 
         /// <summary>
-        /// 1 at or below the researcher's tech level; RimWorld's formula otherwise: +0.5 per level of
-        /// difference (one level above costs 1.5x, two levels above costs 2x).
+        /// RimWorld's tech-level multiplier, times the era's pacing multiplier
+        /// (<see cref="EraPacing.CostFactorFor"/>). The tech-level part is 1 at or below the researcher's tech
+        /// level and RimWorld's formula otherwise: +0.5 per level of difference (one level above costs 1.5x,
+        /// two levels above costs 2x). The era part is 1 for a project with no era.
         /// </summary>
         public float CostFactor(TechLevel researcherTechLevel)
         {
-            if (techLevel <= researcherTechLevel) return 1f;
-            return 1f + 0.5f * (techLevel - researcherTechLevel);
+            float techFactor = techLevel <= researcherTechLevel ? 1f : 1f + 0.5f * (techLevel - researcherTechLevel);
+            return techFactor * EraPacing.CostFactorFor(this);
         }
 
         public bool IsFinished => Find.ResearchManager.IsFinished(this);

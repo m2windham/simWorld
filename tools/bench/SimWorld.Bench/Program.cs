@@ -90,6 +90,9 @@ namespace SimWorld.Bench
                 case "storyteller":
                     StorytellerSuite.Run(opt);
                     break;
+                case "metal":
+                    MetalLadderSuite.Run(opt);
+                    break;
                 case "arc":
                     ArcSuite.Run(opt);
                     break;

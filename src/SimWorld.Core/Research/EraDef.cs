@@ -36,6 +36,27 @@ namespace SimWorld.Research
         /// </summary>
         public float threatPointsFactor = 1f;
 
+        /// <summary>
+        /// Multiplies the cost of every project tagged with this era, on top of RimWorld's tech-level penalty
+        /// (<see cref="ResearchProjectDef.CostFactor"/>), so the era's place in the arc sets its price as well as
+        /// its content. It acts where RimWorld's own cost multiplier acts, dividing the points a researcher
+        /// earns, so <see cref="ResearchProjectDef.baseCost"/> stays the authored relative price inside the era.
+        /// <para/>
+        /// <b>Not sourced from RimWorld</b>, which has no eras. Each value is derived from the era pacing
+        /// translation (<c>docs/status.json</c> research, <c>docs/research/era-arc.md</c> §9) and the
+        /// derivation is written beside the numbers in <c>Eras.xml</c>. <c>EraPacingTests</c> pins the
+        /// nominal era length the factors produce, not the factors.
+        /// </summary>
+        public float researchCostFactor = 1f;
+
+        /// <summary>
+        /// Citizens per research bench the settlement wants while this is its current era
+        /// (<see cref="Building.WorksInitiativeTuning.ResearchBenchesWanted(int, EraDef)"/>). Smaller later: a more advanced
+        /// settlement spares a larger share of its people for study. <b>Not sourced</b>; the tests pin that the
+        /// bench count never falls as the population or the era rises.
+        /// </summary>
+        public float citizensPerScholar = 25f;
+
         private List<ResearchProjectDef>? projectsCache;
         private List<ResearchProjectDef>? spineCache;
 
@@ -147,6 +168,8 @@ namespace SimWorld.Research
             foreach (string error in base.ConfigErrors()) yield return error;
             if (order < 0) yield return "order must be >= 0.";
             if (threatPointsFactor <= 0f) yield return "threatPointsFactor must be > 0.";
+            if (researchCostFactor <= 0f) yield return "researchCostFactor must be > 0.";
+            if (citizensPerScholar <= 0f) yield return "citizensPerScholar must be > 0.";
         }
     }
 }

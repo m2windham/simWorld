@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The material ladder (system: crafting.materialladder): the ores a settlement digs and the metals it smelts
+    out of them, era by era. Its own file, per CLAUDE.md; BaseMineral is Items_Minerals.xml's parent, which
+    resolves across files.
+
+    THE RIMWORLD IDEA, AND WHY IT IS NOT PORTED 1:1
+    RimWorld's metal economy is one step: mine compacted steel, get Steel (Buildings_Natural.xml, mineableYield
+    40), and an electric smelter recovers Steel from slag (ExtractMetalFromSlag, 1 ChunkSlagSteel -> 15 Steel,
+    workAmount 400; both read from Core's Defs). That fits a colony that lands with industrial technology. It is
+    wrong for a settlement that has to reach steel through six eras: with steel lying in every hillside, the
+    bronze age had no bronze and a neolithic smithy made steel knives. So the vein is ore and the metal is made,
+    at a bench that belongs to its era:
+
+      era         raw                 bench              made                 research
+      sticks      flint (mined)       smithy (knapping)  flint knife          StoneTools
+      bronze      copper ore          smelting furnace   copper               Copper
+      bronze      copper + tin        smelting furnace   bronze               Bronze
+      bronze      copper ore alone    smelting furnace   arsenical bronze     Bronze  (when there is no tin)
+      classical   iron ore            bloomery           iron                 Iron
+      medieval    iron                bloomery           steel (cementation)  Steel
+      industrial  iron ore            electric smelter   steel                Electricity + BessemerProcess
+
+    The recipes are RecipeDefs/Recipes_Smelting.xml, the benches ThingDefs_Buildings/Buildings_Smelting.xml.
+
+    STUFF
+    Copper (Items_Minerals.xml), bronze, iron and steel are all Metallic stuff, so each can be a wall, a door, a
+    bench or a blade, exactly as RimWorld's Steel/Silver/Gold are. The numbers that rank them:
+      SharpDamageMultiplier  RimWorld: steel 1 (the anchor), silver 0.85, gold 0.75. Copper 0.8, bronze 0.9 and
+                             iron 0.95 are this port's, UNSOURCED, set in that family so the ladder climbs:
+                             work-hardened bronze takes a better edge than copper, and bloomery iron only just
+                             beats it — iron's advantage was that there was so much more of it.
+      MaxHitPoints factor    RimWorld: steel 1, silver 0.7, gold 0.6. Copper 0.7, bronze 0.85, iron 0.9 are
+                             this port's, UNSOURCED, same reasoning.
+      commonality            RimWorld's meaning: how bulk a material is (steel 1, silver and plasteel 0.05).
+                             Copper and bronze 0.3 — a bronze-age settlement casts blades from it, not walls;
+                             iron 1, as steel. Crafting.MaterialLadder reads it to decide what a wall may be
+                             built of.
+      MarketValue            steel 1.9 is shipped content; the rest are UNSOURCED and only ordered
+                             (ore < iron < copper < steel < bronze, bronze being the alloy of a scarce metal).
+    The tests assert the ladder's order, never these literals.
+
+    Tin stays a raw commodity (Items_Minerals.xml): cassiterite was co-smelted with copper, never worked alone.
+  -->
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>CopperOre</defName>
+    <label>copper ore</label>
+    <description>Green-stained malachite and copper-bearing rock. Worthless until it has been through a furnace.</description>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <statBases>
+      <MarketValue>0.5</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>IronOre</defName>
+    <label>iron ore</label>
+    <description>Heavy red-brown rock. There is iron in half the hills in the world; the trick was a fire hot enough to get it out.</description>
+    <thingCategories><li>ResourcesRaw</li></thingCategories>
+    <statBases>
+      <MarketValue>0.5</MarketValue>
+      <Flammability>0</Flammability>
+    </statBases>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>Bronze</defName>
+    <label>bronze</label>
+    <description>Copper hardened with a tenth part of tin, or with the arsenic its own ore carried. Takes an edge copper never could, and casts.</description>
+    <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
+    <statBases>
+      <MarketValue>2.2</MarketValue>
+      <Flammability>0</Flammability>
+      <SharpDamageMultiplier>0.9</SharpDamageMultiplier>
+    </statBases>
+    <stuffProps>
+      <categories><li>Metallic</li></categories>
+      <commonality>0.3</commonality>
+      <statFactors>
+        <MaxHitPoints>0.85</MaxHitPoints>
+        <Flammability>0</Flammability>
+      </statFactors>
+    </stuffProps>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseMineral">
+    <defName>Iron</defName>
+    <label>iron</label>
+    <description>Wrought iron hammered out of a bloom. No harder than good bronze, but dug from any hillside rather than traded for across a sea.</description>
+    <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
+    <statBases>
+      <MarketValue>1.5</MarketValue>
+      <Flammability>0</Flammability>
+      <SharpDamageMultiplier>0.95</SharpDamageMultiplier>
+    </statBases>
+    <stuffProps>
+      <categories><li>Metallic</li></categories>
+      <commonality>1</commonality>
+      <statFactors>
+        <MaxHitPoints>0.9</MaxHitPoints>
+        <Flammability>0</Flammability>
+      </statFactors>
+    </stuffProps>
+  </ThingDef>
+
+</Defs>

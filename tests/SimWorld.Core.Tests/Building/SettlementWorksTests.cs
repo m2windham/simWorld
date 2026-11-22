@@ -139,13 +139,24 @@ namespace SimWorld.Tests.Building
             Assert.True(minerals.Count >= 10, "Expected the shipped veins to drop minerals; found " + minerals.Count);
 
             HashSet<ThingDef> spent = EverythingSomeCostListNames();
+            // A mineral is also spent when the furnace makes it into something a costList names: since the
+            // material ladder (crafting.materialladder) the old steel vein yields iron ore, and steel is smelted.
+            foreach (global::SimWorld.Crafting.RecipeDef recipe in DefDatabase<global::SimWorld.Crafting.RecipeDef>.AllDefsListForReading)
+            {
+                if (!global::SimWorld.Crafting.MaterialLadder.IsMetallurgy(recipe) || !recipe.products!.Any(p => spent.Contains(p.thingDef))) continue;
+                foreach (global::SimWorld.Crafting.IngredientCount ingredient in recipe.ingredients!)
+                {
+                    spent.UnionWith(ingredient.filter.AllowedThingDefs);
+                }
+            }
             List<ThingDef> wired = minerals.Where(spent.Contains).ToList();
 
-            // Steel is the one that was already spent on something (Buildings_Power and Buildings_Security
-            // cost it) and it predates the ore ladder entirely — it comes out of Buildings_Natural.xml. The
-            // ten veins Buildings_Mineable.xml added had nothing between them: not one was named by a recipe
+            // Steel was the one already spent on something (Buildings_Power and Buildings_Security cost it), and
+            // it predates the ore ladder entirely — its vein is in Buildings_Natural.xml. That vein now yields iron
+            // ore, smelted to steel (Smelt_Steel), so the mined mineral the costLists reach is IronOre. The ten
+            // veins Buildings_Mineable.xml added had nothing between them: not one was named by a recipe
             // ingredient or a costList anywhere in content.
-            Assert.Contains(Def("Steel"), wired);
+            Assert.Contains(Def("IronOre"), wired);
             Assert.True(wired.Count >= 3,
                 "Only " + wired.Count + " of " + minerals.Count
                     + " mined minerals is named by any costList in content, and Steel is one of them. The "
@@ -179,17 +190,17 @@ namespace SimWorld.Tests.Building
         }
 
         [Fact]
-        public void It_stops_at_the_number_the_tech_tree_was_balanced_for()
+        public void It_stops_at_the_number_its_people_and_era_want()
         {
             Settlement settlement = PeopledSettlement();
             CoreMap map = NewMap();
 
-            for (int i = 0; i < WorksInitiativeTuning.ResearchBenchesWanted + 5; i++)
+            for (int i = 0; i < WorksInitiativeTuning.ResearchBenchesWanted(settlement) + 5; i++)
             {
                 SettlementWorksInitiative.Run(settlement, map);
             }
 
-            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted, BlueprintCount(map, ResearchWorkDefOf.ResearchBench));
+            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted(settlement), BlueprintCount(map, ResearchWorkDefOf.ResearchBench));
         }
 
         [Fact]
@@ -197,7 +208,7 @@ namespace SimWorld.Tests.Building
         {
             Settlement settlement = PeopledSettlement();
             CoreMap map = NewMap();
-            for (int i = 0; i < WorksInitiativeTuning.ResearchBenchesWanted; i++)
+            for (int i = 0; i < WorksInitiativeTuning.ResearchBenchesWanted(settlement); i++)
             {
                 Spawn(map, new IntVec3(i * 2, 0, 0), "ResearchBench");
             }
@@ -468,7 +479,7 @@ namespace SimWorld.Tests.Building
             int benches = BlueprintCount(map, ResearchWorkDefOf.ResearchBench);
             int art = Blueprints(map).Count(bp => SculptureMaterials.IsSculpture(bp.EntityToBuild));
 
-            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted, benches);
+            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted(settlement), benches);
             Assert.Equal(SculptureMaterials.SculpturesWantedOf(ArtThingDefOf.Sculpture), art);
 
             for (int i = 0; i < 10; i++) SettlementWorksInitiative.Run(settlement, map);

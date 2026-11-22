@@ -233,6 +233,9 @@ namespace SimWorld.Map
             Crafting.CookingInitiative.TickMap(this);
             // Shirts and knives for the citizens who lack them, at whatever bench stands (same cadence).
             Crafting.OutfittingInitiative.TickMap(this);
+            // The metal those weapon bills want, smelted back to the ore (crafting.materialladder; same cadence,
+            // after the bills it reads and before the mining that digs its ore).
+            Crafting.SmeltingInitiative.TickMap(this);
             // The rock it wants dug: Mine designations by need (AI.MiningInitiative, same cadence).
             AI.MiningInitiative.TickMap(this);
 

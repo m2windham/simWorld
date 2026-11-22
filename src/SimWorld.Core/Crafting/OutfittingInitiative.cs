@@ -70,6 +70,16 @@ namespace SimWorld.Crafting
                 {
                     RecipeDef recipe = recipes[r];
                     if (!IsOutfitting(recipe) || !recipe.AvailableNow) continue;
+                    // A stuff-made melee weapon is the material ladder's to size: one weapon bill per bench, for
+                    // the best weapon in the best stuff the era and stock allow, counting the citizens who would
+                    // trade up to it as well as the unarmed (crafting.materialladder).
+                    if (MaterialLadder.TryPlanWeaponBill(map, buildings[b].def, recipe, citizens, out int lacking, out ThingDef? stuff))
+                    {
+                        UpdateBill(comp, recipe, lacking);
+                        Bill_Production? weaponBill = BillFor(comp, recipe);
+                        if (weaponBill != null && stuff != null) MaterialLadder.RestrictBill(weaponBill, stuff);
+                        continue;
+                    }
                     UpdateBill(comp, recipe, Lacking(recipe, citizens));
                 }
             }

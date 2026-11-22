@@ -24,9 +24,10 @@ namespace SimWorld.Crafting
 
         /// <summary>
         /// Craftsmen a settlement seats in one guild. <b>Flat, not per capita</b> — and the flatness is the
-        /// sourced part, in the same sense <c>Building.WorksInitiativeTuning.ResearchBenchesWanted</c> is:
-        /// scaling an industry with population is the obvious civilization-scale instinct and the arithmetic
-        /// this codebase already did says it is wrong.
+        /// sourced part: scaling an industry with population is the obvious civilization-scale instinct and the
+        /// arithmetic this codebase already did says it is wrong here. (Research benches were flat on the same
+        /// argument until the played era arc showed research cut off from the settlement; they now grow with
+        /// the population and the era, against costs priced for it — <c>Research.EraPacing</c>.)
         ///
         /// <para/>Derived from <see cref="StonecuttingTuning.TablesWanted"/>, which is the same question asked
         /// at map scale — how many people should a settlement have working stone at once — and which

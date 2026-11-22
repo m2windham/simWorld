@@ -82,7 +82,7 @@ namespace SimWorld.Tests.Building
             for (int i = 0; i < 4; i++) SettlementWorksInitiative.Run(settlement, map);
 
             List<Blueprint> benches = Planned(map, ResearchWorkDefOf.ResearchBench);
-            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted, benches.Count);
+            Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted(settlement), benches.Count);
             Assert.All(benches, b => Assert.True(InTheYard(door, b.Position), "research bench at " + b.Position + ", door at " + door.Position));
             List<Blueprint> art = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>()
                 .Where(bp => SculptureMaterials.AllSculptureDefs.Contains(bp.EntityToBuild)).ToList();
