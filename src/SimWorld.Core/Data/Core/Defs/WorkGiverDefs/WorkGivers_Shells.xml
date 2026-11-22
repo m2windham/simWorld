@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    A house's walls and door are supplied before any other building site (translation; see
+    SimWorld.Building.WorkGiver_ConstructDeliverResourcesToShells). Construction, between finishing frames
+    (95) and delivering to frames (90) and blueprints (85), so one giver covers a shell part at either stage.
+  -->
+
+  <WorkGiverDef>
+    <defName>ConstructDeliverResourcesToShells</defName>
+    <label>haul resources to house walls and doors</label>
+    <verb>Haul resources</verb>
+    <gerund>hauling resources</gerund>
+    <workType>Construction</workType>
+    <priorityInType>93</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_ConstructDeliverResourcesToShells</giverClass>
+  </WorkGiverDef>
+
+</Defs>

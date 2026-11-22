@@ -8,15 +8,15 @@
 
     SOURCED: RimWorld's one smelting recipe, ExtractMetalFromSlag (Core Recipes_Production.xml, read): one slag
     chunk to 15 Steel, workAmount 400, no workSkill, worked at the ElectricSmelter. Smelt_Steel is that recipe
-    with ore where the slag was — same 400, same 15, same bench — and every recipe here follows it in having
+    with ore where the slag was â€” same 400, same 15, same bench â€” and every recipe here follows it in having
     no workSkill.
 
-    UNSOURCED (no RimWorld recipe exists to read): every other amount. What is deliberate is the shape —
+    UNSOURCED (no RimWorld recipe exists to read): every other amount. What is deliberate is the shape â€”
       - each era's metal costs more ore and more work than the last made it (copper 15 ore and 400, iron 20
         and 800, cementation steel a further 1200 on top of the iron);
       - tin bronze is nine parts copper to one of tin, the historical alloy;
       - arsenical bronze needs no tin but wastes ore (25 for 10), so a settlement with tin prefers tin bronze
-        and one without still reaches the bronze age — tin is the rarest vein on the map
+        and one without still reaches the bronze age â€” tin is the rarest vein on the map
         (Buildings_Mineable.xml), and RimWorld has no tin at all;
       - the electric smelter is the cheapest steel there is, which is what an industrial revolution is.
     Crafting.SmeltingInitiative picks between two recipes for one metal by newest research first and then by

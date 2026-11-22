@@ -4,6 +4,7 @@ using System.Linq;
 using SimWorld.Defs;
 using SimWorld.Factions;
 using SimWorld.Map;
+using SimWorld.Letters;
 using SimWorld.Pawns;
 using SimWorld.Sim;
 using SimWorld.Things;
@@ -126,10 +127,12 @@ namespace SimWorld.Director
             if (map != null)
             {
                 Arrive(pawns, faction, map, Rand.Current);
+                SendLetter(LastRaidSettlement, faction, strategy, pawns.Count, null);
             }
             else if (LastRaidSettlement != null)
             {
                 LastRaidOutcome = SettlementRaidResolver.Resolve(LastRaidSettlement, pawns, faction, Rand.Current);
+                SendLetter(LastRaidSettlement, faction, strategy, pawns.Count, LastRaidOutcome);
             }
 
             // Neither path taken means the target has no settlement and no map hook — a bare
@@ -141,6 +144,31 @@ namespace SimWorld.Director
             LastRaidStrategy = strategy;
             LastRaidPawns = pawns;
             return true;
+        }
+
+        /// <summary>
+        /// RimWorld's raid sends a ThreatBig letter naming the attackers and their tactic. The player is told on
+        /// both paths, as <see cref="IncidentWorker_ManhunterPack"/> does: on a watched map as the squad arrives,
+        /// and elsewhere with how it ended. The wording is SimWorld's own.
+        /// </summary>
+        private static void SendLetter(SimWorld.World.Settlement? settlement, Faction faction, RaidStrategyDef strategy,
+            int raiders, SettlementRaidOutcome? outcome)
+        {
+            string where = string.IsNullOrEmpty(settlement?.name) ? "a settlement" : settlement!.name;
+            string squad = raiders == 1 ? "A lone raider" : $"A band of {raiders} raiders";
+            string text;
+            if (outcome == null)
+            {
+                text = $"{squad} from {faction.name} has come for {where}. {strategy.description}";
+            }
+            else
+            {
+                string ending = outcome.Value.Repelled ? "The settlement held." : "They broke in.";
+                text = $"Word reaches you late: {squad.ToLowerInvariant()} from {faction.name} fell on {where} while your attention was elsewhere. "
+                    + $"{ending} Dead: {outcome.Value.TotalLivesLost} of the settlement, {outcome.Value.RaidersKilled} of the raiders.";
+            }
+
+            Find.LetterStack?.ReceiveLetter("Raid: " + where, text, LetterDefOf.ThreatBig);
         }
 
         /// <summary>

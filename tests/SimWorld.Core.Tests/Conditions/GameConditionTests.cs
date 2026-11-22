@@ -237,10 +237,9 @@ namespace SimWorld.Tests.Conditions
             RunGameTicks(GameCondition_Flashstorm.TicksBetweenStrikes.max * 3, map);
 
             Assert.Equal(2, Find.World!.gameConditionManager.ActiveConditions.Count);
-            Assert.Equal(
-                GameConditionDefOf.HeatWave.temperatureOffset,
-                map.outdoorTemperature - TemperatureWithoutConditions(map),
-                2);
+            float coming = Find.World.gameConditionManager.AggregateTemperatureOffset();
+            Assert.True(coming > 0f);
+            Assert.Equal(coming, map.outdoorTemperature - TemperatureWithoutConditions(map), 2);
             Assert.True(FireCount(map) > 0, "Lightning fell on a field of walls and nothing caught.");
         }
 
@@ -335,6 +334,7 @@ namespace SimWorld.Tests.Conditions
             CoreMap openedLater = NewMap();
             Assert.Empty(openedLater.gameConditionManager.ActiveConditions);
             Assert.True(openedLater.gameConditionManager.ConditionIsActive(GameConditionDefOf.ColdSnap));
+            RunGameTicks(GameCondition_TemperatureOffset.LerpTicks);
             Assert.Equal(
                 GameConditionDefOf.ColdSnap.temperatureOffset,
                 openedLater.gameConditionManager.AggregateTemperatureOffset(),
@@ -352,6 +352,7 @@ namespace SimWorld.Tests.Conditions
                 GameConditionMaker.MakeConditionForDays(GameConditionDefOf.HeatWave, 1f));
             map.gameConditionManager.RegisterCondition(
                 GameConditionMaker.MakeConditionForDays(GameConditionDefOf.ColdSnap, 1f));
+            RunGameTicks(GameCondition_TemperatureOffset.LerpTicks);
 
             float expected = GameConditionDefOf.HeatWave.temperatureOffset + GameConditionDefOf.ColdSnap.temperatureOffset;
             Assert.Equal(expected, map.gameConditionManager.AggregateTemperatureOffset(), 3);
@@ -394,7 +395,7 @@ namespace SimWorld.Tests.Conditions
             Assert.Equal(0f, body.RotComp!.RotProgress);
 
             Assert.True(FireIncident(ConditionIncidentDefOf.HeatWave, new CivilizationTarget()));
-            RunGameTicks(1, map);
+            RunGameTicks(GameCondition_TemperatureOffset.LerpTicks, map);
 
             // The thermometer moved by exactly the condition's offset, and by nothing else.
             Assert.Equal(
@@ -441,6 +442,8 @@ namespace SimWorld.Tests.Conditions
             Assert.True(growingBefore > 0f, "The fixture is meant to start with a growing season.");
 
             Assert.True(FireIncident(ConditionIncidentDefOf.ColdSnap, new CivilizationTarget()));
+            RunGameTicks(GameCondition_TemperatureOffset.LerpTicks, map);
+            rottedBefore = body.RotComp!.RotProgress;
 
             float growingAfter = 0f;
             for (int i = 0; i < GenDate.TicksPerDay; i++)
@@ -642,6 +645,7 @@ namespace SimWorld.Tests.Conditions
             Assert.Empty(GodViewSnapshot.Capture().Conditions);
 
             Assert.True(FireIncident(ConditionIncidentDefOf.HeatWave, new CivilizationTarget()));
+            RunGameTicks(GameCondition_TemperatureOffset.LerpTicks);
 
             GodViewSnapshot during = GodViewSnapshot.Capture();
             ConditionLine line = Assert.Single(during.Conditions);

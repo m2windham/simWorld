@@ -98,8 +98,10 @@ namespace SimWorld.Tests.Conditions
 
             // The temperature the settlement's rooms, plants and larders read now carries the heat wave — and
             // it got there without this test touching a map, a weather manager or a condition.
+            float coming = map.gameConditionManager.AggregateTemperatureOffset();
+            Assert.True(coming > 0f);
             Assert.Equal(
-                GameConditionDefOf.HeatWave.temperatureOffset,
+                coming,
                 map.outdoorTemperature - GenTemperature.OutdoorTemperatureAt(
                     map.weatherManager.Climate!, Find.TickManager.TicksAbs, map.weatherManager.TemperatureOffset),
                 2);
@@ -141,12 +143,11 @@ namespace SimWorld.Tests.Conditions
             CoreMap map = game.EnterSettlement(settlement);
             RunGame(2);
 
+            float coming = condition.TemperatureOffset();
+            Assert.True(coming < 0f);
+            Assert.Equal(coming, map.gameConditionManager.AggregateTemperatureOffset(), 3);
             Assert.Equal(
-                GameConditionDefOf.ColdSnap.temperatureOffset,
-                map.gameConditionManager.AggregateTemperatureOffset(),
-                3);
-            Assert.Equal(
-                GameConditionDefOf.ColdSnap.temperatureOffset,
+                coming,
                 map.outdoorTemperature - GenTemperature.OutdoorTemperatureAt(
                     map.weatherManager.Climate!, Find.TickManager.TicksAbs, map.weatherManager.TemperatureOffset),
                 2);
