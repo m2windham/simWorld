@@ -85,19 +85,42 @@ namespace SimWorld.Building
         /// <summary>The gap in the east side of the ring, halfway up it.</summary>
         public IntVec3 DoorCell => new IntVec3(interior.maxX + 1, 0, interior.minZ + interior.height / 2);
 
-        /// <summary>Where each bed goes, as the cell it is placed on, south-west first and row by row. A bed
-        /// is placed unrotated (<see cref="RotationAt"/> turns only the door and the storage): it covers this
-        /// cell and the one north of it, and is slept in on this one.</summary>
+        /// <summary>
+        /// Where the dormitory's passive coolers go: the place of one bed at the back of the block, against the
+        /// west wall on the door's row, out of the way in. Two cells, because one passive cooler holds the
+        /// largest dormitory (80 cells) only to about 29 C in 45 C air and two to about 17 C (measured by
+        /// <c>PassiveCoolerTests</c>), and only the second is comfortable to a citizen. Kept for them whether or
+        /// not one is ever built, so a bed never takes the place; that bed is left out of <see cref="BedCells"/>.
+        /// A cooler cools the whole room the same wherever it stands (<see cref="RoomGroup.PushHeat"/>), so
+        /// where is only about traffic. Translation: RimWorld's player puts coolers wherever they like.
+        /// </summary>
+        public IEnumerable<IntVec3> CoolerCells
+        {
+            get
+            {
+                int bedZ = ConstructionThingDefOf.Bed.size.z;
+                int z = interior.minZ + (DoorCell.z - interior.minZ) / bedZ * bedZ;
+                for (int i = 0; i < bedZ; i++) yield return new IntVec3(interior.minX, 0, z + i);
+            }
+        }
+
+        /// <summary>Where each bed goes, as the cell it is placed on, south-west first and row by row, less the
+        /// one whose place is the coolers' (<see cref="CoolerCells"/>). A bed is placed unrotated (<see cref="RotationAt"/>
+        /// turns only the door and the storage): it covers this cell and the one north of it, and is slept in
+        /// on this one.</summary>
         public IEnumerable<IntVec3> BedCells
         {
             get
             {
                 IntVec2 bed = ConstructionThingDefOf.Bed.size;
+                var coolers = new HashSet<IntVec3>(CoolerCells);
                 for (int z = interior.minZ; z + bed.z - 1 <= interior.maxZ; z += bed.z)
                 {
                     for (int x = interior.minX; x + bed.x - 1 <= interior.maxX; x += bed.x)
                     {
-                        yield return new IntVec3(x, 0, z);
+                        var site = new IntVec3(x, 0, z);
+                        if (coolers.Contains(site)) continue;
+                        yield return site;
                     }
                 }
             }
@@ -353,7 +376,7 @@ namespace SimWorld.Building
 
         /// <summary>
         /// The next free site for <paramref name="entityDef"/>, in the order the layout fills. False when the
-        /// compound has no site left for it, or never had one (it places beds, walls, its door,
+        /// compound has no site left for it, or never had one (it places beds, walls, its door, its passive coolers,
         /// storage and dwellings; the work yard has <see cref="TryFindWorkSite"/>). With <paramref name="within"/>, a site must lie wholly inside that area.
         /// </summary>
         public bool TryFindCell(Map.Map map, ThingDef entityDef, Area? within, out IntVec3 cell)
@@ -451,6 +474,7 @@ namespace SimWorld.Building
             if (ReferenceEquals(entityDef, ConstructionThingDefOf.Bed)) return BedCells;
             if (DwellingUtility.IsDwelling(entityDef)) return DwellingCells(map);
             if (ReferenceEquals(entityDef, CompoundThingDefOf.Door)) return new[] { DoorCell };
+            if (ReferenceEquals(entityDef, CoolingThingDefOf.PassiveCooler)) return CoolerCells;
             if (ReferenceEquals(entityDef, ConstructionThingDefOf.StorageHut)) return StorageCells;
             if (StoneWallMaterials.IsWall(entityDef)) return WallCells;
             return Array.Empty<IntVec3>();
@@ -574,14 +598,16 @@ namespace SimWorld.Building
         /// <summary>
         /// The interior a ring of <paramref name="wallBudget"/> cells closes round, chosen to hold the most
         /// beds. False when that is fewer beds than there are citizens.
+        /// One bed's place in every block is kept for the passive coolers (<see cref="CoolerCells"/>), so the
+        /// biggest ring holds one bed fewer than its interior would.
         /// <para/>
         /// <b>The need model is not changed, only spent in one place.</b> The initiative already wants a
         /// wall count per citizen. A ring round a <c>w</c> by <c>h</c> interior is <c>2(w + h) + 4</c> cells, so
         /// that count fixes <c>w + h</c>, and this picks the split with the most room for beds. One ring cell
         /// is the door, so the settlement builds one wall fewer than it wanted and one door. At the founding
         /// band's size the wall count is at <see cref="ConstructionInitiativeTuning.MaxWallShelterCount"/> and
-        /// the ring it closes holds a bed for the largest band <c>SettlementTuning.FoundingBandRange</c>
-        /// founds. Pinned by <c>SettlementCompoundTests</c> as "every citizen's bed fits inside", never as
+        /// the ring it closes holds a bed for all but the largest band <c>SettlementTuning.FoundingBandRange</c>
+        /// founds, which is one short since the coolers took a bed's place. Pinned by <c>SettlementCompoundTests</c> as "every citizen's bed fits inside", never as
         /// those literals.
         /// <para/>
         /// A band too small for its walls to go round its beds gets no compound and places as before. A
@@ -598,7 +624,7 @@ namespace SimWorld.Building
             for (int h = bed.z; h < span; h += bed.z)
             {
                 int w = span - h;
-                int holds = (w / bed.x) * (h / bed.z);
+                int holds = (w / bed.x) * (h / bed.z) - 1; // one bed's place is the coolers' (CoolerCells)
                 if (holds <= beds) continue;
                 beds = holds;
                 width = w;

@@ -39,7 +39,8 @@ namespace SimWorld.Tests.Work
             Assert.Empty(Content.Result.Errors);
             Assert.Equal(12, DefDatabase<SkillDef>.DefCount);
             Assert.Equal(20, DefDatabase<WorkTypeDef>.DefCount);
-            // 34: the temperature lane added BuildRoofs (RimWorld's own Construction giver) in its own
+            // 35: the temperature lane added Refuel (RimWorld's own Hauling giver, for the passive cooler) in its own
+            // WorkGiverDefs/WorkGivers_Refuel.xml. Before that, 34 — the temperature lane added BuildRoofs (RimWorld's own Construction giver) in its own
             // WorkGiverDefs/WorkGivers_Roof.xml. Before that, 33 — the snow lane (system: weather) added CleanClearSnow in its own
             // WorkGiverDefs/WorkGivers_Snow.xml. Before that, 32 — the Patient and PatientBedRest work types got their two givers, in their own
             // WorkGiverDefs/WorkGivers_Patient.xml. Before that, 30 — the beds lane (system 16: Building) added ConstructChopWood in its own
@@ -48,7 +49,7 @@ namespace SimWorld.Tests.Work
             // which had been a WorkGiver_Pending placeholder since there was no Corpse class for it to find.
             // Before that, 28 — the capture loop (system 12: Factions) adding WardenAttemptRecruit and wiring
             // WardenFeed. Work/** owns none of that content; only this literal count moves.
-            Assert.Equal(34, DefDatabase<WorkGiverDef>.DefCount);
+            Assert.Equal(35, DefDatabase<WorkGiverDef>.DefCount);
         }
 
         [Fact]

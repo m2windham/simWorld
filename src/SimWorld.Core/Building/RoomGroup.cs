@@ -57,6 +57,15 @@ namespace SimWorld.Building
 
         public float Temperature => UsesOutdoorTemperature ? map.outdoorTemperature : temperature;
 
+        /// <summary>Adds <paramref name="energy"/> spread over the group's cells; refused (false) by a group
+        /// that is outdoor air (RimWorld: <c>RoomGroup.PushHeat</c>).</summary>
+        public bool PushHeat(float energy)
+        {
+            if (UsesOutdoorTemperature) return false;
+            temperature += energy / CellCount;
+            return true;
+        }
+
         internal RoomGroup(Map.Map map)
         {
             this.map = map;

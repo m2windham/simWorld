@@ -209,6 +209,13 @@ namespace SimWorld.Building
                 // The doorway of the ring. Only a settlement with a compound wants a door: nothing here would
                 // know where else to put one. See Shortfall for how it and the walls are counted.
                 if (map.settlementCompound != null) needs.Add(new Need(CompoundThingDefOf.Door, 1));
+
+                // Passive coolers in the dormitory once it is hot: see SettlementCooling. Their sites are the
+                // compound's (CoolerCells), and they are never drawn anywhere else (TryFindPlacementCell).
+                if (SettlementCooling.WantsCooler(settlement, map))
+                {
+                    needs.Add(new Need(CoolingThingDefOf.PassiveCooler, SettlementCooling.CoolersWanted));
+                }
             }
 
             // Storage for what the ledger holds, counted in stacks: see StorageHutNeed.
@@ -403,6 +410,12 @@ namespace SimWorld.Building
             {
                 if (compound.TryFindCell(map, entityDef, home, out cell)) return true;
                 if (OnlyOnTheRing(entityDef)) return false;
+            }
+            // A cooler outside the dormitory would cool nobody.
+            if (ReferenceEquals(entityDef, CoolingThingDefOf.PassiveCooler))
+            {
+                cell = default;
+                return false;
             }
 
             if (home != null) return TryPickCell(map, entityDef, map.AllCells, home, out cell);

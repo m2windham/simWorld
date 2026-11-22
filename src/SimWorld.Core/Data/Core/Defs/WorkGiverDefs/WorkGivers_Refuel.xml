@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Refueling (RimWorld 1.0 Core/Defs/WorkGiverDefs/WorkGivers.xml: Refuel, Hauling, priorityInType 60,
+       Manipulation). Its own file rather than an addition to WorkGivers.xml (CLAUDE.md). 60 is RimWorld's value:
+       below hauling corpses (110) and general hauling (100). See SimWorld.Building.WorkGiver_Refuel. -->
+
+  <WorkGiverDef>
+    <defName>Refuel</defName>
+    <label>refuel fuelable buildings</label>
+    <verb>refuel</verb>
+    <gerund>refueling</gerund>
+    <workType>Hauling</workType>
+    <priorityInType>60</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_Refuel</giverClass>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+  </WorkGiverDef>
+
+</Defs>

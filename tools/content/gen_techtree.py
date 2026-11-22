@@ -124,7 +124,11 @@ ERA_STICKSANDSTONES = [
     dict(defName="BoneSetting", label="bone setting", track="MedicineHealth", prereqs=["HerbalRemedies"],
          desc="A splint bound tight and held still lets a broken bone knit instead of crippling for good."),
     dict(defName="Rafts", label="rafts", track="TransportExploration", prereqs=["Woodworking"],
-         desc="Lashed logs float a load a swimmer could never carry across a river."),
+         desc="Lashed logs float a load a swimmer could never carry across a river."),    # RimWorld 1.0's PassiveCooler (Core/Defs/ResearchProjectDefs/ResearchProjects_1.xml: Neolithic, no
+    # prerequisites, a ClassicStart and TribalStart project). A root here for the same reason; its cost is
+    # this era's band, not RimWorld's 400.
+    dict(defName="PassiveCooler", label="passive cooler", track="ConstructionSettlement", prereqs=[],
+         desc="Make passive coolers, to cool indoor spaces without using electricity."),
 ]
 
 ERA_AGRARIAN = [
