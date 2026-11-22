@@ -172,17 +172,39 @@ namespace SimWorld.Crafting
         /// <summary>Whether some vein yielding <paramref name="def"/> stands where a miner could reach it now.</summary>
         public static bool HasReachableVein(Map.Map map, ThingDef def)
         {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            return ReachableYields(map).Contains(def);
+        }
+
+        // One walk of the map's buildings per pass rather than one per question: a planning pass asks about
+        // every stuff on every weapon recipe, recursively, and natural rock is most of a map's buildings. Keyed
+        // on the map, the tick and the building count, so a vein mined out or spawned between two questions in
+        // the same tick (a test, a player) is never answered from a stale walk. Holds no game state; thread-static
+        // like Find's own services, since test classes run on parallel threads.
+        [ThreadStatic] private static Map.Map? reachableMap;
+        [ThreadStatic] private static int reachableTick;
+        [ThreadStatic] private static int reachableBuildings;
+        [ThreadStatic] private static HashSet<ThingDef>? reachable;
+
+        private static HashSet<ThingDef> ReachableYields(Map.Map map)
+        {
             IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            int tick = Find.TickManager.TicksGame;
+            if (reachable != null && ReferenceEquals(reachableMap, map) && reachableTick == tick && reachableBuildings == buildings.Count) return reachable;
+
+            reachable ??= new HashSet<ThingDef>();
+            reachable.Clear();
             for (int i = 0; i < buildings.Count; i++)
             {
                 Thing rock = buildings[i];
-                if (rock.Spawned && rock.def.mineable && ReferenceEquals(rock.def.mineableThing, def)
-                    && WorkGiver_Miner.MayBeAccessible(rock.Position, map))
-                {
-                    return true;
-                }
+                ThingDef? yield = rock.def.mineableThing;
+                if (!rock.def.mineable || yield == null || reachable.Contains(yield) || !rock.Spawned) continue;
+                if (WorkGiver_Miner.MayBeAccessible(rock.Position, map)) reachable.Add(yield);
             }
-            return false;
+            reachableMap = map;
+            reachableTick = tick;
+            reachableBuildings = buildings.Count;
+            return reachable;
         }
 
         /// <summary>Whether the settlement can come by more of <paramref name="def"/>: a reachable vein of it, or a

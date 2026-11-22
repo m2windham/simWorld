@@ -90,6 +90,9 @@ namespace SimWorld.Bench
                 case "storyteller":
                     StorytellerSuite.Run(opt);
                     break;
+                case "metal":
+                    MetalLadderSuite.Run(opt);
+                    break;
                 case "layout":
                     for (int play = 0; play < opt.LayoutPlays; play++) LayoutSuite.Run(opt);
                     break;
