@@ -928,3 +928,220 @@ removes it.
 - **`material-ladder` and later lanes.** The runs above predate
   `material-ladder` (`638addc`). Anything that changes how many spare hands a
   settlement has changes its research rate, and so the era lengths.
+
+## 11. Food economy (2026-11-22)
+
+This section follows up the famine in §9.7 (band 40, seed 201) and the
+hunting note in §9.6. Branch `food-economy`, cut from `6193a4d`.
+
+### 11.1 Why seed 40/201 starved
+
+A daily dump of the settlement's food, jobs and field on the 60-day bench
+(threats off) showed five causes, all on the same run:
+
+1. **The hunting gate read the map only.** `SettlementStockInitiative` issues
+   ledger food to the map up to the larder (`NutritionWanted`), so a map-only
+   reading sits at the threshold whatever is banked. In the daily dump (from
+   day 15) the gate was open on days 16 and 17 and from day 36. Run A in §9.6
+   hunted with a year banked under the same gate.
+2. **There was almost no game.** The dump shows one wild animal on each of
+   days 20, 36, 37 and 54 and none on the other days, with 40 armed citizens.
+   Wildlife repopulation is not in this lane.
+3. **Wild berries never ripened** in this run (177 to 506 bushes, none ripe).
+   They did ripen in the fixed runs, so this varies with the run.
+4. **A field at 72% stood while people starved.** From day 40 the starving
+   band spent its time on `Clean` and `LayDown`. Growers take only a ripe
+   crop, and the field ripened on days 52 to 53, after 8 people had died.
+   RimWorld's player would have designated the field for harvest: a crop is
+   harvestable from 65% growth (rimworldwiki, Plants).
+5. **The second crop was sown into autumn.** Sown around day 19, it went from
+   22% to 60% in 17 days. The field was sized as if it grew all year.
+
+### 11.2 What changed
+
+| change | RimWorld source | translation |
+| --- | --- | --- |
+| `HuntingInitiative.ShortOfFood` reads map plus ledger. `WantsMeat` and the famine harvest both use it | `WorkGiver_Hunt` hunts what the player designates. The player looks at the whole larder | The settlement keeps two food books. Every "are we short" question reads both |
+| Food crops and berries harvestable from 65% growth (`harvestMinGrowth`) | wiki, Plants: 65% at reduced yield | Unchanged |
+| Growers take an unripe food plant only while the settlement is short (`WorkGiver_GrowerHarvest.EarlyHarvestWanted`) | The player designates an unripe field when the larder runs out first | The settlement makes the player's famine call. When fed, it waits for the crop to ripen |
+| Field size = 3 × break-even ÷ the share of the year the tile grows in, floored at 1/3 (`FarmingInitiative.GrowingShareOfYear`) | The world inspector's growing period (`TwelfthUtility.GrowingTwelfths`), read before settling | The settlement sows for the winter. The floor is unsourced and pinned by `FarmingSeasonTests` |
+
+A first try sized the field from the current and next twelfth's mean
+temperature. That made 40/201 worse. The field only grew once the cold had
+arrived (3,861 cells on day 39, against 1,281). By then the crop already in
+the ground was stalled, and the store emptied on day 40 as before. Sizing
+from the tile's growing period enlarges the field from day 1 (1,922 cells on
+this tile, 8 of 12 twelfths) and does not react to the weather.
+
+The run of that first try was stopped by hand around day 47. Both sizings were
+designed on this one seed, so 40/201 is not independent evidence for either.
+
+Seed 40/201, daily dump, threats off, one run each:
+
+| | before | gate + early harvest | + growing-period field |
+| --- | --- | --- | --- |
+| food, map plus ledger, day 20 | 851 | 761 | 1,329 |
+| food, day 35 | 305 | 261 | 774 |
+| days with no food | 40 to 51 | 52, 53, 55 to 60 | 51 to 53 |
+| deaths by day 60 | 10 (Starvation 8) | 0 | 6 (Disease 5, Injury 1) |
+
+Gate plus early harvest alone also had no starvation deaths by day 60, but it
+ended the run with no food and the field at 42%. The growing-period field did
+not delay the first empty day; it shortened the gap. It also ran with more
+deaths, none from hunger. The sizing has no 21-seed ablation of its own.
+
+### 11.3 Era shape
+
+Every era has the same answers to hunger: hunting, foraging and the famine
+harvest. Fields belong to the Agrarian band but are not research-gated.
+`Agriculture` finishes around day 8, and a gate would delay the first
+harvest and deepen the founding famine. That call is left to the lead.
+Preservation, granaries and refrigeration are not wired, because nothing
+rots and so they have nothing to act on. This is the main remaining gap in
+the era shape of the food economy.
+
+### 11.4 Measured
+
+Mutation proof, from a lane-private script that asserts each mutation
+changes the file and that the restore is byte-identical, and touches the
+file afterwards. Each of the five mutations fails the targeted tests:
+
+- **M1:** the gate reads the map only.
+- **M2:** no ripeness hold.
+- **M3:** the early harvest ignores the shortage.
+- **M4:** crops are harvestable only when ripe.
+- **M5:** the field ignores the growing period.
+
+M1 to M4 ran on `8902340`, before the growing-period sizing. M5 first failed to
+compile (no result), then was killed on `8902340` and again on the final code.
+The restored run passed 41 of 41. No mutation was run on the merged tree.
+
+Full suite: branch 3,351 of 3,351, merged tree 3,392 of 3,392. Release build:
+0 warnings, 0 errors on both.
+
+21-seed 60-day bench, threats off, against the §9.7 baseline (houses, deaths,
+end population):
+
+| | houses | deaths | end pop | Starvation | Disease | Injury | Exposure |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| §9.7 baseline | 271 | 59 | 547 | 8 | 42 | 9 | 0 |
+| `food-economy` | 280 | 28 | 598 | 0 | 20 | 4 | 4 |
+| merged with `e6c4e2e` | 274 | 45 | 591 | 0 | 18 | 5 | 22 |
+
+`e6c4e2e` without this branch was not benched here, so the merged row does not
+separate this lane from the two it merged with. Per seed:
+
+| seed | §9.7 h/d/pop | branch h/d/pop | merged h/d/pop | merged deaths by cause |
+| --- | --- | --- | --- | --- |
+| 20/99 | 12/3/19 | 11/2/22 | 13/1/26 | Disease 1 |
+| 20/101 | 12/5/19 | 11/0/21 | 11/0/23 | none |
+| 20/102 | 12/4/19 | 11/0/22 | 11/3/21 | Disease 2, Injury 1) [Earthquake 1] |
+| 20/103 | 11/2/22 | 13/0/27 | 10/2/21 | Disease 1, Injury 1) [Earthquake 1] |
+| 20/104 | 12/0/24 | 12/2/21 | 10/0/21 | none |
+| 20/105 | 10/4/18 | 13/0/24 | 13/3/20 | Disease 2, Injury 1) [Disease_Plague 2, Earthquake 1] |
+| 20/106 | 11/1/21 | 13/0/26 | 11/2/19 | Disease 1, Injury 1) [Earthquake 1] |
+| 20/107 | 10/0/20 | 10/0/24 | 11/1/21 | Disease 1 |
+| 20/108 | 11/1/22 | 11/1/20 | 11/0/24 | none |
+| 20/109 | 10/3/18 | 11/0/23 | 12/0/25 | none |
+| 20/110 | 2/2/18 | 0/7/17 | 0/22/1 | Exposure 22 |
+| 20/777 | 10/2/19 | 13/1/23 | 13/0/24 | none |
+| 20/2024 | 2/3/20 | 5/1/22 | 3/0/23 | none |
+| 20/12345 | 12/3/21 | 11/1/22 | 12/0/25 | none |
+| 20/31337 | 12/1/23 | 11/2/21 | 12/3/23 | Disease 2, Injury 1) [Earthquake 1] |
+| 40/201 | 21/10/34 | 23/6/43 | 22/4/41 | Disease 4 |
+| 40/202 | 20/2/42 | 19/2/40 | 19/0/49 | none |
+| 40/203 | 20/3/41 | 19/1/44 | 19/2/43 | Disease 2) [Disease_Plague 1] |
+| 40/204 | 21/4/42 | 23/0/46 | 21/0/47 | none |
+| 40/777 | 20/0/47 | 20/1/45 | 20/1/45 | Disease 1) [Disease_Plague 1] |
+| 40/12345 | 20/6/38 | 20/1/45 | 20/1/49 | Disease 1) [Disease_Plague 1] |
+| total (21 seeds) | 271/59/547 | 280/28/598 | 274/45/591 | |
+
+No seed has a starvation death, branch or merged. **Seed 20/110 is wiped out on
+the merged tree**: 22 heatstroke deaths, one citizen left, no house, outdoor
+temperature up to 56.4 °C. The baseline lost 2 there and the branch 7. Other
+lanes' saved benches of that seed range from 1 death to 21 (hunger or
+exposure). Whether this lane's bigger field makes it worse is not measured.
+
+Arc runs (`--suite arc`) on the branch, not the merged tree, stopped by process
+ID at the 2-hour cap. Band 20 had threats off; band 40 was launched without
+`--threats false` and had threats **on**:
+
+Band 20, seed 99, through year 8:
+
+| year | era | pop | deaths (cumulative) | food in stores | storage huts |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Agrarian | 24 | Disease 1 | 1,902 | 193 |
+| 2 | Bronze | 23 | Disease 1, Exposure 3 | 1,880 | 193 |
+| 3 | Classical | 22 | Disease 2, Exposure 5 | 595 | 193 |
+| 4 | Classical | 24 | Disease 2, Exposure 6 | 0 | 193 |
+| 5 | Medieval | 18 | Disease 4, Injury 2, Exposure 8 | 0 (map 14) | 193 |
+| 6 | Medieval | 17 | Disease 6, Injury 2, Exposure 8 | 3 | 193 |
+| 7 | Medieval | 19 | Disease 8, Injury 2, Exposure 8 | 199 | 193 |
+| 8 | Medieval | 19 | Disease 9, Injury 2, Exposure 10 | 345 | 193 |
+
+Band 40, seed 201, through year 4:
+
+| year | era | pop | deaths (cumulative) | food in stores | storage huts |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Agrarian | 45 | Disease 1 | 2,915 | 262 |
+| 2 | Bronze | 46 | Disease 1, Exposure 3 | 3,591 | 386 |
+| 3 | Classical | 46 | Disease 2, Exposure 7 | 3,168 | 386 |
+| 4 | Classical | 47 | Disease 4, Exposure 11 | 2,955 | 386 |
+
+- **Storage huts.** Band 20 holds at 193 from year 1 (382 at year 8 in §9.6),
+  band 40 at 386 from year 2. Band 20's count cannot be credited to the gate
+  alone, because its store also ran empty. Band 40 has no earlier run in §9.
+- **Band 20's food store emptied, and that is an open problem.** It was 0 at
+  years 4 and 5 (14 nutrition on the map at year 5) and 3 at year 6, against
+  2,665 at year 4 and 3,033 at year 6 in §9.6. Nobody starved. A drought began
+  on day 134, before the fall, but the cause was not traced. Less hunting under
+  the new gate is a candidate.
+- **Exposure is now the largest killer** in band 40, with 11 deaths by
+  year 4. That belongs to the shelter lane, as in §9.6.
+
+### 11.5 Not done
+
+- **Pemmican is a port error.** Here it is 0.2 nutrition, a stack of 200,
+  and 0.35 + 0.35 ingredients. RimWorld's is 0.05 nutrition, a stack of 75,
+  and 0.25 + 0.25 ingredients making 16. It is also the founding provision
+  (`SettlementLarder.ProvisionDef`), and many tests read it, so it is
+  recorded here rather than changed.
+- **Raw food stack.** At 3.75 nutrition per stack, it matches RimWorld
+  (raw food is 0.05 nutrition in stacks of 75). It is not a port error.
+- **Early-harvest yield.** `Plant.Harvest` yields in proportion to growth.
+  RimWorld yields 0.5 + 0.5 × InverseLerp(0.65, 1, growth). The plant
+  module made this choice deliberately, and it is left alone.
+- **No wild animals.** 40/201 had no wild animals from day 15. Wildlife
+  repopulation belongs to another lane.
+
+### 11.6 `SettlementFoodTests` after the merge
+
+`A_founded_settlement_feeds_itself_for_a_week` fails on `e6c4e2e` ("8 of 26
+citizens were at zero nutrition at once") and passes on the merged tree. One
+run per variant:
+
+| variant | result |
+| --- | --- |
+| `e6c4e2e` | fail, 8 of 26 |
+| merged | pass |
+| merged, gate reads map only | fail, 22 of 25 |
+| merged, no early harvest | pass |
+| merged, field ignores growing period | pass |
+
+So the gate change is what the pass depends on. The zero-nutrition citizens in
+the failing run had food on the map (160 to 166) and in the ledger (376). The
+sampled ones were down with heatstroke. Half-day samples from `e6c4e2e` and from
+merged with early harvest off (the unmodified merged tree was not sampled):
+
+| | `e6c4e2e` | merged, no early harvest |
+| --- | --- | --- |
+| outdoor, days 2 to 6 | 37 to 52 °C | 37 to 52 °C |
+| heatstroke, from day 2 | 25 | 25 |
+| downed, day 5 / 5.5 / 6 | 10 / 25 / 25 | 2 / 6 / 25 |
+| zero nutrition, day 6 | 8 | 0 |
+
+The band goes down later, so fewer hours pass unfed before the heat breaks. How
+the gate produces that delay is not shown: it read shut at every sample in both
+runs, but samples half a day apart cannot see it flicker. The heat itself is
+untouched, so the pass may be a narrow margin. Heat refuge in the first week
+belongs to shelter and climate. The test is unchanged.

@@ -215,9 +215,8 @@ namespace SimWorld.Building
         /// <para/><b>Why.</b> <see cref="FarmingTuning.FieldSizeMargin"/> sizes the field to out-grow the mouths
         /// while it grows, and a field only grows in its growing period. The winter has to be eaten out of what
         /// the summer put by, so a tile that grows for half the year has to grow twice what it eats while it
-        /// can. Measured on the 60-day bench, band 40 seed 201: frost from day 32, a field sized for
-        /// break-even out-grew 40 mouths by about a sixth while it grew, and the store was empty on day 40,
-        /// two weeks before the crop that stood through the frost ripened. A RimWorld player on such a tile
+        /// can. Measured on the 60-day bench, band 40 seed 201: the store was empty on day 40,
+        /// about two weeks before the second crop, sown into autumn, ripened. A RimWorld player on such a tile
         /// sows for the winter. Read once per pass from the tile's climate, not from today's weather, so a
         /// cold snap or a heat wave does not repaint the field.
         /// </summary>
