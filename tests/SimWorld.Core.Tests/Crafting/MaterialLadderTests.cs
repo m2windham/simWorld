@@ -303,6 +303,32 @@ namespace SimWorld.Tests.Crafting
         }
 
         [Fact]
+        public void A_furnace_hemmed_in_by_other_stock_still_gets_its_ore_pile_within_reach()
+        {
+            Know("StoneTools", "Copper", "Bronze", "BronzeWeapons");
+            CoreMap map = NewMap();
+            Bench(map, "Smithy", 20, 20);
+            ThingWithComps furnace = Bench(map, "SmeltingFurnace", 24, 20);
+            var other = new Zone_Stockpile { label = "granary" };
+            map.zoneManager.RegisterZone(other);
+            foreach (IntVec3 c in CellRect.CenteredOn(furnace.Position, 2).Cells)
+            {
+                if (c != furnace.Position) map.zoneManager.AddCell(other, c);
+            }
+            Spawn(map, "MineableCopper", 33, 33);
+            Citizen(map, 2, 2, "MeleeWeapon_Knife", "Flint");
+
+            OutfittingInitiative.Run(map);
+            SmeltingInitiative.Run(map);
+
+            Zone_Stockpile pile = map.zoneManager.AllZones.OfType<Zone_Stockpile>().Single(z => z.label == "smelting furnace stock");
+            Assert.Equal(SettlementWorkshops.BenchStockCells, pile.CellCount);
+            Assert.All(pile.Cells, c => Assert.True((c - furnace.Position).LengthHorizontalSquared
+                <= WorkGiver_DoBill.IngredientSearchRadius * WorkGiver_DoBill.IngredientSearchRadius));
+            Assert.True(pile.filter.Allows(Def("CopperOre")));
+        }
+
+        [Fact]
         public void Copper_already_on_hand_is_not_smelted_again()
         {
             Know("StoneTools", "Copper", "Bronze", "BronzeWeapons");

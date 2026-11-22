@@ -44,6 +44,10 @@ namespace SimWorld.Crafting
         /// this number.</summary>
         public const int NearSmithyRadius = 5;
 
+        /// <summary>How far from its bench a furnace's stock pile may lie: half the bill's ingredient reach
+        /// (<see cref="WorkGiver_DoBill.IngredientSearchRadius"/>), so the pile is always well inside it.</summary>
+        public const int StockSearchRadius = WorkGiver_DoBill.IngredientSearchRadius / 2;
+
         /// <summary>Cells in the stockpile kept beside a furnace, as <see cref="SettlementWorkshops.BenchStockCells"/>.</summary>
         public const int StockCells = SettlementWorkshops.BenchStockCells;
 
@@ -234,14 +238,20 @@ namespace SimWorld.Crafting
                 map.zoneManager.RegisterZone(pile);
             }
 
+            // Ring by ring outward from the bench, as far as its ingredient reach: a furnace raised beside the
+            // smithy finds the cells next to it taken by the smithy's own stock (measured: seed 105 left the
+            // bloomery's pile with no cells at radius 2, and 24 iron ore lay in the granary 21 cells away).
             CellRect occupied = bench.OccupiedRect();
-            foreach (IntVec3 c in CellRect.CenteredOn(bench.Position, 2).ClipInsideMap(map).Cells)
+            for (int radius = 2; radius <= StockSearchRadius && pile.CellCount < StockCells; radius++)
             {
-                if (pile.CellCount >= StockCells) return;
-                if (occupied.Contains(c) || !GenGrid.Standable(c, map)) continue;
-                if (map.zoneManager.ZoneAt(c) != null || GenGrid.GetEdifice(c, map) != null) continue;
-                if (HasSiteAt(map, c)) continue;
-                map.zoneManager.AddCell(pile, c);
+                foreach (IntVec3 c in CellRect.CenteredOn(bench.Position, radius).ClipInsideMap(map).Cells)
+                {
+                    if (pile.CellCount >= StockCells) return;
+                    if (occupied.Contains(c) || !GenGrid.Standable(c, map)) continue;
+                    if (map.zoneManager.ZoneAt(c) != null || GenGrid.GetEdifice(c, map) != null) continue;
+                    if (HasSiteAt(map, c)) continue;
+                    map.zoneManager.AddCell(pile, c);
+                }
             }
         }
 
