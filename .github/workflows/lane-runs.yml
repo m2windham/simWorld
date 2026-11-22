@@ -1,0 +1,102 @@
+name: lane-runs
+
+# Full suites, 21-seed benches and era arcs for lane branches, so they stay off the dev PC.
+# Runs only on a push to ci/lane-runs; edit the refs below to choose what is measured.
+on:
+  push:
+    branches: [ci/lane-runs]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lane-runs
+  cancel-in-progress: true
+
+jobs:
+  suite:
+    strategy:
+      fail-fast: false
+      matrix:
+        ref:
+          - { name: food, sha: 258626bd23d295bee358eba30717fc402cfa6431 }
+          - { name: unlocks, sha: 5b1c7014eb42183cb7b79e611c6d33cef82d787e }
+    name: suite ${{ matrix.ref.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ matrix.ref.sha }}" }
+      - uses: actions/setup-dotnet@v4
+        with: { global-json-file: global.json }
+      - run: uname -a; nproc; git rev-parse HEAD
+      - name: Test
+        run: |
+          set -o pipefail
+          dotnet test tests/SimWorld.Core.Tests -c Release 2>&1 | tee suite.log
+      - if: always()
+        run: grep -E "^(Passed|Failed)!" suite.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: "suite-${{ matrix.ref.name }}", path: suite.log }
+
+  bench:
+    strategy:
+      fail-fast: false
+      matrix:
+        ref:
+          - { name: prefood, sha: e6c4e2ed310fc729c0e6bcbdf5d5623afd155a35 }
+          - { name: food, sha: 258626bd23d295bee358eba30717fc402cfa6431 }
+          - { name: unlocks, sha: 5b1c7014eb42183cb7b79e611c6d33cef82d787e }
+        threats: ["false", "true"]
+        shard:
+          - { n: 1, runs: "20:105 20:99 20:777 20:2024 20:12345 20:31337 20:101" }
+          - { n: 2, runs: "20:102 20:103 20:104 20:106 20:107 20:108 20:109 20:110" }
+          - { n: 3, runs: "40:777 40:12345 40:201 40:202 40:203 40:204" }
+    name: bench ${{ matrix.ref.name }} threats=${{ matrix.threats }} ${{ matrix.shard.n }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ matrix.ref.sha }}" }
+      - uses: actions/setup-dotnet@v4
+        with: { global-json-file: global.json }
+      - run: dotnet build tools/bench/SimWorld.Bench -c Release
+      - name: Bench
+        env:
+          RUNS: ${{ matrix.shard.runs }}
+          THREATS: ${{ matrix.threats }}
+        run: |
+          mkdir out
+          export THREATS
+          printf '%s\n' $RUNS | xargs -P "$(nproc)" -I{} bash -c '
+            r={}; b=${r%%:*}; s=${r##*:}
+            dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite storyteller --solo false --days 60 --threats "$THREATS" --band "$b" --seed "$s" > "out/st_${b}_${s}.txt" 2>&1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: "bench-${{ matrix.ref.name }}-threats-${{ matrix.threats }}-${{ matrix.shard.n }}", path: out }
+
+  arc:
+    strategy:
+      fail-fast: false
+      matrix:
+        ref:
+          - { name: food, sha: 258626bd23d295bee358eba30717fc402cfa6431 }
+          - { name: unlocks, sha: 5b1c7014eb42183cb7b79e611c6d33cef82d787e }
+        threats: ["false", "true"]
+    name: arc ${{ matrix.ref.name }} threats=${{ matrix.threats }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ matrix.ref.sha }}" }
+      - uses: actions/setup-dotnet@v4
+        with: { global-json-file: global.json }
+      - run: dotnet build tools/bench/SimWorld.Bench -c Release
+      - name: Arc, 10 years
+        run: |
+          set -o pipefail
+          timeout 300m dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite arc --days 600 --arc-every 30 --solo false --threats ${{ matrix.threats }} --band 20 --seed 99 2>&1 | tee arc.txt || echo "arc ended with $?"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: "arc-${{ matrix.ref.name }}-threats-${{ matrix.threats }}", path: arc.txt }
