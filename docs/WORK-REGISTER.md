@@ -1648,3 +1648,13 @@ the host's), conditions.maplocal (world scope; with one settlement the player se
 remainder of stonework is a new arc item, crafting.materialladder (smelting copper, bronze, iron, steel; per-era
 smithy output), not a port item and left open. That was the last remaining RC gate named above; the
 windowed-quit crash stays open.
+
+2026-11-22 (req007-quests, suite 3333/3333 on the branch): REQ 007 from the host. Map view gains
+MapViewSnapshot.Dwellings / MapViewDelta.Dwellings (DwellingView: rung defName, label and number, plot
+OccupiedMin/OccupiedSize, Rot4, IsComplete, beds standing and planned, household id and name, IndoorTemperature,
+roof defName; re-read whole every capture like the pawns), OutdoorTemperature on both,
+MapViewSnapshot.TemperatureAt(cell) -> CellTemperatureView (focus, tile or map), RoofView.IsEarthen, and
+ThingView.SwitchedOn / FuelFraction (a flip or a 5% fuel step bumps the chunk). Nothing new saved. Bench 20/99 and
+40/201 identical to the shelter baseline apart from wall-clock rows. Quest drop in the host's solo -verify run
+(3 -> 0 at 0d77578): a different random path, not a defect; on six seeds of a core-side repro the quests offered
+went 3 -> 9 and zero-offer seeds 3 -> 2. Note to the host on judging quests: docs/host/verify-quest-gate.md.
