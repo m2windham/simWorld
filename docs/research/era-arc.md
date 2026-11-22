@@ -499,3 +499,160 @@ years of a surviving settlement takes more than a day (§6).
   be the right tool.
 - **Cost on a quiet machine.** Runs B to E overlapped with each other and with
   other lanes' work. The probes are the clean figure.
+
+## 9. Era pacing (2026-11-22)
+
+Added by the `era-pacing` lane. Sections 1 to 8 measured and fixed nothing.
+This section records a fix and measures it against them. It serves all eight
+eras: each era should last long enough for the settlement to build in it and
+live in it, and research should come from the settlement.
+
+### 9.1 Intent and translation
+
+The intent: each era lasts long enough to be built in and lived in, and the
+ladder spans a long game. Tech-reachability used a 50-year horizon. The horizon
+decision in `docs/status.json` says years are not the currency, because a
+quiet century costs nothing to pass on the abstracted clock. That is what makes
+a long arc playable, not a reason against one.
+
+Translated: the years a settlement of 25 spends with each era current.
+
+| era current | intended years | intended turn of the next era |
+| --- | --- | --- |
+| SticksAndStones | 2 | Agrarian, day 120 (y2) |
+| Agrarian | 3 | Bronze, day 300 (y5) |
+| Bronze | 4 | Classical, day 540 (y9) |
+| Classical | 5 | Medieval, day 840 (y14) |
+| Medieval | 6 | Industrial, day 1,200 (y20) |
+| Industrial | 7 | Information, day 1,620 (y27) |
+| Information | 8 | Exotic, day 2,100 (y35) |
+
+Exotic is then lived in from year 35, with the endless tail behind it. The
+translation is in the research `translation` field of `docs/status.json`.
+Nothing is gated on wall-clock.
+
+### 9.2 What was built
+
+RimWorld paces a colony with three things: project cost, the tech-level cost
+factor, and how many researchers work benches. The player picks the project.
+Each lever was kept and shaped for the arc:
+
+- **Benches grow with the settlement and the era.** Each era has a
+  `citizensPerScholar`: 25 for SticksAndStones and Agrarian, then 20, 18, 12,
+  8, 6 and 5. The settlement wants one bench per that many citizens, rounded,
+  and at least one (`WorksInitiativeTuning.ResearchBenchesWanted`). This
+  replaces the flat 2 of §2.1. The ratios are not sourced, so the tests pin
+  only the trend: never fewer benches with more people or a later era, and
+  more for a band of 40 than for a band of 20 in every era.
+- **Each era carries a cost factor.** `EraDef.researchCostFactor` multiplies
+  every project in the era. It sits inside `ResearchProjectDef.CostFactor`,
+  beside RimWorld's tech-level factor, so it acts where RimWorld's own
+  multiplier acts and `baseCost` stays the authored relative price. Generated
+  endless projects take the last era's factor, so the tail does not open
+  cheaper than Exotic. `ResearchPerformed` is not touched; it already divides
+  by `CostFactor`.
+- **The agenda does not reach past the era it is working toward.**
+  `ResearchAgenda` is still cheapest-first. It no longer takes a project from
+  an era past the earliest incomplete one (`EraPacing.FrontierEra`). Run B's
+  drift into `Xenobotany` while Information was unfinished (§2.1) is now a
+  test case, found from content rather than by name.
+
+### 9.3 How the factors were derived
+
+While era X is current, the settlement researches the era after it. The
+frontier agenda sweeps nearly all of that era, leaves included. So:
+
+```text
+factor(X+1) = years(X) x 60 x points per day at benches(X)
+              / (authored cost of X+1 x tech factor)
+```
+
+Points per day were measured, not modelled, and the first calibration was
+wrong. It assumed 350 points a scholar-day, read from runs A to D (147,000
+effective points to the Medieval turn, by day 150 to 213, on two benches). A
+probe on this branch showed one bench earning 380 to 700 points a day,
+rising as its researcher learned. Research is the lowest-priority work type
+(`naturalPriority` 300, as in RimWorld), so a bench is staffed by spare hands.
+One bench is nearly always staffed; a second is staffed less. The 350 was a
+two-bench average.
+
+The rates used, measured with `era-survival`'s 4,000-tick research sittings
+merged in, since both land in integration:
+
+| benches | points a day | source |
+| --- | --- | --- |
+| 1 | about 600 | band 20 seed 99 probe: 358, 520, then 660 to 680 a day by month |
+| 2 | about 390 a bench | runs A to D; band 40 seed 201 probe: 350 to 380 a bench |
+| 3 or more | 390 a bench, assumed | not measured: no run has had three benches |
+
+| era | authored cost | tech factor | benches paying for it | factor |
+| --- | --- | --- | --- | --- |
+| SticksAndStones and Agrarian | 16,600 | 1.0 | 1 | 4.3 |
+| Bronze | 21,110 | 1.5 | 1 | 3.4 |
+| Classical | 38,060 | 1.0 | 1 | 3.8 |
+| Medieval | 60,930 | 1.0 | 1 | 3.0 |
+| Industrial | 120,210 | 1.5 | 2 | 1.55 |
+| Information | 161,370 | 1.5 | 3 | 2.0 |
+| Exotic | 163,680 | 2.0 | 4 | 2.3 |
+
+`EraPacingTests` recomputes each nominal era length from the loaded content
+and pins it within 10% of the intent, so a project added to an era, or a
+ratio changed, fails a test rather than a ten-hour run.
+
+### 9.4 Before and after
+
+`--suite arc`, threats off, solo world, sampled every 30 days, capped at 10
+game years or 2.5 hours. "After" is this branch merged with `era-survival`
+(`b5db21a`), the build integration will have. "Before" is §2. Turn days are
+rebuilt from each project's finish day and the era spines, as in §1.1. For run
+20/99 they match the suite's own table and `EraReached` days exactly.
+
+| era turned | intended | A before (20/99) | after 20/99 | B before (20/2024) | after 20/2024 | C before (40/201) | after 40/201 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Agrarian | d120 | d41 | d125 | d30 | d154 | d38 | d111 |
+| Bronze | d300 | d76 | d266 | d56 | d313 | d70 | d241 |
+| Classical | d540 | d135 | d462 | d98 | not by d360 (3/14 spine) | d121 | not by d300 (6/14 spine) |
+| Medieval | d840 | d213 | not by d600 (6/13 spine) | d150 | | d183 | |
+| stopped | | | 10 y, 95 min | | 6 y, 2.5 h cap | | 5 y, 2.5 h cap |
+
+Days with each era current:
+
+| era | intended | before (A, B, C) | after 20/99 | after 20/2024 | after 40/201 |
+| --- | --- | --- | --- | --- | --- |
+| SticksAndStones | 120 | 30 to 41 | 125 | 154 | 111 |
+| Agrarian | 180 | 26 to 35 | 141 | 159 | 130 |
+| Bronze | 240 | 42 to 59 | 196 | | |
+
+What this shows:
+
+- **The opening is on intent.** Agrarian turned on day 111 to 154 against 120,
+  where it had turned on day 30 to 41. Agrarian and Bronze now last 130 to
+  196 days, where they had lasted 26 to 59. They run 12 to 28% short of
+  intent: the single bench earns a little more than 600 once its researcher
+  matures. That is a calibration point to move, not a shape problem.
+- **Each era is researched whole before the next turns.** In run 20/99 every
+  Agrarian, Bronze and Classical project was finished (27, 31 and 31), and
+  the next era's first project waited until its own era was the frontier.
+- **The turns are announced.** With `era-survival`'s fix merged, each turn
+  wrote an "Era reached" moment, three in 20/99 and two in 20/2024.
+- **A band of 40 researches faster, though not by much.** It turned Agrarian
+  and Bronze 14 to 72 days earlier than the band-20 seeds, on two benches
+  against one. A second bench adds about 25%, not 100%, because it is staffed
+  by spare hands (§9.3).
+
+### 9.5 What this did not determine
+
+- **Medieval onward, measured.** No run reached Medieval: the intended turn is
+  year 14, and the bench affords 5 to 10 years in 2.5 hours. The later eras
+  are paced by the derivation and the content test, not by a played run.
+- **Three or more benches.** The late factors assume 390 points a bench. If a
+  third bench is staffed as thinly as a second, the late eras run longer than
+  intended. That is the next thing to measure, and the lever is
+  `citizensPerScholar` or the rate in the derivation, not a per-seed tune.
+- **A bigger settlement researches more, but weakly.** Two benches earn about
+  1.3 times what one does. A settlement that wants research to scale with
+  people would need researchers who do not lose their bench to every other
+  job. That is a work-priority question this lane did not take on.
+- **The rate depends on `era-survival`.** The calibration was measured on the
+  merged build. On this branch alone the single-bench rate was about the
+  same (383 to 705 a day against 358 to 683).
