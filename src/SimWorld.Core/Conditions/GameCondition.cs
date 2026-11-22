@@ -142,11 +142,6 @@ namespace SimWorld.Conditions
     /// <c>GameCondition_HeatWave</c> / <c>GameCondition_ColdSnap</c>, one class each with the number
     /// hardcoded in an override).
     ///
-    /// <para/><b>It comes on and goes off over a few hours</b> (RimWorld: <c>GameConditionUtility.LerpInOutValue</c>
-    /// with <c>GameCondition_HeatWave</c>'s 12,000 ticks, read from the 1.0 decompile): the offset climbs from
-    /// nothing to the def's number over its first <see cref="LerpTicks"/> and falls back over its last, so a
-    /// heat wave can be felt coming. A permanent one never falls back.
-    ///
     /// <para/><b>One class, two defs.</b> The two RimWorld classes differ in exactly one number and nothing
     /// else, so this port keeps the class and moves the number to
     /// <see cref="GameConditionDef.temperatureOffset"/>. A third temperature condition — a long winter, a
@@ -162,14 +157,6 @@ namespace SimWorld.Conditions
     /// </summary>
     public class GameCondition_TemperatureOffset : GameCondition
     {
-        /// <summary>RimWorld: <c>GameCondition_HeatWave.LerpTicks</c>.</summary>
-        public const int LerpTicks = 12000;
-
-        public override float TemperatureOffset()
-        {
-            if (def == null) return 0f;
-            float strength = Math.Min(1f, Math.Min((float)TicksPassed / LerpTicks, (float)TicksLeft / LerpTicks));
-            return def.temperatureOffset * Math.Max(0f, strength);
-        }
+        public override float TemperatureOffset() => def?.temperatureOffset ?? 0f;
     }
 }

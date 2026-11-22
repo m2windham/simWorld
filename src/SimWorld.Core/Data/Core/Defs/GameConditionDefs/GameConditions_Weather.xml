@@ -6,11 +6,10 @@
     IncidentDef that brings it about rather than the incident naming it - see GameConditionDef's own doc
     comment for why the relationship is inverted (it kept Director/IncidentDefs.cs out of this entirely).
 
-    HeatWave and ColdSnap share one conditionClass and differ only in temperatureOffset. The heat wave's 17 is
-    RimWorld 1.0's (GameCondition_HeatWave.MaxTempOffset, josh-m/RW-Decompile). Both lengths are RimWorld
-    1.0's, 1.5 to 3.5 days (Core/Defs/IncidentDefs/Incidents_Map_Misc.xml, RimWorld-zh/RimWorld-Core); they
-    were 2 to 8 here before they were checked. The tests pin what the offsets do (plants stop growing, rot
-    speeds up or stops dead), not the literals.
+    HeatWave and ColdSnap share one conditionClass and differ only in temperatureOffset. Those two numbers
+    carry RimWorld's shape - a heat wave that makes a temperate summer dangerous, a cold snap that drops a
+    mild day below freezing - recalled rather than sourced from a decompile in this sandbox, so the tests
+    pin what they do (plants stop growing, rot speeds up or stops dead) and never the literals.
   -->
 
   <GameConditionDef>
@@ -19,7 +18,7 @@
     <description>Unusual heat lies over the whole civilization. Plants struggle, food spoils faster, and the shade is the only comfortable place to be.</description>
     <conditionClass>SimWorld.Conditions.GameCondition_TemperatureOffset</conditionClass>
     <incident>HeatWave</incident>
-    <durationDays>1.5~3.5</durationDays>
+    <durationDays>2~8</durationDays>
     <temperatureOffset>17</temperatureOffset>
     <letterDef>NegativeEvent</letterDef>
     <endMessage>The heat wave has passed.</endMessage>
@@ -31,7 +30,7 @@
     <description>Unusual cold lies over the whole civilization. Growing stops, and anything left outdoors freezes rather than spoils.</description>
     <conditionClass>SimWorld.Conditions.GameCondition_TemperatureOffset</conditionClass>
     <incident>ColdSnap</incident>
-    <durationDays>1.5~3.5</durationDays>
+    <durationDays>2~8</durationDays>
     <temperatureOffset>-20</temperatureOffset>
     <letterDef>NegativeEvent</letterDef>
     <endMessage>The cold snap has passed.</endMessage>
