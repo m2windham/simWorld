@@ -3,7 +3,7 @@
   "project": "SimWorld",
 
   "updated": "2026-11-21",
-  "testsTotal": 3324,
+  "testsTotal": 3333,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
