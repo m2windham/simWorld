@@ -511,6 +511,25 @@ namespace SimWorld.Tests.Crafting
             Assert.Equal("Iron", secondDoor.stuffToUse!.defName);
         }
 
+        [Fact]
+        public void Iron_waiting_to_become_steel_is_not_spare_for_a_wall()
+        {
+            Know("Iron", "Steel");
+            CoreMap map = NewMap();
+            ThingWithComps bloomery = Bench(map, "Bloomery", 22, 20);
+            Spawn(map, "Iron", 23, 22, 40);
+            var wall = (Blueprint)Spawn(map, "Blueprint_Wall", 12, 10);
+            wall.stuffToUse = Def("WoodLog");
+            Bills(bloomery).BillStack.AddBill(new Bill_Production(Recipe("Make_Steel_Cementation")) { repeatMode = BillRepeatMode.TargetCount, targetCount = 30 });
+
+            Assert.Equal(0, MaterialLadder.UpgradeBlueprints(map));
+            Assert.Equal("WoodLog", wall.stuffToUse!.defName);
+
+            Bills(bloomery).BillStack.Delete(Bills(bloomery).BillStack.Bills[0]);
+            Assert.Equal(1, MaterialLadder.UpgradeBlueprints(map));
+            Assert.Equal("Iron", wall.stuffToUse!.defName);
+        }
+
         // ---- save ----
 
         [Fact]

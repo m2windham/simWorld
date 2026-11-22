@@ -549,6 +549,7 @@ namespace SimWorld.Crafting
                 if (!GenStuff.CanMake(stuff, def)) continue;
                 if (isWall && stuff.stuffProps.commonality < 1f) continue;
                 if (smithyWants.TryGetValue(stuff, out int stillShort) && stillShort > 0) continue;
+                if (FeedsStandingSmelting(map, stuff)) continue;
                 if (Spare(map, stuff) < def.CostListCountFor(stuff, stuff)) continue;
                 if (best == null || Toughness(stuff) > Toughness(best)
                     || (Toughness(stuff) == Toughness(best) && string.CompareOrdinal(stuff.defName, best.defName) < 0))
@@ -557,6 +558,28 @@ namespace SimWorld.Crafting
                 }
             }
             return best;
+        }
+
+        /// <summary>Whether a metallurgy bill on the map still working takes <paramref name="stuff"/> in: iron
+        /// waiting to become steel is not spare (measured: seed 12345 walled with iron while its cementation bill
+        /// stood short of it).</summary>
+        private static bool FeedsStandingSmelting(Map.Map map, ThingDef stuff)
+        {
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            for (int b = 0; b < buildings.Count; b++)
+            {
+                if (buildings[b] is not ThingWithComps bench || bench.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;
+                IReadOnlyList<Bill> bills = comp.BillStack.Bills;
+                for (int i = 0; i < bills.Count; i++)
+                {
+                    if (bills[i] is not Bill_Production bill || !IsMetallurgy(bill.recipe) || !bill.ShouldDoNow()) continue;
+                    foreach (IngredientCount ingredient in bill.recipe.ingredients!)
+                    {
+                        if (ReferenceEquals(Guild.FixedDefOf(ingredient), stuff)) return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>On the map, less what blueprints and frames already placed still wait for.</summary>
