@@ -40,7 +40,9 @@ namespace SimWorld.Tests.Crafting
             // corpse ThingDefs, which are generated per race at runtime rather than authored here — and task
             // #104 (system: Health — medicine) added one more, Medicine, for MedicineHerbal/MedicineIndustrial.
             Assert.Equal(18, DefDatabase<ThingCategoryDef>.DefCount);
-            Assert.Equal(5, DefDatabase<StuffCategoryDef>.DefCount);
+            // 6: the material ladder (crafting.materialladder) added Lithic, knapped stone, in its own
+            // StuffCategoryDefs/StuffCategories_Lithic.xml.
+            Assert.Equal(6, DefDatabase<StuffCategoryDef>.DefCount);
             Assert.True(DefDatabase<ThingDef>.AllDefsListForReading.Count(d => d.category == ThingCategory.Item) >= 10);
             Assert.True(DefDatabase<RecipeDef>.DefCount >= 5);
             // Assert the production benches this module ships, not a count of every building def:
