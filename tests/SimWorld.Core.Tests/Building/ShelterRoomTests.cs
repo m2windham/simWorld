@@ -406,6 +406,8 @@ namespace SimWorld.Tests.Building
             Assert.InRange(later - calm, -0.5f, 0.5f);
 
             map.gameConditionManager.RegisterCondition(GameConditionMaker.MakeConditionForDays(GameConditionDefOf.HeatWave, 2f));
+            Find.TickManager.DebugSetTicksGame(Find.TickManager.TicksGame + GameCondition_TemperatureOffset.LerpTicks);
+            later = GenTemperature.SeasonalTemperatureAt(map.weatherManager.Climate!, Find.TickManager.TicksAbs) + map.weatherManager.TemperatureOffset;
             float wave = SettlementClimate.Outlook(map).DailyMean;
             Assert.Equal(map.gameConditionManager.AggregateTemperatureOffset(), wave - later, 2);
             Assert.True(wave > later + 10f);

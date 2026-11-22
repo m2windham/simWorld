@@ -54,8 +54,8 @@ namespace SimWorld.Conditions
         /// <see cref="GameCondition_TemperatureOffset"/> and ignored by every other condition class.
         /// <para/>
         /// <b>Constants.</b> RimWorld's heat wave and cold snap override <c>TemperatureOffset()</c> with one
-        /// hardcoded number each; those numbers are recalled here rather than sourced from a decompile, so
-        /// per CLAUDE.md the tests pin the behaviour they produce — a heat wave makes it hotter than it was,
+        /// hardcoded number each. The heat wave's 17 is sourced (the 1.0 decompile); either way
+        /// the tests pin the behaviour they produce — a heat wave makes it hotter than it was,
         /// far enough to stop plants growing and speed rot; a cold snap drops it below freezing and stops rot
         /// dead — never these literals.
         /// </summary>
