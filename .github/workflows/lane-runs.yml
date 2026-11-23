@@ -19,8 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: food, sha: 258626bd23d295bee358eba30717fc402cfa6431 }
-          - { name: unlocks, sha: 5b1c7014eb42183cb7b79e611c6d33cef82d787e }
+          - { name: raidfix, sha: 93eac84d59cdfc4142ee582037d7b6051f886da2 }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -45,9 +44,7 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: prefood, sha: e6c4e2ed310fc729c0e6bcbdf5d5623afd155a35 }
-          - { name: food, sha: 258626bd23d295bee358eba30717fc402cfa6431 }
-          - { name: unlocks, sha: 5b1c7014eb42183cb7b79e611c6d33cef82d787e }
+          - { name: raidfix, sha: 93eac84d59cdfc4142ee582037d7b6051f886da2 }
         threats: ["false", "true"]
         shard:
           - { n: 1, runs: "20:105 20:99 20:777 20:2024 20:12345 20:31337 20:101" }
@@ -80,23 +77,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ref:
-          - { name: food, sha: 258626bd23d295bee358eba30717fc402cfa6431 }
-          - { name: unlocks, sha: 5b1c7014eb42183cb7b79e611c6d33cef82d787e }
-        threats: ["false", "true"]
-    name: arc ${{ matrix.ref.name }} threats=${{ matrix.threats }}
+        run:
+          - { name: raidfix-20-99-on, sha: 93eac84d59cdfc4142ee582037d7b6051f886da2, threats: "true", pop: "20:99" }
+          - { name: raidfix-20-101-on, sha: 93eac84d59cdfc4142ee582037d7b6051f886da2, threats: "true", pop: "20:101" }
+          - { name: raidfix-40-201-on, sha: 93eac84d59cdfc4142ee582037d7b6051f886da2, threats: "true", pop: "40:201" }
+          - { name: raidfix-40-201-off, sha: 93eac84d59cdfc4142ee582037d7b6051f886da2, threats: "false", pop: "40:201" }
+    name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
     steps:
       - uses: actions/checkout@v4
-        with: { ref: "${{ matrix.ref.sha }}" }
+        with: { ref: "${{ matrix.run.sha }}" }
       - uses: actions/setup-dotnet@v4
         with: { global-json-file: global.json }
       - run: dotnet build tools/bench/SimWorld.Bench -c Release
       - name: Arc, 10 years
+        env:
+          POP: ${{ matrix.run.pop }}
         run: |
-          set -o pipefail
-          timeout 300m dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite arc --days 600 --arc-every 30 --solo false --threats ${{ matrix.threats }} --band 20 --seed 99 2>&1 | tee arc.txt || echo "arc ended with $?"
+          set -o pipefail +e
+          timeout 300m dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite arc --days 600 --arc-every 30 --solo false --threats ${{ matrix.run.threats }} --band "${POP%%:*}" --seed "${POP##*:}" 2>&1 | tee arc.txt; rc=$?; echo "arc exit $rc" | tee -a arc.txt; exit $rc
       - uses: actions/upload-artifact@v4
         if: always()
-        with: { name: "arc-${{ matrix.ref.name }}-threats-${{ matrix.threats }}", path: arc.txt }
+        with: { name: "arc-${{ matrix.run.name }}", path: arc.txt }
