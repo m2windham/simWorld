@@ -126,6 +126,7 @@ namespace SimWorld.AI
             ThinkTreeDef? tree = ThinkTreeFor(pawn);
             if (tree?.thinkRoot == null) return;
             ThinkResult result = tree.thinkRoot.TryIssueJobPackage(pawn);
+            JobSearchCount.Note(pawn, result);
             if (result.IsValid) StartJob(result.Job!);
         }
 
