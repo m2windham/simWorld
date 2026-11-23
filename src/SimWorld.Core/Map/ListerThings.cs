@@ -23,6 +23,12 @@ namespace SimWorld.Map
 
         /// <summary>Frames under construction (system 16: Building).</summary>
         BuildingFrame,
+
+        /// <summary>Buildings whose def carries a <see cref="CompBillGiver"/> or is named by any recipe's
+        /// <c>recipeUsers</c> (RimWorld: <c>ThingRequestGroup.PotentialBillGiver</c>), so a bench search touches
+        /// benches and not every wall and storage hut on the map. Membership is read off the def alone, and the
+        /// list keeps spawn order, so it is always an order-preserving subsequence of <see cref="Building"/>.</summary>
+        PotentialBillGiver,
     }
 
     /// <summary>Every spawned Thing on the map, indexed by def and by broad category (RimWorld: <c>Verse.ListerThings</c>).</summary>
@@ -78,6 +84,7 @@ namespace SimWorld.Map
                 case ThingCategory.Building:
                     yield return ThingRequestGroup.Building;
                     if (thing.def.mineable == false) yield return ThingRequestGroup.BuildingArtificial;
+                    if (thing.def.HasComp(typeof(CompBillGiver)) || thing.def.AllRecipes.Count > 0) yield return ThingRequestGroup.PotentialBillGiver;
                     break;
                 case ThingCategory.Item:
                     yield return ThingRequestGroup.Item;

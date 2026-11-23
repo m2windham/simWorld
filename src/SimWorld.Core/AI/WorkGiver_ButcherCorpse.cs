@@ -106,9 +106,13 @@ namespace SimWorld.AI
             return false;
         }
 
+        /// <summary>Walks the <see cref="ThingRequestGroup.PotentialBillGiver"/> group, not every building: a
+        /// butcher bench is named by a recipe's <c>recipeUsers</c>, which puts it in that group, and the group keeps
+        /// the Building group's order, so this and <see cref="TryFindButcherBench"/> see the same benches in the
+        /// same order as a walk of every building did.</summary>
         public static bool AnyButcherBenchOn(Map.Map map)
         {
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             for (int i = 0; i < buildings.Count; i++)
             {
                 if (IsButcherBench(buildings[i])) return true;
@@ -125,7 +129,7 @@ namespace SimWorld.AI
             if (map == null) return false;
 
             int bestDistSq = int.MaxValue;
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             for (int i = 0; i < buildings.Count; i++)
             {
                 Thing candidate = buildings[i];
