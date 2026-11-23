@@ -53,11 +53,21 @@ namespace SimWorld.AI
         public override bool ShouldSkip(Pawn pawn, bool forced = false) =>
             pawn.Map == null || !pawn.Map.designationManager.SettlementInitiativeOn(Designations.PlayerDesignationDefOf.CutPlant);
 
+        /// <summary>
+        /// Only the plants <see cref="ShouldBeCut"/> already marks. It is the first, side-effect-free test
+        /// <see cref="HasJobOnThing"/> runs, so dropping the rest here leaves the surviving candidates in the
+        /// same relative order and the scan picks the same plant — without measuring and sorting every tree on
+        /// the map, almost all of which it would only have rejected.
+        /// </summary>
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.Plant)) yield return t;
+            IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.Plant);
+            for (int i = 0; i < plants.Count; i++)
+            {
+                if (plants[i] is Plant plant && ShouldBeCut(plant)) yield return plant;
+            }
         }
 
         /// <summary>

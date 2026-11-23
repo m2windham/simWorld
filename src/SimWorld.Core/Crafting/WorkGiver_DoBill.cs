@@ -63,14 +63,44 @@ namespace SimWorld.Crafting
 
         public override PathEndMode PathEndMode => PathEndMode.Touch;
 
+        /// <summary>No bench of this giver's trade on the map, nothing to scan. That is exactly the case where
+        /// <see cref="PotentialWorkThingsGlobal"/> would yield nothing, so skipping it changes no answer; it only
+        /// spares the scan its setup.</summary>
+        public override bool ShouldSkip(Pawn pawn, bool forced = false)
+        {
+            Map.Map? map = pawn.Map;
+            if (map == null) return true;
+            IReadOnlyList<Thing> givers = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
+            for (int i = 0; i < givers.Count; i++)
+            {
+                if (ServesThisTrade(givers[i])) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Benches of this giver's own trade (RimWorld: <c>PotentialWorkThingRequest</c> =
+        /// <c>ThingRequest.ForGroup(PotentialBillGiver)</c>). Walks the bill-giver group rather than every
+        /// building: once a settlement has a few hundred walls and storage huts, walking the whole Building group
+        /// on every job search was most of the simulation. The group keeps the Building group's relative order,
+        /// and a bench of another trade is the first thing <see cref="HasJobOnThing"/> rejects, so the nearest
+        /// accepted bench — earliest-listed on a tie — is the same one the wider walk found.
+        /// </summary>
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.Building))
+            IReadOnlyList<Thing> givers = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
+            for (int i = 0; i < givers.Count; i++)
             {
-                if (BillGiverFor(t) != null) yield return t;
+                if (ServesThisTrade(givers[i])) yield return givers[i];
             }
+        }
+
+        private bool ServesThisTrade(Thing thing)
+        {
+            CompBillGiver? comp = BillGiverFor(thing);
+            return comp != null && comp.Props.workType == def.workType;
         }
 
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)

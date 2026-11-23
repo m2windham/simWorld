@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SimWorld.Map;
 using SimWorld.Pawns;
@@ -57,22 +58,49 @@ namespace SimWorld.AI
             // simulation once a band took to mining (tools/bench --suite mining). Sorting by (distance, list
             // position) and stopping at the first accepted candidate picks the same thing the list-order walk
             // picks — the nearest accepted, the earliest-listed on a tie — without asking about the rest.
-            var candidates = new List<Thing>();
-            var order = new List<long>();
-            foreach (Thing t in scanner.PotentialWorkThingsGlobal(pawn))
+            ScanBuffers buffers = RentBuffers();
+            List<Thing> candidates = buffers.candidates;
+            List<long> order = buffers.order;
+            try
             {
-                if (!t.Spawned || t.Map != map) continue;
-                long distSq = (t.Position - pawn.Position).LengthHorizontalSquared;
-                order.Add((distSq << 32) | (uint)candidates.Count);
-                candidates.Add(t);
+                foreach (Thing t in scanner.PotentialWorkThingsGlobal(pawn))
+                {
+                    if (!t.Spawned || t.Map != map) continue;
+                    long distSq = (t.Position - pawn.Position).LengthHorizontalSquared;
+                    order.Add((distSq << 32) | (uint)candidates.Count);
+                    candidates.Add(t);
+                }
+                order.Sort();
+                for (int i = 0; i < order.Count; i++)
+                {
+                    Thing t = candidates[(int)(order[i] & 0xFFFFFFFF)];
+                    if (scanner.HasJobOnThing(pawn, t)) return scanner.JobOnThing(pawn, t);
+                }
+                return null;
             }
-            order.Sort();
-            for (int i = 0; i < order.Count; i++)
+            finally
             {
-                Thing t = candidates[(int)(order[i] & 0xFFFFFFFF)];
-                if (scanner.HasJobOnThing(pawn, t)) return scanner.JobOnThing(pawn, t);
+                candidates.Clear();
+                order.Clear();
+                freeBuffers!.Push(buffers);
             }
-            return null;
+        }
+
+        /// <summary>The scan's two working lists, reused instead of allocated on every job search. A stack rather
+        /// than one pair because a scan can re-enter itself — <see cref="WorkGiver_PatientGoToBed"/> asks the
+        /// whole work list from inside a giver — and per thread because tests run simulations side by side.</summary>
+        private sealed class ScanBuffers
+        {
+            public readonly List<Thing> candidates = new List<Thing>();
+            public readonly List<long> order = new List<long>();
+        }
+
+        [ThreadStatic] private static Stack<ScanBuffers>? freeBuffers;
+
+        private static ScanBuffers RentBuffers()
+        {
+            freeBuffers ??= new Stack<ScanBuffers>();
+            return freeBuffers.Count > 0 ? freeBuffers.Pop() : new ScanBuffers();
         }
 
         private static Job? TryFindJobOnCellScanner(Pawn pawn, WorkGiver_Scanner scanner)
