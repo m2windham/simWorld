@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using SimWorld.Defs;
+using SimWorld.Weather;
 using SimWorld.World;
 
 namespace SimWorld.Building
@@ -24,6 +25,17 @@ namespace SimWorld.Building
     /// <para/><b>Nothing here is a cap.</b> The count still rises with what the settlement holds and falls
     /// when it holds less; a settlement that stockpiles for a year will line its ring with huts, and that
     /// is the stock showing. What changed is that a sack of pemmican no longer counts as fifty-seven things.
+    ///
+    /// <para/><b>Only what the weather would ruin.</b> RimWorld's reason to roof a store is deterioration:
+    /// a thing whose <c>DeteriorationRate</c> is above nothing loses hit points under open sky
+    /// (<c>SteadyEnvironmentEffects.FinalDeteriorationRate</c>), and a thing without one keeps in an open
+    /// stockpile for ever, which is where a RimWorld colony leaves its chunks, blocks and steel. So a hut is
+    /// wanted for the stacks that need covering (<see cref="StacksNeedingCover"/>), not for every stack.
+    /// Counting the whole ledger was the defect: a 40-strong band (<c>tools/bench --suite arc</c>, seed 201)
+    /// held 23,448 raw rice by day 30, which is about a month of food and 313 stacks, and was asked for 105
+    /// huts for it, which took the wood and the hands its houses needed. Food carries no deterioration rate
+    /// here; it spoils by rotting, which a roof does not stop (RimWorld's answer for food is a cold room, not a
+    /// shed).
     /// </summary>
     public static class StorageHutNeed
     {
@@ -51,11 +63,30 @@ namespace SimWorld.Building
             return stacks;
         }
 
-        /// <summary>Huts enough to hold <see cref="StacksHeld"/>: none for an empty ledger, one as soon as
-        /// anything is held, another each time the last one is full.</summary>
+        /// <summary>The part of <see cref="StacksHeld"/> that would wear away left outside: stacks of every
+        /// def that can deteriorate and has a <c>DeteriorationRate</c> above zero.</summary>
+        public static int StacksNeedingCover(Settlement settlement)
+        {
+            if (settlement == null) throw new ArgumentNullException(nameof(settlement));
+            int stacks = 0;
+            foreach (KeyValuePair<ThingDef, int> kv in settlement.Stores)
+            {
+                if (kv.Value <= 0 || !NeedsCover(kv.Key)) continue;
+                int limit = Math.Max(1, kv.Key.stackLimit);
+                stacks += (kv.Value + limit - 1) / limit;
+            }
+            return stacks;
+        }
+
+        private static bool NeedsCover(ThingDef def) =>
+            def.CanEverDeteriorate && def.GetStatValueAbstract(DeteriorationDefOf.DeteriorationRate) > 0f;
+
+        /// <summary>Huts enough to hold <see cref="StacksNeedingCover"/>: none while nothing in the ledger
+        /// would spoil in the open, one as soon as something would, another each time the last one is
+        /// full.</summary>
         public static int Target(Settlement settlement)
         {
-            int stacks = StacksHeld(settlement);
+            int stacks = StacksNeedingCover(settlement);
             return (stacks + StacksPerStorageHut - 1) / StacksPerStorageHut;
         }
     }
