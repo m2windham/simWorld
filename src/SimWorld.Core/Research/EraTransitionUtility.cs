@@ -23,13 +23,6 @@ namespace SimWorld.Research
         }
 
         /// <summary>
-        /// The threat-point multiplier for the era the civilization is in right now, 1 when there is no era
-        /// ladder loaded at all. See <see cref="EraDef.threatPointsFactor"/> for why this exists and what it
-        /// stands in for.
-        /// </summary>
-        public static float CurrentEraThreatPointsFactor() => Find.ResearchManager.CurrentEra?.threatPointsFactor ?? 1f;
-
-        /// <summary>
         /// The chronicle headline for an era. "Reached" is the vocabulary the rest of the module already uses
         /// (<see cref="ResearchManager.CurrentEra"/> is "the furthest era reached"), and it means the era's
         /// spine is finished — a civilization reaches the bronze age by having learned bronze, not by

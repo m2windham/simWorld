@@ -38,8 +38,7 @@ namespace SimWorld.Social.Ideology
         /// hurts. RimWorld rolls part of ritual quality from the physical setting (room impressiveness, an
         /// altar, weather) — no Map/Building/room concept reaches <c>Social</c> yet, the same gap this
         /// system's own tracker entry calls out — so a happier crowd stands in for a better atmosphere, the
-        /// same kind of honest, documented substitution <see cref="Research.EraDef.threatPointsFactor"/>
-        /// already makes for a term nothing computes yet.
+        /// honest, documented substitution for a term nothing computes yet.
         /// </summary>
         public const float MeanMoodQualityWeight = 0.2f;
 

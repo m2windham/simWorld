@@ -205,48 +205,53 @@ namespace SimWorld.Tests.Research
             Assert.Equal(Era("Agrarian").techLevel, manager.ResearcherTechLevel);
         }
 
-        // ---- threat scaling ----
+        // ---- threat points across the ladder ----
+        //
+        // An era used to multiply the threat points (EraDef.threatPointsFactor, 1.0 up to 3.4). It bought
+        // raiders of unchanged strength and nothing else, and on 40/201 threats-on it sent a Medieval raid the
+        // size of the town that killed 24 of 25 people. It was removed; era pressure is meant to come back as
+        // strength rather than head count (docs/research/era-arc.md finding 5). These tests pin the removal:
+        // the same town is priced the same on either side of an era crossing, all the way up the ladder.
 
-        [Fact]
-        public void A_later_era_never_threatens_less_than_an_earlier_one()
+        private static CivilizationTarget Town(int people, float wealth)
         {
-            List<EraDef> ordered = OrderedEras();
-            for (int i = 1; i < ordered.Count; i++)
+            var target = new CivilizationTarget(Find.Storyteller) { PlayerWealthForStoryteller = wealth };
+            for (int i = 0; i < people; i++) target.pawns.Add(NewHuman("Citizen" + i));
+            return target;
+        }
+
+        [Theory]
+        [InlineData(25, 28000f)]
+        [InlineData(8, 400000f)]
+        public void Crossing_an_era_does_not_change_the_threat_points_for_the_same_town(int people, float wealth)
+        {
+            CivilizationTarget town = Town(people, wealth);
+            Find.TickManager.DebugSetTicksGame(400 * GenDate.TicksPerDay);
+            float before = StorytellerUtility.DefaultThreatPointsNow(town);
+
+            foreach (EraDef era in OrderedEras())
             {
-                Assert.True(ordered[i].threatPointsFactor >= ordered[i - 1].threatPointsFactor,
-                    $"{ordered[i].defName} threatens less than {ordered[i - 1].defName}.");
+                CompleteEra(era);
+                Assert.True(manager.CurrentEra!.order >= era.order, $"{era.defName} was not reached.");
+                float after = StorytellerUtility.DefaultThreatPointsNow(town);
+                Assert.True(after == before,
+                    $"reaching {era.defName} moved the threat for the same town from {before} to {after}.");
             }
-
-            Assert.True(ordered[ordered.Count - 1].threatPointsFactor > ordered[0].threatPointsFactor,
-                "the ladder should end up threatening more than it starts.");
         }
 
         [Fact]
-        public void Reaching_a_later_era_raises_the_points_the_director_spends()
+        public void A_bigger_town_still_draws_a_bigger_threat_in_a_late_era()
         {
-            var target = new CivilizationTarget(Find.Storyteller) { PlayerWealthForStoryteller = 400000f };
-            target.pawns.Add(NewHuman("Citizen"));
-            Find.TickManager.DebugSetTicksGame(0);
-
-            float pointsAtStart = StorytellerUtility.DefaultThreatPointsNow(target);
-
+            // The removal must not flatten the curve: RimWorld's own terms (roster and wealth) still move it.
             CompleteLadderThrough(Era("Industrial"));
-            Assert.Equal(Era("Industrial"), manager.CurrentEra);
+            Find.TickManager.DebugSetTicksGame(400 * GenDate.TicksPerDay);
 
-            float pointsIndustrial = StorytellerUtility.DefaultThreatPointsNow(target);
+            float small = StorytellerUtility.DefaultThreatPointsNow(Town(10, 28000f));
+            float large = StorytellerUtility.DefaultThreatPointsNow(Town(30, 28000f));
+            float richer = StorytellerUtility.DefaultThreatPointsNow(Town(10, 400000f));
 
-            Assert.True(pointsIndustrial > pointsAtStart,
-                $"industrial threat points {pointsIndustrial} did not exceed the starting {pointsAtStart}.");
-        }
-
-        [Fact]
-        public void The_first_era_leaves_the_ported_threat_formula_untouched()
-        {
-            // The era factor is an addition to RimWorld's formula, so at the bottom of the ladder — where a
-            // game starts — it must be exactly neutral, or every ported threat number would be off from the
-            // first tick.
-            Assert.Equal(1f, OrderedEras()[0].threatPointsFactor);
-            Assert.Equal(1f, EraTransitionUtility.CurrentEraThreatPointsFactor());
+            Assert.True(large > small, $"30 people drew {large}, no more than 10 people's {small}.");
+            Assert.True(richer > small, $"a richer town drew {richer}, no more than {small}.");
         }
 
         // ---- content gating ----

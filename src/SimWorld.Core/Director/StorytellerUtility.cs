@@ -35,9 +35,18 @@ namespace SimWorld.Director
         /// difficulty's threat scale, times the civilization's current adaptation factor, times the
         /// storyteller's own days-passed curve — clamped to [<see cref="MinThreatPoints"/>, <see cref="MaxThreatPoints"/>].
         /// <para/>
-        /// <b>Addition:</b> one more multiplier, the current era's <see cref="Research.EraDef.threatPointsFactor"/>,
-        /// applied the same way difficulty and adaptation already are. That factor is SimWorld's own and
-        /// stands in for the wealth term while nothing computes real wealth — see the field's own comment.
+        /// <b>No era multiplier, on purpose.</b> Until 2026-11 the current era's <c>threatPointsFactor</c>
+        /// (SimWorld's own, unsourced: 1.0 at the first era to 3.4 at Exotic) multiplied this total. It was
+        /// removed because it bought raiders and nothing else. Raider gear is capped by the raiding faction's
+        /// tech level and citizens' weapons do not change with the era either, so a higher factor only meant
+        /// more bodies of the same strength. With adaptation recovering from a loss on RimWorld's schedule, a
+        /// Medieval factor of 1.9 put a raid the size of the town within reach at ordinary adaptation: on
+        /// 40/201 threats-on (tip 2c74673) raid #34 on day 550 was 24 raiders against 22 able citizens, 992
+        /// points = (88 + 503) x 0.88 adaptation x 1.9 era, and it downed all 25 people, of whom 21 bled out.
+        /// The same run with the factor at 1 ends day 600 at 28 people. Era pressure is meant to return as
+        /// strength (era-capped raider gear, real era weapons for citizens: <c>docs/research/era-arc.md</c>
+        /// finding 5), not as head count; <c>EraTransitionTests</c> pins that crossing an era leaves
+        /// the points unchanged.
         /// </summary>
         public static float DefaultThreatPointsNow(IIncidentTarget target)
         {
@@ -55,7 +64,6 @@ namespace SimWorld.Director
             Storyteller storyteller = Find.Storyteller;
             if (storyteller.difficulty != null) points *= storyteller.difficulty.threatScale;
             points *= storyteller.adaptation.TotalThreatPointsFactor(storyteller.difficulty);
-            points *= Research.EraTransitionUtility.CurrentEraThreatPointsFactor();
             if (storyteller.def != null) points *= storyteller.def.pointsFactorFromDaysPassed.Evaluate(GenDate.DaysPassedAt(Find.TickManager.TicksGame));
 
             return GenMath.Clamp(points, MinThreatPoints, MaxThreatPoints);

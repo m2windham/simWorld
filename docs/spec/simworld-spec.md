@@ -1453,9 +1453,17 @@ already tracks durably (a trait, worn apparel, a granted role).
   planet, rival civilizations included, once `EmergenceManager` started
   founding them), the seat is the oldest settlement with ties broken by tile,
   and `PlayerWealthForStoryteller` is the market value of what they hold: the
-  wealth term `EraDef.threatPointsFactor` was written as a stand-in for, which
-  stays, because scaling threat by the age a civilization has reached is
-  SimWorld's own idea rather than a substitute. An incident that has to happen
+  wealth term `EraDef.threatPointsFactor` was written as a stand-in for. That
+  factor was first kept beside it as SimWorld's own idea, then removed
+  (2026-11). Raider gear is capped by the raiding faction's tech and citizens'
+  weapons do not change by era, so the factor bought head count of unchanged
+  strength. With adaptation recovering on RimWorld's schedule, the arc became a
+  boom and bust that ended in a raid as large as the town: on 40/201 threats-on
+  (2c74673) a Medieval raid of 24 raiders against 22 able citizens (992 points,
+  ×1.9 of them era) downed all 25 people and 21 bled out. Threat points are now
+  RimWorld's formula alone. Era pressure is to return as strength rather than
+  numbers: era-capped raider gear and real era weapons for citizens
+  (`docs/research/era-arc.md` finding 5). An incident that has to happen
   somewhere picks a settlement weighted by population — never below weight 1,
   so an emptied town cannot become invisible to the narrator. The target stays
   singular: one `StoryState`, one refire memory, one adaptation curve, because
@@ -1660,9 +1668,9 @@ the translation and its state per system.
   not just a readout: `ResearchManager` compares the era before and after each
   project it finishes — so a save can never re-announce history — raises
   `EraReached` once per era crossed, and writes a chronicle line and a letter.
-  The era then multiplies the director's threat points
-  (`EraDef.threatPointsFactor`, standing in for the wealth term nothing computes
-  yet) and gates content through `IncidentDef.minEra`/`maxEra`. A scenario's
+  The era then gates content through `IncidentDef.minEra`/`maxEra`. It no
+  longer multiplies the director's threat points (see "A civilization of
+  several settlements" above for why that was removed). A scenario's
   starting era is seeded silently: history begins there, it was not lived through.
   The god layer itself reacts, not just the director: `GodManager` subscribes to
   `EraReached` and re-evaluates active edicts on every crossing.
@@ -2199,8 +2207,8 @@ system as an isolated tested module; the god layer and a playable loop follow.
   question, tick-budget per tier still is.
 - Endless tech beyond the authored era ladder: the generation shape is settled
   (§10, `docs/research/tech-reachability.md` §12). What is still open is what the
-  world does about it — the director's threat scaling stops at Exotic's
-  `EraDef.threatPointsFactor` and knows nothing of an age, and nothing in content
+  world does about it — the director's threat points know nothing of an era or
+  an age at all (the era multiplier was removed in 2026-11), and nothing in content
   can gate on a project that does not exist until it is minted, so a generated
   project is research a civilization can always spend on but not yet research
   that unlocks anything.

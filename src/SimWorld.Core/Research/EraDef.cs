@@ -19,24 +19,6 @@ namespace SimWorld.Research
         public TechLevel techLevel = TechLevel.Undefined;
 
         /// <summary>
-        /// Multiplies the threat points the director spends while a civilization is in this era
-        /// (<see cref="Director.StorytellerUtility.DefaultThreatPointsNow"/>) — the spec's "era completion …
-        /// scales threats" (§10).
-        /// <para/>
-        /// <b>Not sourced from RimWorld.</b> RimWorld scales threats off colony wealth
-        /// (<c>pointsPerWealthCurve</c>): what you have is what comes for it. SimWorld ports that curve but
-        /// nothing yet computes real wealth — <c>IIncidentTarget.PlayerWealthForStoryteller</c> is a settable
-        /// stub — so on its own the wealth term stays flat for a whole game. This factor stands in for it at
-        /// civilization scale: a bronze-age rival threatens with bronze-age force. The ladder of numbers in
-        /// content is SimWorld's own and could not be sourced, so the tests pin the <i>trend</i> (later eras
-        /// never threaten less; reaching an era raises the points spent) rather than any literal.
-        /// <para/>
-        /// When real wealth accounting lands, revisit this: wealth and era both grow across a game, and
-        /// multiplying by both would count the same growth twice.
-        /// </summary>
-        public float threatPointsFactor = 1f;
-
-        /// <summary>
         /// Multiplies the cost of every project tagged with this era, on top of RimWorld's tech-level penalty
         /// (<see cref="ResearchProjectDef.CostFactor"/>), so the era's place in the arc sets its price as well as
         /// its content. It acts where RimWorld's own cost multiplier acts, dividing the points a researcher
@@ -167,7 +149,6 @@ namespace SimWorld.Research
         {
             foreach (string error in base.ConfigErrors()) yield return error;
             if (order < 0) yield return "order must be >= 0.";
-            if (threatPointsFactor <= 0f) yield return "threatPointsFactor must be > 0.";
             if (researchCostFactor <= 0f) yield return "researchCostFactor must be > 0.";
             if (citizensPerScholar <= 0f) yield return "citizensPerScholar must be > 0.";
         }
