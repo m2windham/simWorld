@@ -43,6 +43,17 @@ namespace SimWorld.Building
             return true;
         }
 
+        /// <summary>
+        /// The affordance a cell must offer before <paramref name="def"/> can be planned on it (RimWorld:
+        /// <c>BuildableDef.GetTerrainAffordanceNeed</c>). RimWorld's <c>BuildingBase</c> gives every building
+        /// <c>Light</c> unless the def asks for more; this port's content has no shared building base, so the
+        /// default lives here instead of being repeated in every <c>Buildings_*.xml</c>. Without it no
+        /// buildable def asked for anything and a storage hut went up in a river: water offers only
+        /// <c>Bridgeable</c>, as in RimWorld. A def that names its own need (more, or none) keeps it.
+        /// </summary>
+        public static TerrainAffordanceDef? TerrainAffordanceNeed(ThingDef def) =>
+            def.terrainAffordanceNeeded ?? (def.category == ThingCategory.Building ? TerrainAffordanceDefOf.Light : null);
+
         private static bool CanPlaceOneCell(ThingDef entityToBuild, IntVec3 cell, Map.Map map, out string? failReason)
         {
             if (!GenGrid.InBounds(cell, map))
@@ -51,13 +62,13 @@ namespace SimWorld.Building
                 return false;
             }
 
-            TerrainAffordanceDef? needed = entityToBuild.terrainAffordanceNeeded;
+            TerrainAffordanceDef? needed = TerrainAffordanceNeed(entityToBuild);
             if (needed != null)
             {
                 TerrainDef terrain = map.terrainGrid.TerrainAt(cell);
                 if (terrain.affordances == null || !terrain.affordances.Contains(needed))
                 {
-                    failReason = "terrain lacks the " + needed.defName + " affordance";
+                    failReason = terrain.LabelCap + " cannot support " + (entityToBuild.label ?? entityToBuild.defName) + " (it needs " + (needed.label ?? needed.defName) + " ground)";
                     return false;
                 }
             }

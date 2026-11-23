@@ -589,9 +589,12 @@ namespace SimWorld.Economy
 
         /// <summary>Open, unzoned ground (one zone per cell, ZoneManager's own rule) that the compound does not
         /// keep for its walls, street, yard or plots, and that <paramref name="walker"/> (a citizen, when one is on
-        /// the map) can walk to.</summary>
+        /// the map) can walk to. Never water: shallow water is standable, and RimWorld lets a player put a
+        /// stockpile there, but it rots what lies in it (<c>TerrainDef.extraDeteriorationFactor</c>), so a
+        /// settlement choosing its own store keeps it dry.</summary>
         private static bool CanBeGranary(Map.Map map, IntVec3 c, SettlementCompound? compound, Pawn? walker) =>
-            GenGrid.InBounds(c, map) && GenGrid.Standable(c, map) && map.zoneManager.ZoneAt(c) == null &&
+            GenGrid.InBounds(c, map) && GenGrid.Standable(c, map) && !map.terrainGrid.TerrainAt(c).IsWater &&
+            map.zoneManager.ZoneAt(c) == null &&
             (compound == null || !compound.Reserves(CellRect.SingleCell(c))) &&
             (walker == null || Reachability.CanReach(walker, c, PathEndMode.OnCell));
 

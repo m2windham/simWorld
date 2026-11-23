@@ -313,7 +313,8 @@ namespace SimWorld.Map.View
         /// <para/>Refuses only: any cell off the map (<see cref="MapCommandOutcome.OffMap"/>); any cell
         /// already claimed by another zone (<see cref="MapCommandOutcome.Occupied"/>), checked up front for
         /// the same all-or-nothing reason <see cref="MarkGrowingZone"/> gives. Never refuses for distance
-        /// from anything — see the class doc.
+        /// from anything — see the class doc. Cells of impassable terrain (deep water) are left out of the
+        /// zone and named in the result, and only a drag made of nothing else is refused.
         /// </summary>
         public static MapCommandResult MarkStockpile(IReadOnlyList<IntVec3> cells)
         {
@@ -323,12 +324,28 @@ namespace SimWorld.Map.View
             MapCommandResult? cellsBad = ValidateCells(cells, map);
             if (cellsBad != null) return cellsBad;
 
+            // RimWorld's zone designator skips a cell nothing can stand on (deep water) and keeps the rest of
+            // the drag; shallow water stays the player's call, as there.
+            var usable = new List<IntVec3>(cells.Count);
+            TerrainDef? leftOut = null;
+            for (int i = 0; i < cells.Count; i++)
+            {
+                TerrainDef terrain = map.terrainGrid.TerrainAt(cells[i]);
+                if (terrain.passability == Traversability.Impassable) leftOut ??= terrain;
+                else usable.Add(cells[i]);
+            }
+            if (usable.Count == 0)
+            {
+                return MapCommandResult.Refused("A stockpile cannot be marked on " + leftOut!.label + ".");
+            }
+
             var zone = new Zone_Stockpile();
             zone.filter.SetFromPreset(StorageSettingsPreset.DefaultStockpile);
             map.zoneManager.RegisterZone(zone);
-            for (int i = 0; i < cells.Count; i++) map.zoneManager.AddCell(zone, cells[i]);
+            for (int i = 0; i < usable.Count; i++) map.zoneManager.AddCell(zone, usable[i]);
 
-            return MapCommandResult.Done("Stockpile marked over " + cells.Count + " cell(s).");
+            string skipped = leftOut == null ? "" : " " + (cells.Count - usable.Count) + " cell(s) of " + leftOut.label + " were left out.";
+            return MapCommandResult.Done("Stockpile marked over " + usable.Count + " cell(s)." + skipped);
         }
 
         // -----------------------------------------------------------------------------------------------
