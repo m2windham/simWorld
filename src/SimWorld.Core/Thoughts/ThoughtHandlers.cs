@@ -229,6 +229,16 @@ namespace SimWorld.Thoughts
             }
         }
 
+        /// <summary>The active situational thoughts as last computed, without recomputing them — for a reader
+        /// (the god view) that must not move <see cref="CheckRecalculate"/>'s clock by looking.</summary>
+        public void AppendMoodThoughtsAsComputed(List<Thought> outThoughts)
+        {
+            foreach (Thought_Situational thought in cached.Values)
+            {
+                if (thought.Active) outThoughts.Add(thought);
+            }
+        }
+
         public void CheckRecalculate()
         {
             int now = Find.TickManager.TicksGame;
@@ -334,18 +344,55 @@ namespace SimWorld.Thoughts
         public float MoodOffsetOfGroup(Thought group)
         {
             GetMoodThoughts(group, tmpGroupMembers);
-            if (tmpGroupMembers.Count == 0) return 0f;
+            return StackedMoodOffset(tmpGroupMembers);
+        }
+
+        /// <summary>RimWorld's stacking rule for one group's members: average offset × (1 + m + m² …).</summary>
+        public static float StackedMoodOffset(IReadOnlyList<Thought> members)
+        {
+            if (members.Count == 0) return 0f;
             float sum = 0f;
             float weight = 1f;
             float weightSum = 0f;
-            for (int i = 0; i < tmpGroupMembers.Count; i++)
+            for (int i = 0; i < members.Count; i++)
             {
-                sum += tmpGroupMembers[i].MoodOffset();
+                sum += members[i].MoodOffset();
                 weightSum += weight;
-                weight *= tmpGroupMembers[i].def.stackedEffectMultiplier;
+                weight *= members[i].def.stackedEffectMultiplier;
             }
-            float average = sum / tmpGroupMembers.Count;
+            float average = sum / members.Count;
             return average * weightSum;
+        }
+
+        /// <summary>
+        /// Every mood thought as last computed, gathered into its groups — one list per group, the
+        /// representative first — without recomputing any situational thought. The read the god view makes
+        /// to say what is weighing on somebody: <see cref="GetAllMoodThoughts"/> would refresh the
+        /// situational cache, and a host looking at a citizen must not move the simulation's own clock.
+        /// The same grouping <see cref="GetDistinctMoodThoughtGroups"/> makes.
+        /// </summary>
+        public List<List<Thought>> MoodThoughtGroupsAsComputed()
+        {
+            var all = new List<Thought>();
+            for (int i = 0; i < memories.Memories.Count; i++)
+            {
+                Thought_Memory m = memories.Memories[i];
+                if (m.MoodOffset() != 0f) all.Add(m);
+            }
+            situational.AppendMoodThoughtsAsComputed(all);
+
+            var groups = new List<List<Thought>>();
+            for (int i = 0; i < all.Count; i++)
+            {
+                List<Thought>? into = null;
+                for (int g = 0; g < groups.Count; g++)
+                {
+                    if (groups[g][0].GroupsWith(all[i])) { into = groups[g]; break; }
+                }
+                if (into == null) groups.Add(new List<Thought> { all[i] });
+                else into.Add(all[i]);
+            }
+            return groups;
         }
 
         public float TotalMoodOffset()

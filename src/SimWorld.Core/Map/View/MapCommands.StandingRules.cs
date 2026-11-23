@@ -98,7 +98,7 @@ namespace SimWorld.Map.View
             if (!GenGrid.InBounds(benchCell, map)) return MapCommandResult.OffMap(benchCell);
 
             CompBillGiver? bench = BillGiverAt(map, benchCell);
-            if (bench == null) return MapCommandResult.Refused("No bill-giving bench stands at " + benchCell + ".");
+            if (bench == null) return MapCommandResult.Refused("No bench that takes bills stands there.");
 
             RecipeDef? recipe = ResolveRecipeDef(recipeDefName);
             if (recipe == null) return MapCommandResult.UnknownDef(recipeDefName);
@@ -112,7 +112,7 @@ namespace SimWorld.Map.View
             var bill = new Bill_Production(recipe) { repeatMode = BillRepeatMode.Forever };
             bench.BillStack.AddBill(bill);
             return MapCommandResult.Done(
-                recipe.LabelCap + " queued at the " + bench.parent.def.LabelCap + " at " + benchCell + ".");
+                recipe.LabelCap + " queued at the " + bench.parent.def.label + ".");
         }
 
         /// <summary>
@@ -139,18 +139,18 @@ namespace SimWorld.Map.View
             if (!GenGrid.InBounds(benchCell, map)) return MapCommandResult.OffMap(benchCell);
 
             CompBillGiver? bench = BillGiverAt(map, benchCell);
-            if (bench == null) return MapCommandResult.Refused("No bill-giving bench stands at " + benchCell + ".");
+            if (bench == null) return MapCommandResult.Refused("No bench that takes bills stands there.");
 
             IReadOnlyList<Bill> bills = bench.BillStack.Bills;
             if (billIndex < 0 || billIndex >= bills.Count)
             {
                 return MapCommandResult.Refused(
-                    "The bench at " + benchCell + " has no bill at index " + billIndex + ".");
+                    "The " + bench.parent.def.label + " has no bill at index " + billIndex + ".");
             }
 
             bills[billIndex].suspended = suspended;
             return MapCommandResult.Done(
-                "Bill " + billIndex + " at " + benchCell + (suspended ? " suspended." : " resumed."));
+                "Bill " + (billIndex + 1) + " at the " + bench.parent.def.label + (suspended ? " suspended." : " resumed."));
         }
 
         /// <summary>

@@ -27,6 +27,10 @@ namespace SimWorld.Director
         /// on any entry saved before this field existed.</summary>
         public List<int>? involvedThingIds;
 
+        /// <summary>Where it happened, when the writer knew (see <see cref="Letters.EventLocation"/>); null on
+        /// a line that happened nowhere in particular, and on any entry saved before this field existed.</summary>
+        public Letters.EventLocation? location;
+
         public ChronicleEntry()
         {
         }
@@ -50,6 +54,9 @@ namespace SimWorld.Director
             List<int>? involved = involvedThingIds;
             Scribe_Collections.Look(ref involved, "involvedThingIds", LookMode.Value);
             involvedThingIds = involved;
+            Letters.EventLocation? loc = location;
+            Scribe_Deep.Look(ref loc, "location");
+            location = loc;
         }
     }
 
@@ -172,7 +179,10 @@ namespace SimWorld.Director
 
         private void RecordChronicle(FiringIncident fi)
         {
-            var entry = new ChronicleEntry(Find.TickManager.TicksGame, fi.def.defName, DescribeTarget(fi.parms.target), fi.parms.points);
+            var entry = new ChronicleEntry(Find.TickManager.TicksGame, fi.def.defName, DescribeTarget(fi.parms.target), fi.parms.points)
+            {
+                location = fi.parms.location,
+            };
             chronicle.Add(entry);
             while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
             // Category = the incident's own defName: stable across every firing of the same incident, so this
@@ -233,6 +243,7 @@ namespace SimWorld.Director
             {
                 deathCause = cause,
                 involvedThingIds = new List<int> { pawn.thingIDNumber },
+                location = Letters.EventLocation.Of(pawn),
             };
             chronicle.Add(entry);
             while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
@@ -260,8 +271,11 @@ namespace SimWorld.Director
             return null;
         }
 
+        /// <summary>What <see cref="ChronicleEntry.targetLabel"/> says for the civilization as a whole.</summary>
+        public const string CivilizationTargetLabel = "the civilization";
+
         private static string DescribeTarget(IIncidentTarget target) =>
-            target is CivilizationTarget ? "the civilization" : target?.GetUniqueLoadID() ?? "?";
+            target is CivilizationTarget ? CivilizationTargetLabel : target?.GetUniqueLoadID() ?? "?";
 
         public void ExposeData()
         {

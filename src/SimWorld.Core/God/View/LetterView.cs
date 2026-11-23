@@ -13,8 +13,9 @@ namespace SimWorld.God.View
     {
         internal LetterView(
             string letterID, string defName, string label, string text, int arrivalTick,
-            IReadOnlyList<int> lookTargetThingIds, bool isChoice)
+            IReadOnlyList<int> lookTargetThingIds, bool isChoice, EventLocationView? location)
         {
+            Location = location;
             LetterID = letterID;
             DefName = defName;
             Label = label;
@@ -51,6 +52,12 @@ namespace SimWorld.God.View
         /// answered with <see cref="GodCommands.ResolveLetterChoice"/>, not dismissed.</summary>
         public bool IsChoice { get; }
 
+        /// <summary>Where it happened — the settlement, and the cells on its map when it happened on one — so
+        /// the letter can offer "jump to" and the map can mark it. Null for a letter about nowhere in
+        /// particular (an era reached, a quest offered). A letter about a person carries
+        /// <see cref="LookTargetThingIds"/> as well; this is the place, which outlives them.</summary>
+        public EventLocationView? Location { get; }
+
         internal static List<LetterView> On(Letters.LetterStack stack)
         {
             IReadOnlyList<Letters.Letter> letters = stack.LettersListForReading;
@@ -65,7 +72,8 @@ namespace SimWorld.God.View
                     l.text,
                     l.arrivalTick,
                     ThingIdsOf(l.lookTargets),
-                    l is Letters.ChoiceLetter));
+                    l is Letters.ChoiceLetter,
+                    EventLocationView.Of(l.location)));
             }
             return views;
         }

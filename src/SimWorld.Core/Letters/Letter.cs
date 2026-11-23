@@ -36,6 +36,10 @@ namespace SimWorld.Letters
         /// <summary>Ids (RimWorld: jump targets) this letter points at; resolved by a future Things/Map system.</summary>
         public List<string>? lookTargets;
 
+        /// <summary>Where this letter's event happened — see <see cref="EventLocation"/>. Null when it happened
+        /// nowhere in particular (an era reached, a quest offered).</summary>
+        public EventLocation? location;
+
         /// <summary>False for a letter that should notify (RimWorld: play its sound) without ever appearing in the stack.</summary>
         public virtual bool CanShowInLetterStack => true;
 
@@ -61,6 +65,9 @@ namespace SimWorld.Letters
             List<string>? targets = lookTargets;
             Scribe_Collections.Look(ref targets, "lookTargets", LookMode.Value);
             lookTargets = targets;
+            EventLocation? loc = location;
+            Scribe_Deep.Look(ref loc, "location");
+            location = loc;
         }
     }
 

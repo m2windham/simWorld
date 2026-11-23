@@ -300,7 +300,7 @@ namespace SimWorld.Map.View
         {
             citizen.jobs.StartJob(
                 new Job(jobDef, target) { playerForced = true }, JobCondition.InterruptForced);
-            return MapCommandResult.Done(citizen.Label + " is ordered to " + jobDef.defName + ": " + targetLabel + ".");
+            return MapCommandResult.Done(citizen.Label + " is ordered to " + (jobDef.label ?? jobDef.defName) + ": " + targetLabel + ".");
         }
 
         /// <summary>

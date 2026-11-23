@@ -61,7 +61,7 @@ namespace SimWorld.God.View
     /// to reconstruct a pawn. <see cref="ThingId"/> and <see cref="Name"/> are the two handles the drill-down
     /// takes — see <see cref="CitizenView"/> for why a host wants to keep both.
     /// </summary>
-    public sealed class CitizenLine
+    public sealed partial class CitizenLine
     {
         internal CitizenLine(
             int thingId, string name, string fullName, Pawns.Gender gender, int ageBiologicalYears,
@@ -235,7 +235,7 @@ namespace SimWorld.God.View
             OfficeDef? office = OfficeManager.OfficeOf(pawn);
             Need_Mood? mood = pawn.needs?.mood;
 
-            return new CitizenLine(
+            var line = new CitizenLine(
                 pawn.thingIDNumber,
                 pawn.Label,
                 pawn.Name?.ToStringFull ?? pawn.Label,
@@ -264,9 +264,11 @@ namespace SimWorld.God.View
                 pawn.skills == null ? CitizenFidelity.NotTracked : FidelityOfLiveState(tier),
                 HouseholdIdOf(pawn),
                 HouseholdNameOf(pawn));
+            line.CurrentJobLabel = pawn.Spawned ? JobLabelOf(pawn.jobs?.curJob?.def) : null;
+            return line;
         }
 
-        private static string? ActivityOf(Pawn pawn)
+        internal static string? ActivityOf(Pawn pawn)
         {
             if (!pawn.Spawned) return null;
             MentalStateDef? mental = pawn.MentalStateDef;
@@ -409,7 +411,7 @@ namespace SimWorld.God.View
     }
 
     /// <summary>One thing wrong with (or added to) a body, by label and severity.</summary>
-    public sealed class HediffLine
+    public sealed partial class HediffLine
     {
         internal HediffLine(
             string defName, string label, float severity, string? partLabel,
@@ -575,7 +577,7 @@ namespace SimWorld.God.View
     /// Disease is not part of that gap — <c>AbstractDiseaseResolver</c> resolves it coarsely.</description></item>
     /// </list>
     /// </summary>
-    public sealed class CitizenView
+    public sealed partial class CitizenView
     {
         internal CitizenView(
             int ticksGame, bool isLive, int? thingId, string name, string fullName,
@@ -754,7 +756,7 @@ namespace SimWorld.God.View
             // NotTracked is the honest answer; SampledHealthFraction is what stands in its place.
             bool hediffsReportable = tier != PawnTier.Statistical;
 
-            return new CitizenView(
+            var view = new CitizenView(
                 Find.TickManager.TicksGame,
                 true,
                 pawn.thingIDNumber,
@@ -786,6 +788,8 @@ namespace SimWorld.God.View
                 HistoryNaming(NamesOf(pawn)),
                 pawn.Downed,
                 pawn.Dead);
+            view.FillDetail(pawn, tier, hediffsReportable);
+            return view;
         }
 
         /// <summary>
@@ -843,9 +847,11 @@ namespace SimWorld.God.View
                 // Invisible hediffs are ones the simulation itself does not show; carrying them here would be
                 // telling the host something the game does not consider known about this body.
                 if (!h.Visible) continue;
-                lines.Add(new HediffLine(
+                var line = new HediffLine(
                     h.def.defName, h.Label, h.Severity, h.Part?.LabelCap,
-                    h.IsPermanent, h.IsTended, h.BleedRate));
+                    h.IsPermanent, h.IsTended, h.BleedRate);
+                line.FillDetail(h);
+                lines.Add(line);
             }
             return lines;
         }

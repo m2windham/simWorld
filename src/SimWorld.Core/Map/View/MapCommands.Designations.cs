@@ -67,13 +67,13 @@ namespace SimWorld.Map.View
             if (def == null) return MapCommandResult.UnknownDef(designationDefName);
             if (def.targetType != TargetType.Thing)
             {
-                return MapCommandResult.Refused(def.defName + " marks cells, not things — designate the cell instead.");
+                return MapCommandResult.Refused(def.LabelCap + " marks cells, not things — designate the cell instead.");
             }
             Thing? t = FindThingById(map, thingId);
             if (t == null) return MapCommandResult.Refused("Nothing with id " + thingId + " is on the open settlement's map.");
 
             string? refusal = DesignatorUtility.TryDesignateThing(def, t, map);
-            if (refusal == null) return MapCommandResult.Done(t.Label + " designated: " + def.defName + ".");
+            if (refusal == null) return MapCommandResult.Done(t.Label + " designated: " + def.label + ".");
             return refusal.EndsWith("already designated", System.StringComparison.Ordinal)
                 ? MapCommandResult.NoChange(refusal + ".")
                 : MapCommandResult.Refused(refusal + ".");
@@ -145,17 +145,17 @@ namespace SimWorld.Map.View
             if (!hasInitiative)
             {
                 return MapCommandResult.Refused(
-                    "The settlement never does " + def.defName + " work on its own initiative, so there is nothing to switch.");
+                    "The settlement never does " + def.label + " work on its own initiative, so there is nothing to switch.");
             }
 
             if (map.designationManager.SettlementInitiativeOn(def) == on)
             {
-                return MapCommandResult.NoChange("The settlement's own " + def.defName + " initiative is already " + (on ? "on" : "off") + ".");
+                return MapCommandResult.NoChange("The settlement's own " + def.label + " initiative is already " + (on ? "on" : "off") + ".");
             }
             map.designationManager.SetSettlementInitiative(def, on);
             return MapCommandResult.Done(on
-                ? "The settlement will again do " + def.defName + " work on its own initiative."
-                : "The settlement will only do " + def.defName + " work it is shown.");
+                ? "The settlement will again do " + def.label + " work on its own initiative."
+                : "The settlement will only do " + def.label + " work it is shown.");
         }
 
         private static DesignationDef? ResolvePlayerDesignation(string? defName)

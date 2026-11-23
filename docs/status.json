@@ -2256,6 +2256,11 @@
           "id": "god.playerseam",
           "label": "Player seam: roster fields, WorkPrioritiesOf/SetWorkPriority (ranked per citizen), 10 Alerts, Letters with DismissLetter, ChronicleSince; every death chronicled once; edicts report Suspended and 'nobody is allowed'. The host renders all five screens.",
           "done": true
+        },
+        {
+          "id": "god.playtest-view",
+          "label": "Playtest view data (2026-11-23 fresh-eyes playtest): CitizenView.Thoughts (mood reasons per thought group with stacked offsets, read without recomputing the situational cache), break thresholds, job/activity/mental state/role in words, HediffLine immunity, lethal severity and tend-now; GodViewSnapshot.Era (EraOutlook: progress on the frontier era's spine, the gating projects still missing); EventLocation on letters and chronicle entries (tile, centre cell, up to 24 affected cells) from quakes, raids, manhunter packs, wanderers and deaths, with GodViewSnapshot.RecentEvents; incident chronicle lines by label, no animal death letters, a titled game-start letter, a capitalised era-fitting player faction name, no raw coordinates or defNames in command results.",
+          "done": true
         }
       ],
       "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"

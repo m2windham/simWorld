@@ -1658,3 +1658,20 @@ ThingView.SwitchedOn / FuelFraction (a flip or a 5% fuel step bumps the chunk). 
 40/201 identical to the shelter baseline apart from wall-clock rows. Quest drop in the host's solo -verify run
 (3 -> 0 at 0d77578): a different random path, not a defect; on six seeds of a core-side repro the quests offered
 went 3 -> 9 and zero-offer seeds 3 -> 2. Note to the host on judging quests: docs/host/verify-quest-gate.md.
+
+2026-11-23 (playtest-view): view data for the fresh-eyes playtest's top findings, for a host lane to bind.
+Citizen detail: CitizenView.Thoughts (ThoughtLine: label, stacked MoodOffset, Count, IsMemory, TicksLeft, Reason;
+worst first, read as last computed so looking never refreshes the situational cache), ThoughtsMoodOffset,
+BreakThresholdMinor/Major/Extreme, ActivityLabel, CurrentJobDefName/CurrentJobLabel, MentalStateLabel, RoleLabel,
+BleedRateTotal, NeedsTending; HediffLine.Immunity/LethalSeverity/NeedsTendingNow/IsBad; CitizenLine.CurrentJobLabel.
+Eras: GodViewSnapshot.Era -> EraOutlook (frontier era, GatesFinished/GatesTotal/Progress on its spine, MissingGates
+by name with CanStartNow and LockedBehind); CivilizationSummary.EraProgress counts every era project and is
+documented as not the bar to show. Events: Letter.location and ChronicleEntry.location (EventLocation: tile, centre
+cell, up to 24 affected cells; saved) from the earthquake, raid, manhunter pack, wanderer and death; LetterView.Location,
+ChronicleLine.Location (EventLocationView) and GodViewSnapshot.RecentEvents(count) -> EventMark. Labels: incident
+chronicle lines by IncidentDef label without "the civilization"; no death letter for an animal (no bonds or player
+naming in the port yet); game-start letter titled "The story begins" (ScenPart_GameStartDialog.title); "1 colonist
+idle"; map command results name defs by label and print no coordinates. "Fort union" was the player faction's name,
+drawn from the Industrial bank because the player FactionDef keeps RimWorld's techLevel; the player is now named
+from the Neolithic bank and both words are capitalised (same draw count). Left out: finished-building events, an
+endless-age outlook past Exotic, locations on mental-break and disease letters.

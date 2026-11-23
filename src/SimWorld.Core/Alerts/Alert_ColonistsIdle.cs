@@ -27,7 +27,8 @@ namespace SimWorld.Alerts
         public override AlertReport GetReport(AlertContext context) => ColonistsWhere(context, IsIdle);
 
         public override string GetLabel(AlertContext context, AlertReport report) =>
-            report.Culprits.Count.ToString(CultureInfo.InvariantCulture) + " colonists idle";
+            report.Culprits.Count.ToString(CultureInfo.InvariantCulture)
+            + (report.Culprits.Count == 1 ? " colonist idle" : " colonists idle");
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
             "These colonists have nothing to do. Check their work priorities, or give them work:" +
