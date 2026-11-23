@@ -58,26 +58,30 @@ namespace SimWorld.AI
     ///
     /// <para/><b>The rule, and it is one sentence: a settlement keeps as much livestock as its surplus feeds,
     /// and while it is short of food the animals on its land are meat rather than livestock.</b> The surplus
-    /// is food on the map above the larder wanted in hand; the hunting gate reads that same larder against
-    /// the map <i>and</i> the ledger (<see cref="HuntingInitiative.ShortOfFood(Settlement?, Map.Map)"/>).
-    /// The map is part of that total, so a positive surplus means the settlement is not short, and the two
-    /// verbs can never both be on:
+    /// is food on the map <i>and</i> in the ledger above a year of the people's food
+    /// (<see cref="TamingTuning.DaysOfFeedWanted"/>); the hunting gate reads the same total against the
+    /// four-day larder (<see cref="HuntingInitiative.ShortOfFood(Settlement?, Map.Map)"/>), which is shorter,
+    /// so a positive surplus means the settlement is not short, and the two verbs can never both be on:
     /// <list type="number">
     /// <item><b>Food first.</b> <see cref="HuntingInitiative.WantsMeat"/> true ⇒ no taming at all. This is
     /// the ordering fix, and note what it is <i>not</i>: nothing here touches <c>naturalPriority</c>.
     /// Handling still outranks Hunting exactly as RimWorld's content says, and that is now harmless, because
     /// the higher-priority giver correctly finds no work in the state where the lower one must run.</item>
-    /// <item><b>Then only out of surplus.</b> Everything reachable above the larder the settlement wants in
-    /// hand is divided by what one animal eats over that same horizon — see <see cref="HerdWanted"/>. A
-    /// settlement living hand to mouth wants no herd; one with a full granary can afford some.</item>
+    /// <item><b>Then only out of surplus.</b> Everything stored above a year of the people's food is divided
+    /// by what one animal eats over that same year — see <see cref="HerdWanted"/>. A settlement living hand
+    /// to mouth, or living off last summer's harvest, wants no herd; one with a full granary can afford
+    /// some.</item>
     /// </list>
     ///
     /// <para/><b>Self-limiting, and that is the whole design.</b> A tame animal is an ordinary <c>Pawn</c>
     /// with <see cref="Needs.Need_Food"/> that walks to the settlement's food and eats it
-    /// (<see cref="JobGiver_GetFood"/>), so every head taken on lowers the surplus that decided to take it.
-    /// The herd therefore converges instead of running away, and if it overshoots — a harvest banked, then
-    /// eaten — taming simply stops until the surplus returns. Nothing untames an animal and nothing here
-    /// tries to.
+    /// (<see cref="JobGiver_GetFood"/>), and each head is costed at a year of that eating against a year of
+    /// the people's — so the herd a store can buy is the herd that store can feed. Costed at four days of
+    /// the map alone, as this first shipped, it could not: the map is topped up from the ledger whoever eats
+    /// it, so no head ever lowered the surplus that bought it, and every harvest lying unhauled in the field
+    /// bought more (see <see cref="TamingTuning.DaysOfFeedWanted"/>). If the herd overshoots — a drought
+    /// year — taming stops until the store refills. Nothing untames an animal and nothing here tries to;
+    /// the player's Slaughter designation is the lever.
     ///
     /// <para/><b>An honest gap this gate is shaped around.</b> <i>No tame animal in this port repays its
     /// keep yet.</i> The produce comps exist and the content sets them (<c>CompMilkable</c> and
@@ -113,9 +117,9 @@ namespace SimWorld.AI
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
 
-            // Short of food (or holding exactly the larder it wants and nothing over): an animal standing on
-            // this land is meat, not livestock. A positive map surplus implies the map-plus-ledger total the
-            // hunting gate reads is above the same larder too, so the two gates cannot both be open.
+            // Short of a year's food: an animal standing on this land is meat, not livestock. A positive
+            // surplus implies the same total is above the hunting gate's four-day larder too, so the two
+            // gates cannot both be open.
             float surplus = Surplus(settlement, map);
             if (surplus <= 0f) return false;
 
@@ -135,14 +139,29 @@ namespace SimWorld.AI
         public static float Surplus(Settlement? settlement, Map.Map map)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
-            return HuntingInitiative.NutritionReachable(map) - HuntingInitiative.NutritionWanted(settlement, map);
+            // The whole store, map and ledger. The map alone is held at the four-day larder by
+            // SettlementStockInitiative, so its "surplus" was only ever a harvest not yet hauled.
+            return HuntingInitiative.NutritionAvailable(settlement, map) - NutritionReserved(settlement, map);
         }
 
         /// <summary>
-        /// How many head this settlement's food surplus can keep: everything reachable above the larder it
-        /// wants in hand (<see cref="HuntingInitiative.NutritionReachable"/> less
-        /// <see cref="HuntingInitiative.NutritionWanted"/>), divided by what one animal eats over
-        /// <see cref="TamingTuning.DaysOfFeedWanted"/> days.
+        /// What the store keeps back for the people before any of it buys livestock: what they eat over
+        /// <see cref="TamingTuning.DaysOfFeedWanted"/> days, the same horizon a head is costed at. Their
+        /// per-day burn is <see cref="HuntingInitiative.NutritionWanted"/> divided back out of its own
+        /// horizon, as <c>Building.FarmingInitiative.StoreIsFull</c> reads it.
+        /// </summary>
+        public static float NutritionReserved(Settlement? settlement, Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            float peoplePerDay = HuntingInitiative.NutritionWanted(settlement, map) / HuntingTuning.DaysOfFoodWanted;
+            return peoplePerDay * TamingTuning.DaysOfFeedWanted;
+        }
+
+        /// <summary>
+        /// How many head this settlement's food surplus can keep: everything it holds, map and ledger
+        /// (<see cref="HuntingInitiative.NutritionAvailable"/>), above what its people eat over
+        /// <see cref="TamingTuning.DaysOfFeedWanted"/> days, divided by what one animal eats over the same
+        /// days.
         ///
         /// <para/><b>Every term is read off something the codebase already decided</b> — there is no literal
         /// in this method. The surplus is the same pair of figures the hunting gate compares and

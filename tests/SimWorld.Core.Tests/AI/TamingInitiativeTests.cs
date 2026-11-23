@@ -104,9 +104,10 @@ namespace SimWorld.Tests.AI
             SpawnCitizen(map, settlement, new IntVec3(1, 0, 1), "Eater");
             SpawnAnimal(map, Chicken, new IntVec3(6, 0, 6));
 
-            // Exactly the larder the settlement wants and not a crumb more: nothing is spare, so nothing is
-            // kept. This is the boundary the hunting gate sits on from the other side.
-            FeedTheMap(map, HuntingInitiative.NutritionWanted(settlement, map));
+            // Exactly the year of food the store keeps back for its people and not a crumb more: nothing is
+            // spare, so nothing is kept — though the hunting gate, reading the shorter four-day larder, is
+            // already closed.
+            FeedTheMap(map, TamingInitiative.NutritionReserved(settlement, map));
             Assert.False(HuntingInitiative.WantsMeat(settlement, map));
             Assert.Equal(0, TamingInitiative.HerdWanted(settlement, map));
 
@@ -129,7 +130,7 @@ namespace SimWorld.Tests.AI
             Pawn handler = SpawnCitizen(map, settlement, new IntVec3(1, 0, 1), "Handler");
             SpawnAnimal(map, Chicken, new IntVec3(6, 0, 6), "Wild");
 
-            FeedTheMap(map, HuntingInitiative.NutritionWanted(settlement, map)
+            FeedTheMap(map, TamingInitiative.NutritionReserved(settlement, map)
                 + TamingInitiative.FeedCostPerHead(map) * 3f);
             int wanted = TamingInitiative.HerdWanted(settlement, map);
             Assert.True(wanted > 0);
@@ -203,7 +204,7 @@ namespace SimWorld.Tests.AI
             Assert.True(TameGiver.ShouldSkip(generalist), "A hungry settlement's handler has no taming work...");
             Assert.False(HuntGiver.ShouldSkip(generalist), "... and its hunter does.");
 
-            FeedTheMap(map, HuntingInitiative.NutritionWanted(settlement, map)
+            FeedTheMap(map, TamingInitiative.NutritionReserved(settlement, map)
                 + TamingInitiative.FeedCostPerHead(map) * 2f);
 
             Assert.False(TameGiver.ShouldSkip(generalist), "A fed settlement's handler may keep livestock...");
@@ -244,7 +245,7 @@ namespace SimWorld.Tests.AI
             owned.faction = owner;
             Pawn person = NewHuman("Person");
             GenSpawn.Spawn(person, new IntVec3(1, 0, 1), map);
-            FeedTheMap(map, HuntingInitiative.NutritionWanted(null, map)
+            FeedTheMap(map, TamingInitiative.NutritionReserved(null, map)
                 + TamingInitiative.FeedCostPerHead(map) * 4f);
 
             int herdBefore = TamingInitiative.HerdWanted(null, map);

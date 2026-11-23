@@ -16,16 +16,21 @@ namespace SimWorld.AI
     public static class TamingTuning
     {
         /// <summary>
-        /// How many days of an animal's feed a settlement wants covered before it takes that animal on.
+        /// How many days of food — for its people and for every head it keeps — a settlement wants in store
+        /// before it takes on another animal: <see cref="Building.FarmingTuning.DaysOfFoodStored"/>, the year
+        /// at which the fields already call the store full and lie fallow. Reused rather than restated.
         ///
-        /// <para/><b>The same horizon the settlement holds for its own people</b>
-        /// (<see cref="HuntingTuning.DaysOfFoodWanted"/>), reused rather than restated. A second number here
-        /// would be a second answer to one question — "how far ahead does this settlement keep its larder?" —
-        /// and the two would drift. It also makes <see cref="TamingInitiative.HerdWanted"/> and
-        /// <see cref="HuntingInitiative.WantsMeat"/> two readings of a single ledger: below the larder the
-        /// settlement wants, the animals on its land are meat; above it, each further larder's-worth of
-        /// surplus is one more mouth it can afford to keep.
+        /// <para/><b>Why a year and not the four-day larder this used to alias.</b> A head of livestock is a
+        /// mouth every day of the year, winter included, and it is fed out of the ledger
+        /// (<c>Economy.SettlementStockInitiative.IssueFromStores</c> tops the map up whoever ate it). Measured
+        /// against four days of the map alone, the gate read a harvest lying unhauled in the field as a
+        /// surplus worth dozens of head, and the herd that bought ate all year. Ten-year arc, threats off:
+        /// animals ate 671 → 1,254 → 2,006 nutrition a year at band 40 seed 201 and 1,415 → 3,422 → 4,392 at
+        /// band 20 seed 99 — more than the people — while harvest and human eating stayed flat, so each
+        /// winter drew the ledger lower. A year is the horizon the herd's appetite actually runs over, and
+        /// the one point in the food economy where the settlement has food it has decided it does not need:
+        /// livestock is what a full granary spills into.
         /// </summary>
-        public const float DaysOfFeedWanted = HuntingTuning.DaysOfFoodWanted;
+        public const float DaysOfFeedWanted = Building.FarmingTuning.DaysOfFoodStored;
     }
 }

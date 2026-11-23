@@ -387,11 +387,15 @@ namespace SimWorld.Tests.Designations
         {
             CoreMap map = NewMap();
             Pawn handler = Worker(map, 2, 2, WorkTypeDefOf.Handling);
-            for (int x = 0; x < 10; x++)
+            // Full means a year's food over the handler's own, the store TamingInitiative buys livestock from.
+            ThingDef meatDef = Def("Meat_Generic");
+            float wanted = TamingInitiative.NutritionReserved(null, map) + TamingInitiative.FeedCostPerHead(map);
+            int stacks = (int)System.Math.Ceiling(wanted / (meatDef.stackLimit * meatDef.ingestible!.nutrition));
+            for (int i = 0; i < stacks; i++)
             {
-                Thing meat = ThingMaker.MakeThing(Def("Meat_Generic"));
+                Thing meat = ThingMaker.MakeThing(meatDef);
                 meat.stackCount = meat.def.stackLimit;
-                GenSpawn.Spawn(meat, new IntVec3(x, 0, 28), map);
+                GenSpawn.Spawn(meat, new IntVec3(i % 10, 0, 28 - i / 10), map);
             }
             Pawn unmarked = Animal(map, "Chicken", 5, 2);
             Assert.True(TamingInitiative.WantsLivestock(map));
