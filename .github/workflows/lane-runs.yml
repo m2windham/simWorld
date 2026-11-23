@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: foodstore, sha: ee2b90785641e81b63bf0b93b8e0e465a4aa8ea0 }
+          - { name: tip, sha: 2c7467332da16a07f5470375c990bc0d2c5a6761 }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -45,7 +45,7 @@ jobs:
       matrix:
         ref:
           - { name: food, sha: 31580df164b0196256059c409b8b042241d04073 }
-          - { name: foodstore, sha: ee2b90785641e81b63bf0b93b8e0e465a4aa8ea0 }
+          - { name: tip, sha: 2c7467332da16a07f5470375c990bc0d2c5a6761 }
         threats: ["false", "true"]
         shard:
           - { n: 1, runs: "20:105 20:99 20:777 20:2024 20:12345 20:31337 20:101" }
@@ -79,14 +79,12 @@ jobs:
       fail-fast: false
       matrix:
         run:
-          - { name: food-40-201-off, sha: 31580df164b0196256059c409b8b042241d04073, threats: "false", pop: "40:201" }
-          - { name: food-20-99-off, sha: 31580df164b0196256059c409b8b042241d04073, threats: "false", pop: "20:99" }
-          - { name: food-40-201-on, sha: 31580df164b0196256059c409b8b042241d04073, threats: "true", pop: "40:201" }
-          - { name: food-20-99-on, sha: 31580df164b0196256059c409b8b042241d04073, threats: "true", pop: "20:99" }
-          - { name: foodstore-40-201-off, sha: ee2b90785641e81b63bf0b93b8e0e465a4aa8ea0, threats: "false", pop: "40:201" }
-          - { name: foodstore-20-99-off, sha: ee2b90785641e81b63bf0b93b8e0e465a4aa8ea0, threats: "false", pop: "20:99" }
-          - { name: foodstore-40-201-on, sha: ee2b90785641e81b63bf0b93b8e0e465a4aa8ea0, threats: "true", pop: "40:201" }
-          - { name: foodstore-20-99-on, sha: ee2b90785641e81b63bf0b93b8e0e465a4aa8ea0, threats: "true", pop: "20:99" }
+          - { name: tip-20-99-on, sha: 2c7467332da16a07f5470375c990bc0d2c5a6761, threats: "true", pop: "20:99" }
+          - { name: tip-40-201-on, sha: 2c7467332da16a07f5470375c990bc0d2c5a6761, threats: "true", pop: "40:201" }
+          - { name: tip-20-101-on, sha: 2c7467332da16a07f5470375c990bc0d2c5a6761, threats: "true", pop: "20:101" }
+          - { name: tip-40-202-on, sha: 2c7467332da16a07f5470375c990bc0d2c5a6761, threats: "true", pop: "40:202" }
+          - { name: tip-20-99-off, sha: 2c7467332da16a07f5470375c990bc0d2c5a6761, threats: "false", pop: "20:99" }
+          - { name: tip-40-201-off, sha: 2c7467332da16a07f5470375c990bc0d2c5a6761, threats: "false", pop: "40:201" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
