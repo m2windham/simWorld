@@ -172,7 +172,7 @@ namespace SimWorld.Tests.Building
                 GenSpawn.Spawn(ThingMaker.MakeThing(Def("Wall")), blocked, map);
 
                 Assert.False(GenConstruct.CanPlaceBlueprintAt(Bed, Centre, map, out string? reason, rot), "blocked at " + blocked);
-                Assert.Equal("a building already occupies this cell", reason);
+                Assert.Equal(Def("Wall").LabelCap + " already stands on this cell", reason);
             }
 
             // The cell behind the head is not the bed's: a wall there takes nothing from it.

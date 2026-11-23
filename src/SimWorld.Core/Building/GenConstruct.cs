@@ -87,7 +87,11 @@ namespace SimWorld.Building
             Thing? edifice = map.edificeGrid[cell];
             if (edifice != null)
             {
-                failReason = "a building already occupies this cell";
+                // Named, as RimWorld's "Blocked by {0}" names it: a cliff is natural rock, not a building, and
+                // the player's lever differs (mine it out, versus deconstruct or build elsewhere).
+                failReason = edifice.def.mineable
+                    ? edifice.def.LabelCap + " is in the way: natural rock has to be mined out first"
+                    : edifice.def.LabelCap + " already stands on this cell";
                 return false;
             }
 
