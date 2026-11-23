@@ -32,6 +32,20 @@ namespace SimWorld.AI
         /// very first wound always checks.</summary>
         private int lastDamageCheckTick = -99999;
 
+        /// <summary>How long a pawn whose whole think tree handed back nothing stands before asking again.
+        /// RimWorld ends every tree in <c>JobGiver_IdleError</c>, which hands out a short wait for the same
+        /// reason; the length is recalled, not sourced, and a test pins the behaviour rather than the number.
+        /// Without it, a pawn that can reach nothing (a raider spawned into rock, say) ran every work scan on
+        /// the map every tick, and one such squad made a 60-day run six times slower.</summary>
+        public const int IdleRetryTicks = 100;
+
+        /// <summary>Until when <see cref="JobTrackerTick"/> leaves a pawn with no job alone, after its think
+        /// tree last came back empty.</summary>
+        private int idleUntilTick = -1;
+
+        /// <summary>Read-only view of <see cref="idleUntilTick"/> for tests.</summary>
+        internal int IdleUntilTick => idleUntilTick;
+
         public Pawn_JobTracker(Pawn pawn)
         {
             this.pawn = pawn ?? throw new ArgumentNullException(nameof(pawn));
@@ -42,6 +56,7 @@ namespace SimWorld.AI
         {
             if (job == null) throw new ArgumentNullException(nameof(job));
             jobQueue.Add(job);
+            idleUntilTick = -1; // an order is something to do: no reason to stand out the idle wait first
         }
 
         /// <summary>Pops the first queued player-forced job, if any (RimWorld: consumed ahead of the think tree there;
@@ -278,7 +293,10 @@ namespace SimWorld.AI
 
             if (curJob == null)
             {
+                int now = Find.TickManager.TicksGame;
+                if (now < idleUntilTick) return;
                 TryFindAndStartJob();
+                if (curJob == null && !pawn.Dead && !pawn.Downed) idleUntilTick = now + IdleRetryTicks;
                 return;
             }
 
@@ -318,6 +336,7 @@ namespace SimWorld.AI
             if (Scribe.mode != LoadSaveMode.Saving) heldForLoadedDriver = held;
 
             Scribe_Values.Look(ref lastDamageCheckTick, "lastDamageCheckTick", -99999);
+            Scribe_Values.Look(ref idleUntilTick, "idleUntilTick", -1);
 
             List<Job>? queue = jobQueue;
             Scribe_Collections.Look(ref queue, "jobQueue", LookMode.Deep);

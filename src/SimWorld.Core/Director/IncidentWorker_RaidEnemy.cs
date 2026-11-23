@@ -232,7 +232,7 @@ namespace SimWorld.Director
         /// </summary>
         private static void Arrive(IReadOnlyList<Pawn> pawns, Faction faction, Map.Map map, RandomStream rand)
         {
-            IntVec3 entry = RandomEdgeCell(map, rand);
+            IntVec3 entry = FindEntryCell(map, faction, rand);
             for (int i = 0; i < pawns.Count; i++)
             {
                 GenSpawn.Spawn(pawns[i], RandomClosewalkCellNear(entry, map, ClosewalkRadius, rand), map);
@@ -253,9 +253,8 @@ namespace SimWorld.Director
         /// <summary>
         /// A standable cell within <paramref name="radius"/> of <paramref name="root"/> (RimWorld:
         /// <c>Verse.CellFinder.RandomClosewalkCellNear</c>), falling back to <paramref name="root"/> after
-        /// <see cref="ClosewalkTries"/> misses. RimWorld additionally requires the cell to be in the same
-        /// region and reachable; that check is not made here, because the entry cell is a map edge and the
-        /// squad's approach to the colony is AI's to own — see the class doc.
+        /// <see cref="ClosewalkTries"/> misses. Like RimWorld's, the cell must be reachable from the root, so
+        /// no raider is scattered across a river or into a sealed pocket the rest of the squad cannot reach.
         /// </summary>
         private static IntVec3 RandomClosewalkCellNear(IntVec3 root, Map.Map map, int radius, RandomStream rand)
         {
@@ -264,9 +263,51 @@ namespace SimWorld.Director
             for (int i = 0; i < ClosewalkTries; i++)
             {
                 IntVec3 candidate = root + pattern[rand.Range(0, inRadius)];
-                if (GenGrid.InBounds(candidate, map) && GenGrid.Standable(candidate, map)) return candidate;
+                if (!GenGrid.InBounds(candidate, map) || !GenGrid.Standable(candidate, map)) continue;
+                if (GenGrid.Standable(root, map) && !map.reachability.CanReachCells(root, candidate)) continue;
+                return candidate;
             }
             return root;
+        }
+
+        /// <summary>RimWorld's <c>RCellFinder.TryFindRandomPawnEntryCell</c> tries this many edge cells.
+        /// Recalled, not sourced; the behaviour is pinned by a test rather than the number.</summary>
+        private const int EntryTries = 200;
+
+        /// <summary>
+        /// The squad's entry cell (RimWorld: <c>RCellFinder.TryFindRandomPawnEntryCell</c>): a standable edge
+        /// cell from which the people being raided can be walked to. The port used to take any edge cell at
+        /// all, and when that cell was water or rock every raider was spawned onto it, stood in a region-less
+        /// cell, could reach nothing, and re-ran its whole think tree every tick until it froze to death: a
+        /// 60-day run went from ten minutes to over an hour on the seeds where that happened. Falls back to
+        /// a standable edge cell that reaches nobody (an enclosed town still gets raided), and only then to
+        /// any edge cell.
+        /// </summary>
+        private static IntVec3 FindEntryCell(Map.Map map, Faction faction, RandomStream rand)
+        {
+            IntVec3? target = RaidTarget(map, faction);
+            IntVec3? standable = null;
+            for (int i = 0; i < EntryTries; i++)
+            {
+                IntVec3 c = RandomEdgeCell(map, rand);
+                if (!GenGrid.Standable(c, map)) continue;
+                if (target == null || map.reachability.CanReachCells(c, target.Value)) return c;
+                standable ??= c;
+            }
+            return standable ?? RandomEdgeCell(map, rand);
+        }
+
+        /// <summary>Where the raid is going: the first spawned humanlike not of the raiding faction, or null
+        /// on a map with nobody to raid.</summary>
+        private static IntVec3? RaidTarget(Map.Map map, Faction faction)
+        {
+            IReadOnlyList<Pawn> all = map.mapPawns.AllPawnsSpawned;
+            for (int i = 0; i < all.Count; i++)
+            {
+                Pawn p = all[i];
+                if (p.RaceProps.Humanlike && !p.Dead && p.Faction != faction) return p.Position;
+            }
+            return null;
         }
 
         /// <summary>A random cell on one of the four map edges (RimWorld's usual raid entry point) — the
