@@ -172,6 +172,7 @@ namespace SimWorld.Bench.Suites
             public int Citizens;
             public float Mood;
             public int[] Deaths = Array.Empty<int>();
+            public string Ledger = "";
             public float FoodOnMap;
             public float FoodInStores;
             public float ThreatPoints;
@@ -204,6 +205,7 @@ namespace SimWorld.Bench.Suites
                 Citizens = home.Citizens.Count(p => !p.Dead),
                 Mood = rollup.MeanMood,
                 Deaths = Find.Storyteller.deaths.Snapshot().ToArray(),
+                Ledger = Find.Storyteller.deaths.ToString(),
                 FoodInStores = StoresNutrition(home),
                 ThreatPoints = StorytellerUtility.DefaultThreatPointsNow(game.CivilizationTarget),
                 Wealth = game.CivilizationTarget.PlayerWealthForStoryteller,
@@ -271,6 +273,7 @@ namespace SimWorld.Bench.Suites
                 .Append("; moments ").Append(s.Moments)
                 .Append("; wall ").Append(Report.Num(s.Seconds, 1)).Append(" s");
             Console.WriteLine(sb.ToString());
+            Console.WriteLine("  ledger: " + s.Ledger);
             Console.WriteLine("  built: " + CountsText(s.Built));
             Console.WriteLine("  planned: " + CountsText(s.Planned));
             foreach ((int day, string from, string to) in eras) Console.WriteLine("  era reached day " + day + ": " + from + " -> " + to);
