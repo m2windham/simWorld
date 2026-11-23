@@ -1,0 +1,48 @@
+name: stall-profile
+
+# Samples stacks of the storyteller bench while raid runs slow down, so the stall is found off the dev PC.
+on:
+  push:
+    branches: [ci/stall-profile]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stall-profile
+  cancel-in-progress: true
+
+jobs:
+  profile:
+    strategy:
+      fail-fast: false
+      matrix:
+        run: ["20:101", "20:106", "20:99"]
+    name: profile ${{ matrix.run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: c26f31b32543222840615d533501f2645488916f }
+      - uses: actions/setup-dotnet@v4
+        with: { global-json-file: global.json }
+      - run: dotnet build tools/bench/SimWorld.Bench -c Release
+      - run: dotnet tool install --tool-path "$RUNNER_TEMP/tools" dotnet-stack
+      - name: Run and sample
+        env:
+          RUN: ${{ matrix.run }}
+        run: |
+          mkdir out
+          DLL=$(find artifacts -path '*SimWorld.Bench*' -name SimWorld.Bench.dll | grep -i release | grep -v '/obj/' | head -1)
+          echo "dll $DLL"
+          dotnet "$DLL" --suite storyteller --solo false --days 60 --threats true --band "${RUN%%:*}" --seed "${RUN##*:}" > out/bench.txt 2>&1 &
+          P=$!
+          while kill -0 $P 2>/dev/null; do
+            sleep 20
+            echo "=== $(date +%s)" >> out/stacks.txt
+            timeout 15 "$RUNNER_TEMP/tools/dotnet-stack" report -p $P >> out/stacks.txt 2>&1 || true
+          done
+          wait $P
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: "prof-${{ strategy.job-index }}", path: out }
