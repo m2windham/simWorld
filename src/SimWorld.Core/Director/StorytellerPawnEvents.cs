@@ -63,8 +63,27 @@ namespace SimWorld.Director
         public static bool Notify_PawnDowned(Pawn pawn)
         {
             if (!IsCivilizationMember(pawn)) return false;
-            Find.Storyteller.adaptation.Notify_ColonistDowned();
+            Find.Storyteller.adaptation.Notify_ColonistDowned(LivingMemberCount());
             return true;
+        }
+
+        /// <summary>
+        /// How many of the civilization's people are alive (RimWorld: <c>StoryWatcher_Adaptation.Population</c>,
+        /// its living free colonists), read off the same roster as <see cref="IsCivilizationMember"/>. What a
+        /// casualty costs adaptation depends on it: a band of six feels one loss more than a town of twenty.
+        /// </summary>
+        public static int LivingMemberCount()
+        {
+            int count = 0;
+            IReadOnlyList<IIncidentTarget> targets = Find.Storyteller.AllIncidentTargets;
+            for (int i = 0; i < targets.Count; i++)
+            {
+                foreach (Pawn member in targets[i].PlayerPawnsForStoryteller)
+                {
+                    if (!member.Dead && member.RaceProps.Humanlike) count++;
+                }
+            }
+            return count;
         }
 
         /// <summary>

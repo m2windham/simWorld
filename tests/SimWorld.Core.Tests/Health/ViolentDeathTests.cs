@@ -60,11 +60,11 @@ namespace SimWorld.Tests.Health
         }
 
         /// <summary>Quiet time on the storyteller's clock, so a penalty has something to cut into and cannot
-        /// hide behind the zero floor <see cref="StoryWatcher_Adaptation.Notify_ColonistDied"/> clamps to.</summary>
+        /// hide behind the floor <see cref="StoryWatcher_Adaptation.AdaptDaysMin"/> losses clamp to.</summary>
         private static float BuildQuietTime()
         {
             for (int i = 0; i < 4000; i++) Adaptation.AdaptationTick(Medium);
-            Assert.True(Adaptation.AdaptDays > StoryWatcher_Adaptation.DeathAdaptDaysPenalty);
+            Assert.True(Adaptation.AdaptDays - 2f * StoryWatcher_Adaptation.DeathAdaptDaysLoss(0) > StoryWatcher_Adaptation.AdaptDaysMin);
             return Adaptation.AdaptDays;
         }
 
@@ -126,7 +126,7 @@ namespace SimWorld.Tests.Health
 
             citizen.health.Kill(Violence(), null);
 
-            Assert.Equal(quiet - StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(quiet - StoryWatcher_Adaptation.DeathAdaptDaysLoss(0), Adaptation.AdaptDays, 4);
         }
 
         [Fact]
@@ -145,7 +145,9 @@ namespace SimWorld.Tests.Health
 
             Assert.False(age.health.DiedViolently);
             Assert.False(surgery.health.DiedViolently);
-            Assert.Equal(quiet - 2 * StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            // Each charged against the population it leaves: one, then nobody.
+            float charged = StoryWatcher_Adaptation.DeathAdaptDaysLoss(1) + StoryWatcher_Adaptation.DeathAdaptDaysLoss(0);
+            Assert.Equal(quiet - charged, Adaptation.AdaptDays, 4);
         }
 
         [Fact]
@@ -176,7 +178,7 @@ namespace SimWorld.Tests.Health
             citizen.health.Kill(null, null);
             citizen.health.Kill(Violence(), null);
 
-            Assert.Equal(quiet - StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(quiet - StoryWatcher_Adaptation.DeathAdaptDaysLoss(0), Adaptation.AdaptDays, 4);
         }
 
         // ---- the people who watched ----

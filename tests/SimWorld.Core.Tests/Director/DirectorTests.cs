@@ -115,8 +115,8 @@ namespace SimWorld.Tests.Director
 
             float points = StorytellerUtility.DefaultThreatPointsNow(target);
 
-            // wealth curve (2400) + 3 * colonist curve (140) = 2820, * threatScale(1) * adaptation(0.7 at no adapt days) * pointsFactor(1 from day 40)
-            Assert.Equal(2820f * 0.7f, points, 1);
+            // wealth curve (2400) + 3 * colonist curve (140) = 2820, * threatScale(1) * adaptation(0.8 at no adapt days) * pointsFactor(1 from day 40)
+            Assert.Equal(2820f * 0.8f, points, 1);
         }
 
         [Fact]
@@ -202,13 +202,14 @@ namespace SimWorld.Tests.Director
             DifficultyDef medium = DefDatabase<DifficultyDef>.GetNamed("Medium");
             var adaptation = new StoryWatcher_Adaptation();
 
+            // RimWorld's own chart (wiki: Raid_points): 0.8 fresh, 1.0 at 30 adapt-days, 1.2 at 60.
             float atZero = adaptation.TotalThreatPointsFactor(medium);
-            Assert.Equal(0.7f, atZero, 3);
+            Assert.Equal(0.8f, atZero, 3);
 
             for (int i = 0; i < 600; i++) adaptation.AdaptationTick(medium); // 10 days
             Assert.Equal(10f, adaptation.AdaptDays, 1);
             float atTenDays = adaptation.TotalThreatPointsFactor(medium);
-            Assert.Equal(0.9f, atTenDays, 2);
+            Assert.Equal(0.8f + 0.2f / 3f, atTenDays, 2);
             Assert.True(atTenDays > atZero);
 
             for (int i = 0; i < 1200; i++) adaptation.AdaptationTick(medium); // + 20 more days = 30 total

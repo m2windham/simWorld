@@ -17,7 +17,7 @@ namespace SimWorld.Tests.Director
     ///
     /// <para/><b>What this suite exists to stop happening again.</b> This is the exact twin of the
     /// <see cref="StoryWatcher_Adaptation.Notify_ColonistDied"/> defect the raid lane fixed:
-    /// <c>Notify_ColonistDowned</c>, its <see cref="StoryWatcher_Adaptation.DownedAdaptDaysPenalty"/> constant
+    /// <c>Notify_ColonistDowned</c>, its downed penalty
     /// and its place in the curve all existed, and no line of <c>src/</c> raised it — so adaptation only ever
     /// eased after a death, and a colony that was mauled without losing anybody looked, to the narrator,
     /// exactly as untroubled as one that had spent the month farming.
@@ -48,13 +48,19 @@ namespace SimWorld.Tests.Director
 
         private static DifficultyDef Medium => DefDatabase<DifficultyDef>.GetNamed("Medium");
 
+        /// <summary>What a downing costs at the population alive now (RimWorld charges it by population).</summary>
+        private static float Downed => StoryWatcher_Adaptation.DownedAdaptDaysLoss(StorytellerPawnEvents.LivingMemberCount());
+
+        /// <summary>What a death costs at the population alive now, read after it: the population it leaves.</summary>
+        private static float Death => StoryWatcher_Adaptation.DeathAdaptDaysLoss(StorytellerPawnEvents.LivingMemberCount());
+
         /// <summary>A stretch of quiet on the clock, so a penalty has something to cut into and cannot be
-        /// hidden by the zero floor <see cref="StoryWatcher_Adaptation.Notify_ColonistDowned"/> clamps to.</summary>
+        /// hidden by the floor <see cref="StoryWatcher_Adaptation.AdaptDaysMin"/> losses clamp to.</summary>
         private static float BuildQuietTime()
         {
             for (int i = 0; i < 4000; i++) Adaptation.AdaptationTick(Medium);
-            Assert.True(Adaptation.AdaptDays > StoryWatcher_Adaptation.DeathAdaptDaysPenalty
-                                               + StoryWatcher_Adaptation.DownedAdaptDaysPenalty,
+            Assert.True(Adaptation.AdaptDays - StoryWatcher_Adaptation.DeathAdaptDaysLoss(0)
+                                             - 2f * StoryWatcher_Adaptation.DownedAdaptDaysLoss(1) > StoryWatcher_Adaptation.AdaptDaysMin,
                 "needed a peaceful stretch on the clock before a downing could be seen to cut it short");
             return Adaptation.AdaptDays;
         }
@@ -87,15 +93,14 @@ namespace SimWorld.Tests.Director
             Assert.True(citizen.health.Downed);
             Assert.True(Adaptation.AdaptDays < quiet,
                 "a citizen went down and the storyteller's quiet-time clock did not move");
-            Assert.Equal(quiet - StoryWatcher_Adaptation.DownedAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(quiet - Downed, Adaptation.AdaptDays, 4);
         }
 
         [Fact]
         public void A_downing_costs_the_storyteller_less_than_a_death()
         {
-            // The ordering the two constants encode: losing someone outright is worse news than losing them
-            // for a while. Asserted as an ordering rather than against either literal, both of which are
-            // documented approximations of RimWorld's own.
+            // The ordering the two curves encode: losing someone outright is worse news than losing them
+            // for a while. Asserted as an ordering rather than against either literal.
             float quiet = BuildQuietTime();
             Pawn citizen = NewHuman("Citizen");
             CivilizationOf(citizen);
@@ -104,7 +109,7 @@ namespace SimWorld.Tests.Director
             float costOfDowning = quiet - Adaptation.AdaptDays;
 
             float beforeDeath = Adaptation.AdaptDays;
-            Adaptation.Notify_ColonistDied();
+            Adaptation.Notify_ColonistDied(StorytellerPawnEvents.LivingMemberCount());
             float costOfDeath = beforeDeath - Adaptation.AdaptDays;
 
             Assert.True(costOfDowning > 0f);
@@ -123,7 +128,7 @@ namespace SimWorld.Tests.Director
 
             citizen.health.ForceDowned = true;
             float afterDowning = Adaptation.AdaptDays;
-            Assert.Equal(quiet - StoryWatcher_Adaptation.DownedAdaptDaysPenalty, afterDowning, 4);
+            Assert.Equal(quiet - Downed, afterDowning, 4);
 
             // Pawn_HealthTracker.Kill sets the dead state directly and never passes back through MakeDowned,
             // so the downing is not charged again on the way out. The death is charged, once, whatever it was:
@@ -132,7 +137,7 @@ namespace SimWorld.Tests.Director
             citizen.health.Kill(null, null);
 
             Assert.True(citizen.Dead);
-            Assert.Equal(afterDowning - StoryWatcher_Adaptation.DeathAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(afterDowning - Death, Adaptation.AdaptDays, 4);
         }
 
         [Fact]
@@ -151,7 +156,7 @@ namespace SimWorld.Tests.Director
 
             Assert.True(citizen.health.Downed);
             Assert.Equal(afterDowning, Adaptation.AdaptDays, 4);
-            Assert.Equal(quiet - StoryWatcher_Adaptation.DownedAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(quiet - Downed, Adaptation.AdaptDays, 4);
         }
 
         [Fact]
@@ -168,7 +173,7 @@ namespace SimWorld.Tests.Director
             Assert.False(citizen.health.Downed);
             citizen.health.ForceDowned = true;
 
-            Assert.Equal(quiet - 2f * StoryWatcher_Adaptation.DownedAdaptDaysPenalty, Adaptation.AdaptDays, 4);
+            Assert.Equal(quiet - 2f * Downed, Adaptation.AdaptDays, 4);
         }
 
         // ---- whose downing counts ----

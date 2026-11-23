@@ -357,7 +357,7 @@ namespace SimWorld.Tests.Director
             StoryWatcher_Adaptation adaptation = Find.Storyteller.adaptation;
             for (int i = 0; i < 4000; i++) adaptation.AdaptationTick(medium);
             float quietDays = adaptation.AdaptDays;
-            Assert.True(quietDays > StoryWatcher_Adaptation.DeathAdaptDaysPenalty,
+            Assert.True(quietDays - StoryWatcher_Adaptation.DeathAdaptDaysLoss(0) > StoryWatcher_Adaptation.AdaptDaysMin,
                 "needed a peaceful stretch on the clock before a death could be seen to cut it short");
 
             int killed = 0;

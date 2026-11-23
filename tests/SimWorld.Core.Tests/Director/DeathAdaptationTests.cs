@@ -66,23 +66,25 @@ namespace SimWorld.Tests.Director
 
         private static StoryWatcher_Adaptation Adaptation => Find.Storyteller.adaptation;
 
-        private static float Death => StoryWatcher_Adaptation.DeathAdaptDaysPenalty;
+        /// <summary>What a death costs at the population alive now — read after the death, so the population
+        /// it leaves, which is what RimWorld charges it against.</summary>
+        private static float Death => StoryWatcher_Adaptation.DeathAdaptDaysLoss(StorytellerPawnEvents.LivingMemberCount());
 
-        private static float Downed => StoryWatcher_Adaptation.DownedAdaptDaysPenalty;
+        private static float Downed => StoryWatcher_Adaptation.DownedAdaptDaysLoss(StorytellerPawnEvents.LivingMemberCount());
 
         private static DifficultyDef Medium => DefDatabase<DifficultyDef>.GetNamed("Medium");
 
         // ---- fixtures ----
 
         /// <summary>
-        /// Quiet time on the clock, so a charge has something to cut into and cannot hide behind the zero floor
+        /// Quiet time on the clock, so a charge has something to cut into and cannot hide behind the floor
         /// the watcher clamps to. A test ticks pawns through a bare <see cref="TickManager"/>, which never runs
         /// the storyteller's interval, so nothing else moves adaptation between here and the assertion.
         /// </summary>
         private static float BuildQuietTime()
         {
             for (int i = 0; i < 4000; i++) Adaptation.AdaptationTick(Medium);
-            Assert.True(Adaptation.AdaptDays > 10f * (Death + Downed),
+            Assert.True(Adaptation.AdaptDays - 2f * (Death + Downed) > StoryWatcher_Adaptation.AdaptDaysMin,
                 "needed a peaceful stretch on the clock before a casualty could be seen to cut it short");
             return Adaptation.AdaptDays;
         }
@@ -345,7 +347,10 @@ namespace SimWorld.Tests.Director
                 Assert.True(worker.TryExecute(new IncidentParms { target = target, points = 800f, faction = Raiders() }));
                 int killed = worker.LastRaidOutcome!.Value.CitizensKilled;
 
-                Assert.Equal(quiet - killed * Death, Adaptation.AdaptDays, 4);
+                // Six villagers, so every death leaves fewer than eleven and costs the same; the floor can
+                // catch a raid that kills most of them, and the expectation clamps the same way.
+                float expected = System.Math.Max(StoryWatcher_Adaptation.AdaptDaysMin, quiet - killed * Death);
+                Assert.Equal(expected, Adaptation.AdaptDays, 4);
                 if (killed > 0) runsThatKilled++;
             }
 
