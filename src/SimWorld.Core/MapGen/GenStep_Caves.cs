@@ -23,6 +23,7 @@ namespace SimWorld.MapGen
             bool[] rock = ctx.rock;
 
             int rockCount = CountRock(rock);
+            ctx.mountain = (bool[])rock.Clone(); // the mountain before its caves: GenStep_Roofs roofs this
             if (rockCount == 0) return;
 
             float rockFraction = (float)rockCount / rock.Length;

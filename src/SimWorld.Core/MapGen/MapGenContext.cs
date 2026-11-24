@@ -46,6 +46,13 @@ namespace SimWorld.MapGen
         /// </summary>
         public bool[] rock = Array.Empty<bool>();
 
+        /// <summary>
+        /// The mountain as <see cref="GenStep_RocksAndMountains"/> raised it, before <see cref="GenStep_Caves"/>
+        /// carved passages through it: what <see cref="GenStep_Roofs"/> puts overhead mountain on. Empty when no
+        /// cave step ran, in which case <see cref="rock"/> is the mountain.
+        /// </summary>
+        public bool[] mountain = Array.Empty<bool>();
+
         public MapGenContext(Map.Map map, Tile tile, int tileId, string seedString, WorldGrid? grid = null)
         {
             this.map = map ?? throw new ArgumentNullException(nameof(map));

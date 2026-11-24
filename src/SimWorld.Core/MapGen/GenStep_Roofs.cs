@@ -4,9 +4,11 @@ namespace SimWorld.MapGen
 {
     /// <summary>
     /// Paints the <see cref="RoofGrid"/> over mountain and cave cells (spec §5's map-gen line). Solid rock
-    /// always carries a thick natural roof; a non-rock cell gets a roof graded by how enclosed by rock its
-    /// immediate surroundings are — deep inside a mountain (mostly rock nearby) reads thick, a cave passage or
-    /// a mountain's edge (some rock nearby) reads thin, and open ground (no rock nearby) gets none. This local-
+    /// always carries a thick natural roof; a cave cell (mountain the cave step carved out,
+    /// <see cref="MapGenContext.mountain"/>) gets a roof graded by how enclosed by rock its
+    /// immediate surroundings are — deep inside a mountain (mostly rock nearby) reads thick, a passage near its
+    /// flank (some rock nearby) reads thin. Open ground gets none however much rock stands around it: grading
+    /// it too put "thick rock roof" over grass at the foot of every cliff (playtest). This local-
     /// density read is deliberately not a flood fill from the map border: a tunnel <see cref="GenStep_Caves"/>
     /// carves out to the map edge should stay roofed along its whole length, the way real mined tunnels do in
     /// RimWorld, and a border-seeded flood fill would instead un-roof it the moment it touched the edge.
@@ -17,6 +19,7 @@ namespace SimWorld.MapGen
         {
             Map.Map map = ctx.map;
             bool[] rock = ctx.rock;
+            bool[] mountain = ctx.mountain.Length == rock.Length ? ctx.mountain : rock;
             int sizeX = map.Size.x, sizeZ = map.Size.z;
 
             for (int z = 0; z < sizeZ; z++)
@@ -31,6 +34,10 @@ namespace SimWorld.MapGen
                         map.roofGrid.SetRoof(c, RoofDefOf.RoofRockThick);
                         continue;
                     }
+
+                    // Overhead mountain sits only over the mountain: a cave carved out of it, never the open
+                    // ground beside it, however much rock stands around.
+                    if (!mountain[i]) continue;
 
                     float localRockFraction = LocalRockFraction(map, rock, x, z);
                     if (localRockFraction >= MapGenTuning.ThickRoofRockFraction)
