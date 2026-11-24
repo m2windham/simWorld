@@ -287,10 +287,13 @@ namespace SimWorld.Economy
 
         /// <summary>Spawns up to <paramref name="count"/> units of <paramref name="def"/> around the granary
         /// (or the map's middle when there is not one yet), one stack per cell and never above the def's own
-        /// stack limit. Returns how many units actually landed.</summary>
+        /// stack limit. Returns how many units actually landed. Only on cells the band can walk to
+        /// (<see cref="SettlementReach"/>): food issued into a sealed rock pocket was counted as on the map,
+        /// so nothing more was issued, while nobody could reach it to eat.</summary>
         private static int PlaceIssued(ThingDef def, int count, Map.Map map)
         {
-            IntVec3 anchor = IssueAnchor(map);
+            IntVec3? band = SettlementReach.BandCell(map);
+            IntVec3 anchor = IssueAnchor(map, band);
             IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
 
             int remaining = count;
@@ -299,6 +302,7 @@ namespace SimWorld.Economy
             {
                 IntVec3 cell = anchor + pattern[i];
                 if (!GenGrid.InBounds(cell, map) || !GenGrid.Standable(cell, map)) continue;
+                if (!SettlementReach.CanReach(map, band, cell)) continue;
 
                 int stack = Math.Min(remaining, Math.Max(1, def.stackLimit));
                 Thing thing = ThingMaker.MakeThing(def);
@@ -313,14 +317,18 @@ namespace SimWorld.Economy
         }
 
         /// <summary>Where issued food lands: the granary if the settlement has painted one, otherwise the
-        /// middle of the map. Left loose rather than zoned — <see cref="EnsureGranary"/> is what decides where
+        /// middle of the map — or, when the band stands where it cannot reach either, beside the band. Left loose rather than zoned — <see cref="EnsureGranary"/> is what decides where
         /// a settlement's storage goes, and a hungry citizen reaches a loose stack exactly as well
         /// (<c>AI.JobGiver_GetFood</c> scans items, not stockpiles).</summary>
-        private static IntVec3 IssueAnchor(Map.Map map)
+        private static IntVec3 IssueAnchor(Map.Map map, IntVec3? band)
         {
             Zone_Stockpile? granary = GranaryOf(map);
-            if (granary != null && granary.CellCount > 0) return granary.Cells[0];
-            return new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
+            if (granary != null && granary.CellCount > 0 && SettlementReach.CanReach(map, band, granary.Cells[0]))
+            {
+                return granary.Cells[0];
+            }
+            var middle = new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
+            return SettlementReach.CanReach(map, band, middle) ? middle : band!.Value;
         }
 
         // -----------------------------------------------------------------------------------------------
