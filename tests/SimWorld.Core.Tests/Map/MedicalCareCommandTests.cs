@@ -90,8 +90,9 @@ namespace SimWorld.Tests.Map
         {
             Settlement settlement = OpenedSettlement("medcare-nocare");
             CoreMap map = settlement.InteriorMap!;
-            Pawn doctor = settlement.Citizens.First(p => p.Spawned && p.Map == map);
-            Pawn patient = settlement.Citizens.First(p => p.Spawned && p.Map == map && p != doctor);
+            Pawn patient = settlement.Citizens.First(p => p.Spawned && p.Map == map);
+            // Routine tending is the healers' (HealerUtility), so the doctor is one of them.
+            Pawn doctor = settlement.Citizens.First(p => p.Spawned && p.Map == map && p != patient && HealerUtility.IsHealer(p, patient));
             MakeBleedingWound(patient);
 
             var ordinary = new WorkGiver_Tend { def = DefDatabase<WorkGiverDef>.GetNamed("DoctorTend") };
@@ -108,8 +109,9 @@ namespace SimWorld.Tests.Map
         {
             Settlement settlement = OpenedSettlement("medcare-nomeds");
             CoreMap map = settlement.InteriorMap!;
-            Pawn doctor = settlement.Citizens.First(p => p.Spawned && p.Map == map);
-            Pawn patient = settlement.Citizens.First(p => p.Spawned && p.Map == map && p != doctor);
+            Pawn patient = settlement.Citizens.First(p => p.Spawned && p.Map == map);
+            // Routine tending is the healers' (HealerUtility), so the doctor is one of them.
+            Pawn doctor = settlement.Citizens.First(p => p.Spawned && p.Map == map && p != patient && HealerUtility.IsHealer(p, patient));
             MakeBleedingWound(patient);
 
             Thing medicine = ThingMaker.MakeThing(DefDatabase<ThingDef>.GetNamed("MedicineHerbal"));

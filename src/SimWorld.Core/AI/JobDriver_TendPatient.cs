@@ -26,6 +26,12 @@ namespace SimWorld.AI
         /// call for — this port's own flat simplification (see this class's own doc).</summary>
         public const int MedicinePerTend = 1;
 
+        /// <summary>How many doctors may each claim <see cref="MedicinePerTend"/> from one stack of medicine at once
+        /// (RimWorld's <c>JobDriver_TendPatient</c> reserves its medicine count with ten claimants, as recalled
+        /// from the decompile, not checked from here). It used to claim the whole stack, so after a raid one
+        /// doctor walking to the pile left every other doctor to tend without medicine while it sat in store.</summary>
+        public const int MedicineMaxClaimants = 10;
+
         /// <summary>Medicine experience for tending a humanlike patient, and an animal (RimWorld:
         /// <c>Toils_Tend.FinalizeTend</c>, 500 and 175 as recalled from the decompile, not checked from here).
         /// Without it a doctor never got better at doctoring, and a settlement that hands its tending to its
@@ -55,7 +61,7 @@ namespace SimWorld.AI
             if (pawn.Map == null) return false;
             if (!pawn.Map.reservationManager.CanReserve(pawn, job.GetTarget(TargetIndex.A))) return false;
             LocalTargetInfo medicineTarget = job.GetTarget(TargetIndex.B);
-            if (medicineTarget.HasThing && !pawn.Map.reservationManager.CanReserve(pawn, medicineTarget)) return false;
+            if (medicineTarget.HasThing && !pawn.Map.reservationManager.CanReserve(pawn, medicineTarget, MedicineMaxClaimants, MedicinePerTend)) return false;
             return true;
         }
 
@@ -76,7 +82,7 @@ namespace SimWorld.AI
             bool hasMedicine = job.GetTarget(TargetIndex.B).HasThing;
             if (hasMedicine)
             {
-                yield return Toils_Reserve.Reserve(TargetIndex.B);
+                yield return Toils_Reserve.Reserve(TargetIndex.B, MedicineMaxClaimants, MedicinePerTend);
 
                 Toil gotoMedicine = Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.ClosestTouch);
                 gotoMedicine.FailOnDespawnedOrNull(TargetIndex.B);

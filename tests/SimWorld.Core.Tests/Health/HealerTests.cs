@@ -164,6 +164,24 @@ namespace SimWorld.Tests.Health
         }
 
         [Fact]
+        public void Doctors_share_a_stack_of_medicine_a_unit_each_until_it_runs_out()
+        {
+            (Pawn healer, Pawn novice, Pawn patient) = Band();
+            CoreMap map = healer.Map!;
+            Thing herbs = ThingMaker.MakeThing(MedicineDefOf.MedicineHerbal);
+            herbs.stackCount = 2;
+            GenSpawn.Spawn(herbs, new IntVec3(5, 0, 5), map);
+            Pawn third = Citizen(map, healer.faction!, new IntVec3(6, 0, 6), 5, "Third");
+
+            foreach (Pawn doctor in new[] { healer, novice })
+            {
+                Assert.Same(herbs, MedicineUtility.FindBestMedicine(doctor, patient));
+                Assert.True(map.reservationManager.Reserve(doctor, herbs, JobDriver_TendPatient.MedicineMaxClaimants, JobDriver_TendPatient.MedicinePerTend));
+            }
+            Assert.Null(MedicineUtility.FindBestMedicine(third, patient));
+        }
+
+        [Fact]
         public void Who_heals_survives_a_save_and_load()
         {
             (Pawn healer, Pawn novice, Pawn patient) = Band();
