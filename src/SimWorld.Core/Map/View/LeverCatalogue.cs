@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using SimWorld.AI;
 using SimWorld.Crafting;
 using SimWorld.Defs;
+using SimWorld.Pawns;
 using SimWorld.Things;
 
 namespace SimWorld.Map.View
@@ -95,7 +96,7 @@ namespace SimWorld.Map.View
             var result = new List<OrderableJob>(Orderable.Length);
             for (int i = 0; i < Orderable.Length; i++)
             {
-                (string defName, OrderTargetKind target, string hint) = Orderable[i];
+                (string defName, OrderTargetKind target, string hint, _) = Orderable[i];
                 JobDef? def = DefDatabase<JobDef>.GetNamedSilentFail(defName);
                 if (def == null) continue;
                 result.Add(new OrderableJob(def.defName, def.LabelCap, target, hint));
@@ -103,18 +104,50 @@ namespace SimWorld.Map.View
             return result;
         }
 
-        private static readonly (string DefName, OrderTargetKind Target, string Hint)[] Orderable =
+        /// <summary>
+        /// <see cref="OrderableJobs()"/> less what this citizen could never do, for the order list shown beside
+        /// one person. RimWorld's right-click menu offers a colonist only what they are capable of: a work type
+        /// their age, backstory or traits disable is not offered (<see cref="Pawn.WorkTypeIsDisabled"/>), and a
+        /// baby, or anyone who cannot move at all, is offered nothing. The second playtest offered a baby Mine,
+        /// Hunt and Tend patient. Empty when no such person is on the open settlement's map.
+        /// </summary>
+        public static IReadOnlyList<OrderableJob> OrderableJobsFor(int citizenThingId)
         {
-            ("Goto", OrderTargetKind.Cell, "a cell to walk to"),
-            ("ClearSnow", OrderTargetKind.Cell, "a snowed-in cell"),
-            ("Mine", OrderTargetKind.Thing, "a mineable rock"),
-            ("CutPlant", OrderTargetKind.Thing, "a plant to cut"),
-            ("Harvest", OrderTargetKind.Thing, "a crop ready to harvest"),
-            ("Hunt", OrderTargetKind.Thing, "an animal to hunt"),
-            ("TendPatient", OrderTargetKind.Thing, "a person who needs tending"),
-            ("BeatFire", OrderTargetKind.Thing, "a fire"),
-            ("Clean", OrderTargetKind.Thing, "filth to clean"),
-            ("Repair", OrderTargetKind.Thing, "a damaged building"),
+            var result = new List<OrderableJob>();
+            Pawn? pawn = MapCommands.CitizenForOrders(citizenThingId);
+            if (pawn == null || pawn.Dead || !pawn.RaceProps.Humanlike) return result;
+            if (pawn.ageTracker?.CurLifeStage?.developmentalStage == DevelopmentalStage.Baby) return result;
+            if (!pawn.health.capacities.CapableOf(Health.PawnCapacityDefOf.Moving)) return result;
+
+            for (int i = 0; i < Orderable.Length; i++)
+            {
+                (string defName, OrderTargetKind target, string hint, string? workTypeName) = Orderable[i];
+                JobDef? def = DefDatabase<JobDef>.GetNamedSilentFail(defName);
+                if (def == null) continue;
+                if (workTypeName != null)
+                {
+                    Work.WorkTypeDef? workType = DefDatabase<Work.WorkTypeDef>.GetNamedSilentFail(workTypeName);
+                    if (workType != null && pawn.WorkTypeIsDisabled(workType)) continue;
+                }
+                result.Add(new OrderableJob(def.defName, def.LabelCap, target, hint));
+            }
+            return result;
+        }
+
+        /// <summary>Each orderable job with the work type its own work giver files it under, so a person who
+        /// may not do that work is not offered it; null for plain walking.</summary>
+        private static readonly (string DefName, OrderTargetKind Target, string Hint, string? WorkType)[] Orderable =
+        {
+            ("Goto", OrderTargetKind.Cell, "a cell to walk to", null),
+            ("ClearSnow", OrderTargetKind.Cell, "a snowed-in cell", "Cleaning"),
+            ("Mine", OrderTargetKind.Thing, "a mineable rock", "Mining"),
+            ("CutPlant", OrderTargetKind.Thing, "a plant to cut", "PlantCutting"),
+            ("Harvest", OrderTargetKind.Thing, "a crop ready to harvest", "Growing"),
+            ("Hunt", OrderTargetKind.Thing, "an animal to hunt", "Hunting"),
+            ("TendPatient", OrderTargetKind.Thing, "a person who needs tending", "Doctor"),
+            ("BeatFire", OrderTargetKind.Thing, "a fire", "Firefighter"),
+            ("Clean", OrderTargetKind.Thing, "filth to clean", "Cleaning"),
+            ("Repair", OrderTargetKind.Thing, "a damaged building", "Construction"),
         };
 
         internal static bool IsBillGiver(ThingDef def)

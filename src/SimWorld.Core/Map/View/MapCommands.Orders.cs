@@ -310,6 +310,13 @@ namespace SimWorld.Map.View
         /// <c>ListerThings</c> alongside everything else (<c>Thing.SpawnSetup</c>), so one scan answers both
         /// "which citizen" and "which target".
         /// </summary>
+        /// <summary>The person <paramref name="citizenThingId"/> names on the open settlement's map, or null.</summary>
+        internal static Pawn? CitizenForOrders(int citizenThingId)
+        {
+            SimWorld.Map.Map? map = ResolveMap(out _);
+            return map == null ? null : FindThingById(map, citizenThingId) as Pawn;
+        }
+
         private static Thing? FindThingById(SimWorld.Map.Map map, int thingId)
         {
             System.Collections.Generic.IReadOnlyList<Thing> things = map.listerThings.AllThings;
