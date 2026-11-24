@@ -317,8 +317,9 @@ namespace SimWorld.Tests.Pawns
             Assert.Null(pawn.story.childhood);
             Assert.Null(pawn.story.adulthood);
             Assert.Empty(pawn.story.traits.allTraits);
-            Assert.NotNull(pawn.Name);
-            Assert.IsType<NameSingle>(pawn.Name);
+            // No animal name bank ships, so a wild animal goes by its kind, never by a numbered tag.
+            Assert.Null(pawn.Name);
+            Assert.Equal(Husky.label, pawn.Label);
         }
 
         // ---- save/load ----

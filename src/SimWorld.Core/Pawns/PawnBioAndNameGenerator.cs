@@ -121,12 +121,15 @@ namespace SimWorld.Pawns
             return nick;
         }
 
-        /// <summary>Non-humanlike pawns get one name: from a name bank sharing the race's gender-less first-name
-        /// pool if one is loaded, else the race's own label, numbered to stay unique.</summary>
-        public static Name GenerateName(Pawn pawn)
+        /// <summary>Non-humanlike pawns get one name from a name bank sharing the race's gender-less first-name
+        /// pool if one is loaded, numbered to stay unique; else none, and they go by their kind ("muffalo"), as
+        /// RimWorld's wild animals do. Numbering the race's label instead made tags like "muffalo17" that the
+        /// second playtest read as names.</summary>
+        public static Name? GenerateName(Pawn pawn)
         {
             if (pawn == null) throw new ArgumentNullException(nameof(pawn));
-            string baseName = RandomNameFromBank(Gender.None, NameSlot.First) ?? pawn.def.label ?? pawn.def.defName;
+            string? baseName = RandomNameFromBank(Gender.None, NameSlot.First);
+            if (baseName == null) return null;
 
             string candidate = baseName;
             int suffix = 1;
