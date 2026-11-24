@@ -140,10 +140,12 @@ namespace SimWorld.Director
             // wanderer arrived but not which one has lost the only part of it a player would retell. Same
             // "Prefix: sentence" shape MigrationManager's own arrival line uses, so MomentCurator's free-form
             // categoriser reads them as one kind of event rather than two.
+            // Where they came in: on the map when the settlement has one open, else just the settlement.
+            parms.location = Letters.EventLocation.Of(wanderer) ?? new Letters.EventLocation(settlement.tile);
             Find.Storyteller.RecordChronicle(
-                "Wanderer: " + wanderer.Label + " joins " + PlaceLabel(settlement) + ".");
+                "Wanderer: " + wanderer.Label + " joins " + PlaceLabel(settlement) + ".").location = parms.location;
 
-            SendLetter(settlement, wanderer);
+            SendLetter(settlement, wanderer, parms.location);
             return true;
         }
 
@@ -213,7 +215,7 @@ namespace SimWorld.Director
         /// its victim has been alive a while: a wanderer is Full-tier at this instant whoever is looking,
         /// because every freshly generated pawn is, so tier would answer "watched" every time.
         /// </summary>
-        private static void SendLetter(Settlement settlement, Pawn wanderer)
+        private static void SendLetter(Settlement settlement, Pawn wanderer, Letters.EventLocation location)
         {
             string where = PlaceLabel(settlement);
             bool watched = Find.God.Attention.FocusedTile == settlement.tile;
@@ -221,11 +223,12 @@ namespace SimWorld.Director
                 ? $"{wanderer.Label} has wandered in and asks to stay. {where} has a new citizen."
                 : $"Word reaches you late: {wanderer.Label} wandered into {where} and stayed, while your attention was elsewhere.";
 
-            Find.LetterStack?.ReceiveLetter(
+            Letters.Letter? letter = Find.LetterStack?.ReceiveLetter(
                 "A wanderer joins: " + wanderer.Label,
                 text,
                 LetterDefOf.PositiveEvent,
                 new List<string> { wanderer.GetUniqueLoadID() });
+            if (letter != null) letter.location = location;
         }
 
         private static string PlaceLabel(Settlement settlement) =>

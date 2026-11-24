@@ -164,10 +164,16 @@ namespace SimWorld.Scenario
     /// <summary>Sends an introductory letter when the game starts (RimWorld: <c>RimWorld.ScenPart_GameStartDialog</c>).</summary>
     public sealed class ScenPart_GameStartDialog : ScenPart
     {
+        /// <summary>What RimWorld's game-start dialog has no need of and a letter does: a title. RimWorld shows
+        /// the text in a bare dialog; this port files it as a letter, whose label is the line a player reads in
+        /// the stack. Used to be the part def's own label, "game start dialog" — a developer's name for the
+        /// mechanism, shown to the player as the title of their story's first page.</summary>
+        public const string LetterTitle = "The story begins";
+
         public string text = "";
 
         public override void PostGameStart(IScenarioContext ctx) =>
-            ctx.LetterStack.ReceiveLetter(def.label ?? "Game start", text, Letters.LetterDefOf.NeutralEvent);
+            ctx.LetterStack.ReceiveLetter(LetterTitle, text, Letters.LetterDefOf.NeutralEvent);
 
         public override void ExposeData()
         {

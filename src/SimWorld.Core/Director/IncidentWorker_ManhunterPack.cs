@@ -116,8 +116,9 @@ namespace SimWorld.Director
             Map.Map? map = ArrivalMapFor(civ, settlement);
             if (map != null)
             {
-                TurnAmong(pack, map, rand);
-                SendLetter(settlement, kind, pack.Count, watched: true);
+                parms.location = TurnAmong(pack, map, rand);
+                if (settlement != null) parms.location.tile = settlement.tile;
+                SendLetter(settlement, kind, pack.Count, watched: true, parms.location);
                 return true;
             }
 
@@ -132,7 +133,8 @@ namespace SimWorld.Director
                 // zero. The resolver reads its own ledger delta, so the two axes cannot drift apart.
                 SettlementRaidResolver.Resolve(settlement, pack, null, rand);
 
-                SendLetter(settlement, kind, pack.Count, watched: false);
+                parms.location = new Letters.EventLocation(settlement.tile);
+                SendLetter(settlement, kind, pack.Count, watched: false, parms.location);
                 return true;
             }
 
@@ -238,16 +240,21 @@ namespace SimWorld.Director
         /// <c>Pawn_MindState.manhunterUntilTick</c> files the animal in <c>AI.AttackTargetsCache</c>'s
         /// out-of-faction bucket as it is written, and a pawn with no map yet has no index to be filed in.
         /// </summary>
-        private static void TurnAmong(IReadOnlyList<Pawn> pack, Map.Map map, RandomStream rand)
+        private static Letters.EventLocation TurnAmong(IReadOnlyList<Pawn> pack, Map.Map map, RandomStream rand)
         {
             IntVec3 anchor = AnchorAmongCitizens(map, rand);
             int until = (Find.TickManager?.TicksGame ?? 0) + ManhunterDurationTicks;
+            // Where the god view marks it: the anchor the pack turned on, and where each animal stood.
+            Letters.EventLocation location = Letters.EventLocation.On(map, anchor);
 
             for (int i = 0; i < pack.Count; i++)
             {
-                GenSpawn.Spawn(pack[i], ScatterNear(anchor, map, rand), map);
+                IntVec3 at = ScatterNear(anchor, map, rand);
+                GenSpawn.Spawn(pack[i], at, map);
                 pack[i].mindState.manhunterUntilTick = until;
+                location.AddAffected(at);
             }
+            return location;
         }
 
         /// <summary>
@@ -299,14 +306,15 @@ namespace SimWorld.Director
         /// them anything about where to look next time — which is the entire loop this incident exists to
         /// feed.
         /// </summary>
-        private static void SendLetter(SimWorld.World.Settlement? settlement, PawnKindDef kind, int count, bool watched)
+        private static void SendLetter(SimWorld.World.Settlement? settlement, PawnKindDef kind, int count, bool watched, Letters.EventLocation location)
         {
             string where = string.IsNullOrEmpty(settlement?.name) ? "a settlement" : settlement!.name;
             string text = watched
                 ? $"A pack of {count} {kind.label} has turned manhunter at {where}."
                 : $"Word reaches you late: a pack of {count} {kind.label} turned manhunter at {where} while your attention was elsewhere.";
 
-            Find.LetterStack?.ReceiveLetter("Manhunter pack: " + where, text, LetterDefOf.ThreatBig);
+            Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Manhunter pack: " + where, text, LetterDefOf.ThreatBig);
+            if (letter != null) letter.location = location;
         }
     }
 }

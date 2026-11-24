@@ -101,7 +101,6 @@ code-deaf SimWorld.Health.HediffDef.chronic | Blocked on chronic-disease handlin
 code-deaf SimWorld.Health.HediffDef.countsAsAddedPartOrImplant | Blocked on prosthetics/implants, which no content ships and no code installs.
 code-deaf SimWorld.Health.HediffDef.displayWound | Host-facing: whether a wound is drawn on the pawn. The core never draws.
 code-deaf SimWorld.Health.HediffDef.everCurableByItem | Blocked on curative items (medicine that removes a hediff outright); no recipe or item does that yet.
-code-deaf SimWorld.Health.HediffDef.isBad | Blocked on anything sorting hediffs into good and bad — the health tab and the "is this pawn ill" summary both live host-side.
 code-deaf SimWorld.Health.InjuryProps.destroyedLabel | Host-facing text for a destroyed part, for a health tab the core does not render.
 code-deaf SimWorld.Health.PawnCapacityDef.showOnAnimals | Host-facing: which capacities a UI lists for an animal.
 code-deaf SimWorld.Map.TerrainDef.takeFootprints | Blocked on terrain-aware filth: FilthMaker places filth without asking whether the terrain accepts marks.

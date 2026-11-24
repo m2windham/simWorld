@@ -46,14 +46,20 @@ namespace SimWorld.Factions
             if (rand == null) throw new System.ArgumentNullException(nameof(rand));
             if (existingNames == null) throw new System.ArgumentNullException(nameof(existingNames));
 
+            // The player's civilization is named for the age it is founded in, not for its def's techLevel.
+            // That def keeps RimWorld's PlayerColony value (Industrial) because other systems read it, and
+            // naming from it called a band of stone-age founders "Fort union" in the chronicle. Every bank is
+            // the same size, so this draws exactly as many values as before.
+            TechLevel bank = def.isPlayer ? TechLevel.Neolithic : def.techLevel;
             string[] prefixes = def.settlementNamePrefixes != null && def.settlementNamePrefixes.Count > 0
                 ? def.settlementNamePrefixes.ToArray()
-                : PrefixBanks.TryGetValue(def.techLevel, out string[]? p) ? p : DefaultPrefixes;
-            string[] suffixes = SuffixBanks.TryGetValue(def.techLevel, out string[]? s) ? s : DefaultSuffixes;
+                : PrefixBanks.TryGetValue(bank, out string[]? p) ? p : DefaultPrefixes;
+            string[] suffixes = SuffixBanks.TryGetValue(bank, out string[]? s) ? s : DefaultSuffixes;
 
             for (int attempt = 0; attempt < MaxAttempts; attempt++)
             {
-                string candidate = rand.Element(prefixes) + " " + rand.Element(suffixes);
+                // A proper name, so both words are capitalised: "Ash Clan", not "Ash clan".
+                string candidate = rand.Element(prefixes) + " " + Capitalize(rand.Element(suffixes));
                 if (!existingNames.Contains(candidate)) return candidate;
             }
 
@@ -67,5 +73,8 @@ namespace SimWorld.Factions
             }
             return fallback;
         }
+
+        private static string Capitalize(string word) =>
+            word.Length == 0 ? word : char.ToUpperInvariant(word[0]) + word.Substring(1);
     }
 }

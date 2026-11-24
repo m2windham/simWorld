@@ -116,15 +116,21 @@ namespace SimWorld.Director
 
             if (map != null)
             {
-                (int destroyed, int killed) = ShakeMap(map, settlement, severity, rand, source);
+                // Where the god view marks it: the tile, and on the map every place a structure fell. The
+                // centre is the first one that fell until something better is known, which is enough to
+                // jump to.
+                var location = new Letters.EventLocation(settlement.tile);
+                (int destroyed, int killed) = ShakeMap(map, settlement, severity, rand, source, location);
                 CreditStructures(source, destroyed);
-                SendLetter(settlement, destroyed, killed, watched: IsWatched(settlement));
+                parms.location = location;
+                SendLetter(settlement, destroyed, killed, watched: IsWatched(settlement), location);
                 return true;
             }
 
             int lost = ShakeSettlement(settlement, severity);
             CreditStructures(source, lost);
-            SendLetter(settlement, lost, 0, watched: false);
+            parms.location = new Letters.EventLocation(settlement.tile);
+            SendLetter(settlement, lost, 0, watched: false, parms.location);
             return true;
         }
 
@@ -163,7 +169,7 @@ namespace SimWorld.Director
         /// and how many people were killed doing it. Only what is
         /// <paramref name="settlement"/>'s own is laid out again (<see cref="PlaceRebuildBlueprint"/>).
         /// </summary>
-        private static (int Destroyed, int Killed) ShakeMap(Map.Map map, SimWorld.World.Settlement settlement, float severity, RandomStream rand, string? source)
+        private static (int Destroyed, int Killed) ShakeMap(Map.Map map, SimWorld.World.Settlement settlement, float severity, RandomStream rand, string? source, Letters.EventLocation location)
         {
             int destroyedTotal = 0;
             int killedTotal = 0;
@@ -208,6 +214,7 @@ namespace SimWorld.Director
                     if (rebuild)
                     {
                         destroyedTotal++;
+                        location.AddAffected(at);
                         PlaceRebuildBlueprint(map, built, builtStuff, at, rot);
                     }
 
@@ -349,7 +356,7 @@ namespace SimWorld.Director
         /// <summary>The player is told either way — an earthquake nobody is told about is indistinguishable
         /// from nothing happening, and a defect that costs nothing when unwatched teaches the player nothing
         /// about where to look next time.</summary>
-        private static void SendLetter(SimWorld.World.Settlement settlement, int structuresLost, int killed, bool watched)
+        private static void SendLetter(SimWorld.World.Settlement settlement, int structuresLost, int killed, bool watched, Letters.EventLocation location)
         {
             string where = string.IsNullOrEmpty(settlement.name) ? "a settlement" : settlement.name;
             string text;
@@ -373,7 +380,8 @@ namespace SimWorld.Director
                         where, structuresLost);
             }
 
-            Find.LetterStack?.ReceiveLetter("Earthquake: " + where, text, LetterDefOf.NegativeEvent);
+            Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Earthquake: " + where, text, LetterDefOf.NegativeEvent);
+            if (letter != null) letter.location = location;
         }
     }
 }

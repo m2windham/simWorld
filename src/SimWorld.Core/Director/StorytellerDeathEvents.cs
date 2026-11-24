@@ -134,6 +134,12 @@ namespace SimWorld.Director
         private static void SendDeathLetter(Pawn pawn, DamageInfo? dinfo, Hediff? culprit)
         {
             if (!PawnUtility.ShouldSendNotificationAbout(pawn)) return;
+            // RimWorld letters an animal's death only when the player has a stake in that one animal — it was
+            // bonded, or the player named it. This port has neither bonds nor player naming yet (every animal
+            // carries a generated name like "muffalo3", which is a tag, not a name anyone gave it), so no
+            // animal's death is a letter. Recalled, not read: RimWorld's exact test in
+            // Pawn_HealthTracker.NotifyPlayerOfKilled.
+            if (!pawn.RaceProps.Humanlike) return;
 
             string text;
             if (dinfo != null && !string.IsNullOrEmpty(dinfo.Def.deathMessage))
@@ -149,11 +155,13 @@ namespace SimWorld.Director
                 text = pawn.Label + " has died.";
             }
 
-            Find.LetterStack.ReceiveLetter(
+            Letters.Letter letter = Find.LetterStack.ReceiveLetter(
                 "Death: " + pawn.Label,
                 text,
                 DeathLetterDefOf.Death,
                 new List<string> { pawn.GetUniqueLoadID() });
+            // Read before the corpse is made: Kill notifies the narrator while the body is still where it fell.
+            letter.location = Letters.EventLocation.Of(pawn);
         }
     }
 }

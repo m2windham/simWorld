@@ -73,7 +73,7 @@ namespace SimWorld.Map.View
         internal static MapCommandResult NoMap(string reason) => new MapCommandResult(MapCommandOutcome.NoMap, reason);
 
         internal static MapCommandResult OffMap(IntVec3 cell) =>
-            new MapCommandResult(MapCommandOutcome.OffMap, cell + " is off the map.");
+            new MapCommandResult(MapCommandOutcome.OffMap, "That cell is off the map.");
 
         internal static MapCommandResult Occupied(string reason) => new MapCommandResult(MapCommandOutcome.Occupied, reason);
 
@@ -227,7 +227,7 @@ namespace SimWorld.Map.View
             var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
             blueprint.stuffToUse = stuff;
             GenSpawn.Spawn(blueprint, cell, map, rot);
-            return MapCommandResult.Done("Blueprint for " + entityDef.LabelCap + " placed at " + cell + ".");
+            return MapCommandResult.Done("Blueprint for " + entityDef.LabelCap + " placed.");
         }
 
         /// <summary>
@@ -254,10 +254,10 @@ namespace SimWorld.Map.View
                 {
                     string label = blueprint.EntityToBuild.LabelCap;
                     blueprint.Destroy(DestroyMode.Cancel);
-                    return MapCommandResult.Done("Cancelled the " + label + " designation at " + cell + ".");
+                    return MapCommandResult.Done("Cancelled the " + label + " designation.");
                 }
             }
-            return MapCommandResult.NoChange("Nothing is designated at " + cell + ".");
+            return MapCommandResult.NoChange("Nothing is designated there.");
         }
 
         /// <summary>

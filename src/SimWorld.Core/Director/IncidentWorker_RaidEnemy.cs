@@ -126,13 +126,15 @@ namespace SimWorld.Director
             Map.Map? map = ArrivalMapFor(civ, LastRaidSettlement);
             if (map != null)
             {
-                Arrive(pawns, faction, map, Rand.Current);
-                SendLetter(LastRaidSettlement, faction, strategy, pawns.Count, null);
+                parms.location = Arrive(pawns, faction, map, Rand.Current);
+                if (LastRaidSettlement != null) parms.location.tile = LastRaidSettlement.tile;
+                SendLetter(LastRaidSettlement, faction, strategy, pawns.Count, null, parms.location);
             }
             else if (LastRaidSettlement != null)
             {
                 LastRaidOutcome = SettlementRaidResolver.Resolve(LastRaidSettlement, pawns, faction, Rand.Current);
-                SendLetter(LastRaidSettlement, faction, strategy, pawns.Count, LastRaidOutcome);
+                parms.location = new Letters.EventLocation(LastRaidSettlement.tile);
+                SendLetter(LastRaidSettlement, faction, strategy, pawns.Count, LastRaidOutcome, parms.location);
             }
 
             // Neither path taken means the target has no settlement and no map hook — a bare
@@ -152,7 +154,7 @@ namespace SimWorld.Director
         /// and elsewhere with how it ended. The wording is SimWorld's own.
         /// </summary>
         private static void SendLetter(SimWorld.World.Settlement? settlement, Faction faction, RaidStrategyDef strategy,
-            int raiders, SettlementRaidOutcome? outcome)
+            int raiders, SettlementRaidOutcome? outcome, Letters.EventLocation location)
         {
             string where = string.IsNullOrEmpty(settlement?.name) ? "a settlement" : settlement!.name;
             string squad = raiders == 1 ? "A lone raider" : $"A band of {raiders} raiders";
@@ -168,7 +170,8 @@ namespace SimWorld.Director
                     + $"{ending} Dead: {outcome.Value.TotalLivesLost} of the settlement, {outcome.Value.RaidersKilled} of the raiders.";
             }
 
-            Find.LetterStack?.ReceiveLetter("Raid: " + where, text, LetterDefOf.ThreatBig);
+            Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Raid: " + where, text, LetterDefOf.ThreatBig);
+            if (letter != null) letter.location = location;
         }
 
         /// <summary>
@@ -230,12 +233,16 @@ namespace SimWorld.Director
         /// computed the edge cell once and spawned the whole squad on that single cell — a bug, not a
         /// simplification: a raid arrived as one stack of pawns standing inside each other.
         /// </summary>
-        private static void Arrive(IReadOnlyList<Pawn> pawns, Faction faction, Map.Map map, RandomStream rand)
+        private static Letters.EventLocation Arrive(IReadOnlyList<Pawn> pawns, Faction faction, Map.Map map, RandomStream rand)
         {
             IntVec3 entry = FindEntryCell(map, faction, rand);
+            // Where the god view marks it: the entry cell, and where each raider came in.
+            Letters.EventLocation location = Letters.EventLocation.On(map, entry);
             for (int i = 0; i < pawns.Count; i++)
             {
-                GenSpawn.Spawn(pawns[i], RandomClosewalkCellNear(entry, map, ClosewalkRadius, rand), map);
+                IntVec3 at = RandomClosewalkCellNear(entry, map, ClosewalkRadius, rand);
+                GenSpawn.Spawn(pawns[i], at, map);
+                location.AddAffected(at);
             }
 
             // The line this class's own doc used to describe as somebody else's problem ("walking the squad
@@ -248,6 +255,7 @@ namespace SimWorld.Director
             // Every strategy gets the assault job: RimWorld's siege has a lord job of its own, and this port's
             // Siege strategy has never behaved as anything but an assault.
             SimWorld.AI.Group.LordMaker.MakeNewLord(faction, new SimWorld.AI.Group.LordJob_AssaultColony(faction), map, pawns);
+            return location;
         }
 
         /// <summary>

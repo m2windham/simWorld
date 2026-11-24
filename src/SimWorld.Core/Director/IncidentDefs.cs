@@ -115,6 +115,11 @@ namespace SimWorld.Director
         /// by the caller to pin a specific raider (tests, a forced incident), or left null so the worker
         /// picks one itself (<see cref="IncidentWorker_RaidEnemy"/>: <c>Find.FactionManager.RandomEnemyFaction()</c>).</summary>
         public Faction? faction;
+
+        /// <summary>Where the worker made it happen, set by the worker as it executes and copied onto the
+        /// chronicle entry the storyteller writes for a successful firing. Null when it happened nowhere in
+        /// particular. Not RimWorld's (its parms carry the target map and a spawn centre instead).</summary>
+        public Letters.EventLocation? location;
     }
 
     /// <summary>An incident selected to fire, waiting to be executed or queued (RimWorld: <c>Verse.FiringIncident</c>).</summary>

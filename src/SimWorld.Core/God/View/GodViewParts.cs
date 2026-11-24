@@ -63,7 +63,9 @@ namespace SimWorld.God.View
         /// <summary>The current era's label, or null before any era is complete.</summary>
         public string? EraLabel { get; }
 
-        /// <summary>Progress through the current era, 0-1.</summary>
+        /// <summary>The share of <i>every</i> project tagged with the current era that is finished, 0-1. Not
+        /// what turns the era: an era completes when its spine is done, which this does not count. For the
+        /// bar a player watches, and the projects still in the way, read <see cref="GodViewSnapshot.Era"/>.</summary>
         public float EraProgress { get; }
 
         public int SettlementCount { get; }
@@ -361,8 +363,9 @@ namespace SimWorld.God.View
     {
         internal ChronicleLine(
             int tick, string text, bool isMoment, ChronicleKind kind, string? incidentDefName,
-            Pawns.DeathCause? deathCause, IReadOnlyList<int> involvedThingIds)
+            Pawns.DeathCause? deathCause, IReadOnlyList<int> involvedThingIds, EventLocationView? location)
         {
+            Location = location;
             Tick = tick;
             Text = text;
             IsMoment = isMoment;
@@ -386,6 +389,10 @@ namespace SimWorld.God.View
         /// the one who died). Empty when it did not — most event lines carry names only in
         /// <see cref="Text"/>.</summary>
         public IReadOnlyList<int> InvolvedThingIds { get; }
+
+        /// <summary>Where it happened, for a "jump to" and a mark on the map; null when the writer recorded
+        /// no place (a treaty, an edict, an era reached) or the entry predates locations.</summary>
+        public EventLocationView? Location { get; }
 
         public int Tick { get; }
 
@@ -424,7 +431,7 @@ namespace SimWorld.God.View
             return new ChronicleLine(
                 e.tick, Describe(e), e.isMoment, kind,
                 kind == ChronicleKind.Incident ? e.incidentDefName : null,
-                e.deathCause, involved);
+                e.deathCause, involved, EventLocationView.Of(e.location));
         }
 
         private static string Describe(ChronicleEntry entry)
@@ -435,7 +442,18 @@ namespace SimWorld.God.View
             bool hasIncident = !string.IsNullOrEmpty(entry.incidentDefName);
             bool hasTarget = !string.IsNullOrEmpty(entry.targetLabel);
 
-            if (hasIncident && hasTarget) return entry.incidentDefName + ": " + entry.targetLabel;
+            if (hasIncident && hasTarget)
+            {
+                // An incident firing names its def and its target. The def's own label is what a player reads
+                // ("Wanderer joins", not "WandererJoin"), and "the civilization" is the only target there is,
+                // so it says nothing and is left off. A line that is not an incident (a death, "Death: Ash")
+                // keeps its headline as written.
+                IncidentDef? incident = DefDatabase<IncidentDef>.GetNamedSilentFail(entry.incidentDefName);
+                if (incident == null) return entry.incidentDefName + ": " + entry.targetLabel;
+                return entry.targetLabel == Storyteller.CivilizationTargetLabel
+                    ? incident.LabelCap
+                    : incident.LabelCap + ": " + entry.targetLabel;
+            }
             if (hasIncident) return entry.incidentDefName;
             return hasTarget ? entry.targetLabel : "";
         }
