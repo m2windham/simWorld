@@ -242,6 +242,14 @@ namespace SimWorld.Director
             moments.Consider(entry, "Death:" + cause);
             moments.ConsiderDeathRecord(entry, pawn.ageTracker.AgeBiologicalYearsFloat);
 
+            // And the day's toll: a new worst day is its own line, written once per day (MomentCurator).
+            ChronicleEntry? worstDay = moments.ConsiderDeathToll(entry.tick);
+            if (worstDay != null)
+            {
+                chronicle.Add(worstDay);
+                while (chronicle.Count > ChronicleCapacity) chronicle.RemoveAt(0);
+            }
+
             // A death the curator judged worth remembering is exactly "the chronicle singled them out by name"
             // — the trigger Pawn_TierTracker.Notify_ChronicleNamed's own doc says a director-policy decision
             // must supply (deliberately not wired to every RecordDeath call, only to ones that matter).

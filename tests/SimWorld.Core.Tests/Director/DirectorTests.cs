@@ -598,10 +598,12 @@ namespace SimWorld.Tests.Director
 
             Pawn older = NewHuman("Older");
             older.ageTracker.DebugSetAge(70f);
+            Find.TickManager.DebugSetTicksGame(1 * GenDate.TicksPerDay); // a day apart: one death a day is no worst day
             storyteller.RecordDeath(older, DeathCause.Age); // not a "first" any more, but 70 beats 40 -> a new record
 
             Pawn younger = NewHuman("Younger");
             younger.ageTracker.DebugSetAge(50f);
+            Find.TickManager.DebugSetTicksGame(2 * GenDate.TicksPerDay); // a day apart: one death a day is no worst day
             storyteller.RecordDeath(younger, DeathCause.Age); // neither a first nor a record (50 < 70) -> routine
 
             Assert.Equal(3, storyteller.Chronicle.Count(e => e.incidentDefName == "Death"));

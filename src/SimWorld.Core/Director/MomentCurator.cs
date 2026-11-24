@@ -31,7 +31,8 @@ namespace SimWorld.Director
     /// moment only when it is broken. By definition that fires less and less often the longer a game runs
     /// (each new record must beat every one before it), never more. The two halves are one number on purpose:
     /// a life is not a record for having ended, and a civilization that has watched someone reach ninety does
-    /// not find an eighty-year-old remarkable afterwards.</item>
+    /// not find an eighty-year-old remarkable afterwards. Loss has a record of its own:
+    /// <see cref="ConsiderDeathToll"/>, the worst day, one line per record-setting day.</item>
     /// </list>
     /// </summary>
     public sealed class MomentCurator : IExposable
@@ -127,6 +128,73 @@ namespace SimWorld.Director
             return true;
         }
 
+        /// <summary>Category of a worst-day record line (<see cref="ConsiderDeathToll"/>).</summary>
+        public const string WorstDayCategory = "Worst day";
+
+        /// <summary>
+        /// The fewest deaths in one day that can be a worst day. One death is not a bad <i>day</i>: the first
+        /// is already a moment ("first of its kind"), and every later lone death would otherwise tie or beat
+        /// a record of one. Two is the least that says "a day the settlement lost people", not a tuned number.
+        /// </summary>
+        public const int MinDeathsForWorstDay = 2;
+
+        private int tollDay = -1;
+        private int deathsOnTollDay;
+        private int worstDayDeaths;
+
+        /// <summary>The most citizens this civilization has lost in one game day, or 0 before any day has
+        /// reached <see cref="MinDeathsForWorstDay"/>.</summary>
+        public int WorstDayDeaths => worstDayDeaths;
+
+        /// <summary>
+        /// The "records" rule for loss, shaped like the longevity record: counts a citizen's death against its
+        /// game day and, when that day's toll beats every day before it (and reaches
+        /// <see cref="MinDeathsForWorstDay"/>), records it. One day is one moment however many deaths push the
+        /// record up: the first death that sets it writes the line and returns it for the chronicle, and each
+        /// further death that day rewrites that same line's count and returns null. Like the longevity
+        /// ratchet it fires less and less often the longer a game runs. <c>docs/research/era-arc.md</c> §5.2
+        /// measured why it is needed: a raid that killed 10 of 15 left no moment, because a death by violence
+        /// had already been seen.
+        /// </summary>
+        public ChronicleEntry? ConsiderDeathToll(int tick)
+        {
+            int day = tick / GenDate.TicksPerDay;
+            if (day != tollDay)
+            {
+                tollDay = day;
+                deathsOnTollDay = 0;
+            }
+            deathsOnTollDay++;
+            if (deathsOnTollDay < MinDeathsForWorstDay || deathsOnTollDay <= worstDayDeaths) return null;
+
+            worstDayDeaths = deathsOnTollDay;
+            string line = WorstDayCategory + ": " + deathsOnTollDay + " people died in a single day.";
+            ChronicleEntry? standing = WorstDayEntryFor(day);
+            if (standing != null)
+            {
+                standing.incidentDefName = line;
+                standing.points = deathsOnTollDay;
+                return null;
+            }
+
+            var entry = new ChronicleEntry(tick, line, "", deathsOnTollDay) { isMoment = true };
+            moments.Add(entry);
+            return entry;
+        }
+
+        /// <summary>The worst-day line already written for <paramref name="day"/>, searched from the newest end;
+        /// found again from <see cref="Moments"/> rather than held, so a reload needs nothing extra saved.</summary>
+        private ChronicleEntry? WorstDayEntryFor(int day)
+        {
+            for (int i = moments.Count - 1; i >= 0; i--)
+            {
+                ChronicleEntry e = moments[i];
+                if (e.tick / GenDate.TicksPerDay != day) return null;
+                if (CategoryForFreeform(e.incidentDefName) == WorstDayCategory) return e;
+            }
+            return null;
+        }
+
         /// <summary>Derives a stable category from a free-form chronicle line: the text before its first colon
         /// ("Birth: Ada joins family 3." -&gt; "Birth"), or the whole text when there is none. Every free-form
         /// call site in this codebase already writes "Category: detail" (birth, edicts, quests, foundings, era
@@ -146,6 +214,9 @@ namespace SimWorld.Director
             if (categoryList != null) foreach (string c in categoryList) seenCategories.Add(c);
 
             Scribe_Values.Look(ref longestLifeYearsKnown, "longestLifespanYearsAtDeath", -1f);
+            Scribe_Values.Look(ref tollDay, "tollDay", -1);
+            Scribe_Values.Look(ref deathsOnTollDay, "deathsOnTollDay");
+            Scribe_Values.Look(ref worstDayDeaths, "worstDayDeaths");
 
             List<ChronicleEntry>? momentList = new List<ChronicleEntry>(moments);
             Scribe_Collections.Look(ref momentList, "moments", LookMode.Deep);
