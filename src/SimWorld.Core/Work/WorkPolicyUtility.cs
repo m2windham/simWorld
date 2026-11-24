@@ -20,7 +20,8 @@ namespace SimWorld.Work
         /// who can work at all — dead pawns, animals and anyone never enabled for work
         /// (<see cref="Pawn_WorkSettings.EverWork"/> false) are silently skipped, matching
         /// <see cref="God.EdictWorker.AppliesTo"/>'s own default (a civilization's policy directs its citizens,
-        /// not its livestock or its dead). Returns how many citizens the role actually reached, so a caller (or
+        /// not its livestock or its dead). A citizen holding an office (<see cref="Offices.OfficeManager.OfficeOf"/>)
+        /// is skipped too: their role is the seat. Returns how many citizens the role actually reached, so a caller (or
         /// a test) can tell a policy that reached nobody from one that reached everyone.
         /// </summary>
         public static int ApplyRoleToPopulation(IReadOnlyList<Pawn> citizens, RoleDef? role)
@@ -32,6 +33,9 @@ namespace SimWorld.Work
             {
                 Pawn? p = citizens[i];
                 if (p == null || p.Dead || !p.RaceProps.Humanlike || !p.workSettings.EverWork) continue;
+                // An office holder's role is their seat, not a work policy: overwriting it emptied the seat, and
+                // the next office sweep re-seated the same citizen with a fresh "Accession" line each time.
+                if (Offices.OfficeManager.OfficeOf(p) != null) continue;
                 p.workSettings.SetRole(role);
                 applied++;
             }

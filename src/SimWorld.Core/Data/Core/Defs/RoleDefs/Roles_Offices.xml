@@ -5,9 +5,10 @@
     The standing roles the two shipped stations carry (system: offices, src/SimWorld.Core/Offices). These are
     ordinary Work.RoleDefs and nothing about the class is special — what makes them different is that an
     OfficeDef names one, and OfficeManager therefore treats "carries this role" as "holds that seat". They are
-    reserved for their office in the same sense a defName is reserved: assigning one by hand, or sweeping a
-    whole settlement with WorkPolicyUtility.ApplyRoleToPopulation, is corrected on the next office sweep
-    rather than forbidden.
+    reserved for their office in the same sense a defName is reserved: assigning one by hand is corrected on
+    the next office sweep rather than forbidden. A settlement-wide WorkPolicyUtility.ApplyRoleToPopulation
+    passes over an office holder altogether: overwriting the seat and having the sweep restore it wrote a
+    fresh accession for a steward who never changed.
 
     Its own file rather than an addition to Roles.xml: a new file cannot conflict with another lane's edit,
     and DefLoader.AddDirectory loads every XML under the folder recursively (CLAUDE.md).
