@@ -16,7 +16,9 @@ namespace SimWorld.Research
     /// and the cheapest-era recipe that produces it (each recipe as late as its latest prerequisite's
     /// <see cref="ResearchProjectDef.era"/>). Something no recipe makes, or that is mined from the ground, has
     /// no era of its own and is always shown. Display only: nothing here stops a thing existing (a trader or a
-    /// raider may still carry one), as <see cref="ThingDef.IsResearchFinished"/> does not stop spawning.
+    /// raider may still carry one), as <see cref="ThingDef.IsResearchFinished"/> does not stop spawning. The view
+    /// seam (<c>ZoneView.Allowed</c>) still reads a filter back whole; the host drops what this says is out of
+    /// era from the list it draws.
     /// </summary>
     public static class EraAvailability
     {
@@ -39,6 +41,14 @@ namespace SimWorld.Research
             if (era == null) return true;
             EraDef? working = WorkingEra();
             return working == null || era.order <= working.order;
+        }
+
+        /// <summary><see cref="IsAvailableInCurrentEra(ThingDef)"/> by defName, for a host holding view options.
+        /// An unknown name is shown (true): this hides things, it does not vouch for them.</summary>
+        public static bool IsAvailableInCurrentEra(string defName)
+        {
+            ThingDef? def = DefDatabase<ThingDef>.GetNamedSilentFail(defName);
+            return def == null || IsAvailableInCurrentEra(def);
         }
 
         /// <summary>The first era not yet complete, or the last era when every one is.</summary>

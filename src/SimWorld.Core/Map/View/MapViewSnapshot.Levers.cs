@@ -139,9 +139,7 @@ namespace SimWorld.Map.View
             var defs = new List<ThingDef>();
             foreach (ThingDef def in filter.AllowedThingDefs)
             {
-                // A stone-age granary does not list bronze: what the era cannot have yet is left out of the view
-                // (the filter itself still allows it, so goods that do turn up are stored).
-                if (def.EverHaulable && Research.EraAvailability.IsAvailableInCurrentEra(def)) defs.Add(def);
+                if (def.EverHaulable) defs.Add(def);
             }
             // The filter is a HashSet: sort so two captures of the same filter read identically.
             defs.Sort(static (a, b) => string.CompareOrdinal(a.defName, b.defName));

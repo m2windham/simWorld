@@ -51,7 +51,7 @@ namespace SimWorld.Tests.Research
         }
 
         [Fact]
-        public void A_stone_age_stockpile_lists_no_bronze_iron_or_longsword_but_keeps_its_own_goods()
+        public void A_stone_age_stockpile_list_drops_bronze_iron_and_longsword_but_keeps_its_own_goods()
         {
             Settlement settlement = OpenedSettlement("stone-age-granary");
             CoreMap map = settlement.InteriorMap!;
@@ -63,7 +63,9 @@ namespace SimWorld.Tests.Research
             List<IntVec3> cells = map.AllCells.Where(c => GenGrid.Standable(c, map) && map.zoneManager.ZoneAt(c) == null).Take(4).ToList();
             Assert.Equal(MapCommandOutcome.Done, MapCommands.MarkStockpile(cells).Outcome);
             ZoneView pile = MapViewSnapshot.CaptureLevers(map).Zones.Single(z => z.Kind == ZoneKind.Stockpile && z.Cells.Contains(cells[0]));
-            var listed = new HashSet<string>(pile.Allowed.Select(o => o.DefName));
+            // The seam reads the filter back whole; the host's list is that, less what the era cannot have.
+            Assert.Contains(pile.Allowed, o => o.DefName == "Bronze");
+            var listed = new HashSet<string>(pile.Allowed.Where(o => EraAvailability.IsAvailableInCurrentEra(o.DefName)).Select(o => o.DefName));
 
             Assert.DoesNotContain("Bronze", listed);
             Assert.DoesNotContain("Iron", listed);
