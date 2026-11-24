@@ -39,6 +39,14 @@ namespace SimWorld.Research
         /// </summary>
         public float citizensPerScholar = 25f;
 
+        /// <summary>
+        /// Years the pacing intends a settlement to live with this era as its current one (the intent written
+        /// in <c>Eras.xml</c>); 0 for an open-ended era. The world's own clock: rival civilizations reach each
+        /// era when a nominal settlement would (<see cref="Factions.FactionAdvancement"/>). <b>Not sourced</b>
+        /// from RimWorld, which has no eras.
+        /// </summary>
+        public float intendedYears;
+
         private List<ResearchProjectDef>? projectsCache;
         private List<ResearchProjectDef>? spineCache;
 

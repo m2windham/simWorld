@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The classical age's bow (era-arc finding 5). Its own file, per CLAUDE.md.
+
+    RimWorld's great bow (Bow_Great, Arrow_Great), the longbow of the brief. Numbers RECALLED, not read from Core
+    RangedNeolithic.xml: damage 17 at penetration 0.25, the longest bow range, the slowest draw. RimWorld gates it
+    behind its GreatBow project; here it is the drilled archery of StandingArmies. MarketValue unsourced, ordered.
+    The weaponTag is the classical raider's (PawnKinds_EraRaiders.xml). Made at the smithy: Recipes_Armoury.xml.
+    The classical age's melee arms are the ladder's iron spear (Crafting.MaterialLadder); the gladius stays out,
+    for the reason Weapons_MeleeLadder.xml gives.
+  -->
+
+  <ThingDef>
+    <defName>Bow_Great</defName>
+    <researchPrerequisites>
+      <li>StandingArmies</li>
+    </researchPrerequisites>
+    <label>great bow</label>
+    <description>A bow as tall as its archer. It takes years of drill to draw, and a standing army has them.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Neolithic</techLevel>
+    <weaponTags>
+      <li>ClassicalRangedWeapon</li>
+    </weaponTags>
+    <statBases><MarketValue>150</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
+    <verbs>
+      <li>
+        <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
+        <label>shoot</label>
+        <range>30.9</range>
+        <warmupTime>1.5</warmupTime>
+        <defaultCooldownTime>1.8</defaultCooldownTime>
+        <accuracyTouch>0.6</accuracyTouch>
+        <accuracyShort>0.75</accuracyShort>
+        <accuracyMedium>0.75</accuracyMedium>
+        <accuracyLong>0.65</accuracyLong>
+        <defaultProjectile>Arrow_Great</defaultProjectile>
+      </li>
+    </verbs>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Arrow_Great</defName>
+    <label>great arrow</label>
+    <category>Projectile</category>
+    <projectile>
+      <damageDef>Cut</damageDef>
+      <damageAmountBase>17</damageAmountBase>
+      <armorPenetrationBase>0.25</armorPenetrationBase>
+      <speed>44</speed>
+    </projectile>
+  </ThingDef>
+
+</Defs>

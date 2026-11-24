@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The medieval age's missile weapons (era-arc finding 5). Its own file, per CLAUDE.md. The medieval melee
+    weapon is the ladder's steel longsword (Weapons_MeleeLadder.xml).
+
+    Neither is RimWorld content: RimWorld's ladder goes from the great bow straight to the revolver. Both are
+    SimWorld's own and every number is UNSOURCED, set only so the order holds (Crafting.Armoury.RangedScore,
+    pinned by ArmouryTests): the crossbow hits harder and pierces more than the great bow and is slower to
+    reload; the musket, from Gunpowder at the era's end, pierces more again and is slower still. Both have the
+    penetration plate armour (Apparel_Armour.xml) asks for. MarketValue unsourced, ordered. The weaponTag is the
+    medieval raider's (PawnKinds_EraRaiders.xml). Made at the smithy: Recipes_Armoury.xml.
+  -->
+
+  <ThingDef>
+    <defName>Crossbow</defName>
+    <researchPrerequisites>
+      <li>Crossbows</li>
+    </researchPrerequisites>
+    <label>crossbow</label>
+    <description>A short, heavy bow on a wooden stock, spanned by a crank and loosed by a trigger. A peasant with a week's practice can kill a knight with one.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Medieval</techLevel>
+    <weaponTags>
+      <li>MedievalRangedWeapon</li>
+    </weaponTags>
+    <statBases><MarketValue>200</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
+    <verbs>
+      <li>
+        <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
+        <label>shoot</label>
+        <range>29.9</range>
+        <warmupTime>1.8</warmupTime>
+        <defaultCooldownTime>2.6</defaultCooldownTime>
+        <accuracyTouch>0.8</accuracyTouch>
+        <accuracyShort>0.8</accuracyShort>
+        <accuracyMedium>0.75</accuracyMedium>
+        <accuracyLong>0.6</accuracyLong>
+        <defaultProjectile>Bolt_Crossbow</defaultProjectile>
+      </li>
+    </verbs>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Bolt_Crossbow</defName>
+    <label>crossbow bolt</label>
+    <category>Projectile</category>
+    <projectile>
+      <damageDef>Cut</damageDef>
+      <damageAmountBase>20</damageAmountBase>
+      <armorPenetrationBase>0.4</armorPenetrationBase>
+      <speed>50</speed>
+    </projectile>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Gun_Musket</defName>
+    <researchPrerequisites>
+      <li>Gunpowder</li>
+    </researchPrerequisites>
+    <label>musket</label>
+    <description>A smoothbore matchlock: slow to load, loud, inaccurate past a few dozen paces, and through any armour at all.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Medieval</techLevel>
+    <weaponTags>
+      <li>MedievalRangedWeapon</li>
+    </weaponTags>
+    <statBases><MarketValue>220</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
+    <verbs>
+      <li>
+        <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
+        <label>shoot</label>
+        <range>26.9</range>
+        <warmupTime>1.5</warmupTime>
+        <defaultCooldownTime>2.8</defaultCooldownTime>
+        <accuracyTouch>0.7</accuracyTouch>
+        <accuracyShort>0.7</accuracyShort>
+        <accuracyMedium>0.6</accuracyMedium>
+        <accuracyLong>0.45</accuracyLong>
+        <defaultProjectile>Bullet_Musket</defaultProjectile>
+      </li>
+    </verbs>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Bullet_Musket</defName>
+    <label>musket ball</label>
+    <category>Projectile</category>
+    <projectile>
+      <damageDef>Bullet</damageDef>
+      <damageAmountBase>24</damageAmountBase>
+      <armorPenetrationBase>0.5</armorPenetrationBase>
+      <speed>55</speed>
+      <stoppingPower>1.5</stoppingPower>
+    </projectile>
+  </ThingDef>
+
+</Defs>

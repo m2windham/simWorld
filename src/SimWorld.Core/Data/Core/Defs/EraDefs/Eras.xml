@@ -22,7 +22,9 @@
     spans a long game. Translated: the years a settlement spends with each era current are
       SticksAndStones 2, Agrarian 3, Bronze 4, Classical 5, Medieval 6, Industrial 7, Information 8,
     so Exotic turns at about year 35 and is lived in from there, with the endless tail behind it.
-    A year is 60 days.
+    A year is 60 days. Those years are intendedYears below (0 for Exotic: open-ended). Rival civilizations
+    advance on this same clock (Factions.FactionAdvancement), so the world reaches each era when a nominal
+    settlement would.
 
     citizensPerScholar sets the research benches a settlement wants in its current era (one per that many
     citizens, rounded, at least one). Not sourced: a more advanced settlement spares a larger share of its
@@ -64,6 +66,7 @@
     <techLevel>Neolithic</techLevel>
     <researchCostFactor>1.0</researchCostFactor>
     <citizensPerScholar>25</citizensPerScholar>
+    <intendedYears>2</intendedYears>
   </EraDef>
 
   <EraDef>
@@ -74,6 +77,7 @@
     <techLevel>Neolithic</techLevel>
     <researchCostFactor>6.0</researchCostFactor>
     <citizensPerScholar>25</citizensPerScholar>
+    <intendedYears>3</intendedYears>
   </EraDef>
 
   <EraDef>
@@ -84,6 +88,7 @@
     <techLevel>Medieval</techLevel>
     <researchCostFactor>3.4</researchCostFactor>
     <citizensPerScholar>20</citizensPerScholar>
+    <intendedYears>4</intendedYears>
   </EraDef>
 
   <EraDef>
@@ -94,6 +99,7 @@
     <techLevel>Medieval</techLevel>
     <researchCostFactor>3.8</researchCostFactor>
     <citizensPerScholar>18</citizensPerScholar>
+    <intendedYears>5</intendedYears>
   </EraDef>
 
   <EraDef>
@@ -104,6 +110,7 @@
     <techLevel>Medieval</techLevel>
     <researchCostFactor>3.0</researchCostFactor>
     <citizensPerScholar>12</citizensPerScholar>
+    <intendedYears>6</intendedYears>
   </EraDef>
 
   <EraDef>
@@ -114,6 +121,7 @@
     <techLevel>Industrial</techLevel>
     <researchCostFactor>1.55</researchCostFactor>
     <citizensPerScholar>8</citizensPerScholar>
+    <intendedYears>7</intendedYears>
   </EraDef>
 
   <EraDef>
@@ -124,6 +132,7 @@
     <techLevel>Spacer</techLevel>
     <researchCostFactor>2.0</researchCostFactor>
     <citizensPerScholar>6</citizensPerScholar>
+    <intendedYears>8</intendedYears>
   </EraDef>
 
   <EraDef>
@@ -134,6 +143,7 @@
     <techLevel>Archotech</techLevel>
     <researchCostFactor>2.3</researchCostFactor>
     <citizensPerScholar>5</citizensPerScholar>
+    <intendedYears>0</intendedYears>
   </EraDef>
 
 </Defs>

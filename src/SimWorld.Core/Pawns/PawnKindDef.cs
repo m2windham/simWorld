@@ -8,7 +8,7 @@ namespace SimWorld.Pawns
     /// pools to draw from, age/trait overrides, and a combat-power number other systems can use to balance
     /// encounters. <see cref="Generation.PawnGenerator"/> consumes this.
     /// </summary>
-    public class PawnKindDef : Def
+    public partial class PawnKindDef : Def
     {
         public ThingDef? race;
 

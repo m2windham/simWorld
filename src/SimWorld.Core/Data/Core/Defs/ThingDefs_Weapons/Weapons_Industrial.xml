@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The industrial age's rifle (era-arc finding 5). Its own file, per CLAUDE.md. The revolver and the assault
+    rifle were already content (Weapons_Ranged.xml); Recipes_Armoury.xml now makes all three.
+
+    RimWorld's bolt-action rifle (Gun_BoltActionRifle, Bullet_BoltActionRifle). Numbers RECALLED, not read from
+    Core RangedIndustrial.xml: damage 18 at penetration 0.27, range 36.9, a long aim and accuracy that climbs with
+    range. MarketValue is unsourced and set above Tribesperson's 200 weapon budget on purpose, so a founding band
+    is armed exactly as before. Gated, with the revolver, by Firearms.
+  -->
+
+  <ThingDef>
+    <defName>Gun_BoltActionRifle</defName>
+    <researchPrerequisites>
+      <li>Firearms</li>
+    </researchPrerequisites>
+    <label>bolt-action rifle</label>
+    <description>A long rifle worked by hand between shots. Slow, and deadly at any range a man can see.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Industrial</techLevel>
+    <weaponTags>
+      <li>IndustrialRangedWeapon</li>
+    </weaponTags>
+    <statBases><MarketValue>250</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
+    <verbs>
+      <li>
+        <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
+        <label>shoot</label>
+        <range>36.9</range>
+        <warmupTime>1.7</warmupTime>
+        <defaultCooldownTime>1.5</defaultCooldownTime>
+        <accuracyTouch>0.65</accuracyTouch>
+        <accuracyShort>0.8</accuracyShort>
+        <accuracyMedium>0.9</accuracyMedium>
+        <accuracyLong>0.8</accuracyLong>
+        <defaultProjectile>Bullet_BoltActionRifle</defaultProjectile>
+      </li>
+    </verbs>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Bullet_BoltActionRifle</defName>
+    <label>rifle bullet</label>
+    <category>Projectile</category>
+    <projectile>
+      <damageDef>Bullet</damageDef>
+      <damageAmountBase>18</damageAmountBase>
+      <armorPenetrationBase>0.27</armorPenetrationBase>
+      <speed>80</speed>
+    </projectile>
+  </ThingDef>
+
+</Defs>

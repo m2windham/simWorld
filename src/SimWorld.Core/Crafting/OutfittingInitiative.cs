@@ -80,6 +80,18 @@ namespace SimWorld.Crafting
                         if (weaponBill != null && stuff != null) MaterialLadder.RestrictBill(weaponBill, stuff);
                         continue;
                     }
+                    // Bows, crossbows and guns, and armour: the best within reach, for whoever it would improve
+                    // (Crafting.Armoury, era-arc finding 5).
+                    if (Armoury.TryPlanRangedBill(map, buildings[b].def, recipe, citizens, out int rangedLacking))
+                    {
+                        UpdateBill(comp, recipe, rangedLacking);
+                        continue;
+                    }
+                    if (Armoury.TryPlanArmourBill(map, recipe, citizens, out int armourLacking))
+                    {
+                        UpdateBill(comp, recipe, armourLacking);
+                        continue;
+                    }
                     UpdateBill(comp, recipe, Lacking(recipe, citizens));
                 }
             }

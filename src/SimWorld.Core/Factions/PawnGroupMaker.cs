@@ -87,6 +87,8 @@ namespace SimWorld.Factions
             if (options == null || options.Count == 0) return result;
 
             List<PawnGenOption> roster = FightersOnlyIfCombat(options, kindDef);
+            // The kinds of the era the faction has reached: a rival advances with the world (no random draw).
+            roster = FactionAdvancement.CurrentRoster(roster, parms.faction);
             if (roster.Count == 0) return result;
 
             List<PawnGenOption> chosen = PawnGroupMakerUtility.ChoosePawnGenOptionsByPoints(parms.points, roster, Rand.Current);
