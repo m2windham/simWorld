@@ -118,7 +118,7 @@ namespace SimWorld.Director
             {
                 parms.location = TurnAmong(pack, map, rand);
                 if (settlement != null) parms.location.tile = settlement.tile;
-                SendLetter(settlement, kind, pack.Count, watched: true, parms.location);
+                SendLetter(settlement, kind, pack.Count, watched: true, parms.location, pack);
                 return true;
             }
 
@@ -134,7 +134,7 @@ namespace SimWorld.Director
                 SettlementRaidResolver.Resolve(settlement, pack, null, rand);
 
                 parms.location = new Letters.EventLocation(settlement.tile);
-                SendLetter(settlement, kind, pack.Count, watched: false, parms.location);
+                SendLetter(settlement, kind, pack.Count, watched: false, parms.location, null);
                 return true;
             }
 
@@ -306,14 +306,16 @@ namespace SimWorld.Director
         /// them anything about where to look next time — which is the entire loop this incident exists to
         /// feed.
         /// </summary>
-        private static void SendLetter(SimWorld.World.Settlement? settlement, PawnKindDef kind, int count, bool watched, Letters.EventLocation location)
+        private static void SendLetter(SimWorld.World.Settlement? settlement, PawnKindDef kind, int count, bool watched, Letters.EventLocation location,
+            IReadOnlyList<Pawn>? present)
         {
             string where = string.IsNullOrEmpty(settlement?.name) ? "a settlement" : settlement!.name;
             string text = watched
                 ? $"A pack of {count} {kind.label} has turned manhunter at {where}."
                 : $"Word reaches you late: a pack of {count} {kind.label} turned manhunter at {where} while your attention was elsewhere.";
 
-            Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Manhunter pack: " + where, text, LetterDefOf.ThreatBig);
+            Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Manhunter pack: " + where, text, LetterDefOf.ThreatBig,
+                IncidentWorker_RaidEnemy.LoadIdsOf(present));
             if (letter != null) letter.location = location;
         }
     }

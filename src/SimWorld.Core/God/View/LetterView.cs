@@ -13,9 +13,11 @@ namespace SimWorld.God.View
     {
         internal LetterView(
             string letterID, string defName, string label, string text, int arrivalTick,
-            IReadOnlyList<int> lookTargetThingIds, bool isChoice, EventLocationView? location)
+            IReadOnlyList<int> lookTargetThingIds, bool isChoice, EventLocationView? location,
+            IReadOnlyList<LookTargetNow> lookTargetsNow)
         {
             Location = location;
+            LookTargetsNow = lookTargetsNow;
             LetterID = letterID;
             DefName = defName;
             Label = label;
@@ -58,22 +60,42 @@ namespace SimWorld.God.View
         /// <see cref="LookTargetThingIds"/> as well; this is the place, which outlives them.</summary>
         public EventLocationView? Location { get; }
 
+        /// <summary>Where each of <see cref="LookTargetThingIds"/> stands now, for those still on a map — the
+        /// raiders and the pack where they have got to, not where they came in. Read when the snapshot is
+        /// taken; empty when nobody the letter is about is on a map.</summary>
+        public IReadOnlyList<LookTargetNow> LookTargetsNow { get; }
+
         internal static List<LetterView> On(Letters.LetterStack stack)
         {
             IReadOnlyList<Letters.Letter> letters = stack.LettersListForReading;
             var views = new List<LetterView>(letters.Count);
+            var ids = new IReadOnlyList<int>[letters.Count];
+            var wanted = new HashSet<int>();
+            for (int i = 0; i < letters.Count; i++)
+            {
+                ids[i] = ThingIdsOf(letters[i].lookTargets);
+                wanted.UnionWith(ids[i]);
+            }
+            Dictionary<int, LookTargetNow> now = LookTargetNow.Find(wanted);
+
             for (int i = 0; i < letters.Count; i++)
             {
                 Letters.Letter l = letters[i];
+                var here = new List<LookTargetNow>();
+                foreach (int id in ids[i])
+                {
+                    if (now.TryGetValue(id, out LookTargetNow? at)) here.Add(at);
+                }
                 views.Add(new LetterView(
                     l.letterID,
                     l.def?.defName ?? "",
                     l.label,
                     l.text,
                     l.arrivalTick,
-                    ThingIdsOf(l.lookTargets),
+                    ids[i],
                     l is Letters.ChoiceLetter,
-                    EventLocationView.Of(l.location)));
+                    EventLocationView.Of(l.location),
+                    here));
             }
             return views;
         }

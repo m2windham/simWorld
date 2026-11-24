@@ -128,13 +128,13 @@ namespace SimWorld.Director
             {
                 parms.location = Arrive(pawns, faction, map, Rand.Current);
                 if (LastRaidSettlement != null) parms.location.tile = LastRaidSettlement.tile;
-                SendLetter(LastRaidSettlement, faction, strategy, pawns.Count, null, parms.location);
+                SendLetter(LastRaidSettlement, faction, strategy, pawns.Count, null, parms.location, pawns);
             }
             else if (LastRaidSettlement != null)
             {
                 LastRaidOutcome = SettlementRaidResolver.Resolve(LastRaidSettlement, pawns, faction, Rand.Current);
                 parms.location = new Letters.EventLocation(LastRaidSettlement.tile);
-                SendLetter(LastRaidSettlement, faction, strategy, pawns.Count, LastRaidOutcome, parms.location);
+                SendLetter(LastRaidSettlement, faction, strategy, pawns.Count, LastRaidOutcome, parms.location, null);
             }
 
             // Neither path taken means the target has no settlement and no map hook — a bare
@@ -154,7 +154,7 @@ namespace SimWorld.Director
         /// and elsewhere with how it ended. The wording is SimWorld's own.
         /// </summary>
         private static void SendLetter(SimWorld.World.Settlement? settlement, Faction faction, RaidStrategyDef strategy,
-            int raiders, SettlementRaidOutcome? outcome, Letters.EventLocation location)
+            int raiders, SettlementRaidOutcome? outcome, Letters.EventLocation location, IReadOnlyList<Pawn>? present)
         {
             string where = string.IsNullOrEmpty(settlement?.name) ? "a settlement" : settlement!.name;
             string squad = raiders == 1 ? "A lone raider" : $"A band of {raiders} raiders";
@@ -170,8 +170,22 @@ namespace SimWorld.Director
                     + $"{ending} Dead: {outcome.Value.TotalLivesLost} of the settlement, {outcome.Value.RaidersKilled} of the raiders.";
             }
 
-            Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Raid: " + where, text, LetterDefOf.ThreatBig);
+            Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Raid: " + where, text, LetterDefOf.ThreatBig, LoadIdsOf(present));
             if (letter != null) letter.location = location;
+        }
+
+        /// <summary>The letter's look targets (RimWorld: the raid letter's <c>LookTargets</c> are the raiders),
+        /// so the view can say where each one is now, not only where they came in. Null when nobody is on a map
+        /// to point at — an unwatched raid was settled in the abstract.</summary>
+        internal static List<string>? LoadIdsOf(IReadOnlyList<Pawn>? present)
+        {
+            if (present == null) return null;
+            var ids = new List<string>(present.Count);
+            for (int i = 0; i < present.Count; i++)
+            {
+                if (present[i].Spawned) ids.Add(present[i].GetUniqueLoadID());
+            }
+            return ids;
         }
 
         /// <summary>
