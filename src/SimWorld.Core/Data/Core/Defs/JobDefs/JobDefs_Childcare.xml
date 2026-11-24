@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- A baby carried to a comfortable bed (RimWorld Biotech: JobDefOf.BringBabyToSafety). The carry is the
+       rescue's own driver, JobDriver_TakeToBed. Bound by SimWorld.AI.ChildcareJobDefOf. -->
+
+  <JobDef>
+    <defName>BringBabyToSafety</defName>
+    <driverClass>SimWorld.AI.JobDriver_TakeToBed</driverClass>
+    <reportString>bringing a baby to safety.</reportString>
+  </JobDef>
+
+</Defs>

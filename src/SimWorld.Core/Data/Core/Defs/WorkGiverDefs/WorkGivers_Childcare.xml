@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Carrying a baby out of cold or heat (RimWorld Biotech: WorkGiver_BringBabyToSafety, an emergency giver
+       under the Childcare work type). This port has no Childcare work type, so it is basic work, which every
+       adult does: see SimWorld.AI.WorkGiver_BringBabyToSafety. Emergency, so a sleeping adult is woken for it
+       (JobDriver_LayDown asks the emergency givers) and it runs above needs. Its own file (CLAUDE.md). The
+       priority within the type is this port's: above flicking (500), the only other basic work. -->
+
+  <WorkGiverDef>
+    <defName>BringBabyToSafety</defName>
+    <label>bring babies to safety</label>
+    <verb>Bring to safety</verb>
+    <gerund>bringing to safety</gerund>
+    <workType>BasicWorker</workType>
+    <priorityInType>600</priorityInType>
+    <emergency>true</emergency>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+    <giverClass>SimWorld.AI.WorkGiver_BringBabyToSafety</giverClass>
+  </WorkGiverDef>
+
+</Defs>
