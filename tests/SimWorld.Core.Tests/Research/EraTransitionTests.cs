@@ -159,11 +159,30 @@ namespace SimWorld.Tests.Research
             string headline = EraTransitionUtility.ChronicleLine(OrderedEras()[0], reached);
 
             Assert.Contains(headline, ChronicleHeadlines());
-            Assert.Contains(reached.label!, headline);
+            Assert.Contains(reached.LabelCap, headline);
 
             List<Letter> letters = EraLetters();
             Assert.Single(letters);
-            Assert.Contains(reached.label!, letters[0].text);
+            Assert.Contains(reached.LabelCap, letters[0].text);
+        }
+
+        /// <summary>The second playtest's era letter read "agrarian": content writes labels lower case for
+        /// mid-sentence use, and an era is a name. The line is also a moment, so a chronicle of landmarks
+        /// carries it.</summary>
+        [Fact]
+        public void An_era_is_named_capitalised_in_its_letter_and_its_moment()
+        {
+            CompleteEra(OrderedEras()[0]);
+            CompleteEra(OrderedEras()[1]);
+            EraDef reached = OrderedEras()[1];
+            Assert.NotEqual(reached.label, reached.LabelCap); // content's label is lower case, or this proves nothing
+
+            Letter letter = Assert.Single(EraLetters());
+            Assert.Equal("A new era: " + reached.LabelCap, letter.label);
+            Assert.DoesNotContain(" " + reached.label + ",", letter.text);
+
+            var entry = Find.Storyteller.Chronicle.Single(e => e.incidentDefName.StartsWith("Era reached: " + reached.LabelCap, System.StringComparison.Ordinal));
+            Assert.True(entry.isMoment);
         }
 
         [Fact]

@@ -33,12 +33,14 @@ namespace SimWorld.Research
         internal static string ChronicleLine(EraDef? from, EraDef to) =>
             from == null
                 ? "Era reached: " + Name(to) + "."
-                : "Era reached: " + Name(to) + ", after the " + Name(from) + ".";
+                : "Era reached: " + Name(to) + ", after " + Name(from) + ".";
 
         private static string LetterLabel(EraDef to) => "A new era: " + Name(to);
 
-        /// <summary>The era's label for prose, falling back to its defName when content gave it none.</summary>
-        private static string Name(EraDef era) => era.label ?? era.defName;
+        /// <summary>The era's label as a name, capitalised ("Agrarian", "Sticks and stones": content writes labels
+        /// in lower case for mid-sentence use, and an era is named, not described), falling back to its defName
+        /// when content gave it none.</summary>
+        private static string Name(EraDef era) => era.label != null ? era.LabelCap : era.defName;
 
         private static string LetterText(EraDef? from, EraDef to)
         {
