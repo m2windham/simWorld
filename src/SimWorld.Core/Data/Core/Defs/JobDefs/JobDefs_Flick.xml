@@ -5,6 +5,7 @@
 
   <JobDef>
     <defName>Flick</defName>
+    <label>flip switch</label>
     <driverClass>SimWorld.Building.JobDriver_Flick</driverClass>
     <reportString>flicking TargetA.</reportString>
   </JobDef>

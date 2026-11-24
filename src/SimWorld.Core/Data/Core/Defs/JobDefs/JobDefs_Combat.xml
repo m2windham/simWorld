@@ -14,12 +14,14 @@
 
   <JobDef>
     <defName>AttackMelee</defName>
+    <label>melee attack</label>
     <driverClass>SimWorld.AI.JobDriver_AttackMelee</driverClass>
     <reportString>attacking.</reportString>
   </JobDef>
 
   <JobDef>
     <defName>AttackStatic</defName>
+    <label>attack</label>
     <driverClass>SimWorld.AI.JobDriver_AttackStatic</driverClass>
     <reportString>shooting.</reportString>
   </JobDef>

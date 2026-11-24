@@ -14,6 +14,7 @@
 
   <JobDef>
     <defName>DeliverFood</defName>
+    <label>deliver food</label>
     <driverClass>SimWorld.AI.JobDriver_FoodDeliver</driverClass>
     <reportString>delivering food.</reportString>
   </JobDef>

@@ -11,6 +11,7 @@
 
   <JobDef>
     <defName>Research</defName>
+    <label>research</label>
     <driverClass>SimWorld.AI.JobDriver_Research</driverClass>
     <reportString>researching.</reportString>
   </JobDef>

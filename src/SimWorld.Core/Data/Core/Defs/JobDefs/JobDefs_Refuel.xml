@@ -6,6 +6,7 @@
 
   <JobDef>
     <defName>Refuel</defName>
+    <label>refuel</label>
     <driverClass>SimWorld.Building.JobDriver_Refuel</driverClass>
     <reportString>refueling TargetA.</reportString>
   </JobDef>

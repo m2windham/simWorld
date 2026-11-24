@@ -7,12 +7,14 @@
 
   <JobDef>
     <defName>GotoSafeTemperature</defName>
+    <label>seek safe temperature</label>
     <driverClass>SimWorld.AI.JobDriver_GotoSafeTemperature</driverClass>
     <reportString>seeking safe temperature.</reportString>
   </JobDef>
 
   <JobDef>
     <defName>Wait_SafeTemperature</defName>
+    <label>wait out the temperature</label>
     <driverClass>SimWorld.AI.JobDriver_WaitSafeTemperature</driverClass>
     <reportString>waiting for safe temperature.</reportString>
   </JobDef>

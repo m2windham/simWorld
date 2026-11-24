@@ -13,18 +13,21 @@
 
   <JobDef>
     <defName>Skygaze</defName>
+    <label>skygaze</label>
     <driverClass>SimWorld.AI.JobDriver_Skygaze</driverClass>
     <reportString>skygazing.</reportString>
   </JobDef>
 
   <JobDef>
     <defName>GoForWalk</defName>
+    <label>go for a walk</label>
     <driverClass>SimWorld.AI.JobDriver_GoForWalk</driverClass>
     <reportString>going for a walk.</reportString>
   </JobDef>
 
   <JobDef>
     <defName>SocialRelax</defName>
+    <label>socialize</label>
     <driverClass>SimWorld.AI.JobDriver_SocialRelax</driverClass>
     <reportString>relaxing.</reportString>
   </JobDef>

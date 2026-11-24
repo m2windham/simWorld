@@ -6,12 +6,14 @@
 
   <JobDef>
     <defName>Slaughter</defName>
+    <label>slaughter</label>
     <driverClass>SimWorld.AI.JobDriver_Slaughter</driverClass>
     <reportString>slaughtering.</reportString>
   </JobDef>
 
   <JobDef>
     <defName>Deconstruct</defName>
+    <label>deconstruct</label>
     <driverClass>SimWorld.AI.JobDriver_Deconstruct</driverClass>
     <reportString>deconstructing.</reportString>
   </JobDef>

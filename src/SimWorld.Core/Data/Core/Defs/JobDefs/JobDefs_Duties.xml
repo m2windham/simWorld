@@ -21,6 +21,7 @@
   -->
   <JobDef>
     <defName>ExitMap</defName>
+    <label>leave</label>
     <driverClass>SimWorld.AI.JobDriver_ExitMap</driverClass>
     <reportString>leaving the map.</reportString>
   </JobDef>

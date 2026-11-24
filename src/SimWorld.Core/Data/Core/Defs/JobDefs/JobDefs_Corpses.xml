@@ -10,6 +10,7 @@
 
   <JobDef>
     <defName>ButcherCorpse</defName>
+    <label>butcher</label>
     <driverClass>SimWorld.AI.JobDriver_ButcherCorpse</driverClass>
     <reportString>butchering a carcass.</reportString>
   </JobDef>

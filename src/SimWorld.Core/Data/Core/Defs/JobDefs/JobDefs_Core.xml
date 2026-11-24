@@ -5,6 +5,7 @@
 
   <JobDef>
     <defName>Ingest</defName>
+    <label>eat</label>
     <driverClass>SimWorld.AI.JobDriver_Ingest</driverClass>
     <reportString>eating.</reportString>
   </JobDef>
@@ -20,6 +21,7 @@
   -->
   <JobDef>
     <defName>LayDown</defName>
+    <label>lie down</label>
     <driverClass>SimWorld.AI.JobDriver_LayDown</driverClass>
     <reportString>lying down.</reportString>
     <casualInterruptible>false</casualInterruptible>
@@ -27,6 +29,7 @@
 
   <JobDef>
     <defName>GotoWander</defName>
+    <label>wander</label>
     <driverClass>SimWorld.AI.JobDriver_GotoWander</driverClass>
     <reportString>wandering.</reportString>
   </JobDef>
@@ -42,12 +45,14 @@
 
   <JobDef>
     <defName>HaulToBuildingSite</defName>
+    <label>haul to building site</label>
     <driverClass>SimWorld.Building.JobDriver_HaulToBuildingSite</driverClass>
     <reportString>hauling to a construction site.</reportString>
   </JobDef>
 
   <JobDef>
     <defName>ConstructFinishFrame</defName>
+    <label>construct</label>
     <driverClass>SimWorld.Building.JobDriver_ConstructFinishFrame</driverClass>
     <reportString>constructing.</reportString>
   </JobDef>
@@ -56,6 +61,7 @@
 
   <JobDef>
     <defName>Sow</defName>
+    <label>sow</label>
     <driverClass>SimWorld.Building.JobDriver_Sow</driverClass>
     <reportString>sowing.</reportString>
   </JobDef>
@@ -71,12 +77,14 @@
 
   <JobDef>
     <defName>Tame</defName>
+    <label>tame</label>
     <driverClass>SimWorld.AI.JobDriver_Tame</driverClass>
     <reportString>taming.</reportString>
   </JobDef>
 
   <JobDef>
     <defName>Train</defName>
+    <label>train</label>
     <driverClass>SimWorld.AI.JobDriver_Train</driverClass>
     <reportString>training.</reportString>
   </JobDef>
@@ -85,12 +93,14 @@
 
   <JobDef>
     <defName>PrisonerAttemptRecruit</defName>
+    <label>recruit prisoner</label>
     <driverClass>SimWorld.AI.JobDriver_Warden_AttemptRecruit</driverClass>
     <reportString>talking with prisoner.</reportString>
   </JobDef>
 
   <JobDef>
     <defName>FeedPatient</defName>
+    <label>feed patient</label>
     <driverClass>SimWorld.AI.JobDriver_Warden_Feed</driverClass>
     <reportString>feeding.</reportString>
   </JobDef>
@@ -106,6 +116,7 @@
 
   <JobDef>
     <defName>Rescue</defName>
+    <label>rescue</label>
     <driverClass>SimWorld.AI.JobDriver_TakeToBed</driverClass>
     <reportString>rescuing.</reportString>
   </JobDef>

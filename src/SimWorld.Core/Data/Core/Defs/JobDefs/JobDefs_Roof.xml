@@ -6,6 +6,7 @@
 
   <JobDef>
     <defName>BuildRoof</defName>
+    <label>build roof</label>
     <driverClass>SimWorld.Building.JobDriver_BuildRoof</driverClass>
     <reportString>building roof.</reportString>
   </JobDef>

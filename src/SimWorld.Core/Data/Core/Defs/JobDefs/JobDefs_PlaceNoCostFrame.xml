@@ -6,6 +6,7 @@
 
   <JobDef>
     <defName>PlaceNoCostFrame</defName>
+    <label>lay out</label>
     <driverClass>SimWorld.Building.JobDriver_PlaceNoCostFrame</driverClass>
     <reportString>placing a frame for TargetA.</reportString>
   </JobDef>

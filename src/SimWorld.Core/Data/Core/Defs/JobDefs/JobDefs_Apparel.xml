@@ -6,12 +6,14 @@
 
   <JobDef>
     <defName>Wear</defName>
+    <label>put on apparel</label>
     <driverClass>SimWorld.AI.JobDriver_Wear</driverClass>
     <reportString>putting on TargetA.</reportString>
   </JobDef>
 
   <JobDef>
     <defName>Equip</defName>
+    <label>equip</label>
     <driverClass>SimWorld.AI.JobDriver_Equip</driverClass>
     <reportString>equipping TargetA.</reportString>
   </JobDef>
