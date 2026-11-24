@@ -54,7 +54,25 @@ namespace SimWorld.AI
                 }
             }
 
-            return givers == null ? null : WorkGiverScanUtility.TryGiveJobInGivers(pawn, givers);
+            if (givers == null) return null;
+
+            // Patients before the edict: a doctor feeds and tends the downed first, as the edict exempts needs
+            // and emergencies. Without this a sowing edict kept every able hand in the fields while a downed
+            // colonist starved beside full stores (second playtest). Only the doctor work this pawn already
+            // does, in their own order; an edict that is itself doctoring needs no second pass.
+            Job? care = WorkGiverScanUtility.TryGiveJobInGivers(pawn, PatientCare(pawn, givers));
+            return care ?? WorkGiverScanUtility.TryGiveJobInGivers(pawn, givers);
+        }
+
+        private static List<WorkGiverDef> PatientCare(Pawn pawn, List<WorkGiverDef> edictGivers)
+        {
+            var care = new List<WorkGiverDef>();
+            IReadOnlyList<WorkGiverDef> own = pawn.workSettings.WorkGiversInOrderNormal;
+            for (int i = 0; i < own.Count; i++)
+            {
+                if (own[i].workType == WorkTypeDefOf.Doctor && !edictGivers.Contains(own[i])) care.Add(own[i]);
+            }
+            return care;
         }
     }
 }

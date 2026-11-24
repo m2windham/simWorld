@@ -129,5 +129,34 @@ namespace SimWorld.Tests.God
             Assert.True(idleWith <= idleWithout + 0.10, $"idle {idleWith:P0} under {edict} vs {idleWithout:P0} without");
         }
 
+
+        /// <summary>The second playtest's Agrarian colony starved beside full stores, downed colonists among
+        /// them. Feeding a downed patient is a doctor's routine work, which an exclusive edict used to withhold
+        /// from every able hand, and which the edict tier still sits above.</summary>
+        [Theory]
+        [InlineData(null)]
+        [InlineData("BreakTheSod")]
+        public void A_downed_hungry_colonist_is_fed_within_a_few_hours_under_an_edict_or_none(string? edict)
+        {
+            Settlement settlement = Opened("AgrarianVillage", "sod-patient");
+            CoreMap map = settlement.InteriorMap!;
+            ReachAgrarian(map);
+            List<Pawn> citizens = settlement.Citizens.Where(p => p.Spawned && p.Map == map).ToList();
+            if (edict != null) Assert.Equal(GodCommandOutcome.Done, GodCommands.IssueEdict(edict).Outcome);
+            Sample(citizens, 2500); // food reaches the map and the band settles into its work
+
+            Pawn patient = citizens.First(p => !p.Downed);
+            patient.health.ForceDowned = true;
+            patient.needs.food!.CurLevelPercentage = 0.05f;
+            float before = patient.needs.food.CurLevelPercentage;
+            int fedAt = -1;
+            for (int i = 0; i < GenDate.TicksPerHour * 6 && fedAt < 0; i++)
+            {
+                Find.TickManager.DoSingleTick();
+                if (patient.needs.food.CurLevelPercentage > before + 0.1f) fedAt = i;
+            }
+            output.WriteLine((edict ?? "no edict") + ": fed after " + fedAt + " ticks");
+            Assert.True(fedAt >= 0, "nobody fed the downed, starving colonist within six hours");
+        }
     }
 }
