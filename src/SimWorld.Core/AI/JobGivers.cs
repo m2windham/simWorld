@@ -115,9 +115,9 @@ namespace SimWorld.AI
         private static Job? TryGiveRoutineJob(Pawn pawn)
         {
             if (!CanWork(pawn)) return null;
-            // An exclusive edict's work is the only routine work for its able hands; the edict tier above
-            // already offered it (God.EdictDef.exclusiveWork).
-            if (God.EdictWorkUtility.RoutineWorkWithheld(pawn)) return null;
+            // No gate for edicts here: the edict tier sits directly above and has already handed out any of its
+            // work this pawn could take. Reaching this line means there was none, and RimWorld's JobGiver_Work
+            // never idles a pawn for want of their first-priority work while lower work waits.
             return WorkGiverScanUtility.TryGiveJobInGivers(pawn, pawn.workSettings.WorkGiversInOrderNormal);
         }
 

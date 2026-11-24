@@ -57,11 +57,13 @@ namespace SimWorld.AI
             if (map == null) return true;
             if (!HuntUtility.HasHuntingWeapon(pawn)) return true;
             if (pawn.WorkTagIsDisabled(WorkTags.Violent)) return true;
+            // The hunter's mandate is the order to hunt every animal worth the arrow, as if each one carried a
+            // painted hunt mark (RimWorld's Designation.Hunt driving WorkGiver_HunterHunt): it opens the food gate
+            // and the player's "only hunt what I mark" rule alike.
+            if (God.EdictWorkUtility.Demands(pawn, def.workType)) return false;
             // The player's standing rule "only hunt what I mark" (DesignationManager.SettlementInitiativeOn);
             // the marked animals are WorkGiver_HunterHunt's either way.
             if (!map.designationManager.SettlementInitiativeOn(Designations.PlayerDesignationDefOf.Hunt)) return true;
-            // The hunter's mandate is the order to hunt: it opens the food gate, as a painted hunt mark would.
-            if (God.EdictWorkUtility.Demands(pawn, def.workType)) return false;
             return !HuntingInitiative.WantsMeat(map);
         }
 

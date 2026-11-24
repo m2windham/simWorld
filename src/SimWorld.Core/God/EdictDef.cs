@@ -23,14 +23,14 @@ namespace SimWorld.God
         public List<WorkTypeDef> prioritizedWork = new List<WorkTypeDef>();
 
         /// <summary>
-        /// The edict's work is the <i>only</i> routine work for a citizen it applies to who is able to do it
-        /// ("nothing else gets done"), not merely the first thing tried: <see cref="AI.JobGiver_Work"/>'s routine
-        /// tier offers that citizen nothing else while it stands (<see cref="EdictWorkUtility.RoutineWorkWithheld"/>).
-        /// RimWorld's nearest mechanic is a colonist whose only enabled work type is the one forced on them, and
-        /// what stays exempt is what stays exempt there: needs, the emergency tier (firefighting, urgent
-        /// tending), a direct order, and fighting. A citizen who cannot do the work at all (no hunting weapon,
-        /// the work disabled or set to never) is not an able hand and keeps their own routine. Only words that
-        /// say "nothing else" earn it; "before anything else" is <see cref="prioritizedWork"/> alone.
+        /// The edict claims every able hand for its work ("nothing else gets done"): that work opens even where a
+        /// settlement's own gate would keep it shut (<see cref="EdictWorkUtility.Demands"/>; the hunt's food gate and
+        /// its "only what I mark" rule), and it is offered before anything routine
+        /// (<see cref="EdictWorkUtility.IsAbleHand"/>). It does not idle anyone: a hand who finds none of the work
+        /// to do (no reachable prey, no field to sow) goes back to routine work, as RimWorld's JobGiver_Work falls
+        /// through to the next work type. Withholding routine work instead left ten of a playtest's colonists
+        /// wandering under the hunter's mandate and froze research. Only words that say "nothing else" earn it;
+        /// "before anything else" is <see cref="prioritizedWork"/> alone.
         /// <para/>Two edicts contradict when either is exclusive and they push different work
         /// (<see cref="Contradicts"/>): issuing one rescinds the other.
         /// </summary>

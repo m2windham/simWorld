@@ -40,16 +40,6 @@ namespace SimWorld.Tests.God
 
         private static EdictDef Edict(string name) => DefDatabase<EdictDef>.GetNamed(name);
 
-        /// <summary>Jobs a citizen under an exclusive edict may still be on: its own work (the hunt and what a
-        /// kill leaves), needs, the emergency tier, fighting, a direct order, idling. Anything else is routine
-        /// work the edict should have withheld.</summary>
-        private static readonly HashSet<string> Exempt = new HashSet<string>
-        {
-            "Hunt", "Butcher", "Ingest", "LayDown", "Wait", "Wait_Wander", "GotoWander", "Goto", "TendPatient",
-            "BeatFire", "ExtinguishSelf", "AttackMelee", "AttackStatic", "Flee", "FleeAndCower", "Rescue",
-            "Equip", "Wear", "RemoveApparel", "SocialRelax", "Meditate", "Skygaze", "Wander", "GotoSafeTemperature",
-        };
-
         /// <summary>Samples every citizen's current job every 250 ticks for <paramref name="ticks"/> ticks.</summary>
         private static Dictionary<string, int> SampleJobs(List<Pawn> citizens, int ticks)
         {
@@ -72,26 +62,33 @@ namespace SimWorld.Tests.God
             string.Join(", ", jobs.OrderByDescending(kv => kv.Value).Select(kv => kv.Key + "=" + kv.Value));
 
         [Fact]
-        public void Under_the_hunters_mandate_the_hunt_dominates_and_routine_work_stops()
+        public void The_hunters_mandate_sends_the_able_hands_hunting_even_past_the_mark_only_rule()
         {
-            Settlement settlement = OpenedSettlement("hunters-mandate");
-            CoreMap map = settlement.InteriorMap!;
-            List<Pawn> citizens = settlement.Citizens.Where(p => p.Spawned && p.Map == map).ToList();
-            Assert.Contains(citizens, HuntUtility.HasHuntingWeapon); // otherwise nobody is an able hand
+            // The player's "only hunt what I mark" rule with nothing marked: without an order nobody hunts, so
+            // every hunt below is the mandate's own doing (RimWorld: the hunt designation is what drives
+            // WorkGiver_HunterHunt; the mandate marks every animal worth the arrow).
+            (int hunting, int all, string shown) Window(string seed, bool mandate)
+            {
+                Settlement settlement = OpenedSettlement(seed);
+                CoreMap map = settlement.InteriorMap!;
+                map.designationManager.SetSettlementInitiative(global::SimWorld.Designations.PlayerDesignationDefOf.Hunt, false);
+                List<Pawn> citizens = settlement.Citizens.Where(p => p.Spawned && p.Map == map).ToList();
+                Assert.Contains(citizens, HuntUtility.HasHuntingWeapon); // otherwise nobody is an able hand
+                if (mandate) Assert.Equal(GodCommandOutcome.Done, GodCommands.IssueEdict("HuntersMandate").Outcome);
+                List<Pawn> able = citizens.Where(p => !mandate || EdictWorkUtility.IsAbleHand(p)).ToList();
+                if (mandate) Assert.True(able.Count * 2 > citizens.Count, "most of the band should be able hands: " + able.Count + "/" + citizens.Count);
+                // An edict does not interrupt the job a citizen is already on, so let those finish first.
+                SampleJobs(able, 1000);
+                Dictionary<string, int> jobs = SampleJobs(able, 4000);
+                return (jobs.GetValueOrDefault("Hunt"), jobs.Values.Sum(), Show(jobs));
+            }
 
-            Assert.Equal(GodCommandOutcome.Done, GodCommands.IssueEdict("HuntersMandate").Outcome);
-            // The able hands: armed, and allowed to hunt (a backstory can disable it). The rest keep their routine.
-            List<Pawn> able = citizens.Where(EdictWorkUtility.RoutineWorkWithheld).ToList();
-            Assert.True(able.Count * 2 > citizens.Count, "most of the band should be able hands: " + able.Count + "/" + citizens.Count);
-            // An edict does not interrupt the job a citizen is already on, so let those finish first.
-            SampleJobs(able, 1000);
-            Dictionary<string, int> jobs = SampleJobs(able, 4000);
-
-            int routine = jobs.Where(kv => !Exempt.Contains(kv.Key) && kv.Key != "none").Sum(kv => kv.Value);
-            int hunting = jobs.GetValueOrDefault("Hunt");
-            // Measured before the fix: Hunt 31 of 320 samples, behind construction, harvest and cutting,
-            // because the hunt's own "only while short of food" gate closed and routine work filled the rest.
-            Assert.True(hunting > 0 && hunting >= 4 * routine, "hunting should dominate: " + Show(jobs));
+            var unordered = Window("hunters-mandate", mandate: false);
+            var ordered = Window("hunters-mandate", mandate: true);
+            Assert.True(unordered.hunting == 0, "nothing marked and no order, yet: " + unordered.shown);
+            // A large share of the able hands' time, not every sample: the hunt's walk back, the butchering and
+            // the hand with no free prey left (one hunter per animal) all fall to other jobs.
+            Assert.True(ordered.hunting * 4 >= ordered.all, "the mandate should put the able hands to the hunt: " + ordered.shown);
         }
 
         [Fact]
@@ -101,10 +98,10 @@ namespace SimWorld.Tests.God
             CoreMap map = settlement.InteriorMap!;
             List<Pawn> citizens = settlement.Citizens.Where(p => p.Spawned && p.Map == map).ToList();
             Assert.Equal(GodCommandOutcome.Done, GodCommands.IssueEdict("HuntersMandate").Outcome);
-            Assert.Contains(citizens, EdictWorkUtility.RoutineWorkWithheld);
+            Assert.Contains(citizens, EdictWorkUtility.IsAbleHand);
 
             Assert.Equal(GodCommandOutcome.Done, GodCommands.RescindEdict("HuntersMandate").Outcome);
-            Assert.All(citizens, p => Assert.False(EdictWorkUtility.RoutineWorkWithheld(p)));
+            Assert.All(citizens, p => Assert.False(EdictWorkUtility.IsAbleHand(p)));
         }
 
         [Fact]
@@ -117,7 +114,7 @@ namespace SimWorld.Tests.God
             Assert.False(HuntUtility.HasHuntingWeapon(unarmed));
 
             Assert.Equal(GodCommandOutcome.Done, GodCommands.IssueEdict("HuntersMandate").Outcome);
-            Assert.False(EdictWorkUtility.RoutineWorkWithheld(unarmed));
+            Assert.False(EdictWorkUtility.IsAbleHand(unarmed));
         }
 
         [Fact]
@@ -128,7 +125,7 @@ namespace SimWorld.Tests.God
             Settlement settlement = OpenedSettlement("reorder-only");
             CoreMap map = settlement.InteriorMap!;
             Assert.True(Find.God.Activate(reorder));
-            Assert.All(settlement.Citizens.Where(p => p.Spawned && p.Map == map), p => Assert.False(EdictWorkUtility.RoutineWorkWithheld(p)));
+            Assert.All(settlement.Citizens.Where(p => p.Spawned && p.Map == map), p => Assert.False(EdictWorkUtility.IsAbleHand(p)));
         }
 
         // ---- contradictory edicts ----

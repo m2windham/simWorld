@@ -39,13 +39,13 @@ namespace SimWorld.God
         }
 
         /// <summary>
-        /// Routine work other than an exclusive edict's is withheld from <paramref name="pawn"/>: an edict in
-        /// force with <see cref="EdictDef.exclusiveWork"/> applies to them and they are an able hand for it —
-        /// they may do one of its work types and at least one of that type's givers would consider them
-        /// (<see cref="WorkGiver.ShouldSkip"/>; a hunter without a ranged weapon is skipped, as in RimWorld).
-        /// Needs, emergencies, direct orders and fighting sit above the routine tier and are untouched.
+        /// <paramref name="pawn"/> is an able hand for an exclusive edict in force (<see cref="EdictDef.exclusiveWork"/>):
+        /// it applies to them, they may do one of its work types, and at least one of that type's givers would
+        /// consider them (<see cref="WorkGiver.ShouldSkip"/>; a hunter without a ranged weapon is skipped, as in
+        /// RimWorld). An able hand is offered the edict's work before anything routine; one who finds none of it
+        /// to do goes back to their routine rather than standing idle.
         /// </summary>
-        public static bool RoutineWorkWithheld(Pawn pawn)
+        public static bool IsAbleHand(Pawn pawn)
         {
             IReadOnlyList<EdictDef> active = Find.God.ActiveEdicts;
             for (int e = 0; e < active.Count; e++)
