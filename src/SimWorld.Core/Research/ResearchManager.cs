@@ -101,7 +101,9 @@ namespace SimWorld.Research
             // finishing amount must not be written here first or it never sees an era crossing.
             if (newProgress >= currentProj.baseCost)
             {
-                FinishProject(currentProj, false, researcher);
+                ResearchProjectDef finished = currentProj;
+                FinishProject(finished, false, researcher);
+                ResearchFinishedLetter.Send(finished, researcher);
                 return;
             }
             progress[currentProj] = newProgress;

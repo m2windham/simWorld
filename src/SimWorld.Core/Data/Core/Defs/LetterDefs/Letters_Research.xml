@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Its own file (CLAUDE.md, "add a file rather than edit a shared one"). RimWorld tells the player a project
+    is done (the "ResearchFinished" message); the host asked for it so it can show research landing as it
+    happens. Its own def so a host can draw it quietly, or fold a run of them, without guessing from a label.
+  -->
+
+  <LetterDef>
+    <defName>ResearchFinished</defName>
+    <label>research finished</label>
+    <description>A research project has been completed.</description>
+  </LetterDef>
+
+</Defs>
