@@ -526,7 +526,7 @@ namespace SimWorld.Map.View
                 moving,
                 moving ? p.pather!.Destination.Cell : IntVec3.Invalid,
                 p.MentalStateDef?.defName,
-                p.health != null ? Clamp01(p.health.summaryHealth.SummaryHealthPercent) : 1f,
+                p.health != null ? Clamp01(Health.HealthReadout.Of(p)) : 1f,
                 apparel,
                 p.equipment?.Primary?.def.defName);
         }

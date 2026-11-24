@@ -328,7 +328,7 @@ namespace SimWorld.God.View
         internal static float HealthFractionOf(Pawn pawn, PawnTier tier) =>
             tier == PawnTier.Statistical
                 ? pawn.tier?.SampledHealthFraction ?? 0f
-                : pawn.health?.summaryHealth?.SummaryHealthPercent ?? 0f;
+                : pawn.health != null ? Health.HealthReadout.Of(pawn) : 0f;
     }
 
     /// <summary>
