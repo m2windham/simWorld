@@ -26,7 +26,8 @@ namespace SimWorld.AI
     /// (<see cref="Crafting.MaterialLadder.IsBetterWeapon"/>), and drops the old one where it stands
     /// (<c>JobDriver_Equip</c>). A ranged weapon is traded only for a forged metal blade, and only by a citizen
     /// who fights better than they shoot (<see cref="Crafting.MaterialLadder.TradesBowForBlade"/>), so the
-    /// hunters keep their bows; a raider never trades up.
+    /// hunters keep their bows; a raider never trades up. A ranged weapon is also traded for a strictly
+    /// better ranged one (<see cref="Crafting.Armoury"/>): the recurve bow, crossbow or rifle the bench made.
     /// </summary>
     public sealed class JobGiver_PickUpOpportunisticWeapon : ThinkNode_JobGiver
     {
@@ -39,6 +40,13 @@ namespace SimWorld.AI
             Thing? held = pawn.equipment.Primary;
             if (held != null && !MayTradeUp(pawn, held)) return null;
             if (pawn.WorkTagIsDisabled(WorkTags.Violent)) return null;
+            // A bow holder with nothing better than a blade to trade for skips the scan when no better ranged
+            // weapon lies anywhere on the map (one cached look per map per tick).
+            if (held != null && Crafting.Armoury.IsRangedWeapon(held.def) && !Crafting.MaterialLadder.FightsBetterThanShoots(pawn)
+                && Crafting.Armoury.BestLyingRangedScore(pawn.Map) <= Crafting.Armoury.RangedScore(held.def) * Crafting.MaterialLadder.TradeUpMargin)
+            {
+                return null;
+            }
 
             float maxDistSq = maxDistance * maxDistance;
             Thing? best = null;
@@ -59,7 +67,8 @@ namespace SimWorld.AI
         }
 
         private static bool MayTradeUp(Pawn pawn, Thing held) =>
-            (Crafting.MaterialLadder.IsMeleeWeapon(held.def) || Crafting.MaterialLadder.FightsBetterThanShoots(pawn))
+            (Crafting.MaterialLadder.IsMeleeWeapon(held.def) || Crafting.Armoury.IsRangedWeapon(held.def)
+                || Crafting.MaterialLadder.FightsBetterThanShoots(pawn))
             && (pawn.Faction == null || ReferenceEquals(pawn.Faction, Sim.Find.FactionManager.OfPlayer));
     }
 }

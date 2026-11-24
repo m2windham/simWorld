@@ -379,6 +379,10 @@ namespace SimWorld.Economy
                     if (!stockpile.filter.Allows(stack.def)) continue;
                     if (map.reservationManager.IsReserved(stack)) continue;
                     if (!stack.def.IsNutritionGivingIngestible && AnyTakes(billed, stack.def)) continue;
+                    // And what such a bill makes to be worn or wielded: a crafted bow or coat is hauled to
+                    // storage before anyone takes it up, and banked there it leaves the map, so nobody is ever
+                    // armed, the bill never sees its count reached, and it eats material without end.
+                    if ((stack.def.IsWeapon || stack.def.IsApparel) && AnyMakes(billed, stack.def)) continue;
                     if (construction.Contains(stack.def)) continue;
 
                     int take = BankableUnits(stack, ref nutritionSurplus);
@@ -477,6 +481,15 @@ namespace SimWorld.Economy
                 {
                     if (ingredients[i].filter.Allows(def)) return true;
                 }
+            }
+            return false;
+        }
+
+        private static bool AnyMakes(List<RecipeDef> recipes, ThingDef def)
+        {
+            for (int r = 0; r < recipes.Count; r++)
+            {
+                if (recipes[r].ProducedThingDef == def) return true;
             }
             return false;
         }

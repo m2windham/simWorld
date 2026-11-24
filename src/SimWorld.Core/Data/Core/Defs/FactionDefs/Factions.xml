@@ -60,6 +60,14 @@
         <options>
           <li><kind>Raider_Melee</kind><selectionWeight>2.0</selectionWeight></li>
           <li><kind>Raider_Bow</kind><selectionWeight>1.0</selectionWeight></li>
+          <!-- Era kinds (PawnKinds_EraRaiders.xml): the faction fields only the latest era's it has reached. -->
+          <li><kind>Raider_Spearman</kind><selectionWeight>2.0</selectionWeight></li>
+          <li><kind>Raider_Bowman</kind><selectionWeight>1.0</selectionWeight></li>
+          <li><kind>Raider_Legionary</kind><selectionWeight>2.0</selectionWeight></li>
+          <li><kind>Raider_Longbowman</kind><selectionWeight>1.0</selectionWeight></li>
+          <li><kind>Raider_ManAtArms</kind><selectionWeight>2.0</selectionWeight></li>
+          <li><kind>Raider_Crossbowman</kind><selectionWeight>1.0</selectionWeight></li>
+          <li><kind>Raider_Rifleman</kind><selectionWeight>1.0</selectionWeight></li>
         </options>
       </li>
     </pawnGroupMakers>
@@ -123,6 +131,14 @@
         <options>
           <li><kind>Raider_Melee</kind><selectionWeight>1.5</selectionWeight></li>
           <li><kind>Raider_Bow</kind><selectionWeight>2.0</selectionWeight></li>
+          <!-- Era kinds (PawnKinds_EraRaiders.xml): the faction fields only the latest era's it has reached. -->
+          <li><kind>Raider_Spearman</kind><selectionWeight>1.5</selectionWeight></li>
+          <li><kind>Raider_Bowman</kind><selectionWeight>2.0</selectionWeight></li>
+          <li><kind>Raider_Legionary</kind><selectionWeight>1.5</selectionWeight></li>
+          <li><kind>Raider_Longbowman</kind><selectionWeight>2.0</selectionWeight></li>
+          <li><kind>Raider_ManAtArms</kind><selectionWeight>1.5</selectionWeight></li>
+          <li><kind>Raider_Crossbowman</kind><selectionWeight>2.0</selectionWeight></li>
+          <li><kind>Raider_Rifleman</kind><selectionWeight>2.0</selectionWeight></li>
         </options>
       </li>
     </pawnGroupMakers>

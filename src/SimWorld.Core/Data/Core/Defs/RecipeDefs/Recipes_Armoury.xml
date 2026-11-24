@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The armoury's bills (era-arc finding 5: eras buy strength, not bodies; system crafting.billcreators). Its own
+    file, per CLAUDE.md. Crafting.Armoury decides which of these a bench works and for how many citizens:
+    the best ranged weapon and the best armour of each slot whose materials are in reach.
+
+    Every era's research now makes something a defender carries: bows (Agrarian Bows), the recurve bow and the
+    helmet (Bronze), the great bow and mail (Classical), crossbow, musket and plate (Medieval), revolver, rifle and
+    flak vest (Industrial), assault rifle (Information). The gate is each item's own research
+    (ThingDef.researchPrerequisites), repeated here as the recipe's.
+
+    RimWorld makes bows at a crafting spot or table, guns at a machining table and armour at a smithy; this
+    content has one smithy and one tailoring bench, so all weapons and metal armour are the smithy's and the hide
+    coat is the tailor's. RimWorld guns also take components, which this content does not have (Buildings_Shelter.xml
+    makes the same substitution): steel stands in. workAmount follows the knife's scale (RimWorld's WorkToMake x
+    about 0.3, Recipes_Smithing.xml); the WorkToMake values and wood counts it scales are RECALLED, the crossbow's
+    and musket's unsourced. Metal armour takes its stuff from the ingredient, as the ladder's blades do. What the
+    tests pin is which bill the armoury queues and for whom, not these numbers.
+  -->
+
+  <RecipeDef>
+    <defName>Make_Bow_Short</defName>
+    <researchPrerequisites>
+      <li>Bows</li>
+    </researchPrerequisites>
+    <label>make a short bow</label>
+    <jobString>Making a short bow.</jobString>
+    <workAmount>1200</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>WoodLog</li></thingDefs></filter>
+        <count>30</count>
+      </li>
+    </ingredients>
+    <products><Bow_Short>1</Bow_Short></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Bow_Recurve</defName>
+    <researchPrerequisites>
+      <li>BronzeWeapons</li>
+    </researchPrerequisites>
+    <label>make a recurve bow</label>
+    <jobString>Making a recurve bow.</jobString>
+    <workAmount>1800</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>WoodLog</li></thingDefs></filter>
+        <count>40</count>
+      </li>
+    </ingredients>
+    <products><Bow_Recurve>1</Bow_Recurve></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Bow_Great</defName>
+    <researchPrerequisites>
+      <li>StandingArmies</li>
+    </researchPrerequisites>
+    <label>make a great bow</label>
+    <jobString>Making a great bow.</jobString>
+    <workAmount>3000</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>WoodLog</li></thingDefs></filter>
+        <count>50</count>
+      </li>
+    </ingredients>
+    <products><Bow_Great>1</Bow_Great></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Crossbow</defName>
+    <researchPrerequisites>
+      <li>Crossbows</li>
+    </researchPrerequisites>
+    <label>make a crossbow</label>
+    <jobString>Making a crossbow.</jobString>
+    <workAmount>3600</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>WoodLog</li></thingDefs></filter>
+        <count>30</count>
+      </li>
+      <li>
+        <filter><thingDefs><li>Iron</li><li>Steel</li></thingDefs></filter>
+        <count>15</count>
+      </li>
+    </ingredients>
+    <products><Crossbow>1</Crossbow></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Gun_Musket</defName>
+    <researchPrerequisites>
+      <li>Gunpowder</li>
+    </researchPrerequisites>
+    <label>make a musket</label>
+    <jobString>Making a musket.</jobString>
+    <workAmount>4500</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>WoodLog</li></thingDefs></filter>
+        <count>20</count>
+      </li>
+      <li>
+        <filter><thingDefs><li>Steel</li></thingDefs></filter>
+        <count>25</count>
+      </li>
+    </ingredients>
+    <products><Gun_Musket>1</Gun_Musket></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Gun_Revolver</defName>
+    <researchPrerequisites>
+      <li>Firearms</li>
+    </researchPrerequisites>
+    <label>make a revolver</label>
+    <jobString>Making a revolver.</jobString>
+    <workAmount>4500</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Steel</li></thingDefs></filter>
+        <count>30</count>
+      </li>
+    </ingredients>
+    <products><Gun_Revolver>1</Gun_Revolver></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Gun_BoltActionRifle</defName>
+    <researchPrerequisites>
+      <li>Firearms</li>
+    </researchPrerequisites>
+    <label>make a bolt-action rifle</label>
+    <jobString>Making a bolt-action rifle.</jobString>
+    <workAmount>6000</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>WoodLog</li></thingDefs></filter>
+        <count>10</count>
+      </li>
+      <li>
+        <filter><thingDefs><li>Steel</li></thingDefs></filter>
+        <count>40</count>
+      </li>
+    </ingredients>
+    <products><Gun_BoltActionRifle>1</Gun_BoltActionRifle></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Gun_AssaultRifle</defName>
+    <researchPrerequisites>
+      <li>MachineGuns</li>
+    </researchPrerequisites>
+    <label>make an assault rifle</label>
+    <jobString>Making an assault rifle.</jobString>
+    <workAmount>8000</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Steel</li></thingDefs></filter>
+        <count>60</count>
+      </li>
+    </ingredients>
+    <products><Gun_AssaultRifle>1</Gun_AssaultRifle></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Apparel_HideArmor</defName>
+    <researchPrerequisites>
+      <li>Tanning</li>
+    </researchPrerequisites>
+    <label>make a hide coat</label>
+    <jobString>Making a hide coat.</jobString>
+    <workAmount>1500</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Leather_Plain</li></thingDefs></filter>
+        <count>40</count>
+      </li>
+    </ingredients>
+    <products><Apparel_HideArmor>1</Apparel_HideArmor></products>
+    <recipeUsers><li>TableTailor</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Apparel_SimpleHelmet</defName>
+    <researchPrerequisites>
+      <li>Phalanx</li>
+    </researchPrerequisites>
+    <label>smith a helmet</label>
+    <jobString>Smithing a helmet.</jobString>
+    <workAmount>1500</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Copper</li><li>Bronze</li><li>Iron</li><li>Steel</li></thingDefs></filter>
+        <count>15</count>
+      </li>
+    </ingredients>
+    <productHasIngredientStuff>true</productHasIngredientStuff>
+    <products><Apparel_SimpleHelmet>1</Apparel_SimpleHelmet></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Apparel_ChainShirt</defName>
+    <researchPrerequisites>
+      <li>StandingArmies</li>
+    </researchPrerequisites>
+    <label>smith a mail shirt</label>
+    <jobString>Smithing a mail shirt.</jobString>
+    <workAmount>3500</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Iron</li><li>Steel</li></thingDefs></filter>
+        <count>30</count>
+      </li>
+    </ingredients>
+    <productHasIngredientStuff>true</productHasIngredientStuff>
+    <products><Apparel_ChainShirt>1</Apparel_ChainShirt></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Apparel_PlateArmor</defName>
+    <researchPrerequisites>
+      <li>Knighthood</li>
+    </researchPrerequisites>
+    <label>smith plate armor</label>
+    <jobString>Smithing plate armor.</jobString>
+    <workAmount>6000</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Steel</li></thingDefs></filter>
+        <count>50</count>
+      </li>
+    </ingredients>
+    <productHasIngredientStuff>true</productHasIngredientStuff>
+    <products><Apparel_PlateArmor>1</Apparel_PlateArmor></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Apparel_FlakVest</defName>
+    <researchPrerequisites>
+      <li>Artillery</li>
+    </researchPrerequisites>
+    <label>make a flak vest</label>
+    <jobString>Making a flak vest.</jobString>
+    <workAmount>3000</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Steel</li></thingDefs></filter>
+        <count>25</count>
+      </li>
+    </ingredients>
+    <productHasIngredientStuff>true</productHasIngredientStuff>
+    <products><Apparel_FlakVest>1</Apparel_FlakVest></products>
+    <recipeUsers><li>Smithy</li></recipeUsers>
+  </RecipeDef>
+
+</Defs>

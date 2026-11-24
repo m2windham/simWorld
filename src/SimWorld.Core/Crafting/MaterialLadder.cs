@@ -127,6 +127,8 @@ namespace SimWorld.Crafting
         {
             if (candidate == null) throw new ArgumentNullException(nameof(candidate));
             if (current == null) return true;
+            // A bow for a better bow or a gun (Crafting.Armoury); never a blade for a bow here.
+            if (Armoury.IsRangedWeapon(candidate.def)) return Armoury.IsBetterRanged(candidate.def, current.def);
             if (!IsMeleeWeapon(candidate.def)) return false;
             if (!IsMeleeWeapon(current.def)) return holder != null && TradesBowForBlade(holder, candidate.Stuff);
             return WeaponScore(candidate) > WeaponScore(current) * TradeUpMargin;

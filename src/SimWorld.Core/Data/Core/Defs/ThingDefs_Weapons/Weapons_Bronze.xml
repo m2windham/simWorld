@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The bronze age's bow (era-arc finding 5: eras buy strength, not bodies). Its own file, per CLAUDE.md.
+
+    RimWorld's recurve bow (Bow_Recurve, Arrow_Recurve). Its numbers are RECALLED, not read from Core
+    RangedNeolithic.xml: damage 14 at penetration 0.21 against the short bow's 11 at 0.16, a little longer range,
+    a little slower to draw. What the tests pin is the order (each era's bow outshoots the last,
+    Crafting.Armoury.RangedScore), never these literals. RimWorld gates it behind its own RecurveBow project; here
+    it is the bronze age's weapon work (BronzeWeapons), beside the spear. MarketValue is unsourced and only ordered
+    (short bow 60 < recurve < great bow < crossbow), which is what raider budgets read. The weaponTag is the bronze
+    raider's (PawnKinds_EraRaiders.xml). Made at the smithy: Recipes_Armoury.xml.
+  -->
+
+  <ThingDef>
+    <defName>Bow_Recurve</defName>
+    <researchPrerequisites>
+      <li>BronzeWeapons</li>
+    </researchPrerequisites>
+    <label>recurve bow</label>
+    <description>A bow whose limbs curve away from the archer, built up from wood, horn and sinew. More power from a shorter stave.</description>
+    <category>Item</category>
+    <thingClass>SimWorld.Things.ThingWithComps</thingClass>
+    <techLevel>Neolithic</techLevel>
+    <weaponTags>
+      <li>BronzeRangedWeapon</li>
+    </weaponTags>
+    <statBases><MarketValue>100</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
+    <verbs>
+      <li>
+        <verbClass>SimWorld.Combat.Verb_LaunchProjectile</verbClass>
+        <label>shoot</label>
+        <range>27.9</range>
+        <warmupTime>1.25</warmupTime>
+        <defaultCooldownTime>1.6</defaultCooldownTime>
+        <accuracyTouch>0.65</accuracyTouch>
+        <accuracyShort>0.7</accuracyShort>
+        <accuracyMedium>0.65</accuracyMedium>
+        <accuracyLong>0.55</accuracyLong>
+        <defaultProjectile>Arrow_Recurve</defaultProjectile>
+      </li>
+    </verbs>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Arrow_Recurve</defName>
+    <label>recurve arrow</label>
+    <category>Projectile</category>
+    <projectile>
+      <damageDef>Cut</damageDef>
+      <damageAmountBase>14</damageAmountBase>
+      <armorPenetrationBase>0.21</armorPenetrationBase>
+      <speed>40</speed>
+    </projectile>
+  </ThingDef>
+
+</Defs>

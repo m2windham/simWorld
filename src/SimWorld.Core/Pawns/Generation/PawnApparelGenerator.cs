@@ -35,7 +35,8 @@ namespace SimWorld.Pawns.Generation
             if (kind?.apparelTags == null || kind.apparelTags.Count == 0) return;
 
             // No faction on the request: no tech ceiling, mirroring PawnWeaponGenerator.
-            TechLevel? maxTech = request.Faction?.def.techLevel;
+            // A rival's ceiling rises with the world's era (Factions.FactionAdvancement); the player's is its def's.
+            TechLevel? maxTech = request.Faction == null ? (TechLevel?)null : Factions.FactionAdvancement.TechLevelOf(request.Faction);
 
             List<ThingDef> pool = DefDatabase<ThingDef>.AllDefsListForReading
                 .Where(td => td.IsApparel

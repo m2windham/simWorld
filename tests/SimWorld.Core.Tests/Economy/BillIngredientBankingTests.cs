@@ -66,5 +66,36 @@ namespace SimWorld.Tests.Economy
             Assert.True(cloth.Destroyed);
             Assert.Equal(40, settlement.StoreCountOf(Def("Cloth")));
         }
+
+        [Theory]
+        [InlineData("Apparel_Shirt", "TableTailor", "Make_Apparel_Shirt")]
+        [InlineData("Bow_Recurve", "Smithy", "Make_Bow_Recurve")]
+        [InlineData("Apparel_HideArmor", "TableTailor", "Make_Apparel_HideArmor")]
+        public void Gear_a_standing_bill_makes_stays_on_the_map_for_someone_to_take_up(string product, string benchDef, string recipe)
+        {
+            var map = new CoreMap(20, 20, TerrainDefOf.Soil);
+            var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Forgehome", 0);
+            var cell = new IntVec3(5, 0, 5);
+            var zone = new Zone_Stockpile();
+            map.zoneManager.RegisterZone(zone);
+            map.zoneManager.AddCell(zone, cell);
+            zone.filter.SetAllowAll(null);
+            ThingDef def = Def(product);
+            Thing made = ThingMaker.MakeThing(def, def.MadeFromStuff ? GenStuff.DefaultStuffFor(def) : null);
+            GenSpawn.Spawn(made, cell, map);
+            var bench = (ThingWithComps)GenSpawn.Spawn(ThingMaker.MakeThing(Def(benchDef)), new IntVec3(12, 0, 12), map);
+
+            Assert.Equal(1, SettlementStockInitiative.BankStoredGoods(settlement, map)); // no bill: banked as before
+            Assert.True(made.Destroyed);
+
+            made = ThingMaker.MakeThing(def, def.MadeFromStuff ? GenStuff.DefaultStuffFor(def) : null);
+            GenSpawn.Spawn(made, cell, map);
+            bench.GetComp<CompBillGiver>()!.BillStack.AddBill(
+                new Bill_Production(DefDatabase<RecipeDef>.GetNamed(recipe)) { repeatMode = BillRepeatMode.TargetCount, targetCount = 3 });
+
+            Assert.Equal(0, SettlementStockInitiative.BankStoredGoods(settlement, map));
+            Assert.True(made.Spawned);
+            Assert.Equal(1, settlement.StoreCountOf(def));
+        }
     }
 }

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Raiders by era (era-arc finding 5: eras buy strength, not bodies). Its own file, per CLAUDE.md.
+
+    RimWorld prices a raider in its kind's combatPower and arms it from the kind's weaponTags and apparelTags
+    within a money budget, capped at its faction's tech level. Each kind here carries one era's arms
+    (PawnKindDef.era): the weapons and armour that era's research makes (ThingDefs_Weapons/Weapons_<Era>.xml,
+    Apparel_Armour.xml). A raiding faction fields the kinds of the latest era the world has reached
+    (Factions.FactionAdvancement), and its tech ceiling rises with it, so a Medieval-era raid carries
+    Medieval-era arms.
+
+    combatPower is SimWorld's own, UNSOURCED: set in the family of the stone-age kinds (Raider_Melee 35,
+    Raider_Bow 45) and rising with the gear, so the same threat points buy fewer, better-armed raiders as the
+    eras turn. RimWorld's own raiders run from about 35 to 150 by the same reasoning. EraRaiderTests pins the
+    trend (within the melee and within the ranged line, an era's kind costs more and carries better gear than
+    the last), not these numbers. Every kind is a fighter; the ranged ones refuse Brawler as Raider_Bow does.
+    Civil apparel tags give them shirt, trousers and a coat over the armour; the tribal robe, which armour
+    replaces, is not drawn.
+  -->
+
+  <!-- Bronze: a spear and a hide coat. -->
+  <PawnKindDef>
+    <defName>Raider_Spearman</defName>
+    <label>spearman</label>
+    <race>Human</race>
+    <era>Bronze</era>
+    <backstoryCategories>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>50</combatPower>
+    <isFighter>true</isFighter>
+    <weaponTags>
+      <li>BronzeMeleeWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>0~200</weaponMoneyRange>
+    <apparelTags>
+      <li>Civil</li>
+      <li>BronzeArmor</li>
+    </apparelTags>
+    <apparelMoneyRange>0~400</apparelMoneyRange>
+  </PawnKindDef>
+
+  <!-- Bronze: a recurve bow and a hide coat. -->
+  <PawnKindDef>
+    <defName>Raider_Bowman</defName>
+    <label>bowman</label>
+    <race>Human</race>
+    <era>Bronze</era>
+    <backstoryCategories>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>60</combatPower>
+    <isFighter>true</isFighter>
+    <disallowedTraits>
+      <li>Brawler</li>
+    </disallowedTraits>
+    <weaponTags>
+      <li>BronzeRangedWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>0~200</weaponMoneyRange>
+    <apparelTags>
+      <li>Civil</li>
+      <li>BronzeArmor</li>
+    </apparelTags>
+    <apparelMoneyRange>0~400</apparelMoneyRange>
+  </PawnKindDef>
+
+  <!-- Classical: an iron spear and a mail shirt. -->
+  <PawnKindDef>
+    <defName>Raider_Legionary</defName>
+    <label>legionary</label>
+    <race>Human</race>
+    <era>Classical</era>
+    <backstoryCategories>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>75</combatPower>
+    <isFighter>true</isFighter>
+    <weaponTags>
+      <li>ClassicalMeleeWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>0~200</weaponMoneyRange>
+    <apparelTags>
+      <li>Civil</li>
+      <li>ClassicalArmor</li>
+    </apparelTags>
+    <apparelMoneyRange>0~400</apparelMoneyRange>
+  </PawnKindDef>
+
+  <!-- Classical: a great bow and a hide coat. -->
+  <PawnKindDef>
+    <defName>Raider_Longbowman</defName>
+    <label>longbowman</label>
+    <race>Human</race>
+    <era>Classical</era>
+    <backstoryCategories>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>75</combatPower>
+    <isFighter>true</isFighter>
+    <disallowedTraits>
+      <li>Brawler</li>
+    </disallowedTraits>
+    <weaponTags>
+      <li>ClassicalRangedWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>0~200</weaponMoneyRange>
+    <apparelTags>
+      <li>Civil</li>
+      <li>BronzeArmor</li>
+    </apparelTags>
+    <apparelMoneyRange>0~400</apparelMoneyRange>
+  </PawnKindDef>
+
+  <!-- Medieval: a longsword and plate. -->
+  <PawnKindDef>
+    <defName>Raider_ManAtArms</defName>
+    <label>man-at-arms</label>
+    <race>Human</race>
+    <era>Medieval</era>
+    <backstoryCategories>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>110</combatPower>
+    <isFighter>true</isFighter>
+    <weaponTags>
+      <li>MedievalMeleeWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>0~300</weaponMoneyRange>
+    <apparelTags>
+      <li>Civil</li>
+      <li>MedievalArmor</li>
+    </apparelTags>
+    <apparelMoneyRange>0~400</apparelMoneyRange>
+  </PawnKindDef>
+
+  <!-- Medieval: a crossbow or a musket, and mail. -->
+  <PawnKindDef>
+    <defName>Raider_Crossbowman</defName>
+    <label>crossbowman</label>
+    <race>Human</race>
+    <era>Medieval</era>
+    <backstoryCategories>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>95</combatPower>
+    <isFighter>true</isFighter>
+    <disallowedTraits>
+      <li>Brawler</li>
+    </disallowedTraits>
+    <weaponTags>
+      <li>MedievalRangedWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>0~300</weaponMoneyRange>
+    <apparelTags>
+      <li>Civil</li>
+      <li>ClassicalArmor</li>
+    </apparelTags>
+    <apparelMoneyRange>0~400</apparelMoneyRange>
+  </PawnKindDef>
+
+  <!-- Industrial: a bolt-action rifle (the budget prices out the revolver), a flak vest and a helmet. -->
+  <PawnKindDef>
+    <defName>Raider_Rifleman</defName>
+    <label>rifleman</label>
+    <race>Human</race>
+    <era>Industrial</era>
+    <backstoryCategories>
+      <li>Tribal</li>
+    </backstoryCategories>
+    <combatPower>100</combatPower>
+    <isFighter>true</isFighter>
+    <disallowedTraits>
+      <li>Brawler</li>
+    </disallowedTraits>
+    <weaponTags>
+      <li>IndustrialRangedWeapon</li>
+    </weaponTags>
+    <weaponMoneyRange>200~300</weaponMoneyRange>
+    <apparelTags>
+      <li>Civil</li>
+      <li>Soldier</li>
+    </apparelTags>
+    <apparelMoneyRange>0~400</apparelMoneyRange>
+  </PawnKindDef>
+
+</Defs>

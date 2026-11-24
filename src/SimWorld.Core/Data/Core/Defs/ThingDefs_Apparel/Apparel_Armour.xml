@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Body armour by era (era-arc finding 5: eras buy strength, not bodies). Its own file, per CLAUDE.md; it
+    inherits Apparel_Basic.xml's BaseApparel and changes nothing there.
+
+    Hide (Agrarian, Tanning), mail (Classical, StandingArmies), plate (Medieval, Knighthood); the flak vest and
+    the simple helmet already in Apparel_Basic.xml become makeable too (Recipes_Armoury.xml). Plate armour is
+    RimWorld's (Apparel_PlateArmor, Smithing); hide coat and mail shirt are SimWorld's own, RimWorld having no
+    armour between its tribal wear and plate. Every armour value here is UNSOURCED (plate's is recalled as
+    "about two thirds against sharp" and set there), ordered so each era's coat outscores the last by the score
+    JobGiver_OptimizeApparel puts it on with; ArmouryTests pins the order, not the values.
+
+    Layer: all three are worn on the Middle layer, under any coat. RimWorld's plate takes the Shell layer as well;
+    here it does not, so a citizen in armour still keeps a parka on in the cold (the exposure lane's concern,
+    recorded in the report). A tribal robe, also Middle, is the garment armour replaces.
+
+    Tags are the era raiders' (PawnKinds_EraRaiders.xml), never Tribal/Civil/Soldier, so no existing kind's
+    generation draws them and every founding band dresses exactly as before. MarketValue unsourced, ordered.
+  -->
+
+  <ThingDef ParentName="BaseApparel">
+    <defName>Apparel_HideArmor</defName>
+    <researchPrerequisites>
+      <li>Tanning</li>
+    </researchPrerequisites>
+    <label>hide coat</label>
+    <description>Layers of hardened, tanned hide, laced over the chest. Turns a glancing blade and a spent arrow.</description>
+    <techLevel>Neolithic</techLevel>
+    <statBases>
+      <MarketValue>40</MarketValue>
+      <ArmorRating_Sharp>0.18</ArmorRating_Sharp>
+      <ArmorRating_Blunt>0.1</ArmorRating_Blunt>
+      <Insulation_Cold>6</Insulation_Cold>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>Torso</li>
+      </bodyPartGroups>
+      <layers>
+        <li>Middle</li>
+      </layers>
+      <tags>
+        <li>BronzeArmor</li>
+      </tags>
+    </apparel>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseApparel">
+    <defName>Apparel_ChainShirt</defName>
+    <researchPrerequisites>
+      <li>StandingArmies</li>
+    </researchPrerequisites>
+    <label>mail shirt</label>
+    <description>A shirt of thousands of riveted iron rings. Months of a smith's work, and a cut that would have opened a man skids off it.</description>
+    <techLevel>Medieval</techLevel>
+    <stuffCategories>
+      <li>Metallic</li>
+    </stuffCategories>
+    <statBases>
+      <MarketValue>90</MarketValue>
+      <ArmorRating_Sharp>0.38</ArmorRating_Sharp>
+      <ArmorRating_Blunt>0.12</ArmorRating_Blunt>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>Torso</li>
+        <li>Arms</li>
+      </bodyPartGroups>
+      <layers>
+        <li>Middle</li>
+      </layers>
+      <tags>
+        <li>ClassicalArmor</li>
+      </tags>
+    </apparel>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseApparel">
+    <defName>Apparel_PlateArmor</defName>
+    <researchPrerequisites>
+      <li>Knighthood</li>
+    </researchPrerequisites>
+    <label>plate armor</label>
+    <description>Shaped steel plates over the whole body. Its wearer walks through arrows; only a bolt, a ball or a heavy blow reaches them.</description>
+    <techLevel>Medieval</techLevel>
+    <stuffCategories>
+      <li>Metallic</li>
+    </stuffCategories>
+    <statBases>
+      <MarketValue>180</MarketValue>
+      <ArmorRating_Sharp>0.62</ArmorRating_Sharp>
+      <ArmorRating_Blunt>0.25</ArmorRating_Blunt>
+      <ArmorRating_Heat>0.1</ArmorRating_Heat>
+    </statBases>
+    <apparel>
+      <bodyPartGroups>
+        <li>Torso</li>
+        <li>Arms</li>
+        <li>Legs</li>
+      </bodyPartGroups>
+      <layers>
+        <li>Middle</li>
+      </layers>
+      <tags>
+        <li>MedievalArmor</li>
+      </tags>
+    </apparel>
+  </ThingDef>
+
+</Defs>

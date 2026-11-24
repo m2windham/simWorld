@@ -1145,3 +1145,102 @@ the gate produces that delay is not shown: it read shut at every sample in both
 runs, but samples half a day apart cannot see it flicker. The heat itself is
 untouched, so the pass may be a narrow margin. Heat refuge in the first week
 belongs to shelter and climate. The test is unchanged.
+
+## 12. Era strength (2026-11-24)
+
+Added by the `era-strength` lane (branch `era-strength`). Finding 5 said
+defence scales with neither era nor population. The era threat multiplier was
+already dropped at `868d0a5`. This section makes eras buy strength, not bodies.
+
+### 12.1 What was built
+
+- **Rivals advance.** `FactionAdvancement` runs a world era clock from each
+  era's `intendedYears` (Bronze at day 300, Classical 540, Medieval 840,
+  Industrial 1200). A non-player faction's tech cap is the higher of its def's
+  tech level and the world era's. Its raid roster keeps only the kinds of the
+  latest tier it has reached (`PawnKindDef.era`). The points formula is
+  unchanged.
+- **Raider tiers.** `PawnKinds_EraRaiders.xml`: Spearman and Bowman (Bronze),
+  Legionary and Longbowman (Classical), Man-at-arms and Crossbowman
+  (Medieval), Rifleman (Industrial). Each tier has a higher combatPower and
+  wears that era's armour, so the same points buy fewer, better-armed raiders.
+- **Citizens craft and carry era arms.** New weapons, each gated by research
+  and made at the smithy: recurve bow, great bow, crossbow, musket, bolt-action
+  rifle. The short bow, revolver and assault rifle are now craftable too.
+  New armour: hide coat (tailor), chain shirt, steel plate. The simple helmet
+  and flak vest are now craftable. `Armoury` plans the best ranged bill and the
+  best armour per slot whose ingredients exist. Missile weapons are ranked by
+  damage per second. Pawns trade up through the opportunistic weapon giver and
+  the apparel optimizer.
+- **Banking guard (`dde1ffd`).** The settlement no longer banks a weapon or
+  apparel that a standing bill makes.
+
+### 12.2 Measured
+
+Ten-year arcs with threats on, 600 days. `before` is `f8261fd`. `after` is
+`dde1ffd`. Seed 40/201 is identical between `d6d9d25` and `dde1ffd`.
+
+| seed | run | era day 600 | pop day 600 | deaths | raid deaths |
+| --- | --- | --- | --- | --- | --- |
+| 40/201 | before | Medieval | 30 | 50 | 21 |
+| 40/201 | after | Medieval | 33 | 42 | 14 |
+| 40/202 | before | Medieval | 30 | 39 | 24 |
+| 40/202 | after | Medieval | 37 | 43 | 19 |
+| 20/99 | before | Classical | 15 | 30 | 15 |
+| 20/99 | after | Classical | 29 | 34 | 12 |
+| 20/99 | after, no armoury bills | Classical | 23 | 25 | 13 |
+
+Raid sizes from the raid probe (`RaidProbe`, same seeds, after = `d6d9d25`):
+
+| seed | run | days 300 to 540: raids, mean squad, max, mean points |
+| --- | --- | --- |
+| 40/201 | before | 17, 12.9, 20, 549 |
+| 40/201 | after | 16, 8.1, 10, 476 |
+| 20/99 | before | 18, 6.4, 10, 277 |
+| 20/99 | after | 19, 6.1, 8, 364 |
+
+From day 300 the raiders are Bronze tier: spearmen and bowmen with recurve
+bows and hide coats. At similar points the 40/201 squads are about a third
+smaller. The 60-day storyteller bench (40/201) is unchanged, as expected,
+since no tier arrives before day 300.
+
+One run per variant. The deaths and population differences are within
+the spread these arcs show between runs. They are not evidence that defence
+now holds.
+
+### 12.3 The citizen side does not arm in 40/201
+
+In 20/99 four to five citizens wore hide coats by the end. In 40/201 nobody did,
+and every citizen kept the founding short bow or revolver all ten years. A
+diagnostic probe printed every outfitting bill every 15 days:
+
+- The bills exist and want work: `Make_Apparel_HideArmor` target 38, have 0,
+  `ShouldDoNow` true. `Make_Bow_Recurve` target 20 from day 150.
+- The ingredients exist: 360 leather on the map on day 120, 497 on day 180.
+- Every citizen may do the bill, and the recipe is available.
+- **Ingredients within 12 cells of the bench: 0**, every sample. This holds
+  for the tailor table at (125, 110) and the smithy at (127, 102). The same is
+  true of the shirt and knife bills from before this lane. Nothing is ever
+  crafted in this settlement.
+
+`WorkGiver_DoBill.IngredientSearchRadius` is 12 by design. The driver does not
+fetch ingredients. Its remarks leave a "deliver ingredients to a bill" driver
+as an open seam. Storage is the granary, and the port has no storage priority
+to pull stock to a stockpile by the bench. So a settlement arms itself only
+when its benches happen to stand near its stock, as in 20/99. `Armoury` counts
+ingredients anywhere on the map, so it plans bills that can never run.
+
+The banking guard was written for the other suspect, crafted gear banked
+before anyone picked it up. It is correct, with a test and a mutation proof
+both ways, but it changes nothing in 40/201.
+
+### 12.4 Not done
+
+- Ingredient delivery to a bench (the crafting seam above). Until it exists, a
+  kept-up town cannot be shown to hold better than one that did not keep up.
+- The unwatched raid resolver still prices defenders by kind, not by gear.
+- Founders still carry revolvers, because the player faction's def is
+  Industrial. This is unchanged.
+- For the exposure lane: armour sits on the Middle layer and replaces the
+  tribal robe. The flak vest is Shell and replaces a parka. The optimizer
+  ignores insulation.

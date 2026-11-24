@@ -29,6 +29,11 @@
     <category>Item</category>
     <thingClass>SimWorld.Things.ThingWithComps</thingClass>
     <techLevel>Neolithic</techLevel>
+    <!-- The bronze and classical raiders' weapon (PawnKinds_EraRaiders.xml). -->
+    <weaponTags>
+      <li>BronzeMeleeWeapon</li>
+      <li>ClassicalMeleeWeapon</li>
+    </weaponTags>
     <statBases><MarketValue>70</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
     <stuffCategories>
       <li>Metallic</li>
@@ -61,6 +66,10 @@
     <category>Item</category>
     <thingClass>SimWorld.Things.ThingWithComps</thingClass>
     <techLevel>Medieval</techLevel>
+    <!-- The medieval raider's weapon (PawnKinds_EraRaiders.xml). -->
+    <weaponTags>
+      <li>MedievalMeleeWeapon</li>
+    </weaponTags>
     <statBases><MarketValue>120</MarketValue><DeteriorationRate>2</DeteriorationRate></statBases>
     <stuffCategories>
       <li>Metallic</li>

@@ -13,8 +13,9 @@ namespace SimWorld.Pawns.Generation
     /// <see cref="ThingDef.weaponTags"/> intersects <see cref="PawnKindDef.weaponTags"/> and whose
     /// <see cref="Crafting.ThingDef.BaseMarketValue"/> falls in <see cref="PawnKindDef.weaponMoneyRange"/>;
     /// when the pawn has a <see cref="Pawn.faction"/>, candidates are further capped to
-    /// <c>ThingDef.techLevel &lt;= faction.def.techLevel</c> — RimWorld's own rule, and the mechanism that
-    /// keeps a neolithic raiding faction from ever handing out an assault rifle. A kind with no
+    /// <c>ThingDef.techLevel &lt;= </c><see cref="Factions.FactionAdvancement.TechLevelOf"/> — RimWorld's own rule
+    /// (its ceiling is <c>faction.def.techLevel</c>), and the mechanism that keeps a neolithic raiding faction from
+    /// ever handing out an assault rifle. Here a rival's ceiling rises with the world's era, never below its def's. A kind with no
     /// <see cref="PawnKindDef.weaponTags"/> at all is never armed; a kind that can't afford anything in its
     /// budget (or whose tags match nothing at its faction's tech level) simply goes unarmed too, rather than
     /// erroring — matching RimWorld's own "no candidates, no weapon" behaviour.
@@ -30,7 +31,8 @@ namespace SimWorld.Pawns.Generation
             if (kind?.weaponTags == null || kind.weaponTags.Count == 0) return;
 
             // No faction on the request: no tech ceiling (a directly-generated pawn isn't anyone's raider).
-            TechLevel? maxTech = request.Faction?.def.techLevel;
+            // A rival's ceiling rises with the world's era (Factions.FactionAdvancement); the player's is its def's.
+            TechLevel? maxTech = request.Faction == null ? (TechLevel?)null : Factions.FactionAdvancement.TechLevelOf(request.Faction);
 
             List<ThingDef> candidates = DefDatabase<ThingDef>.AllDefsListForReading
                 .Where(td => td.IsWeapon
