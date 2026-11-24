@@ -584,7 +584,15 @@ namespace SimWorld.World
             {
                 if (citizens[i].Spawned && citizens[i].Map == map) return citizens[i].Position;
             }
+            return LargestOpenGround(map);
+        }
 
+        /// <summary>A cell of the largest piece of open ground on <paramref name="map"/> (standable cells joined
+        /// edge to edge), where the first of a band is stood; null on a map with no standable cell. Public so
+        /// wildlife born with the map is put where the band will be able to walk to it.</summary>
+        public static IntVec3? LargestOpenGround(Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
             int sizeX = map.Size.x;
             var seen = new bool[sizeX * map.Size.z];
             var queue = new Queue<IntVec3>();

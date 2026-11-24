@@ -229,7 +229,7 @@ namespace SimWorld.Pawns
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (kind == null) throw new ArgumentNullException(nameof(kind));
 
-            if (!TryFindSpawnCell(map, seed, out IntVec3 cell)) return null;
+            if (!TryFindSpawnCell(map, seed, SpawnAnchor(map), out IntVec3 cell)) return null;
 
             Pawn animal;
             Rand.PushState(seed);
@@ -248,23 +248,41 @@ namespace SimWorld.Pawns
 
         /// <summary>Open, unroofed, standable ground: where an animal can actually be. Unroofed because
         /// wildlife belongs outdoors and because a cave or a settlement's own rooms are not where a herd
-        /// wanders in — the same condition <c>MapGen.GenStep_Scatterers</c> places plants under.</summary>
-        private static bool CanSpawnAt(Map.Map map, IntVec3 cell)
+        /// wanders in — the same condition <c>MapGen.GenStep_Scatterers</c> places plants under.
+        /// <para/>And ground the settlement can walk to. RimWorld walks its wildlife in from a map-edge cell that
+        /// can reach the colony (<c>RCellFinder.TryFindRandomPawnEntryCell</c>), so a herd is never born
+        /// walled into a pocket of mountain nobody can get at (recalled, not checked against the source). Without
+        /// it, on a hilly start five of seven animals stood where no hunter could reach them, and the second
+        /// playtest's hunter's mandate found nothing to hunt. This port's colony is not stood at a cell chosen to
+        /// reach the map edge but on its largest piece of open ground (<see cref="Settlement.LargestOpenGround"/>),
+        /// so the anchor is where people already stand, or before any arrive (map generation) that ground.</summary>
+        private static bool CanSpawnAt(Map.Map map, IntVec3 cell, IntVec3? anchor)
         {
             if (map.roofGrid.Roofed(cell)) return false;
             if (map.edificeGrid[cell] != null) return false;
             if (!GenGrid.Standable(cell, map)) return false;
-            return !map.terrainGrid.TerrainAt(cell).IsWater;
+            if (map.terrainGrid.TerrainAt(cell).IsWater) return false;
+            return anchor == null || map.reachability.CanReachCells(anchor.Value, cell);
         }
 
-        private static bool TryFindSpawnCell(Map.Map map, int seed, out IntVec3 cell)
+        private static IntVec3? SpawnAnchor(Map.Map map)
+        {
+            IReadOnlyList<Pawn> pawns = map.mapPawns.AllPawnsSpawned;
+            for (int i = 0; i < pawns.Count; i++)
+            {
+                if (pawns[i].faction != null && pawns[i].RaceProps.Humanlike && !pawns[i].Dead) return pawns[i].Position;
+            }
+            return Settlement.LargestOpenGround(map);
+        }
+
+        private static bool TryFindSpawnCell(Map.Map map, int seed, IntVec3? anchor, out IntVec3 cell)
         {
             for (int attempt = 1; attempt <= MaxCellTriesPerSpawn; attempt++)
             {
                 int x = RandomStream.RangeSeeded(0, map.Size.x, SeedFor(seed, attempt, CellPurposeBase));
                 int z = RandomStream.RangeSeeded(0, map.Size.z, SeedFor(seed, attempt, CellPurposeBase + 1));
                 var candidate = new IntVec3(x, 0, z);
-                if (!CanSpawnAt(map, candidate)) continue;
+                if (!CanSpawnAt(map, candidate, anchor)) continue;
                 cell = candidate;
                 return true;
             }
