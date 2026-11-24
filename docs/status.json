@@ -1228,7 +1228,7 @@
       "id": "director",
       "n": 11,
       "rimworld": "Storyteller / Threat Director",
-      "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth and population instead of one colony, by RimWorld's own formula. An era multiplier (EraDef.threatPointsFactor, 1.0 to 3.4) sat on top until 2026-11 and was removed: neither raider gear (capped by the raiding faction's tech) nor citizens' weapons change with the era, so it bought head count of unchanged strength, and with adaptation recovering on RimWorld's schedule the arc became a boom and bust ending in a raid as large as the town. On 40/201 threats-on (2c74673) a Medieval raid of 24 against 22 able citizens (992 points, 1.9 of them era) downed all 25 and 21 bled out; with the factor at 1 the run ends day 600 at 28 people. Era pressure is to return as strength (era-capped raider gear, real era weapons for citizens; docs/research/era-arc.md finding 5), not head count. Deaths are recorded on two axes rather than one: by cause, as RimWorld does, and by source — the incident that put the killer in the world. The second axis is a SimWorld addition and exists because a civilization-scale game cannot measure a threat by differencing two runs: ablating anything that spawns onto a live map diverges the whole world from that tick, and the noise in total deaths is larger than the cost being measured.",
+      "translation": "Translated: a chronicle-style narrator (name open — Scribe / Historian / The Chronicle) targeting the player's civilization. Threat points scale with civilization wealth and population instead of one colony, by RimWorld's own formula. An era multiplier (EraDef.threatPointsFactor, 1.0 to 3.4) sat on top until 2026-11 and was removed: neither raider gear (capped by the raiding faction's tech) nor citizens' weapons change with the era, so it bought head count of unchanged strength, and with adaptation recovering on RimWorld's schedule the arc became a boom and bust ending in a raid as large as the town. On 40/201 threats-on (2c74673) a Medieval raid of 24 against 22 able citizens (992 points, 1.9 of them era) downed all 25 and 21 bled out; with the factor at 1 the run ends day 600 at 28 people. Era pressure returns as strength, not head count (era-strength, 2026-11-23; docs/research/era-arc.md section 12): rival civilizations advance on the world's own clock, reaching each era when a nominal settlement would (EraDef.intendedYears, the pacing intent), independent of the player's research (Factions.FactionAdvancement). A rival's tech ceiling rises with its era and its raiding roster narrows to the kinds of that era (PawnKindDef.era: spearman and bowman, legionary and longbowman, man-at-arms and crossbowman, rifleman), whose combatPower rises with their gear, so RimWorld's unchanged points buy fewer, better-armed raiders. A settlement that keeps up meets raiders of its own age or older; one that falls behind meets them ahead of it. Deaths are recorded on two axes rather than one: by cause, as RimWorld does, and by source — the incident that put the killer in the world. The second axis is a SimWorld addition and exists because a civilization-scale game cannot measure a threat by differencing two runs: ablating anything that spawns onto a live map diverges the whole world from that tick, and the noise in total deaths is larger than the cost being measured.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Director",
       "status": "verified",
@@ -1277,6 +1277,11 @@
         {
           "id": "director.raids.unwatched",
           "label": "Measured before it was fixed: a raid on an unwatched settlement generated twelve raiders, spawned none, changed no population and no stores, and still wrote 'RaidEnemy fired' to the chronicle. Target selection is deliberately left alone — biasing raids toward the watched settlement would make the bug rarer rather than gone, and the tiering exists so unwatched settlements stay real",
+          "done": true
+        },
+        {
+          "id": "director.raids.erastrength",
+          "label": "BUILT 2026-11-23 (branch era-strength). Rival civilizations advance on the world's clock (Factions/FactionAdvancement.cs, EraDef.intendedYears): a rival's tech ceiling rises with its era and its raiding roster narrows to the latest era's kinds (PawnKinds_EraRaiders.xml, PawnKindDef.era), whose combatPower rises with their gear, so the same points buy fewer, better-armed raiders (Factions/FactionAdvancementTests.cs). The unwatched resolver still prices defenders by kind, not gear.",
           "done": true
         },
         {
@@ -1429,7 +1434,7 @@
       "id": "crafting",
       "n": 13,
       "rimworld": "Crafting & Production",
-      "translation": "Proposed: bills unchanged; guilds and industries act as bill queues at scale. Material ladder (crafting.materialladder): RimWorld mines finished steel and its smelter only reclaims slag and old gear; here a vein yields ore and the era's furnace makes the metal (copper, bronze, iron, steel), because the arc's ages are told by what a settlement can smelt. The settlement is the player: it raises the furnace, queues the smelting and arms its people from the smithy's demand alone, so nothing is smelted that no bill will take, and a citizen trades up to a better blade (a bow only for forged metal, and only by one who fights better than shoots).",
+      "translation": "Proposed: bills unchanged; guilds and industries act as bill queues at scale. Material ladder (crafting.materialladder): RimWorld mines finished steel and its smelter only reclaims slag and old gear; here a vein yields ore and the era's furnace makes the metal (copper, bronze, iron, steel), because the arc's ages are told by what a settlement can smelt. The settlement is the player: it raises the furnace, queues the smelting and arms its people from the smithy's demand alone, so nothing is smelted that no bill will take, and a citizen trades up to a better blade (a bow only for forged metal, and only by one who fights better than shoots). Armoury (era-strength): RimWorld's player adds the weapon and armour bills research unlocks and hands the gear out; here each era's research makes something a defender carries (short, recurve and great bow, crossbow and musket, revolver, rifle and assault rifle; hide coat, mail, plate and flak; the helmet) and Crafting.Armoury queues the best one within reach, for the citizens it would improve, so a settlement that researched and smelted carries the arms of its age.",
       "translationState": "proposed",
       "module": "src/SimWorld.Core/Crafting",
       "status": "verified",
@@ -1503,6 +1508,11 @@
         {
           "id": "crafting.billcreators",
           "label": "CLOSED, re-verified 2026-11-21. Cooking, smithing and tailoring each have a bill-creator now. Cooking: Crafting/CookingInitiative.cs queues its bills and places FueledStove's blueprint, as before. Smithing and tailoring: Crafting/OutfittingInitiative.cs, ticked from Map/Map.cs:226, puts a bill on every built bench for each available apparel or weapon recipe, sized to the citizens who lack its product (BillStack.AddBill; Crafting/OutfittingInitiativeTests.cs). The benches it needs are raised by Building/SettlementWorkshops.cs - see crafting.stonework.gaps.",
+          "done": true
+        },
+        {
+          "id": "crafting.armoury",
+          "label": "BUILT 2026-11-23 (branch era-strength). Every era's research makes a weapon or armour a citizen carries: Weapons_Bronze/Classical/Medieval/Industrial.xml (Bow_Recurve, Bow_Great, Crossbow, Gun_Musket, Gun_BoltActionRifle), Apparel_Armour.xml (Apparel_HideArmor, Apparel_ChainShirt, Apparel_PlateArmor), Recipes_Armoury.xml (bills for those plus Bow_Short, the revolver, assault rifle, simple helmet and flak vest). Crafting/Armoury.cs ranks ranged weapons by damage per second and armour by JobGiver_OptimizeApparel's own score; OutfittingInitiative queues the best ranged recipe and the best armour of each slot whose materials are in reach, sized to the citizens it would improve, and a citizen trades a bow for a better one (Crafting/ArmouryTests.cs).",
           "done": true
         },
         {
