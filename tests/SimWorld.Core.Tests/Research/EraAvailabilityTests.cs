@@ -65,7 +65,8 @@ namespace SimWorld.Tests.Research
             ZoneView pile = MapViewSnapshot.CaptureLevers(map).Zones.Single(z => z.Kind == ZoneKind.Stockpile && z.Cells.Contains(cells[0]));
             // The seam reads the filter back whole; the host's list is that, less what the era cannot have.
             Assert.Contains(pile.Allowed, o => o.DefName == "Bronze");
-            var listed = new HashSet<string>(pile.Allowed.Where(o => EraAvailability.IsAvailableInCurrentEra(o.DefName)).Select(o => o.DefName));
+            // Through the view's own door (EraView), the way the host asks, by defName.
+            var listed = new HashSet<string>(pile.Allowed.Where(o => EraView.IsAvailableInCurrentEra(o.DefName)).Select(o => o.DefName));
 
             Assert.DoesNotContain("Bronze", listed);
             Assert.DoesNotContain("Iron", listed);
@@ -90,6 +91,18 @@ namespace SimWorld.Tests.Research
             }
             Assert.True(EraAvailability.WorkingEra()!.order >= bronzeEra.order);
             Assert.True(EraAvailability.IsAvailableInCurrentEra(bronze));
+            Assert.True(EraView.IsAvailableInCurrentEra("Bronze"));
+        }
+
+        [Fact]
+        public void The_view_door_shows_what_it_cannot_name()
+        {
+            OpenedSettlement("era-door");
+            Assert.False(EraView.IsAvailableInCurrentEra("Bronze"));
+            Assert.True(EraView.IsAvailableInCurrentEra("WoodLog"));
+            Assert.True(EraView.IsAvailableInCurrentEra("NoSuchThing"));
+            Assert.True(EraView.IsAvailableInCurrentEra(null));
+            Assert.True(EraView.IsAvailableInCurrentEra(""));
         }
     }
 }
