@@ -26,6 +26,24 @@ namespace SimWorld.AI
         /// call for — this port's own flat simplification (see this class's own doc).</summary>
         public const int MedicinePerTend = 1;
 
+        /// <summary>Medicine experience for tending a humanlike patient, and an animal (RimWorld:
+        /// <c>Toils_Tend.FinalizeTend</c>, 500 and 175 as recalled from the decompile, not checked from here).
+        /// Without it a doctor never got better at doctoring, and a settlement that hands its tending to its
+        /// healers (<see cref="HealerUtility"/>) could not grow them.</summary>
+        public const float TendXpHumanlike = 500f;
+
+        /// <inheritdoc cref="TendXpHumanlike"/>
+        public const float TendXpAnimal = 175f;
+
+        /// <summary>The share of <see cref="TendXpHumanlike"/> a tend without medicine teaches. RimWorld scales tend
+        /// experience by the medicine used and gives less with none; its exact factors were not sourced here, so
+        /// this is the port's own half, pinned by a test only as "less than with medicine".</summary>
+        public const float NoMedicineXpFactor = 0.5f;
+
+        /// <summary>The Medicine experience one landed tend of <paramref name="patient"/> teaches.</summary>
+        public static float TendXp(Pawn patient, bool withMedicine) =>
+            (patient.RaceProps.Humanlike ? TendXpHumanlike : TendXpAnimal) * (withMedicine ? 1f : NoMedicineXpFactor);
+
         /// <summary>The medicine in hand, off the map, between pickup and the tend that spends it — null once
         /// spent, or when this job carries none at all. Mirrors <see cref="JobDriver_FoodDeliver"/>'s own
         /// <c>carried</c> field for the same reason: something has to remember it long enough to give it back
@@ -100,7 +118,11 @@ namespace SimWorld.AI
                 if (!(job.GetTarget(TargetIndex.A).Thing is Pawn patient) || patient.Destroyed || !patient.Spawned || patient.Dead) return;
                 Thing? medicine = carriedMedicine;
                 carriedMedicine = null;
-                TendUtility.DoTendWithMedicine(pawn, patient, medicine);
+                bool withMedicine = medicine != null;
+                if (TendUtility.DoTendWithMedicine(pawn, patient, medicine).Count > 0)
+                {
+                    pawn.skills?.Learn(Work.SkillDefOf.Medicine, TendXp(patient, withMedicine));
+                }
             });
         }
     }
