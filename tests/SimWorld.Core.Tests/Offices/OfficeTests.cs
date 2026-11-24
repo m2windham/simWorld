@@ -413,9 +413,9 @@ namespace SimWorld.Tests.Offices
             steward.needs.mood!.thoughts.situational.Notify_SituationalThoughtsDirty();
             float withOffice = steward.needs.mood.thoughts.TotalMoodOffset();
 
-            // Unseated by the god's own population-wide work policy, which clears every standing role. A
-            // situational thought is never granted or revoked, so this is the whole mechanism.
-            WorkPolicyUtility.ApplyRoleToPopulation(town.Citizens, null);
+            // Unseated by having the role taken off them (a population-wide work policy no longer reaches a seat
+            // holder). A situational thought is never granted or revoked, so this is the whole mechanism.
+            steward.workSettings.SetRole(null);
             steward.needs.mood.thoughts.situational.Notify_SituationalThoughtsDirty();
             float withoutOffice = steward.needs.mood.thoughts.TotalMoodOffset();
 
@@ -431,13 +431,12 @@ namespace SimWorld.Tests.Offices
             Pawn steward = Steward(town);
 
             // The god sweeps the whole settlement onto a work role. Pawn_WorkSettings.Role is one field, so
-            // that writes over the steward's own role and the stewardship is momentarily held by nobody.
+            // writing it over the steward's own role would empty the seat and the next sweep would re-seat them
+            // with a fresh accession; the policy passes over the seat holder instead.
             RoleDef farmer = DefDatabase<RoleDef>.GetNamed("Farmer");
             WorkPolicyUtility.ApplyRoleToPopulation(town.Citizens, farmer);
-            Assert.Null(OfficeManager.HolderIn(OfficeDefOf.Steward, town));
+            Assert.Same(steward, OfficeManager.HolderIn(OfficeDefOf.Steward, town));
 
-            // The next sweep corrects it, and re-seats the incumbent rather than electing afresh: an office's
-            // role is reserved for its office, self-healing rather than guarded.
             OfficeManager.ReconcileWorld(world);
             Assert.Same(steward, Steward(town));
         }
