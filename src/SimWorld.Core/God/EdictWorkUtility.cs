@@ -24,6 +24,49 @@ namespace SimWorld.God
             && (pawn.workSettings == null || !pawn.workSettings.IsExplicitlyNever(workType));
 
         /// <summary>
+        /// An edict in force that applies to <paramref name="pawn"/> names <paramref name="workType"/>. The
+        /// edict is the order to do that work, so a settlement's own gate on it (the hunt's "only while short of
+        /// food", which stands in for RimWorld's player-painted hunt designation) gives way to it.
+        /// </summary>
+        public static bool Demands(Pawn pawn, WorkTypeDef workType)
+        {
+            IReadOnlyList<EdictDef> active = Find.God.ActiveEdicts;
+            for (int e = 0; e < active.Count; e++)
+            {
+                if (active[e].prioritizedWork.Contains(workType) && active[e].Worker.AppliesTo(pawn)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Routine work other than an exclusive edict's is withheld from <paramref name="pawn"/>: an edict in
+        /// force with <see cref="EdictDef.exclusiveWork"/> applies to them and they are an able hand for it —
+        /// they may do one of its work types and at least one of that type's givers would consider them
+        /// (<see cref="WorkGiver.ShouldSkip"/>; a hunter without a ranged weapon is skipped, as in RimWorld).
+        /// Needs, emergencies, direct orders and fighting sit above the routine tier and are untouched.
+        /// </summary>
+        public static bool RoutineWorkWithheld(Pawn pawn)
+        {
+            IReadOnlyList<EdictDef> active = Find.God.ActiveEdicts;
+            for (int e = 0; e < active.Count; e++)
+            {
+                EdictDef edict = active[e];
+                if (!edict.exclusiveWork || !edict.Worker.AppliesTo(pawn)) continue;
+                for (int w = 0; w < edict.prioritizedWork.Count; w++)
+                {
+                    WorkTypeDef workType = edict.prioritizedWork[w];
+                    if (!MayDoEdictWork(pawn, workType)) continue;
+                    IReadOnlyList<WorkGiverDef> givers = workType.WorkGivers;
+                    for (int g = 0; g < givers.Count; g++)
+                    {
+                        if (givers[g].Worker is WorkGiver_Scanner scanner && !scanner.ShouldSkip(pawn) && !scanner.MissingRequiredCapacity(pawn)) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// The work types of <paramref name="edict"/> that no living citizen it applies to may do, in the
         /// edict's own order. Empty when anyone may do each of them, and empty when there are no citizens at
         /// all (before a world exists) — "nobody is allowed" is a claim about people, not about their absence.

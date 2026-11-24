@@ -538,7 +538,9 @@ namespace SimWorld.Tests.God
                     Assert.DoesNotContain(snapshot.Edicts, o => o.Availability == EdictAvailability.Available);
                 }
 
-                EdictOption? next = snapshot.Edicts.FirstOrDefault(o => o.Availability == EdictAvailability.Available);
+                // One that rescinds nothing: a contradictory edict replaces another (EdictDef.Contradicts) and fills no slot.
+                EdictOption? next = snapshot.Edicts.FirstOrDefault(o => o.Availability == EdictAvailability.Available
+                    && !DefDatabase<EdictDef>.GetNamed(o.DefName).exclusiveWork && Find.God.ContradictedBy(DefDatabase<EdictDef>.GetNamed(o.DefName)).Count == 0);
                 if (next == null) break;
 
                 int usedBefore = snapshot.EdictSlotsUsed;

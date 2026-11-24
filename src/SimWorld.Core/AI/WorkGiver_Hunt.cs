@@ -60,6 +60,8 @@ namespace SimWorld.AI
             // The player's standing rule "only hunt what I mark" (DesignationManager.SettlementInitiativeOn);
             // the marked animals are WorkGiver_HunterHunt's either way.
             if (!map.designationManager.SettlementInitiativeOn(Designations.PlayerDesignationDefOf.Hunt)) return true;
+            // The hunter's mandate is the order to hunt: it opens the food gate, as a painted hunt mark would.
+            if (God.EdictWorkUtility.Demands(pawn, def.workType)) return false;
             return !HuntingInitiative.WantsMeat(map);
         }
 

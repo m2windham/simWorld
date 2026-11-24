@@ -184,6 +184,13 @@ namespace SimWorld.God
         {
             if (!CanActivate(def)) return false;
 
+            // Contradictory edicts are mutually exclusive (EdictDef.Contradicts): the newer order stands, and
+            // the chronicle says which one it replaced.
+            foreach (EdictDef contradicted in ContradictedBy(def))
+            {
+                DeactivateInternal(contradicted, "Edict rescinded: " + contradicted.LabelCap + ", contradicted by " + def.LabelCap);
+            }
+
             activeEdicts.Add(def);
             RebuildInForce();
 
@@ -195,6 +202,18 @@ namespace SimWorld.God
             def.Worker.Notify_Activated();
             Find.Storyteller.RecordChronicle("Edict issued: " + def.LabelCap);
             return true;
+        }
+
+        /// <summary>The issued edicts (in force or suspended) that <paramref name="def"/> contradicts, which
+        /// <see cref="Activate"/> would rescind.</summary>
+        public List<EdictDef> ContradictedBy(EdictDef def)
+        {
+            var found = new List<EdictDef>();
+            for (int i = 0; i < activeEdicts.Count; i++)
+            {
+                if (def.Contradicts(activeEdicts[i])) found.Add(activeEdicts[i]);
+            }
+            return found;
         }
 
         /// <summary>Deactivates <paramref name="def"/>; false (no-op) if it was not active. Never touches

@@ -23,6 +23,36 @@ namespace SimWorld.God
         public List<WorkTypeDef> prioritizedWork = new List<WorkTypeDef>();
 
         /// <summary>
+        /// The edict's work is the <i>only</i> routine work for a citizen it applies to who is able to do it
+        /// ("nothing else gets done"), not merely the first thing tried: <see cref="AI.JobGiver_Work"/>'s routine
+        /// tier offers that citizen nothing else while it stands (<see cref="EdictWorkUtility.RoutineWorkWithheld"/>).
+        /// RimWorld's nearest mechanic is a colonist whose only enabled work type is the one forced on them, and
+        /// what stays exempt is what stays exempt there: needs, the emergency tier (firefighting, urgent
+        /// tending), a direct order, and fighting. A citizen who cannot do the work at all (no hunting weapon,
+        /// the work disabled or set to never) is not an able hand and keeps their own routine. Only words that
+        /// say "nothing else" earn it; "before anything else" is <see cref="prioritizedWork"/> alone.
+        /// <para/>Two edicts contradict when either is exclusive and they push different work
+        /// (<see cref="Contradicts"/>): issuing one rescinds the other.
+        /// </summary>
+        public bool exclusiveWork;
+
+        /// <summary>Whether this edict and <paramref name="other"/> cannot both stand: either one claims every able
+        /// hand for its own work and the other directs those hands somewhere else — other work, or, for an edict
+        /// with no work of its own (take up arms: "every hand ... meets the enemy"), out to fight. Two edicts
+        /// that only reorder work never contradict; each is tried in turn.</summary>
+        public bool Contradicts(EdictDef other)
+        {
+            if (other == null || ReferenceEquals(other, this)) return false;
+            if (!exclusiveWork && !other.exclusiveWork) return false;
+            if (prioritizedWork.Count != other.prioritizedWork.Count) return true;
+            for (int i = 0; i < prioritizedWork.Count; i++)
+            {
+                if (!other.prioritizedWork.Contains(prioritizedWork[i])) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Buildable <see cref="Defs.ThingDef"/>s this edict biases citizen-initiated construction toward
         /// (<see cref="Building.SettlementConstructionInitiative"/>, <c>docs/status.json</c>'s
         /// <c>building.initiative</c>) — the same declarative, read-live shape as <see cref="prioritizedWork"/>:

@@ -30,6 +30,8 @@
     <requiredEra>SticksAndStones</requiredEra>
     <obsoleteEra>Agrarian</obsoleteEra>
     <researchFocus>Hunting</researchFocus>
+    <!-- The text says nothing else gets done, so nothing else does: EdictDef.exclusiveWork. -->
+    <exclusiveWork>true</exclusiveWork>
     <prioritizedWork>
       <li>Hunting</li>
     </prioritizedWork>
@@ -42,6 +44,8 @@
     <description>Every field gets turned this season, whatever else waits.</description>
     <requiredEra>Agrarian</requiredEra>
     <researchFocus>Agriculture</researchFocus>
+    <!-- "Whatever else waits": it waits: EdictDef.exclusiveWork. -->
+    <exclusiveWork>true</exclusiveWork>
     <prioritizedWork>
       <li>Growing</li>
     </prioritizedWork>

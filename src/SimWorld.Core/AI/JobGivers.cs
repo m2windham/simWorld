@@ -115,6 +115,9 @@ namespace SimWorld.AI
         private static Job? TryGiveRoutineJob(Pawn pawn)
         {
             if (!CanWork(pawn)) return null;
+            // An exclusive edict's work is the only routine work for its able hands; the edict tier above
+            // already offered it (God.EdictDef.exclusiveWork).
+            if (God.EdictWorkUtility.RoutineWorkWithheld(pawn)) return null;
             return WorkGiverScanUtility.TryGiveJobInGivers(pawn, pawn.workSettings.WorkGiversInOrderNormal);
         }
 

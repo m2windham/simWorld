@@ -62,7 +62,9 @@ namespace SimWorld.Tests.God
         {
             while (god.ActiveEdicts.Count < GodTuning.MaxActiveEdicts)
             {
-                EdictDef? next = AllEdicts.FirstOrDefault(d => god.CanActivate(d));
+                // One that rescinds nothing: a contradictory edict replaces another (EdictDef.Contradicts) and
+                // fills no slot, so taking it would loop here for ever; and an exclusive one leaves room for nothing.
+                EdictDef? next = AllEdicts.FirstOrDefault(d => god.CanActivate(d) && !d.exclusiveWork && god.ContradictedBy(d).Count == 0);
                 if (next == null) break;
                 god.Activate(next);
             }

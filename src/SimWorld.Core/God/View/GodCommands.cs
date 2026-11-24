@@ -102,12 +102,22 @@ namespace SimWorld.God.View
                 return GodCommandResult.Refused(EdictOption.For(def, god).Reason);
             }
 
+            List<EdictDef> contradicted = god.ContradictedBy(def);
             return god.Activate(def)
-                ? GodCommandResult.Done(def.LabelCap + " issued." + StalledNote(def))
+                ? GodCommandResult.Done(def.LabelCap + " issued." + RescindedNote(def, contradicted) + StalledNote(def))
                 // Unreachable while Activate's only refusal is CanActivate, which was just checked. Kept
                 // because "the simulation said no after saying yes" is worth surfacing rather than asserting
                 // away, and a silent false here would be indistinguishable from success to the host.
                 : GodCommandResult.Refused(def.LabelCap + " was refused on issue.");
+        }
+
+        /// <summary>The edicts issuing <paramref name="def"/> rescinded because they contradicted it.</summary>
+        private static string RescindedNote(EdictDef def, List<EdictDef> contradicted)
+        {
+            if (contradicted.Count == 0) return "";
+            var names = new List<string>(contradicted.Count);
+            for (int i = 0; i < contradicted.Count; i++) names.Add(contradicted[i].LabelCap);
+            return " " + string.Join(", ", names) + " rescinded: it contradicts " + def.LabelCap + ".";
         }
 
         /// <summary>Issuing an edict nobody may carry out is allowed — a bad order is still the player's to give
