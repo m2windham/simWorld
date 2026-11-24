@@ -345,7 +345,7 @@ namespace SimWorld.Tests.God
             Game game = NewSoloGame("playtest-labels");
 
             Assert.DoesNotContain(Find.LetterStack.LettersListForReading, l => l.label == "game start dialog");
-            Assert.Contains(Find.LetterStack.LettersListForReading, l => l.label == ScenPart_GameStartDialog.DefaultTitle);
+            Assert.Contains(Find.LetterStack.LettersListForReading, l => l.label == ScenPart_GameStartDialog.LetterTitle);
 
             Faction player = Find.FactionManager.AllFactionsListForReading.First(f => f.def.isPlayer);
             string[] words = player.name.Split(' ');

@@ -1670,7 +1670,7 @@ documented as not the bar to show. Events: Letter.location and ChronicleEntry.lo
 cell, up to 24 affected cells; saved) from the earthquake, raid, manhunter pack, wanderer and death; LetterView.Location,
 ChronicleLine.Location (EventLocationView) and GodViewSnapshot.RecentEvents(count) -> EventMark. Labels: incident
 chronicle lines by IncidentDef label without "the civilization"; no death letter for an animal (no bonds or player
-naming in the port yet); game-start letter titled "The story begins" (ScenPart_GameStartDialog.title); "1 colonist
+naming in the port yet); game-start letter titled "The story begins" (ScenPart_GameStartDialog.LetterTitle); "1 colonist
 idle"; map command results name defs by label and print no coordinates. "Fort union" was the player faction's name,
 drawn from the Industrial bank because the player FactionDef keeps RimWorld's techLevel; the player is now named
 from the Neolithic bank and both words are capitalised (same draw count). Left out: finished-building events, an

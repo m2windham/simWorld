@@ -168,21 +168,16 @@ namespace SimWorld.Scenario
         /// the text in a bare dialog; this port files it as a letter, whose label is the line a player reads in
         /// the stack. Used to be the part def's own label, "game start dialog" — a developer's name for the
         /// mechanism, shown to the player as the title of their story's first page.</summary>
-        public string title = "";
-
-        /// <summary>The letter title when the scenario gives none.</summary>
-        public const string DefaultTitle = "The story begins";
+        public const string LetterTitle = "The story begins";
 
         public string text = "";
 
         public override void PostGameStart(IScenarioContext ctx) =>
-            ctx.LetterStack.ReceiveLetter(
-                string.IsNullOrEmpty(title) ? DefaultTitle : title, text, Letters.LetterDefOf.NeutralEvent);
+            ctx.LetterStack.ReceiveLetter(LetterTitle, text, Letters.LetterDefOf.NeutralEvent);
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(ref title, "title", "");
             Scribe_Values.Look(ref text, "text", "");
         }
     }
