@@ -603,7 +603,10 @@ namespace SimWorld.Building
         /// <summary>
         /// Re-plans a stuff-built site whose stuff is not there to finish it: a bed, door or bench blueprint or
         /// frame (never a wall — <see cref="StoneWallMaterials"/> owns what a wall is made of) that still needs
-        /// more of its chosen stuff than the map holds within the band's reach plus what anyone is carrying.
+        /// more of its chosen stuff than the map holds within the band's reach plus what anyone is carrying, plus
+        /// what the settlement's ledger holds: that is issued to the site (<see cref="Economy.SettlementBuildStock"/>),
+        /// and without it a steel site whose steel was banked went back to wood the pass after it was planned
+        /// (renewal lane 2).
         /// The site is cancelled — a frame gives back all it was given (<see cref="Frame.Cancel"/>) — and
         /// planned again on the same cell, turned the same way, in <see cref="GenStuff.AffordableStuffFor"/>'s
         /// answer. A site whose answer is the stuff it already has is left alone, so nothing is churned.
@@ -618,6 +621,7 @@ namespace SimWorld.Building
             var sites = new List<Thing>(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint));
             sites.AddRange(map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame));
             IntVec3? band = SettlementReach.BandCell(map);
+            World.Settlement? settlement = AI.HuntingInitiative.SettlementFor(map);
 
             int replanned = 0;
             foreach (Thing site in sites)
@@ -642,15 +646,20 @@ namespace SimWorld.Building
                         continue;
                 }
                 if (stuff == null || need <= 0 || !entity.MadeFromStuff || StoneWallMaterials.IsWall(entity)) continue;
-                if (StuffWithinReach(map, stuff, band) >= need) continue;
+                if (StuffWithinReach(map, stuff, band) + (settlement?.StoreCountOf(stuff) ?? 0) >= need) continue;
 
-                ThingDef? replacement = GenStuff.AffordableStuffFor(map, entity);
-                if (replacement == null || ReferenceEquals(replacement, stuff)) continue;
+                // A renewal (a site over a standing building) is not re-planned in a lesser stuff: a bench rebuilt
+                // in wood over a wooden bench is no renewal, and renewal would plan it again in the better stuff the
+                // day after, for ever. It is called off; renewal plans it again once its material is held.
+                bool renewal = GenConstruct.ThingToReplace(site) != null;
+                ThingDef? replacement = renewal ? null : GenStuff.AffordableStuffFor(map, entity);
+                if (!renewal && (replacement == null || ReferenceEquals(replacement, stuff))) continue;
 
                 IntVec3 cell = site.Position;
                 Rot4 rot = site.Rotation;
                 if (site is Frame stalled) stalled.Cancel();
                 else site.Destroy(DestroyMode.Cancel);
+                if (replacement == null) continue;
 
                 ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(entity);
                 if (blueprintDef == null) continue;

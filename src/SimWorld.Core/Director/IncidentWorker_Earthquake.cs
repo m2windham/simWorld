@@ -288,6 +288,14 @@ namespace SimWorld.Director
         /// </summary>
         private static void PlaceRebuildBlueprint(Map.Map map, ThingDef built, ThingDef? stuff, IntVec3 at, Rot4 rot)
         {
+            // A stone wall (a Def of its own, of no stuff) whose stone is no longer to spare goes back up as the wall
+            // the town would raise today, as a new one would: kept in granite once the granite was gone, it waited
+            // for ever (renewal lane 2).
+            if (stuff == null && StoneWallMaterials.IsWall(built) && !StoneWallMaterials.CanAffordOne(map, built))
+            {
+                built = StoneWallMaterials.PreferredWallDef(map);
+                if (built.MadeFromStuff) stuff = Crafting.GenStuff.DefaultStuffFor(built);
+            }
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(built);
             if (blueprintDef == null || !GenConstruct.CanPlaceBlueprintAt(built, at, map, out _, rot)) return;
             var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);

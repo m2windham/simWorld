@@ -110,7 +110,9 @@ namespace SimWorld.God.View
                     int category = CategoryOf(b);
                     if (category < 0) continue;
                     if (b.isHeritage) heritage++;
-                    Tally(counts, category, EraAvailability.EraOf(b.def)?.order ?? 0, now, ReplacementOn(map, b.Position));
+                    // A bench's or wall's form includes its material (StructureRenewal.FormEraOrder): a granite wall is
+                    // a Bronze-age wall and a steel one a Medieval wall. A store's form is its def.
+                    Tally(counts, category, StructureRenewal.FormEraOrder(b), now, ReplacementOn(map, b.Position));
                 }
             }
 
@@ -134,7 +136,7 @@ namespace SimWorld.God.View
         /// <summary>1 storage, 2 workshops, 3 walls, or -1 for anything renewal does not count.</summary>
         private static int CategoryOf(Building.Building b)
         {
-            if (ReferenceEquals(b.def, ConstructionThingDefOf.StorageHut)) return 1;
+            if (StorageForms.IsStorage(b.def)) return 1;
             if (b.GetComp<CompBillGiver>() != null) return 2;
             if (GenConstruct.ReplaceTag(b.def) == "Wall") return 3;
             return -1;

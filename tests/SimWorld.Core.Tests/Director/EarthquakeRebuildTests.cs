@@ -109,6 +109,51 @@ namespace SimWorld.Tests.Director
             });
         }
 
+        /// <summary>A stone wall (a Def of its own) is rebuilt as itself while its stone is to spare, and once it is
+        /// not, as the wall the town would raise today: wood, here, where nothing is known of masonry. Kept as
+        /// granite with the granite gone, it waited for ever (renewal lane 2).</summary>
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void A_fallen_stone_wall_is_rebuilt_as_itself_while_its_stone_lasts_else_as_todays_wall(bool graniteOnMap)
+        {
+            CoreMap map = new CoreMap(30, 30, SimWorld.Map.TerrainDefOf.Soil);
+            ThingDef wall = Def("WallGranite");
+            var ours = new Faction(DefDatabase<FactionDef>.GetNamed("PlayerCivilization"), "Settlers", "F_Settlers");
+            var walls = new List<Thing>();
+            foreach (int z in new[] { 6, 10, 14 })
+            {
+                for (int x = 2; x < 22; x++)
+                {
+                    Thing w = ThingMaker.MakeThing(wall);
+                    w.SetFaction(ours);
+                    walls.Add(GenSpawn.Spawn(w, new IntVec3(x, 0, z), map));
+                }
+            }
+            if (graniteOnMap)
+            {
+                Thing blocks = ThingMaker.MakeThing(Def("BlocksGranite"));
+                blocks.stackCount = 5000;
+                GenSpawn.Spawn(blocks, new IntVec3(25, 0, 25), map);
+            }
+
+            Shake(map, ours);
+
+            int fallen = walls.Count(w => w.Destroyed);
+            Assert.True(fallen > 0);
+            if (graniteOnMap)
+            {
+                Assert.Equal(fallen, BlueprintsFor(map, wall).Count);
+            }
+            else
+            {
+                Assert.Empty(BlueprintsFor(map, wall));
+                List<Blueprint> wooden = BlueprintsFor(map, Def("Wall"));
+                Assert.Equal(fallen, wooden.Count);
+                Assert.All(wooden, b => Assert.Same(Def("WoodLog"), b.stuffToUse));
+            }
+        }
+
         /// <summary>A wooden bed that falls on a map with no wood left but stone blocks on hand is rebuilt in
         /// stone, as a new bed would be placed; while the wood is there it is rebuilt in wood. Before, the
         /// rebuild always asked for the fallen bed's own stuff, and on a wood-poor map (storyteller seed 2024)

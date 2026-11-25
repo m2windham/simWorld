@@ -584,10 +584,20 @@ namespace SimWorld.Crafting
             return false;
         }
 
-        /// <summary>On the map, less what blueprints and frames already placed still wait for.</summary>
+        /// <summary>
+        /// What the settlement holds of <paramref name="stuff"/>, on the map and in its ledger, less what blueprints
+        /// and frames already placed still wait for.
+        /// <para/>
+        /// <b>The ledger counts.</b> Whatever rests in storage is banked into <see cref="World.Settlement.Stores"/>
+        /// (<see cref="Economy.SettlementStockInitiative.BankStoredGoods"/>) unless a site already wants it, so read
+        /// off the map alone every block and bar a mason or smith had made and hauled away was invisible here: the
+        /// arcs' towns held their cut stone and their logs in the ledger with none on the map, and every material
+        /// gate that read this said no (renewal lane 2). A site planned against the ledger's half is supplied from it
+        /// (<see cref="Economy.SettlementBuildStock"/>), as a RimWorld builder fetches from the stockpile.
+        /// </summary>
         internal static int Spare(Map.Map map, ThingDef stuff)
         {
-            int have = OnMap(map, stuff);
+            int have = OnMap(map, stuff) + (HuntingInitiative.SettlementFor(map)?.StoreCountOf(stuff) ?? 0);
             if (have <= 0) return 0;
             IReadOnlyList<Thing> blueprints = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
             for (int i = 0; i < blueprints.Count; i++)

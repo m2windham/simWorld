@@ -43,7 +43,7 @@ namespace SimWorld.Social
             for (int i = 0; i < population.Count; i++)
             {
                 Pawn p = population[i];
-                if (p != null && !p.Dead && p.RaceProps.Humanlike) tmpEligible.Add(p);
+                if (p != null && !p.Dead && p.RaceProps.Humanlike && CanInteractRandomly(p)) tmpEligible.Add(p);
             }
             if (tmpEligible.Count < 2) return;
             tmpEligible.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
@@ -61,6 +61,19 @@ namespace SimWorld.Social
                 }
             }
         }
+
+        /// <summary>
+        /// Whether <paramref name="pawn"/> may start or be picked for a random interaction at all: never as a baby.
+        /// RimWorld keeps babies out of the random sweep in both directions (recalled, not read: Biotech's
+        /// <c>LifeStageDef.canInitiateSocialInteraction</c> is false for the baby stage, and
+        /// <c>InteractionUtility.CanReceiveRandomInteraction</c> refuses a downed pawn, which a baby always is);
+        /// a baby is babbled at and played with, not insulted. This port has no baby interactions yet, so a baby is
+        /// simply left out of the sweep. Before this the playtests' babies carried <c>Insulted</c> at about -9 mood.
+        /// RimWorld's other receive clauses (asleep, downed adults, aggro states) are not ported: the sweep here is
+        /// non-spatial and has none of them (<see cref="RunInterval"/>).
+        /// </summary>
+        public static bool CanInteractRandomly(Pawn pawn) =>
+            pawn.ageTracker?.CurLifeStage?.developmentalStage != DevelopmentalStage.Baby;
 
         /// <summary>Uniformly picks one of the other <c>eligible.Count - 1</c> pawns (excluding
         /// <paramref name="initiatorIndex"/> itself): draws from the <c>Count - 1</c> slots that remain once

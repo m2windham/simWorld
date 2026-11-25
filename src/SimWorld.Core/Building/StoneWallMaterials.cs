@@ -87,7 +87,7 @@ namespace SimWorld.Building
         /// wall, and just itself for everything else. The one hook <see cref="SettlementConstructionInitiative"/>
         /// needs to stop counting a granite wall as a missing wooden one.</summary>
         public static IReadOnlyList<ThingDef> EquivalentsOf(ThingDef def) =>
-            IsWall(def) ? AllWallDefs : new[] { def };
+            IsWall(def) ? AllWallDefs : StorageForms.IsStorage(def) ? StorageForms.All : new[] { def };
 
         /// <summary>
         /// The wall the settlement should raise next on <paramref name="map"/>: the toughest stone it has a
@@ -115,23 +115,24 @@ namespace SimWorld.Building
             return ConstructionThingDefOf.Wall;
         }
 
-        /// <summary>Whether every entry of <paramref name="wall"/>'s cost is on the map in full. Counts loose
-        /// stacks wherever they lie, exactly as <see cref="WorkGiver_ConstructDeliverResources"/> does when it
-        /// goes looking for them.</summary>
-        private static bool CanAffordOne(Map.Map map, ThingDef wall)
+        /// <summary>Whether every entry of <paramref name="wall"/>'s cost is held in full to spare
+        /// (<see cref="MaterialLadder.Spare"/>): on the map, where loose stacks count wherever they lie as
+        /// <see cref="WorkGiver_ConstructDeliverResources"/> finds them, or in the ledger, less what the
+        /// blueprints and frames already standing still need.
+        /// <para/>
+        /// Renewal lane 2: the ledger counts, since cut stone hauled to storage is banked there and supplied back to
+        /// the site that wants it (<c>Economy.SettlementBuildStock</c>); read off the map alone, a town whose masons
+        /// had cut a hundred blocks never raised a stone wall. And the claims count, since a house plans all its
+        /// walls in one pass: with only what was held, the last twenty granite blocks made every wall of a new
+        /// house a granite wall, and all but four of them waited for granite for ever.</summary>
+        internal static bool CanAffordOne(Map.Map map, ThingDef wall)
         {
             List<ThingDefCountClass> cost = wall.CostListAdjusted(null);
             if (cost.Count == 0) return false;
 
             for (int i = 0; i < cost.Count; i++)
             {
-                int have = 0;
-                IReadOnlyList<Thing> stacks = map.listerThings.ThingsOfDef(cost[i].thingDef);
-                for (int s = 0; s < stacks.Count; s++)
-                {
-                    if (stacks[s].Spawned) have += stacks[s].stackCount;
-                }
-                if (have < cost[i].count) return false;
+                if (MaterialLadder.Spare(map, cost[i].thingDef) < cost[i].count) return false;
             }
             return true;
         }
