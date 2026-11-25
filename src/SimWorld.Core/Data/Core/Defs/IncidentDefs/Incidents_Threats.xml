@@ -7,6 +7,14 @@
     class's doc comment for exactly how far it goes without a Map to place the squad on. ManhunterPack has
     its own worker now (IncidentWorker_ManhunterPack); it spends its points on pack size and turns the pack
     among the settlement rather than marching it in from an edge, for the reason that class's doc gives.
+
+    Weights and refire from RimWorld (rimworldwiki.com "Events", event data table, read for playtest-bugs4; not
+    checked against a decompile): RaidEnemy chance 9.0 and no wait between repeats, ManhunterPack chance 2.0 and
+    15 days before it may repeat. They were 1.0 and 0.5 with no wait, so a pack was a third of the big threats
+    rather than RimWorld's fifth, and while no rival can raid yet (a lone tribe early in the arc, before any
+    neighbour is hostile) every big threat was a pack: the third playtest's letter pile was mostly maddened
+    beasts. With the wait, a lone tribe meets a pack at most every 15 days and the rest of its big-threat
+    rolls come up empty, which is what RimWorld's own selection does when nothing in the category can fire.
   -->
 
   <IncidentDef>
@@ -16,7 +24,7 @@
     <category>ThreatBig</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
     <workerClass>SimWorld.Director.IncidentWorker_RaidEnemy</workerClass>
-    <baseChance>1.0</baseChance>
+    <baseChance>9.0</baseChance>
     <minThreatPoints>35</minThreatPoints>
     <pointsScaleable>true</pointsScaleable>
   </IncidentDef>
@@ -28,7 +36,8 @@
     <category>ThreatBig</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
     <workerClass>SimWorld.Director.IncidentWorker_ManhunterPack</workerClass>
-    <baseChance>0.5</baseChance>
+    <baseChance>2.0</baseChance>
+    <minRefireDays>15</minRefireDays>
     <minThreatPoints>35</minThreatPoints>
     <pointsScaleable>true</pointsScaleable>
   </IncidentDef>
