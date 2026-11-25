@@ -125,7 +125,7 @@ namespace SimWorld.Tests.Designations
             Assert.Null(DesignatorUtility.TryDesignateCell(DesignationDefOf.Mine, rock.Position, map));
             Assert.Equal(DesignationSource.Player, settlementMark.source);
             Assert.Single(map.designationManager.AllDesignations);
-            Assert.Equal("already designated", DesignatorUtility.TryDesignateCell(DesignationDefOf.Mine, rock.Position, map));
+            Assert.Equal("already marked", DesignatorUtility.TryDesignateCell(DesignationDefOf.Mine, rock.Position, map));
         }
 
         // ---- CutPlant / HarvestPlant ----
@@ -286,7 +286,7 @@ namespace SimWorld.Tests.Designations
             List<global::SimWorld.Crafting.ThingDefCountClass> cost = wall.def.CostListAdjusted(wall.Stuff);
             Assert.NotEmpty(cost);
 
-            Assert.Contains("mined, not deconstructed", DesignationsRefusal(PlayerDesignationDefOf.Deconstruct, rock, map));
+            Assert.Contains("mined, not taken down", DesignationsRefusal(PlayerDesignationDefOf.Deconstruct, rock, map));
             PlayerMark(map, PlayerDesignationDefOf.Deconstruct, wall);
             Assert.Equal(DesignationJobDefOf.Deconstruct, NextJob(builder)!.def);
 
@@ -312,7 +312,7 @@ namespace SimWorld.Tests.Designations
             for (int x = 25; x < 28; x++) map.zoneManager.AddCell(zone, new IntVec3(x, 0, 25));
             Spawn(map, "WoodLog", 3, 2);
             Thing marked = Spawn(map, "WoodLog", 15, 15);
-            Assert.Contains("cannot be hauled", DesignationsRefusal(PlayerDesignationDefOf.HaulUrgently, Spawn(map, "Wall", 20, 5), map));
+            Assert.Contains("cannot be carried", DesignationsRefusal(PlayerDesignationDefOf.HaulUrgently, Spawn(map, "Wall", 20, 5), map));
 
             PlayerMark(map, PlayerDesignationDefOf.HaulUrgently, marked);
             Job? job = NextJob(hauler);

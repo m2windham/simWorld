@@ -35,7 +35,7 @@
     <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
     <stages>
       <li>
-        <label>kindness honored</label>
+        <label>gentleness honored</label>
         <description>The Hearthway holds gentleness as a virtue, and I have it.</description>
         <baseMoodEffect>3</baseMoodEffect>
       </li>
@@ -71,7 +71,7 @@
     <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
     <stages>
       <li>
-        <label>immodest exposure</label>
+        <label>bare before the forge</label>
         <description>Bare before the forge's judgment. The covenant expects better of me.</description>
         <baseMoodEffect>-4</baseMoodEffect>
       </li>
@@ -83,7 +83,7 @@
     <workerClass>SimWorld.Social.Ideology.ThoughtWorker_UnderPrecept</workerClass>
     <stages>
       <li>
-        <label>bloodlust honored</label>
+        <label>battle-hunger honored</label>
         <description>The covenant does not ask me to temper what I am. It asks me to forge it.</description>
         <baseMoodEffect>3</baseMoodEffect>
       </li>

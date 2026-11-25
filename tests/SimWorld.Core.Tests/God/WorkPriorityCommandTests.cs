@@ -127,6 +127,22 @@ namespace SimWorld.Tests.God
             Assert.Equal(4, p.workSettings.GetPriority(Work("Mining")));
         }
 
+        [Fact]
+        public void A_priority_is_answered_in_words_of_order_not_a_number()
+        {
+            Assert.Equal(WorkPriorityTable.LowestPriority, WorkPriorityTable.PriorityWords.Count);
+            Assert.Equal(new[] { "first", "soon", "later", "last" }, WorkPriorityTable.PriorityWords);
+            Assert.Equal("left alone", WorkPriorityTable.PriorityWord(0));
+
+            CoreWorld world = BareWorld();
+            Pawn p = Citizen(NewSettlement(world, 21, "Town"), "Wordy");
+            GodCommandResult set = GodCommands.SetWorkPriority(p.thingIDNumber, "Mining", 2);
+            Assert.Equal(GodCommandOutcome.Done, set.Outcome);
+            Assert.EndsWith(" soon.", set.Reason);
+            Assert.DoesNotContain("priority", set.Reason);
+            Assert.EndsWith(" soon.", GodCommands.SetWorkPriority(p.thingIDNumber, "Mining", 2).Reason);
+        }
+
         // ---- refusals ----
 
         [Fact]
@@ -139,7 +155,7 @@ namespace SimWorld.Tests.God
             GodCommandResult result = GodCommands.SetWorkPriority(p.thingIDNumber, "Firefighter", 1);
 
             Assert.Equal(GodCommandOutcome.Refused, result.Outcome);
-            Assert.Contains("pyromaniac", result.Reason);
+            Assert.Contains("fire-touched", result.Reason);
             Assert.Equal(0, p.workSettings.GetPriority(Work("Firefighter")));
         }
 

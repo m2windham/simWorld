@@ -81,7 +81,8 @@ namespace SimWorld.Tests.Content
         {
             Assert.True(File.Exists(PlayerTextTerms.ListPath), PlayerTextTerms.ListPath + " is missing.");
             Assert.True(PlayerTextTerms.Terms.Count > 50, "The banned list is nearly empty, so every check here would pass.");
-            foreach (string term in new[] { "cassandra", "aprimay", "muffalo", "manhunter", "colonist", "rimworld", "plasteel" })
+            foreach (string term in new[] { "cassandra", "aprimay", "muffalo", "manhunter", "colonist", "rimworld", "plasteel",
+                "pyromaniac", "low expectations", "break line", "haul urgently", "thick rock roof" })
             {
                 Assert.Contains(term, PlayerTextTerms.Terms);
             }
@@ -100,6 +101,12 @@ namespace SimWorld.Tests.Content
         [InlineData("Cooking a fine meal.", "fine meal")]
         [InlineData("Kind: Tribesperson", "tribesperson")]
         [InlineData("Constr.", "constr.")]
+        [InlineData("27 points above the minor break line (35%)", "break line")]
+        [InlineData("Haul urgently", "haul urgently")]
+        [InlineData("Study Fire (next era)", "(next era)")]
+        [InlineData("Thick rock roof", "thick rock roof")]
+        [InlineData("Low expectations", "low expectations")]
+        [InlineData("traits: pyromaniac, kind", "pyromaniac")]
         public void The_matcher_finds_a_banned_term_in_any_case(string text, string term)
         {
             Assert.Contains(term, PlayerTextTerms.Find(text));
@@ -115,6 +122,10 @@ namespace SimWorld.Tests.Content
         [InlineData("a break in the risk")]
         [InlineData("the home of the area")]
         [InlineData("construction")]
+        [InlineData("clear growth")]
+        [InlineData("a next era, studied")]
+        [InlineData("a roof of thick rock")]
+        [InlineData("a kind and tough woman")]
         public void The_matcher_leaves_identifiers_and_ordinary_words_alone(string text)
         {
             Assert.Empty(PlayerTextTerms.Find(text));

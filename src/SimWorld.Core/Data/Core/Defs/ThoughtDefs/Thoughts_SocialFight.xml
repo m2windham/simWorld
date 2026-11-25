@@ -26,7 +26,7 @@
     <stackLimitForSameOtherPawn>2</stackLimitForSameOtherPawn>
     <stages>
       <li>
-        <label>cathartic fight</label>
+        <label>cleared the air with fists</label>
         <description>We had it out. I feel better for it.</description>
         <baseMoodEffect>4</baseMoodEffect>
         <baseOpinionOffset>5</baseOpinionOffset>
@@ -42,7 +42,7 @@
     <stackLimitForSameOtherPawn>2</stackLimitForSameOtherPawn>
     <stages>
       <li>
-        <label>angering fight</label>
+        <label>a fight that settled nothing</label>
         <description>We came to blows and it settled nothing.</description>
         <baseMoodEffect>-4</baseMoodEffect>
         <baseOpinionOffset>-5</baseOpinionOffset>

@@ -7,7 +7,7 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>ate without table</label>
+        <label>no table to eat at</label>
         <description>I had to eat sitting on the ground.</description>
         <baseMoodEffect>-3</baseMoodEffect>
       </li>
@@ -20,7 +20,7 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>ate raw food</label>
+        <label>ate it raw</label>
         <description>Raw food is disgusting.</description>
         <baseMoodEffect>-7</baseMoodEffect>
       </li>
@@ -49,7 +49,7 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>slept on ground</label>
+        <label>slept on bare earth</label>
         <description>I slept on the cold ground.</description>
         <baseMoodEffect>-4</baseMoodEffect>
       </li>
@@ -62,7 +62,7 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>slept outside</label>
+        <label>slept under the sky</label>
         <description>I slept out in the open.</description>
         <baseMoodEffect>-3</baseMoodEffect>
       </li>
@@ -90,8 +90,8 @@
     <stackLimitForSameOtherPawn>3</stackLimitForSameOtherPawn>
     <stages>
       <li>
-        <label>insulted</label>
-        <description>Someone insulted me.</description>
+        <label>stung by harsh words</label>
+        <description>Someone said something cruel to me, and it stuck.</description>
         <baseMoodEffect>-5</baseMoodEffect>
         <baseOpinionOffset>-8</baseOpinionOffset>
       </li>
@@ -109,7 +109,7 @@
     </nullifyingTraits>
     <stages>
       <li>
-        <label>witnessed ally's death</label>
+        <label>saw a friend fall</label>
         <description>I saw someone I cared about die.</description>
         <baseMoodEffect>-5</baseMoodEffect>
       </li>

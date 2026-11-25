@@ -100,8 +100,8 @@ namespace SimWorld.Conditions
         {
             string text = string.Format(
                 CultureInfo.InvariantCulture,
-                "A drought settles over the civilization. Growth and harvests are down to about {0:0}% of "
-                    + "normal, watched or not, and it looks set to last around {1:0.#} days.",
+                "A drought settles over the land. Growth and harvests are down to about {0:0}% of normal in "
+                    + "every settlement, and it looks set to last around {1:0.#} days.",
                 severity * 100f,
                 durationDays);
 

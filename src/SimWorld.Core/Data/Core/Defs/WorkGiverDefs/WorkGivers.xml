@@ -289,9 +289,9 @@
 
   <WorkGiverDef>
     <defName>PlantsCut</defName>
-    <label>cut plants</label>
-    <verb>Cut</verb>
-    <gerund>cutting</gerund>
+    <label>clear growth</label>
+    <verb>Clear</verb>
+    <gerund>clearing</gerund>
     <workType>PlantCutting</workType>
     <priorityInType>100</priorityInType>
     <!-- Wired to a real scanner (system: work — the PlantCutting work type): clears a plant that is in

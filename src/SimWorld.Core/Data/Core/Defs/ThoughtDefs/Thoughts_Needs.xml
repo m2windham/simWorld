@@ -11,7 +11,7 @@
         <baseMoodEffect>-6</baseMoodEffect>
       </li>
       <li>
-        <label>ravenously hungry</label>
+        <label>famished</label>
         <description>I need to eat now.</description>
         <baseMoodEffect>-12</baseMoodEffect>
       </li>

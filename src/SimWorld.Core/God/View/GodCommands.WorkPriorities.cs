@@ -34,8 +34,9 @@ namespace SimWorld.God.View
             if (priority < 0 || priority > Pawn_WorkSettings.LowestPriority)
             {
                 return GodCommandResult.Refused(
-                    "Priority " + priority.ToString(CultureInfo.InvariantCulture) + " is out of range: use 0 (never) " +
-                    "or 1 to " + Pawn_WorkSettings.LowestPriority.ToString(CultureInfo.InvariantCulture) + ", 1 first.");
+                    "There is no order " + priority.ToString(CultureInfo.InvariantCulture) + ": 0 leaves the work alone, and 1 to "
+                    + Pawn_WorkSettings.LowestPriority.ToString(CultureInfo.InvariantCulture) + " run from "
+                    + WorkPriorityTable.PriorityWord(1) + " to " + WorkPriorityTable.PriorityWord(Pawn_WorkSettings.LowestPriority) + ".");
             }
 
             WorkTypeDef? workType = string.IsNullOrEmpty(workTypeDefName)
@@ -73,13 +74,15 @@ namespace SimWorld.God.View
             if (before == priority && !rankingTurnsOn)
             {
                 return GodCommandResult.NoChange(
-                    pawn.Label + " already has " + work + " at " + priority.ToString(CultureInfo.InvariantCulture) + ".");
+                    priority == 0
+                        ? pawn.Label + " already leaves " + work + " alone."
+                        : pawn.Label + " already does " + work + " " + WorkPriorityTable.PriorityWord(priority) + ".");
             }
 
             return GodCommandResult.Done(
                 priority == 0
                     ? pawn.Label + " will no longer do " + work + "."
-                    : pawn.Label + " now does " + work + " at priority " + priority.ToString(CultureInfo.InvariantCulture) + ".");
+                    : pawn.Label + " now does " + work + " " + WorkPriorityTable.PriorityWord(priority) + ".");
         }
 
         /// <summary>A live citizen of any settlement, by thing id — the population the roster lists.</summary>

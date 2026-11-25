@@ -201,6 +201,13 @@
       "state": "decided",
       "title": "Trade runs on reputation (faction goodwill)",
       "note": "Doug: trade runs on a reputation/trust system. Trust is the existing faction goodwill, not a second number. Only the player's own settlements trade. Tiers from goodwill: at war or hostile, no trade and no caravans; wary (<0) worse prices; neutral (0-74) plain prices; trusted (>=75) better prices and more frequent caravans. Completed trades raise goodwill a little (pooled per day, capped); RimWorld's gift mechanic is ported as GiftToTrader."
+    },
+    {
+      "id": "player-text",
+      "date": "2026-11-24",
+      "state": "decided",
+      "title": "Nothing from RimWorld is player-facing",
+      "note": "Doug: nothing 'rim world' is player facing. Internal defNames, class names, enum members and save keys keep RimWorld's names; every label, description, letter, name and host UI string a player reads is simWorld's own, and must not echo the vocabulary distinctive to RimWorld's systems. Guarded by tests/SimWorld.Core.Tests/Content/player-text-banned.txt, read by the core's and the host's PlayerTextTests. Round 1 renamed proper nouns, round 2 the system vocabulary, round 3 (2026-11-25, player-names3) the presentation: skills renamed and grouped under the host's own headings with keen/devoted for passion, the trait list, the mood reasons, the break line in plain words, the mark verbs, the work grid in words of order (first, soon, later, last), the rock roofs and developer jargon. Saves store defNames, so no rename needs a migration. Record: docs/research/player-text-audit.md."
     }
   ],
   "systems": [

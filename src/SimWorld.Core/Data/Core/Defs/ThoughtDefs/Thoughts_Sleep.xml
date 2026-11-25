@@ -33,7 +33,7 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>slept in barracks</label>
+        <label>slept in a crowded hall</label>
         <description>I slept in a room full of other people. No privacy, and somebody always snores.</description>
         <baseMoodEffect>-4</baseMoodEffect>
       </li>

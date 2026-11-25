@@ -21,18 +21,18 @@
   -->
   <TraitDef>
     <defName>Squeamishness</defName>
-    <label>squeamishness</label>
+    <label>weak stomach</label>
     <commonality>0.4</commonality>
     <disabledWorkTags>Caring</disabledWorkTags>
     <degreeDatas>
       <li>
-        <label>squeamish</label>
+        <label>weak-stomached</label>
         <description>Cannot stand the sight of an open wound, and will not be the one to close it.</description>
         <degree>1</degree>
         <commonality>1</commonality>
       </li>
       <li>
-        <label>faint-hearted</label>
+        <label>blood-shy</label>
         <description>Turns away from blood of any kind — a patient's or a carcass's.</description>
         <degree>2</degree>
         <commonality>0.4</commonality>

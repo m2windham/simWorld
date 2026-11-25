@@ -6,9 +6,9 @@
 
   <JobDef>
     <defName>CutPlant</defName>
-    <label>cut plant</label>
+    <label>clear growth</label>
     <driverClass>SimWorld.AI.JobDriver_PlantWork</driverClass>
-    <reportString>cutting plant.</reportString>
+    <reportString>clearing growth.</reportString>
   </JobDef>
 
 </Defs>

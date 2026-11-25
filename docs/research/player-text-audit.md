@@ -106,3 +106,77 @@ The terms are banned as whole phrases in `player-text-banned.txt`, so "break",
 English (pyromaniac, gourmand, brawler), the "incapable" skill marker in the
 citizen panel's skill list, and job defs with no label, which the host shows as
 their defName spaced out.
+
+## Round 3 (2026-11-25): presentation
+
+A fresh tester (playtest 4, `H:/dev/_builds/playtest4/report.md`) still read whole
+sets as borrowed even where each word was plain: the twelve-skill list with its
+passions, the trait list, the mood reasons, the break line, the mark verbs and the
+numbered work grid. This round reshapes the presentation as well as the words. No
+renamed text is saved: saves store defNames, and the letters and zone labels a save
+does keep are free text that loads either way.
+
+| Where | Old | New |
+| --- | --- | --- |
+| Skills `Shooting` / `Melee` | shooting / melee | marksmanship / close fighting |
+| Skills `Construction` / `Plants` / `Animals` | construction / plants / animals | building / farming / husbandry (the work columns' own names) |
+| Skills `Crafting` / `Artistic` / `Medicine` | crafting / artistic / medicine | handcraft / artistry / healing |
+| Skills `Social` / `Intellectual` | social / intellectual | speech / learning |
+| Skills `Mining` / `Cooking` | mining / cooking | kept: the honest names |
+| Skill `pawnLabel`s | Shooter, Grower, Handler, Crafter, Doctor, Socialite, Professor | Marksman, Farmer, Herder, Maker, Healer, Speaker, Scholar |
+| Host citizen panel | "Skills", twelve rows | "Know-how", four grouped lines: Arms; Land and beasts; Handiwork; Care and wits |
+| Host citizen panel | interested / passionate / incapable | keen / devoted / unable |
+| Traits | pyromaniac, bloodlust, psychopath, kind, ascetic | fire-touched, battle-hungry, cold-hearted, gentle, plain-living |
+| Traits | brawler, tough, jealous, greedy, abrasive, nimble | scrapper, hardy, envious, grasping, sharp-tongued, light-footed |
+| Traits | fast learner, slow learner, gourmand, nervous | quick study, slow study, food-lover, jumpy |
+| Trait `Squeamishness` | squeamishness: squeamish, faint-hearted | weak stomach: weak-stomached, blood-shy |
+| Genes | fast learner, slow learner | quick to learn, slow to learn |
+| Precept, thoughts | bloodlust celebrated / honored, kindness honored | battle-hunger celebrated / honored, gentleness honored |
+| Thoughts (temperament) | sanguine, optimist, pessimist, depressive | sunny / hopeful / gloomy / melancholic nature |
+| Thought `Expectations` | extremely low ... sky-high expectations | asks nothing of the world, asks little of the world, used to plain living, wants a settled life, wants to live well, wants the best of everything |
+| Thoughts | ate without table, ate raw food | no table to eat at, ate it raw |
+| Thoughts | slept on ground, slept outside, slept in barracks | slept on bare earth, slept under the sky, slept in a crowded hall |
+| Thoughts | insulted, witnessed ally's death, ravenously hungry | stung by harsh words, saw a friend fall, famished |
+| Thoughts | had a nice chat, was snubbed, rebuffed | passed the time of day, given the cold shoulder, turned down |
+| Thoughts | cathartic fight, angering fight | cleared the air with fists, a fight that settled nothing |
+| Thoughts | soaking wet, immodest exposure | drenched to the skin, bare before the forge |
+| Host citizen panel | Breaking point: "none: mood 62%, 27 points above the minor break line (35%)" | Spirits: "comfortably above breaking" / "steady, a fair way above breaking" / "holding, but close to low spirits" |
+| Host citizen panel | "low spirits: mood 30% is under 35%; near breaking under 20%" | "low spirits: an outburst could come" (and "a bad breakdown could come", "anything could set them off") |
+| Marks (designation, job, work giver) `CutPlant` | cut / cut plant / cut plants; cutting plant | clear growth; clearing growth |
+| Marks `Deconstruct` | deconstruct; deconstructing | take down; taking down |
+| Marks `HaulUrgently` | haul urgently | carry first |
+| Marks: mine, harvest, hunt, tame, slaughter | | kept: plain verbs |
+| Mark answers | Designated 3 CutPlant target(s) over 12 cell(s); already designated; N designation(s) | Marked 3 to clear growth across 12 cells; already marked; N mark(s) |
+| Work grid (core words, host cells) | 1-4, "1 is done first, blank is never" | First / Soon / Later / Last; an empty cell is work they leave alone |
+| Work priority answers | "now does Mining at priority 2"; "use 0 (never)" | "now does Mining soon"; "0 leaves the work alone" |
+| Roofs | constructed roof, thin rock roof, thick rock roof | roof, rock overhang, cave ceiling |
+| Host inspector | Roof: X; Category: Building | Overhead: X; Kind: a structure (or something growing, loose goods, ...) |
+| Host stock | Nutrition; "61519 units in all" | Food; "61519 things stored" |
+| Host research | Study Fire (next era) | Study Fire, toward the next era |
+| Host era panel | (research 3 of 7, conditions 0 of 1); (31 of 25) | (3 of 7 studies done, its one goal still to meet); (31 now, 25 needed) |
+| Host era panel | Their raiders carry Sticks and stones arms. | Their raiders are armed as in the Sticks and stones era. |
+| Host speed | Speed 5 (at 47%) | Speed 5 (slowed to 47%) |
+| Drought letter and condition | watched or not | in every settlement, near or far |
+
+The retired phrases are banned in `player-text-banned.txt` as whole phrases. Common
+words stay off the list even where one was retired here, because banning them would
+catch ordinary text: the plain skill names (shooting, construction, plants, animals,
+crafting, medicine, social, melee), the plain trait names (kind, tough, greedy,
+nimble, nervous), "insulted", and the passion words "interested" and "passionate"
+(a thought says "I wasn't interested"). Those are held instead by the host's tests
+on the know-how lines and by this table. "minor break" is not listed either:
+"break line" already catches the old phrasing, and the longer term would hide the
+round-2 "break risk" match inside "minor break risk".
+
+Left alone in round 3, and why:
+
+- Stat and job labels that name a skill's use ("melee hit chance", "shooting accuracy",
+  "melee attack"): plain descriptions of a mechanic. The job label can show as what a
+  fighter is doing; the tester did not flag it, and it is worth a look next round.
+- "lazy", "sick", "tired", "exhausted", "hungry", "starving", "in pain", "has a
+  friend", "has a rival", "broke up", "divorced", "new lover", "unwanted advance": plain
+  English that any game would use.
+- "earthen roof": simWorld's own (the pit house's sod roof).
+- The Mine, Hunt, Tame, Slaughter and Harvest marks: the honest verbs.
+- Work type columns: renamed in round 2; this round only changed the numbers in
+  their cells.

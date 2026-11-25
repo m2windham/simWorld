@@ -62,7 +62,7 @@
 
   <PreceptDef>
     <defName>Precept_Bloodlust_Celebrated</defName>
-    <label>bloodlust celebrated</label>
+    <label>battle-hunger celebrated</label>
     <issue>Personality</issue>
     <workerClass>SimWorld.Social.Ideology.PreceptWorker_Trait</workerClass>
     <trait>Bloodlust</trait>

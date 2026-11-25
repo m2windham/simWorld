@@ -67,14 +67,14 @@ namespace SimWorld.Map.View
             if (def == null) return MapCommandResult.UnknownDef(designationDefName);
             if (def.targetType != TargetType.Thing)
             {
-                return MapCommandResult.Refused(def.LabelCap + " marks cells, not things — designate the cell instead.");
+                return MapCommandResult.Refused(def.LabelCap + " marks ground, not things — mark the ground instead.");
             }
             Thing? t = FindThingById(map, thingId);
             if (t == null) return MapCommandResult.Refused("Nothing with id " + thingId + " is on the open settlement's map.");
 
             string? refusal = DesignatorUtility.TryDesignateThing(def, t, map);
-            if (refusal == null) return MapCommandResult.Done(t.Label + " designated: " + def.label + ".");
-            return refusal.EndsWith("already designated", System.StringComparison.Ordinal)
+            if (refusal == null) return MapCommandResult.Done(t.Label + " marked: " + def.label + ".");
+            return refusal.EndsWith("already marked", System.StringComparison.Ordinal)
                 ? MapCommandResult.NoChange(refusal + ".")
                 : MapCommandResult.Refused(refusal + ".");
         }
@@ -101,8 +101,8 @@ namespace SimWorld.Map.View
             int removed = 0;
             for (int i = 0; i < cells.Count; i++) removed += DesignatorUtility.RemoveDesignationsIn(def, cells[i], map);
             return removed == 0
-                ? MapCommandResult.NoChange("Nothing is designated there.")
-                : MapCommandResult.Done("Removed " + removed + " designation(s).");
+                ? MapCommandResult.NoChange("Nothing is marked there.")
+                : MapCommandResult.Done("Removed " + removed + (removed == 1 ? " mark." : " marks."));
         }
 
         /// <summary>Removes the marks (of one kind, or every kind when null) on the thing with
@@ -121,8 +121,8 @@ namespace SimWorld.Map.View
             if (t == null) return MapCommandResult.Refused("Nothing with id " + thingId + " is on the open settlement's map.");
             int removed = DesignatorUtility.RemoveDesignationsOn(def, t, map);
             return removed == 0
-                ? MapCommandResult.NoChange(t.Label + " is not designated.")
-                : MapCommandResult.Done("Removed " + removed + " designation(s) from " + t.Label + ".");
+                ? MapCommandResult.NoChange(t.Label + " is not marked.")
+                : MapCommandResult.Done("Removed " + removed + (removed == 1 ? " mark" : " marks") + " from " + t.Label + ".");
         }
 
         /// <summary>
@@ -179,19 +179,20 @@ namespace SimWorld.Map.View
         private static MapCommandResult Summarise(DesignationDef def, int placed, int cellCount, List<KeyValuePair<string, int>> rejected)
         {
             var sb = new StringBuilder();
-            sb.Append("Designated ").Append(placed).Append(' ').Append(def.defName)
-              .Append(def.targetType == TargetType.Cell ? " cell(s)" : " target(s)")
-              .Append(" over ").Append(cellCount).Append(" cell(s)");
+            sb.Append("Marked ").Append(placed).Append(" to ").Append(def.label)
+              .Append(" across ").Append(Cells(cellCount));
             for (int i = 0; i < rejected.Count; i++)
             {
-                sb.Append(i == 0 ? "; " : ", ").Append(rejected[i].Value).Append(" cell(s): ").Append(rejected[i].Key);
+                sb.Append(i == 0 ? "; " : ", ").Append(Cells(rejected[i].Value)).Append(": ").Append(rejected[i].Key);
             }
             sb.Append('.');
             string reason = sb.ToString();
 
             if (placed > 0) return MapCommandResult.Done(reason);
-            bool allAlready = rejected.Count == 1 && rejected[0].Key == "already designated";
+            bool allAlready = rejected.Count == 1 && rejected[0].Key == "already marked";
             return allAlready ? MapCommandResult.NoChange(reason) : MapCommandResult.Refused(reason);
         }
+
+        private static string Cells(int n) => n + (n == 1 ? " cell" : " cells");
     }
 }
