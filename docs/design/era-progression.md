@@ -506,3 +506,13 @@ every new guard gets a mutation proof.
   ask for "half the homes in this era's form", but only once step 10 shows renewal gets there unaided.
 - `EraUnlocks.Describe` already lists each era's houses and buildings in the era letter. Renewal makes that
   list a promise the town keeps.
+
+### 7.11 Decisions taken building it (lane `renewal`)
+
+Choices the spec left open, recorded as they were made, in build order.
+
+- **Step 1: the built tick lives on `Building`, not in a `CompBuilt`.** Comps are rebuilt from `def.comps` on
+  every load (`ThingWithComps.InitializeComps`), so a comp attached at run time would vanish after a save, and
+  listing it would mean editing every building def. `Building.builtTick` and `Building.isHeritage` are saved
+  fields every building carries. A building's tick is set when it first spawns: a finished frame, or map
+  generation and a scenario's start. A save from before the field loads as `UnknownBuiltTick` (-1).
