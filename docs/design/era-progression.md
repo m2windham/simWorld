@@ -524,7 +524,7 @@ Choices the spec left open, recorded as they were made, in build order.
   never stops holding the roof. A site's target is read off the map (`GenConstruct.ThingToReplace`: a site on an
   edifice is always a replacement), so a save carries nothing new and either spawn order on load leaves the old
   building in the edifice slot.
-- **Step 3 comes after the homes.** Steps 4 to 6 (homes) were built before step 3 (`UpgradeStanding`), since a
+- **Step 3 was built after the homes.** Steps 4 to 6 (homes) were built before step 3 (`UpgradeStanding`), since a
   house renewed is what the player sees first.
 - **Step 4: new before old, and only on a free plot.** `DwellingPlanner.Renew` lays the new rung on the first free
   plot (`TryFindPlot`), linked to the old house both ways by a new `Dwelling.id`. The household keeps the old house,
@@ -579,3 +579,11 @@ Choices the spec left open, recorded as they were made, in build order.
   outside houses, storage huts, benches that take bills and walls (by `EraAvailability.EraOf`, the era of the
   research that unlocks them; none means the first era). `Share` is current-or-previous-era structures over all,
   7.5's measure. It also carries the heritage count and the reason renewal is waiting. Roads are not counted.
+- **Step 3: standing walls are renewed a stretch at a time, after the homes.** `MaterialLadder.UpgradeStanding` runs
+  in the same daily pass, under the same waits, after the house pass. It plans a replace-in-place blueprint over each
+  of the settlement's own walls outside any house whose hit points are below the wall the town would raise today
+  (the era's stone, else a spare bulk metal), heritage walls excepted, in map order. Its budget is
+  `WallCellsPerStructure` (8, the port's own figure) wall cells per unit of `RenewalTuning.MaxUnderway`, counted
+  over replacements already standing, separate from the homes' budget. Each wall needs the reserve (1.5 times its
+  cost, spare over other sites' claims) before it is planned. A cell whose ground cannot bear the new wall is
+  skipped. House walls are left to the house's renewal.

@@ -73,7 +73,7 @@ namespace SimWorld.Crafting
     /// <para/><b>Stateless.</b> Everything is re-derived from the map on the rare tick; the only state is the
     /// bills it writes, which their bench saves.
     /// </summary>
-    public static class MaterialLadder
+    public static partial class MaterialLadder
     {
         /// <summary>How much better a weapon has to be for a citizen to trade up to it: strictly better, with a
         /// sliver of float slack so two identical knives never trade places.</summary>

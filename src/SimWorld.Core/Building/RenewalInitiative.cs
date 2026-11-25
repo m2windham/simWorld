@@ -49,12 +49,15 @@ namespace SimWorld.Building
     /// </summary>
     public static class RenewalInitiative
     {
-        /// <summary>The daily pass; self-gates on <see cref="RenewalTuning.PassIntervalTicks"/>. Returns the house
-        /// it set out to replace, or null.</summary>
+        /// <summary>The daily pass; self-gates on <see cref="RenewalTuning.PassIntervalTicks"/>. Homes first, then
+        /// the settlement's standing walls (<see cref="MaterialLadder.UpgradeStanding"/>), both under the same waits.
+        /// Returns the house it set out to replace, or null.</summary>
         public static Dwelling? TickSettlement(Settlement settlement, Map.Map map)
         {
             if (Find.TickManager.TicksGame % RenewalTuning.PassIntervalTicks != 0) return null;
-            return TryRenewOne(settlement, map);
+            Dwelling? renewed = TryRenewOne(settlement, map);
+            if (WaitReason(settlement, map) == null) MaterialLadder.UpgradeStanding(map, RenewalTuning.MaxUnderway(LivingCitizens(settlement)));
+            return renewed;
         }
 
         /// <summary>One pass, ungated by the clock: the waits, the budget, the scores, then one renewal at most.</summary>

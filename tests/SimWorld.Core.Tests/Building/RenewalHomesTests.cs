@@ -3,6 +3,7 @@ using System.Linq;
 
 using SimWorld.AI;
 using SimWorld.Building;
+using SimWorld.Crafting;
 using SimWorld.Defs;
 using SimWorld.Factions;
 using SimWorld.God.View;
@@ -450,6 +451,94 @@ namespace SimWorld.Tests.Building
             Assert.Equal("House_Paleo", marked.def.defName);
             Assert.Equal(0, marked.replacedById);
             Assert.DoesNotContain(plain, v.Compound.dwellings);
+        }
+
+        // ---- step 3: standing walls renewed in the era's stone, within the budget ----
+
+        /// <summary>A row of <paramref name="count"/> finished wooden walls of the settlement's own, outside any house,
+        /// on open home ground; and the town able to build in granite.</summary>
+        private static List<Thing> WoodWallRow(Village v, int count)
+        {
+            CoreMap map = v.Map;
+            foreach (ResearchProjectDef p in Def("WallGranite").researchPrerequisites ?? new List<ResearchProjectDef>()) Find.ResearchManager.SetProjectFinishedForSetup(p);
+            IntVec3 start = map.AllCells.First(c => Enumerable.Range(-1, count + 2).All(dx =>
+                Enumerable.Range(-1, 3).All(dz =>
+                {
+                    IntVec3 n = new IntVec3(c.x + dx, 0, c.z + dz);
+                    bool row = dz == 0 && dx >= 0 && dx < count;
+                    return GenGrid.InBounds(n, map) && GenGrid.Standable(n, map) && map.thingGrid.ThingsListAt(n).Count == 0
+                        && (!row || GenConstruct.CanPlaceBlueprintAt(Def("WallGranite"), n, map, out _)) // ground that bears stone
+                        && DwellingUtility.DwellingAt(map, n) == null && v.Compound.DwellingPlots(int.MaxValue, map.Size).All(pl => !pl.Plot.Contains(n));
+                })));
+            var walls = new List<Thing>();
+            for (int i = 0; i < count; i++)
+            {
+                Thing wall = ThingMaker.MakeThing(Def("Wall"), Def("WoodLog"));
+                wall.SetFaction(v.Faction);
+                GenSpawn.Spawn(wall, new IntVec3(start.x + i, 0, start.z), map);
+                walls.Add(wall);
+            }
+            return walls;
+        }
+
+        private static void SpawnBlocks(Village v, int count)
+        {
+            CoreMap map = v.Map;
+            foreach (Thing old in map.listerThings.ThingsOfDef(Def("BlocksGranite")).ToList()) old.Destroy();
+            while (count > 0)
+            {
+                Thing blocks = ThingMaker.MakeThing(Def("BlocksGranite"));
+                blocks.stackCount = System.Math.Min(count, blocks.def.stackLimit);
+                count -= blocks.stackCount;
+                GenSpawn.Spawn(blocks, map.AllCells.First(c => GenGrid.Standable(c, map) && map.thingGrid.ThingsListAt(c).Count == 0 && c.x > 3 && c.z > 3), map);
+            }
+        }
+
+        private static int Replacements(CoreMap map) =>
+            map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).Count(b => GenConstruct.ThingToReplace(b) != null);
+
+        [Fact]
+        public void With_spare_stone_wood_walls_are_planned_for_replacement_within_the_budget()
+        {
+            Village v = Founded("renewal-walls", 2, "House_Paleo");
+            List<Thing> walls = WoodWallRow(v, 12);
+            SpawnBlocks(v, 300);
+            Assert.Equal(Def("WallGranite"), StoneWallMaterials.PreferredWallDef(v.Map));
+
+            int budget = RenewalTuning.MaxUnderway(v.Settlement.Citizens.Count(p => !p.Dead)) * MaterialLadder.WallCellsPerStructure;
+            Assert.True(budget < walls.Count);
+            Assert.Equal(budget, MaterialLadder.UpgradeStanding(v.Map, RenewalTuning.MaxUnderway(v.Settlement.Citizens.Count(p => !p.Dead))));
+            Assert.Equal(budget, Replacements(v.Map));
+            Assert.All(walls, w => Assert.True(w.Spawned)); // every wood wall still stands
+            Assert.All(v.Houses, h => Assert.True(h.IsComplete(v.Map))); // and no house wall was touched
+            Assert.Equal(0, MaterialLadder.UpgradeStanding(v.Map, 1)); // the budget is full
+        }
+
+        [Fact]
+        public void A_wall_renewal_never_takes_the_stone_below_the_reserve_and_none_without_spare_stone()
+        {
+            Village v = Founded("renewal-walls-reserve", 2, "House_Paleo");
+            WoodWallRow(v, 12);
+            int perWall = Def("WallGranite").CostListAdjusted(null).Single().count;
+
+            SpawnBlocks(v, perWall * 3);
+            Assert.Equal(Def("WallGranite"), StoneWallMaterials.PreferredWallDef(v.Map));
+            int planned = MaterialLadder.UpgradeStanding(v.Map, 1);
+            // Each one planned needed its cost half again in spare stone before it was planned.
+            int spareAfter = perWall * 3 - planned * perWall;
+            Assert.True(planned > 0);
+            Assert.True(spareAfter + perWall >= (int)System.Math.Ceiling(perWall * RenewalTuning.MaterialReserve), "a renewal took the stone below the reserve");
+            Assert.True(spareAfter < (int)System.Math.Ceiling(perWall * RenewalTuning.MaterialReserve), "one more could have been planned");
+
+            foreach (Thing bp in v.Map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).ToList()) bp.Destroy(DestroyMode.Cancel);
+            SpawnBlocks(v, 0);
+            // With no stone the wall it would raise is a metal one (BestBuildingMetal); take the metal away too.
+            for (ThingDef? metal = MaterialLadder.BestBuildingMetal(v.Map, Def("Wall")); metal != null; metal = MaterialLadder.BestBuildingMetal(v.Map, Def("Wall")))
+            {
+                foreach (Thing t in v.Map.listerThings.ThingsOfDef(metal).ToList()) t.Destroy();
+            }
+            Assert.Equal(0, MaterialLadder.UpgradeStanding(v.Map, 1));
+            Assert.Equal(0, Replacements(v.Map));
         }
 
         // ---- step 9: what the host is shown ----
