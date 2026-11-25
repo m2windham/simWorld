@@ -16,6 +16,7 @@ namespace SimWorld.Quests
     {
         private readonly List<Quest> quests = new List<Quest>();
         private readonly Dictionary<QuestScriptDef, int> lastFireTicks = new Dictionary<QuestScriptDef, int>();
+        private readonly Dictionary<QuestScriptDef, int> lastDeclinedTicks = new Dictionary<QuestScriptDef, int>();
 
         /// <summary>
         /// Who actually applies a reward's effects; see <see cref="IQuestRewardSink"/>.
@@ -58,10 +59,16 @@ namespace SimWorld.Quests
             }
         }
 
-        /// <summary>True when <paramref name="def"/> either has no refire spacing or has not fired within it.</summary>
+        /// <summary>True when <paramref name="def"/> either has no refire spacing or has not fired within it, and
+        /// was not declined within <see cref="QuestScriptDef.declinedRefireDays"/>.</summary>
         public bool CanFire(QuestScriptDef def, int nowTick)
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
+            if (def.declinedRefireDays > 0f && lastDeclinedTicks.TryGetValue(def, out int declined)
+                && nowTick < declined + (int)(def.declinedRefireDays * GenDate.TicksPerDay))
+            {
+                return false;
+            }
             if (def.minRefireDays <= 0f) return true;
             if (!lastFireTicks.TryGetValue(def, out int last)) return true;
             return nowTick >= last + (int)(def.minRefireDays * GenDate.TicksPerDay);
@@ -71,6 +78,13 @@ namespace SimWorld.Quests
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
             lastFireTicks[def] = tick;
+        }
+
+        /// <summary>An offer of <paramref name="def"/> was turned down or left to lapse at <paramref name="tick"/>.</summary>
+        public void Notify_QuestDeclined(QuestScriptDef def, int tick)
+        {
+            if (def == null) throw new ArgumentNullException(nameof(def));
+            lastDeclinedTicks[def] = tick;
         }
 
         public void ExposeData()
@@ -86,6 +100,14 @@ namespace SimWorld.Quests
             if (refireDict != null)
             {
                 foreach (KeyValuePair<QuestScriptDef, int> kv in refireDict) lastFireTicks[kv.Key] = kv.Value;
+            }
+
+            Dictionary<QuestScriptDef, int>? declinedDict = new Dictionary<QuestScriptDef, int>(lastDeclinedTicks);
+            Scribe_Collections.Look(ref declinedDict, "lastDeclinedTicks", LookMode.Def, LookMode.Value);
+            lastDeclinedTicks.Clear();
+            if (declinedDict != null)
+            {
+                foreach (KeyValuePair<QuestScriptDef, int> kv in declinedDict) lastDeclinedTicks[kv.Key] = kv.Value;
             }
         }
     }

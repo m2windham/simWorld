@@ -52,11 +52,22 @@ namespace SimWorld.AI
                 workDone += JobDriver_ConstructFinishFrame.BaseWorkPerTick
                     * JobDriver_ConstructFinishFrame.WorkSpeedFactorFromConstructionLevel.Evaluate(skillLevel);
                 if (workDone < TotalNeededWork(building)) return;
+                // The settlement's own demolition asks again as the piece comes down, as JobDriver_Mine does: a
+                // neighbour taken while this one was worked can leave it the last thing holding a roof up.
+                if (IsSettlementWork(building) && RoofCollapseUtility.WouldCollapseRoofIfRemoved(building))
+                {
+                    EndJobWith(JobCondition.Incompletable);
+                    return;
+                }
                 Deconstruct(building);
                 work.actor.ReadyForNextToil();
             };
             yield return work;
         }
+
+        private static bool IsSettlementWork(Thing building) =>
+            building.Map?.designationManager.DesignationOn(building, Designations.PlayerDesignationDefOf.Deconstruct) is Designations.Designation des
+            && des.source == Designations.DesignationSource.Settlement;
 
         public static float TotalNeededWork(Thing building) =>
             Math.Min(MaxWork, Math.Max(MinWork, building.def.GetStatValue(StatDefOf.WorkToBuild, building.Stuff)));

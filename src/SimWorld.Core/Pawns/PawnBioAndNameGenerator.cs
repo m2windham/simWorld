@@ -37,6 +37,40 @@ namespace SimWorld.Pawns
             usedFullNames.Clear();
             usedNicks.Clear();
         }
+
+        /// <summary>
+        /// Saves and restores every name the game has handed out. RimWorld needs no such thing: its
+        /// <c>NameUseChecker</c> asks every pawn the game still holds, the dead among them, because RimWorld keeps
+        /// dead world pawns. This port keeps nobody it does not need, and the set lived only in memory, so a
+        /// reloaded game had forgotten every name in it: the fourth playtest's band lost Rasmus to a roof and a
+        /// later wanderer joined as a second Rasmus. Saved with the game; on load the names of everyone still
+        /// in it are added as well, which is all an older save can recover.
+        /// </summary>
+        public static void ExposeData()
+        {
+            List<string>? full = Scribe.mode == LoadSaveMode.Saving ? usedFullNames.OrderBy(n => n, StringComparer.Ordinal).ToList() : null;
+            List<string>? nicks = Scribe.mode == LoadSaveMode.Saving ? usedNicks.OrderBy(n => n, StringComparer.Ordinal).ToList() : null;
+            Scribe_Collections.Look(ref full, "usedFullNames", LookMode.Value);
+            Scribe_Collections.Look(ref nicks, "usedNicks", LookMode.Value);
+            if (Scribe.mode != LoadSaveMode.LoadingVars) return;
+            Clear();
+            if (full != null) usedFullNames.UnionWith(full);
+            if (nicks != null) usedNicks.UnionWith(nicks);
+        }
+
+        /// <summary>Marks <paramref name="name"/> used, whatever kind of name it is.</summary>
+        public static void AddName(Name? name)
+        {
+            switch (name)
+            {
+                case NameTriple triple:
+                    AddName(triple);
+                    break;
+                case NameSingle single:
+                    AddName(single.name);
+                    break;
+            }
+        }
     }
 
     /// <summary>

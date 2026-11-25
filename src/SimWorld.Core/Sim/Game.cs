@@ -740,6 +740,8 @@ namespace SimWorld.Sim
             SimWorld.Social.Ideology.Ideo? beliefs = ideo;
             Scribe_Deep.Look(ref beliefs, "ideo");
             ideo = beliefs;
+
+            SimWorld.Pawns.NameUseChecker.ExposeData();
             // A guild is attached to its settlement by world tile rather than by reference (WorldObject is not
             // ILoadReferenceable), so the reattachment has to wait until the world itself is back.
             if (Scribe.mode == LoadSaveMode.PostLoadInit) guildManager?.ResolveSettlements(world);
@@ -766,6 +768,13 @@ namespace SimWorld.Sim
 
                 if (storyteller != null && civilizationTarget != null) storyteller.RegisterTarget(civilizationTarget);
                 WireTickHooks();
+                if (world != null)
+                {
+                    foreach (SimWorld.World.Settlement s in world.worldObjects.OfType<SimWorld.World.Settlement>())
+                    {
+                        foreach (SimWorld.Pawns.Pawn p in s.Citizens) SimWorld.Pawns.NameUseChecker.AddName(p.Name);
+                    }
+                }
             }
         }
     }

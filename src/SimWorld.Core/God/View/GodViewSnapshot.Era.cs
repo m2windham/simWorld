@@ -51,17 +51,28 @@ namespace SimWorld.God.View
         {
             Unit = unit;
             Label = label;
-            Current = current;
+            Reading = current;
+            Current = target > 0f && current > target ? target : current;
             Target = target;
             IsMet = met;
+            Text = TextFor(label, current, target, met, unit);
         }
 
         /// <summary>What is asked, in the player's words.</summary>
         public string Label { get; }
 
-        /// <summary>The reading now, in the units of <see cref="Target"/> (a share, days of food, people,
-        /// buildings).</summary>
+        /// <summary>Progress toward <see cref="Target"/>, in its units (a share, days of food, people, buildings),
+        /// stopping at the target: a host that writes "(Current of Target)" reads "(10 of 10)" once the
+        /// condition is met, not the fourth playtest's "Food in store for 10 days (95 of 10)". The reading
+        /// itself, past the target or not, is <see cref="Reading"/>.</summary>
         public float Current { get; }
+
+        /// <summary>The reading now, uncapped: 95 days of food held against a target of 10 is 95 here.</summary>
+        public float Reading { get; }
+
+        /// <summary>The whole line in words, composed here so every host says the same thing: "Food in store for
+        /// 10 days: 95 days' worth held", "20 people: 14 so far", "Everyone housed: 80% are".</summary>
+        public string Text { get; }
 
         public float Target { get; }
 
@@ -70,6 +81,21 @@ namespace SimWorld.God.View
         public EraConditionUnit Unit { get; }
 
         public bool IsMet { get; }
+
+        private static string TextFor(string label, float reading, float target, bool met, EraConditionUnit unit)
+        {
+            string n = reading >= 10f || reading == (float)System.Math.Round(reading)
+                ? reading.ToString("0", System.Globalization.CultureInfo.InvariantCulture)
+                : reading.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+            string state = unit switch
+            {
+                EraConditionUnit.Share => (reading * 100f).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "% now",
+                EraConditionUnit.Days => n + (n == "1" ? " day's" : " days'") + " worth held",
+                EraConditionUnit.People => n + (met ? " now" : " so far"),
+                _ => n + (n == "1" ? " stands" : " stand") + (met ? "" : " so far"),
+            };
+            return label + ": " + state;
+        }
     }
 
     /// <summary>

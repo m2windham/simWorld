@@ -11,6 +11,7 @@
   <PawnKindDef>
     <defName>Muffalo</defName>
     <label>woolly ox</label>
+    <labelPlural>woolly oxen</labelPlural>
     <race>Muffalo</race>
     <combatPower>60</combatPower>
   </PawnKindDef>

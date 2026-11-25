@@ -41,6 +41,18 @@ namespace SimWorld.Thoughts
         /// <summary>Hediffs that suppress this thought.</summary>
         public List<HediffDef>? nullifyingHediffs;
 
+        /// <summary>
+        /// The life phases that can have this thought (RimWorld: <c>ThoughtDef.developmentalStageFilter</c>).
+        /// Null is RimWorld's default, child and adult: a baby has none of the grown-up thoughts unless a def
+        /// names <see cref="DevelopmentalStage.Baby"/> (recalled from Biotech's decompiled defs, not quoted).
+        /// The fourth playtest found a baby carrying "immodest exposure -4" from its parents' covenant.
+        /// </summary>
+        public List<DevelopmentalStage>? developmentalStageFilter;
+
+        /// <summary>Whether a pawn in <paramref name="stage"/> can have this thought at all.</summary>
+        public bool AllowsStage(DevelopmentalStage stage) =>
+            developmentalStageFilter != null ? developmentalStageFilter.Contains(stage) : stage != DevelopmentalStage.Baby;
+
         /// <summary>For <see cref="ThoughtWorker_Hediff"/>: the hediff whose stage drives this thought.</summary>
         public HediffDef? hediff;
 

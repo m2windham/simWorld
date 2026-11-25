@@ -367,7 +367,16 @@ namespace SimWorld.God.View
                 officeSeated: def.requiredOffice == null || GodManager.IsSeated(def.requiredOffice),
                 workNobodyMayDo: isActive ? GodViewSnapshot.NobodyMayDo(def) : null,
                 cooldownDaysLeft: god.CooldownTicksLeft(def) / (float)Sim.GenDate.TicksPerDay,
-                daysRemaining: lapse == null ? (float?)null : lapse.Value / (float)Sim.GenDate.TicksPerDay);
+                daysRemaining: lapse == null ? (float?)null : lapse.Value / (float)Sim.GenDate.TicksPerDay,
+                fieldWork: isActive && def.fieldSizeFactor > 1f ? FieldWorkOf() : null);
+        }
+
+        /// <summary>The fields' state on the seat's map, for an edict in force that breaks ground; null with no
+        /// map open, where there is no field to speak of.</summary>
+        private static string? FieldWorkOf()
+        {
+            Map.Map? map = Sim.Find.CurrentGame?.CivilizationTarget?.Seat?.InteriorMap;
+            return map == null ? null : Building.FarmingInitiative.FieldWorkReport(map);
         }
 
         /// <param name="workNobodyMayDo">For an edict in force: the gerund labels of its work that no citizen
@@ -377,7 +386,8 @@ namespace SimWorld.God.View
         /// in force.</param>
         internal static EdictOption For(
             EdictDef def, bool isActive, EraDef? currentEra, bool slotFree, bool isSuspended, bool officeSeated,
-            IReadOnlyList<string>? workNobodyMayDo = null, float cooldownDaysLeft = 0f, float? daysRemaining = null)
+            IReadOnlyList<string>? workNobodyMayDo = null, float cooldownDaysLeft = 0f, float? daysRemaining = null,
+            string? fieldWork = null)
         {
             EdictAvailability availability;
             string reason;
@@ -389,6 +399,7 @@ namespace SimWorld.God.View
                     ? "In force."
                     : "In force, but nobody is allowed to do " + string.Join(" or ", workNobodyMayDo) +
                       ": everyone it applies to has it set to never or cannot do it.";
+                if (fieldWork != null) reason += " " + fieldWork;
             }
             else if (isSuspended)
             {

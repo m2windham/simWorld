@@ -126,6 +126,7 @@ namespace SimWorld.Building
             RoofDef? roof = map.roofGrid.RoofAt(c);
             if (roof == null) return;
 
+            using RoofCollapseCause.Scope cause = RoofCollapseCause.Falling(roof);
             if (LeavesImpassableRock(roof))
             {
                 // RimWorld runs this loop twice, and the second pass is not belt-and-braces: killing a pawn

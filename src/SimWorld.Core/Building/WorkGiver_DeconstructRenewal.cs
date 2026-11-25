@@ -47,6 +47,9 @@ namespace SimWorld.Building
             if (thing.Destroyed || !thing.Spawned || pawn.Map == null) return false;
             Designation? des = pawn.Map.designationManager.DesignationOn(thing, PlayerDesignationDefOf.Deconstruct);
             if (des == null || des.source != DesignationSource.Settlement) return false;
+            // Never the piece holding a roof up: what the settlement takes down on its own must not drop a
+            // roof on anyone (DwellingPlanner.Demolish withdraws the mark; this covers the pass in between).
+            if (RoofCollapseUtility.WouldCollapseRoofIfRemoved(thing)) return false;
             if (!pawn.Map.reservationManager.CanReserve(pawn, thing)) return false;
             return Reachability.CanReach(pawn, thing, PathEndMode);
         }

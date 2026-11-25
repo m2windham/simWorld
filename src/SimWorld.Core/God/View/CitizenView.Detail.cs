@@ -151,6 +151,11 @@ namespace SimWorld.God.View
         /// <summary>Whether any of <see cref="Hediffs"/> wants tending now.</summary>
         public bool NeedsTending { get; private set; }
 
+        /// <summary>What they carry and wear (<see cref="Map.View.GearView"/>): the weapon first, then the apparel
+        /// in the order worn, each with its label ("bronze spear"), stuff, era and wear. Empty for someone with
+        /// nothing, and for a person who is not on a map, whose kit nobody is tracking.</summary>
+        public IReadOnlyList<Map.View.GearView> Gear { get; private set; } = Array.Empty<Map.View.GearView>();
+
         internal void FillDetail(Pawn pawn, PawnTier tier, bool hediffsReportable)
         {
             ActivityLabel = CitizenLine.ActivityOf(pawn);
@@ -161,6 +166,7 @@ namespace SimWorld.God.View
             MentalStateDefName = mental?.defName;
             MentalStateLabel = mental?.label ?? mental?.defName;
             RoleLabel = pawn.workSettings?.Role?.LabelCap;
+            Gear = Map.View.GearView.Of(pawn);
 
             Need_Mood? mood = pawn.needs?.mood;
             MentalBreaker? breaker = pawn.mindState?.mentalBreaker;

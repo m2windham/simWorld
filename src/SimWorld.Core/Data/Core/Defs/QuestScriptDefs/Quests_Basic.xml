@@ -18,6 +18,7 @@
     <minRefireDays>10</minRefireDays>
     <expireDaysRange>4~8</expireDaysRange>
     <autoAccept>false</autoAccept>
+    <riskText>the silver is taken from your treasury when the demand falls due, and if the treasury cannot cover it the rival takes it badly</riskText>
     <!--
       This script used to set demandSilver, send the letter, wait out the offer and end Fail — always.
       Nothing read demandSilver, no coin moved either way, and refusing cost nothing, so "or threatens

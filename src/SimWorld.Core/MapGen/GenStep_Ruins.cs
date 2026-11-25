@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using SimWorld.Defs;
+using SimWorld.Factions;
 using SimWorld.Map;
+using SimWorld.Research;
 using SimWorld.Sim;
 using SimWorld.Things;
 
@@ -97,6 +99,8 @@ namespace SimWorld.MapGen
             int attempts = (int)Math.Round(map.cellIndices.NumGridCells / MapGenTuning.RuinCellsPerAttempt);
             if (attempts <= 0) return;
 
+            List<ThingDef> wallStuffs = OfTheAge(WallStuffs);
+            List<ThingDef> loot = OfTheAge(LootPool);
             var placed = new List<CellRect>();
             for (int attempt = 0; attempt < attempts; attempt++)
             {
@@ -104,10 +108,30 @@ namespace SimWorld.MapGen
                 if (rect.IsEmpty) continue;
                 if (!CanPlaceRuin(map, ctx, rect, placed)) continue;
 
-                ThingDef wallStuff = rand.Element(WallStuffs);
-                BuildRuin(ctx, rand, rect, wallStuff);
+                ThingDef wallStuff = rand.Element(wallStuffs);
+                BuildRuin(ctx, rand, rect, wallStuff, loot);
                 placed.Add(rect);
             }
+        }
+
+        /// <summary>
+        /// The part of <paramref name="pool"/> the settlement's own age could have known: anything whose era
+        /// (<see cref="EraAvailability.EraOf"/>, read from what makes it) is later than the player's
+        /// (<see cref="FactionAdvancement.PlayerEra"/>) is left out. RimWorld's ruins are an industrial world's
+        /// leavings because its colony lives in one; here the ruins are of the people before this one, and the
+        /// fourth playtest's sticks-and-stones band found 21 steel lying in them on its first day, which the
+        /// stock panel then counted as theirs. Raw stuff no recipe makes (silver, wood, stone) has no era and stays.
+        /// </summary>
+        private static List<ThingDef> OfTheAge(ThingDef[] pool)
+        {
+            EraDef? now = FactionAdvancement.PlayerEra();
+            var kept = new List<ThingDef>(pool.Length);
+            foreach (ThingDef def in pool)
+            {
+                EraDef? era = EraAvailability.EraOf(def);
+                if (now == null || era == null || era.order <= now.order) kept.Add(def);
+            }
+            return kept;
         }
 
         private static CellRect PickRuinRect(Map.Map map, RandomStream rand)
@@ -149,7 +173,7 @@ namespace SimWorld.MapGen
         private static bool Overlaps(CellRect a, CellRect b) =>
             a.minX <= b.maxX && a.maxX >= b.minX && a.minZ <= b.maxZ && a.maxZ >= b.minZ;
 
-        private static void BuildRuin(MapGenContext ctx, RandomStream rand, CellRect rect, ThingDef wallStuff)
+        private static void BuildRuin(MapGenContext ctx, RandomStream rand, CellRect rect, ThingDef wallStuff, List<ThingDef> loot)
         {
             Map.Map map = ctx.map;
             ClearFootprint(ctx, rect);
@@ -189,7 +213,7 @@ namespace SimWorld.MapGen
             }
             if (rand.Chance(MapGenTuning.RuinLootChance))
             {
-                ScatterLoot(map, rand, interior);
+                ScatterLoot(map, rand, interior, loot);
             }
         }
 
@@ -268,7 +292,7 @@ namespace SimWorld.MapGen
             GenSpawn.Spawn(rubble, c, map);
         }
 
-        private static void ScatterLoot(Map.Map map, RandomStream rand, CellRect interior)
+        private static void ScatterLoot(Map.Map map, RandomStream rand, CellRect interior, List<ThingDef> lootPool)
         {
             var cells = new List<IntVec3>(interior.Cells);
             int count = Math.Min(rand.Range(MapGenTuning.RuinLootItemCountRange), cells.Count);
@@ -280,7 +304,7 @@ namespace SimWorld.MapGen
                 IntVec3 c = cells[k];
                 if (!GenGrid.Walkable(c, map)) continue; // defensive: interior was already cleared, but never spawn loot inside a wall
 
-                ThingDef lootDef = rand.Element(LootPool);
+                ThingDef lootDef = rand.Element(lootPool);
                 Thing loot = ThingMaker.MakeThing(lootDef);
                 if (lootDef.stackLimit > 1)
                 {

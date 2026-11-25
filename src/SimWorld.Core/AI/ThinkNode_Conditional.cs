@@ -54,11 +54,49 @@ namespace SimWorld.AI
         }
     }
 
-    /// <summary>True while the pawn's rest need has fallen below "rested" and it is not already resting.</summary>
+    /// <summary>
+    /// True while the pawn, not already resting, should go to bed: its rest need has fallen below "rested", or
+    /// it is night and the need is below <see cref="FallAsleepMaxLevel"/>.
+    ///
+    /// <para/><b>The night half is RimWorld's default timetable.</b> A colonist's schedule is Sleep from 22h to
+    /// 5h and Anything between (<c>Pawn_TimetableTracker</c>'s constructor), and <c>JobGiver_GetRest</c> puts a
+    /// colonist to bed under Sleep while rest is below <c>RestUtility.FallAsleepMaxLevel</c> (0.75), under
+    /// Anything only once it is below 0.3 (recalled from the decompiled source, not quoted). This port had only
+    /// the second rule, so nobody's sleep was tied to the clock: a citizen slept when tired, woke rested and
+    /// worked through the night, and the band drifted until the fourth playtest found healthy people "lying
+    /// down" at noon (a 20-strong band at 12h had up to five in bed and at midnight a dozen hauling). There is no
+    /// timetable to edit here, so every citizen keeps the default one; the hours are read at the longitude
+    /// daylight is (<see cref="Building.PlantUtility.AssumedLongitudeDegrees"/>), so night is when it is dark.
+    /// People only: RimWorld gives animals a night of their own (before 7h and after 21h), which is not ported
+    /// here because nothing about animals was wrong.
+    /// </para>
+    /// </summary>
     public sealed class ThinkNode_ConditionalTired : ThinkNode_Conditional
     {
-        protected override bool Satisfied(Pawn pawn) =>
-            pawn.needs.rest != null && !pawn.Asleep && pawn.needs.rest.CurCategory != RestCategory.Rested;
+        /// <summary>RimWorld's <c>RestUtility.FallAsleepMaxLevel</c>: under the Sleep block a pawn goes to bed
+        /// below this.</summary>
+        public const float FallAsleepMaxLevel = 0.75f;
+
+        /// <summary>First hour of the default timetable's Sleep block.</summary>
+        public const int SleepFromHour = 22;
+
+        /// <summary>Last hour of the default timetable's Sleep block.</summary>
+        public const int SleepUntilHour = 5;
+
+        protected override bool Satisfied(Pawn pawn)
+        {
+            Need_Rest? rest = pawn.needs.rest;
+            if (rest == null || pawn.Asleep) return false;
+            if (rest.CurCategory != RestCategory.Rested) return true;
+            return pawn.RaceProps.Humanlike && IsSleepHour() && rest.CurLevel < FallAsleepMaxLevel;
+        }
+
+        /// <summary>Whether the clock is in the default timetable's Sleep block now.</summary>
+        public static bool IsSleepHour()
+        {
+            int hour = GenDate.HourOfDay(Find.TickManager.TicksAbs, Building.PlantUtility.AssumedLongitudeDegrees);
+            return hour >= SleepFromHour || hour <= SleepUntilHour;
+        }
     }
 
     /// <summary>

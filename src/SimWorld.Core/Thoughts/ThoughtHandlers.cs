@@ -11,6 +11,8 @@ namespace SimWorld.Thoughts
     {
         public static bool ThoughtNullified(Pawn pawn, ThoughtDef def)
         {
+            // RimWorld's ThoughtUtility.CanGetThought asks the life phase before anything else.
+            if (pawn.ageTracker?.CurLifeStage is LifeStageDef stage && !def.AllowsStage(stage.developmentalStage)) return true;
             if (def.nullifyingTraits != null)
             {
                 for (int i = 0; i < def.nullifyingTraits.Count; i++)

@@ -10,6 +10,7 @@ using Xunit;
 // The production namespace SimWorld.Research shares its leaf segment with this test namespace; alias every
 // production type explicitly, the convention ResearchTests.cs and ResearchWorkTests.cs already follow
 // (CLAUDE.md: "qualify with global:: when it bites").
+using EraPacing = global::SimWorld.Research.EraPacing;
 using ResearchAgenda = global::SimWorld.Research.ResearchAgenda;
 using ResearchManager = global::SimWorld.Research.ResearchManager;
 using ResearchProjectDef = global::SimWorld.Research.ResearchProjectDef;
@@ -87,15 +88,19 @@ namespace SimWorld.Tests.Research
 
         /// <summary>The policy itself, asserted as a relation against whatever the database holds rather than
         /// against a named project: endless ages are minted into the same database while a game runs, so any
-        /// test naming "the cheapest project" by defName would rot the first time one opened.</summary>
+        /// test naming "the cheapest project" by defName would rot the first time one opened. Cheapest among
+        /// its own kind: the era gate's work (<see cref="ResearchAgenda.GateWork"/>) goes before side projects,
+        /// so a cheaper side project may wait behind gate work, never behind another side project.</summary>
         [Fact]
         public void Nothing_startable_is_cheaper_than_what_the_agenda_picked()
         {
             ResearchProjectDef next = ResearchAgenda.NextProject()!;
+            HashSet<ResearchProjectDef> gate = ResearchAgenda.GateWork(EraPacing.FrontierEra());
 
             List<ResearchProjectDef> startable = AllProjects.Where(p => p.CanStartNow).ToList();
             Assert.NotEmpty(startable);
-            foreach (ResearchProjectDef candidate in startable)
+            if (startable.Any(gate.Contains)) Assert.Contains(next, gate);
+            foreach (ResearchProjectDef candidate in startable.Where(p => gate.Contains(p) == gate.Contains(next)))
             {
                 Assert.True(candidate.baseCost >= next.baseCost,
                     candidate.defName + " (" + candidate.baseCost + ") is startable and cheaper than the chosen "

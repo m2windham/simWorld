@@ -58,7 +58,10 @@ namespace SimWorld.Map
 
             if (mode != DestroyMode.WillReplace && edifice.def.Fillage == FillCategory.Full)
             {
-                Building.RoofCollapseUtility.Notify_RoofHolderDespawned(occupied, map);
+                using (Building.RoofCollapseCause.HolderGone(edifice, map))
+                {
+                    Building.RoofCollapseUtility.Notify_RoofHolderDespawned(occupied, map);
+                }
             }
         }
     }
