@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: doctor, sha: cc4851a7e8fbeb04d59f3cf4c322cc8ef48b6979 }
+          - { name: next, sha: c5090c656ad2ae3f152e74fbd7c9757df90bc550 }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -44,8 +44,8 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: base, sha: 71143bd6cd29018429ee1e74a20f6a52ca54f097 }
-          - { name: doctor, sha: cc4851a7e8fbeb04d59f3cf4c322cc8ef48b6979 }
+          - { name: base, sha: 484f2734f557d7500758d9f27978281b24d1b01b }
+          - { name: next, sha: c5090c656ad2ae3f152e74fbd7c9757df90bc550 }
         threats: ["false", "true"]
         shard:
           - { n: 1, runs: "20:105 20:99 20:777 20:2024 20:12345 20:31337 20:101" }
@@ -79,10 +79,10 @@ jobs:
       fail-fast: false
       matrix:
         run:
-          - { name: doctor-20-99-on, sha: cc4851a7e8fbeb04d59f3cf4c322cc8ef48b6979, threats: "true", pop: "20:99" }
-          - { name: doctor-40-201-on, sha: cc4851a7e8fbeb04d59f3cf4c322cc8ef48b6979, threats: "true", pop: "40:201" }
-          - { name: doctor-20-101-on, sha: cc4851a7e8fbeb04d59f3cf4c322cc8ef48b6979, threats: "true", pop: "20:101" }
-          - { name: doctor-40-201-off, sha: cc4851a7e8fbeb04d59f3cf4c322cc8ef48b6979, threats: "false", pop: "40:201" }
+          - { name: next-20-99-on, sha: c5090c656ad2ae3f152e74fbd7c9757df90bc550, threats: "true", pop: "20:99" }
+          - { name: next-40-201-on, sha: c5090c656ad2ae3f152e74fbd7c9757df90bc550, threats: "true", pop: "40:201" }
+          - { name: next-20-101-on, sha: c5090c656ad2ae3f152e74fbd7c9757df90bc550, threats: "true", pop: "20:101" }
+          - { name: next-40-201-off, sha: c5090c656ad2ae3f152e74fbd7c9757df90bc550, threats: "false", pop: "40:201" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
