@@ -72,12 +72,32 @@ namespace SimWorld.Tests.MindState
 
             Letter let = Assert.Single(Letters);
             Assert.Contains("Aldra", let.label);
-            Assert.Contains("berserk", let.label);
+            Assert.StartsWith("Berserk", let.label);
             // The pawn's own name substituted into the content's {0}, not the template left in the letter.
             Assert.Contains("Aldra", let.text);
             Assert.DoesNotContain("{0}", let.text);
             // Pointed at whoever it is about, so a view can jump to them.
             Assert.Equal(new[] { p.GetUniqueLoadID() }, let.lookTargets);
+        }
+
+        [Fact]
+        public void Every_break_letter_title_starts_with_a_capital()
+        {
+            // The content writes the labels in lower case for use mid-sentence; the third playtest's letters read
+            // "tantrum: Niall" and "food binge: Persephone". RimWorld capitalises the label when it sends the letter.
+            List<MentalStateDef> withLetters = DefDatabase<MentalStateDef>.AllDefsListForReading
+                .Where(d => !string.IsNullOrEmpty(d.beginLetter)).ToList();
+            Assert.Contains(withLetters, d => d.defName == "Tantrum");
+            foreach (MentalStateDef def in withLetters)
+            {
+                Pawn p = Citizen("Niall");
+                int before = Letters.Count;
+                if (!p.mindState.mentalStateHandler.TryStartMentalState(def)) continue;
+                Assert.True(Letters.Count == before + 1, def.defName + " sent no letter");
+                string title = Letters[before].label;
+                Assert.True(char.IsUpper(title[0]), $"{def.defName}: \"{title}\"");
+                Assert.EndsWith(": Niall", title);
+            }
         }
 
         [Fact]

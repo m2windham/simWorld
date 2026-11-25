@@ -62,7 +62,10 @@ namespace SimWorld.MindState
             if (string.IsNullOrEmpty(def.beginLetter)) return;
             if (!Pawns.PawnUtility.ShouldSendNotificationAbout(pawn)) return;
 
+            // Content writes the label in lower case for use mid-sentence; a letter's title starts with a
+            // capital, as RimWorld capitalises it when it sends the letter ("tantrum: Niall", third playtest).
             string label = string.IsNullOrEmpty(def.beginLetterLabel) ? def.LabelCap : def.beginLetterLabel!;
+            label = char.ToUpperInvariant(label[0]) + label.Substring(1);
             string text = Pawns.PawnUtility.FormatWithPawn(def.beginLetter, pawn);
             if (!string.IsNullOrEmpty(reason)) text = text + "\n\n" + reason;
 
