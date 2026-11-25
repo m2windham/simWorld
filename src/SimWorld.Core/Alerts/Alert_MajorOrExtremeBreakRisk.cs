@@ -14,7 +14,7 @@ namespace SimWorld.Alerts
     {
         public override AlertPriority Priority => AlertPriority.Critical;
 
-        public override string DefaultLabel => "Major break risk";
+        public override string DefaultLabel => "Near breaking";
 
         internal static MentalBreakIntensity RiskOf(Pawn p) =>
             p.needs?.mood == null || p.InMentalState || p.mindState?.mentalBreaker == null
@@ -28,13 +28,13 @@ namespace SimWorld.Alerts
         {
             for (int i = 0; i < report.Culprits.Count; i++)
             {
-                if (report.Culprits[i] is Pawn p && RiskOf(p) == MentalBreakIntensity.Extreme) return "Extreme break risk";
+                if (report.Culprits[i] is Pawn p && RiskOf(p) == MentalBreakIntensity.Extreme) return "At breaking point";
             }
             return DefaultLabel;
         }
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "These citizens are so unhappy they could suffer a serious mental break at any moment. Find out " +
+            "These citizens are so unhappy they could snap at any moment. Find out " +
             "what is weighing on them and give them something better:" + CulpritList(report);
     }
 }

@@ -12,7 +12,7 @@
   <StatDef>
     <defName>GeneralLaborSpeed</defName>
     <label>general labor speed</label>
-    <description>How fast this pawn does unskilled physical work, such as clearing snow.</description>
+    <description>How fast this pawn does unskilled physical work, such as shovelling snow.</description>
     <category>BasicsPawn</category>
     <defaultBaseValue>1</defaultBaseValue>
     <minValue>0.1</minValue>

@@ -12,6 +12,10 @@ namespace SimWorld.Health
     /// carry both, so this one is no higher than the weakest capacity a person needs to get about and stay
     /// alive, and a downed person never reads as more than <see cref="DownedCeiling"/>. Display only: the
     /// storyteller and the raid resolver keep reading <see cref="SummaryHealthHandler"/> as RimWorld does.
+    /// <para/>A baby is down because it cannot walk yet (<see cref="Pawns.LifeStageDef.alwaysDowned"/>), not because
+    /// it is hurt, so being down caps it only when something else holds it down too
+    /// (<see cref="Pawn_HealthTracker.DownedOtherThanByAge"/>). The third playtest found every baby in the town
+    /// reading "25%, down" for the three years it was a baby.
     /// </summary>
     public static class HealthReadout
     {
@@ -34,7 +38,7 @@ namespace SimWorld.Health
             if (pawn.RaceProps.Humanlike) health = Math.Min(health, capacities.GetLevel(PawnCapacityDefOf.Manipulation));
             health = Math.Min(health, capacities.GetLevel(PawnCapacityDefOf.Breathing));
             health = Math.Min(health, capacities.GetLevel(PawnCapacityDefOf.BloodPumping));
-            if (pawn.Downed) health = Math.Min(health, DownedCeiling);
+            if (pawn.health.DownedOtherThanByAge) health = Math.Min(health, DownedCeiling);
             return Math.Max(0f, health);
         }
     }

@@ -250,7 +250,7 @@ namespace SimWorld.God.View
                 mood == null ? CitizenFidelity.NotTracked : FidelityOfLiveState(tier),
                 HealthFractionOf(pawn, tier),
                 FidelityOfLiveState(tier),
-                pawn.Downed,
+                CitizenLine.DownedOf(pawn),
                 pawn.Dead,
                 pawn.ageTracker?.CurLifeStage?.defName,
                 pawn.ageTracker?.CurLifeStage?.label,
@@ -268,13 +268,19 @@ namespace SimWorld.God.View
             return line;
         }
 
+        /// <summary>Down for a reason a reader should worry about. A baby lies down because it cannot walk yet
+        /// (<see cref="Pawn_HealthTracker.DownedOtherThanByAge"/>); the third playtest's roster showed every baby
+        /// as "down, cannot walk" for years.</summary>
+        internal static bool DownedOf(Pawn pawn) => pawn.health != null && pawn.health.DownedOtherThanByAge;
+
         internal static string? ActivityOf(Pawn pawn)
         {
             if (!pawn.Spawned) return null;
             MentalStateDef? mental = pawn.MentalStateDef;
             if (mental != null) return mental.LabelCap;
             AI.JobDef? job = pawn.jobs?.curJob?.def;
-            if (job == null) return null;
+            // A baby sleeps without a job (Needs.Need_Rest): say so rather than nothing.
+            if (job == null) return pawn.Asleep ? "sleeping." : null;
             return string.IsNullOrEmpty(job.reportString) ? job.LabelCap : job.reportString;
         }
 
@@ -786,7 +792,7 @@ namespace SimWorld.God.View
                 RelationshipsOf(pawn, livePeople),
                 LifeEventsOf(pawn),
                 HistoryNaming(NamesOf(pawn)),
-                pawn.Downed,
+                CitizenLine.DownedOf(pawn),
                 pawn.Dead);
             view.FillDetail(pawn, tier, hediffsReportable);
             return view;

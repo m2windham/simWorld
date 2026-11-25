@@ -194,7 +194,7 @@ namespace SimWorld.God.View
         {
             if (!pawn.WorkTypeIsDisabled(workType)) return null;
 
-            string work = workType.gerundLabel ?? workType.label ?? workType.defName;
+            string work = workType.label ?? workType.defName;
             if (!pawn.RaceProps.Humanlike) return pawn.Label + " is not a person who can be given work.";
 
             var sources = new List<string>();
@@ -207,7 +207,8 @@ namespace SimWorld.God.View
             {
                 if (Bars(traits[i].def.DisabledWorkTagsAtDegree(traits[i].degree), workType))
                 {
-                    sources.Add("being " + traits[i].Label);
+                    string trait = traits[i].Label;
+                    sources.Add(("aeiou".IndexOf(char.ToLowerInvariant(trait[0])) >= 0 ? "an " : "a ") + trait + " nature");
                 }
             }
             if (pawn.genes != null)
@@ -223,8 +224,8 @@ namespace SimWorld.God.View
             }
 
             return sources.Count == 0
-                ? pawn.Label + " is incapable of " + work + "."
-                : pawn.Label + " is incapable of " + work + " because of " + string.Join(" and ", sources) + ".";
+                ? pawn.Label + " will never take on " + work + "."
+                : pawn.Label + " will never take on " + work + ", owing to " + string.Join(" and ", sources) + ".";
         }
 
         private static bool Bars(WorkTags disables, WorkTypeDef workType) =>

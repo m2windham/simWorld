@@ -7,7 +7,7 @@
 
   <WorkGiverDef>
     <defName>Refuel</defName>
-    <label>refuel fuelable buildings</label>
+    <label>refuel buildings</label>
     <verb>refuel</verb>
     <gerund>refueling</gerund>
     <workType>Hauling</workType>

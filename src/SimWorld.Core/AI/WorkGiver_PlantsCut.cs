@@ -24,10 +24,9 @@ namespace SimWorld.AI
     /// <list type="bullet">
     /// <item><description><b>Wrong crop in a growing zone.</b> RimWorld's own <c>WorkGiver_GrowerSow</c>
     /// hands back a <c>CutPlant</c> job when the cell it wants to sow holds a plant that is not the zone's
-    /// chosen crop. This port's <see cref="WorkGiver_GrowerSow"/> instead just refuses the cell
-    /// (<c>thingGrid.CellContains(cell, ThingCategory.Plant)</c> and it moves on), so a single wrong plant
-    /// blocks that cell forever and nothing clears it. It is genuinely unserved, not duplicated — which is
-    /// why it belongs here rather than being left to the grower.</description></item>
+    /// chosen crop. This port's <see cref="WorkGiver_GrowerSow"/> used to refuse the cell instead, and this
+    /// giver was written to clear it; the grower now cuts its own blockers as RimWorld's does (third playtest),
+    /// and this stays for a settlement whose growers are busy or few, as PlantCutting work.</description></item>
     /// <item><description><b>Plant standing where something is being built.</b> RimWorld clears a plant
     /// blocking a blueprint through its construction path (the blocking-thing handling the deliver-resources
     /// giver runs before hauling). This port's <see cref="GenConstruct.CanPlaceBlueprintAt"/> does not even

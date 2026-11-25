@@ -299,10 +299,19 @@ namespace SimWorld.God.View
             if (def.prioritizedWork.Count > 0)
             {
                 var work = new List<string>(def.prioritizedWork.Count);
-                for (int i = 0; i < def.prioritizedWork.Count; i++) work.Add(def.prioritizedWork[i].gerundLabel ?? def.prioritizedWork[i].defName);
-                lines.Add(def.exclusiveWork
-                    ? "Every able hand turns to " + string.Join(" and ", work) + " before anything else."
-                    : string.Join(" and ", work) + " come before other work.");
+                if (def.exclusiveWork)
+                {
+                    for (int i = 0; i < def.prioritizedWork.Count; i++) work.Add(def.prioritizedWork[i].gerundLabel ?? def.prioritizedWork[i].defName);
+                    lines.Add("Every able hand turns to " + string.Join(" and ", work) + " before anything else.");
+                }
+                else
+                {
+                    // The work's own name, not its gerund: "Construction comes before other work.", not
+                    // "constructing come before other work." (the host lane's reading of the edict drawer).
+                    for (int i = 0; i < def.prioritizedWork.Count; i++) work.Add(def.prioritizedWork[i].label ?? def.prioritizedWork[i].defName);
+                    string first = string.Join(" and ", work);
+                    lines.Add(char.ToUpperInvariant(first[0]) + first.Substring(1) + (work.Count == 1 ? " comes" : " come") + " before other work.");
+                }
             }
             if (def.prioritizedConstruction.Count > 0)
             {
@@ -311,7 +320,7 @@ namespace SimWorld.God.View
                 lines.Add("The settlement builds " + string.Join(" and ", things) + " first.");
             }
             if (def.rationFood) lines.Add("People eat only once very hungry, so the stores last longer.");
-            if (def.restDay) lines.Add("No routine work: the day is given to rest and recreation. Emergencies are still answered.");
+            if (def.restDay) lines.Add("No routine work: the day is given to rest and leisure. Emergencies are still answered.");
             if (def.workerClass == typeof(EdictWorker_ExemptMinors)) lines.Add("Children are spared it.");
             if (def.researchFocus != null) lines.Add("Research turns to " + def.researchFocus.LabelCap + ".");
             float moodWhile = MoodOf(def.moodThought);
@@ -331,6 +340,14 @@ namespace SimWorld.God.View
             thought == null || thought.stages == null || thought.stages.Count == 0 || thought.stages[0] == null
                 ? 0f
                 : thought.stages[0]!.baseMoodEffect;
+
+        /// <summary>An era named the way a sentence wants it: "Bronze age" stands alone, "Agrarian" takes "era"
+        /// ("Needs the Bronze age era." read badly in the host's edict drawer).</summary>
+        internal static string EraName(EraDef era)
+        {
+            string name = era.LabelCap;
+            return name.EndsWith(" age", StringComparison.Ordinal) ? name : name + " era";
+        }
 
         private static string Signed(float value) => (value > 0f ? "+" : "") + value.ToString("0.#");
 
@@ -382,12 +399,12 @@ namespace SimWorld.God.View
             else if (def.obsoleteEra != null && currentEra != null && currentEra.order >= def.obsoleteEra.order)
             {
                 availability = EdictAvailability.Obsolete;
-                reason = "Left behind in the " + def.obsoleteEra.LabelCap + " era.";
+                reason = "Belongs to the times before the " + EraName(def.obsoleteEra) + ".";
             }
             else if (def.requiredEra != null && (currentEra == null || currentEra.order < def.requiredEra.order))
             {
                 availability = EdictAvailability.RequiresLaterEra;
-                reason = "Needs the " + def.requiredEra.LabelCap + " era.";
+                reason = "Opens in the " + EraName(def.requiredEra) + ".";
             }
             else if (cooldownDaysLeft > 0f)
             {

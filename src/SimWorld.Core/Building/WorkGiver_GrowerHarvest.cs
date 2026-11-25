@@ -9,10 +9,16 @@ using SimWorld.Work;
 namespace SimWorld.Building
 {
     /// <summary>
-    /// Harvests every reachable, unreserved, harvestable-now <see cref="Plant"/> on the map (RimWorld:
-    /// <c>RimWorld.WorkGiver_GrowerHarvest</c>). Thing-scanning, like <c>WorkGiver_Miner</c>. <b>Deviation
-    /// from RimWorld, deliberately kept:</b> not restricted to plants inside a growing zone — RimWorld's own
-    /// harvester scans every harvestable plant on the map, zones only control where sowing happens.
+    /// Harvests every reachable, unreserved, harvestable-now <see cref="Plant"/> standing in a growing zone
+    /// (RimWorld: <c>RimWorld.WorkGiver_GrowerHarvest</c>, which walks the growing zones' cells). Thing-scanning,
+    /// like <c>WorkGiver_Miner</c>.
+    ///
+    /// <para/><b>Fields only; the wild is <see cref="WorkGiver_ForageWild"/>'s.</b> This giver used to take every
+    /// harvestable plant on the map, so wild food could be gathered with nobody to designate it. Harvest ranks
+    /// above sowing in the Growing list, so a map of ripe berry bushes kept every grower foraging before a field
+    /// was sown: under Break the sod a whole band picked berries while its new fields stood bare (third playtest).
+    /// RimWorld's grower harvests the zone and a player's harvest designation brings in the wild; here the wild
+    /// half is its own giver, ranked below sowing, so a field is sown before the band goes foraging.
     ///
     /// <para/><b>Ripe, unless the settlement is short of food.</b> RimWorld's grower harvests a plant only
     /// once it is fully grown (<c>LifeStage == Mature</c>). A crop is harvestable sooner, from 65% growth at
@@ -38,12 +44,8 @@ namespace SimWorld.Building
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
             if (!(thing is Plant plant) || !plant.Spawned || !plant.HarvestableNow) return false;
-            // A wild tree is not a crop. RimWorld's grower only harvests inside a growing zone; a tree outside
-            // one is felled by a Chop Wood designation instead. The deviation above (every plant, not only
-            // zoned ones) exists for wild food, and read literally it would have every grower on the map
-            // clear-cutting the forest. A wild tree is WorkGiver_ConstructChopWood's, which fells one only
-            // when construction is short of wood.
-            if (plant.def.plant!.IsTree && !(plant.Map!.zoneManager.ZoneAt(plant.Position) is Zone_Growing)) return false;
+            // Only what stands in a field. A wild tree is WorkGiver_ConstructChopWood's, wild food is foraged.
+            if (!(plant.Map!.zoneManager.ZoneAt(plant.Position) is Zone_Growing)) return false;
             if (!plant.FullyGrown && !EarlyHarvestWanted(plant)) return false;
             if (!Reachability.CanReach(pawn, plant, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, plant);

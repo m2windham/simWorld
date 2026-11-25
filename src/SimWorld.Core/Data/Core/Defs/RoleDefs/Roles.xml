@@ -13,7 +13,7 @@
   <RoleDef>
     <defName>Farmer</defName>
     <label>farmer</label>
-    <description>Feeds the settlement first: growing and plant cutting take priority over everything else this citizen is willing to do.</description>
+    <description>Feeds the settlement first: farming and felling take priority over everything else this citizen is willing to do.</description>
     <emphasizedWorkTypes>
       <li>Growing</li>
       <li>PlantCutting</li>

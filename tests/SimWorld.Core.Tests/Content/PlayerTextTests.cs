@@ -55,7 +55,7 @@ namespace SimWorld.Tests.Content
         public static IReadOnlyList<string> Find(string? text) =>
             string.IsNullOrEmpty(text)
                 ? Array.Empty<string>()
-                : LazyMatcher.Value.Matches(text).Select(m => m.Value.ToLowerInvariant()).Distinct().ToList();
+                : LazyMatcher.Value.Matches(text).Select(m => Regex.Replace(m.Value, @"\s+", " ").ToLowerInvariant()).Distinct().ToList();
     }
 
     /// <summary>
@@ -95,6 +95,11 @@ namespace SimWorld.Tests.Content
         [InlineData("COLONISTS idle", "colonists")]
         [InlineData("a raid, a Manhunter\npack", "manhunter")]
         [InlineData("severe yayo withdrawal", "yayo")]
+        [InlineData("Minor break risk", "break risk")]
+        [InlineData("There is a fire in the Home  Area.", "home area")]
+        [InlineData("Cooking a fine meal.", "fine meal")]
+        [InlineData("Kind: Tribesperson", "tribesperson")]
+        [InlineData("Constr.", "constr.")]
         public void The_matcher_finds_a_banned_term_in_any_case(string text, string term)
         {
             Assert.Contains(term, PlayerTextTerms.Find(text));
@@ -107,6 +112,9 @@ namespace SimWorld.Tests.Content
         [InlineData("a trimmed hedge")]
         [InlineData("snowflake")]
         [InlineData("maddened beasts")]
+        [InlineData("a break in the risk")]
+        [InlineData("the home of the area")]
+        [InlineData("construction")]
         public void The_matcher_leaves_identifiers_and_ordinary_words_alone(string text)
         {
             Assert.Empty(PlayerTextTerms.Find(text));
@@ -166,6 +174,8 @@ namespace SimWorld.Tests.Content
         [Fact]
         public void No_string_literal_in_the_core_names_RimWorld()
         {
+            // A literal that is exactly a defName ("Pemmican") is a handle, not text a player reads.
+            var defNames = new HashSet<string>(Content.Database.AllDefs.Select(d => d.defName), StringComparer.Ordinal);
             var offences = new List<string>();
             int literals = 0;
             foreach (string file in Directory.EnumerateFiles(CoreUnderAudit.CoreSourceRoot, "*.cs", SearchOption.AllDirectories))
@@ -173,6 +183,7 @@ namespace SimWorld.Tests.Content
                 foreach ((int line, string text) in StringLiterals(File.ReadAllText(file)))
                 {
                     literals++;
+                    if (defNames.Contains(text)) continue;
                     IReadOnlyList<string> hits = PlayerTextTerms.Find(text);
                     if (hits.Count > 0)
                     {

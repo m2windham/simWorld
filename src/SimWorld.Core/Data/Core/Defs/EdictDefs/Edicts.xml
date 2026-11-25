@@ -57,6 +57,9 @@
     <prioritizedWork>
       <li>Growing</li>
     </prioritizedWork>
+    <!-- Breaking the sod is breaking new ground: the settlement's field doubles while it stands
+         (EdictDef.fieldSizeFactor). This port's figure; a RimWorld player sizes the zone by eye. -->
+    <fieldSizeFactor>2</fieldSizeFactor>
     <moodThought>UnderBreakTheSod</moodThought>
   </EdictDef>
 

@@ -79,7 +79,7 @@ namespace SimWorld.Tests.Pawns
             Assert.True(psychopath.ConflictsWith(kind));
             Assert.True(kind.ConflictsWith(psychopath));
             Assert.False(kind.ConflictsWith(mood));
-            Assert.Equal("sanguine", mood.DataAtDegree(2).label);
+            Assert.Equal("sunny", mood.DataAtDegree(2).label);
             Assert.True(mood.HasDegree(-2));
             Assert.False(mood.HasDegree(3));
 
@@ -89,7 +89,7 @@ namespace SimWorld.Tests.Pawns
             Assert.True(p.story.traits.HasTrait(mood, -1));
             Assert.False(p.story.traits.HasTrait(mood, 1));
             Assert.Equal(-1, p.story.traits.DegreeOfTrait(mood));
-            Assert.Equal("pessimist", p.story.traits.GetTrait(mood)!.Label);
+            Assert.Equal("gloomy", p.story.traits.GetTrait(mood)!.Label);
         }
 
         [Fact]

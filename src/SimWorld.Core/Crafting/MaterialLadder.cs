@@ -197,7 +197,9 @@ namespace SimWorld.Crafting
             return have;
         }
 
-        /// <summary>Whether some vein yielding <paramref name="def"/> stands where a miner could reach it now.</summary>
+        /// <summary>Whether some vein yielding <paramref name="def"/> stands where a miner could reach it: at an
+        /// open face now, or behind rock a miner can tunnel through from one (<see cref="MiningInitiative"/>
+        /// digs that tunnel when the yield is wanted).</summary>
         public static bool HasReachableVein(Map.Map map, ThingDef def)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
@@ -214,6 +216,14 @@ namespace SimWorld.Crafting
         [ThreadStatic] private static int reachableBuildings;
         [ThreadStatic] private static HashSet<ThingDef>? reachable;
 
+        /// <summary>
+        /// The yields of every vein a miner can reach, by a flood through mineable rock from each open face the
+        /// settlement can walk to (<see cref="MiningInitiative.FaceReachable"/>). A
+        /// RimWorld player mines a path to the ore they want; the settlement does the same
+        /// (<see cref="MiningInitiative.TunnelFace"/>), so ore buried in a mountain counts once the mountain has a
+        /// face. Measured: seed 40/201's only iron, 37 cells, lay wholly behind rock, and no iron was smelted in
+        /// ten years. Cardinal steps only, so the tunnel it implies is one a pawn can walk.
+        /// </summary>
         private static HashSet<ThingDef> ReachableYields(Map.Map map)
         {
             IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
@@ -222,12 +232,26 @@ namespace SimWorld.Crafting
 
             reachable ??= new HashSet<ThingDef>();
             reachable.Clear();
+            var seen = new HashSet<IntVec3>();
+            var open = new Queue<IntVec3>();
+            IntVec3? band = SettlementReach.BandCell(map);
             for (int i = 0; i < buildings.Count; i++)
             {
                 Thing rock = buildings[i];
-                ThingDef? yield = rock.def.mineableThing;
-                if (!rock.def.mineable || yield == null || reachable.Contains(yield) || !rock.Spawned) continue;
-                if (WorkGiver_Miner.MayBeAccessible(rock.Position, map)) reachable.Add(yield);
+                if (!rock.def.mineable || !rock.Spawned || !MiningInitiative.FaceReachable(map, rock.Position, band)) continue;
+                if (seen.Add(rock.Position)) open.Enqueue(rock.Position);
+            }
+            while (open.Count > 0)
+            {
+                IntVec3 c = open.Dequeue();
+                ThingDef? yield = WorkGiver_Miner.FirstMineable(c, map)?.def.mineableThing;
+                if (yield != null) reachable.Add(yield);
+                for (int d = 0; d < GenAdj.CardinalDirections.Length; d++)
+                {
+                    IntVec3 next = c + GenAdj.CardinalDirections[d];
+                    if (!GenGrid.InBounds(next, map) || WorkGiver_Miner.FirstMineable(next, map) == null || !seen.Add(next)) continue;
+                    open.Enqueue(next);
+                }
             }
             reachableMap = map;
             reachableTick = tick;
@@ -245,24 +269,93 @@ namespace SimWorld.Crafting
 
         /// <summary>
         /// The recipe the settlement makes <paramref name="metal"/> with, or null when it can make none: researched
-        /// metallurgy recipes whose fixed inputs are each on the map or can be come by, the newest technique first
-        /// (the highest-cost research it needs — the electric smelter's steel over the bloomery's), then the most
-        /// metal out per unit in (tin bronze over arsenical while there is tin), then defName.
+        /// metallurgy recipes whose fixed inputs are each on the map or can be come by and that have a bench to be
+        /// worked at (<see cref="BenchFor"/>). A recipe whose bench stands beats one whose bench would first have
+        /// to be raised; then the newest technique (the highest-cost research it needs — the electric smelter's
+        /// steel over the bloomery's), then the most metal out per unit in (tin bronze over arsenical while there
+        /// is tin), then defName.
         /// </summary>
-        public static RecipeDef? BestRecipeFor(Map.Map map, ThingDef metal, int depth = ChainDepth)
+        public static RecipeDef? BestRecipeFor(Map.Map map, ThingDef metal, int depth = ChainDepth) =>
+            BestRecipeFor(map, metal, depth, preferBuilt: true);
+
+        /// <summary>
+        /// <see cref="BestRecipeFor(Map.Map, ThingDef, int)"/>, with <paramref name="preferBuilt"/> false ranking a
+        /// bench that could be raised level with one that stands: the technique the settlement should move to,
+        /// which <see cref="SmeltingInitiative"/> raises a bench for while the old one goes on working.
+        /// </summary>
+        public static RecipeDef? BestRecipeFor(Map.Map map, ThingDef metal, int depth, bool preferBuilt)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (depth <= 0) return null;
             RecipeDef? best = null;
+            BenchState bestBench = BenchState.None;
             IReadOnlyList<RecipeDef> all = DefDatabase<RecipeDef>.AllDefsListForReading;
             for (int i = 0; i < all.Count; i++)
             {
                 RecipeDef r = all[i];
                 if (!IsMetallurgy(r) || !r.AvailableNow || ProductCount(r, metal) <= 0) continue;
-                if (!InputsGettable(map, r, depth - 1)) continue;
-                if (best == null || CompareRecipes(r, best, metal) < 0) best = r;
+                BenchState bench = BenchFor(map, r);
+                if (bench == BenchState.None || !InputsGettable(map, r, depth - 1)) continue;
+                if (!preferBuilt) bench = BenchState.CanRaise;
+                if (best == null || bench > bestBench || (bench == bestBench && CompareRecipes(r, best, metal) < 0))
+                {
+                    best = r;
+                    bestBench = bench;
+                }
             }
             return best;
+        }
+
+        /// <summary>Whether a recipe has a bench to be worked at: one built, one under way or that the
+        /// settlement could raise now, or none.</summary>
+        public enum BenchState
+        {
+            None = 0,
+            CanRaise = 1,
+            Built = 2,
+        }
+
+        /// <summary>
+        /// Where <paramref name="recipe"/> would be worked. <see cref="BenchState.Built"/> when a bench listing it
+        /// stands; <see cref="BenchState.CanRaise"/> when one is under way (a blueprint or frame), or a researched
+        /// one could be placed and every metal its cost list asks for lies spare on the map. RimWorld's electric
+        /// smelter costs steel, and it is this port's best steel recipe: without the cost check an industrial town
+        /// with no steel planned its steel at a smelter that could only be built of steel, and deleted the
+        /// bloomery bill that would have made it. A built bench outranks a planned one for the same reason: the
+        /// old furnace works until the new one stands.
+        /// </summary>
+        public static BenchState BenchFor(Map.Map map, RecipeDef recipe)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (recipe?.recipeUsers == null) return BenchState.None;
+            BenchState state = BenchState.None;
+            foreach (ThingDef user in recipe.recipeUsers)
+            {
+                if (user?.comps == null || !user.comps.Exists(c => c is CompProperties_BillGiver)) continue;
+                IReadOnlyList<Thing> built = map.listerThings.ThingsOfDef(user);
+                for (int i = 0; i < built.Count; i++)
+                {
+                    if (built[i].Spawned) return BenchState.Built;
+                }
+                if (SettlementWorksInitiative.CountBuiltOrPlanned(map, user) > 0 || CanRaise(map, user)) state = BenchState.CanRaise;
+            }
+            return state;
+        }
+
+        /// <summary>Whether <paramref name="bench"/> is researched, has a blueprint, and every Metallic stuff its
+        /// cost list asks for lies spare on the map. Wood and stone are the construction pipeline's to find.</summary>
+        public static bool CanRaise(Map.Map map, ThingDef bench)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (bench == null || !bench.IsResearchFinished || GenConstruct.BlueprintDefFor(bench) == null) return false;
+            if (bench.costList == null) return true;
+            foreach (ThingDefCountClass cost in bench.costList)
+            {
+                List<StuffCategoryDef>? categories = cost.thingDef?.stuffProps?.categories;
+                if (categories == null || !categories.Contains(MaterialLadderDefOf.Metallic)) continue;
+                if (Spare(map, cost.thingDef!) < cost.count) return false;
+            }
+            return true;
         }
 
         private static bool InputsGettable(Map.Map map, RecipeDef recipe, int depth)
@@ -341,7 +434,7 @@ namespace SimWorld.Crafting
             return best;
         }
 
-        private static bool IsSharperThan(ThingDef a, ThingDef b)
+        internal static bool IsSharperThan(ThingDef a, ThingDef b)
         {
             int bySharp = Sharpness(a).CompareTo(Sharpness(b));
             return bySharp != 0 ? bySharp > 0 : string.CompareOrdinal(a.defName, b.defName) < 0;
@@ -480,7 +573,34 @@ namespace SimWorld.Crafting
         /// weapon bill, its products still to make times the stuff each takes, less what of that stuff already
         /// lies on the map. The demand <see cref="SmeltingInitiative"/> works back from.
         /// </summary>
-        public static Dictionary<ThingDef, int> WeaponStuffWanted(Map.Map map)
+        public static Dictionary<ThingDef, int> WeaponStuffWanted(Map.Map map) => LessOnMap(map, GrossWeaponStuff(map));
+
+        /// <summary>
+        /// Units of metal the settlement wants smelted, by metal: <see cref="WeaponStuffWanted"/>'s blades plus the
+        /// armoury's bows, guns and armour (<see cref="Armoury.MetalWanted"/>), less what of each already lies on
+        /// the map. The demand <see cref="SmeltingInitiative"/> works back from, and what a wall may not take.
+        /// Before the armoury's half was counted, a bill for plate or a rifle stood for years at a smithy with no
+        /// furnace on the map (era-arc §13).
+        /// </summary>
+        public static Dictionary<ThingDef, int> MetalWanted(Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            Dictionary<ThingDef, int> gross = GrossWeaponStuff(map);
+            foreach (KeyValuePair<ThingDef, int> kv in Armoury.MetalWanted(map))
+            {
+                gross[kv.Key] = (gross.TryGetValue(kv.Key, out int n) ? n : 0) + kv.Value;
+            }
+            return LessOnMap(map, gross);
+        }
+
+        private static Dictionary<ThingDef, int> LessOnMap(Map.Map map, Dictionary<ThingDef, int> wanted)
+        {
+            var keys = new List<ThingDef>(wanted.Keys);
+            foreach (ThingDef stuff in keys) wanted[stuff] = Math.Max(0, wanted[stuff] - OnMap(map, stuff));
+            return wanted;
+        }
+
+        private static Dictionary<ThingDef, int> GrossWeaponStuff(Map.Map map)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             var wanted = new Dictionary<ThingDef, int>();
@@ -501,8 +621,6 @@ namespace SimWorld.Crafting
                     }
                 }
             }
-            var keys = new List<ThingDef>(wanted.Keys);
-            foreach (ThingDef stuff in keys) wanted[stuff] = Math.Max(0, wanted[stuff] - OnMap(map, stuff));
             return wanted;
         }
 
@@ -530,7 +648,7 @@ namespace SimWorld.Crafting
         /// The metal <paramref name="def"/> (a wall or a door) should be built of on <paramref name="map"/>, or
         /// null to leave the caller's choice alone. The shared hook "best wall stuff for this era": the toughest
         /// Metallic stuff the def can be made of that the settlement holds a whole one's worth of to spare — after
-        /// what its smithies want (<see cref="WeaponStuffWanted"/> is a deficit, so any of that metal on the map
+        /// what its smithies want (<see cref="MetalWanted"/>, blades and armoury both, is a deficit, so any of that metal on the map
         /// is spoken for while it is positive) and what other blueprints and frames already wait on. A wall takes
         /// only bulk metal (<c>stuffProps.commonality</c> 1 or more, RimWorld's own reading of a bulk material:
         /// iron and steel, never copper or bronze, which went into blades and gates, not ramparts). Stone is not
@@ -541,7 +659,7 @@ namespace SimWorld.Crafting
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (def == null || !def.MadeFromStuff) return null;
             bool isWall = StoneWallMaterials.IsWall(def);
-            Dictionary<ThingDef, int> smithyWants = WeaponStuffWanted(map);
+            Dictionary<ThingDef, int> smithyWants = MetalWanted(map);
             ThingDef? best = null;
             IReadOnlyList<ThingDef> all = DefDatabase<ThingDef>.AllDefsListForReading;
             for (int i = 0; i < all.Count; i++)
@@ -584,10 +702,20 @@ namespace SimWorld.Crafting
             return false;
         }
 
-        /// <summary>On the map, less what blueprints and frames already placed still wait for.</summary>
+        /// <summary>
+        /// What the settlement holds of <paramref name="stuff"/>, on the map and in its ledger, less what blueprints
+        /// and frames already placed still wait for.
+        /// <para/>
+        /// <b>The ledger counts.</b> Whatever rests in storage is banked into <see cref="World.Settlement.Stores"/>
+        /// (<see cref="Economy.SettlementStockInitiative.BankStoredGoods"/>) unless a site already wants it, so read
+        /// off the map alone every block and bar a mason or smith had made and hauled away was invisible here: the
+        /// arcs' towns held their cut stone and their logs in the ledger with none on the map, and every material
+        /// gate that read this said no (renewal lane 2). A site planned against the ledger's half is supplied from it
+        /// (<see cref="Economy.SettlementBuildStock"/>), as a RimWorld builder fetches from the stockpile.
+        /// </summary>
         internal static int Spare(Map.Map map, ThingDef stuff)
         {
-            int have = OnMap(map, stuff);
+            int have = OnMap(map, stuff) + (HuntingInitiative.SettlementFor(map)?.StoreCountOf(stuff) ?? 0);
             if (have <= 0) return 0;
             IReadOnlyList<Thing> blueprints = map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint);
             for (int i = 0; i < blueprints.Count; i++)

@@ -115,6 +115,11 @@ namespace SimWorld.Building
             Rot4 rot = Rotation;
             ThingDef built = EntityToBuild;
             Building? replaced = GenConstruct.ThingToReplace(this);
+            // A bench rebuilt in place keeps its bills (renewal lane 2): RimWorld's player would have to set them
+            // again, and nobody here would, so the bench would stand idle. Taken before the old one comes down.
+            List<Crafting.Bill>? bills = replaced?.GetComp<CompBillGiver>() is CompBillGiver oldBills
+                ? new List<Crafting.Bill>(oldBills.BillStack.Bills)
+                : null;
             // WillReplace, not Vanish: the real Building spawns at this exact cell a few lines below, in the
             // same moment — roof-collapse support checking (system 16: Building) must not read the fraction
             // of a call between "Frame gone" and "Building spawned" as this cell's support genuinely lost.
@@ -130,6 +135,10 @@ namespace SimWorld.Building
             // stands in: only a citizen ever completes a frame.
             building.SetFaction(worker.Faction);
             GenSpawn.Spawn(building, pos, map, rot);
+            if (bills != null && building is ThingWithComps withComps && withComps.GetComp<CompBillGiver>() is CompBillGiver newBills)
+            {
+                for (int i = 0; i < bills.Count; i++) newBills.BillStack.AddBill(bills[i]);
+            }
             worker.skills?.GetSkill(SkillDefOf.Construction)?.Learn(CompletionXp);
             // This port's stand-in for RimWorld's Building.SpawnSetup -> AutoHomeAreaMaker.Notify_BuildingSpawned,
             // gated there on Faction.OfPlayer: only a citizen with a construction job ever reaches this call, so

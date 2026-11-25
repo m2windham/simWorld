@@ -95,6 +95,86 @@ namespace SimWorld.Building
             return replacement;
         }
 
+        /// <summary>
+        /// Plans the house that will replace <paramref name="old"/> on <paramref name="old"/>'s own plot, for a town
+        /// with no free plot left: the household moves out at once to lodge in the dormitory, the old house is pulled
+        /// down (<see cref="Demolish"/>), and the new one is planned on the cleared ground
+        /// (<see cref="WaitsForOldToClear"/>) and is the household's from the start, so it moves in the moment it is
+        /// whole. Returns the new house, or null when the plot cannot take <paramref name="def"/>; then nothing
+        /// changes. The caller decides whether the household has somewhere to sleep meanwhile
+        /// (<see cref="RenewalInitiative"/>).
+        /// <para/>
+        /// <b>Why.</b> A town builds new before old only while it has room. The plots along the street run out as it
+        /// grows, and from then on renewal on a free plot never found one: the forty-strong arcs filled their street
+        /// with pit houses in the first month and lived in them, unrenewed, to the Exotic age (renewal lane 2). A real
+        /// town rebuilds on the same lot, and its household lodges with neighbours meanwhile. RimWorld has no such
+        /// step (recalled: its player deconstructs and rebuilds by hand); this is the spec's own fallback (§7.7),
+        /// done a house at a time rather than part by part, since the rungs' plans do not share their walls.
+        /// </summary>
+        public static Dwelling? RenewInPlace(Map.Map map, Dwelling old, DwellingDef def)
+        {
+            SettlementCompound? compound = map.settlementCompound;
+            if (compound == null || old.replacedById != 0 || old.beingDemolished || old.isHeritage) return null;
+            (CellRect Plot, Rot4 Rot)? plot = PlotOf(map, compound, old);
+            if (plot == null) return null;
+            CellRect footprint = FootprintOn(plot.Value.Plot, plot.Value.Rot, def.Size);
+            Area home = map.areaManager.Home;
+            bool homeBinds = home.TrueCount > 0;
+            IntVec3? band = SettlementReach.BandCell(map);
+            IReadOnlyList<Dwelling> dwellings = DwellingUtility.DwellingsOn(map);
+            foreach (IntVec3 c in footprint.Cells)
+            {
+                if (!GenGrid.InBounds(c, map)) return null;
+                if (old.footprint.Contains(c)) continue; // the old house's own ground: cleared before anything is planned on it
+                if (!map.pathGrid.Walkable(c) || (homeBinds && !home[c]) || map.edificeGrid[c] != null) return null;
+                if (!SettlementReach.CanReach(map, band, c)) return null;
+                for (int i = 0; i < dwellings.Count; i++)
+                {
+                    if (!ReferenceEquals(dwellings[i], old) && dwellings[i].footprint.Contains(c)) return null;
+                }
+            }
+
+            var replacement = new Dwelling(def, footprint, plot.Value.Rot);
+            compound.dwellings.Add(replacement);
+            compound.EnsureDwellingIds();
+            replacement.replacesId = old.id;
+            old.replacedById = replacement.id;
+            replacement.householdId = old.householdId;
+            old.householdId = Pawns.Pawn_RelationsTracker.None;
+            old.beingDemolished = true;
+            return replacement;
+        }
+
+        /// <summary>Whether <paramref name="dwelling"/> replaces a house on its own ground that is still coming
+        /// down: nothing of it is planned until that ground is clear (<see cref="RenewInPlace"/>).</summary>
+        internal static bool WaitsForOldToClear(Map.Map map, Dwelling dwelling)
+        {
+            if (dwelling.replacesId == 0) return false;
+            Dwelling? old = map.settlementCompound?.DwellingById(dwelling.replacesId);
+            return old != null && !old.footprint.ClipInsideRect(dwelling.footprint).IsEmpty;
+        }
+
+        /// <summary>The street plot <paramref name="d"/> stands on, and which way it faces, or null for a house off
+        /// the street's plots.</summary>
+        private static (CellRect Plot, Rot4 Rot)? PlotOf(Map.Map map, SettlementCompound compound, Dwelling d)
+        {
+            foreach ((CellRect plot, Rot4 rot) in compound.DwellingPlots(int.MaxValue, map.Size))
+            {
+                if (plot.Contains(new IntVec3(d.footprint.minX, 0, d.footprint.minZ))
+                    && plot.Contains(new IntVec3(d.footprint.maxX, 0, d.footprint.maxZ)))
+                {
+                    return (plot, rot);
+                }
+            }
+            return null;
+        }
+
+        /// <summary>Where a plan of <paramref name="size"/> sits on <paramref name="plot"/>: at the street edge, so a
+        /// smaller house leaves the back of the plot open.</summary>
+        private static CellRect FootprintOn(CellRect plot, Rot4 rot, IntVec2 size) => rot == Rot4.South
+            ? new CellRect(plot.maxX - size.x + 1, plot.maxZ - size.z + 1, size.x, size.z)
+            : new CellRect(plot.minX, plot.minZ, size.x, size.z);
+
         /// <summary>Stamps the tick a house first stood whole, and the founding house: the first one to.</summary>
         private static void NoteCompletions(Map.Map map, SettlementCompound compound)
         {
@@ -178,10 +258,7 @@ namespace SimWorld.Building
             IntVec2 size = def.Size;
             foreach ((CellRect plot, Rot4 rot) in compound.DwellingPlots(int.MaxValue, map.Size))
             {
-                // The plan sits at the street edge of its plot: a smaller house leaves the back of the plot open.
-                CellRect footprint = rot == Rot4.South
-                    ? new CellRect(plot.maxX - size.x + 1, plot.maxZ - size.z + 1, size.x, size.z)
-                    : new CellRect(plot.minX, plot.minZ, size.x, size.z);
+                CellRect footprint = FootprintOn(plot, rot, size);
                 if (Overlaps(map, footprint)) continue;
                 if (!Open(map, footprint, homeBinds ? home : null, band)) continue;
                 var dwelling = new Dwelling(def, footprint, rot);
@@ -224,6 +301,7 @@ namespace SimWorld.Building
 
         private static int PlaceMissingParts(Map.Map map, Dwelling dwelling)
         {
+            if (WaitsForOldToClear(map, dwelling)) return 0;
             int placed = 0;
             foreach ((DwellingPartKind kind, IntVec3 cell, Rot4 rot) in dwelling.Parts)
             {

@@ -59,7 +59,7 @@
 
   <JoyGiverDef>
     <defName>Skygaze</defName>
-    <label>skygaze</label>
+    <label>watch the sky</label>
     <giverClass>SimWorld.AI.JoyGiver_Skygaze</giverClass>
     <jobDef>Skygaze</jobDef>
     <joyKind>Meditative</joyKind>

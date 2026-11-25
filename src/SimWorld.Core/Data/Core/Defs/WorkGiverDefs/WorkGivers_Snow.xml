@@ -7,7 +7,7 @@
 
   <WorkGiverDef>
     <defName>CleanClearSnow</defName>
-    <label>clear snow</label>
+    <label>shovel snow</label>
     <verb>Clear</verb>
     <gerund>clearing snow</gerund>
     <workType>Cleaning</workType>

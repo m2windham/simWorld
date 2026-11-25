@@ -33,9 +33,16 @@ namespace SimWorld.Tests.Building
         private static WorkGiver_GrowerHarvest Giver =>
             (WorkGiver_GrowerHarvest)DefDatabase<WorkGiverDef>.GetNamed("GrowerHarvest").Worker;
 
+        /// <summary>A crop standing in a field: the grower's harvest is the field's (wild food is foraged).</summary>
         private static Plant SpawnPlant(CoreMap map, string defName, IntVec3 cell, float growth)
         {
             var plant = (Plant)ThingMaker.MakeThing(Def(defName));
+            if (!(map.zoneManager.ZoneAt(cell) is Zone_Growing))
+            {
+                var field = new Zone_Growing { label = "field " + cell, plantDefToGrow = Def(defName) };
+                map.zoneManager.RegisterZone(field);
+                map.zoneManager.AddCell(field, cell);
+            }
             GenSpawn.Spawn(plant, cell, map);
             plant.Growth = growth;
             return plant;

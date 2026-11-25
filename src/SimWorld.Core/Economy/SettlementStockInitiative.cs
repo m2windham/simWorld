@@ -155,6 +155,9 @@ namespace SimWorld.Economy
             // And what a standing bill on the map is short of; banking already leaves bill ingredients alone, so
             // this cannot undo it either.
             SettlementBillStock.IssueBillIngredientsFromStores(settlement, map);
+            // And what a blueprint or frame on the map is short of: banking leaves construction materials alone
+            // while a site wants them, so this cannot undo it either.
+            SettlementBuildStock.IssueConstructionMaterialsFromStores(settlement, map);
 
             return banked;
         }
@@ -293,7 +296,7 @@ namespace SimWorld.Economy
         /// stack limit. Returns how many units actually landed. Only on cells the band can walk to
         /// (<see cref="SettlementReach"/>): food issued into a sealed rock pocket was counted as on the map,
         /// so nothing more was issued, while nobody could reach it to eat.</summary>
-        private static int PlaceIssued(ThingDef def, int count, Map.Map map)
+        internal static int PlaceIssued(ThingDef def, int count, Map.Map map)
         {
             IntVec3? band = SettlementReach.BandCell(map);
             IntVec3 anchor = IssueAnchor(map, band);

@@ -87,8 +87,32 @@ namespace SimWorld.Needs
             CurLevel = Rand.Range(0.9f, 1f);
         }
 
+        /// <summary>
+        /// A baby sleeps where it lies. It is down from birth (<see cref="Pawns.LifeStageDef.alwaysDowned"/>), so it
+        /// takes no job, and every other road to sleep here is a job (<c>AI.JobDriver_LayDown</c>): its rest only
+        /// ever fell, and the third playtest's babies read Rest 0% and Exhausted -20 for three years. RimWorld's
+        /// babies sleep when tired, in a crib or bed if they lie in one and on the ground if not (recalled from
+        /// Biotech, not checked here). So: asleep once tired, awake once rested, the same two points
+        /// <c>AI.JobGiver_GetRest</c> and <c>AI.JobDriver_LayDown</c> use, at a bed's effectiveness when one stands
+        /// under it.
+        /// </summary>
+        private void BabySleepInterval()
+        {
+            if (!pawn.Spawned || pawn.health == null || !pawn.health.LifeStageForcesDowned) return;
+            if (pawn.Asleep)
+            {
+                if (CurLevel >= 0.999f) pawn.Asleep = false;
+            }
+            else if (CurCategory != RestCategory.Rested)
+            {
+                pawn.Asleep = true;
+                lastRestEffectiveness = AI.RestUtility.InBed(pawn) ? BedRestEffectiveness : 1f;
+            }
+        }
+
         public override void NeedInterval()
         {
+            BabySleepInterval();
             if (!IsFrozen)
             {
                 if (Resting)

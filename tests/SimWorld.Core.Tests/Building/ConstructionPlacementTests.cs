@@ -181,7 +181,7 @@ namespace SimWorld.Tests.Building
             Assert.NotNull(why);
             Assert.Contains("1 bed", why);
             Assert.Contains("6 walls", why);
-            Assert.Contains("home area", why);
+            Assert.Contains("town bounds", why);
 
             // The player widens it: the very next pass uses the new room, inside the new paint and only there.
             List<IntVec3> widened = Paint(map, new CellRect(2, 4, 6, 4));

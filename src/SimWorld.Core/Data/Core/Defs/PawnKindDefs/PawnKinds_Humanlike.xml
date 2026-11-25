@@ -46,7 +46,7 @@
 
   <PawnKindDef>
     <defName>Tribesperson</defName>
-    <label>tribesperson</label>
+    <label>clan member</label>
     <race>Human</race>
     <backstoryCategories>
       <li>Tribal</li>

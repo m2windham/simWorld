@@ -45,8 +45,8 @@
     <startingGoodwill>-30~30</startingGoodwill>
     <raidCommonality>1.0</raidCommonality>
     <leaderTitle>chief</leaderTitle>
-    <pawnSingular>tribesperson</pawnSingular>
-    <pawnsPlural>tribespeople</pawnsPlural>
+    <pawnSingular>clan member</pawnSingular>
+    <pawnsPlural>clansfolk</pawnsPlural>
     <earliestRaidDays>3</earliestRaidDays>
     <settlementNamePrefixes>
       <li>Ash</li>

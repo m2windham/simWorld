@@ -11,12 +11,12 @@ namespace SimWorld.Alerts
     {
         public override AlertPriority Priority => AlertPriority.High;
 
-        public override string DefaultLabel => "Minor break risk";
+        public override string DefaultLabel => "Low spirits";
 
         public override AlertReport GetReport(AlertContext context) =>
             ColonistsWhere(context, p => Alert_MajorOrExtremeBreakRisk.RiskOf(p) == MentalBreakIntensity.Minor);
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "These citizens are unhappy enough that they could have a minor mental break:" + CulpritList(report);
+            "These citizens are low enough that they could lose their composure:" + CulpritList(report);
     }
 }

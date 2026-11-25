@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Wild food, gathered with no player to designate it (WorkGiver_ForageWild). Growing work after the field's
+       own harvest (GrowerHarvest, 100) and sowing (GrowerSow, 90): a field is sown before the band forages. -->
+  <WorkGiverDef>
+    <defName>ForageWild</defName>
+    <label>forage</label>
+    <verb>Forage</verb>
+    <gerund>foraging</gerund>
+    <workType>Growing</workType>
+    <priorityInType>80</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_ForageWild</giverClass>
+  </WorkGiverDef>
+
+</Defs>

@@ -111,9 +111,33 @@ namespace SimWorld.Crafting
             return true;
         }
 
+        /// <summary>Whether one product's worth of every ingredient of <paramref name="recipe"/> lies on the map or in
+        /// the settlement's ledger now: the bill could start today, not once a furnace has worked.</summary>
+        public static bool IngredientsOnHand(Map.Map map, RecipeDef recipe)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (recipe.ingredients == null) return true;
+            SimWorld.World.Settlement? settlement = HuntingInitiative.SettlementFor(map);
+            for (int i = 0; i < recipe.ingredients.Count; i++)
+            {
+                int per = (int)Math.Ceiling(recipe.ingredients[i].count);
+                bool any = false;
+                foreach (ThingDef def in recipe.ingredients[i].filter.AllowedThingDefs)
+                {
+                    if (MaterialLadder.OnMap(map, def) + (settlement?.StoreCountOf(def) ?? 0) >= per) { any = true; break; }
+                }
+                if (!any) return false;
+            }
+            return true;
+        }
+
         /// <summary>The ranged weapon <paramref name="benchDef"/> should make: of its researched ranged recipes whose
         /// ingredients are in reach, the best product (defName settles a tie). Null when there is none.</summary>
-        public static RecipeDef? BestRangedRecipe(Map.Map map, ThingDef benchDef)
+        public static RecipeDef? BestRangedRecipe(Map.Map map, ThingDef benchDef) => BestRangedRecipe(map, benchDef, onHandOnly: false);
+
+        /// <summary><see cref="BestRangedRecipe(Map.Map, ThingDef)"/>, counting with <paramref name="onHandOnly"/>
+        /// only recipes whose ingredients are on hand (<see cref="IngredientsOnHand"/>).</summary>
+        public static RecipeDef? BestRangedRecipe(Map.Map map, ThingDef benchDef, bool onHandOnly)
         {
             if (benchDef == null) throw new ArgumentNullException(nameof(benchDef));
             RecipeDef? best = null;
@@ -123,6 +147,7 @@ namespace SimWorld.Crafting
             {
                 RecipeDef r = recipes[i];
                 if (!IsRangedRecipe(r) || !r.AvailableNow || !IngredientsInReach(map, r)) continue;
+                if (onHandOnly && !IngredientsOnHand(map, r)) continue;
                 float score = RangedScore(r.products![0].thingDef);
                 if (best == null || score > bestScore || (score == bestScore && string.CompareOrdinal(r.defName, best.defName) < 0))
                 {
@@ -153,15 +178,175 @@ namespace SimWorld.Crafting
         /// <summary>
         /// The hook <see cref="OutfittingInitiative"/> calls for a ranged weapon recipe. False when
         /// <paramref name="recipe"/> makes no ranged weapon. Otherwise <paramref name="lacking"/> is the bill's
-        /// target: zero for every ranged recipe but the bench's best, so a bench holds one bow-or-gun bill.
+        /// target: the citizens who would take up the bench's best weapon in reach, and, while that one's materials
+        /// are still being smelted, the best one whose materials are on hand (<see cref="IngredientsOnHand"/>);
+        /// zero for every other ranged recipe. The stop-gap is the material ladder's own (a copper knife now beats
+        /// a bronze one in a season): a town whose rifle waits on a bloomery still trades its short bows for great
+        /// bows meanwhile, where before the rifle bill zeroed every lesser one and nothing was made for years.
         /// </summary>
         public static bool TryPlanRangedBill(Map.Map map, ThingDef benchDef, RecipeDef recipe, IReadOnlyList<Pawn> citizens, out int lacking)
         {
             lacking = 0;
             if (!IsRangedRecipe(recipe)) return false;
             RecipeDef? best = BestRangedRecipe(map, benchDef);
-            if (ReferenceEquals(best, recipe)) lacking = WouldTakeUpRanged(recipe.products![0].thingDef, citizens);
+            if (best == null) return true;
+            if (ReferenceEquals(best, recipe))
+            {
+                lacking = WouldTakeUpRanged(recipe.products![0].thingDef, citizens);
+                return true;
+            }
+            if (IngredientsOnHand(map, best)) return true;
+            if (ReferenceEquals(BestRangedRecipe(map, benchDef, onHandOnly: true), recipe)) lacking = WouldTakeUpRanged(recipe.products![0].thingDef, citizens);
             return true;
+        }
+
+        /// <summary>
+        /// Units of metal the armoury's standing bills want, by metal and before what lies on the map: for each
+        /// bow, gun or armour bill still short, the products to make times each metal ingredient, less what of the
+        /// ingredient's other metals is held, charged to the metal the settlement should smelt for it
+        /// (<see cref="GoalMetal"/>). <see cref="MaterialLadder.MetalWanted"/> adds the blades' and takes off the
+        /// map's stock; <see cref="SmeltingInitiative"/> works back from the total.
+        /// </summary>
+        public static Dictionary<ThingDef, int> MetalWanted(Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            var wanted = new Dictionary<ThingDef, int>();
+            SimWorld.World.Settlement? settlement = HuntingInitiative.SettlementFor(map);
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            var metals = new List<ThingDef>();
+            for (int b = 0; b < buildings.Count; b++)
+            {
+                if (!buildings[b].Spawned || !(buildings[b] is ThingWithComps bench) || bench.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;
+                foreach (Bill bill in comp.BillStack.Bills)
+                {
+                    if (!(bill is Bill_Production production) || production.suspended || production.repeatMode != BillRepeatMode.TargetCount) continue;
+                    if (!IsRangedRecipe(bill.recipe) && !IsArmourRecipe(bill.recipe)) continue;
+                    int toMake = production.targetCount - comp.CountProducts(production);
+                    if (toMake <= 0 || bill.recipe.ingredients == null) continue;
+                    foreach (IngredientCount ingredient in bill.recipe.ingredients)
+                    {
+                        metals.Clear();
+                        foreach (ThingDef def in ingredient.filter.AllowedThingDefs)
+                        {
+                            if (IsMetal(def) && bill.ingredientFilter.Allows(def)) metals.Add(def);
+                        }
+                        ThingDef? goal = GoalMetal(map, bill.recipe, metals);
+                        if (goal == null) continue;
+                        int need = toMake * (int)Math.Ceiling(ingredient.count) - (settlement?.StoreCountOf(goal) ?? 0);
+                        foreach (ThingDef other in metals)
+                        {
+                            if (!ReferenceEquals(other, goal)) need -= MaterialLadder.OnMap(map, other) + (settlement?.StoreCountOf(other) ?? 0);
+                        }
+                        if (need > 0) wanted[goal] = (wanted.TryGetValue(goal, out int n) ? n : 0) + need;
+                    }
+                }
+            }
+            return wanted;
+        }
+
+        private static bool IsMetal(ThingDef def) =>
+            def.stuffProps?.categories != null && def.stuffProps.categories.Contains(MaterialLadderDefOf.Metallic);
+
+        /// <summary>Whether any ingredient of <paramref name="recipe"/> may be a metal.</summary>
+        public static bool TakesMetal(RecipeDef recipe)
+        {
+            if (recipe?.ingredients == null) return false;
+            foreach (IngredientCount ingredient in recipe.ingredients)
+            {
+                foreach (ThingDef def in ingredient.filter.AllowedThingDefs)
+                {
+                    if (IsMetal(def)) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Narrows <paramref name="bill"/>'s metal ingredients to the one the settlement smelts for it
+        /// (<see cref="GoalMetal"/>), leaving its other ingredients alone; with no metal in reach, it is left as it
+        /// is. The armoury's half of <see cref="MaterialLadder.RestrictBill"/>: without it a helmet bill that may
+        /// take any metal ate the iron the bloomery was cementing into plate, and on a generated medieval map the
+        /// town's only iron vein went into helmets and mail and no plate was ever made.
+        /// </summary>
+        public static void RestrictToGoalMetal(Map.Map map, Bill bill)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (bill?.recipe?.ingredients == null) return;
+            var metals = new List<ThingDef>();
+            foreach (IngredientCount ingredient in bill.recipe.ingredients)
+            {
+                metals.Clear();
+                foreach (ThingDef def in ingredient.filter.AllowedThingDefs)
+                {
+                    if (IsMetal(def)) metals.Add(def);
+                }
+                ThingDef? goal = metals.Count > 1 ? GoalMetal(map, bill.recipe, metals) : null;
+                if (goal == null) continue;
+                foreach (ThingDef metal in metals) bill.ingredientFilter.SetAllow(metal, ReferenceEquals(metal, goal));
+            }
+        }
+
+        /// <summary>
+        /// Which of <paramref name="metals"/> (one ingredient's) the settlement should smelt for
+        /// <paramref name="recipe"/>, of those it can get: for armour that takes its stuff from the metal, the best
+        /// (steel mail over iron, as the ladder picks a blade's metal); for a weapon whose metal is only a part,
+        /// the cheapest, since the product is the same whatever it is made of. Null when none can be got.
+        ///
+        /// <para/>The best gives way to a bill that can take nothing else (<see cref="HeldMetals"/>): while plate,
+        /// which only steel makes, is still short, a helmet or a mail shirt is made of the next best metal. A
+        /// helmet that takes fifteen steel is always ready before a plate coat that takes fifty, so with both
+        /// asking for steel the helmets were made first, every time: on a generated medieval map twenty steel
+        /// helmets used up the town's only iron vein and no plate was ever made.
+        /// </summary>
+        public static ThingDef? GoalMetal(Map.Map map, RecipeDef recipe, IReadOnlyList<ThingDef> metals)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            ThingDef? goal = null;
+            ThingDef? spare = null;
+            HashSet<ThingDef>? held = recipe.productHasIngredientStuff && metals.Count > 1 ? HeldMetals(map) : null;
+            for (int i = 0; i < metals.Count; i++)
+            {
+                ThingDef metal = metals[i];
+                if (!MaterialLadder.CanGet(map, metal)) continue;
+                if (goal == null || MaterialLadder.IsSharperThan(metal, goal) == recipe.productHasIngredientStuff) goal = metal;
+                if (held != null && !held.Contains(metal) && (spare == null || MaterialLadder.IsSharperThan(metal, spare))) spare = metal;
+            }
+            return spare ?? goal;
+        }
+
+        /// <summary>
+        /// The metals a standing armoury bill on <paramref name="map"/> can be made of and nothing else: some
+        /// ingredient of a short, unsuspended target bill whose recipe allows that one metal only (plate's steel, a
+        /// rifle's).
+        /// </summary>
+        public static HashSet<ThingDef> HeldMetals(Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            var held = new HashSet<ThingDef>();
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            for (int b = 0; b < buildings.Count; b++)
+            {
+                if (!buildings[b].Spawned || !(buildings[b] is ThingWithComps bench) || bench.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;
+                foreach (Bill bill in comp.BillStack.Bills)
+                {
+                    if (!(bill is Bill_Production production) || production.suspended || production.repeatMode != BillRepeatMode.TargetCount) continue;
+                    if (bill.recipe.ingredients == null || (!IsRangedRecipe(bill.recipe) && !IsArmourRecipe(bill.recipe))) continue;
+                    if (production.targetCount - comp.CountProducts(production) <= 0) continue;
+                    foreach (IngredientCount ingredient in bill.recipe.ingredients)
+                    {
+                        ThingDef? only = null;
+                        int count = 0;
+                        foreach (ThingDef def in ingredient.filter.AllowedThingDefs)
+                        {
+                            if (!IsMetal(def)) continue;
+                            only = def;
+                            count++;
+                        }
+                        if (count == 1) held.Add(only!);
+                    }
+                }
+            }
+            return held;
         }
 
         // Best ranged weapon lying on a map, cached per map and tick: every armed citizen's think asks it, and
@@ -222,6 +407,19 @@ namespace SimWorld.Crafting
         /// </summary>
         public static List<RecipeDef> BestArmourRecipes(Map.Map map)
         {
+            List<RecipeDef> available = AvailableArmourRecipes(map);
+            var best = new List<RecipeDef>();
+            for (int i = 0; i < available.Count; i++)
+            {
+                if (!IsOutscored(available[i], available)) best.Add(available[i]);
+            }
+            return best;
+        }
+
+        /// <summary>Every researched armour recipe at a bench standing on <paramref name="map"/> whose ingredients
+        /// are in reach.</summary>
+        private static List<RecipeDef> AvailableArmourRecipes(Map.Map map)
+        {
             if (map == null) throw new ArgumentNullException(nameof(map));
             var available = new List<RecipeDef>();
             IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
@@ -236,13 +434,7 @@ namespace SimWorld.Crafting
                     if (IngredientsInReach(map, recipe)) available.Add(recipe);
                 }
             }
-
-            var best = new List<RecipeDef>();
-            for (int i = 0; i < available.Count; i++)
-            {
-                if (!IsOutscored(available[i], available)) best.Add(available[i]);
-            }
-            return best;
+            return available;
         }
 
         private static bool IsOutscored(RecipeDef recipe, List<RecipeDef> others)
@@ -287,17 +479,111 @@ namespace SimWorld.Crafting
         }
 
         /// <summary>
+        /// The armour recipes to work while a slot's best waits on its metal: for each recipe in
+        /// <see cref="BestArmourRecipes"/> whose ingredients are not on hand (<see cref="IngredientsOnHand"/>), the
+        /// best in-reach recipe of the same place whose ingredients are. Hide coats go on being made while the
+        /// bloomery smelts the plate's steel; measured before this, seed 20/101 stood at 16 of 28 in armour for
+        /// four years behind a plate bill nothing could fill.
+        /// </summary>
+        public static List<RecipeDef> StopGapArmourRecipes(Map.Map map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            List<RecipeDef> best = BestArmourRecipes(map);
+            var onHand = new List<RecipeDef>();
+            foreach (RecipeDef recipe in AvailableArmourRecipes(map))
+            {
+                if (!best.Contains(recipe) && IngredientsOnHand(map, recipe)) onHand.Add(recipe);
+            }
+            var stopGaps = new List<RecipeDef>();
+            foreach (RecipeDef recipe in onHand)
+            {
+                if (IsOutscored(recipe, onHand)) continue;
+                ApparelProperties worn = recipe.products![0].thingDef.apparel!;
+                bool waiting = false;
+                foreach (RecipeDef b in best)
+                {
+                    if (!b.products![0].thingDef.apparel!.ConflictsWith(worn)) continue;
+                    if (IngredientsOnHand(map, b)) { waiting = false; break; }
+                    // Mail made while plate waits on steel eats the iron the steel is made from.
+                    if (TakesMetal(recipe) && TakesMetal(b)) { waiting = false; break; }
+                    waiting = true;
+                }
+                if (waiting) stopGaps.Add(recipe);
+            }
+            return stopGaps;
+        }
+
+        /// <summary>
         /// The hook <see cref="OutfittingInitiative"/> calls for an armour recipe. False when
         /// <paramref name="recipe"/> makes no armour. Otherwise <paramref name="lacking"/> is the bill's target:
-        /// the citizens who would wear it while it is the best of its slot (<see cref="BestArmourRecipes"/>), and
-        /// zero once something better is within reach.
+        /// the citizens who would wear it while it is the best of its slot (<see cref="BestArmourRecipes"/>) or the
+        /// stop-gap for a best still waiting on metal (<see cref="StopGapArmourRecipes"/>), and zero otherwise.
         /// </summary>
         public static bool TryPlanArmourBill(Map.Map map, RecipeDef recipe, IReadOnlyList<Pawn> citizens, out int lacking)
         {
             lacking = 0;
             if (!IsArmourRecipe(recipe)) return false;
-            if (BestArmourRecipes(map).Contains(recipe)) lacking = WouldWear(recipe.products![0].thingDef, citizens);
+            List<RecipeDef> best = BestArmourRecipes(map);
+            if (best.Contains(recipe) || StopGapArmourRecipes(map).Contains(recipe))
+            {
+                lacking = WouldWear(recipe.products![0].thingDef, citizens);
+                RecipeDef? first = KitFirst(recipe, best, citizens);
+                if (first != null) lacking = WouldWear(recipe.products![0].thingDef, Wearing(first.products![0].thingDef, citizens));
+            }
             return true;
+        }
+
+        /// <summary>
+        /// The armour <paramref name="recipe"/> waits behind: another of the best, for another slot, that also
+        /// takes metal, scores higher (<see cref="ArmourScore"/>) and is still wanted by someone. Null when it
+        /// waits on none. While mail or plate is short, a metal helmet goes only to a citizen already wearing it,
+        /// so a soldier is kitted out whole before the next is started. A fifteen-metal helmet is always ready
+        /// before a thirty-iron mail shirt or a fifty-steel coat, and helmets for the whole town used up the iron:
+        /// on a generated medieval map nineteen helmets and four mail shirts and no plate in fifteen days, and on
+        /// 40/201's arc thirty-two iron helmets and no mail from the only vein on the map.
+        /// </summary>
+        private static RecipeDef? KitFirst(RecipeDef recipe, List<RecipeDef> best, IReadOnlyList<Pawn> citizens)
+        {
+            if (!TakesMetal(recipe) || OneMetalOnly(recipe)) return null;
+            ThingDef own = recipe.products![0].thingDef;
+            float score = ArmourScore(own);
+            foreach (RecipeDef other in best)
+            {
+                if (ReferenceEquals(other, recipe) || !TakesMetal(other)) continue;
+                ThingDef product = other.products![0].thingDef;
+                if (product.apparel!.ConflictsWith(own.apparel!) || ArmourScore(product) <= score) continue;
+                if (WouldWear(product, citizens) > 0) return other;
+            }
+            return null;
+        }
+
+        private static bool OneMetalOnly(RecipeDef recipe)
+        {
+            if (recipe.ingredients == null) return false;
+            foreach (IngredientCount ingredient in recipe.ingredients)
+            {
+                int count = 0;
+                foreach (ThingDef def in ingredient.filter.AllowedThingDefs)
+                {
+                    if (IsMetal(def)) count++;
+                }
+                if (count == 1) return true;
+            }
+            return false;
+        }
+
+        private static List<Pawn> Wearing(ThingDef apparel, IReadOnlyList<Pawn> citizens)
+        {
+            var wearing = new List<Pawn>();
+            foreach (Pawn p in citizens)
+            {
+                if (p.apparel == null) continue;
+                foreach (ThingWithComps w in p.apparel.WornApparel)
+                {
+                    if (ReferenceEquals(w.def, apparel)) { wearing.Add(p); break; }
+                }
+            }
+            return wearing;
         }
     }
 }

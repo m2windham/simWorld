@@ -95,6 +95,23 @@ namespace SimWorld.Crafting
                     UpdateBill(comp, recipe, Lacking(recipe, citizens));
                 }
             }
+
+            // Once every bill stands: which metal a bill is held to depends on the others (Armoury.HeldMetals).
+            for (int b = 0; b < buildings.Count; b++)
+            {
+                if (!buildings[b].Spawned) continue;
+                CompBillGiver? comp = (buildings[b] as ThingWithComps)?.GetComp<CompBillGiver>();
+                if (comp == null) continue;
+                IReadOnlyList<Bill> bills = comp.BillStack.Bills;
+                for (int i = 0; i < bills.Count; i++)
+                {
+                    RecipeDef recipe = bills[i].recipe;
+                    if ((Armoury.IsRangedRecipe(recipe) || Armoury.IsArmourRecipe(recipe)) && Armoury.TakesMetal(recipe))
+                    {
+                        Armoury.RestrictToGoalMetal(map, bills[i]);
+                    }
+                }
+            }
         }
 
         /// <summary>True when every product <paramref name="recipe"/> makes is apparel or a weapon.</summary>

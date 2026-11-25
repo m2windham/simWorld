@@ -117,3 +117,62 @@ scaria
 
 # Weather
 flashstorm
+
+# Round 2 (2026-11-24): the source game's system vocabulary. A space matches any run of whitespace, so
+# each line below is matched as a whole phrase, case-insensitively; ordinary words inside them ("break",
+# "home", "meal") stay free on their own.
+
+# Mood and the mind
+break risk
+mental break
+mental breaks
+sad wander
+hide in room
+hiding in room
+food binge
+insulting spree
+sadistic rage
+fire starting spree
+fire-starting spree
+murderous rage
+catatonic breakdown
+give up and leave
+social fighting
+chitchat
+deep talk
+too smart
+iron-willed
+natural mood
+
+# Work, areas and jobs
+home area
+snow clear
+snow-clear
+beat fire
+bed rest
+basic work
+plant cutting
+constr.
+tend patient
+tend patients
+feed patient
+feed patients
+skygaze
+skygazing
+fuelable
+
+# Things
+passive cooler
+simple meal
+fine meal
+lavish meal
+pemmican
+herbal medicine
+stonecutter's table
+potato plant
+rice plant
+cotton plant
+
+# People
+tribesperson
+tribespeople

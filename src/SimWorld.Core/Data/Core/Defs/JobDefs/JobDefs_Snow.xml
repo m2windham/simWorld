@@ -6,9 +6,9 @@
 
   <JobDef>
     <defName>ClearSnow</defName>
-    <label>clear snow</label>
+    <label>shovel snow</label>
     <driverClass>SimWorld.Weather.JobDriver_ClearSnow</driverClass>
-    <reportString>clearing snow.</reportString>
+    <reportString>shovelling snow.</reportString>
   </JobDef>
 
 </Defs>

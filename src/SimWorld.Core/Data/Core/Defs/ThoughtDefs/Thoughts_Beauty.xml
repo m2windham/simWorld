@@ -24,32 +24,32 @@
     <workerClass>SimWorld.Needs.ThoughtWorker_NeedBeauty</workerClass>
     <stages>
       <li>
-        <label>hideous environment</label>
+        <label>hideous surroundings</label>
         <description>Everywhere I look there is squalor.</description>
         <baseMoodEffect>-8</baseMoodEffect>
       </li>
       <li>
-        <label>very ugly environment</label>
+        <label>very ugly surroundings</label>
         <description>This place is genuinely unpleasant to be in.</description>
         <baseMoodEffect>-5</baseMoodEffect>
       </li>
       <li>
-        <label>ugly environment</label>
+        <label>ugly surroundings</label>
         <description>This place could do with some care.</description>
         <baseMoodEffect>-3</baseMoodEffect>
       </li>
       <li>
-        <label>pretty environment</label>
+        <label>pretty surroundings</label>
         <description>It is pleasant here.</description>
         <baseMoodEffect>2</baseMoodEffect>
       </li>
       <li>
-        <label>very pretty environment</label>
+        <label>very pretty surroundings</label>
         <description>Somebody has made this place lovely.</description>
         <baseMoodEffect>4</baseMoodEffect>
       </li>
       <li>
-        <label>beautiful environment</label>
+        <label>beautiful surroundings</label>
         <description>I could look at this all day.</description>
         <baseMoodEffect>6</baseMoodEffect>
       </li>

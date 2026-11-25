@@ -50,27 +50,27 @@
     <workerClass>SimWorld.Thoughts.ThoughtWorker_NeedJoy</workerClass>
     <stages>
       <li>
-        <label>recreation-starved</label>
+        <label>leisure-starved</label>
         <description>I haven't had a moment to myself in ages.</description>
         <baseMoodEffect>-20</baseMoodEffect>
       </li>
       <li>
-        <label>recreation-deprived</label>
+        <label>leisure-deprived</label>
         <description>All work and no play.</description>
         <baseMoodEffect>-12</baseMoodEffect>
       </li>
       <li>
-        <label>recreation-poor</label>
+        <label>leisure-poor</label>
         <description>I could use a break.</description>
         <baseMoodEffect>-6</baseMoodEffect>
       </li>
       <li>
-        <label>recreation-satisfied</label>
+        <label>leisure-satisfied</label>
         <description>I've been having a good time lately.</description>
         <baseMoodEffect>3</baseMoodEffect>
       </li>
       <li>
-        <label>recreation-fulfilled</label>
+        <label>leisure-fulfilled</label>
         <description>Life is fun.</description>
         <baseMoodEffect>6</baseMoodEffect>
       </li>

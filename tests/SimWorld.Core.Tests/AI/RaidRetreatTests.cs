@@ -109,9 +109,9 @@ namespace SimWorld.Tests.AI
 
             // The player is told, in RimWorld's words, and the chronicle keeps it: the first raid ever to
             // break is a moment (MomentCurator's first-of-its-kind rule reads the text before the colon).
-            Assert.Contains(Find.LetterStack.LettersListForReading, l => l.text == "Tribespeople from Theirs are fleeing.");
+            Assert.Contains(Find.LetterStack.LettersListForReading, l => l.text == "Clansfolk from Theirs are fleeing.");
             ChronicleEntry entry = Find.Storyteller.Chronicle.Last();
-            Assert.Equal("Raiders fleeing: Tribespeople from Theirs are fleeing.", entry.incidentDefName);
+            Assert.Equal("Raiders fleeing: Clansfolk from Theirs are fleeing.", entry.incidentDefName);
             Assert.True(entry.isMoment);
         }
 
@@ -180,7 +180,7 @@ namespace SimWorld.Tests.AI
             map.lordManager.LordManagerTick();
             Assert.IsType<LordToil_ExitMap>(lord.CurLordToil);
             Assert.All(squad, r => Assert.Same(LordDutyDefOf.ExitMapBest, r.mindState.duty));
-            Assert.Contains(Find.LetterStack.LettersListForReading, l => l.text == "Tribespeople from Theirs have given up and are leaving.");
+            Assert.Contains(Find.LetterStack.LettersListForReading, l => l.text == "Clansfolk from Theirs have given up and are leaving.");
         }
 
         [Fact]

@@ -63,8 +63,9 @@ namespace SimWorld.Building
         /// front on the north edge. Either way the front faces the street.</summary>
         public Rot4 rot = Rot4.North;
 
-        /// <summary>The <see cref="Family"/> that lives here, or <see cref="Pawn_RelationsTracker.None"/>. Set only
-        /// by <see cref="DwellingUtility.AssignHomes"/>.</summary>
+        /// <summary>The <see cref="Family"/> that lives here, or <see cref="Pawn_RelationsTracker.None"/>. Set by
+        /// <see cref="DwellingUtility.AssignHomes"/>, and by <see cref="DwellingPlanner.RenewInPlace"/>, which moves a
+        /// household's claim from its old house to the one that will rise on the same plot.</summary>
         public int householdId = Pawn_RelationsTracker.None;
 
         /// <summary>This house's handle, unique on its map and never reused (<see cref="SettlementCompound.EnsureDwellingIds"/>).
@@ -485,14 +486,16 @@ namespace SimWorld.Building
             return n;
         }
 
-        /// <summary>Dwellings not yet finished.</summary>
+        /// <summary>Dwellings not yet finished. A house coming down is not one going up: counted, the old houses
+        /// renewal was demolishing held <see cref="DwellingTuning.MaxUnderway"/> and stopped every new house and
+        /// every renewal behind them until the last wall was gone (renewal lane 2).</summary>
         public static int CountUnderway(Map.Map map)
         {
             int n = 0;
             IReadOnlyList<Dwelling> dwellings = DwellingsOn(map);
             for (int i = 0; i < dwellings.Count; i++)
             {
-                if (!dwellings[i].IsComplete(map)) n++;
+                if (!dwellings[i].beingDemolished && !dwellings[i].IsComplete(map)) n++;
             }
             return n;
         }
