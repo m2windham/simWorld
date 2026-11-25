@@ -75,6 +75,7 @@ content-silent SimWorld.Research.ResearchProjectDef.hiddenPrerequisites | None o
 content-silent SimWorld.Scenario.ScenPart_ForcedTrait.degree | The one shipped forced-trait scen part forces a degree-0 trait, so the non-default branch of the degree lookup is never exercised by content.
 content-silent SimWorld.Stats.PawnCapacityFactor.allowedDefect | No shipped stat's capacity factor tolerates a defect, so that arm of PawnCapacityFactor.GetFactor is dead in shipped content.
 content-silent SimWorld.Stats.PawnCapacityFactor.useReciprocal | As allowedDefect: no shipped capacity factor inverts, so the reciprocal arm of GetFactor never runs.
+content-silent SimWorld.Thoughts.ThoughtDef.developmentalStageFilter | RimWorld's default (child and adult) is what every shipped thought wants, and null means that default: babies are kept out of grown-up thoughts by it already. Set it only on a thought meant for a stage the default leaves out.
 content-silent SimWorld.Thoughts.ThoughtDef.nullifyingHediffs | No shipped thought is suppressed by a hediff, so the nullifying check in ThoughtHandlers always passes.
 content-silent SimWorld.Thoughts.ThoughtDef.thoughtClass | An optional override: all 50 shipped thoughts let ThoughtDef.ThoughtClass fall back to Thought_Memory or Thought_Situational, which is the intended shape.
 content-silent SimWorld.Weather.WeatherDef.repeatable | No shipped weather may follow itself, so WeatherDecider's repeat check always rejects the incumbent — the flag exists for content that wants the opposite.
