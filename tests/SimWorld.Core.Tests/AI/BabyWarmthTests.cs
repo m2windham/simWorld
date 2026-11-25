@@ -238,6 +238,48 @@ namespace SimWorld.Tests.AI
         }
 
         /// <summary>
+        /// One of the house's own out in the frost with hypothermia, nobody at home: the house lights its hearth for them
+        /// to come home to, and within hours it is somewhere warm to go. The arc's children of day 520 froze out of
+        /// doors and in the dormitory while their houses stood at -5 C, because nobody was home to want the fire.
+        /// </summary>
+        [Fact]
+        public void A_house_lights_its_hearth_for_one_of_its_own_freezing_away_from_home()
+        {
+            Village v = NewWinterVillage("hearth-for-the-away", 2);
+            List<Pawn> household = v.Settlement.Citizens.Where(p => p.relations.familyId == v.Housed && p.Spawned).ToList();
+            Assert.NotEmpty(household);
+            List<IntVec3> ground = OpenGround(v).Take(household.Count).ToList();
+            for (int i = 0; i < household.Count; i++)
+            {
+                household[i].Position = ground[i];
+                Hediff? had = household[i].health.hediffSet.GetFirstHediffOfDef(TemperatureDefOf.Hypothermia);
+                if (had != null) had.Severity = 0.001f; // below the first stage (0.04, Hediffs_Temperature.xml)
+            }
+            Assert.False(SettlementClimate.SomeoneHomeIsCold(v.Settlement, v.Map, v.House, 0f),
+                "the hearth wants to burn with nobody home and nobody hurt by the cold");
+
+            Pawn cold = household[0];
+            Hediff hurt = HediffMaker.MakeHediff(TemperatureDefOf.Hypothermia, cold);
+            hurt.Severity = 0.25f; // the minor stage (0.2 to 0.35, Hediffs_Temperature.xml)
+            cold.health.AddHediff(hurt);
+            Assert.True(SettlementClimate.SomeoneHomeIsCold(v.Settlement, v.Map, v.House, 0f),
+                "one of the house's own freezing away from home does not ask its hearth to burn");
+
+            float comfyMin = TemperatureInjuryUtility.ComfortableTemperatureRange(cold).min;
+            IntVec3 inside = v.House.Beds(v.Map).First().GetSleepingSlotPos();
+            float air = float.MinValue;
+            int warmAt = -1;
+            for (int hour = 0; hour < 12 && warmAt < 0; hour++)
+            {
+                Run(v.Game, GenDate.TicksPerHour);
+                air = RotUtility.AmbientTemperatureAt(v.Map, inside);
+                if (air >= comfyMin) warmAt = hour;
+            }
+            output.WriteLine("house air " + air.ToString("0.0") + " comfyMin " + comfyMin.ToString("0.0") + " warm at h" + warmAt);
+            Assert.True(warmAt >= 0, "the house was not warm enough for them within 12 h: " + air);
+        }
+
+        /// <summary>
         /// The hearth answers whoever lies in the house: a baby of another household laid in its bed for the warmth
         /// keeps the hearth burning for it, with none of the house's own people at home.
         /// </summary>
