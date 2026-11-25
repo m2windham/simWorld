@@ -524,3 +524,20 @@ Choices the spec left open, recorded as they were made, in build order.
   never stops holding the roof. A site's target is read off the map (`GenConstruct.ThingToReplace`: a site on an
   edifice is always a replacement), so a save carries nothing new and either spawn order on load leaves the old
   building in the edifice slot.
+- **Step 3 comes after the homes.** Steps 4 to 6 (homes) were built before step 3 (`UpgradeStanding`), since a
+  house renewed is what the player sees first.
+- **Step 4: new before old, and only on a free plot.** `DwellingPlanner.Renew` lays the new rung on the first free
+  plot (`TryFindPlot`), linked to the old house both ways by a new `Dwelling.id`. The household keeps the old house,
+  repaired as before, until every part of the new one stands; `DwellingUtility.AssignHomes` (still the one writer of
+  `householdId`) then moves it in one step and marks the old house `beingDemolished`. With no free plot, renewal
+  waits: the spec's fallback, replacing in place part by part, is not built in this lane.
+- **Demolition is RimWorld's deconstruct designation, placed by the settlement.** The player's deconstruct giver
+  works only the player's marks, so a new `WorkGiver_DeconstructRenewal` (`WorkGivers_Renewal.xml`, Construction,
+  `priorityInType` 80) works the settlement's own, below finishing frames (95) and the player's marks (110). The
+  player switching the settlement's deconstruct initiative off stops it.
+- **The old roof is lifted when demolition starts.** The port has no no-roof area or roof-removal job (RimWorld's
+  way, recalled), and a roof whose last wall goes falls on whoever is under it. So the roof and its build-roof
+  marks over the old footprint are cleared at once. Once nothing built stands on the footprint, the house is struck
+  off the plan, which frees its plot.
+- **Ids are given lazily.** Planners and tests add dwellings to the compound directly; every pass that reads ids
+  calls `SettlementCompound.EnsureDwellingIds` first, in plan order, so ids are the same on every replay and load.

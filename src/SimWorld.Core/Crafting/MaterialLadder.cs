@@ -585,7 +585,7 @@ namespace SimWorld.Crafting
         }
 
         /// <summary>On the map, less what blueprints and frames already placed still wait for.</summary>
-        private static int Spare(Map.Map map, ThingDef stuff)
+        internal static int Spare(Map.Map map, ThingDef stuff)
         {
             int have = OnMap(map, stuff);
             if (have <= 0) return 0;

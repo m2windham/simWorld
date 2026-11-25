@@ -66,6 +66,38 @@ namespace SimWorld.Building
         /// (shelter lane; see <see cref="Dwelling"/> and <see cref="DwellingPlanner"/>).</summary>
         internal List<Dwelling> dwellings = new List<Dwelling>();
 
+        /// <summary>The next <see cref="Dwelling.id"/> to give (renewal: a house names the one it replaces).</summary>
+        private int nextDwellingId = 1;
+
+        /// <summary>The first house of the settlement to be finished, by <see cref="Dwelling.id"/>; 0 before any
+        /// is. Kept as heritage (<c>docs/design/era-progression.md</c> §7.6).</summary>
+        internal int foundingDwellingId;
+
+        /// <summary>The order of the last era whose first renewal was announced (one letter per era); -1 before any.</summary>
+        internal int renewalAnnouncedEraOrder = -1;
+
+        /// <summary>Gives every dwelling without an id the next one, in the order they were planned. Planners and
+        /// tests add to <see cref="dwellings"/> directly; every pass that reads ids calls this first, so a house
+        /// gets its id on the pass after it was planned at the latest, and the same one on every replay.</summary>
+        internal void EnsureDwellingIds()
+        {
+            for (int i = 0; i < dwellings.Count; i++)
+            {
+                if (dwellings[i].id == 0) dwellings[i].id = nextDwellingId++;
+            }
+        }
+
+        /// <summary>The dwelling with <paramref name="id"/>, or null.</summary>
+        internal Dwelling? DwellingById(int id)
+        {
+            if (id == 0) return null;
+            for (int i = 0; i < dwellings.Count; i++)
+            {
+                if (dwellings[i].id == id) return dwellings[i];
+            }
+            return null;
+        }
+
         /// <summary>For Scribe.</summary>
         private SettlementCompound()
         {
@@ -652,6 +684,9 @@ namespace SimWorld.Building
             List<Dwelling>? list = dwellings;
             Scribe_Collections.Look(ref list, "dwellings", LookMode.Deep);
             dwellings = list ?? new List<Dwelling>();
+            Scribe_Values.Look(ref nextDwellingId, "nextDwellingId", 1);
+            Scribe_Values.Look(ref foundingDwellingId, "foundingDwellingId", 0);
+            Scribe_Values.Look(ref renewalAnnouncedEraOrder, "renewalAnnouncedEraOrder", -1);
         }
     }
 }

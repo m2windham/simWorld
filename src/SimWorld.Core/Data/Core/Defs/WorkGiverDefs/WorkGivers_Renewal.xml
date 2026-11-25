@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Renewal (docs/design/era-progression.md section 7): the settlement's own deconstruct marks, on a house its
+       household has moved out of. RimWorld's deconstruct work, worked after the player's own marks (Deconstruct,
+       priorityInType 110) and after finishing frames (95), so a new house goes up before an old one comes down. -->
+  <WorkGiverDef>
+    <defName>DeconstructRenewal</defName>
+    <label>pull down old houses</label>
+    <verb>Deconstruct</verb>
+    <gerund>pulling down</gerund>
+    <workType>Construction</workType>
+    <priorityInType>80</priorityInType>
+    <giverClass>SimWorld.Building.WorkGiver_DeconstructRenewal</giverClass>
+  </WorkGiverDef>
+
+</Defs>
