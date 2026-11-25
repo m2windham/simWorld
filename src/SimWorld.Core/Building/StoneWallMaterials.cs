@@ -87,7 +87,7 @@ namespace SimWorld.Building
         /// wall, and just itself for everything else. The one hook <see cref="SettlementConstructionInitiative"/>
         /// needs to stop counting a granite wall as a missing wooden one.</summary>
         public static IReadOnlyList<ThingDef> EquivalentsOf(ThingDef def) =>
-            IsWall(def) ? AllWallDefs : new[] { def };
+            IsWall(def) ? AllWallDefs : StorageForms.IsStorage(def) ? StorageForms.All : new[] { def };
 
         /// <summary>
         /// The wall the settlement should raise next on <paramref name="map"/>: the toughest stone it has a
@@ -115,7 +115,7 @@ namespace SimWorld.Building
             return ConstructionThingDefOf.Wall;
         }
 
-        /// <summary>Whether every entry of <paramref name="wall"/>'s cost is on the map in full. Counts loose
+        /// <summary>Whether every entry of <paramref name="wall"/>'s cost is held in full, on the map or in the ledger. Counts loose
         /// stacks wherever they lie, exactly as <see cref="WorkGiver_ConstructDeliverResources"/> does when it
         /// goes looking for them.</summary>
         private static bool CanAffordOne(Map.Map map, ThingDef wall)
@@ -125,7 +125,10 @@ namespace SimWorld.Building
 
             for (int i = 0; i < cost.Count; i++)
             {
-                int have = 0;
+                // The ledger's blocks count too: cut stone hauled to storage is banked there, and is supplied back
+                // to the site that wants it (Economy.SettlementBuildStock). Read off the map alone, a town whose mason
+                // had cut a hundred blocks never raised a stone wall (renewal lane 2).
+                int have = AI.HuntingInitiative.SettlementFor(map)?.StoreCountOf(cost[i].thingDef) ?? 0;
                 IReadOnlyList<Thing> stacks = map.listerThings.ThingsOfDef(cost[i].thingDef);
                 for (int s = 0; s < stacks.Count; s++)
                 {

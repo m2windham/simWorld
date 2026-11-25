@@ -587,3 +587,63 @@ Choices the spec left open, recorded as they were made, in build order.
   over replacements already standing, separate from the homes' budget. Each wall needs the reserve (1.5 times its
   cost, spare over other sites' claims) before it is planned. A cell whose ground cannot bear the new wall is
   skipped. House walls are left to the house's renewal.
+
+### 7.12 Renewal past the early eras (lane `renewal2`)
+
+The ten-year arcs renewed homes through the Agrarian and Bronze ages and then stopped. Each cause below was found in
+a probe and is pinned by a test on a generated map (`RenewalLaterErasTests`, `BabyInteractionTests`).
+
+- **The ledger is stock.** `SettlementStockInitiative` banks stockpiled chunks, blocks, logs and metal into
+  `Settlement.Stores`, and every material gate read the map alone: `MaterialLadder.Spare`,
+  `StoneWallMaterials.CanAffordOne` and through them `RenewalInitiative.Affordable` and the wall pass. A probe town
+  held 38 chunks and 600 logs in its ledger and none on the ground, so no stonecutter's table was ever raised, no
+  block was ever cut and no stone wall ever built. `Spare` and `CanAffordOne` now count the ledger;
+  `SettlementBuildStock` issues what blueprints and frames still need from the ledger next to the settlement's
+  stockpile, as `SettlementBillStock` already did for bills; and `StonecutterInitiative` raises its table, and
+  takes its bill, for stone held only in the ledger.
+- **A full street rebuilds in place.** Renewal built only on a free plot, and a town of forty filled its street in
+  its first month and never renewed a house again. With no free plot, `DwellingPlanner.RenewInPlace` plans the new
+  rung on the old house's own plot. The household's claim moves to the new house at once, the old one is pulled
+  down, and nothing of the new one is planned until its ground is clear. It goes ahead only while the dormitory
+  has a bed for every member beyond the citizens already without a house (`RenewalInitiative.CanLodge`), and never
+  while beds are short. This is 7.7's fallback done a whole house at a time, since the rungs' plans do not share
+  their walls. RimWorld has none (recalled: its player rebuilds by hand).
+- **A bed shortage no longer stops every renewal.** In a growing town, births and newcomers kept beds short for good,
+  and renewal waited for ever. While beds are short, a house is still renewed if its household has more members
+  than beds and the new rung has more beds (`RenewalInitiative.AddsBeds`). It is built on a free plot only, new
+  before old, so no bed is lost on the way. Stores, benches and walls still wait.
+- **A house coming down is not one going up.** `DwellingUtility.CountUnderway` counted houses being demolished,
+  which held `DwellingTuning.MaxUnderway` and stopped new houses and renewals until the last wall was gone.
+- **Stores have an era form.** Only the storage hut existed, so storage could never count as renewed.
+  `Buildings_StorageForms.xml` adds a store for each era from the Agrarian age on: granary (Granaries),
+  storehouse (Bureaucracy), horreum (Markets), tithe barn (Feudalism), warehouse (Railways), distribution centre
+  (GlobalMarkets) and automated depot (AutonomousDrones). Each is one cell and made from stuff, and its hit points
+  and work rise with the era. These figures are this port's own. `GenConstruct.ReplaceTag` puts all stores in one
+  family (`Storage`). `StoneWallMaterials.EquivalentsOf` counts any store toward the storage need, so a renewed
+  hut is not built again.
+- **Benches are rebuilt in a better material.** A one-cell bench that is made from stuff and takes bills replaces
+  itself in place (`Bench:<defName>`) in the best material held to spare: a building metal, then cut stone, then
+  wood. It keeps its bills across the swap (`Frame.CompleteConstruction`), because nobody here would set them
+  again. `StructureRenewal` runs after the homes in the daily pass, under the same waits. Its budget is
+  `RenewalTuning.MaxUnderway`, separate from the homes' and walls' budgets, with the same 1.5 times reserve and
+  wood exempt. Stores go first, then the bench furthest behind.
+- **A bench's or wall's form is its material's era too.** `RenewalSummary` dates a store by its def, and a bench or
+  wall by the later of its def's era and its material's (`StructureRenewal.FormEraOrder`). A material's era is that
+  of the earliest recipe that makes it (`StructureRenewal.MaterialEraOrder`), not `EraAvailability.EraOf`. `EraOf`
+  gives no era to anything that can also be dug up, and RimWorld maps carry compacted steel, so steel read as a
+  first-era material.
+- **A stalled renewal is called off, not downgraded.** `ReplanStalledSites` re-plans a site that is short of its
+  stuff in whatever is affordable, which is usually wood. It now counts the ledger as within reach. A site over a
+  standing building is cancelled instead of re-planned, because a wooden bench rebuilt in wood is no renewal and
+  would be planned again the next day.
+- **Production gap, not closed here.** Steel (Medieval) is the latest building material any chain makes. Nothing
+  later is produced: the electric smelter needs power, and no settlement builds power. So from the Industrial age
+  on, benches and walls can renew no further, and only homes and stores can be in the current era's form.
+- **House research comes late in each era.** The agenda studies the cheapest projects in the frontier era first,
+  and each era's house project is one of its dearest. In one probe, `UrbanSanitation` finished 160 days into the
+  Industrial age. Homes still count toward the measure in the previous era's form, so this is reported rather than
+  changed.
+- **Babies take no part in the social sweep.** `SocialInteractionManager` now skips a pawn whose life stage is
+  `Baby`, as an initiator or a recipient. This is recalled from Biotech, not read from its source:
+  `LifeStageDef.canInitiateSocialInteraction` is false for a baby, and `InteractionUtility` keeps a baby from being
+  picked for random interactions. Before this, a newborn collected "Insulted" memories (about -9) from adults.

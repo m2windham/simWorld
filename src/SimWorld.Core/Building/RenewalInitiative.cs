@@ -56,7 +56,12 @@ namespace SimWorld.Building
         {
             if (Find.TickManager.TicksGame % RenewalTuning.PassIntervalTicks != 0) return null;
             Dwelling? renewed = TryRenewOne(settlement, map);
-            if (WaitReason(settlement, map) == null) MaterialLadder.UpgradeStanding(map, RenewalTuning.MaxUnderway(LivingCitizens(settlement)));
+            if (WaitReason(settlement, map) == null)
+            {
+                int budget = RenewalTuning.MaxUnderway(LivingCitizens(settlement));
+                StructureRenewal.Renew(map, budget);
+                MaterialLadder.UpgradeStanding(map, budget);
+            }
             return renewed;
         }
 
@@ -66,7 +71,12 @@ namespace SimWorld.Building
             SettlementCompound? compound = map.settlementCompound;
             if (compound == null) return null;
             compound.EnsureDwellingIds();
-            if (WaitReason(settlement, map) != null) return null;
+            // Short of beds, only a renewal that is itself the cure goes ahead: a crowded household rebuilt into a
+            // house with more beds, new before old, so no bed is lost on the way (renewal lane 2). Waiting it out
+            // never ended in a growing town: births and newcomers kept the beds short for good.
+            string? wait = WaitReason(settlement, map);
+            bool bedsShort = wait == BedsShort;
+            if (wait != null && !bedsShort) return null;
 
             DwellingDef? target = DwellingUtility.PreferredDwellingDef();
             if (target == null) return null;
@@ -95,9 +105,11 @@ namespace SimWorld.Building
             // Highest score first; the older house (lower id) on a tie.
             candidates.Sort((a, b) => a.Score != b.Score ? b.Score.CompareTo(a.Score) : a.Home.id.CompareTo(b.Home.id));
 
+            bool plotFree = true;
             for (int i = 0; i < candidates.Count; i++)
             {
                 Dwelling d = candidates[i].Home;
+                if (bedsShort && !AddsBeds(d, target, households)) continue;
                 // The old quarter (§7.6): before a rung's last-but-one house goes, its oldest is kept.
                 Dwelling? exemplar = ExemplarToKeep(map, d);
                 if (exemplar != null)
@@ -105,20 +117,36 @@ namespace SimWorld.Building
                     MarkHeritage(map, exemplar);
                     if (ReferenceEquals(exemplar, d)) continue;
                 }
-                Dwelling? replacement = DwellingPlanner.Renew(map, d, target);
-                if (replacement == null) return null; // no free plot: nothing else would find one either
+                Dwelling? replacement = null;
+                if (plotFree)
+                {
+                    replacement = DwellingPlanner.Renew(map, d, target);
+                    plotFree = replacement != null; // no free plot for one means none for the next either
+                }
+                // No free plot: rebuild on the house's own, while its household lodges in the dormitory. Never while
+                // short of beds, and only while the dormitory has a bed for every one of them.
+                if (replacement == null && !bedsShort && CanLodge(settlement, map, d, households))
+                {
+                    replacement = DwellingPlanner.RenewInPlace(map, d, target);
+                }
+                if (replacement == null) continue;
                 Notify_RenewalStarted(compound);
                 return d;
             }
             return null;
         }
 
-        /// <summary>Why renewal is waiting, or null when it may go ahead (§7.4).</summary>
+        /// <summary><see cref="WaitReason"/> when beds are fewer than citizens. Homes are still renewed then where
+        /// the renewal adds beds to a crowded household (<see cref="AddsBeds"/>); stores, benches and walls wait.</summary>
+        public const string BedsShort = "not everyone has a bed";
+
+        /// <summary>Why renewal is waiting, or null when it may go ahead (§7.4). With <see cref="BedsShort"/> only the
+        /// homes that add beds go ahead.</summary>
         public static string? WaitReason(Settlement settlement, Map.Map map)
         {
             int citizens = LivingCitizens(settlement);
             if (citizens == 0) return "nobody lives here";
-            if (map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count < citizens) return "not everyone has a bed";
+            if (map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count < citizens) return BedsShort;
             if (FoodDays(settlement, map, citizens) < FoodDaysWanted()) return "food is short";
             if (HostilesOnMap(settlement, map)) return "enemies are on the map";
             return null;
@@ -167,6 +195,33 @@ namespace SimWorld.Building
                 if (!citizens[i].Dead) n++;
             }
             return n;
+        }
+
+        /// <summary>Whether renewing <paramref name="d"/> as <paramref name="target"/> gives a crowded household more
+        /// beds: more members than its beds, and a rung with more.</summary>
+        public static bool AddsBeds(Dwelling d, DwellingDef target, SortedDictionary<int, int> households)
+        {
+            int members = households.TryGetValue(d.householdId, out int n) ? n : 0;
+            return members > d.def.BedCount && target.BedCount > d.def.BedCount;
+        }
+
+        /// <summary>
+        /// Whether <paramref name="d"/>'s household could sleep in the dormitory while its house is rebuilt on the
+        /// same plot (<see cref="DwellingPlanner.RenewInPlace"/>): the beds outside every house, less the citizens a
+        /// finished house does not already sleep, hold all its members. A household lodges with the town for the
+        /// days it takes, as one would with its neighbours; nobody is put out to sleep on the ground for it.
+        /// </summary>
+        public static bool CanLodge(Settlement settlement, Map.Map map, Dwelling d, SortedDictionary<int, int> households)
+        {
+            int members = households.TryGetValue(d.householdId, out int n) ? n : 0;
+            int dormitory = 0;
+            IReadOnlyList<Thing> beds = map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed);
+            for (int i = 0; i < beds.Count; i++)
+            {
+                if (!DwellingUtility.IsDwellingBed(beds[i])) dormitory++;
+            }
+            int unhoused = LivingCitizens(settlement) - DwellingUtility.HousedCitizens(settlement, map);
+            return dormitory - unhoused >= members;
         }
 
         /// <summary>A finished, lived-in house, not heritage, not already being replaced, in a lower rung than the

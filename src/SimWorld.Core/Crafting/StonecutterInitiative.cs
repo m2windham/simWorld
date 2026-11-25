@@ -148,7 +148,8 @@ namespace SimWorld.Crafting
         /// <summary>
         /// Every stonecutting recipe the civilization knows and has the stone for right now: researched
         /// (<see cref="RecipeDef.AvailableNow"/>), with at least one chunk of its own ingredient lying on
-        /// <paramref name="map"/>, and with a bench Def that could work it. Ordered by defName so two runs of
+        /// <paramref name="map"/> or banked in its settlement's ledger (<see cref="IngredientInLedger"/>), and with a
+        /// bench Def that could work it. Ordered by defName so two runs of
         /// the same state queue the same bills in the same order — determinism is a feature, and this is the
         /// one place here that could otherwise depend on Def load order.
         /// </summary>
@@ -163,7 +164,7 @@ namespace SimWorld.Crafting
                 RecipeDef recipe = all[i];
                 if (!IsStonecutting(recipe) || !recipe.AvailableNow) continue;
                 if (recipe.recipeUsers == null || recipe.recipeUsers.Count == 0) continue;
-                if (IngredientOnMap(map, recipe) == null) continue;
+                if (IngredientOnMap(map, recipe) == null && !IngredientInLedger(map, recipe)) continue;
                 found.Add(recipe);
             }
             found.Sort((a, b) => string.CompareOrdinal(a.defName, b.defName));
@@ -192,6 +193,27 @@ namespace SimWorld.Crafting
             return null;
         }
 
+        /// <summary>
+        /// Whether the ledger of the settlement that owns <paramref name="map"/> holds one of
+        /// <paramref name="recipe"/>'s fixed ingredients. Chunks hauled to storage are banked (they stay allowed in
+        /// the granary for the masons' guild), so a town that mined and tidied up had all its stone in the ledger and
+        /// none on the ground, and this initiative, reading the ground alone, never raised a table: no ten-year arc
+        /// ever cut a block or built a stone wall (renewal lane 2). A bill on a table is supplied from the ledger
+        /// (<see cref="Economy.SettlementBillStock"/>), so the stone only has to be held.
+        /// </summary>
+        public static bool IngredientInLedger(Map.Map map, RecipeDef recipe)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            Settlement? settlement = AI.HuntingInitiative.SettlementFor(map);
+            if (settlement == null || recipe?.ingredients == null) return false;
+            for (int i = 0; i < recipe.ingredients.Count; i++)
+            {
+                ThingDef? fixedDef = Guild.FixedDefOf(recipe.ingredients[i]);
+                if (fixedDef != null && settlement.StoreCountOf(fixedDef) > 0) return true;
+            }
+            return false;
+        }
+
         // -----------------------------------------------------------------------------------------------
         // Benches.
         // -----------------------------------------------------------------------------------------------
@@ -210,9 +232,10 @@ namespace SimWorld.Crafting
             for (int i = 0; i < recipes.Count; i++)
             {
                 Thing? chunk = IngredientOnMap(map, recipes[i]);
-                if (chunk == null) continue;
+                // Stone held only in the ledger is issued beside the table once its bill stands, so the yard will do.
+                if (chunk == null && !IngredientInLedger(map, recipes[i])) continue;
                 if (!TryFindYardSite(map, benchDef, recipes, out IntVec3 cell)
-                    && !TryFindPlacementCell(map, benchDef, chunk.Position, out cell)) continue;
+                    && (chunk == null || !TryFindPlacementCell(map, benchDef, chunk.Position, out cell))) continue;
                 PlaceBlueprint(map, benchDef, cell);
                 return;
             }
@@ -298,7 +321,9 @@ namespace SimWorld.Crafting
             cell = default;
             SettlementCompound? compound = map.settlementCompound;
             if (compound == null || !compound.TryFindWorkSite(map, SettlementCompound.WorkSite.Stonecutter, benchDef, out IntVec3 site)) return false;
-            if (!SettlementCompound.ItemWithin(map, site, WorkGiver_DoBill.IngredientSearchRadius, def => CutsFrom(recipes, def))) return false;
+            // Stone in the ledger is issued beside the table's bill (SettlementBillStock), so it is always within reach.
+            if (!SettlementCompound.ItemWithin(map, site, WorkGiver_DoBill.IngredientSearchRadius, def => CutsFrom(recipes, def))
+                && !recipes.Exists(r => IngredientInLedger(map, r))) return false;
             cell = site;
             return true;
         }

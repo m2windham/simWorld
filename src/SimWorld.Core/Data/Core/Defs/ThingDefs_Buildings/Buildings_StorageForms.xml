@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    The storage ladder (renewal lane 2, docs/design/era-progression.md 7.11): one form of the settlement's store
+    for each era after the first, as the dwelling ladder has one house per era. StorageHut (Buildings_Structural.xml)
+    is the first rung and stays as it was. Each form fills the same need (Building.StorageForms, counted with the hut
+    by StoneWallMaterials.EquivalentsOf) and replaces a standing store in place when the town renews it
+    (Building.StructureRenewal). Like the hut each is one cell, impassable and roofed: the goods themselves are in the
+    ledger, and a store on the map is the town's capacity to keep them.
+
+    Made from stuff, as RimWorld's buildings are: the form is the era's, the material is what the town holds (a
+    bulk metal, then cut stone, then wood, which a builder can always fell), so every era's store can be built from
+    what a town actually produces. Gates, sizes and costs are this port's own; RimWorld has no storage building
+    but the shelf (recalled). The labels are the real stores of each age, not RimWorld's.
+  -->
+
+  <ThingDef>
+    <defName>Granary</defName>
+    <label>granary</label>
+    <description>A raised, roofed store on posts: dry grain and goods kept off the damp ground and out of reach of vermin.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <statBases>
+      <MaxHitPoints>190</MaxHitPoints>
+      <WorkToBuild>420</WorkToBuild>
+    </statBases>
+    <researchPrerequisites>
+      <li>Granaries</li>
+    </researchPrerequisites>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>30</costStuffCount>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Granary</defName>
+    <label>granary (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Granary</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Granary</defName>
+    <label>granary (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>Granary</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Storehouse</defName>
+    <label>storehouse</label>
+    <description>A walled storeroom of tallied jars and bales, kept by the town's scribes.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <statBases>
+      <MaxHitPoints>230</MaxHitPoints>
+      <WorkToBuild>520</WorkToBuild>
+    </statBases>
+    <researchPrerequisites>
+      <li>Bureaucracy</li>
+    </researchPrerequisites>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>35</costStuffCount>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Storehouse</defName>
+    <label>storehouse (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Storehouse</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Storehouse</defName>
+    <label>storehouse (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>Storehouse</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Horreum</defName>
+    <label>horreum</label>
+    <description>A public warehouse of thick walls and raised floors, rented out to the town's merchants.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <statBases>
+      <MaxHitPoints>280</MaxHitPoints>
+      <WorkToBuild>640</WorkToBuild>
+    </statBases>
+    <researchPrerequisites>
+      <li>Markets</li>
+    </researchPrerequisites>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>40</costStuffCount>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Horreum</defName>
+    <label>horreum (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Horreum</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Horreum</defName>
+    <label>horreum (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>Horreum</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>TitheBarn</defName>
+    <label>tithe barn</label>
+    <description>A great barn where the town's dues in kind are gathered and kept.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <statBases>
+      <MaxHitPoints>330</MaxHitPoints>
+      <WorkToBuild>760</WorkToBuild>
+    </statBases>
+    <researchPrerequisites>
+      <li>Feudalism</li>
+    </researchPrerequisites>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>45</costStuffCount>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_TitheBarn</defName>
+    <label>tithe barn (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>TitheBarn</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_TitheBarn</defName>
+    <label>tithe barn (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>TitheBarn</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Warehouse</defName>
+    <label>warehouse</label>
+    <description>A long goods shed on its own siding, loaded straight from the wagons.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <statBases>
+      <MaxHitPoints>400</MaxHitPoints>
+      <WorkToBuild>900</WorkToBuild>
+    </statBases>
+    <researchPrerequisites>
+      <li>Railways</li>
+    </researchPrerequisites>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>50</costStuffCount>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Warehouse</defName>
+    <label>warehouse (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Warehouse</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Warehouse</defName>
+    <label>warehouse (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>Warehouse</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>DistributionCentre</defName>
+    <label>distribution centre</label>
+    <description>Racked bays and loading doors: goods pass through on a schedule rather than sit.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <statBases>
+      <MaxHitPoints>470</MaxHitPoints>
+      <WorkToBuild>1050</WorkToBuild>
+    </statBases>
+    <researchPrerequisites>
+      <li>GlobalMarkets</li>
+    </researchPrerequisites>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>55</costStuffCount>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_DistributionCentre</defName>
+    <label>distribution centre (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>DistributionCentre</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_DistributionCentre</defName>
+    <label>distribution centre (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>DistributionCentre</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>AutomatedDepot</defName>
+    <label>automated depot</label>
+    <description>A sealed store worked by machines that sort, stack and fetch without being asked.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <statBases>
+      <MaxHitPoints>550</MaxHitPoints>
+      <WorkToBuild>1200</WorkToBuild>
+    </statBases>
+    <researchPrerequisites>
+      <li>AutonomousDrones</li>
+    </researchPrerequisites>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <costStuffCount>60</costStuffCount>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_AutomatedDepot</defName>
+    <label>automated depot (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>AutomatedDepot</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_AutomatedDepot</defName>
+    <label>automated depot (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>Impassable</passability>
+    <fillPercent>0</fillPercent>
+    <entityToBuild>AutomatedDepot</entityToBuild>
+  </ThingDef>
+
+</Defs>

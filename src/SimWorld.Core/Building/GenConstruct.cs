@@ -161,7 +161,8 @@ namespace SimWorld.Building
 
         /// <summary>
         /// What family a building belongs to for replacing in place: one wall can be raised over another, of a
-        /// different form or stuff, and nothing else can. RimWorld (1.3 on; <b>recalled</b>, not read from a
+        /// different form or stuff; one store over another (<see cref="StorageForms"/>); a workbench over itself in
+        /// another stuff (<see cref="StructureRenewal.IsBench"/>); and nothing else can. RimWorld (1.3 on; <b>recalled</b>, not read from a
         /// decompile here) does this with <c>BuildableDef.replaceTags</c> and a <c>GenConstruct</c> check that the
         /// placed def and the standing one share a tag. This port reads the family off what it already knows
         /// about a wall (<see cref="StoneWallMaterials.IsWall"/>, and the earth bank, impassable and full) rather
@@ -174,6 +175,9 @@ namespace SimWorld.Building
             if (def.size.x != 1 || def.size.z != 1) return null;
             if (StoneWallMaterials.IsWall(def)) return "Wall";
             if (def.earthBanked && def.passability == Traversability.Impassable && def.Fillage == FillCategory.Full) return "Wall";
+            // Renewal lane 2: a store is replaced by the era's store, and a workbench by itself in a better stuff.
+            if (StorageForms.IsStorage(def)) return "Storage";
+            if (StructureRenewal.IsBench(def)) return "Bench:" + def.defName;
             return null;
         }
 
