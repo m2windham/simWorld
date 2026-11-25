@@ -240,7 +240,7 @@ namespace SimWorld.Tests.MindState
             Assert.True(p.InMentalState, "no break within ten days of despair");
             Letter let = Assert.Single(Letters);
             Assert.Contains("Despairing", let.label);
-            Assert.Contains(p.MentalStateDef!.beginLetterLabel!, let.label);
+            Assert.Contains(p.MentalStateDef!.beginLetterLabel!.Substring(1), let.label); // the title capitalises it
         }
 
         /// <summary>
