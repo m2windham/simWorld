@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: r6, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5 }
+          - { name: r8, sha: 2aa37aa2318147eda222b96dd2282badab5aff06 }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -44,8 +44,8 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: base, sha: 52f0459eb7aebe2b0f275ed37b04ec1297b9a89c }
-          - { name: r6, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5 }
+          - { name: base, sha: b552f68ccb69b6aed0b15cc75e926c044f2f7011 }
+          - { name: r8, sha: 2aa37aa2318147eda222b96dd2282badab5aff06 }
         threats: ["false", "true"]
         shard:
           - { n: 1, runs: "20:105 20:99 20:777 20:2024 20:12345 20:31337 20:101" }
@@ -79,10 +79,10 @@ jobs:
       fail-fast: false
       matrix:
         run:
-          - { name: r6-20-99-on, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5, threats: "true", pop: "20:99" }
-          - { name: r6-40-201-on, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5, threats: "true", pop: "40:201" }
-          - { name: r6-20-101-on, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5, threats: "true", pop: "20:101" }
-          - { name: r6-40-201-off, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5, threats: "false", pop: "40:201" }
+          - { name: r8-20-99-on, sha: 2aa37aa2318147eda222b96dd2282badab5aff06, threats: "true", pop: "20:99" }
+          - { name: r8-40-201-on, sha: 2aa37aa2318147eda222b96dd2282badab5aff06, threats: "true", pop: "40:201" }
+          - { name: r8-20-101-on, sha: 2aa37aa2318147eda222b96dd2282badab5aff06, threats: "true", pop: "20:101" }
+          - { name: r8-40-201-off, sha: 2aa37aa2318147eda222b96dd2282badab5aff06, threats: "false", pop: "40:201" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
