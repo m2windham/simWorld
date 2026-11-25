@@ -612,6 +612,13 @@ a probe and is pinned by a test on a generated map (`RenewalLaterErasTests`, `Ba
   and renewal waited for ever. While beds are short, a house is still renewed if its household has more members
   than beds and the new rung has more beds (`RenewalInitiative.AddsBeds`). It is built on a free plot only, new
   before old, so no bed is lost on the way. Stores, benches and walls still wait.
+- **Banked stone is stock for the masons and claimed stone is not spare.** Once the stonecutters worked from the
+  ledger, their standing bill counted only blocks on the map (`CompBillGiver.CountProducts`), and the masons of one
+  probe had cut twelve thousand blocks by its third year. `StonecutterInitiative.CountTheLedger` now sets the
+  bill's target to what the walls want less what the ledger holds, keeping the half-way band. A wall's stone is
+  affordable only if it is spare over other sites' claims (`StoneWallMaterials.CanAffordOne`). Otherwise a house
+  planned on the last twenty granite blocks made every wall granite, and most of them waited for ever. A fallen
+  stone wall whose stone is gone is rebuilt as the wall the town would raise today, not in the lost stone.
 - **A house coming down is not one going up.** `DwellingUtility.CountUnderway` counted houses being demolished,
   which held `DwellingTuning.MaxUnderway` and stopped new houses and renewals until the last wall was gone.
 - **Stores have an era form.** Only the storage hut existed, so storage could never count as renewed.

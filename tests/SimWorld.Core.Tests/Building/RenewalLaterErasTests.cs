@@ -296,6 +296,80 @@ namespace SimWorld.Tests.Building
             Assert.True(summary.Categories.Single(c => c.Category == "Storage").InCurrentOrPreviousEra >= 1);
         }
 
+        // ---- the stone the ledger holds ----
+
+        [Fact]
+        public void Masons_cut_stone_held_only_in_the_ledger_and_stop_once_the_ledger_holds_what_the_walls_want()
+        {
+            Town t = Founded("renewal2-masons", 1, "House_Chalco", "Medieval", spareBeds: 0);
+            CoreMap map = t.Map;
+            IntVec3 band = SettlementReach.BandCell(map)!.Value;
+            ThingDef tableDef = Def("TableStonecutter");
+            IntVec3 cell = map.AllCells.Where(c => DwellingUtility.DwellingAt(map, c) == null && GenConstruct.CanPlaceBlueprintAt(tableDef, c, map, out _))
+                .OrderBy(c => (c - band).LengthHorizontalSquared).ThenBy(c => c.x).ThenBy(c => c.z).First();
+            Thing table = ThingMaker.MakeThing(tableDef, Def("WoodLog"));
+            table.SetFaction(t.Faction);
+            GenSpawn.Spawn(table, cell, map);
+            ThingDef chunk = Def("ChunkGranite"), blocks = Def("BlocksGranite");
+            foreach (Thing c in map.listerThings.ThingsOfDef(chunk).ToList()) c.Destroy();
+            foreach (Thing b in map.listerThings.ThingsOfDef(blocks).ToList()) b.Destroy();
+            t.Settlement.SetStoreCount(chunk, 40);
+            t.Settlement.SetStoreCount(blocks, 0);
+
+            // Granite held only in the ledger still gets a bill: it is issued beside the table.
+            global::SimWorld.Crafting.StonecutterInitiative.Run(map);
+            var bill = (Bill_Production)((ThingWithComps)table).GetComp<CompBillGiver>()!.BillStack.Bills
+                .Single(b => b.recipe.products!.Any(p => ReferenceEquals(p.thingDef, blocks)));
+            int wanted = global::SimWorld.Crafting.StonecutterInitiative.StandingBillFor(bill.recipe).targetCount;
+            Assert.True(wanted > 0);
+            Assert.True(bill.ShouldDoNow(), "a town with no cut granite does not cut its banked chunks");
+
+            // Cut and banked, the blocks are off the map: the bill still counts them.
+            t.Settlement.SetStoreCount(blocks, wanted);
+            global::SimWorld.Crafting.StonecutterInitiative.Run(map);
+            Assert.Equal(0, MaterialLadder.OnMap(map, blocks));
+            Assert.False(bill.ShouldDoNow(), "the masons keep cutting with the ledger full of blocks");
+
+            // Spent down a little it stays stopped (the band), and spent below half it starts again.
+            t.Settlement.SetStoreCount(blocks, wanted / 2 + 1);
+            global::SimWorld.Crafting.StonecutterInitiative.Run(map);
+            Assert.False(bill.ShouldDoNow());
+            t.Settlement.SetStoreCount(blocks, wanted / 2 - 1);
+            global::SimWorld.Crafting.StonecutterInitiative.Run(map);
+            Assert.True(bill.ShouldDoNow(), "the masons never cut again once the ledger ran down");
+        }
+
+        [Fact]
+        public void A_house_planned_on_the_last_of_the_granite_takes_no_more_granite_walls_than_it_holds()
+        {
+            Town t = Founded("renewal2-granite", 1, "House_Chalco", "Medieval", spareBeds: 0);
+            CoreMap map = t.Map;
+            ThingDef granite = Def("BlocksGranite"), limestone = Def("BlocksLimestone");
+            foreach (ThingDef d in DefDatabase<ThingDef>.AllDefsListForReading.Where(d => d.defName.StartsWith("Blocks")).ToList())
+            {
+                foreach (Thing b in map.listerThings.ThingsOfDef(d).ToList()) b.Destroy();
+                t.Settlement.SetStoreCount(d, 0);
+            }
+            ThingDef graniteWall = StoneWallMaterials.WallBuiltFrom(granite)!;
+            int perWall = graniteWall.CostListCountFor(granite);
+            t.Settlement.SetStoreCount(granite, perWall * 3);
+            t.Settlement.SetStoreCount(limestone, 2000);
+
+            // Wall after wall, as a house's walls are planned in one pass: each blueprint claims its stone.
+            IntVec3 band = SettlementReach.BandCell(map)!.Value;
+            var planned = new List<ThingDef>();
+            foreach (IntVec3 c in map.AllCells.Where(c => DwellingUtility.DwellingAt(map, c) == null && GenConstruct.CanPlaceBlueprintAt(graniteWall, c, map, out _))
+                .OrderBy(c => (c - band).LengthHorizontalSquared).ThenBy(c => c.x).ThenBy(c => c.z).Take(8).ToList())
+            {
+                ThingDef wall = StoneWallMaterials.PreferredWallDef(map);
+                planned.Add(wall);
+                var bp = (Blueprint)ThingMaker.MakeThing(GenConstruct.BlueprintDefFor(wall)!);
+                GenSpawn.Spawn(bp, c, map);
+            }
+            Assert.Equal(3, planned.Count(w => ReferenceEquals(w, graniteWall)));
+            Assert.All(planned.Skip(3), w => Assert.Same(StoneWallMaterials.WallBuiltFrom(limestone), w));
+        }
+
         [Fact]
         public void A_bench_rebuilt_in_place_keeps_its_bills()
         {

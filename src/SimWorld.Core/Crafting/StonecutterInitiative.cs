@@ -387,7 +387,37 @@ namespace SimWorld.Crafting
 
                     comp.BillStack.AddBill(bill);
                 }
+
+                Settlement? settlement = AI.HuntingInitiative.SettlementFor(map);
+                if (settlement == null) continue;
+                IReadOnlyList<Bill> bills = comp.BillStack.Bills;
+                for (int i = 0; i < bills.Count; i++)
+                {
+                    if (bills[i] is Bill_Production production && production.repeatMode == BillRepeatMode.TargetCount) CountTheLedger(settlement, production);
+                }
             }
+        }
+
+        /// <summary>
+        /// Sets a standing bill's target to what the walls want less what the ledger already holds, so cut stone
+        /// that has been banked counts as stock. <c>CompBillGiver.CountProducts</c> counts the map, as RimWorld's
+        /// does its stockpiles, but here blocks hauled to storage leave the map for the ledger; read off the map
+        /// alone the bill was never met, and the masons of a ten-year arc cut twelve thousand blocks by its third
+        /// year (renewal lane 2). The band is kept: once met, the bill stays met until the ledger is down to half
+        /// of what is wanted.
+        /// </summary>
+        internal static void CountTheLedger(Settlement settlement, Bill_Production bill)
+        {
+            int wanted = StandingBillFor(bill.recipe).targetCount;
+            if (wanted <= 0) return;
+            int banked = 0;
+            for (int i = 0; bill.recipe.products != null && i < bill.recipe.products.Count; i++)
+            {
+                banked += settlement.StoreCountOf(bill.recipe.products[i].thingDef);
+            }
+            int target = banked >= wanted || (bill.targetCount == 0 && banked > wanted / 2) ? 0 : wanted - banked;
+            bill.targetCount = target;
+            bill.unpauseWhenYouHave = target / 2;
         }
 
         /// <summary>The bill this initiative queues for a recipe. Public because it is the whole content of
