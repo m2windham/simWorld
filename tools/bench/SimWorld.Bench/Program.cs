@@ -96,6 +96,9 @@ namespace SimWorld.Bench
                 case "arc":
                     ArcSuite.Run(opt);
                     break;
+                case "resume":
+                    ResumeSuite.Run(opt);
+                    break;
                 case "layout":
                     for (int play = 0; play < opt.LayoutPlays; play++) LayoutSuite.Run(opt);
                     break;
@@ -203,6 +206,15 @@ namespace SimWorld.Bench
                         break;
                     case "--arc-every":
                         opt.ArcEvery = ParseInt(Next(args, ref i), "--arc-every");
+                        break;
+                    case "--save-at":
+                        opt.SaveAtDay = ParseInt(Next(args, ref i), "--save-at");
+                        break;
+                    case "--save-path":
+                        opt.SavePath = Next(args, ref i);
+                        break;
+                    case "--quake-at":
+                        opt.QuakeAt = ParseDouble(Next(args, ref i), "--quake-at");
                         break;
                     case "--death-detail":
                         opt.DeathDetail = ParseBool(Next(args, ref i), "--death-detail");

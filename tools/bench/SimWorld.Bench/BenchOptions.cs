@@ -88,6 +88,18 @@ namespace SimWorld.Bench
         /// (<see cref="Suites.ExposureWatch"/>). Read-only: the run is the same run without it.</summary>
         public bool DeathDetail { get; set; }
 
+        /// <summary>--suite arc: save the whole game to <see cref="SavePath"/> at the end of this day (0: never).
+        /// With <c>--days</c> equal to it, the run stops there.</summary>
+        public int SaveAtDay { get; set; }
+
+        /// <summary>--suite arc: where <see cref="SaveAtDay"/> writes; --suite resume: the save it loads.</summary>
+        public string? SavePath { get; set; }
+
+        /// <summary>--suite resume: the game day (fractional) on which an earthquake is forced, if none came by
+        /// itself by then (a loaded game has a fresh random stream, so the storyteller's own may not recur).
+        /// Negative: none forced.</summary>
+        public double QuakeAt { get; set; } = -1;
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }
