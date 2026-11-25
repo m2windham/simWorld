@@ -570,3 +570,12 @@ Choices the spec left open, recorded as they were made, in build order.
   marks the whole dwelling. It refuses a house already being replaced and a mark past the cap. Unmarking frees the
   house for renewal and for the era's repairs. Chronicle lines are free text: "The town begins to rebuild in the
   forms of ..." once per era, and "The last ... is pulled down" when a rung's last unkept house goes.
+- **Step 9: renewal is shown on the house, not the Thing.** `DwellingView` gains `DwellingId` (the dwelling's own
+  id: a house is a plan of many Things, so it has no thing id), `EraDefName`, `BuiltTick`, `AgeYears`, `Condition`,
+  `IsObsolete`, `IsHeritage`, `Renewal` (`None`, `Planned`, `Underway` or `Replaced`, as a string like the
+  snapshot's other stages) and `ReplacedByDwellingId` / `ReplacesDwellingId`, the pair a host cross-fades between.
+  The per-building fields of 7.8 (`StructureView` in chunks and deltas) are not built in this lane.
+- **The era panel's measure is `EraOutlook.Renewal`.** `RenewalSummary` counts homes (by their rung's era) and,
+  outside houses, storage huts, benches that take bills and walls (by `EraAvailability.EraOf`, the era of the
+  research that unlocks them; none means the first era). `Share` is current-or-previous-era structures over all,
+  7.5's measure. It also carries the heritage count and the reason renewal is waiting. Roads are not counted.

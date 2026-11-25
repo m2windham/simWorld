@@ -227,6 +227,12 @@ namespace SimWorld.God.View
         /// <summary>Eras the rivals are ahead (positive) or behind (negative) of the civilization.</summary>
         public int RivalLead { get; }
 
+        private RenewalSummary? renewal;
+
+        /// <summary>How far the town has rebuilt itself in this era's forms (<see cref="RenewalSummary"/>). Built
+        /// the first time it is read, like <see cref="GodViewSnapshot.Era"/> itself.</summary>
+        public RenewalSummary Renewal => renewal ??= RenewalSummary.Capture();
+
         internal static EraOutlook Capture()
         {
             ResearchManager manager = Find.ResearchManager;

@@ -7,6 +7,7 @@ using SimWorld.Defs;
 using SimWorld.Factions;
 using SimWorld.God.View;
 using SimWorld.Map;
+using SimWorld.Map.View;
 using SimWorld.Pawns;
 using SimWorld.Research;
 using SimWorld.Scenario;
@@ -449,6 +450,68 @@ namespace SimWorld.Tests.Building
             Assert.Equal("House_Paleo", marked.def.defName);
             Assert.Equal(0, marked.replacedById);
             Assert.DoesNotContain(plain, v.Compound.dwellings);
+        }
+
+        // ---- step 9: what the host is shown ----
+
+        [Fact]
+        public void The_house_views_carry_renewal_and_the_era_outlook_counts_the_town()
+        {
+            Village v = Founded("renewal-view", 3, "House_Paleo");
+            CoreMap map = v.Map;
+            Dwelling founding = v.Houses[0];
+            Dwelling old = RenewalInitiative.TryRenewOne(v.Settlement, map)!;
+            Dwelling replacement = v.Compound.DwellingById(old.replacedById)!;
+
+            MapViewSnapshot snapshot = MapViewSnapshot.Capture(map);
+            DwellingView oldView = Assert.Single(snapshot.Dwellings, d => d.DwellingId == old.id);
+            DwellingView newView = Assert.Single(snapshot.Dwellings, d => d.DwellingId == replacement.id);
+            DwellingView foundingView = Assert.Single(snapshot.Dwellings, d => d.DwellingId == founding.id);
+
+            Assert.Equal("SticksAndStones", oldView.EraDefName);
+            Assert.True(oldView.IsObsolete);
+            Assert.False(oldView.IsHeritage);
+            Assert.Equal(old.completedTick, oldView.BuiltTick);
+            Assert.True(oldView.AgeYears >= 0f);
+            Assert.Equal(1f, oldView.Condition);
+            Assert.Equal("Planned", oldView.Renewal);
+            Assert.Equal(replacement.id, oldView.ReplacedByDwellingId);
+            Assert.Null(oldView.ReplacesDwellingId);
+
+            Assert.Equal("Agrarian", newView.EraDefName);
+            Assert.False(newView.IsObsolete);
+            Assert.Equal(-1, newView.BuiltTick);
+            Assert.Equal("None", newView.Renewal);
+            Assert.Equal(old.id, newView.ReplacesDwellingId);
+
+            Assert.True(foundingView.IsHeritage);
+            Assert.Equal("None", foundingView.Renewal);
+
+            // A wall of the new house up: the old one's renewal is under way; its walls knocked about: its condition falls.
+            Pawn builder = v.Settlement.Citizens.First(p => p.Spawned && !p.Dead);
+            Blueprint first = replacement.footprint.Cells.SelectMany(c => map.thingGrid.ThingsListAt(c)).OfType<Blueprint>().First(b => GenConstruct.ReplaceTag(b.EntityToBuild) == "Wall" || b.EntityToBuild.earthBanked);
+            first.ReplaceWithFrame().CompleteConstruction(builder);
+            Thing oldWall = map.edificeGrid[old.Parts.First(p => p.Kind == DwellingPartKind.Wall).Cell]!;
+            oldWall.HitPoints = oldWall.MaxHitPoints / 4;
+            DwellingView underway = Assert.Single(MapViewSnapshot.Capture(map).Dwellings, d => d.DwellingId == old.id);
+            Assert.Equal("Underway", underway.Renewal);
+            Assert.True(underway.Condition < 1f);
+
+            // The town's summary counts what stands on the map.
+            RenewalSummary summary = GodViewSnapshot.Capture().Era.Renewal;
+            RenewalCategoryLine homes = summary.Categories.Single(c => c.Category == "Homes");
+            List<Dwelling> standing = v.Compound.dwellings.Where(d => !d.beingDemolished && d.completedTick >= 0).ToList();
+            Assert.Equal(standing.Count, homes.Count);
+            Assert.Equal(standing.Count(d => d.def.era!.defName == "Agrarian"), homes.InCurrentEra);
+            Assert.Equal(standing.Count, homes.InCurrentOrPreviousEra); // Sticks and stones is the previous era
+            Assert.Equal(1, homes.Underway);
+            Assert.Equal(standing.Count(d => d.isHeritage), summary.HeritageCount);
+            Assert.Null(summary.WaitingFor);
+            Assert.Equal(new[] { "Homes", "Storage", "Workshops", "Walls" }, summary.Categories.Select(c => c.Category));
+            int walls = map.listerThings.ThingsInGroup(ThingRequestGroup.Building)
+                .Count(b => b.Faction != null && GenConstruct.ReplaceTag(b.def) == "Wall" && DwellingUtility.DwellingAt(map, b.Position) == null);
+            Assert.Equal(walls, summary.Categories.Single(c => c.Category == "Walls").Count);
+            Assert.InRange(summary.Share, 0f, 1f);
         }
     }
 }
