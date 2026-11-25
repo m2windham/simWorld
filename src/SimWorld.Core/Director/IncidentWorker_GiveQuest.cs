@@ -66,12 +66,12 @@ namespace SimWorld.Director
             var letter = (ChoiceLetter)Activator.CreateInstance(def.letterClass)!;
             letter.def = def;
             letter.label = quest.name;
-            letter.text = quest.description.Length > 0 ? quest.description : "A quest is available: " + quest.name + ".";
+            letter.text = QuestOfferText.For(quest);
             letter.quest = quest;
             // The kind is what survives a save; the delegate is what runs now. Both are given, because a load
             // rebuilds the delegate from the kind and would otherwise hand back a choice that does nothing.
             letter.choices.Add(new LetterChoice("Accept", () => quest.Accept(), LetterChoiceKind.AcceptQuest));
-            letter.choices.Add(new LetterChoice("Reject", null, LetterChoiceKind.Dismiss));
+            letter.choices.Add(new LetterChoice("Reject", () => quest.Reject(), LetterChoiceKind.RejectQuest));
             if (quest.ticksUntilAcceptanceExpiry >= 0)
             {
                 letter.SetTimeout(quest.ticksUntilAcceptanceExpiry, null);

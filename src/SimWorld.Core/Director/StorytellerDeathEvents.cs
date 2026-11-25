@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 
+using SimWorld.Building;
 using SimWorld.Health;
 using SimWorld.Letters;
 using SimWorld.Pawns;
@@ -142,7 +143,12 @@ namespace SimWorld.Director
             if (!pawn.RaceProps.Humanlike) return;
 
             string text;
-            if (dinfo != null && !string.IsNullOrEmpty(dinfo.Def.deathMessage))
+            if (dinfo != null && dinfo.Def == RoofCollapseDefOf.Crush && RoofCollapseCause.Describe() is string why)
+            {
+                // The damage's own message says how, not why; under a collapse the cause is known.
+                text = pawn.Label + " was crushed to death when " + why + ".";
+            }
+            else if (dinfo != null && !string.IsNullOrEmpty(dinfo.Def.deathMessage))
             {
                 text = PawnUtility.FormatWithPawn(dinfo.Def.deathMessage, pawn);
             }

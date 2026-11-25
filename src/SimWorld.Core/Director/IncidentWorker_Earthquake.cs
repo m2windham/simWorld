@@ -120,17 +120,24 @@ namespace SimWorld.Director
                 // centre is the first one that fell until something better is known, which is enough to
                 // jump to.
                 var location = new Letters.EventLocation(settlement.tile);
-                (int destroyed, int killed) = ShakeMap(map, settlement, severity, rand, source, location);
-                CreditStructures(source, destroyed);
+                var toll = new QuakeToll();
+                Dictionary<Pawn, int> people = PeopleOn(map, settlement);
+                using (RoofCollapseCause.During("in the earthquake"))
+                {
+                    ShakeMap(map, settlement, severity, rand, source, location, toll);
+                }
+                toll.CountPeople(people);
+                CreditStructures(source, toll.Structures);
                 parms.location = location;
-                SendLetter(settlement, destroyed, killed, watched: IsWatched(settlement), location);
+                SendLetter(settlement, toll, watched: IsWatched(settlement), location);
                 return true;
             }
 
-            int lost = ShakeSettlement(settlement, severity);
-            CreditStructures(source, lost);
+            var abstractToll = new QuakeToll { PeopleKnown = false };
+            ShakeSettlement(settlement, severity, abstractToll);
+            CreditStructures(source, abstractToll.Structures);
             parms.location = new Letters.EventLocation(settlement.tile);
-            SendLetter(settlement, lost, 0, watched: false, parms.location);
+            SendLetter(settlement, abstractToll, watched: false, parms.location);
             return true;
         }
 
@@ -143,9 +150,8 @@ namespace SimWorld.Director
         /// <see cref="Building.SettlementConstructionInitiative"/>. No roll: which structures existed and how
         /// many of each is arithmetic over <see cref="World.Settlement.StructureCount"/>, not a draw.
         /// </summary>
-        private static int ShakeSettlement(SimWorld.World.Settlement settlement, float severity)
+        private static void ShakeSettlement(SimWorld.World.Settlement settlement, float severity, QuakeToll toll)
         {
-            int total = 0;
             IReadOnlyList<ThingDef> defs = KnownStructureDefs();
             for (int i = 0; i < defs.Count; i++)
             {
@@ -155,9 +161,8 @@ namespace SimWorld.Director
 
                 int destroy = DestroyCount(have, severity);
                 settlement.AddStructure(structureDef, -destroy);
-                total += destroy;
+                toll.Fell(structureDef, destroy);
             }
-            return total;
         }
 
         // ---- the watched half: real Things, on a real map ----
@@ -169,10 +174,8 @@ namespace SimWorld.Director
         /// and how many people were killed doing it. Only what is
         /// <paramref name="settlement"/>'s own is laid out again (<see cref="PlaceRebuildBlueprint"/>).
         /// </summary>
-        private static (int Destroyed, int Killed) ShakeMap(Map.Map map, SimWorld.World.Settlement settlement, float severity, RandomStream rand, string? source, Letters.EventLocation location)
+        private static void ShakeMap(Map.Map map, SimWorld.World.Settlement settlement, float severity, RandomStream rand, string? source, Letters.EventLocation location, QuakeToll toll)
         {
-            int destroyedTotal = 0;
-            int killedTotal = 0;
             IReadOnlyList<ThingDef> defs = KnownStructureDefs();
             for (int d = 0; d < defs.Count; d++)
             {
@@ -213,18 +216,111 @@ namespace SimWorld.Director
                     // had. Same faction test as the rebuild.
                     if (rebuild)
                     {
-                        destroyedTotal++;
+                        toll.Fell(built, 1);
                         location.AddAffected(at);
                         PlaceRebuildBlueprint(map, built, builtStuff, at, rot);
                     }
 
                     foreach (IntVec3 cell in footprint.Cells)
                     {
-                        if (GenGrid.InBounds(cell, map)) killedTotal += CrushOccupants(map, cell, source, rand);
+                        if (GenGrid.InBounds(cell, map)) CrushOccupants(map, cell, source, rand);
                     }
                 }
             }
-            return (destroyedTotal, killedTotal);
+        }
+
+        /// <summary>The settlement's own people on the map, alive, with how many injuries each carries now, so
+        /// the letter can say who the quake killed or hurt however it did it: crushed in bed, or under a roof
+        /// that fell when a wall went (which <see cref="CrushOccupants"/> never sees).</summary>
+        private static Dictionary<Pawn, int> PeopleOn(Map.Map map, SimWorld.World.Settlement settlement)
+        {
+            var people = new Dictionary<Pawn, int>();
+            IReadOnlyList<Pawn> citizens = settlement.Citizens;
+            for (int i = 0; i < citizens.Count; i++)
+            {
+                Pawn p = citizens[i];
+                if (p.Dead || !p.Spawned || p.Map != map) continue;
+                people[p] = Injuries(p);
+            }
+            return people;
+        }
+
+        private static int Injuries(Pawn p)
+        {
+            int n = 0;
+            foreach (Hediff h in p.health.hediffSet.hediffs)
+            {
+                if (h is Hediff_Injury) n++;
+            }
+            return n;
+        }
+
+        /// <summary>What one earthquake cost: the settlement's own structures that fell, by kind, and who of its
+        /// people it killed or hurt. The fourth playtest's letters said "99 structures come down" and nothing
+        /// else, which is a number and not news.</summary>
+        private sealed class QuakeToll
+        {
+            public readonly List<(ThingDef Def, int Count)> Fallen = new List<(ThingDef, int)>();
+            public readonly List<string> Killed = new List<string>();
+            public int Hurt;
+            public int Structures;
+            public bool PeopleKnown = true;
+
+            public void Fell(ThingDef def, int count)
+            {
+                if (count <= 0) return;
+                Structures += count;
+                for (int i = 0; i < Fallen.Count; i++)
+                {
+                    // Walls of every material are one line: the toll is what fell, not what it was made of.
+                    if (Fallen[i].Def == def || (StoneWallMaterials.IsWall(Fallen[i].Def) && StoneWallMaterials.IsWall(def)))
+                    {
+                        Fallen[i] = (Fallen[i].Def, Fallen[i].Count + count);
+                        return;
+                    }
+                }
+                Fallen.Add((def, count));
+            }
+
+            public void CountPeople(Dictionary<Pawn, int> before)
+            {
+                foreach (KeyValuePair<Pawn, int> kv in before)
+                {
+                    if (kv.Key.Dead) Killed.Add(kv.Key.Label);
+                    else if (Injuries(kv.Key) > kv.Value) Hurt++;
+                }
+            }
+
+            /// <summary>"40 walls, 3 beds and a storage hut".</summary>
+            public string FallenText()
+            {
+                var parts = new List<string>();
+                foreach ((ThingDef def, int count) in Fallen.OrderByDescending(f => f.Count))
+                {
+                    string label = StoneWallMaterials.IsWall(def) ? "wall" : def.label ?? def.defName;
+                    parts.Add(count == 1 ? "a " + label : count.ToString(CultureInfo.InvariantCulture) + " " + LabelPlural.For(label, count));
+                }
+                return JoinAnd(parts);
+            }
+
+            /// <summary>"Rasmus and Ridgeback were killed, and 3 more were hurt." / "No one was hurt."</summary>
+            public string PeopleText()
+            {
+                string hurt = Hurt.ToString(CultureInfo.InvariantCulture);
+                if (Killed.Count == 0)
+                {
+                    return Hurt == 0 ? "No one was hurt." : hurt + " of your people " + (Hurt == 1 ? "was" : "were") + " hurt, and no one was killed.";
+                }
+                string dead = JoinAnd(Killed) + (Killed.Count == 1 ? " was" : " were") + " killed";
+                return Hurt == 0 ? dead + "." : dead + ", and " + hurt + " more " + (Hurt == 1 ? "was" : "were") + " hurt.";
+            }
+
+            private static string JoinAnd(List<string> parts)
+            {
+                if (parts.Count == 0) return "";
+                if (parts.Count == 1) return parts[0];
+                return string.Join(", ", parts.GetRange(0, parts.Count - 1)) + " and " + parts[parts.Count - 1];
+            }
         }
 
         /// <summary>Crushes every living pawn standing on <paramref name="cell"/> — one cell of a destroyed
@@ -364,29 +460,17 @@ namespace SimWorld.Director
         /// <summary>The player is told either way — an earthquake nobody is told about is indistinguishable
         /// from nothing happening, and a defect that costs nothing when unwatched teaches the player nothing
         /// about where to look next time.</summary>
-        private static void SendLetter(SimWorld.World.Settlement settlement, int structuresLost, int killed, bool watched, Letters.EventLocation location)
+        private static void SendLetter(SimWorld.World.Settlement settlement, QuakeToll toll, bool watched, Letters.EventLocation location)
         {
             string where = string.IsNullOrEmpty(settlement.name) ? "a settlement" : settlement.name;
-            string text;
-            if (watched)
-            {
-                text = killed > 0
-                    ? string.Format(CultureInfo.InvariantCulture,
-                        "An earthquake tears through {0}. {1} structures come down, and {2} of your people are lost in the collapse.",
-                        where, structuresLost, killed)
-                    : string.Format(CultureInfo.InvariantCulture,
-                        "An earthquake tears through {0}. {1} structures come down.", where, structuresLost);
-            }
-            else
-            {
-                text = killed > 0
-                    ? string.Format(CultureInfo.InvariantCulture,
-                        "Word reaches you late: an earthquake struck {0} while your attention was elsewhere, destroying {1} structures. {2} of your people were lost in the collapse.",
-                        where, structuresLost, killed)
-                    : string.Format(CultureInfo.InvariantCulture,
-                        "Word reaches you late: an earthquake struck {0} while your attention was elsewhere, destroying {1} structures.",
-                        where, structuresLost);
-            }
+            string fell = toll.Structures == 0
+                ? "Nothing of yours comes down."
+                : toll.Structures.ToString(CultureInfo.InvariantCulture) + (toll.Structures == 1 ? " structure comes down: " : " structures come down: ")
+                    + toll.FallenText() + ".";
+            string people = toll.PeopleKnown ? " " + toll.PeopleText() : "";
+            string text = watched
+                ? "An earthquake tears through " + where + ". " + fell + people
+                : "Word reaches you late: an earthquake struck " + where + " while your attention was elsewhere. " + fell + people;
 
             Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Earthquake: " + where, text, LetterDefOf.NegativeEvent);
             if (letter != null) letter.location = location;

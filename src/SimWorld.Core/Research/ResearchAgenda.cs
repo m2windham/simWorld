@@ -80,24 +80,81 @@ namespace SimWorld.Research
         /// <summary>
         /// The cheapest project, priced at its era's factor (<see cref="EraPacing.CostFactorFor"/>), the civilization could start right now (<see cref="ResearchProjectDef.CanStartNow"/>
         /// — not finished, every visible and hidden prerequisite finished) and that is not in an era past the
-        /// frontier (<see cref="EraPacing.IsPastFrontier"/>), ties broken by <c>defName</c>.
+        /// frontier (<see cref="EraPacing.IsPastFrontier"/>), ties broken by <c>defName</c>. A project the
+        /// frontier's gate still waits on (<see cref="GateWork"/>) goes ahead of every other.
         /// Null when nothing at all is startable. Reads <see cref="ResearchManager.AllProjects"/> live and
         /// caches nothing: projects are minted into it while a game runs (research.endless), so a cache here
         /// would go stale the first time an age opened.
+        ///
+        /// <para/><b>The gate's research first.</b> The way out of an era is its research spine as well as its
+        /// conditions (<see cref="EraDef.GateOpen"/>), and cheapest-first left the spine for last: the spine is
+        /// what later ages build on, so it is rarely the cheapest thing in its era. In the fourth playtest the
+        /// Agrarian age stood at 90% with every condition met while the agenda swept up cheaper leaves, and
+        /// Selective breeding (600 points, a spine project) waited until the tester chose it by hand. Within the
+        /// gate's own work the choice is still cheapest-first, and once it is done the agenda returns to the
+        /// whole shelf. What is left of earlier eras still goes first (<see cref="Tier"/>): a band finishes its
+        /// starting kit before it studies the next age.
         /// </summary>
         public static ResearchProjectDef? NextProject()
         {
             IReadOnlyList<ResearchProjectDef> all = Find.ResearchManager.AllProjects;
             EraDef? frontier = EraPacing.FrontierEra();
+            HashSet<ResearchProjectDef> gate = GateWork(frontier);
             ResearchProjectDef? best = null;
+            int bestTier = int.MaxValue;
             for (int i = 0; i < all.Count; i++)
             {
                 ResearchProjectDef candidate = all[i];
                 if (!candidate.CanStartNow) continue;
                 if (EraPacing.IsPastFrontier(candidate, frontier)) continue;
-                if (best == null || IsCheaperThan(candidate, best)) best = candidate;
+                int tier = Tier(candidate, frontier, gate);
+                if (best == null || tier < bestTier || (tier == bestTier && IsCheaperThan(candidate, best)))
+                {
+                    best = candidate;
+                    bestTier = tier;
+                }
             }
             return best;
+        }
+
+        /// <summary>The order the agenda works in: what is left of the eras before the frontier (the starting
+        /// kit, priced at its own era's lower rate), then the frontier's gate work, then the rest.</summary>
+        public static int Tier(ResearchProjectDef project, EraDef? frontier, HashSet<ResearchProjectDef> gate)
+        {
+            if (frontier != null && project.era != null && project.era.order < frontier.order) return 0;
+            return gate.Contains(project) ? 1 : 2;
+        }
+
+        /// <summary>
+        /// Every unfinished project the way out of <paramref name="frontier"/> still waits on: its spine
+        /// (<see cref="EraDef.SpineProjects"/>, or every project of an era that has none, which is what
+        /// <see cref="EraDef.IsComplete"/> asks of such an era) and, transitively, whatever those need first,
+        /// whatever era it is in. Empty with no frontier.
+        /// </summary>
+        public static HashSet<ResearchProjectDef> GateWork(EraDef? frontier)
+        {
+            var gate = new HashSet<ResearchProjectDef>();
+            if (frontier == null) return gate;
+            IReadOnlyList<ResearchProjectDef> required = frontier.SpineProjects.Count > 0 ? frontier.SpineProjects : frontier.Projects;
+            var stack = new Stack<ResearchProjectDef>();
+            for (int i = 0; i < required.Count; i++) stack.Push(required[i]);
+            while (stack.Count > 0)
+            {
+                ResearchProjectDef project = stack.Pop();
+                if (project.IsFinished || !gate.Add(project)) continue;
+                PushAll(project.prerequisites, stack);
+                PushAll(project.hiddenPrerequisites, stack);
+            }
+            return gate;
+        }
+
+        private static void PushAll(List<ResearchProjectDef>? projects, Stack<ResearchProjectDef> into)
+        {
+            if (projects == null) return;
+            for (int i = 0; i < projects.Count; i++)
+            {
+                if (projects[i] != null) into.Push(projects[i]);
+            }
         }
 
         private static bool IsCheaperThan(ResearchProjectDef candidate, ResearchProjectDef incumbent)

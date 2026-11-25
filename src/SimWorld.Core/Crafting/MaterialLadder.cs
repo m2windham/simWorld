@@ -418,20 +418,27 @@ namespace SimWorld.Crafting
         /// The best stuff <paramref name="recipe"/> can be worked in now: the sharpest of its ingredient's stuffs
         /// that lies on the map in a whole product's worth or that the settlement can get (a vein, a smelting
         /// chain). Null when there is none.
+        ///
+        /// <para/>As in <see cref="Armoury.GoalMetal"/>, the best gives way to an armoury bill that can take nothing
+        /// else (<see cref="Armoury.HeldMetals"/>): while plate is short, blades are made of the next best stuff. A
+        /// longsword takes 33 of the steel a plate coat needs 50 of, so it was always ready first, and on a
+        /// generated medieval map the swords took the steel from the town's only iron vein and no plate was made.
         /// </summary>
         public static ThingDef? GoalStuff(Map.Map map, RecipeDef recipe)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (!IsLadderWeaponRecipe(recipe)) return null;
             int per = (int)Math.Ceiling(recipe.ingredients![0].count);
+            HashSet<ThingDef> held = Armoury.HeldMetals(map);
             ThingDef? best = null;
+            ThingDef? spare = null;
             foreach (ThingDef stuff in recipe.ingredients[0].filter.AllowedThingDefs)
             {
-                if (!stuff.IsStuff) continue;
-                if (best != null && !IsSharperThan(stuff, best)) continue;
-                if (OnMap(map, stuff) >= per || CanGet(map, stuff)) best = stuff;
+                if (!stuff.IsStuff || (OnMap(map, stuff) < per && !CanGet(map, stuff))) continue;
+                if (best == null || IsSharperThan(stuff, best)) best = stuff;
+                if (!held.Contains(stuff) && (spare == null || IsSharperThan(stuff, spare))) spare = stuff;
             }
-            return best;
+            return spare ?? best;
         }
 
         internal static bool IsSharperThan(ThingDef a, ThingDef b)

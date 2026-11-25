@@ -201,6 +201,16 @@ namespace SimWorld.Building
         /// <b>The roof is lifted at once.</b> RimWorld's player paints a no-roof area and builders take a roof down
         /// (recalled); this port has neither, and a roof whose last wall is deconstructed falls on whoever is under
         /// it (<see cref="RoofCollapseUtility"/>). So the roof and its build-roof marks go when demolition starts.
+        /// <para/>
+        /// <b>Only the roof people built.</b> A house can stand in a mined-out hall under a mountain, and there its
+        /// walls hold up the rock: the roof over the footprint and the rock around it. Lifting a roof is a
+        /// builder's job and a mountain is not one, so a natural roof stays. Any wall, door or frame whose going
+        /// would still bring a roof down (<see cref="RoofCollapseUtility.WouldCollapseRoofIfRemoved"/>) is left
+        /// standing, unmarked, and the house is struck off without it; the next pass asks again, since a piece
+        /// that holds nothing now can come to as its neighbours go. The fourth playtest lost two people this way:
+        /// the town's renewal pulled down an old house in a mined hall at night, this lifted the rock over its
+        /// footprint as if it were thatch, the walls went, and the mountain came down on the two asleep beside it
+        /// (the save's collapsed rock and the unroofed footprints in the middle of the hall are what is left).
         /// </summary>
         internal static void Demolish(Map.Map map, SettlementCompound compound)
         {
@@ -213,7 +223,7 @@ namespace SimWorld.Building
                 foreach (IntVec3 c in d.footprint.Cells)
                 {
                     if (!GenGrid.InBounds(c, map)) continue;
-                    if (map.roofGrid.Roofed(c)) map.roofGrid.SetRoof(c, null);
+                    if (map.roofGrid.RoofAt(c) is RoofDef roof && !roof.isNatural) map.roofGrid.SetRoof(c, null);
                     map.areaManager.BuildRoof[c] = false;
                     IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(c);
                     for (int t = here.Count - 1; t >= 0; t--)
@@ -222,6 +232,12 @@ namespace SimWorld.Building
                         if (thing is Blueprint)
                         {
                             thing.Destroy(DestroyMode.Cancel);
+                            continue;
+                        }
+                        if (RoofCollapseUtility.WouldCollapseRoofIfRemoved(thing))
+                        {
+                            Designations.Designation? held = map.designationManager.DesignationOn(thing, Designations.PlayerDesignationDefOf.Deconstruct);
+                            if (held != null && held.source == Designations.DesignationSource.Settlement) map.designationManager.RemoveDesignation(held);
                             continue;
                         }
                         if (thing is Frame frame)

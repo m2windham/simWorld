@@ -59,6 +59,14 @@ namespace SimWorld.Building
         /// <c>FarmingSeasonTests</c> as "a shorter growing period wants a bigger field, and not an unbounded one".
         /// </summary>
         public const float MaxColdFieldFactor = 3f;
+
+        /// <summary>
+        /// How far past its own size an edict that breaks ground (<c>EdictDef.fieldSizeFactor</c>) breaks it by
+        /// the time it lapses, as a multiple of that size (see <c>FarmingInitiative.EdictBreakAllowance</c>).
+        /// Unsourced (RimWorld has no edicts): twice the edict's field, pinned by
+        /// <c>BreakTheSodStandingFieldTests</c> as "sowing goes on through the edict" rather than as this number.
+        /// </summary>
+        public const float EdictBreakCeilingFactor = 2f;
     }
 
     /// <summary>
@@ -177,8 +185,107 @@ namespace SimWorld.Building
             field.plantDefToGrow = crop;
             field.allowSow = true;
 
-            if (field.CellCount >= wanted) return;
-            GrowField(map, field, crop, Math.Min(wanted - field.CellCount, FarmingTuning.MaxCellsPerPass));
+            if (field.CellCount < wanted)
+            {
+                GrowField(map, field, crop, Math.Min(wanted - field.CellCount, FarmingTuning.MaxCellsPerPass));
+                return;
+            }
+
+            // Breaking the sod. The fourth playtest issued the edict over a field already the size it asks for
+            // and fully sown: nothing to sow, the edict's work claimed every hand, and three people stood idle
+            // for its ten days. Under an edict that breaks ground, new ground is broken through the edict's days,
+            // paced so each of them has some (EdictBreakAllowance), and only once what is broken is sown (all but
+            // a twentieth: a cell a dropped stone or a sleeper is lying on must not hold the edict up).
+            int allowed = (int)(wanted * EdictBreakAllowance());
+            if (edictFactor > 1f && field.CellCount < allowed && NearlyAllSown(map, field, crop))
+            {
+                GrowField(map, field, crop, Math.Min(allowed - field.CellCount, FarmingTuning.MaxCellsPerPass));
+            }
+        }
+
+        /// <summary>
+        /// How large, as a multiple of the edict's own field, an edict that breaks ground lets the field be by
+        /// now: 1 when it is issued, rising evenly to <see cref="FarmingTuning.EdictBreakCeilingFactor"/> as its
+        /// days run out (at once for one that stands until rescinded). A band of twenty sows a field this size in
+        /// a day, so growing it all at once filled the first two days and left the rest as idle as before; spread
+        /// over the edict, every day of it has new ground to sow. 1 with no such edict.
+        /// </summary>
+        public static float EdictBreakAllowance()
+        {
+            float through = 0f;
+            bool any = false;
+            God.GodManager god = Find.God;
+            IReadOnlyList<God.EdictDef> active = god.ActiveEdicts;
+            for (int i = 0; i < active.Count; i++)
+            {
+                if (active[i].fieldSizeFactor <= 1f) continue;
+                any = true;
+                int? left = god.TicksUntilLapse(active[i]);
+                float span = active[i].durationDays * GenDate.TicksPerDay;
+                through = Math.Max(through, left == null || span <= 0f ? 1f : 1f - left.Value / span);
+            }
+            return any ? 1f + (FarmingTuning.EdictBreakCeilingFactor - 1f) * through : 1f;
+        }
+
+        /// <summary>Whether no more than a twentieth of <paramref name="field"/> still waits for seed.</summary>
+        public static bool NearlyAllSown(Map.Map map, Zone_Growing field, ThingDef crop) =>
+            CellsToSow(map, field, crop) * 20 <= field.CellCount;
+
+        /// <summary>Cells of <paramref name="field"/> with no <paramref name="crop"/> standing in them: ground
+        /// broken and waiting for seed.</summary>
+        public static int CellsToSow(Map.Map map, Zone_Growing field, ThingDef crop)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            int bare = 0;
+            IReadOnlyList<IntVec3> cells = field.Cells;
+            for (int i = 0; i < cells.Count; i++)
+            {
+                IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(cells[i]);
+                bool sown = false;
+                for (int t = 0; t < here.Count && !sown; t++) sown = ReferenceEquals(here[t].def, crop);
+                if (!sown) bare++;
+            }
+            return bare;
+        }
+
+        /// <summary>
+        /// What an edict that breaks ground (<c>EdictDef.fieldSizeFactor</c> above 1) has its people doing in the
+        /// fields of <paramref name="map"/> now, in words, or why it cannot: no crop this ground grows, a season
+        /// too cold for anything sown to grow, ground waiting for seed, or every cell sown and more being broken.
+        /// Read by the edict's line in the god view, so an edict that has put nobody in a field says why.
+        /// </summary>
+        public static string FieldWorkReport(Map.Map map) => FieldWorkReport(map, Weather.MapClimate.TryResolve(map));
+
+        internal static string FieldWorkReport(Map.Map map, Weather.MapClimate? climate)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            ThingDef? crop = CropFor(map);
+            if (crop == null) return "Nothing that can be sown grows on this ground, so there are no fields to work.";
+
+            if (climate != null && !GrowingSeasonNow(climate))
+            {
+                return "It is out of the growing season here: what is sown now will not grow until the weather warms.";
+            }
+
+            Zone_Growing? field = FieldOf(map);
+            int toSow = field == null ? 0 : CellsToSow(map, field, crop);
+            if (field != null && !NearlyAllSown(map, field, crop)) return toSow + (toSow == 1 ? " cell" : " cells") + " of broken ground waiting to be sown with " + crop.label + ".";
+            int wanted = (int)Math.Ceiling(FieldCellsWantedFor(HuntingInitiative.SettlementFor(map), map) * EdictFieldSizeFactor());
+            if (field != null && field.CellCount >= wanted * FarmingTuning.EdictBreakCeilingFactor)
+            {
+                return "All " + field.CellCount + " cells of field are sown, as far as this edict breaks ground; the next work in them is the harvest.";
+            }
+            return "Every field is sown; more ground is broken as the edict goes on.";
+        }
+
+        /// <summary>Whether this twelfth's mean temperature is one things grow in
+        /// (<see cref="Weather.TwelfthUtility.GrowingTwelfths"/>'s test, for now).</summary>
+        public static bool GrowingSeasonNow(Weather.MapClimate climate)
+        {
+            if (climate == null) throw new ArgumentNullException(nameof(climate));
+            int twelfth = (int)(Find.TickManager.TicksAbs / GenDate.TicksPerTwelfth % GenDate.TwelfthsPerYear);
+            float mean = Weather.TwelfthUtility.AverageTemperatureForTwelfth(climate, twelfth);
+            return mean >= Weather.TwelfthUtility.GrowingPeriodMinTemperature && mean <= Weather.TwelfthUtility.GrowingPeriodMaxTemperature;
         }
 
         // -------------------------------------------------------------------------------------------

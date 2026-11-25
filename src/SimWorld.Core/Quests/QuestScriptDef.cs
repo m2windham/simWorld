@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SimWorld.Defs;
+using SimWorld.Sim;
 
 namespace SimWorld.Quests
 {
@@ -35,6 +36,18 @@ namespace SimWorld.Quests
         public bool isRootSpecial;
 
         public string? nameTemplate;
+
+        /// <summary>
+        /// Days before a script whose offer was turned down (or left to lapse) may be offered again. SimWorld's
+        /// own: RimWorld spaces a quest by its incident's refire days alone, which here let the fourth playtest's
+        /// rejected "Lost caravan" come straight back. Not sourced; half a game year, so a refusal is remembered
+        /// for a season.
+        /// </summary>
+        public float declinedRefireDays = GenDate.DaysPerYear / 2f;
+
+        /// <summary>What can go wrong in taking the offer, in the player's words, for the offer letter. Null reads
+        /// as no risk to the settlement.</summary>
+        public string? riskText;
 
         public override IEnumerable<string> ConfigErrors()
         {

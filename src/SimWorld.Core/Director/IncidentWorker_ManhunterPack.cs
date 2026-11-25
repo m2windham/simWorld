@@ -311,8 +311,8 @@ namespace SimWorld.Director
         {
             string where = string.IsNullOrEmpty(settlement?.name) ? "a settlement" : settlement!.name;
             string text = watched
-                ? $"A pack of {count} {kind.label} has been driven mad at {where}."
-                : $"Word reaches you late: a pack of {count} {kind.label} was driven mad at {where} while your attention was elsewhere.";
+                ? $"A pack of {count} {kind.LabelFor(count)} has been driven mad at {where}."
+                : $"Word reaches you late: a pack of {count} {kind.LabelFor(count)} was driven mad at {where} while your attention was elsewhere.";
 
             Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Maddened beasts: " + where, text, LetterDefOf.ThreatBig,
                 IncidentWorker_RaidEnemy.LoadIdsOf(present));

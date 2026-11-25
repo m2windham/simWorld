@@ -113,12 +113,32 @@ namespace SimWorld.Quests
             }
         }
 
-        /// <summary>Lapses an unaccepted offer. A no-op once accepted or already ended.</summary>
+        /// <summary>Lapses an unaccepted offer. A no-op once accepted or already ended. An offer left to lapse
+        /// is an offer declined, and counts against the script's return (<see cref="QuestManager.Notify_QuestDeclined"/>).</summary>
         public void Expire()
         {
             if (state != QuestState.NotYetAccepted) return;
             state = QuestState.EndedOfferExpired;
             CleanupQuestParts();
+            if (root != null) Find.QuestManager.Notify_QuestDeclined(root, Find.TickManager.TicksGame);
+        }
+
+        /// <summary>The player turned the offer down: it ends as a lapsed offer does, now.</summary>
+        public void Reject() => Expire();
+
+        /// <summary>What accepting pays, as the quest's reward parts promise it, before any of it is given.</summary>
+        public IEnumerable<RewardRecord> PromisedRewards
+        {
+            get
+            {
+                foreach (QuestPart part in parts)
+                {
+                    if (part is QuestPart_Reward reward)
+                    {
+                        foreach (RewardRecord r in reward.rewards) yield return r;
+                    }
+                }
+            }
         }
 
         /// <summary><paramref name="sendLetter"/> is kept for parity with RimWorld's call sites; SimWorld has no

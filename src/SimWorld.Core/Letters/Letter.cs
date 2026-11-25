@@ -101,6 +101,11 @@ namespace SimWorld.Letters
 
         /// <summary>Accepts the letter's own <see cref="ChoiceLetter.quest"/>.</summary>
         AcceptQuest = 1,
+
+        /// <summary>Turns the letter's own <see cref="ChoiceLetter.quest"/> down, so it is not offered again
+        /// at once (<see cref="Quests.QuestScriptDef.declinedRefireDays"/>). With the quest gone there is
+        /// nothing left to turn down, and the letter leaving the stack is the whole effect.</summary>
+        RejectQuest = 2,
     }
 
     public sealed class LetterChoice
@@ -208,6 +213,8 @@ namespace SimWorld.Letters
             {
                 case LetterChoiceKind.AcceptQuest:
                     return () => quest?.Accept();
+                case LetterChoiceKind.RejectQuest:
+                    return () => quest?.Reject();
                 default:
                     return null;
             }
