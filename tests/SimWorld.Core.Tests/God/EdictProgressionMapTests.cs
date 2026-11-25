@@ -202,6 +202,26 @@ namespace SimWorld.Tests.God
             Assert.Equal(harvestFeast.cooldownDays, option.CooldownDaysLeft, 1);
         }
 
+        [Fact]
+        public void On_a_feast_day_even_the_content_do_no_routine_work()
+        {
+            // The recreation tier takes anyone below the feast's joy target first; this is the other half, the
+            // citizen already content: routine work is closed to them too, so they keep to their leisure.
+            static void Content(Settlement settlement)
+            {
+                foreach (Pawn p in Citizens(settlement))
+                {
+                    if (p.needs?.joy != null) p.needs.joy.CurLevel = p.needs.joy.MaxLevel;
+                }
+            }
+
+            Dictionary<string, int> ordinary = Window("AgrarianVillage", "feast-content", null, Content);
+            Dictionary<string, int> feast = Window("AgrarianVillage", "feast-content", "HarvestFeast", Content);
+            int workOrdinary = Count(ordinary, k => !NotWork.Contains(k));
+            int workFeast = Count(feast, k => !NotWork.Contains(k));
+            Assert.True(workFeast * 4 <= workOrdinary, $"work samples {workFeast} on the feast day vs {workOrdinary} on an ordinary one");
+        }
+
         // ---- the work pushes ----
 
         [Fact]
