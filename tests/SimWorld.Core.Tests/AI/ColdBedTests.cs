@@ -140,6 +140,24 @@ namespace SimWorld.Tests.AI
             return child;
         }
 
+        /// <summary>A lodger with no house asleep in the dormitory, so its thermostat lights the hearth, and the hours
+        /// until the dormitory's air is above <paramref name="target"/> (at most twelve). A dormitory bed is judged by
+        /// its air, so the dormitory is somewhere safe only once somebody's sleeping there has warmed it.</summary>
+        private int WarmDormitory(Village v, float target)
+        {
+            Thing bed = v.Map.thingGrid.ThingsListAt(v.Compound.BedCells.Last()).First(t => t.def == ConstructionThingDefOf.Bed);
+            Pawn lodger = Child(v, v.Houseless, bed.GetSleepingSlotPos());
+            int hour = 0;
+            for (; hour < 12 && Air(v, bed) < target; hour++)
+            {
+                if (lodger.needs.rest!.CurLevel > 0.3f) lodger.needs.rest.CurLevel = 0.05f;
+                Run(v.Game, GenDate.TicksPerHour);
+            }
+            output.WriteLine("dormitory warmed to " + Air(v, bed).ToString("0.0") + " in " + hour + " h, out " + v.Map.outdoorTemperature.ToString("0.0"));
+            Assert.True(Air(v, bed) >= target, "the dormitory did not warm above " + target + " within 12 h: " + Air(v, bed));
+            return hour;
+        }
+
         /// <summary>Open ground outside every house and the compound, reachable, with nothing on it.</summary>
         private static IEnumerable<IntVec3> OpenGround(Village v, IntVec3 near)
         {
@@ -219,12 +237,35 @@ namespace SimWorld.Tests.AI
 
             Assert.Same(cold, RestUtility.FindRestBedFor(child, child));
 
-            // A fuelled hearth set in the dormitory: before it has warmed the air at all, the dormitory is where the
-            // child sleeps, since the thermostat lights it for whoever lies there (SettlementClimate.WillWarm).
-            Hearth(v, v.Compound.HearthCell);
-            Assert.True(Air(v, first) < TemperatureInjuryUtility.SafeTemperatureRange(child).min, "the dormitory air is already safe");
-            Assert.True(RestUtility.IsSafeTemperatureBed(child, first), "a bed in the closed dormitory by a fuelled hearth is not safe");
-            Assert.True(InDormitory(v, RestUtility.FindRestBedFor(child, child)), "the child was not sent to the dormitory with its fuelled hearth");
+            // A fuelled hearth set in the dormitory promises nothing until it has warmed the air: one campfire does not
+            // hold the dormitory at a baby's comfort in a hard frost, so a bed there is judged by its air, as RimWorld's are.
+            Thing hearth = Hearth(v, v.Compound.HearthCell);
+            float safeMin = TemperatureInjuryUtility.SafeTemperatureRange(child).min;
+            Assert.True(Air(v, first) < safeMin, "the dormitory air is already safe");
+            Assert.False(RestUtility.IsSafeTemperatureBed(child, first), "a cold dormitory bed is safe because a hearth stands unlit");
+            Assert.NotNull(hearth);
+            WarmDormitory(v, safeMin + 1f);
+            child.needs.rest!.CurLevel = 1f; // awake and out on the ground while the dormitory warms
+            Assert.True(InDormitory(v, RestUtility.FindRestBedFor(child, child)), "the child was not sent to the warmed dormitory");
+        }
+
+        [Fact]
+        public void A_whole_house_with_a_fuelled_hearth_is_safe_for_a_baby_however_cold_its_room_is_now()
+        {
+            Village v = NewWinterVillage("cold-bed-whole-house", 2, dormitoryHearth: false);
+            Thing homeBed = v.House.Beds(v.Map).First();
+            // The frost into the night, until the empty house is colder than a baby can bear.
+            for (int hour = 0; hour < 24 && Air(v, homeBed) >= 4f; hour++) Run(v.Game, GenDate.TicksPerHour);
+            Pawn baby = PawnGenerator.GenerateNewborn(PawnKindDefOf.Tribesperson, faction: v.Settlement.faction);
+            baby.relations.familyId = v.Housed;
+            v.Settlement.AddCitizen(baby);
+            GenSpawn.Spawn(baby, homeBed.GetSleepingSlotPos(), v.Map);
+            output.WriteLine("house air " + Air(v, homeBed).ToString("0.0") + ", baby safe min " + TemperatureInjuryUtility.SafeTemperatureRange(baby).min.ToString("0.0"));
+            Assert.True(Air(v, homeBed) < TemperatureInjuryUtility.SafeTemperatureRange(baby).min, "the house is already warm enough for a baby");
+            // The thermostat lights the hearth for whoever lies there (SettlementClimate.WillWarm).
+            Assert.True(RestUtility.IsSafeTemperatureBed(baby, homeBed), "a whole house with a fuelled hearth is not safe for the baby");
+            OpenToTheFrost(v, v.House);
+            Assert.False(RestUtility.IsSafeTemperatureBed(baby, homeBed), "an opened house is safe for the baby");
         }
 
         [Fact]
@@ -237,6 +278,7 @@ namespace SimWorld.Tests.AI
             Assert.Same(homeBed.def, RestUtility.FindRestBedFor(child, child)?.def);
             Assert.True(DwellingUtility.IsOwnHomeBed(child, RestUtility.FindRestBedFor(child, child)!));
 
+            WarmDormitory(v, TemperatureInjuryUtility.SafeTemperatureRange(child).min + 1f);
             OpenToTheFrost(v, v.House);
             output.WriteLine("open house air " + Air(v, homeBed).ToString("0.0") + ", safe min "
                 + TemperatureInjuryUtility.SafeTemperatureRange(child).min.ToString("0.0"));
@@ -250,8 +292,8 @@ namespace SimWorld.Tests.AI
         public void A_child_downed_in_the_heated_dormitory_is_not_carried_home_to_a_house_open_to_the_frost()
         {
             Village v = NewWinterVillage("cold-bed-rescue", 2, dormitoryHearth: true);
+            WarmDormitory(v, 3f); // above a child in a shirt's safe minimum (2 C)
             OpenToTheFrost(v, v.House);
-            Run(v.Game, GenDate.TicksPerHour * 2);
             Pawn rescuer = v.Settlement.Citizens.First(p => p.Spawned && !p.Downed && p.relations.familyId != v.Housed);
 
             // Downed on open ground: carried to the dormitory, not home.
@@ -277,25 +319,6 @@ namespace SimWorld.Tests.AI
             Assert.Same(homeBed, child.CurrentBed());
             Assert.True(new WorkGiver_RescueDowned().HasJobOnThing(rescuer, child), "nobody would carry the child out of its opened house");
             Assert.True(InDormitory(v, WorkGiver_RescueDowned.BedFor(child, rescuer)));
-        }
-
-        [Fact]
-        public void A_baby_left_in_a_house_open_to_the_frost_is_carried_to_the_heated_dormitory()
-        {
-            Village v = NewWinterVillage("cold-bed-baby", 2, dormitoryHearth: true);
-            Thing homeBed = v.House.Beds(v.Map).Last();
-            Pawn baby = PawnGenerator.GenerateNewborn(PawnKindDefOf.Tribesperson, faction: v.Settlement.faction);
-            baby.relations.familyId = v.Housed;
-            v.Settlement.AddCitizen(baby);
-            GenSpawn.Spawn(baby, homeBed.GetSleepingSlotPos(), v.Map);
-            OpenToTheFrost(v, v.House);
-            Pawn carer = v.Settlement.Citizens.First(p => p.Spawned && !p.Downed && p.ageTracker.CurLifeStage?.developmentalStage == DevelopmentalStage.Adult);
-            output.WriteLine("open house air " + Air(v, homeBed).ToString("0.0") + ", baby comfy min "
-                + TemperatureInjuryUtility.ComfortableTemperatureRange(baby).min.ToString("0.0"));
-
-            Assert.True(BabySafetyUtility.NeedsMovingForTemperature(baby), "the baby is not in danger in the opened house");
-            Thing? to = BabySafetyUtility.SafeBedFor(baby, carer);
-            Assert.True(InDormitory(v, to), "the baby would be carried to " + (to == null ? "nowhere" : to.Position.ToString()));
         }
 
         [Fact]
@@ -346,7 +369,6 @@ namespace SimWorld.Tests.AI
             {
                 p.Position = OpenGround(v, v.Compound.DoorCell).First();
             }
-            Assert.True(RestUtility.IsSafeTemperatureBed(child, dormBed), "a bed in the closed dormitory by a fuelled hearth is not safe");
 
             SettlementClimate.Tick(v.Settlement, v.Map);
             Assert.True(((ThingWithComps)hearth).GetComp<CompFlickable>()!.WantSwitchOn, "the dormitory's hearth was not asked to burn for the cold child");

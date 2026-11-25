@@ -160,15 +160,16 @@ namespace SimWorld.Building
         /// <summary>
         /// Whether <paramref name="bed"/> stands in a room this settlement heats for whoever lies in it, so it is safe
         /// to lie down in however cold the air is now: a finished, lived-in house whose hearth has fuel (its
-        /// thermostat counts anybody lying in its beds, <see cref="SomeoneHomeIsCold"/>), or the dormitory while it is a
-        /// closed room and its hearth has fuel (<see cref="TendDormitory"/>). A house or dormitory a quake has opened is
-        /// not one: its hearth warms the outdoors.
+        /// thermostat counts anybody lying in its beds, <see cref="SomeoneHomeIsCold"/>). A house a quake has opened is
+        /// not one: its hearth warms the outdoors. Nor is the dormitory, though its hearth is tended the same way
+        /// (<see cref="TendDormitory"/>): one campfire does not hold forty beds' worth of room at a baby's comfort in a
+        /// hard frost (exposure4 lane: given that promise, two babies with no house were carried there at -20 C outside
+        /// and froze at 5 C indoors). A dormitory bed is safe when its air is, as RimWorld judges every bed.
         /// </summary>
         public static bool WillWarm(Map.Map map, Thing bed)
         {
             Dwelling? house = DwellingUtility.DwellingOfBed(bed);
-            if (house == null) return DormitoryWillWarm(map, bed);
-            return !house.beingDemolished && house.householdId != Pawn_RelationsTracker.None
+            return house != null && !house.beingDemolished && house.householdId != Pawn_RelationsTracker.None
                 && house.IsComplete(map) && HasFueledHearth(map, house);
         }
 
@@ -269,18 +270,6 @@ namespace SimWorld.Building
                 comfyMin = Math.Max(comfyMin, TemperatureInjuryUtility.ComfortableTemperatureRange(citizens[i]).min);
             }
             return comfyMin > float.MinValue;
-        }
-
-        /// <summary>Whether <paramref name="bed"/> is in the dormitory while it is a closed room with its hearth in it
-        /// and fuel in the hearth's tank, so the thermostat can warm it.</summary>
-        private static bool DormitoryWillWarm(Map.Map map, Thing bed)
-        {
-            SettlementCompound? compound = map.settlementCompound;
-            if (compound == null || !compound.Interior.Contains(bed.Position)) return false;
-            Thing? hearth = DeviceAt(map, compound.HearthCell, ShelterThingDefOf.Campfire);
-            if ((hearth as ThingWithComps)?.GetComp<CompRefuelable>()?.HasFuel != true) return false;
-            Room? room = map.roomTracker.RoomAt(AI.BedUtility.GetSleepingSlotPos(bed));
-            return room != null && !room.Group.UsesOutdoorTemperature && ReferenceEquals(room, map.roomTracker.RoomAt(compound.HearthCell));
         }
 
         /// <summary>Whether the settlement has asked for <paramref name="dwelling"/>'s hearth to burn.</summary>
