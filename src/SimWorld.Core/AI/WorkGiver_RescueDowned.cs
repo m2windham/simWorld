@@ -78,11 +78,21 @@ namespace SimWorld.AI
         /// birth and only ever moves by rescue. Found for the rescuer, a baby picked up by a neighbour went to the
         /// neighbour's house; the hearth that would have kept it alive is lit in its own (<see
         /// cref="Building.SettlementClimate"/>), for it, and it froze in a room heated for robed adults or in none.
+        /// <para/>
+        /// With no home bed to give it, a baby lying in the cold (<see cref="BabySafetyUtility.NeedsMovingForTemperature"/>)
+        /// goes to a bed that is safe for it, from the ground or from the cold bed it lies in (RimWorld: bringing a
+        /// baby to safety). Before, a baby of a household still waiting for a house was laid in the nearest bed that
+        /// was nobody's, the unheated dormitory, and left there however cold it got.
         /// </summary>
         internal static Thing? BedFor(Pawn patient, Pawn rescuer)
         {
             Thing? home = Building.DwellingUtility.FindDwellingBedFor(patient, rescuer);
             if (home != null) return home;
+            if (BabySafetyUtility.NeedsMovingForTemperature(patient))
+            {
+                Thing? safe = BabySafetyUtility.SafeBedFor(patient, rescuer);
+                if (safe != null) return safe;
+            }
             return patient.InBed() ? null : RestUtility.FindBedFor(patient, rescuer);
         }
     }
