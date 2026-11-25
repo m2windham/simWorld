@@ -514,6 +514,13 @@ namespace SimWorld.Tests.Building
             Assert.All(walls, w => Assert.True(w.Spawned)); // every wood wall still stands
             Assert.All(v.Houses, h => Assert.True(h.IsComplete(v.Map))); // and no house wall was touched
             Assert.Equal(0, MaterialLadder.UpgradeStanding(v.Map, 1)); // the budget is full
+
+            // With budget and stone for every wall on the map, only the free-standing row is taken.
+            SpawnBlocks(v, 3000);
+            MaterialLadder.UpgradeStanding(v.Map, 100);
+            Assert.Equal(walls.Count, Replacements(v.Map));
+            Assert.All(v.Map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).Where(b => GenConstruct.ThingToReplace(b) != null),
+                b => Assert.Contains(GenConstruct.ThingToReplace(b), walls));
         }
 
         [Fact]
