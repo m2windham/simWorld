@@ -134,8 +134,8 @@ namespace SimWorld.Tests.Building
                 if (i % 250 != 0) continue;
                 Dwelling? home = HomeOf(v.Map, household);
                 Assert.True(home != null, "household " + household + " has no house on tick " + Find.TickManager.TicksGame);
-                Assert.True(home!.completedTick != SimWorld.Building.Building.UnknownBuiltTick,
-                    "household " + household + " was moved into an unfinished house on tick " + Find.TickManager.TicksGame);
+                Assert.True(home!.IsComplete(v.Map),
+                    "household " + household + " lives in a house that is not whole on tick " + Find.TickManager.TicksGame);
                 Assert.True(v.Map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count >= citizens - v.Settlement.Citizens.Count(p => p.Dead),
                     "a citizen has no bed on tick " + Find.TickManager.TicksGame);
             }
@@ -216,6 +216,121 @@ namespace SimWorld.Tests.Building
             Assert.DoesNotContain(loadedOld, lv.Compound.dwellings);
             Assert.Same(loadedNew, HomeOf(lv.Map, household));
             Assert.Equal("House_Neo", loadedNew.def.defName);
+        }
+
+        // ---- step 5: the initiative's waits and its order ----
+
+        /// <summary>Moves the clock to the tick before the next daily pass and runs that one tick, so the pass reads
+        /// the map exactly as the test left it.</summary>
+        private static void PassNow(Village v)
+        {
+            int day = RenewalTuning.PassIntervalTicks;
+            int next = (Find.TickManager.TicksGame / day + 1) * day;
+            Find.TickManager.DebugSetTicksGame(next - 1);
+            v.Game.TickManager.DoSingleTick();
+            Assert.Equal(0, Find.TickManager.TicksGame % day);
+        }
+
+        private static bool AnyRenewal(Village v) => DwellingUtility.DwellingsOn(v.Map).Any(d => d.replacedById != 0 || d.replacesId != 0);
+
+        /// <summary>Puts the village in <paramref name="crisis"/> and returns how to lift it.</summary>
+        private System.Action Crisis(Village v, string crisis)
+        {
+            CoreMap map = v.Map;
+            switch (crisis)
+            {
+                case "bed":
+                {
+                    Thing bed = map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).First(b => !DwellingUtility.IsDwellingBed(b));
+                    IntVec3 at = bed.Position;
+                    bed.Destroy();
+                    return () =>
+                    {
+                        Thing again = ThingMaker.MakeThing(ConstructionThingDefOf.Bed, Def("WoodLog"));
+                        again.SetFaction(v.Faction);
+                        GenSpawn.Spawn(again, at, map);
+                    };
+                }
+                case "food":
+                {
+                    int stored = v.Settlement.StoreCountOf(Def("MealSimple"));
+                    v.Settlement.SetStoreCount(Def("MealSimple"), 0);
+                    foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.Item).Where(t => t.def.IsNutritionGivingIngestible).ToList()) t.Destroy();
+                    return () => v.Settlement.AddStore(Def("MealSimple"), stored);
+                }
+                case "raid":
+                {
+                    var theirs = new Faction(DefDatabase<FactionDef>.GetNamed("TribalCivilization"), "Raiders", "F_Raiders");
+                    Find.FactionManager.Add(theirs);
+                    theirs.SetRelationDirect(v.Faction, FactionRelationKind.Hostile, -100);
+                    v.Faction.SetRelationDirect(theirs, FactionRelationKind.Hostile, -100);
+                    Pawn raider = NewHuman("Raider");
+                    raider.SetFaction(theirs);
+                    IntVec3 edge = map.AllCells.First(c => c.x == 1 && GenGrid.Standable(c, map));
+                    GenSpawn.Spawn(raider, edge, map);
+                    return () => raider.Destroy();
+                }
+                default:
+                    throw new System.ArgumentException(crisis);
+            }
+        }
+
+        [Theory]
+        [InlineData("bed", "not everyone has a bed")]
+        [InlineData("food", "food is short")]
+        [InlineData("raid", "enemies are on the map")]
+        public void Nothing_is_renewed_in_a_crisis_and_renewal_resumes_once_it_is_over(string crisis, string reason)
+        {
+            Village v = Founded("renewal-wait-" + crisis, 3, "House_Paleo");
+            System.Action lift = Crisis(v, crisis);
+            Assert.Equal(reason, RenewalInitiative.WaitReason(v.Settlement, v.Map));
+
+            PassNow(v);
+            Assert.False(AnyRenewal(v), "a renewal was planned during the crisis (" + crisis + ")");
+            Assert.Equal(reason, RenewalInitiative.WaitReason(v.Settlement, v.Map));
+
+            // Over, renewal resumes on a later daily pass: once the houses the pass just planned for households
+            // without one are up, since renewal waits for those too (DwellingTuning.MaxUnderway).
+            lift();
+            Assert.Null(RenewalInitiative.WaitReason(v.Settlement, v.Map));
+            for (int i = 0; i < 3 * GenDate.TicksPerDay && !AnyRenewal(v); i++) v.Game.TickManager.DoSingleTick();
+            Assert.True(AnyRenewal(v), "renewal did not resume after the crisis (" + crisis + ")");
+        }
+
+        [Fact]
+        public void Of_two_obsolete_houses_the_more_crowded_is_renewed_first()
+        {
+            Village v = Founded("renewal-crowding", 3, "House_Paleo");
+            Dwelling older = v.Houses[1], newer = v.Houses[2];
+            Assert.False(older.isHeritage);
+            Assert.False(newer.isHeritage);
+            Assert.True(older.id < newer.id);
+
+            // Crowd the newer house: three more people join its household, past its two beds. The older house's
+            // household is cut to one, so nothing but crowding tells them apart besides age, which favours the older.
+            int[] housed = v.Houses.Select(d => d.householdId).ToArray();
+            List<Pawn> others = v.Settlement.Citizens.Where(p => !p.Dead && !housed.Contains(p.relations.familyId)).ToList();
+            foreach (Pawn p in others.Take(3)) p.relations.familyId = newer.householdId;
+            foreach (Pawn p in v.Settlement.Citizens.Where(p => p.relations.familyId == older.householdId).Skip(1).ToList())
+            {
+                p.relations.familyId = others.Skip(3).First().relations.familyId;
+            }
+            Assert.True(DwellingUtility.Households(v.Settlement)[newer.householdId] > newer.def.BedCount);
+
+            Assert.Same(newer, RenewalInitiative.TryRenewOne(v.Settlement, v.Map));
+        }
+
+        [Fact]
+        public void Of_two_equally_due_houses_the_older_is_renewed_first()
+        {
+            Village v = Founded("renewal-crowding", 3, "House_Paleo");
+            int[] housed = v.Houses.Select(d => d.householdId).ToArray();
+            int spare = v.Settlement.Citizens.First(p => !p.Dead && !housed.Contains(p.relations.familyId)).relations.familyId;
+            foreach (Dwelling d in v.Houses.Skip(1))
+            {
+                foreach (Pawn p in v.Settlement.Citizens.Where(p => p.relations.familyId == d.householdId).Skip(1).ToList()) p.relations.familyId = spare;
+            }
+            Assert.Same(v.Houses[1], RenewalInitiative.TryRenewOne(v.Settlement, v.Map));
         }
     }
 }

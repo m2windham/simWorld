@@ -541,3 +541,15 @@ Choices the spec left open, recorded as they were made, in build order.
   off the plan, which frees its plot.
 - **Ids are given lazily.** Planners and tests add dwellings to the compound directly; every pass that reads ids
   calls `SettlementCompound.EnsureDwellingIds` first, in plan order, so ids are the same on every replay and load.
+- **Step 5: the waits, the budget and the score.** `RenewalInitiative` runs inside the construction pass, once a
+  day. It waits while built beds are fewer than living citizens, while stored food (the
+  `EraCondition_FoodStores` reading) is under 5 days or the era's own food bar if lower, and while a pawn of a
+  faction hostile to the settlement is up on the map. Its budget is the spec's (`MaxUnderway` one per 15 citizens,
+  a quarter of homes), and it also waits while `DwellingTuning.MaxUnderway` houses are already going up, so new
+  houses for households without one come first. The score is eras behind (once due), crowding into a rung with
+  more beds, walls under half their hit points, and a little age; ties go to the older house. One renewal is
+  started per pass.
+- **The material gate skips wood.** The reserve rule (1.5 times the new house's cost, over what sites already
+  claim, `MaterialLadder.Spare`) holds for every material except logs: builders fell a tree for a blueprint that
+  wants wood (`WorkGiver_ConstructChopWood`), and no one keeps a woodpile, so gating on logs would stall every
+  wooden rung.
