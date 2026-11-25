@@ -53,6 +53,9 @@ namespace SimWorld.AI
             if (!DoctorUtility.IsCaredForBy(pawn, patient)) return false;
             if (!TendUtility.HasAnythingToTend(patient)) return false;
             if (TendUtility.NeedsEmergencyTend(patient) != def.emergency) return false;
+            // Routine tending is the healers' (HealerUtility): the settlement does what a RimWorld player does on
+            // the work tab. Emergencies and a direct order stay open to anyone.
+            if (!def.emergency && !forced && !HealerUtility.ShouldTakeRoutineTend(pawn, patient)) return false;
             if (!Reachability.CanReach(pawn, patient, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, patient);
         }

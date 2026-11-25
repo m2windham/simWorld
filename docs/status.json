@@ -854,7 +854,7 @@
       "id": "health",
       "n": 8,
       "rimworld": "Health System",
-      "translation": "Unchanged.",
+      "translation": "Unchanged, except who doctors. RimWorld's player sets the best doctor or two to Doctor priority 1 on the work tab; a god game has no work tab, so the settlement does it: routine tending (DoctorTend) goes to its healers, the top ceil(n/6) Medicine skills among citizens able to doctor on the map (HealerUtility, stateless, recomputed per ask, so succession is automatic). Emergency tending, rescue and a direct order stay open to anyone. A landed tend teaches Medicine, so concentrating the work grows healers over the arc.",
       "translationState": "decided",
       "module": "src/SimWorld.Core/Health · Data/Core/Defs (bodies, hediffs, damages)",
       "status": "verified",
@@ -969,6 +969,11 @@
           "id": "health.medicalresearch",
           "label": "GAP, for the era-unlocks lane: medical research changes no treatment. HerbalRemedies, BoneSetting, Anatomy, Hospitals, Antiseptics, GermTheory and Vaccination gate no medicine, recipe, bed or stat; the only reader of the MedicineHealth tag is a newborn's lifespan budget (Pawn_AgeTracker). MedicineIndustrial has no recipe and no hospital bed ships (MedicalTendQualityOffset is 0 on the one Bed). A Medieval or Information settlement tends with herbal medicine (potency 0.6, quality cap 0.7) exactly as a Paleolithic one does.",
           "done": false
+        },
+        {
+          "id": "health.healers",
+          "label": "The settlement lets its best healers doctor (HealerUtility; WorkGiver_Tend's routine giver asks it). Before, every citizen tended at whatever skill they had: on 20/99 over 390 days the mean tender had Medicine 2.9 while the best standing had 8.9, mean tend quality 0.26, 8 of 22 infections fatal. A tend now teaches Medicine (500 xp humanlike, 175 animal, half without medicine; recalled from Toils_Tend, not checked) and doctors claim one unit of a medicine stack each (ten claimants), not the whole stack. Open: medicine runs out; most tends after the first weeks have none (see health.medicalresearch) (HealerTests).",
+          "done": true
         }
       ],
       "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
