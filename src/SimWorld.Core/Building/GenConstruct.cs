@@ -160,6 +160,98 @@ namespace SimWorld.Building
         }
 
         /// <summary>
+        /// What family a building belongs to for replacing in place: one wall can be raised over another, of a
+        /// different form or stuff, and nothing else can. RimWorld (1.3 on; <b>recalled</b>, not read from a
+        /// decompile here) does this with <c>BuildableDef.replaceTags</c> and a <c>GenConstruct</c> check that the
+        /// placed def and the standing one share a tag. This port reads the family off what it already knows
+        /// about a wall (<see cref="StoneWallMaterials.IsWall"/>, and the earth bank, impassable and full) rather
+        /// than adding a content field. Doors are left out on purpose: a door's frame is impassable here, so
+        /// replacing a house's door would shut its household out until the new one was finished.
+        /// </summary>
+        public static string? ReplaceTag(ThingDef def)
+        {
+            if (def == null || def.category != ThingCategory.Building || def.mineable) return null;
+            if (def.size.x != 1 || def.size.z != 1) return null;
+            if (StoneWallMaterials.IsWall(def)) return "Wall";
+            if (def.earthBanked && def.passability == Traversability.Impassable && def.Fillage == FillCategory.Full) return "Wall";
+            return null;
+        }
+
+        /// <summary>Whether <paramref name="placing"/> made of <paramref name="stuff"/> may be planned over
+        /// <paramref name="existing"/>: the same family (<see cref="ReplaceTag"/>), and not the same thing again.</summary>
+        public static bool CanReplace(ThingDef placing, ThingDef? stuff, Thing existing)
+        {
+            if (existing == null || existing.Destroyed || !(existing is Building)) return false;
+            string? tag = ReplaceTag(placing);
+            if (tag == null || tag != ReplaceTag(existing.def)) return false;
+            if (placing.MadeFromStuff) stuff ??= Crafting.GenStuff.DefaultStuffFor(placing);
+            return !(ReferenceEquals(placing, existing.def) && ReferenceEquals(stuff, existing.Stuff));
+        }
+
+        /// <summary>
+        /// Whether a replacement of <paramref name="placing"/> in <paramref name="stuff"/> may be planned on
+        /// <paramref name="cell"/>, over the building standing there (RimWorld's replace, <b>recalled</b>). The
+        /// same checks as <see cref="CanPlaceBlueprintAt"/> except that the cell must hold a building
+        /// <see cref="CanReplace"/> accepts, where an ordinary blueprint needs it empty.
+        /// </summary>
+        public static bool CanPlaceReplacementAt(ThingDef placing, ThingDef? stuff, IntVec3 cell, Map.Map map, out string? failReason)
+        {
+            if (!GenGrid.InBounds(cell, map))
+            {
+                failReason = "out of bounds";
+                return false;
+            }
+            Thing? edifice = map.edificeGrid[cell];
+            if (edifice == null || !CanReplace(placing, stuff, edifice))
+            {
+                failReason = "nothing here that a " + (placing.label ?? placing.defName) + " can replace";
+                return false;
+            }
+            IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(cell);
+            for (int i = 0; i < here.Count; i++)
+            {
+                if (here[i].def.category == ThingCategory.Blueprint || here[i].def.category == ThingCategory.Frame)
+                {
+                    failReason = "something is already planned here";
+                    return false;
+                }
+            }
+            TerrainAffordanceDef? needed = TerrainAffordanceNeed(placing);
+            TerrainDef terrain = map.terrainGrid.TerrainAt(cell);
+            if (needed != null && (terrain.affordances == null || !terrain.affordances.Contains(needed)))
+            {
+                failReason = terrain.LabelCap + " cannot support " + (placing.label ?? placing.defName);
+                return false;
+            }
+            failReason = null;
+            return true;
+        }
+
+        /// <summary>Plans <paramref name="placing"/> in <paramref name="stuff"/> over the building on
+        /// <paramref name="cell"/> (<see cref="CanPlaceReplacementAt"/>), or returns null and plans nothing. The
+        /// building stands until the frame is finished (<see cref="Frame.CompleteConstruction"/>).</summary>
+        public static Blueprint? PlaceReplacement(ThingDef placing, ThingDef? stuff, IntVec3 cell, Map.Map map)
+        {
+            if (!CanPlaceReplacementAt(placing, stuff, cell, map, out _)) return null;
+            ThingDef? blueprintDef = BlueprintDefFor(placing);
+            if (blueprintDef == null) return null;
+            var blueprint = (Blueprint)ThingMaker.MakeThing(blueprintDef);
+            blueprint.stuffToUse = stuff;
+            GenSpawn.Spawn(blueprint, cell, map, map.edificeGrid[cell]!.Rotation);
+            return blueprint;
+        }
+
+        /// <summary>The building a blueprint or frame on its cell is replacing, or null for an ordinary site. A
+        /// site never stands on an edifice except to replace it, so this is read off the map, and a save needs to
+        /// carry nothing for it.</summary>
+        public static Building? ThingToReplace(Thing site)
+        {
+            Map.Map? map = site.Map;
+            if (map == null || site.def.category != ThingCategory.Blueprint && site.def.category != ThingCategory.Frame) return null;
+            return map.edificeGrid[site.Position] is Building b && !b.Destroyed ? b : null;
+        }
+
+        /// <summary>
         /// The hand-authored <c>Blueprint_&lt;X&gt;</c>/<c>Frame_&lt;X&gt;</c> ThingDef for a buildable Def —
         /// see <see cref="Defs.ThingDef.entityToBuild"/>'s remarks for why these are content rather than
         /// generated. A linear scan over the (small, single-digit) set of Blueprint/Frame Defs this pass

@@ -63,12 +63,18 @@ namespace SimWorld.AI
 
         /// <summary>Destroys <paramref name="building"/> and drops its refund on its cell (RimWorld:
         /// <c>Destroy(DestroyMode.Deconstruct)</c> → <c>GenLeaving.DoLeavingsFor</c>).</summary>
-        public static void Deconstruct(Thing building)
+        public static void Deconstruct(Thing building) => Deconstruct(building, DestroyMode.Deconstruct, null);
+
+        /// <summary>As <see cref="Deconstruct(Thing)"/>, destroyed with <paramref name="mode"/> and its refund
+        /// dropped on <paramref name="dropCell"/> (its own cell when null). A building replaced in place
+        /// (<see cref="Building.Frame.CompleteConstruction"/>) goes with <see cref="DestroyMode.WillReplace"/>, so
+        /// its cell is not read as roof support lost, and drops beside itself, since the new one takes its cell.</summary>
+        public static void Deconstruct(Thing building, DestroyMode mode, IntVec3? dropCell)
         {
             Map.Map map = building.Map ?? throw new InvalidOperationException("Building is not spawned.");
-            IntVec3 pos = building.Position;
+            IntVec3 pos = dropCell ?? building.Position;
             List<ThingDefCountClass> cost = building.def.CostListAdjusted(building.Stuff);
-            building.Destroy(DestroyMode.Deconstruct);
+            building.Destroy(mode);
             for (int i = 0; i < cost.Count; i++)
             {
                 int count = Math.Min(cost[i].count, GenMath.RoundRandom(cost[i].count * ResourcesFractionWhenDeconstructed, Rand.Current));

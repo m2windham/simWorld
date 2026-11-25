@@ -516,3 +516,11 @@ Choices the spec left open, recorded as they were made, in build order.
   listing it would mean editing every building def. `Building.builtTick` and `Building.isHeritage` are saved
   fields every building carries. A building's tick is set when it first spawns: a finished frame, or map
   generation and a scenario's start. A save from before the field loads as `UnknownBuiltTick` (-1).
+- **Step 2: replace in place covers walls only.** `GenConstruct.ReplaceTag` reads the family off what the port
+  already knows (`StoneWallMaterials.IsWall`, the earth bank) instead of adding RimWorld's `replaceTags` to
+  content. Doors are left out: a door's frame is impassable here, so replacing a house's door would shut its
+  household out until it was finished. The replaced building gives back what deconstructing it would, dropped
+  beside the cell rather than inside the new wall. Both buildings are destroyed with `WillReplace`, so the cell
+  never stops holding the roof. A site's target is read off the map (`GenConstruct.ThingToReplace`: a site on an
+  edifice is always a replacement), so a save carries nothing new and either spawn order on load leaves the old
+  building in the edifice slot.
