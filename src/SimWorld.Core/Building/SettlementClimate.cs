@@ -38,14 +38,17 @@ namespace SimWorld.Building
     /// cooler in a room, refuels it, and flicks it off when it is not wanted; this is that player's judgement, made
     /// for every finished house that has a household and a spot kept for the device (<see cref="DwellingPartKind"/>).
     /// <para/>
-    /// <b>The decision reads the weather, not the people.</b> A room left alone settles toward the outdoor day's
+    /// <b>The decision reads the weather, and then the people.</b> A room left alone settles toward the outdoor day's
     /// mean within hours (RimWorld's room model, <see cref="RoomTracker"/>), so the question is where today's mean
     /// stands against what the household finds comfortable: above the warmest member's comfortable maximum it
     /// wants cooling, below the coldest member's comfortable minimum it wants heat, and in between neither. The
     /// mean is the climate's annual mean, the season (<see cref="GenTemperature.OffsetFromSeasonCycle"/>), the
     /// weather and every active condition, the sum <c>WeatherManager</c> feeds the map without the sun's swing.
     /// So a heat wave turns the coolers on the day it begins, a warm afternoon does not, and a cooler built for
-    /// summer stops drinking wood when autumn comes.
+    /// summer stops drinking wood when autumn comes. A hearth is also lit, whatever the mean, when somebody at
+    /// home is colder than they find comfortable, and burns until they are warm with a margin
+    /// (<see cref="SomeoneHomeIsCold"/>): RimWorld's player sets the heater's target, and here the settlement sets
+    /// it by the most vulnerable person in the house, which in a house with a baby is the baby.
     /// <para/>
     /// <b>The era is in what can be built.</b> A hearth (<see cref="ShelterThingDefOf.Campfire"/>) needs Fire, a
     /// passive cooler Windcatchers, and only a house with a spot for one gets one: the earth-sheltered rungs keep
@@ -82,12 +85,62 @@ namespace SimWorld.Building
                 Dwelling d = dwellings[i];
                 if (d.householdId == Pawn_RelationsTracker.None || !d.IsComplete(map)) continue;
                 if (!TryComfortOf(settlement, d.householdId, out FloatRange comfy)) continue;
-                bool wantHeat = outlook.DailyMean < comfy.min;
+                bool wantHeat = outlook.DailyMean < comfy.min
+                    || SomeoneHomeIsCold(settlement, map, d, HearthWanted(map, d) ? HearthWarmthMargin : 0f);
                 bool wantCool = outlook.DailyMean > comfy.max;
                 placed += Tend(map, d, DwellingPartKind.HearthSpot, ShelterThingDefOf.Campfire, wantHeat);
                 placed += Tend(map, d, DwellingPartKind.CoolerSpot, ShelterThingDefOf.PassiveCooler, wantCool);
             }
             return placed;
+        }
+
+        /// <summary>
+        /// How far above a member's comfortable minimum a lit hearth keeps burning before it is let go out: the
+        /// thermostat's dead band, so a fire is not lit and doused every few hours by somebody walking over to flick
+        /// it. Five degrees is the gap between RimWorld's default heater target (21 C, <c>CompProperties_TempControl
+        /// .defaultTargetTemperature</c>, recalled, not re-read) and a naked human's comfortable minimum (16 C, the
+        /// shipped <c>ComfyTemperatureMin</c>): a baby's hearth runs to RimWorld's own setting.
+        /// </summary>
+        public const float HearthWarmthMargin = 5f;
+
+        /// <summary>
+        /// Whether a member of <paramref name="dwelling"/>'s household is at home in air colder than they find
+        /// comfortable, plus <paramref name="margin"/> (RimWorld: the heater's thermostat, <c>CompTempControl</c>, whose
+        /// target the player sets; here the settlement sets it, from whoever is most vulnerable in the house).
+        /// <para/>
+        /// <b>Why the people and not only the weather.</b> The season's mean says when a robed adult needs a fire,
+        /// and that was the whole of the decision: a household lit its hearth when the day's mean fell under its
+        /// coldest-blooded member's comfortable minimum. A day can average above that and still drop eight degrees
+        /// overnight (<see cref="TemperatureTuning.DailyTempVariationAmplitude"/>), and a baby, comfortable only from
+        /// 16 C, wearing nothing and unable to walk to warmth, takes hypothermia it cannot shed, because it heals
+        /// only in comfortable air. So the hearth also answers the room: lit when somebody at home is below
+        /// comfort, and kept lit until they are <see cref="HearthWarmthMargin"/> above it. Somebody away from home
+        /// is not counted: the hearth cannot warm them.
+        /// </para>
+        /// </summary>
+        internal static bool SomeoneHomeIsCold(Settlement settlement, Map.Map map, Dwelling dwelling, float margin)
+        {
+            IReadOnlyList<Pawn> citizens = settlement.Citizens;
+            for (int i = 0; i < citizens.Count; i++)
+            {
+                Pawn p = citizens[i];
+                if (p.Dead || !p.Spawned || p.Map != map || p.relations.familyId != dwelling.householdId) continue;
+                if (!dwelling.InteriorContains(p.Position)) continue;
+                float comfyMin = TemperatureInjuryUtility.ComfortableTemperatureRange(p).min;
+                if (TemperatureInjuryUtility.AmbientTemperature(p) < comfyMin + margin) return true;
+            }
+            return false;
+        }
+
+        /// <summary>Whether the settlement has asked for <paramref name="dwelling"/>'s hearth to burn.</summary>
+        private static bool HearthWanted(Map.Map map, Dwelling dwelling)
+        {
+            foreach (IntVec3 spot in dwelling.Spots(DwellingPartKind.HearthSpot))
+            {
+                Thing? device = DeviceAt(map, spot, ShelterThingDefOf.Campfire);
+                if ((device as ThingWithComps)?.GetComp<CompFlickable>()?.WantSwitchOn == true) return true;
+            }
+            return false;
         }
 
         /// <summary>The household's comfortable range at its narrowest: the warmest of its members' comfortable

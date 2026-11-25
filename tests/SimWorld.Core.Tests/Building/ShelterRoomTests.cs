@@ -471,6 +471,77 @@ namespace SimWorld.Tests.Building
                 ((Blueprint)At(map, d.Spots(DwellingPartKind.HearthSpot).Single(), t => t is Blueprint)!).EntityToBuild));
         }
 
+        /// <summary>A baby of <paramref name="house"/>'s household lying in one of its beds, the house roofed
+        /// and its room at <paramref name="air"/>.</summary>
+        private Pawn BabyAtHome(Settlement settlement, CoreMap map, Dwelling house, float air)
+        {
+            ShelterKit.Roof(map, house);
+            map.MapTick();
+            Pawn baby = NewHuman("Baby");
+            baby.ageTracker.DebugSetAge(0.1f);
+            baby.relations.familyId = house.householdId;
+            settlement.AddCitizen(baby);
+            GenSpawn.Spawn(baby, house.Beds(map).First().GetSleepingSlotPos(), map);
+            BedRoom(map, house).Group.temperature = air;
+            return baby;
+        }
+
+        private static CompFlickable Hearth(CoreMap map, Dwelling d) =>
+            ((ThingWithComps)At(map, d.Spots(DwellingPartKind.HearthSpot).Single(), t => ReferenceEquals(t.def, ShelterThingDefOf.Campfire))!)
+                .GetComp<CompFlickable>()!;
+
+        /// <summary>
+        /// The day's mean is warm enough for everybody, but the night has left the house with the baby in it below
+        /// a baby's comfortable minimum: that house gets its hearth, the other does not. On the mean alone neither
+        /// would, and the baby would lie all night in air where its hypothermia cannot heal.
+        /// </summary>
+        [Fact]
+        public void A_baby_at_home_below_its_comfort_has_its_hearth_built_on_a_mild_day()
+        {
+            (Settlement settlement, CoreMap map, List<Dwelling> houses) = TownOfTwo(20f);
+            Pawn baby = BabyAtHome(settlement, map, houses[0], 11f);
+            Assert.True(SettlementClimate.Outlook(map).DailyMean > TemperatureInjuryUtility.ComfortableTemperatureRange(baby).min);
+            Assert.True(TemperatureInjuryUtility.AmbientTemperature(baby) < TemperatureInjuryUtility.ComfortableTemperatureRange(baby).min);
+
+            Assert.Equal(1, SettlementClimate.Tick(settlement, map));
+            var bp = (Blueprint)At(map, houses[0].Spots(DwellingPartKind.HearthSpot).Single(), t => t is Blueprint)!;
+            Assert.Same(ShelterThingDefOf.Campfire, bp.EntityToBuild);
+            Assert.Null(At(map, houses[1].Spots(DwellingPartKind.HearthSpot).Single(), t => t is Blueprint));
+        }
+
+        /// <summary>
+        /// The hearth is the settlement's thermostat, set by the most vulnerable person at home: lit below their
+        /// comfortable minimum, kept burning until they are <see cref="SettlementClimate.HearthWarmthMargin"/> above
+        /// it, and let go out only then; once out, it stays out until they are cold again.
+        /// </summary>
+        [Fact]
+        public void A_babys_hearth_burns_past_its_comfort_by_a_margin_and_is_not_relit_until_it_is_cold_again()
+        {
+            (Settlement settlement, CoreMap map, List<Dwelling> houses) = TownOfTwo(20f);
+            Dwelling home = houses[0];
+            Pawn baby = BabyAtHome(settlement, map, home, 11f);
+            float comfyMin = TemperatureInjuryUtility.ComfortableTemperatureRange(baby).min;
+            SettlementClimate.Tick(settlement, map);
+            ((Blueprint)At(map, home.Spots(DwellingPartKind.HearthSpot).Single(), t => t is Blueprint)!).ReplaceWithFrame().CompleteConstruction(NewHuman("Builder"));
+            Room room = BedRoom(map, home);
+
+            room.Group.temperature = comfyMin + SettlementClimate.HearthWarmthMargin / 2f;
+            SettlementClimate.Tick(settlement, map);
+            Assert.True(Hearth(map, home).WantSwitchOn, "the hearth was let go out before the baby was warm with a margin");
+
+            room.Group.temperature = comfyMin + SettlementClimate.HearthWarmthMargin + 1f;
+            SettlementClimate.Tick(settlement, map);
+            Assert.False(Hearth(map, home).WantSwitchOn, "the hearth kept burning in a warm house on a mild day");
+
+            room.Group.temperature = comfyMin + SettlementClimate.HearthWarmthMargin / 2f;
+            SettlementClimate.Tick(settlement, map);
+            Assert.False(Hearth(map, home).WantSwitchOn, "the hearth was relit while the baby was still comfortable");
+
+            room.Group.temperature = comfyMin - 1f;
+            SettlementClimate.Tick(settlement, map);
+            Assert.True(Hearth(map, home).WantSwitchOn, "the hearth was not relit for a baby below its comfort");
+        }
+
         [Fact]
         public void Nothing_is_built_that_the_civilization_has_not_learned()
         {
