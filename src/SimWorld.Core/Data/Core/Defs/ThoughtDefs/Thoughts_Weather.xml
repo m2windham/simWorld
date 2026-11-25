@@ -20,7 +20,7 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>soaking wet</label>
+        <label>drenched to the skin</label>
         <description>I am drenched. Water is running down my back.</description>
         <baseMoodEffect>-8</baseMoodEffect>
       </li>

@@ -17,7 +17,7 @@
   <GameConditionDef>
     <defName>Drought</defName>
     <label>drought</label>
-    <description>A drought lies over the whole civilization. Crops struggle wherever they are grown, watched or not.</description>
+    <description>A drought lies over the whole land. Crops struggle in every settlement, near or far.</description>
     <conditionClass>SimWorld.Conditions.GameCondition_Drought</conditionClass>
     <durationDays>6~16</durationDays>
     <letterDef>NegativeEvent</letterDef>

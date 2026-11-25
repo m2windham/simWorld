@@ -125,8 +125,22 @@ namespace SimWorld.God.View
             Rows = rows;
         }
 
-        /// <summary>Highest number a cell can hold (<c>Pawn_WorkSettings.LowestPriority</c>); 0 is "never".</summary>
+        /// <summary>Highest number a cell can hold (<c>Pawn_WorkSettings.LowestPriority</c>); 0 is "left alone".</summary>
         public const int LowestPriority = Pawn_WorkSettings.LowestPriority;
+
+        /// <summary>
+        /// The player's words for priorities 1 to <see cref="LowestPriority"/>, in order (player-names3): an order
+        /// of work in words rather than the source game's numbered ranks, read both as a cell ("Soon") and in a
+        /// sentence ("Ada now does Mining soon"). 0 has no word: the work is left alone.
+        /// </summary>
+        public static readonly IReadOnlyList<string> PriorityWords = new[] { "first", "soon", "later", "last" };
+
+        /// <summary>The word for <paramref name="priority"/>, lower case; "left alone" for 0, and the number itself
+        /// outside the range.</summary>
+        public static string PriorityWord(int priority) =>
+            priority == 0 ? "left alone"
+            : priority > 0 && priority <= PriorityWords.Count ? PriorityWords[priority - 1]
+            : priority.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
         public int TicksGame { get; }
 

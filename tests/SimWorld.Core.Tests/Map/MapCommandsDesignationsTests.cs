@@ -59,7 +59,7 @@ namespace SimWorld.Tests.Map
             MapCommandResult result = MapCommands.Designate("Mine", new List<IntVec3> { rock.Position, empty, new IntVec3(-5, 0, -5) });
 
             Assert.Equal(MapCommandOutcome.Done, result.Outcome);
-            Assert.Contains("Designated 1", result.Reason);
+            Assert.Contains("Marked 1", result.Reason);
             Assert.Contains("nothing here can be mined", result.Reason);
             Assert.Contains("off the map", result.Reason);
 

@@ -3,18 +3,18 @@
 
   <RoofDef>
     <defName>RoofConstructed</defName>
-    <label>constructed roof</label>
+    <label>roof</label>
   </RoofDef>
 
   <RoofDef>
     <defName>RoofRockThin</defName>
-    <label>thin rock roof</label>
+    <label>rock overhang</label>
     <isNatural>true</isNatural>
   </RoofDef>
 
   <RoofDef>
     <defName>RoofRockThick</defName>
-    <label>thick rock roof</label>
+    <label>cave ceiling</label>
     <isNatural>true</isNatural>
     <isThickRoof>true</isThickRoof>
   </RoofDef>

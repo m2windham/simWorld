@@ -21,9 +21,9 @@
 
   <WorkGiverDef>
     <defName>PlantsCutDesignated</defName>
-    <label>cut plants</label>
-    <verb>Cut</verb>
-    <gerund>cutting</gerund>
+    <label>clear growth</label>
+    <verb>Clear</verb>
+    <gerund>clearing</gerund>
     <workType>PlantCutting</workType>
     <priorityInType>110</priorityInType>
     <giverClass>SimWorld.AI.WorkGiver_PlantsCutDesignated</giverClass>
@@ -61,9 +61,9 @@
 
   <WorkGiverDef>
     <defName>Deconstruct</defName>
-    <label>deconstruct</label>
-    <verb>Deconstruct</verb>
-    <gerund>deconstructing</gerund>
+    <label>take down</label>
+    <verb>Take down</verb>
+    <gerund>taking down</gerund>
     <workType>Construction</workType>
     <priorityInType>110</priorityInType>
     <giverClass>SimWorld.AI.WorkGiver_Deconstruct</giverClass>
@@ -71,9 +71,9 @@
 
   <WorkGiverDef>
     <defName>HaulUrgently</defName>
-    <label>haul urgently</label>
-    <verb>Haul</verb>
-    <gerund>hauling</gerund>
+    <label>carry first</label>
+    <verb>Carry</verb>
+    <gerund>carrying</gerund>
     <workType>Hauling</workType>
     <priorityInType>120</priorityInType>
     <giverClass>SimWorld.AI.WorkGiver_HaulUrgently</giverClass>

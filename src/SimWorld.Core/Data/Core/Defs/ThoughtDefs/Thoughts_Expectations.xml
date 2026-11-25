@@ -13,32 +13,32 @@
     <workerClass>SimWorld.Thoughts.ThoughtWorker_Expectations</workerClass>
     <stages>
       <li>
-        <label>extremely low expectations</label>
+        <label>asks nothing of the world</label>
         <description>We have so little, and we expect no more. Anything is a gift.</description>
         <baseMoodEffect>30</baseMoodEffect>
       </li>
       <li>
-        <label>very low expectations</label>
+        <label>asks little of the world</label>
         <description>A full belly and a dry place to sleep. Not much more is asked of the world.</description>
         <baseMoodEffect>24</baseMoodEffect>
       </li>
       <li>
-        <label>low expectations</label>
+        <label>used to plain living</label>
         <description>Life is plain and I am used to it.</description>
         <baseMoodEffect>18</baseMoodEffect>
       </li>
       <li>
-        <label>moderate expectations</label>
+        <label>wants a settled life</label>
         <description>A settled age. I expect what settled people have.</description>
         <baseMoodEffect>12</baseMoodEffect>
       </li>
       <li>
-        <label>high expectations</label>
+        <label>wants to live well</label>
         <description>In an age like this one, I expect to live well.</description>
         <baseMoodEffect>6</baseMoodEffect>
       </li>
       <li>
-        <label>sky-high expectations</label>
+        <label>wants the best of everything</label>
         <description>The world has so much. Anything less than the best is a disappointment.</description>
         <baseMoodEffect>0</baseMoodEffect>
       </li>

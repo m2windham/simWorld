@@ -13,9 +13,9 @@
 
   <JobDef>
     <defName>Deconstruct</defName>
-    <label>deconstruct</label>
+    <label>take down</label>
     <driverClass>SimWorld.AI.JobDriver_Deconstruct</driverClass>
-    <reportString>deconstructing.</reportString>
+    <reportString>taking down.</reportString>
   </JobDef>
 
 </Defs>

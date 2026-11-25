@@ -29,7 +29,7 @@
 
   <TraitDef>
     <defName>Brawler</defName>
-    <label>brawler</label>
+    <label>scrapper</label>
     <commonality>0.3</commonality>
     <!-- As Bloodlust: recalled as RimWorld's own gate, not verified here. A pawn who cannot do violence at
          all has no business preferring to do it up close, and the melee skill bonus below would be dead
@@ -37,7 +37,7 @@
     <requiredWorkTags>Violent</requiredWorkTags>
     <degreeDatas>
       <li>
-        <label>brawler</label>
+        <label>scrapper</label>
         <description>Would much rather settle things with fists and blades than at range.</description>
         <degree>0</degree>
         <skillGains>
@@ -52,11 +52,11 @@
 
   <TraitDef>
     <defName>Tough</defName>
-    <label>tough</label>
+    <label>hardy</label>
     <commonality>0.4</commonality>
     <degreeDatas>
       <li>
-        <label>tough</label>
+        <label>hardy</label>
         <description>Shrugs off injuries that would floor most people.</description>
         <degree>0</degree>
       </li>
@@ -65,11 +65,11 @@
 
   <TraitDef>
     <defName>Jealous</defName>
-    <label>jealous</label>
+    <label>envious</label>
     <commonality>0.5</commonality>
     <degreeDatas>
       <li>
-        <label>jealous</label>
+        <label>envious</label>
         <description>Keeps a close eye on what everyone else has, and resents it.</description>
         <degree>0</degree>
       </li>
@@ -78,11 +78,11 @@
 
   <TraitDef>
     <defName>Greedy</defName>
-    <label>greedy</label>
+    <label>grasping</label>
     <commonality>0.5</commonality>
     <degreeDatas>
       <li>
-        <label>greedy</label>
+        <label>grasping</label>
         <description>Wants more of everything, and is not shy about saying so.</description>
         <degree>0</degree>
       </li>
@@ -91,11 +91,11 @@
 
   <TraitDef>
     <defName>Abrasive</defName>
-    <label>abrasive</label>
+    <label>sharp-tongued</label>
     <commonality>0.6</commonality>
     <degreeDatas>
       <li>
-        <label>abrasive</label>
+        <label>sharp-tongued</label>
         <description>Blunt to the point of rudeness, whether it means to be or not.</description>
         <degree>0</degree>
         <!-- Recalled as RimWorld's own constant (a flat -15 to how everyone else sees this pawn) but not
@@ -108,11 +108,11 @@
 
   <TraitDef>
     <defName>Nimble</defName>
-    <label>nimble</label>
+    <label>light-footed</label>
     <commonality>0.35</commonality>
     <degreeDatas>
       <li>
-        <label>nimble</label>
+        <label>light-footed</label>
         <description>Light on its feet; slips out of the way of attacks more often than most.</description>
         <degree>0</degree>
       </li>
@@ -121,14 +121,14 @@
 
   <TraitDef>
     <defName>FastLearner</defName>
-    <label>fast learner</label>
+    <label>quick study</label>
     <commonality>0.4</commonality>
     <exclusionTags>
       <li>learningSpeed</li>
     </exclusionTags>
     <degreeDatas>
       <li>
-        <label>fast learner</label>
+        <label>quick study</label>
         <description>Picks up new skills faster than most people manage.</description>
         <degree>0</degree>
       </li>
@@ -137,14 +137,14 @@
 
   <TraitDef>
     <defName>SlowLearner</defName>
-    <label>slow learner</label>
+    <label>slow study</label>
     <commonality>0.4</commonality>
     <exclusionTags>
       <li>learningSpeed</li>
     </exclusionTags>
     <degreeDatas>
       <li>
-        <label>slow learner</label>
+        <label>slow study</label>
         <description>Takes longer than most to get the hang of anything new.</description>
         <degree>0</degree>
       </li>
@@ -172,11 +172,11 @@
 
   <TraitDef>
     <defName>Gourmand</defName>
-    <label>gourmand</label>
+    <label>food-lover</label>
     <commonality>0.4</commonality>
     <degreeDatas>
       <li>
-        <label>gourmand</label>
+        <label>food-lover</label>
         <description>Lives to eat well, and has picked up real skill in the kitchen along the way.</description>
         <degree>0</degree>
         <skillGains>

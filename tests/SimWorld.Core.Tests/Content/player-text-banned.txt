@@ -176,3 +176,68 @@ cotton plant
 # People
 tribesperson
 tribespeople
+
+# Round 3 (2026-11-25): the presentation a fresh tester still read as borrowed: the skill list and its
+# passions, the trait list, the mood reasons, the break line, the mark verbs, the work grid's numbers, the
+# rock roofs and developer jargon. Whole phrases; the plain words inside them ("roof", "break", "plant",
+# "kind", "tough", "insulted") stay free on their own, and so do skill names that are plain English
+# (shooting, construction, cooking, medicine, social), which the host now groups under its own headings.
+
+# Skills
+artistic
+intellectual
+
+# Traits
+pyromaniac
+bloodlust
+psychopath
+ascetic
+brawler
+jealous
+abrasive
+fast learner
+slow learner
+gourmand
+squeamish
+squeamishness
+faint-hearted
+sanguine
+depressive
+
+# Mood reasons
+low expectations
+moderate expectations
+high expectations
+ate without table
+ate raw food
+slept on ground
+slept outside
+slept in barracks
+ravenously hungry
+witnessed ally's death
+had a nice chat
+was snubbed
+cathartic fight
+angering fight
+soaking wet
+immodest exposure
+
+# The break line
+break line
+
+# Marks
+cut plant
+cutting plant
+haul urgently
+deconstruct
+deconstructed
+deconstructing
+
+# Work grid, roofs and jargon
+blank is never
+constructed roof
+thin rock roof
+thick rock roof
+units in all
+(next era)
+watched or not

@@ -13,7 +13,7 @@
     <requiredTraitsDegree>2</requiredTraitsDegree>
     <stages>
       <li>
-        <label>sanguine</label>
+        <label>sunny nature</label>
         <description>Life is good.</description>
         <baseMoodEffect>12</baseMoodEffect>
       </li>
@@ -25,7 +25,7 @@
     <requiredTraitsDegree>1</requiredTraitsDegree>
     <stages>
       <li>
-        <label>optimist</label>
+        <label>hopeful nature</label>
         <description>Things will work out.</description>
         <baseMoodEffect>6</baseMoodEffect>
       </li>
@@ -37,7 +37,7 @@
     <requiredTraitsDegree>-1</requiredTraitsDegree>
     <stages>
       <li>
-        <label>pessimist</label>
+        <label>gloomy nature</label>
         <description>Something will go wrong.</description>
         <baseMoodEffect>-6</baseMoodEffect>
       </li>
@@ -49,7 +49,7 @@
     <requiredTraitsDegree>-2</requiredTraitsDegree>
     <stages>
       <li>
-        <label>depressive</label>
+        <label>melancholic nature</label>
         <description>Nothing matters.</description>
         <baseMoodEffect>-12</baseMoodEffect>
       </li>

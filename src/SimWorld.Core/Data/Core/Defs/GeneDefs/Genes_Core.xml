@@ -73,7 +73,7 @@
 
   <GeneDef>
     <defName>Gene_FastLearner</defName>
-    <label>fast learner</label>
+    <label>quick to learn</label>
     <description>Picks up new skills more quickly than most, from both training and doing.</description>
     <biostatCpx>3</biostatCpx>
     <statFactors>
@@ -83,7 +83,7 @@
 
   <GeneDef>
     <defName>Gene_SlowLearner</defName>
-    <label>slow learner</label>
+    <label>slow to learn</label>
     <description>Picks up new skills more slowly than most.</description>
     <biostatCpx>1</biostatCpx>
     <statFactors>

@@ -5,13 +5,14 @@
     The rest of RimWorld's Designations.xml that this port has a worker for, placed by the player through
     SimWorld.Map.View.MapCommands.Designate (Mine, in Designations.xml, is placed by a settlement as well).
     All aim at a Thing, as RimWorld's do. Forbid/Unforbid are left out: there is no CompForbiddable here.
-    Labels: RimWorld's Designations.xml carries none; these are its designator labels (Keyed DesignatorX
-    strings), recalled rather than copied from a source file, lowercased as Def labels are.
+    Labels are simWorld's own (player-names3): plain verbs where they are honest (harvest, hunt, tame,
+    slaughter), and "clear growth", "take down" and "carry first" where RimWorld's designator labels read as its
+    UI. The JobDefs and WorkGiverDefs that share these defNames carry the same words.
   -->
 
   <DesignationDef>
     <defName>CutPlant</defName>
-    <label>cut</label>
+    <label>clear growth</label>
     <targetType>Thing</targetType>
   </DesignationDef>
 
@@ -41,13 +42,13 @@
 
   <DesignationDef>
     <defName>Deconstruct</defName>
-    <label>deconstruct</label>
+    <label>take down</label>
     <targetType>Thing</targetType>
   </DesignationDef>
 
   <DesignationDef>
     <defName>HaulUrgently</defName>
-    <label>haul urgently</label>
+    <label>carry first</label>
     <targetType>Thing</targetType>
   </DesignationDef>
 

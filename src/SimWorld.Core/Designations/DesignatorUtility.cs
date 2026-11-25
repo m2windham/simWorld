@@ -46,14 +46,14 @@ namespace SimWorld.Designations
             switch (def.defName)
             {
                 case "Mine": return "mined";
-                case "CutPlant": return "cut";
+                case "CutPlant": return "cleared";
                 case "HarvestPlant": return "harvested";
                 case "Hunt": return "hunted";
                 case "Tame": return "tamed";
                 case "Slaughter": return "slaughtered";
-                case "Deconstruct": return "deconstructed";
-                case "HaulUrgently": return "hauled";
-                default: return "designated " + def.defName;
+                case "Deconstruct": return "taken down";
+                case "HaulUrgently": return "carried first";
+                default: return "marked " + def.defName;
             }
         }
 
@@ -71,7 +71,7 @@ namespace SimWorld.Designations
             if (!GenGrid.InBounds(c, map)) return c + " is off the map";
             if (def != DesignationDefOf.Mine) throw new ArgumentException(def.defName + " aims at things, not cells.", nameof(def));
             Designation? existing = map.designationManager.DesignationAt(c, def);
-            if (existing != null && existing.source == DesignationSource.Player) return "already designated";
+            if (existing != null && existing.source == DesignationSource.Player) return "already marked";
             if (AI.WorkGiver_Miner.FirstMineable(c, map) == null) return "nothing here can be mined";
             return null;
         }
@@ -82,7 +82,7 @@ namespace SimWorld.Designations
             if (t == null) throw new ArgumentNullException(nameof(t));
             if (!t.Spawned || t.Map != map) return t.Label + " is not on this map";
             Designation? existing = map.designationManager.DesignationOn(t, def);
-            if (existing != null && existing.source == DesignationSource.Player) return t.Label + " is already designated";
+            if (existing != null && existing.source == DesignationSource.Player) return t.Label + " is already marked";
 
             if (def == PlayerDesignationDefOf.CutPlant)
             {
@@ -111,13 +111,13 @@ namespace SimWorld.Designations
             if (def == PlayerDesignationDefOf.Deconstruct)
             {
                 if (t.def.category != ThingCategory.Building) return t.Label + " is not a building";
-                if (t.def.mineable) return t.Label + " is rock — it is mined, not deconstructed";
+                if (t.def.mineable) return t.Label + " is rock — it is mined, not taken down";
                 if (t.Faction != null && !IsColonyFaction(t.Faction, map)) return t.Label + " belongs to someone else";
                 return null;
             }
             if (def == PlayerDesignationDefOf.HaulUrgently)
             {
-                return t.def.EverHaulable ? null : t.Label + " cannot be hauled";
+                return t.def.EverHaulable ? null : t.Label + " cannot be carried";
             }
             throw new ArgumentException(def.defName + " is not a designation the player can place.", nameof(def));
         }
@@ -186,7 +186,7 @@ namespace SimWorld.Designations
                 }
                 if (TryDesignateThing(def, here[i], map) == null) placed++;
             }
-            refusal = placed > 0 ? null : anyAlready ? "already designated" : "nothing here can be " + Verb(def);
+            refusal = placed > 0 ? null : anyAlready ? "already marked" : "nothing here can be " + Verb(def);
             return placed;
         }
 

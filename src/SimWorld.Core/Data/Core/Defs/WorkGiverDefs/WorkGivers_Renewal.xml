@@ -7,7 +7,7 @@
   <WorkGiverDef>
     <defName>DeconstructRenewal</defName>
     <label>pull down old houses</label>
-    <verb>Deconstruct</verb>
+    <verb>Pull down</verb>
     <gerund>pulling down</gerund>
     <workType>Construction</workType>
     <priorityInType>80</priorityInType>

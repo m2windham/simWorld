@@ -254,10 +254,10 @@ namespace SimWorld.Map.View
                 {
                     string label = blueprint.EntityToBuild.LabelCap;
                     blueprint.Destroy(DestroyMode.Cancel);
-                    return MapCommandResult.Done("Cancelled the " + label + " designation.");
+                    return MapCommandResult.Done("Cancelled the " + label + " plan.");
                 }
             }
-            return MapCommandResult.NoChange("Nothing is designated there.");
+            return MapCommandResult.NoChange("Nothing is marked there.");
         }
 
         /// <summary>
