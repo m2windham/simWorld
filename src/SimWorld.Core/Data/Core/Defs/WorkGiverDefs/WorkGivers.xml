@@ -19,7 +19,7 @@
 
   <WorkGiverDef>
     <defName>DoctorTendEmergency</defName>
-    <label>tend patients (emergency)</label>
+    <label>treat the sick (urgent)</label>
     <verb>Tend</verb>
     <gerund>tending to</gerund>
     <workType>Doctor</workType>
@@ -36,7 +36,7 @@
 
   <WorkGiverDef>
     <defName>DoctorTend</defName>
-    <label>tend patients</label>
+    <label>treat the sick</label>
     <verb>Tend</verb>
     <gerund>tending to</gerund>
     <workType>Doctor</workType>
@@ -50,7 +50,7 @@
 
   <WorkGiverDef>
     <defName>DoctorFeedHumanlikes</defName>
-    <label>feed patients</label>
+    <label>feed the sick</label>
     <verb>Feed</verb>
     <gerund>feeding</gerund>
     <workType>Doctor</workType>
@@ -305,7 +305,7 @@
 
   <WorkGiverDef>
     <defName>DoBillsSmith</defName>
-    <label>smith bills</label>
+    <label>smithing orders</label>
     <verb>Smith</verb>
     <gerund>smithing</gerund>
     <workType>Smithing</workType>
@@ -316,7 +316,7 @@
 
   <WorkGiverDef>
     <defName>DoBillsTailor</defName>
-    <label>tailor bills</label>
+    <label>tailoring orders</label>
     <verb>Tailor</verb>
     <gerund>tailoring</gerund>
     <workType>Tailoring</workType>
@@ -327,7 +327,7 @@
 
   <WorkGiverDef>
     <defName>DoBillsArt</defName>
-    <label>art bills</label>
+    <label>art orders</label>
     <verb>Make art</verb>
     <gerund>making art</gerund>
     <workType>Art</workType>
@@ -340,7 +340,7 @@
 
   <WorkGiverDef>
     <defName>DoBillsCraft</defName>
-    <label>craft bills</label>
+    <label>crafting orders</label>
     <verb>Craft</verb>
     <gerund>crafting</gerund>
     <workType>Crafting</workType>

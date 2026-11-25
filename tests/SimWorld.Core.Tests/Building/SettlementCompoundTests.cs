@@ -572,7 +572,7 @@ namespace SimWorld.Tests.Building
             string? why = SettlementConstructionInitiative.HomeAreaFullExplanation(settlement, map);
             Assert.NotNull(why);
             Assert.Contains("1 bed", why);
-            Assert.Contains("home area", why);
+            Assert.Contains("town bounds", why);
         }
 
         // ---- growth past the ring ----

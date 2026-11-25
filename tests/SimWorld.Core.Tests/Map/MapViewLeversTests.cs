@@ -412,7 +412,7 @@ namespace SimWorld.Tests.Map
             Assert.Equal(Def("Steel").LabelCap, DefLabels.LabelOf("Steel"));
             Assert.Equal(TerrainDefOf.Soil.LabelCap, DefLabels.LabelOf(TerrainDefOf.Soil.defName));
             Assert.Equal(JobDefOf.Mine.LabelCap, DefLabels.LabelOf("Mine"));
-            Assert.Equal("Cook simple meal", DefLabels.LabelOf("CookMealSimple"));
+            Assert.Equal("Cook a plain meal", DefLabels.LabelOf("CookMealSimple"));
 
             Assert.Equal(Def("Steel").description, DefLabels.DescriptionOf("Steel"));
             Assert.True(DefLabels.IsKnown("Steel"));

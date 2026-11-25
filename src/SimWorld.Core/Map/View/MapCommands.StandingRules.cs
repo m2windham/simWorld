@@ -98,7 +98,7 @@ namespace SimWorld.Map.View
             if (!GenGrid.InBounds(benchCell, map)) return MapCommandResult.OffMap(benchCell);
 
             CompBillGiver? bench = BillGiverAt(map, benchCell);
-            if (bench == null) return MapCommandResult.Refused("No bench that takes bills stands there.");
+            if (bench == null) return MapCommandResult.Refused("No bench that takes work orders stands there.");
 
             RecipeDef? recipe = ResolveRecipeDef(recipeDefName);
             if (recipe == null) return MapCommandResult.UnknownDef(recipeDefName);
@@ -139,18 +139,18 @@ namespace SimWorld.Map.View
             if (!GenGrid.InBounds(benchCell, map)) return MapCommandResult.OffMap(benchCell);
 
             CompBillGiver? bench = BillGiverAt(map, benchCell);
-            if (bench == null) return MapCommandResult.Refused("No bench that takes bills stands there.");
+            if (bench == null) return MapCommandResult.Refused("No bench that takes work orders stands there.");
 
             IReadOnlyList<Bill> bills = bench.BillStack.Bills;
             if (billIndex < 0 || billIndex >= bills.Count)
             {
                 return MapCommandResult.Refused(
-                    "The " + bench.parent.def.label + " has no bill at index " + billIndex + ".");
+                    "The " + bench.parent.def.label + " has no work order at index " + billIndex + ".");
             }
 
             bills[billIndex].suspended = suspended;
             return MapCommandResult.Done(
-                "Bill " + (billIndex + 1) + " at the " + bench.parent.def.label + (suspended ? " suspended." : " resumed."));
+                "Work order " + (billIndex + 1) + " at the " + bench.parent.def.label + (suspended ? " suspended." : " resumed."));
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace SimWorld.Map.View
 
             return MapCommandResult.Done(
                 (included ? "Added " : "Removed ") + cells.Count + " cell(s) "
-                + (included ? "to" : "from") + " the home area.");
+                + (included ? "to" : "from") + " the town bounds.");
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ namespace SimWorld.Map.View
 
             return MapCommandResult.Done(
                 (included ? "Added " : "Removed ") + cells.Count + " cell(s) "
-                + (included ? "to" : "from") + " the snow-clear area.");
+                + (included ? "to" : "from") + " the snow-shovelling area.");
         }
 
         /// <summary>

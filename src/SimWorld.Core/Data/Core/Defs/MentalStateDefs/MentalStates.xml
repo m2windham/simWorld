@@ -28,51 +28,51 @@
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>Wander_Sad</defName>
-    <label>sad wander</label>
+    <label>aimless grief</label>
     <category>Misc</category>
     <minTicksBeforeRecovery>20000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>60000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.6</recoveryMtbDays>
     <recoverFromSleep>true</recoverFromSleep>
-    <baseInspectLine>Mental state: Sad wander</baseInspectLine>
-    <beginLetterLabel>sad wandering</beginLetterLabel>
+    <baseInspectLine>State of mind: Aimless grief</baseInspectLine>
+    <beginLetterLabel>aimless grief</beginLetterLabel>
     <beginLetter>{0} is wandering in a daze, too low to work. They will come back to themselves in their own time.</beginLetter>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>Wander_OwnRoom</defName>
-    <label>hiding in room</label>
+    <label>shut away</label>
     <category>Misc</category>
     <minTicksBeforeRecovery>20000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>60000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.6</recoveryMtbDays>
     <recoverFromSleep>true</recoverFromSleep>
-    <baseInspectLine>Mental state: Hiding in room</baseInspectLine>
+    <baseInspectLine>State of mind: Shut away</baseInspectLine>
     <beginLetterLabel>hiding away</beginLetterLabel>
     <beginLetter>{0} has shut themselves away and will not come out. Not hurt, not in danger; simply unable to face anyone today.</beginLetter>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>Binging_Food</defName>
-    <label>food binge</label>
+    <label>gorging</label>
     <category>Indulgent</category>
     <minTicksBeforeRecovery>15000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.5</recoveryMtbDays>
-    <baseInspectLine>Mental state: Food binge</baseInspectLine>
-    <beginLetterLabel>food binge</beginLetterLabel>
+    <baseInspectLine>State of mind: Gorging</baseInspectLine>
+    <beginLetterLabel>gorging</beginLetterLabel>
     <beginLetter>{0} has started eating everything they can lay hands on. The stores will be lighter when they stop.</beginLetter>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>InsultingSpree</defName>
-    <label>insulting spree</label>
+    <label>lashing out</label>
     <category>Malicious</category>
     <minTicksBeforeRecovery>15000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.5</recoveryMtbDays>
-    <baseInspectLine>Mental state: Insulting spree</baseInspectLine>
-    <beginLetterLabel>insulting spree</beginLetterLabel>
+    <baseInspectLine>State of mind: Lashing out</baseInspectLine>
+    <beginLetterLabel>lashing out</beginLetterLabel>
     <beginLetter>{0} is going from person to person picking fights with words. Whoever they find will remember it.</beginLetter>
   </MentalStateDef>
 
@@ -85,7 +85,7 @@
 
   <MentalStateDef>
     <defName>SocialFighting</defName>
-    <label>social fighting</label>
+    <label>brawling</label>
     <stateClass>SimWorld.MindState.MentalState_SocialFighting</stateClass>
     <category>Aggro</category>
     <minTicksBeforeRecovery>420</minTicksBeforeRecovery>
@@ -93,45 +93,45 @@
     <recoveryMtbDays>0.02</recoveryMtbDays>
     <recoverFromSleep>true</recoverFromSleep>
     <recoverFromDowned>true</recoverFromDowned>
-    <baseInspectLine>Mental state: Social fighting</baseInspectLine>
+    <baseInspectLine>State of mind: Brawling</baseInspectLine>
   </MentalStateDef>
 
   <!-- Major -->
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>Tantrum</defName>
-    <label>tantrum</label>
+    <label>smashing fit</label>
     <category>Malicious</category>
     <minTicksBeforeRecovery>15000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.6</recoveryMtbDays>
-    <baseInspectLine>Mental state: Tantrum</baseInspectLine>
-    <beginLetterLabel>tantrum</beginLetterLabel>
+    <baseInspectLine>State of mind: Smashing fit</baseInspectLine>
+    <beginLetterLabel>smashing fit</beginLetterLabel>
     <beginLetter>{0} is in a rage and smashing whatever is nearest. Things will be broken before this burns out.</beginLetter>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>SadisticRage</defName>
-    <label>sadistic rage</label>
+    <label>cruel streak</label>
     <category>Aggro</category>
     <minTicksBeforeRecovery>15000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.6</recoveryMtbDays>
-    <baseInspectLine>Mental state: Sadistic rage</baseInspectLine>
-    <beginLetterLabel>sadistic rage</beginLetterLabel>
+    <baseInspectLine>State of mind: Cruel streak</baseInspectLine>
+    <beginLetterLabel>cruel streak</beginLetterLabel>
     <beginLetter>{0} has turned cruel and is looking for someone to hurt.</beginLetter>
     <beginLetterDef>ThreatSmall</beginLetterDef>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>FireStartingSpree</defName>
-    <label>fire starting spree</label>
+    <label>fire-setting frenzy</label>
     <category>Malicious</category>
     <minTicksBeforeRecovery>15000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>40000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.5</recoveryMtbDays>
-    <baseInspectLine>Mental state: Fire starting spree</baseInspectLine>
-    <beginLetterLabel>fire-starting spree</beginLetterLabel>
+    <baseInspectLine>State of mind: Fire-setting frenzy</baseInspectLine>
+    <beginLetterLabel>fire-setting frenzy</beginLetterLabel>
     <beginLetter>{0} is setting fires. Whatever they reach will burn unless somebody stops them.</beginLetter>
     <beginLetterDef>ThreatSmall</beginLetterDef>
   </MentalStateDef>
@@ -140,52 +140,52 @@
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>Berserk</defName>
-    <label>berserk</label>
+    <label>blood frenzy</label>
     <category>Aggro</category>
     <minTicksBeforeRecovery>25000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>60000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.7</recoveryMtbDays>
-    <baseInspectLine>Mental state: Berserk</baseInspectLine>
-    <beginLetterLabel>berserk</beginLetterLabel>
-    <beginLetter>{0} has gone berserk and is attacking everyone in reach. They will not stop of their own accord for some time.</beginLetter>
+    <baseInspectLine>State of mind: Blood frenzy</baseInspectLine>
+    <beginLetterLabel>blood frenzy</beginLetterLabel>
+    <beginLetter>{0} has fallen into a blood frenzy and is attacking everyone in reach. They will not stop of their own accord for some time.</beginLetter>
     <beginLetterDef>ThreatSmall</beginLetterDef>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>MurderousRage</defName>
-    <label>murderous rage</label>
+    <label>killing grudge</label>
     <category>Aggro</category>
     <minTicksBeforeRecovery>25000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>60000</maxTicksBeforeRecovery>
     <recoveryMtbDays>0.7</recoveryMtbDays>
-    <baseInspectLine>Mental state: Murderous rage</baseInspectLine>
-    <beginLetterLabel>murderous rage</beginLetterLabel>
+    <baseInspectLine>State of mind: Killing grudge</baseInspectLine>
+    <beginLetterLabel>killing grudge</beginLetterLabel>
     <beginLetter>{0} has fixed on killing someone and has gone looking for them.</beginLetter>
     <beginLetterDef>ThreatSmall</beginLetterDef>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>Catatonic</defName>
-    <label>catatonic breakdown</label>
+    <label>stupor</label>
     <category>Misc</category>
     <minTicksBeforeRecovery>60000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>240000</maxTicksBeforeRecovery>
     <recoveryMtbDays>2</recoveryMtbDays>
     <recoverFromDowned>false</recoverFromDowned>
-    <baseInspectLine>Mental state: Catatonic breakdown</baseInspectLine>
-    <beginLetterLabel>catatonic breakdown</beginLetterLabel>
-    <beginLetter>{0} has collapsed into a catatonic state and no longer responds to anything. This one lasts.</beginLetter>
+    <baseInspectLine>State of mind: Stupor</baseInspectLine>
+    <beginLetterLabel>stupor</beginLetterLabel>
+    <beginLetter>{0} has sunk into a stupor and no longer responds to anything. This one lasts.</beginLetter>
   </MentalStateDef>
 
   <MentalStateDef ParentName="MoodBreakBase">
     <defName>GiveUpExit</defName>
-    <label>giving up</label>
+    <label>walking away</label>
     <category>Misc</category>
     <minTicksBeforeRecovery>60000</minTicksBeforeRecovery>
     <maxTicksBeforeRecovery>120000</maxTicksBeforeRecovery>
     <recoveryMtbDays>1</recoveryMtbDays>
-    <baseInspectLine>Mental state: Giving up</baseInspectLine>
-    <beginLetterLabel>giving up</beginLetterLabel>
+    <baseInspectLine>State of mind: Walking away</baseInspectLine>
+    <beginLetterLabel>walking away</beginLetterLabel>
     <beginLetter>{0} has given up on this place and is walking out of it.</beginLetter>
   </MentalStateDef>
 

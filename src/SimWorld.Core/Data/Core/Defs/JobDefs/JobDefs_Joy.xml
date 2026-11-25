@@ -13,9 +13,9 @@
 
   <JobDef>
     <defName>Skygaze</defName>
-    <label>skygaze</label>
+    <label>watch the sky</label>
     <driverClass>SimWorld.AI.JobDriver_Skygaze</driverClass>
-    <reportString>skygazing.</reportString>
+    <reportString>watching the sky.</reportString>
   </JobDef>
 
   <JobDef>

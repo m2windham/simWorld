@@ -130,7 +130,7 @@
   <ThingDef>
     <defName>ChunkSandstone</defName>
     <label>chunk of sandstone</label>
-    <description>A chunk of sandstone, ready to be cut into blocks at a stonecutter's table.</description>
+    <description>A chunk of sandstone, ready to be cut into blocks at a masons' bench.</description>
     <category>Item</category>
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>
@@ -144,7 +144,7 @@
   <ThingDef>
     <defName>ChunkGranite</defName>
     <label>chunk of granite</label>
-    <description>A chunk of granite, ready to be cut into blocks at a stonecutter's table.</description>
+    <description>A chunk of granite, ready to be cut into blocks at a masons' bench.</description>
     <category>Item</category>
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>
@@ -158,7 +158,7 @@
   <ThingDef>
     <defName>ChunkLimestone</defName>
     <label>chunk of limestone</label>
-    <description>A chunk of limestone, ready to be cut into blocks at a stonecutter's table.</description>
+    <description>A chunk of limestone, ready to be cut into blocks at a masons' bench.</description>
     <category>Item</category>
     <thingClass>SimWorld.Things.Thing</thingClass>
     <thingCategories><li>ResourcesRaw</li></thingCategories>

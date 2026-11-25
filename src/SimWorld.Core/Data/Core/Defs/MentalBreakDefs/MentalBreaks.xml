@@ -5,7 +5,7 @@
 
   <MentalBreakDef>
     <defName>Wander_Sad</defName>
-    <label>sad wander</label>
+    <label>aimless grief</label>
     <mentalState>Wander_Sad</mentalState>
     <intensity>Minor</intensity>
     <baseCommonality>5</baseCommonality>
@@ -13,7 +13,7 @@
 
   <MentalBreakDef>
     <defName>Wander_OwnRoom</defName>
-    <label>hide in room</label>
+    <label>shut away</label>
     <mentalState>Wander_OwnRoom</mentalState>
     <intensity>Minor</intensity>
     <baseCommonality>4</baseCommonality>
@@ -21,7 +21,7 @@
 
   <MentalBreakDef>
     <defName>Binging_Food</defName>
-    <label>food binge</label>
+    <label>gorging</label>
     <mentalState>Binging_Food</mentalState>
     <intensity>Minor</intensity>
     <baseCommonality>3</baseCommonality>
@@ -29,7 +29,7 @@
 
   <MentalBreakDef>
     <defName>InsultingSpree</defName>
-    <label>insulting spree</label>
+    <label>lashing out</label>
     <mentalState>InsultingSpree</mentalState>
     <intensity>Minor</intensity>
     <baseCommonality>3</baseCommonality>
@@ -39,7 +39,7 @@
 
   <MentalBreakDef>
     <defName>Tantrum</defName>
-    <label>tantrum</label>
+    <label>smashing fit</label>
     <mentalState>Tantrum</mentalState>
     <intensity>Major</intensity>
     <baseCommonality>6</baseCommonality>
@@ -47,7 +47,7 @@
 
   <MentalBreakDef>
     <defName>SadisticRage</defName>
-    <label>sadistic rage</label>
+    <label>cruel streak</label>
     <mentalState>SadisticRage</mentalState>
     <intensity>Major</intensity>
     <baseCommonality>1</baseCommonality>
@@ -56,7 +56,7 @@
 
   <MentalBreakDef>
     <defName>FireStartingSpree</defName>
-    <label>fire starting spree</label>
+    <label>fire-setting frenzy</label>
     <mentalState>FireStartingSpree</mentalState>
     <intensity>Major</intensity>
     <baseCommonality>10</baseCommonality>
@@ -67,7 +67,7 @@
 
   <MentalBreakDef>
     <defName>Berserk</defName>
-    <label>berserk</label>
+    <label>blood frenzy</label>
     <mentalState>Berserk</mentalState>
     <intensity>Extreme</intensity>
     <baseCommonality>2</baseCommonality>
@@ -75,7 +75,7 @@
 
   <MentalBreakDef>
     <defName>MurderousRage</defName>
-    <label>murderous rage</label>
+    <label>killing grudge</label>
     <mentalState>MurderousRage</mentalState>
     <intensity>Extreme</intensity>
     <baseCommonality>1</baseCommonality>
@@ -83,7 +83,7 @@
 
   <MentalBreakDef>
     <defName>Catatonic</defName>
-    <label>catatonic breakdown</label>
+    <label>stupor</label>
     <mentalState>Catatonic</mentalState>
     <intensity>Extreme</intensity>
     <baseCommonality>2</baseCommonality>
@@ -91,7 +91,7 @@
 
   <MentalBreakDef>
     <defName>GiveUpExit</defName>
-    <label>give up and leave</label>
+    <label>walking away</label>
     <mentalState>GiveUpExit</mentalState>
     <intensity>Extreme</intensity>
     <baseCommonality>1</baseCommonality>

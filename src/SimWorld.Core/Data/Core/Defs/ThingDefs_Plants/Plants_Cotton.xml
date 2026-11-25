@@ -14,7 +14,7 @@
 
   <ThingDef ParentName="BasePlantCrop">
     <defName>Plant_Cotton</defName>
-    <label>cotton plant</label>
+    <label>cotton crop</label>
     <description>A fibre crop. Its bolls are spun and woven into cloth.</description>
     <plant>
       <growDays>8</growDays>

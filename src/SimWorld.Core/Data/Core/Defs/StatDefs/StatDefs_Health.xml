@@ -16,7 +16,7 @@
 
   <StatDef>
     <defName>BedRestEffectiveness</defName>
-    <label>bed rest effectiveness</label>
+    <label>convalescence effectiveness</label>
     <description>How much a bed speeds up a resting pawn's immunity gain.</description>
     <category>Building</category>
     <defaultBaseValue>1</defaultBaseValue>

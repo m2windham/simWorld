@@ -3,13 +3,13 @@
 
   <InteractionDef>
     <defName>Chitchat</defName>
-    <label>chitchat</label>
+    <label>small talk</label>
     <workerClass>SimWorld.Social.InteractionWorker_Chitchat</workerClass>
   </InteractionDef>
 
   <InteractionDef>
     <defName>DeepTalk</defName>
-    <label>deep talk</label>
+    <label>heart-to-heart</label>
     <workerClass>SimWorld.Social.InteractionWorker_DeepTalk</workerClass>
   </InteractionDef>
 
@@ -22,7 +22,7 @@
 
   <InteractionDef>
     <defName>Slight</defName>
-    <label>slight</label>
+    <label>snub</label>
     <workerClass>SimWorld.Social.InteractionWorker_Slight</workerClass>
     <socialFightBaseChance>0.005</socialFightBaseChance>
   </InteractionDef>

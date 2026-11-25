@@ -117,9 +117,9 @@ namespace SimWorld.Building
 
         public AreaManager(Map.Map map)
         {
-            Home = new Area(map, "Home area");
-            SnowClear = new Area(map, "Snow clear");
-            BuildRoof = new Area(map, "Build roof");
+            Home = new Area(map, "Town bounds");
+            SnowClear = new Area(map, "Snow shovelling");
+            BuildRoof = new Area(map, "Roofing");
         }
 
         /// <summary>The home area keeps writing at the map's own level, where saves made before the snow-clear

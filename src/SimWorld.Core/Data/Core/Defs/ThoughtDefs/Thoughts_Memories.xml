@@ -36,7 +36,7 @@
     </nullifyingTraits>
     <stages>
       <li>
-        <label>ate fine meal</label>
+        <label>ate a hearty meal</label>
         <description>That meal was really good.</description>
         <baseMoodEffect>5</baseMoodEffect>
       </li>
@@ -75,7 +75,7 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
-        <label>catharsis</label>
+        <label>weight lifted</label>
         <description>Letting it out felt good. I feel much better now.</description>
         <baseMoodEffect>40</baseMoodEffect>
       </li>

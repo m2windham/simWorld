@@ -72,7 +72,7 @@ namespace SimWorld.Tests.MindState
 
             Letter let = Assert.Single(Letters);
             Assert.Contains("Aldra", let.label);
-            Assert.StartsWith("Berserk", let.label);
+            Assert.StartsWith("Blood frenzy", let.label);
             // The pawn's own name substituted into the content's {0}, not the template left in the letter.
             Assert.Contains("Aldra", let.text);
             Assert.DoesNotContain("{0}", let.text);

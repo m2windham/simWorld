@@ -76,8 +76,8 @@
 
   <StatDef>
     <defName>MentalBreakThreshold</defName>
-    <label>mental break threshold</label>
-    <description>As long as a pawn's mood is below this level, they are in danger of having a mental break.</description>
+    <label>breakdown threshold</label>
+    <description>As long as a pawn's mood is below this level, they are in danger of having a breakdown.</description>
     <category>BasicsPawn</category>
     <defaultBaseValue>0.35</defaultBaseValue>
     <minValue>0.01</minValue>

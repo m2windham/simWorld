@@ -5,10 +5,10 @@
 
   <WorkTypeDef>
     <defName>Firefighter</defName>
-    <label>firefighting</label>
-    <labelShort>Firefight</labelShort>
-    <gerundLabel>firefighting</gerundLabel>
-    <verb>Firefight</verb>
+    <label>fire watch</label>
+    <labelShort>Fire watch</labelShort>
+    <gerundLabel>keeping fire watch</gerundLabel>
+    <verb>Fight fires</verb>
     <naturalPriority>1400</naturalPriority>
     <workTags>Firefighting</workTags>
     <alwaysStartActive>true</alwaysStartActive>
@@ -17,8 +17,8 @@
 
   <WorkTypeDef>
     <defName>Patient</defName>
-    <label>patient</label>
-    <labelShort>Patient</labelShort>
+    <label>seeking care</label>
+    <labelShort>Seek care</labelShort>
     <gerundLabel>getting treatment</gerundLabel>
     <verb>Treat</verb>
     <naturalPriority>1300</naturalPriority>
@@ -41,9 +41,9 @@
 
   <WorkTypeDef>
     <defName>PatientBedRest</defName>
-    <label>bed rest</label>
-    <labelShort>Bed rest</labelShort>
-    <gerundLabel>resting in bed</gerundLabel>
+    <label>convalescence</label>
+    <labelShort>Convalesce</labelShort>
+    <gerundLabel>convalescing</gerundLabel>
     <verb>Rest</verb>
     <naturalPriority>1150</naturalPriority>
     <alwaysStartActive>true</alwaysStartActive>
@@ -52,10 +52,10 @@
 
   <WorkTypeDef>
     <defName>BasicWorker</defName>
-    <label>basic work</label>
-    <labelShort>Basic</labelShort>
-    <gerundLabel>doing basic labor</gerundLabel>
-    <verb>Do basic labor</verb>
+    <label>chores</label>
+    <labelShort>Chores</labelShort>
+    <gerundLabel>doing chores</gerundLabel>
+    <verb>Do chores</verb>
     <naturalPriority>1100</naturalPriority>
     <workTags>ManualDumb</workTags>
     <alwaysStartActive>true</alwaysStartActive>
@@ -63,10 +63,10 @@
 
   <WorkTypeDef>
     <defName>Warden</defName>
-    <label>warden</label>
-    <labelShort>Warden</labelShort>
-    <gerundLabel>doing warden work</gerundLabel>
-    <verb>Warden</verb>
+    <label>keeping captives</label>
+    <labelShort>Captives</labelShort>
+    <gerundLabel>keeping captives</gerundLabel>
+    <verb>Keep captives</verb>
     <naturalPriority>1000</naturalPriority>
     <workTags>Social</workTags>
     <relevantSkills>
@@ -76,10 +76,10 @@
 
   <WorkTypeDef>
     <defName>Handling</defName>
-    <label>handling</label>
-    <labelShort>Handling</labelShort>
-    <gerundLabel>handling animals</gerundLabel>
-    <verb>Handle</verb>
+    <label>husbandry</label>
+    <labelShort>Husbandry</labelShort>
+    <gerundLabel>tending animals</gerundLabel>
+    <verb>Tend animals</verb>
     <naturalPriority>950</naturalPriority>
     <workTags>Animals</workTags>
     <relevantSkills>
@@ -116,7 +116,7 @@
   <WorkTypeDef>
     <defName>Construction</defName>
     <label>construction</label>
-    <labelShort>Constr.</labelShort>
+    <labelShort>Building</labelShort>
     <gerundLabel>constructing</gerundLabel>
     <verb>Construct</verb>
     <naturalPriority>800</naturalPriority>
@@ -128,10 +128,10 @@
 
   <WorkTypeDef>
     <defName>Growing</defName>
-    <label>growing</label>
-    <labelShort>Growing</labelShort>
-    <gerundLabel>growing</gerundLabel>
-    <verb>Grow</verb>
+    <label>farming</label>
+    <labelShort>Farming</labelShort>
+    <gerundLabel>farming</gerundLabel>
+    <verb>Farm</verb>
     <naturalPriority>750</naturalPriority>
     <workTags>PlantWork</workTags>
     <relevantSkills>
@@ -154,10 +154,10 @@
 
   <WorkTypeDef>
     <defName>PlantCutting</defName>
-    <label>plant cutting</label>
-    <labelShort>Plants</labelShort>
-    <gerundLabel>cutting plants</gerundLabel>
-    <verb>Cut plants</verb>
+    <label>felling</label>
+    <labelShort>Felling</labelShort>
+    <gerundLabel>felling and clearing</gerundLabel>
+    <verb>Fell</verb>
     <naturalPriority>650</naturalPriority>
     <workTags>PlantWork, ManualDumb</workTags>
     <relevantSkills>
@@ -168,7 +168,7 @@
   <WorkTypeDef>
     <defName>Smithing</defName>
     <label>smithing</label>
-    <labelShort>Smith</labelShort>
+    <labelShort>Smithing</labelShort>
     <gerundLabel>smithing</gerundLabel>
     <verb>Smith</verb>
     <naturalPriority>600</naturalPriority>
@@ -181,7 +181,7 @@
   <WorkTypeDef>
     <defName>Tailoring</defName>
     <label>tailoring</label>
-    <labelShort>Tailor</labelShort>
+    <labelShort>Tailoring</labelShort>
     <gerundLabel>tailoring</gerundLabel>
     <verb>Tailor</verb>
     <naturalPriority>550</naturalPriority>
@@ -193,8 +193,8 @@
 
   <WorkTypeDef>
     <defName>Art</defName>
-    <label>art</label>
-    <labelShort>Art</labelShort>
+    <label>artistry</label>
+    <labelShort>Artistry</labelShort>
     <gerundLabel>doing art</gerundLabel>
     <verb>Make art</verb>
     <naturalPriority>500</naturalPriority>
@@ -207,7 +207,7 @@
   <WorkTypeDef>
     <defName>Crafting</defName>
     <label>crafting</label>
-    <labelShort>Craft</labelShort>
+    <labelShort>Crafting</labelShort>
     <gerundLabel>crafting</gerundLabel>
     <verb>Craft</verb>
     <naturalPriority>450</naturalPriority>

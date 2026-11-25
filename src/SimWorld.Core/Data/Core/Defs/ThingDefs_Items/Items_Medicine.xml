@@ -25,7 +25,7 @@
 
   <ThingDef>
     <defName>MedicineHerbal</defName>
-    <label>herbal medicine</label>
+    <label>herbal salve</label>
     <description>Bandages, ointments and salves made from comfrey and other medicinal plants.</description>
     <category>Item</category>
     <thingClass>SimWorld.Things.Thing</thingClass>

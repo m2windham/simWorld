@@ -12,7 +12,7 @@
     <defName>DoBill</defName>
     <label>work at bench</label>
     <driverClass>SimWorld.Crafting.JobDriver_DoBill</driverClass>
-    <reportString>doing a bill.</reportString>
+    <reportString>working an order.</reportString>
   </JobDef>
 
 </Defs>

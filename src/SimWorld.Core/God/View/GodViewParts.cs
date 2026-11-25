@@ -320,7 +320,7 @@ namespace SimWorld.God.View
                 lines.Add("The settlement builds " + string.Join(" and ", things) + " first.");
             }
             if (def.rationFood) lines.Add("People eat only once very hungry, so the stores last longer.");
-            if (def.restDay) lines.Add("No routine work: the day is given to rest and recreation. Emergencies are still answered.");
+            if (def.restDay) lines.Add("No routine work: the day is given to rest and leisure. Emergencies are still answered.");
             if (def.workerClass == typeof(EdictWorker_ExemptMinors)) lines.Add("Children are spared it.");
             if (def.researchFocus != null) lines.Add("Research turns to " + def.researchFocus.LabelCap + ".");
             float moodWhile = MoodOf(def.moodThought);

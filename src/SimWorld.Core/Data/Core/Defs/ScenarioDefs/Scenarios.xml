@@ -72,11 +72,11 @@
   <ScenarioDef>
     <defName>TribalStart</defName>
     <label>tribal start</label>
-    <description>Five tribespeople start with nothing but sticks and stones.</description>
+    <description>Five clansfolk start with nothing but sticks and stones.</description>
     <scenario>
       <name>Tribal Start</name>
-      <summary>Five tribespeople start with nothing but sticks and stones.</summary>
-      <description>Five tribespeople start with nothing but sticks and stones.</description>
+      <summary>Five clansfolk start with nothing but sticks and stones.</summary>
+      <description>Five clansfolk start with nothing but sticks and stones.</description>
       <parts>
         <li Class="SimWorld.Scenario.ScenPart_ConfigPage_ConfigureStartingPawns">
           <def>ConfigPage_ConfigureStartingPawns</def>
