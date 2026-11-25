@@ -155,7 +155,7 @@ does keep are free text that loads either way.
 | Host research | Study Fire (next era) | Study Fire, toward the next era |
 | Host era panel | (research 3 of 7, conditions 0 of 1); (31 of 25) | (3 of 7 studies done, its one goal still to meet); (31 now, 25 needed) |
 | Host era panel | Their raiders carry Sticks and stones arms. | Their raiders are armed as in the Sticks and stones era. |
-| Host speed | Speed 5 (at 47%) | Speed 5 (slowed to 47%) |
+| Host speed | Speed 5 (at 47%) | Speed 5 (behind): the bar has no room to explain a share |
 | Drought letter and condition | watched or not | in every settlement, near or far |
 
 The retired phrases are banned in `player-text-banned.txt` as whole phrases. Common
