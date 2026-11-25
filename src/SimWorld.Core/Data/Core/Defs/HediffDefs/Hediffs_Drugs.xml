@@ -37,7 +37,7 @@
 
   <HediffDef ParentName="ToleranceBase">
     <defName>YayoTolerance</defName>
-    <label>yayo tolerance</label>
+    <label>brightdust tolerance</label>
     <comps>
       <li Class="SimWorld.Health.HediffCompProperties_SeverityPerDay">
         <severityPerDay>-0.03</severityPerDay>
@@ -95,7 +95,7 @@
 
   <HediffDef ParentName="AddictionBase">
     <defName>YayoAddiction</defName>
-    <label>yayo addiction</label>
+    <label>brightdust addiction</label>
     <comps>
       <li Class="SimWorld.Health.HediffCompProperties_SeverityPerDay">
         <severityPerDay>0.25</severityPerDay>

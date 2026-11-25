@@ -10,9 +10,9 @@
 
   <CropDemandDef>
     <defName>HealrootForMedicine</defName>
-    <label>healroot for medicine</label>
+    <label>comfrey for medicine</label>
     <crop>Plant_Healroot</crop>
-    <fieldLabel>Healroot field</fieldLabel>
+    <fieldLabel>Comfrey field</fieldLabel>
     <workerClass>SimWorld.Farming.CropDemandWorker_Medicine</workerClass>
   </CropDemandDef>
 

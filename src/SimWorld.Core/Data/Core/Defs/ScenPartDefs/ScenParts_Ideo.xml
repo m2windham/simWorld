@@ -9,7 +9,7 @@
 
   <ScenPartDef>
     <defName>StartingIdeo</defName>
-    <label>starting ideoligion</label>
+    <label>starting faith</label>
     <category>StartingImportant</category>
     <scenPartClass>SimWorld.Scenario.ScenPart_StartingIdeo</scenPartClass>
     <summaryPriority>85</summaryPriority>

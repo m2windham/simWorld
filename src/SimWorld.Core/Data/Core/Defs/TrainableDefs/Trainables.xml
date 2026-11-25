@@ -51,7 +51,7 @@
   <TrainableDef>
     <defName>Rescue</defName>
     <label>rescue</label>
-    <description>Carry a downed colonist to safety.</description>
+    <description>Carry a downed citizen to safety.</description>
     <steps>2</steps>
     <minTrainability>Intermediate</minTrainability>
     <prerequisites>

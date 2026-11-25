@@ -46,7 +46,7 @@ namespace SimWorld.Scenario
         {
             if (options.Count == 0) return "";
             if (options.Count == 1) return "Your civilization follows " + options[0].LabelCap + ".";
-            return "Your civilization's belief is drawn from " + options.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " ideoligions.";
+            return "Your civilization's belief is drawn from " + options.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " faiths.";
         }
 
         /// <summary>

@@ -44,13 +44,13 @@
   -->
   <GameConditionDef>
     <defName>Flashstorm</defName>
-    <label>flashstorm</label>
+    <label>dry thunderstorm</label>
     <description>A dry lightning storm. Strikes fall on open ground and set alight whatever they find.</description>
     <conditionClass>SimWorld.Conditions.GameCondition_Flashstorm</conditionClass>
     <incident>Flashstorm</incident>
     <durationDays>0.075~0.1</durationDays>
     <letterDef>NegativeEvent</letterDef>
-    <endMessage>The flashstorm has blown itself out.</endMessage>
+    <endMessage>The dry thunderstorm has blown itself out.</endMessage>
   </GameConditionDef>
 
 </Defs>

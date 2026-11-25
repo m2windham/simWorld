@@ -355,8 +355,8 @@ namespace SimWorld.Tests.God
         }
 
         [Theory]
-        [InlineData(1, "1 colonist idle")]
-        [InlineData(3, "3 colonists idle")]
+        [InlineData(1, "1 citizen idle")]
+        [InlineData(3, "3 citizens idle")]
         public void The_idle_alert_counts_in_words(int idle, string expected)
         {
             var map = new CoreMap(10, 10, TerrainDefOf.Soil);

@@ -102,8 +102,8 @@
 
   <IncidentDef>
     <defName>Flashstorm</defName>
-    <label>flashstorm</label>
-    <description>A flashstorm brings sudden lightning.</description>
+    <label>dry thunderstorm</label>
+    <description>A dry thunderstorm brings sudden lightning and no rain to douse what it starts.</description>
     <category>Misc</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
     <workerClass>SimWorld.Conditions.IncidentWorker_MakeGameCondition</workerClass>

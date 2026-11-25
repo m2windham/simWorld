@@ -70,7 +70,7 @@ namespace SimWorld.Social.Ideology
             }
             if (structureCount != 1)
             {
-                yield return "an ideoligion must carry exactly one Structure meme (found " + structureCount + ").";
+                yield return "an ideology must carry exactly one Structure meme (found " + structureCount + ").";
             }
 
             // Every slot a meme opened must be filled by something in `precepts` carrying that issue tag.

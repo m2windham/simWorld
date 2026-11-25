@@ -88,7 +88,7 @@ namespace SimWorld.Needs
             if (fallPerDay != DefaultFallPerDay)
             {
                 yield return "fallPerDay is set (" + fallPerDay.ToString(System.Globalization.CultureInfo.InvariantCulture)
-                    + ") but nothing reads it: in RimWorld only Need_Chemical does, and chemical needs are not"
+                    + ") but nothing reads it: in the source game only Need_Chemical does, and chemical needs are not"
                     + " ported. Give the need class its own rate instead — see NeedDef.fallPerDay.";
             }
         }

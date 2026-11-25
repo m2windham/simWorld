@@ -150,8 +150,8 @@
 
   <ThingDef ParentName="BaseNaturalRock">
     <defName>MineablePlasteel</defName>
-    <label>compacted plasteel</label>
-    <description>Plasteel pressed into the rock in a seam no geology explains. Somebody made this, a very long time ago.</description>
+    <label>compacted starmetal</label>
+    <description>Starmetal pressed into the rock in a seam no geology explains. Somebody made this, a very long time ago.</description>
     <mineableThing>Plasteel</mineableThing>
     <mineableYield>20</mineableYield>
     <mineableScatterCommonality>0.03</mineableScatterCommonality>

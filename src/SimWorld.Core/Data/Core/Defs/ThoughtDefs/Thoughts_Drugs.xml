@@ -32,15 +32,15 @@
     <hediff>YayoAddiction</hediff>
     <stages>
       <li>
-        <label>mild craving for yayo</label>
+        <label>mild craving for brightdust</label>
         <baseMoodEffect>-3</baseMoodEffect>
       </li>
       <li>
-        <label>yayo withdrawal</label>
+        <label>brightdust withdrawal</label>
         <baseMoodEffect>-12</baseMoodEffect>
       </li>
       <li>
-        <label>severe yayo withdrawal</label>
+        <label>severe brightdust withdrawal</label>
         <baseMoodEffect>-22</baseMoodEffect>
       </li>
     </stages>

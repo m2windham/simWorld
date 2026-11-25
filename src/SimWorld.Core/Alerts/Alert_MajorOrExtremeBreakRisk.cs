@@ -34,7 +34,7 @@ namespace SimWorld.Alerts
         }
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "These colonists are so unhappy they could suffer a serious mental break at any moment. Find out " +
+            "These citizens are so unhappy they could suffer a serious mental break at any moment. Find out " +
             "what is weighing on them and give them something better:" + CulpritList(report);
     }
 }

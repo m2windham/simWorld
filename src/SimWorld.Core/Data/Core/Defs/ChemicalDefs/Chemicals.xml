@@ -20,7 +20,7 @@
 
   <ChemicalDef>
     <defName>Yayo</defName>
-    <label>yayo</label>
+    <label>brightdust</label>
     <toleranceHediff>YayoTolerance</toleranceHediff>
     <addictionHediff>YayoAddiction</addictionHediff>
     <minToleranceToAddict>0.15</minToleranceToAddict>

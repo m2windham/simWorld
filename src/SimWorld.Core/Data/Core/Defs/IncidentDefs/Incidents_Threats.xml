@@ -23,8 +23,8 @@
 
   <IncidentDef>
     <defName>ManhunterPack</defName>
-    <label>manhunter pack</label>
-    <description>A pack of animals turns manhunter and attacks the civilization.</description>
+    <label>maddened beasts</label>
+    <description>A pack of animals is driven mad and attacks the civilization.</description>
     <category>ThreatBig</category>
     <targetTags><li>Map_PlayerHome</li></targetTags>
     <workerClass>SimWorld.Director.IncidentWorker_ManhunterPack</workerClass>

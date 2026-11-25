@@ -11,8 +11,8 @@
 
   <StorytellerDef>
     <defName>Cassandra_Classic</defName>
-    <label>Cassandra Classic</label>
-    <description>A balanced storyteller: rising tension with a fair, escalating rhythm.</description>
+    <label>The Annalist</label>
+    <description>A patient keeper of records who sets down trouble on a steady, rising beat: a quiet stretch, then a threat, each a little sharper than the last.</description>
     <listOrder>0</listOrder>
     <persona>The Chronicle</persona>
     <!-- RimWorld's own "starting factor" (rimworldwiki.com/wiki/Combat_power, read 2026-11-19): 0.7 up to day 10,
@@ -67,8 +67,8 @@
 
   <StorytellerDef>
     <defName>Phoebe_Chillax</defName>
-    <label>Phoebe Chillax</label>
-    <description>A gentler storyteller: longer quiet stretches and a more relaxed pace.</description>
+    <label>The Hearthkeeper</label>
+    <description>A kindly teller who lets the fire burn low between hardships: long quiet seasons and a gentler pace.</description>
     <listOrder>1</listOrder>
     <persona>The Chronicle</persona>
     <!-- RimWorld's shared starting factor; see Cassandra_Classic. Replaces the unsourced (0,1)(40,1.5)(150,2.5). -->
@@ -113,8 +113,8 @@
 
   <StorytellerDef>
     <defName>Randy_Random</defName>
-    <label>Randy Random</label>
-    <description>An unpredictable storyteller: no pattern, just chance.</description>
+    <label>The Trickster</label>
+    <description>A teller who keeps to no pattern at all. Anything may come next, and often does.</description>
     <listOrder>2</listOrder>
     <persona>The Chronicle</persona>
     <!-- RimWorld's shared starting factor; see Cassandra_Classic. -->

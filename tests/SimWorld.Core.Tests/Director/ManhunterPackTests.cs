@@ -197,7 +197,7 @@ namespace SimWorld.Tests.Director
 
             Assert.Contains(
                 Find.LetterStack.LettersListForReading,
-                l => l.label.Contains("Manhunter", System.StringComparison.Ordinal));
+                l => l.label.StartsWith(Manhunter.LabelCap, System.StringComparison.Ordinal));
         }
 
         // ---- the ablation discipline ----

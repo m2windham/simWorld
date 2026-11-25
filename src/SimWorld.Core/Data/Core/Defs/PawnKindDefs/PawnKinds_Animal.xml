@@ -10,7 +10,7 @@
 
   <PawnKindDef>
     <defName>Muffalo</defName>
-    <label>muffalo</label>
+    <label>woolly ox</label>
     <race>Muffalo</race>
     <combatPower>60</combatPower>
   </PawnKindDef>

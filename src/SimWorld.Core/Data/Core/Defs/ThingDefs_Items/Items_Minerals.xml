@@ -155,7 +155,7 @@
 
   <ThingDef ParentName="BaseMineral">
     <defName>Plasteel</defName>
-    <label>plasteel</label>
+    <label>starmetal</label>
     <description>A metal-ceramic composite far beyond anything a forge can make, found compacted in old rock. Whoever left it there is not around to ask.</description>
     <thingCategories><li>ResourcesRaw</li><li>Metals</li></thingCategories>
     <statBases>

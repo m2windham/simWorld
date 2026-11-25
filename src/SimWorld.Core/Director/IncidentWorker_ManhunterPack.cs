@@ -311,10 +311,10 @@ namespace SimWorld.Director
         {
             string where = string.IsNullOrEmpty(settlement?.name) ? "a settlement" : settlement!.name;
             string text = watched
-                ? $"A pack of {count} {kind.label} has turned manhunter at {where}."
-                : $"Word reaches you late: a pack of {count} {kind.label} turned manhunter at {where} while your attention was elsewhere.";
+                ? $"A pack of {count} {kind.label} has been driven mad at {where}."
+                : $"Word reaches you late: a pack of {count} {kind.label} was driven mad at {where} while your attention was elsewhere.";
 
-            Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Manhunter pack: " + where, text, LetterDefOf.ThreatBig,
+            Letters.Letter? letter = Find.LetterStack?.ReceiveLetter("Maddened beasts: " + where, text, LetterDefOf.ThreatBig,
                 IncidentWorker_RaidEnemy.LoadIdsOf(present));
             if (letter != null) letter.location = location;
         }

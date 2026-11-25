@@ -11,7 +11,7 @@
 
   <XenotypeDef>
     <defName>Baseliner</defName>
-    <label>baseliner</label>
+    <label>commonborn</label>
     <description>An unmodified human — no genes beyond the species baseline.</description>
   </XenotypeDef>
 

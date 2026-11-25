@@ -17,6 +17,6 @@ namespace SimWorld.Alerts
             ColonistsWhere(context, p => Alert_MajorOrExtremeBreakRisk.RiskOf(p) == MentalBreakIntensity.Minor);
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "These colonists are unhappy enough that they could have a minor mental break:" + CulpritList(report);
+            "These citizens are unhappy enough that they could have a minor mental break:" + CulpritList(report);
     }
 }

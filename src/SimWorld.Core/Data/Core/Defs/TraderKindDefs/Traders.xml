@@ -34,7 +34,7 @@
 
   <TraderKindDef>
     <defName>Caravan_Outlander_BulkGoods</defName>
-    <label>outlander bulk goods caravan</label>
+    <label>borderland bulk goods caravan</label>
     <commonality>1.0</commonality>
     <orbital>false</orbital>
     <requestable>true</requestable>

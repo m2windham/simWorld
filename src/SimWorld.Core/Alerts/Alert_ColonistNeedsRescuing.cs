@@ -14,7 +14,7 @@ namespace SimWorld.Alerts
     {
         public override AlertPriority Priority => AlertPriority.Critical;
 
-        public override string DefaultLabel => "Colonist needs rescue";
+        public override string DefaultLabel => "Citizen needs rescue";
 
         /// <summary>RimWorld: <c>Alert_ColonistNeedsRescuing.NeedsRescue</c>, trimmed as the class doc says.
         /// Shared with <see cref="Alert_ColonistNeedsTend"/>, which steps aside for anyone this covers, the same
@@ -24,7 +24,7 @@ namespace SimWorld.Alerts
         public override AlertReport GetReport(AlertContext context) => ColonistsWhere(context, NeedsRescue);
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "These colonists are downed and lying where they fell. Someone must carry them to a bed, or they " +
+            "These citizens are downed and lying where they fell. Someone must carry them to a bed, or they " +
             "may bleed, freeze or starve where they lie:" + CulpritList(report);
     }
 }

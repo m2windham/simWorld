@@ -19,7 +19,7 @@ namespace SimWorld.Alerts
     {
         public override AlertPriority Priority => AlertPriority.Medium;
 
-        public override string DefaultLabel => "Colonists idle";
+        public override string DefaultLabel => "Citizens idle";
 
         internal static bool IsIdle(Pawn p) =>
             !p.Downed && !p.InMentalState && p.jobs?.curJob?.def == JobDefOf.GotoWander;
@@ -28,10 +28,10 @@ namespace SimWorld.Alerts
 
         public override string GetLabel(AlertContext context, AlertReport report) =>
             report.Culprits.Count.ToString(CultureInfo.InvariantCulture)
-            + (report.Culprits.Count == 1 ? " colonist idle" : " colonists idle");
+            + (report.Culprits.Count == 1 ? " citizen idle" : " citizens idle");
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "These colonists have nothing to do. Check their work priorities, or give them work:" +
+            "These citizens have nothing to do. Check their work priorities, or give them work:" +
             CulpritList(report);
     }
 }

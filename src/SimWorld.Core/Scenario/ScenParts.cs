@@ -22,7 +22,7 @@ namespace SimWorld.Scenario
 
         public int StartingPawnCount => pawnCount;
 
-        public override string Summary(Scenario scen) => "You start with " + pawnCount + " pawns.";
+        public override string Summary(Scenario scen) => "You start with " + pawnCount + " citizens.";
 
         public override IEnumerable<string> ConfigErrors()
         {
@@ -121,7 +121,7 @@ namespace SimWorld.Scenario
         public float chance = 1f;
         public PawnGenerationContext context = PawnGenerationContext.PlayerStarter;
 
-        public override string Summary(Scenario scen) => "Starting pawns may have the " + (trait?.LabelCap ?? "?") + " trait.";
+        public override string Summary(Scenario scen) => "Starting citizens may have the " + (trait?.LabelCap ?? "?") + " trait.";
 
         public override void PostGameStart(IScenarioContext ctx)
         {

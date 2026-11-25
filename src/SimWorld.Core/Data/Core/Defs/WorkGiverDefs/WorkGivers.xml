@@ -70,7 +70,7 @@
 
   <WorkGiverDef>
     <defName>DoctorRescue</defName>
-    <label>rescue downed pawns</label>
+    <label>rescue the downed</label>
     <verb>Rescue</verb>
     <gerund>rescuing</gerund>
     <workType>Doctor</workType>

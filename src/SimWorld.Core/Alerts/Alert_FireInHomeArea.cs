@@ -31,7 +31,7 @@ namespace SimWorld.Alerts
         }
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "There is a fire in the home area. Colonists with Firefighter work will try to put it out; if " +
+            "There is a fire in the home area. Citizens with Firefighter work will try to put it out; if " +
             "nobody does, it will spread.";
     }
 }

@@ -77,17 +77,19 @@ namespace SimWorld.Sim
 
         public static string QuadrumLabel(Quadrum quadrum)
         {
+            // The enum keeps RimWorld's names (internal, and saves never store them); what a player reads is
+            // simWorld's own calendar.
             switch (quadrum)
             {
-                case Quadrum.Aprimay: return "Aprimay";
-                case Quadrum.Jugust: return "Jugust";
-                case Quadrum.Septober: return "Septober";
-                case Quadrum.Decembary: return "Decembary";
+                case Quadrum.Aprimay: return "Seedtide";
+                case Quadrum.Jugust: return "Suntide";
+                case Quadrum.Septober: return "Reaptide";
+                case Quadrum.Decembary: return "Frosttide";
                 default: return "Undefined";
             }
         }
 
-        /// <summary>"Day 3 of Aprimay, 5500" (RimWorld's date readout, 1-based day).</summary>
+        /// <summary>"Day 3 of Seedtide, 5500" (RimWorld's date readout, 1-based day).</summary>
         public static string DateReadoutStringAt(long absTicks, float longitude)
         {
             int day = DayOfQuadrum(absTicks, longitude) + 1;

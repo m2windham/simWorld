@@ -28,7 +28,7 @@ namespace SimWorld.Tests.Sim
         [Fact]
         public void Tick_zero_is_day_one_of_Aprimay_5500()
         {
-            Assert.Equal("Day 1 of Aprimay, 5500", GenDate.DateReadoutStringAt(0, 0f));
+            Assert.Equal("Day 1 of Seedtide, 5500", GenDate.DateReadoutStringAt(0, 0f));
             Assert.Equal(0, GenDate.HourOfDay(0, 0f));
             Assert.Equal(0, GenDate.DaysPassedAt(0));
             Assert.Equal(Quadrum.Aprimay, GenDate.QuadrumAt(0, 0f));
@@ -38,7 +38,7 @@ namespace SimWorld.Tests.Sim
         public void Dates_advance_through_quadrums_and_years()
         {
             long ticks = GenDate.TicksPerDay * 15L;
-            Assert.Equal("Day 1 of Jugust, 5500", GenDate.DateReadoutStringAt(ticks, 0f));
+            Assert.Equal("Day 1 of Suntide, 5500", GenDate.DateReadoutStringAt(ticks, 0f));
 
             ticks = GenDate.TicksPerYear + GenDate.TicksPerDay * 44L + GenDate.TicksPerHour * 13L;
             Assert.Equal(5501, GenDate.Year(ticks, 0f));
@@ -46,7 +46,7 @@ namespace SimWorld.Tests.Sim
             Assert.Equal(Quadrum.Septober, GenDate.QuadrumAt(ticks, 0f));
             Assert.Equal(14, GenDate.DayOfQuadrum(ticks, 0f));
             Assert.Equal(13, GenDate.HourOfDay(ticks, 0f));
-            Assert.Equal("Day 15 of Septober, 5501, 13h", GenDate.DateFullStringAt(ticks, 0f));
+            Assert.Equal("Day 15 of Reaptide, 5501, 13h", GenDate.DateFullStringAt(ticks, 0f));
             Assert.Equal(104, GenDate.DaysPassedAt(ticks));
         }
 

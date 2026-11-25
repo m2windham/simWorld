@@ -40,7 +40,7 @@ namespace SimWorld.Alerts
             int perHead = (int)Math.Floor(nutrition / colonists);
             return "You are running low on food. There is " + nutrition.ToString("F0", CultureInfo.InvariantCulture) +
                 " nutrition on the map for " + colonists.ToString(CultureInfo.InvariantCulture) +
-                " colonists: " + perHead.ToString(CultureInfo.InvariantCulture) +
+                " citizens: " + perHead.ToString(CultureInfo.InvariantCulture) +
                 " each. Hunt, harvest, gather or trade for more.";
         }
     }

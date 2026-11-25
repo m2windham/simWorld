@@ -17,7 +17,7 @@ namespace SimWorld.Alerts
     {
         public override AlertPriority Priority => AlertPriority.High;
 
-        public override string DefaultLabel => "Colonist needs treatment";
+        public override string DefaultLabel => "Citizen needs treatment";
 
         public override AlertReport GetReport(AlertContext context) =>
             ColonistsWhere(context, p =>
@@ -25,7 +25,7 @@ namespace SimWorld.Alerts
                 && !Alert_ColonistNeedsRescuing.NeedsRescue(p));
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "These colonists have wounds or illnesses that need a doctor's care. Untended wounds bleed and " +
+            "These citizens have wounds or illnesses that need a doctor's care. Untended wounds bleed and " +
             "can become infected:" + CulpritList(report);
     }
 }

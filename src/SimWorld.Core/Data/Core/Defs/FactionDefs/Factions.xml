@@ -78,7 +78,7 @@
 
   <FactionDef>
     <defName>OutlanderCivilization</defName>
-    <label>outlander civilization</label>
+    <label>borderland civilization</label>
     <techLevel>Industrial</techLevel>
     <requiredCountAtGameStart>1</requiredCountAtGameStart>
     <maxCountAtGameStart>5</maxCountAtGameStart>
@@ -91,8 +91,8 @@
     <startingGoodwill>-20~40</startingGoodwill>
     <raidCommonality>0.8</raidCommonality>
     <leaderTitle>governor</leaderTitle>
-    <pawnSingular>outlander</pawnSingular>
-    <pawnsPlural>outlanders</pawnsPlural>
+    <pawnSingular>borderer</pawnSingular>
+    <pawnsPlural>borderers</pawnsPlural>
     <earliestRaidDays>5</earliestRaidDays>
     <pawnGroupMakers>
       <li>
@@ -111,7 +111,7 @@
 
   <FactionDef>
     <defName>RoughOutlanders</defName>
-    <label>rough outlanders</label>
+    <label>reaver band</label>
     <techLevel>Medieval</techLevel>
     <permanentEnemy>true</permanentEnemy>
     <requiredCountAtGameStart>0</requiredCountAtGameStart>

@@ -334,7 +334,7 @@
 
   <ResearchProjectDef>
     <defName>ArchotechSeeds</defName>
-    <label>archotech seeds</label>
+    <label>demiurge seeds</label>
     <description>A self-improving intelligence, seeded and left to recurse, aims at a technology no human team designed.</description>
     <baseCost>6900</baseCost>
     <techLevel>Archotech</techLevel>
@@ -436,7 +436,7 @@
   <ResearchProjectDef>
     <defName>MindUploading</defName>
     <label>mind uploading</label>
-    <description>A neural lace fine enough to read a mind, and an archotech vast enough to hold it, make a person's continuity a software problem.</description>
+    <description>A neural lace fine enough to read a mind, and a demiurge vast enough to hold it, make a person's continuity a software problem.</description>
     <baseCost>7740</baseCost>
     <techLevel>Archotech</techLevel>
     <tab>Main</tab>

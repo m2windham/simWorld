@@ -3,7 +3,7 @@
 
   <PawnKindDef>
     <defName>Colonist</defName>
-    <label>colonist</label>
+    <label>settler</label>
     <race>Human</race>
     <backstoryCategories>
       <li>Civil</li>

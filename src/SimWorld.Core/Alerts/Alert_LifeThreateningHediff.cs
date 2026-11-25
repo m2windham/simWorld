@@ -33,7 +33,7 @@ namespace SimWorld.Alerts
         public override AlertReport GetReport(AlertContext context) => ColonistsWhere(context, HasLifeThreateningHediff);
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "These colonists have a condition that will kill them if it runs its course. Get them treated:" +
+            "These citizens have a condition that will kill them if it runs its course. Get them treated:" +
             CulpritList(report);
     }
 }

@@ -50,7 +50,7 @@ namespace SimWorld.Alerts
         }
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "These colonists need medical care, and nobody able to walk has Doctor work enabled. Enable Doctor " +
+            "These citizens need medical care, and nobody able to walk has Doctor work enabled. Enable Doctor " +
             "work for someone who can do it:" + CulpritList(report);
     }
 }

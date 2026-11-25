@@ -12,7 +12,7 @@
   <IncidentCategoryDef>
     <defName>ThreatBig</defName>
     <label>big threat</label>
-    <description>A major danger scaled by the civilization's threat points: a raid, a manhunter pack.</description>
+    <description>A major danger scaled by the civilization's threat points: a raid, a pack of maddened beasts.</description>
   </IncidentCategoryDef>
 
   <IncidentCategoryDef>
@@ -59,7 +59,7 @@
 
   <IncidentCategoryDef>
     <defName>ShipChunkDrop</defName>
-    <label>ship chunk drop</label>
+    <label>falling wreckage</label>
     <description>Wreckage falls from orbit.</description>
   </IncidentCategoryDef>
 

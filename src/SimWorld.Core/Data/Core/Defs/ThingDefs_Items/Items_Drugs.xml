@@ -43,7 +43,7 @@
 
   <ThingDef>
     <defName>Flake</defName>
-    <label>flake</label>
+    <label>brightdust</label>
     <description>A refined stimulant, smoked. A powerful high with a hard, addictive comedown.</description>
     <category>Item</category>
     <thingClass>SimWorld.Things.ThingWithComps</thingClass>

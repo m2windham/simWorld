@@ -15,7 +15,7 @@ namespace SimWorld.Alerts
             ColonistsWhere(context, p => p.needs?.food != null && p.needs.food.Starving);
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "These colonists are starving. Every hour without food deepens their malnutrition, which will " +
+            "These citizens are starving. Every hour without food deepens their malnutrition, which will " +
             "eventually kill them. Get them food:" + CulpritList(report);
     }
 }

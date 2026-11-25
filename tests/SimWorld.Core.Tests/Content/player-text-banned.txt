@@ -1,0 +1,119 @@
+# Terms no player may read: RimWorld's proper nouns and coined words (Doug, 2026-11-24:
+# "nothing 'rim world' is player facing"). Internal defNames, class names and ported code may keep them.
+#
+# One term per line, matched case-insensitively as a whole word (a letter, digit or underscore on either
+# side means no match, so the defName "ManhunterPack" is not a hit but "manhunter pack" is). A space
+# matches any run of whitespace. Lines starting with # are comments.
+#
+# Read by PlayerTextTests in this repository and by the host's PlayerTextTests (simWorld.Host), which
+# finds this file beside the core package it builds against. Add a term here and both repositories
+# enforce it.
+
+# Storytellers
+cassandra
+phoebe
+randy
+chillax
+cassandra classic
+phoebe chillax
+randy random
+
+# Calendar
+aprimay
+jugust
+septober
+decembary
+quadrum
+quadrums
+
+# Creatures
+muffalo
+muffalos
+boomalope
+boomalopes
+boomrat
+boomrats
+thrumbo
+thrumbos
+thrumbofur
+megasloth
+megasloths
+megascarab
+megascarabs
+megaspider
+megaspiders
+spelopede
+spelopedes
+alphabeaver
+alphabeavers
+yttakin
+yttakins
+scyther
+scythers
+insectoid
+insectoids
+mechanoid
+mechanoids
+mech
+mechs
+mechanitor
+manhunter
+manhunters
+
+# Worlds, tech levels and setting
+rimworld
+rim
+glitterworld
+urbworld
+spacer
+spacers
+ultratech
+archotech
+archotechs
+archite
+outlander
+outlanders
+colonist
+colonists
+ship chunk
+drop pod
+drop pods
+transport pod
+cryptosleep
+
+# Belief and psychic
+ideoligion
+ideoligions
+psycast
+psycasts
+psylink
+neuroquake
+
+# Drugs, medicine, materials
+luciferium
+go-juice
+yayo
+smokeleaf
+ambrosia
+wake-up
+flake
+psychite
+psychoid
+insect jelly
+healroot
+penoxycyline
+neutroamine
+plasteel
+hyperweave
+devilstrand
+chemfuel
+vanometric
+gauranlen
+xenogerm
+genepack
+baseliner
+baseliners
+scaria
+
+# Weather
+flashstorm
