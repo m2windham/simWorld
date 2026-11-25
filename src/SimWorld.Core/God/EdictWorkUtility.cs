@@ -66,6 +66,22 @@ namespace SimWorld.God
             return false;
         }
 
+        /// <summary>An edict in force puts <paramref name="pawn"/> on lean rations (<see cref="EdictDef.rationFood"/>).</summary>
+        public static bool Rationed(Pawn pawn) => AnyInForce(pawn, e => e.rationFood);
+
+        /// <summary>An edict in force gives <paramref name="pawn"/> a day of rest (<see cref="EdictDef.restDay"/>).</summary>
+        public static bool OnRestDay(Pawn pawn) => AnyInForce(pawn, e => e.restDay);
+
+        private static bool AnyInForce(Pawn pawn, System.Func<EdictDef, bool> which)
+        {
+            IReadOnlyList<EdictDef> active = Find.God.ActiveEdicts;
+            for (int e = 0; e < active.Count; e++)
+            {
+                if (which(active[e]) && active[e].Worker.AppliesTo(pawn)) return true;
+            }
+            return false;
+        }
+
         /// <summary>
         /// The work types of <paramref name="edict"/> that no living citizen it applies to may do, in the
         /// edict's own order. Empty when anyone may do each of them, and empty when there are no citizens at

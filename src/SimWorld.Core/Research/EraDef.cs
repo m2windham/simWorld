@@ -47,8 +47,36 @@ namespace SimWorld.Research
         /// </summary>
         public float intendedYears;
 
+        /// <summary>
+        /// What the era asks of the settlement, besides its research, before the civilization leaves it for the
+        /// next (<see cref="EraCondition"/>). The gate out of an era is its research spine
+        /// (<see cref="IsComplete"/>) and every one of these (<see cref="GateOpen"/>). Empty asks nothing more.
+        /// </summary>
+        public List<EraCondition> conditions = new List<EraCondition>();
+
+        /// <summary>Every <see cref="conditions"/> entry holds in <paramref name="context"/>.</summary>
+        public bool ConditionsMet(EraConditionContext context)
+        {
+            for (int i = 0; i < conditions.Count; i++)
+            {
+                if (!conditions[i].IsMet(context)) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// The way out of this era is open: its research spine is finished (<see cref="IsComplete"/>) and its
+        /// <see cref="conditions"/> hold. What <see cref="ResearchManager"/> checks before moving the
+        /// civilization on to the next era.
+        /// </summary>
+        public bool GateOpen(EraConditionContext context) => IsComplete && ConditionsMet(context);
+
         private List<ResearchProjectDef>? projectsCache;
         private List<ResearchProjectDef>? spineCache;
+        private List<ThingDef>? buildingsCache;
+
+        /// <summary>Buildings whose research belongs to this era (<see cref="EraUnlocks.Buildings"/>). Cached.</summary>
+        public IReadOnlyList<ThingDef> UnlockedBuildings => buildingsCache ??= EraUnlocks.ComputeBuildings(this);
 
         /// <summary>Every loaded project tagged with this era, in Def registration order. Cached after first use.</summary>
         public IReadOnlyList<ResearchProjectDef> Projects
@@ -151,6 +179,7 @@ namespace SimWorld.Research
             base.ClearCachedData();
             projectsCache = null;
             spineCache = null;
+            buildingsCache = null;
         }
 
         public override IEnumerable<string> ConfigErrors()
@@ -159,6 +188,15 @@ namespace SimWorld.Research
             if (order < 0) yield return "order must be >= 0.";
             if (researchCostFactor <= 0f) yield return "researchCostFactor must be > 0.";
             if (citizensPerScholar <= 0f) yield return "citizensPerScholar must be > 0.";
+            for (int i = 0; i < conditions.Count; i++)
+            {
+                if (conditions[i] == null)
+                {
+                    yield return "conditions has a null entry.";
+                    continue;
+                }
+                foreach (string error in conditions[i].ConfigErrors()) yield return error;
+            }
         }
     }
 }

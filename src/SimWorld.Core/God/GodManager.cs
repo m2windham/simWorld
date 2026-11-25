@@ -33,6 +33,14 @@ namespace SimWorld.God
         /// <summary>Issued and not suspended; derived from the two lists above, never saved.</summary>
         private readonly List<EdictDef> inForce = new List<EdictDef>();
         private int lastGodTick = int.MinValue;
+
+        /// <summary>The tick each issued edict was issued on, by defName: when an edict with a
+        /// <see cref="EdictDef.durationDays"/> lapses. Saved.</summary>
+        private Dictionary<string, int> issuedAtTick = new Dictionary<string, int>();
+
+        /// <summary>The tick each edict with a <see cref="EdictDef.cooldownDays"/> can be issued again, by
+        /// defName. Written when it ends; an entry in the past is spent. Saved.</summary>
+        private Dictionary<string, int> availableAgainTick = new Dictionary<string, int>();
         private AttentionManager attention = new AttentionManager();
 
         /// <summary>The edicts in force right now: issued and not suspended. What every consumer of an
@@ -157,6 +165,7 @@ namespace SimWorld.God
             if (def == null) throw new ArgumentNullException(nameof(def));
             if (IsIssued(def)) return false;
             if (activeEdicts.Count >= GodTuning.MaxActiveEdicts) return false;
+            if (CooldownTicksLeft(def) > 0) return false;
             EraDef? current = Find.ResearchManager.CurrentEra;
             if (def.requiredEra != null)
             {
@@ -192,6 +201,7 @@ namespace SimWorld.God
             }
 
             activeEdicts.Add(def);
+            issuedAtTick[def.defName] = Find.TickManager.TicksGame;
             RebuildInForce();
 
             if (def.researchFocus != null && !Find.ResearchManager.IsFinished(def.researchFocus))
@@ -231,6 +241,11 @@ namespace SimWorld.God
         private bool DeactivateInternal(EdictDef def, string chronicleLine)
         {
             if (!activeEdicts.Remove(def)) return false;
+            issuedAtTick.Remove(def.defName);
+            if (def.cooldownDays > 0f)
+            {
+                availableAgainTick[def.defName] = Find.TickManager.TicksGame + (int)(def.cooldownDays * GenDate.TicksPerDay);
+            }
             // A suspended edict already had its worker told it stopped, when it was suspended.
             bool wasInForce = !suspendedEdicts.Remove(def);
             RebuildInForce();
@@ -253,6 +268,10 @@ namespace SimWorld.God
             int now = Find.TickManager.TicksGame;
             if (lastGodTick != int.MinValue && now - lastGodTick < GodTuning.GodTickIntervalTicks) return;
             lastGodTick = now;
+            // An era whose research was done turns here once the town meets its conditions
+            // (ResearchManager.TryAdvanceEra); a project finishing turns it too, without waiting for this.
+            Find.ResearchManager.TryAdvanceEra();
+            LapseEdictsThatRanTheirCourse(now);
             ReconcileSuspensions();
             for (int i = 0; i < inForce.Count; i++)
             {
@@ -260,6 +279,59 @@ namespace SimWorld.God
             }
 
             attention.Reconcile();
+        }
+
+        /// <summary>Ticks of cooldown left before <paramref name="def"/> can be issued again; 0 when none.</summary>
+        public int CooldownTicksLeft(EdictDef def)
+        {
+            if (def == null) throw new ArgumentNullException(nameof(def));
+            if (!availableAgainTick.TryGetValue(def.defName, out int at)) return 0;
+            return Math.Max(0, at - Find.TickManager.TicksGame);
+        }
+
+        /// <summary>Ticks before an issued edict with a <see cref="EdictDef.durationDays"/> lapses, or null for one
+        /// that stands until rescinded, or is not issued.</summary>
+        public int? TicksUntilLapse(EdictDef def)
+        {
+            if (def == null) throw new ArgumentNullException(nameof(def));
+            if (def.durationDays <= 0f || !issuedAtTick.TryGetValue(def.defName, out int at)) return null;
+            return Math.Max(0, at + (int)(def.durationDays * GenDate.TicksPerDay) - Find.TickManager.TicksGame);
+        }
+
+        /// <summary>
+        /// Ends every issued edict whose <see cref="EdictDef.durationDays"/> has run out, with a chronicle line of
+        /// its own, and grants its <see cref="EdictDef.completedThought"/> to every living citizen it applies to.
+        /// A suspended edict's clock keeps running: it was issued for a span, and a vacant seat does not extend
+        /// it. Public so a test or a host can settle it without waiting for the cadence.
+        /// </summary>
+        public void LapseEdictsThatRanTheirCourse(int now)
+        {
+            for (int i = activeEdicts.Count - 1; i >= 0; i--)
+            {
+                EdictDef def = activeEdicts[i];
+                if (def.durationDays <= 0f || !issuedAtTick.TryGetValue(def.defName, out int at)) continue;
+                if (now < at + (int)(def.durationDays * GenDate.TicksPerDay)) continue;
+                bool wasInForce = !suspendedEdicts.Contains(def);
+                DeactivateInternal(def, "Edict ran its course: " + def.LabelCap + ".");
+                if (wasInForce && def.completedThought != null) GrantCompletedThought(def);
+            }
+        }
+
+        private static void GrantCompletedThought(EdictDef def)
+        {
+            World.World? world = Find.World;
+            if (world == null) return;
+            foreach (World.WorldObject obj in world.worldObjects)
+            {
+                if (!(obj is World.Settlement settlement)) continue;
+                IReadOnlyList<Pawns.Pawn> roster = settlement.Citizens;
+                for (int c = 0; c < roster.Count; c++)
+                {
+                    Pawns.Pawn p = roster[c];
+                    if (p.Dead || p.needs?.mood == null || !def.Worker.AppliesTo(p)) continue;
+                    p.needs.mood.thoughts.memories.TryGainMemory(def.completedThought!);
+                }
+            }
         }
 
         /// <summary>
@@ -376,6 +448,12 @@ namespace SimWorld.God
             suspendedEdicts = suspended ?? new List<EdictDef>();
             RebuildInForce();
             Scribe_Values.Look(ref lastGodTick, "lastGodTick", int.MinValue);
+            Dictionary<string, int>? issued = issuedAtTick;
+            Scribe_Collections.Look(ref issued, "issuedAtTick", LookMode.Value, LookMode.Value);
+            issuedAtTick = issued ?? new Dictionary<string, int>();
+            Dictionary<string, int>? again = availableAgainTick;
+            Scribe_Collections.Look(ref again, "availableAgainTick", LookMode.Value, LookMode.Value);
+            availableAgainTick = again ?? new Dictionary<string, int>();
 
             // One int (the focused world tile). Nothing here has to be re-applied to citizens after a load:
             // each citizen's own attention flag and tier round-trip through Pawn_TierTracker.ExposeData, so

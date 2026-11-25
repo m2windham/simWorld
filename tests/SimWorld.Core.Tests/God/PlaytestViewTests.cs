@@ -169,12 +169,16 @@ namespace SimWorld.Tests.God
             GodViewSnapshot snapshot = GodViewSnapshot.Capture();
             EraOutlook era = snapshot.Era;
 
+            // In the first era, learning it: its gates are counted, and nothing is mastered yet.
+            Assert.Equal(first.defName, era.CurrentEraDefName);
             Assert.Equal(first.defName, era.FrontierEraDefName);
             Assert.Null(era.ReachedEraDefName);
             Assert.Equal(spine.Count, era.GatesTotal);
             Assert.Equal(1, era.GatesFinished);
             Assert.False(era.GatesAreWholeEra);
-            Assert.Equal(1f / spine.Count, era.Progress, 4);
+            // The era's conditions count toward the bar beside its gates (with no settlement to read, they hold).
+            Assert.Equal(first.conditions.Count, era.Conditions.Count);
+            Assert.Equal((1f + era.Conditions.Count(c => c.IsMet)) / (spine.Count + era.Conditions.Count), era.Progress, 4);
             Assert.Equal(leaves.Count + 1, era.EraProjectsFinished);
             // The old bar ran ahead of what turns the era; this one does not.
             Assert.True(snapshot.Civilization.EraProgress > era.Progress);

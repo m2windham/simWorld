@@ -133,10 +133,11 @@ namespace SimWorld.Tests.God
             Assert.False(Find.God.Activate(breakTheSod));
             Assert.Empty(Find.God.ActiveEdicts);
 
+            // Learning the first era puts the civilization in the Agrarian age, whose edicts it may now issue
+            // while it learns to farm.
             FinishEra(sticksAndStones);
-            FinishEra(agrarian);
 
-            Assert.True(Find.ResearchManager.CurrentEra!.order >= agrarian.order);
+            Assert.Same(agrarian, Find.ResearchManager.CurrentEra);
             Assert.True(Find.God.CanActivate(breakTheSod));
             Assert.True(Find.God.Activate(breakTheSod));
             Assert.True(Find.God.IsActive(breakTheSod));
@@ -579,10 +580,9 @@ namespace SimWorld.Tests.God
             EdictDef edict = TestEdict("TestObsoleteActivateEdict", WorkTypeDefOf.Hunting, obsoleteEra: agrarian);
 
             Assert.Same(sticksAndStones, Find.ResearchManager.CurrentEra);
-            Assert.True(Find.God.CanActivate(edict)); // not yet reached Agrarian: still issuable.
+            Assert.True(Find.God.CanActivate(edict)); // not yet in Agrarian: still issuable.
 
             FinishEra(sticksAndStones);
-            FinishEra(agrarian);
 
             Assert.Same(agrarian, Find.ResearchManager.CurrentEra);
             Assert.False(Find.God.CanActivate(edict));
@@ -592,8 +592,8 @@ namespace SimWorld.Tests.God
         [Fact]
         public void An_active_edict_auto_deactivates_with_its_own_chronicle_line_on_reaching_its_obsoleteEra()
         {
-            // HuntersMandate ships with obsoleteEra=Agrarian (content: a standing hunt-everyone mandate is a
-            // thing a civilization outgrows the moment it learns to farm) — real content, not an ad-hoc def,
+            // HuntersMandate ships with obsoleteEra=Bronze (content: a hunt-everyone mandate is a thing a
+            // civilization outgrows once it has learned to farm and store) — real content, not an ad-hoc def,
             // so this also proves the content itself round-trips through the mechanism correctly.
             EdictDef hunters = DefDatabase<EdictDef>.GetNamed("HuntersMandate");
             Assert.NotNull(hunters.obsoleteEra);
@@ -604,13 +604,15 @@ namespace SimWorld.Tests.God
             EraDef agrarian = DefDatabase<EraDef>.GetNamed("Agrarian");
 
             FinishEra(sticksAndStones);
-            FinishEra(agrarian); // crosses into Agrarian: HuntersMandate's obsoleteEra.
+            Assert.True(Find.God.IsActive(hunters)); // in Agrarian: the hunt still has its place.
+            FinishEra(agrarian); // crosses into Bronze: HuntersMandate's obsoleteEra.
 
+            Assert.Same(hunters.obsoleteEra, Find.ResearchManager.CurrentEra);
             Assert.False(Find.God.IsActive(hunters));
             Assert.True(Find.Storyteller.Chronicle.Count > chronicleCountBefore);
             ChronicleEntry outgrown = Find.Storyteller.Chronicle.Single(e => e.incidentDefName.StartsWith("Edict outgrown"));
             Assert.Contains(hunters.LabelCap, outgrown.incidentDefName);
-            Assert.Contains(agrarian.LabelCap, outgrown.incidentDefName);
+            Assert.Contains(hunters.obsoleteEra!.LabelCap, outgrown.incidentDefName);
         }
 
         [Fact]
@@ -626,8 +628,8 @@ namespace SimWorld.Tests.God
             EraDef agrarian = DefDatabase<EraDef>.GetNamed("Agrarian");
             EdictDef breakTheSod = DefDatabase<EdictDef>.GetNamed("BreakTheSod");
 
-            FinishEra(sticksAndStones);
-            FinishEra(agrarian); // crosses into Agrarian: BreakTheSod.requiredEra.
+            FinishEra(sticksAndStones); // crosses into Agrarian: BreakTheSod.requiredEra.
+            Assert.Same(agrarian, Find.ResearchManager.CurrentEra);
 
             List<ChronicleEntry> unlockLines =
                 Find.Storyteller.Chronicle.Where(e => e.incidentDefName.StartsWith("New edicts available")).ToList();
@@ -643,20 +645,19 @@ namespace SimWorld.Tests.God
         {
             _ = Find.God; // force the lazily-constructed subscription — see the sibling test's comment.
 
-            EraDef sticksAndStones = DefDatabase<EraDef>.GetNamed("SticksAndStones");
-            EraDef agrarian = DefDatabase<EraDef>.GetNamed("Agrarian");
-            EraDef bronze = DefDatabase<EraDef>.GetNamed("Bronze");
-            EraDef classical = DefDatabase<EraDef>.GetNamed("Classical"); // no edict requires Classical exactly.
+            EraDef information = DefDatabase<EraDef>.GetNamed("Information"); // no edict requires Information exactly.
+            Assert.DoesNotContain(DefDatabase<EdictDef>.AllDefsListForReading, e => e.requiredEra == information);
 
-            FinishEra(sticksAndStones);
-            FinishEra(agrarian);
-            FinishEra(bronze);
-            int chronicleCountBeforeClassical = Find.Storyteller.Chronicle.Count;
+            foreach (EraDef era in DefDatabase<EraDef>.AllDefsListForReading.Where(e => e.order < information.order - 1).OrderBy(e => e.order))
+            {
+                FinishEra(era);
+            }
+            int chronicleCountBefore = Find.Storyteller.Chronicle.Count;
 
-            FinishEra(classical);
+            FinishEra(DefDatabase<EraDef>.AllDefsListForReading.Single(e => e.order == information.order - 1));
 
-            Assert.Same(classical, Find.ResearchManager.CurrentEra);
-            IEnumerable<ChronicleEntry> writtenForThisTransition = Find.Storyteller.Chronicle.Skip(chronicleCountBeforeClassical);
+            Assert.Same(information, Find.ResearchManager.CurrentEra);
+            IEnumerable<ChronicleEntry> writtenForThisTransition = Find.Storyteller.Chronicle.Skip(chronicleCountBefore);
             Assert.DoesNotContain(writtenForThisTransition, e => e.incidentDefName.StartsWith("New edicts available"));
         }
 

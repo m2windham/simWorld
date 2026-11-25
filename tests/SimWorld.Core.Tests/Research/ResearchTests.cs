@@ -262,17 +262,24 @@ namespace SimWorld.Tests.Research
             EraDef sticksAndStones = DefDatabase<EraDef>.GetNamed("SticksAndStones");
             EraDef agrarian = DefDatabase<EraDef>.GetNamed("Agrarian");
 
-            // Nothing finished yet: CurrentEra falls back to the earliest era.
-            Assert.Equal(sticksAndStones, manager.CurrentEra);
+            EraDef bronze = DefDatabase<EraDef>.GetNamed("Bronze");
 
-            foreach (ResearchProjectDef project in sticksAndStones.Projects) manager.FinishProject(project);
-
+            // Nothing finished yet: the civilization is in the first era, learning it, and has mastered none.
             Assert.Equal(sticksAndStones, manager.CurrentEra);
             Assert.Equal(agrarian, manager.NextEra);
+            Assert.Null(manager.MasteredEra);
+
+            // Learning it moves the civilization into the next. With no world there is no settlement for the
+            // era's conditions to read, so research alone decides.
+            foreach (ResearchProjectDef project in sticksAndStones.Projects) manager.FinishProject(project);
+
+            Assert.Equal(agrarian, manager.CurrentEra);
+            Assert.Equal(bronze, manager.NextEra);
+            Assert.Equal(sticksAndStones, manager.MasteredEra);
 
             foreach (ResearchProjectDef project in agrarian.Projects) manager.FinishProject(project);
 
-            Assert.Equal(agrarian, manager.CurrentEra);
+            Assert.Equal(bronze, manager.CurrentEra);
         }
 
         [Fact]
@@ -316,13 +323,21 @@ namespace SimWorld.Tests.Research
             EraDef agrarian = DefDatabase<EraDef>.GetNamed("Agrarian");
             manager.ResearcherTechLevel = TechLevel.Neolithic;
 
-            foreach (ResearchProjectDef project in sticksAndStones.SpineProjects) manager.FinishProject(project);
-            Assert.Equal(sticksAndStones, manager.CurrentEra);
+            EraDef bronze = DefDatabase<EraDef>.GetNamed("Bronze");
+            EraDef classical = DefDatabase<EraDef>.GetNamed("Classical");
 
-            foreach (ResearchProjectDef project in agrarian.SpineProjects) manager.FinishProject(project);
+            foreach (ResearchProjectDef project in sticksAndStones.SpineProjects) manager.FinishProject(project);
             Assert.Equal(agrarian, manager.CurrentEra);
-            Assert.True(manager.ResearcherTechLevel >= agrarian.techLevel,
-                $"tech level {manager.ResearcherTechLevel} did not follow the era to {agrarian.techLevel}.");
+
+            // In the Bronze age the civilization is learning bronze: it pays the premium on it until mastered.
+            foreach (ResearchProjectDef project in agrarian.SpineProjects) manager.FinishProject(project);
+            Assert.Equal(bronze, manager.CurrentEra);
+            Assert.Equal(agrarian.techLevel, manager.ResearcherTechLevel);
+
+            foreach (ResearchProjectDef project in bronze.SpineProjects) manager.FinishProject(project);
+            Assert.Equal(classical, manager.CurrentEra);
+            Assert.True(manager.ResearcherTechLevel >= bronze.techLevel,
+                $"tech level {manager.ResearcherTechLevel} did not follow the era mastered to {bronze.techLevel}.");
 
             // A scenario that starts a civilization above its era keeps that floor: knowledge is not forgotten.
             manager.ResearcherTechLevel = TechLevel.Spacer;

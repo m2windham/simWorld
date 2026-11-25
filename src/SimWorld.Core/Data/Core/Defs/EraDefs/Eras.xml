@@ -16,90 +16,129 @@
   -->
 
   <!--
-    Era pacing (docs/status.json research translation; docs/research/era-arc.md section 9).
+    Era progression (docs/design/era-progression.md; docs/status.json research translation).
 
-    Intent: each era lasts long enough for the settlement to build in it and live in it, and the whole ladder
-    spans a long game. Translated: the years a settlement spends with each era current are
-      SticksAndStones 2, Agrarian 3, Bronze 4, Classical 5, Medieval 6, Industrial 7, Information 8,
-    so Exotic turns at about year 35 and is lived in from there, with the endless tail behind it.
-    A year is 60 days. Those years are intendedYears below (0 for Exotic: open-ended). Rival civilizations
-    advance on this same clock (Factions.FactionAdvancement), so the world reaches each era when a nominal
-    settlement would.
+    THE MODEL. The civilization is IN an era while it learns that era's research and may issue its edicts
+    (ResearchManager.CurrentEra). It leaves for the next era once this era's research spine is finished and every
+    one of this era's <conditions> holds (EraDef.GateOpen). So each era's conditions below are the way OUT of it.
+    A new game is in the first era; a scenario that starts in an era has finished every era before it. Until
+    2026-11-24 the era was the last one complete, so a fresh start was "in" an era it had not learned and an
+    Agrarian village start refused its own edicts.
+
+    PACING. intendedYears is the years a nominal settlement of 25 spends IN the era, learning it. A year is 60
+    days. Intent: an evening of play (about 300 days at speed 5) crosses four era turns, and the whole ladder is
+    learned in about eighteen years, with Exotic lived in from about year 14 and the endless tail behind it.
+      SticksAndStones 0.25 (the starting kit and the first roofs), Agrarian 1, Bronze 1.5, Classical 2,
+      Medieval 2.5, Industrial 3, Information 3.5, Exotic 4.
+    The world enters each era on the same clock (Factions.FactionAdvancement): Agrarian day 15, Bronze 75,
+    Classical 165, Medieval 285, Industrial 435, Information 615, Exotic 825.
+    The ladder was twice as long (2, 3, 4, 5, 6, 7, 8 years with the era complete). In a fresh-eyes playtest an
+    era turned every 50-70 real minutes and nothing changed when it did, and a ten-year arc ended in Classical or
+    Medieval. Halved, the turns come every 25-60 minutes early and each one now says what it changed.
 
     citizensPerScholar sets the research benches a settlement wants in its current era (one per that many
-    citizens, rounded, at least one). Not sourced: a more advanced settlement spares a larger share of its
-    people for study. A nominal settlement of 25 gets 1, 1, 1, 1, 2, 3, 4, 5 benches across the eras.
+    citizens, rounded, at least one). Not sourced. The values moved one era later with the model, so the benches
+    a settlement has while it learns each era are the ones the pacing was measured with: 1, 1, 1, 1, 1, 2, 3, 4
+    for a settlement of 25.
 
-    researchCostFactor multiplies every project in the era, on top of RimWorld's tech-level factor. Derived,
-    not tuned per seed: the time a settlement spends with era X current is the time it takes to research the
-    era after it (cheapest-first within the frontier window sweeps nearly all of it), so
-    SticksAndStones itself is the band's starting kit, not something it waits for: fire, shelter and cooking
-    gate the first house and stove, and priced up they left a founding band without a roof for two months
-    (era-pacing 60-day bench: 20/2024 lost all 21 people to a day-18 heat wave with no house built). It keeps
-    factor 1, is researched in its first days as before, and the two years go to Agrarian:
-      factor(X+1) = years(X) x 60 x points per day at scholars(X) / (authored cost of X+1 x tech factor)
-    with the tech factor RimWorld's 1.5x per tech level above the researcher's. Points per day are measured,
-    not modelled. Research is the lowest-priority work (WorkTypeDef naturalPriority 300, as in RimWorld), so a
-    bench is staffed by whoever has nothing more pressing:
-      one bench:   about 600 points a day once its researcher has learned (era-pacing probe, band 20 seed 99,
-                   with era-survival's 4,000-tick sittings merged: 358, 520, then 660-680 a day by month)
-      two benches: about 390 a bench (docs/research/era-arc.md runs A-D: some 147,000 effective points to the
-                   Medieval turn by day 150-213)
-      three or more: assumed 390 a bench as well. Not measured: no played run has had three benches.
+    researchCostFactor multiplies every project in the era, on top of RimWorld's tech-level factor (research is
+    priced at the tech level of the era mastered, ResearchManager.AdvanceTechLevelToEra). Derived, not tuned per
+    seed: the days in era X pay for X's research at the points the settlement earns while in it,
+      factor(X) = days(X) x points per day(X) / (authored cost of X x tech factor(X))
+    Points per day are measured (docs/research/era-arc.md section 10.3): about 600 with one bench, about 390 a
+    bench with two, and 390 a bench assumed beyond. Every factor is the previous derivation's at half the days:
       SticksAndStones               4,500 x 1.0, the starting kit       -> 1.0
-      Agrarian                     12,100 x 1.0, 2 y,   600/day -> 6.0
-      Bronze                       21,110 x 1.5, 3 y,   600/day -> 3.4
-      Classical                    38,060 x 1.0, 4 y,   600/day -> 3.8
-      Medieval                     60,930 x 1.0, 5 y,   600/day -> 3.0
-      Industrial                  120,210 x 1.5, 6 y,   780/day -> 1.55
-      Information                 161,370 x 1.5, 7 y, 1,170/day -> 2.0
-      Exotic                      163,680 x 2.0, 8 y, 1,560/day -> 2.3
-    Generated endless projects carry the last era's factor (Research.EraPacing.CostFactorFor). EraPacingTests
-    recomputes the nominal years from the loaded content and pins them to the intent, not these literals.
+      Agrarian                     12,100 x 1.0, 60 d,    600/day -> 3.0
+      Bronze                       21,110 x 1.5, 90 d,    600/day -> 1.7
+      Classical                    38,060 x 1.0, 120 d,   600/day -> 1.9
+      Medieval                     60,930 x 1.0, 150 d,   600/day -> 1.5
+      Industrial                  120,210 x 1.5, 180 d,   780/day -> 0.78
+      Information                 161,370 x 1.5, 210 d, 1,170/day -> 1.0
+      Exotic                      163,680 x 2.0, 240 d, 1,560/day -> 1.15
+    Industrial is priced under RimWorld's rate: its authored tree is the largest and the settlement has two
+    benches for it. Generated endless projects carry the last era's factor (Research.EraPacing.CostFactorFor).
+    EraPacingTests recomputes the nominal days from the loaded content and pins them to the intent.
+
+    CONDITIONS (Research.EraCondition). Each reads state the settlement's own machinery produces, so an unwatched
+    town can clear it, and each has a player lever. Not sourced: the bars are this port's, and the later ones are
+    provisional until the CI arcs in docs/design/era-progression.md section 6 report how long each era holds.
+      SticksAndStones: half the people sleep under their own roof. The first killer was the weather.
+      Agrarian:        10 days of food in store. A surplus frees hands from the fields.
+      Bronze:          a smithy stands. The age is the smith's.
+      Classical:       15 days of food, and three in four people housed.
+      Medieval:        24 people. A kingdom needs subjects.
+      Industrial:      28 people and 20 days of food.
+      Information:     32 people.
   -->
 
   <EraDef>
     <defName>SticksAndStones</defName>
     <label>sticks and stones</label>
-    <description>Fire, stone tools, and the first words spoken around a hearth.</description>
+    <description>Fire, stone tools, and the first words spoken around a hearth. The band learns to cook, to build a roof, and to hunt together.</description>
     <order>0</order>
     <techLevel>Neolithic</techLevel>
     <researchCostFactor>1.0</researchCostFactor>
     <citizensPerScholar>25</citizensPerScholar>
-    <intendedYears>2</intendedYears>
+    <intendedYears>0.25</intendedYears>
+    <conditions>
+      <li Class="SimWorld.Research.EraCondition_Housed">
+        <share>0.5</share>
+      </li>
+    </conditions>
   </EraDef>
 
   <EraDef>
     <defName>Agrarian</defName>
     <label>agrarian</label>
-    <description>Farming, storage, and permanent settlement replace the hunt and the chase.</description>
+    <description>Farming, storage, and permanent settlement replace the hunt and the chase. Fields are sown, granaries filled, and the first longhouses raised.</description>
     <order>1</order>
     <techLevel>Neolithic</techLevel>
-    <researchCostFactor>6.0</researchCostFactor>
+    <researchCostFactor>3.0</researchCostFactor>
     <citizensPerScholar>25</citizensPerScholar>
-    <intendedYears>3</intendedYears>
+    <intendedYears>1</intendedYears>
+    <conditions>
+      <li Class="SimWorld.Research.EraCondition_FoodStores">
+        <days>10</days>
+      </li>
+    </conditions>
   </EraDef>
 
   <EraDef>
     <defName>Bronze</defName>
     <label>bronze age</label>
-    <description>Smelting and alloying open the door to tools and weapons stone cannot match.</description>
+    <description>Smelting and alloying open the door to tools and weapons stone cannot match. The smith's fire becomes the heart of the town.</description>
     <order>2</order>
     <techLevel>Medieval</techLevel>
-    <researchCostFactor>3.4</researchCostFactor>
-    <citizensPerScholar>20</citizensPerScholar>
-    <intendedYears>4</intendedYears>
+    <researchCostFactor>1.7</researchCostFactor>
+    <citizensPerScholar>25</citizensPerScholar>
+    <intendedYears>1.5</intendedYears>
+    <conditions>
+      <li Class="SimWorld.Research.EraCondition_Building">
+        <things>
+          <li>Smithy</li>
+        </things>
+        <label>a smithy</label>
+      </li>
+    </conditions>
   </EraDef>
 
   <EraDef>
     <defName>Classical</defName>
     <label>classical</label>
-    <description>Law, mathematics, and monumental building organize a civilization at scale.</description>
+    <description>Law, mathematics, and monumental building organize a civilization at scale. Scholars are kept, and the town is planned in streets.</description>
     <order>3</order>
     <techLevel>Medieval</techLevel>
-    <researchCostFactor>3.8</researchCostFactor>
-    <citizensPerScholar>18</citizensPerScholar>
-    <intendedYears>5</intendedYears>
+    <researchCostFactor>1.9</researchCostFactor>
+    <citizensPerScholar>20</citizensPerScholar>
+    <intendedYears>2</intendedYears>
+    <conditions>
+      <li Class="SimWorld.Research.EraCondition_FoodStores">
+        <days>15</days>
+      </li>
+      <li Class="SimWorld.Research.EraCondition_Housed">
+        <share>0.75</share>
+      </li>
+    </conditions>
   </EraDef>
 
   <EraDef>
@@ -108,9 +147,14 @@
     <description>Iron and steel, castles and cathedrals, and the long road toward gunpowder.</description>
     <order>4</order>
     <techLevel>Medieval</techLevel>
-    <researchCostFactor>3.0</researchCostFactor>
-    <citizensPerScholar>12</citizensPerScholar>
-    <intendedYears>6</intendedYears>
+    <researchCostFactor>1.5</researchCostFactor>
+    <citizensPerScholar>18</citizensPerScholar>
+    <intendedYears>2.5</intendedYears>
+    <conditions>
+      <li Class="SimWorld.Research.EraCondition_Population">
+        <count>24</count>
+      </li>
+    </conditions>
   </EraDef>
 
   <EraDef>
@@ -119,9 +163,17 @@
     <description>Steam, steel mills, and the factory line remake how a civilization builds.</description>
     <order>5</order>
     <techLevel>Industrial</techLevel>
-    <researchCostFactor>1.55</researchCostFactor>
-    <citizensPerScholar>8</citizensPerScholar>
-    <intendedYears>7</intendedYears>
+    <researchCostFactor>0.78</researchCostFactor>
+    <citizensPerScholar>12</citizensPerScholar>
+    <intendedYears>3</intendedYears>
+    <conditions>
+      <li Class="SimWorld.Research.EraCondition_Population">
+        <count>28</count>
+      </li>
+      <li Class="SimWorld.Research.EraCondition_FoodStores">
+        <days>20</days>
+      </li>
+    </conditions>
   </EraDef>
 
   <EraDef>
@@ -130,9 +182,14 @@
     <description>Electronics, computing, and orbit turn a civilization's knowledge outward.</description>
     <order>6</order>
     <techLevel>Spacer</techLevel>
-    <researchCostFactor>2.0</researchCostFactor>
-    <citizensPerScholar>6</citizensPerScholar>
-    <intendedYears>8</intendedYears>
+    <researchCostFactor>1.0</researchCostFactor>
+    <citizensPerScholar>8</citizensPerScholar>
+    <intendedYears>3.5</intendedYears>
+    <conditions>
+      <li Class="SimWorld.Research.EraCondition_Population">
+        <count>32</count>
+      </li>
+    </conditions>
   </EraDef>
 
   <EraDef>
@@ -141,9 +198,9 @@
     <description>Beyond the authored tree: the far end of the ladder, where SimWorld's later procedural extension picks up.</description>
     <order>7</order>
     <techLevel>Archotech</techLevel>
-    <researchCostFactor>2.3</researchCostFactor>
-    <citizensPerScholar>5</citizensPerScholar>
-    <intendedYears>0</intendedYears>
+    <researchCostFactor>1.15</researchCostFactor>
+    <citizensPerScholar>6</citizensPerScholar>
+    <intendedYears>4</intendedYears>
   </EraDef>
 
 </Defs>

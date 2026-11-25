@@ -206,6 +206,9 @@ namespace SimWorld.God.View
 
         /// <summary>Issued, and holding its slot, but out of force until its seat is filled again.</summary>
         Suspended,
+
+        /// <summary>Ended too recently: its <see cref="EdictDef.cooldownDays"/> have not run out.</summary>
+        Cooldown,
     }
 
     /// <summary>
@@ -228,7 +231,9 @@ namespace SimWorld.God.View
         internal EdictOption(
             string defName, string label, string description,
             bool isActive, EdictAvailability availability, string reason,
-            string? requiredEraDefName, string? obsoleteEraDefName)
+            string? requiredEraDefName, string? obsoleteEraDefName,
+            float durationDays, float cooldownDays, float? daysRemaining, float cooldownDaysLeft,
+            IReadOnlyList<string> effects)
         {
             DefName = defName;
             Label = label;
@@ -238,6 +243,11 @@ namespace SimWorld.God.View
             Reason = reason;
             RequiredEraDefName = requiredEraDefName;
             ObsoleteEraDefName = obsoleteEraDefName;
+            DurationDays = durationDays;
+            CooldownDays = cooldownDays;
+            DaysRemaining = daysRemaining;
+            CooldownDaysLeft = cooldownDaysLeft;
+            Effects = effects;
         }
 
         /// <summary>The handle to pass back to <see cref="GodCommands"/>. Not a Def — see
@@ -262,6 +272,70 @@ namespace SimWorld.God.View
         /// <summary>The era that retires it, or null if nothing does.</summary>
         public string? ObsoleteEraDefName { get; }
 
+        /// <summary>Days it stands once issued before it lapses on its own; 0 when it stands until rescinded.</summary>
+        public float DurationDays { get; }
+
+        /// <summary>Days after it ends before it can be issued again; 0 for none.</summary>
+        public float CooldownDays { get; }
+
+        /// <summary>For an issued edict with a duration: days before it lapses. Null otherwise.</summary>
+        public float? DaysRemaining { get; }
+
+        /// <summary>Days before it can be issued again; 0 when it is not cooling down.</summary>
+        public float CooldownDaysLeft { get; }
+
+        /// <summary>
+        /// What it does, line by line, in the player's words, built from the def's own fields
+        /// (<see cref="EffectsOf"/>) so a line can never describe a mechanism the edict does not carry: the work
+        /// it puts first, any rule it sets (lean rations, a day of rest), its research focus, its mood cost while
+        /// in force, what it leaves behind, how long it stands and how long it then rests.
+        /// </summary>
+        public IReadOnlyList<string> Effects { get; }
+
+        /// <summary>The <see cref="Effects"/> lines for <paramref name="def"/>.</summary>
+        internal static List<string> EffectsOf(EdictDef def)
+        {
+            var lines = new List<string>();
+            if (def.prioritizedWork.Count > 0)
+            {
+                var work = new List<string>(def.prioritizedWork.Count);
+                for (int i = 0; i < def.prioritizedWork.Count; i++) work.Add(def.prioritizedWork[i].gerundLabel ?? def.prioritizedWork[i].defName);
+                lines.Add(def.exclusiveWork
+                    ? "Every able hand turns to " + string.Join(" and ", work) + " before anything else."
+                    : string.Join(" and ", work) + " come before other work.");
+            }
+            if (def.prioritizedConstruction.Count > 0)
+            {
+                var things = new List<string>(def.prioritizedConstruction.Count);
+                for (int i = 0; i < def.prioritizedConstruction.Count; i++) things.Add(def.prioritizedConstruction[i].label ?? def.prioritizedConstruction[i].defName);
+                lines.Add("The settlement builds " + string.Join(" and ", things) + " first.");
+            }
+            if (def.rationFood) lines.Add("People eat only once very hungry, so the stores last longer.");
+            if (def.restDay) lines.Add("No routine work: the day is given to rest and recreation. Emergencies are still answered.");
+            if (def.workerClass == typeof(EdictWorker_ExemptMinors)) lines.Add("Children are spared it.");
+            if (def.researchFocus != null) lines.Add("Research turns to " + def.researchFocus.LabelCap + ".");
+            float moodWhile = MoodOf(def.moodThought);
+            if (moodWhile != 0f) lines.Add("Mood " + Signed(moodWhile) + " while in force.");
+            if (def.completedThought != null)
+            {
+                lines.Add("When it runs its course: mood " + Signed(MoodOf(def.completedThought)) + " for " +
+                          def.completedThought.durationDays + " days.");
+            }
+            if (def.durationDays > 0f) lines.Add("Lasts " + Days(def.durationDays) + ".");
+            if (def.cooldownDays > 0f) lines.Add("Can be issued again " + Days(def.cooldownDays) + " after it ends.");
+            if (def.requiredOffice != null) lines.Add("Needs a seated " + def.requiredOffice.role.LabelCap + ".");
+            return lines;
+        }
+
+        private static float MoodOf(Thoughts.ThoughtDef? thought) =>
+            thought == null || thought.stages == null || thought.stages.Count == 0 || thought.stages[0] == null
+                ? 0f
+                : thought.stages[0]!.baseMoodEffect;
+
+        private static string Signed(float value) => (value > 0f ? "+" : "") + value.ToString("0.#");
+
+        internal static string Days(float days) => days == 1f ? "1 day" : days.ToString("0.#") + " days";
+
         /// <summary>The option for <paramref name="def"/> as <paramref name="god"/> stands right now: the one
         /// place both the snapshot and <see cref="GodCommands.IssueEdict"/> build it from, so the two can never
         /// read the state differently. Only an edict actually in force is asked whether anyone may carry it out
@@ -269,11 +343,14 @@ namespace SimWorld.God.View
         internal static EdictOption For(EdictDef def, GodManager god)
         {
             bool isActive = god.IsActive(def);
+            int? lapse = god.TicksUntilLapse(def);
             return For(def, isActive, Sim.Find.ResearchManager.CurrentEra,
                 slotFree: god.IssuedEdicts.Count < GodTuning.MaxActiveEdicts,
                 isSuspended: god.IsSuspended(def),
                 officeSeated: def.requiredOffice == null || GodManager.IsSeated(def.requiredOffice),
-                workNobodyMayDo: isActive ? GodViewSnapshot.NobodyMayDo(def) : null);
+                workNobodyMayDo: isActive ? GodViewSnapshot.NobodyMayDo(def) : null,
+                cooldownDaysLeft: god.CooldownTicksLeft(def) / (float)Sim.GenDate.TicksPerDay,
+                daysRemaining: lapse == null ? (float?)null : lapse.Value / (float)Sim.GenDate.TicksPerDay);
         }
 
         /// <param name="workNobodyMayDo">For an edict in force: the gerund labels of its work that no citizen
@@ -283,7 +360,7 @@ namespace SimWorld.God.View
         /// in force.</param>
         internal static EdictOption For(
             EdictDef def, bool isActive, EraDef? currentEra, bool slotFree, bool isSuspended, bool officeSeated,
-            IReadOnlyList<string>? workNobodyMayDo = null)
+            IReadOnlyList<string>? workNobodyMayDo = null, float cooldownDaysLeft = 0f, float? daysRemaining = null)
         {
             EdictAvailability availability;
             string reason;
@@ -312,6 +389,12 @@ namespace SimWorld.God.View
                 availability = EdictAvailability.RequiresLaterEra;
                 reason = "Needs the " + def.requiredEra.LabelCap + " era.";
             }
+            else if (cooldownDaysLeft > 0f)
+            {
+                // After the era (a fact about the age) and before the seat and the slot: a fact about this edict.
+                availability = EdictAvailability.Cooldown;
+                reason = "Can be issued again in " + Days((float)System.Math.Ceiling(cooldownDaysLeft * 10f) / 10f) + ".";
+            }
             else if (!officeSeated)
             {
                 // Before the slot, for the reason the era comes first: the seat is a fact about this edict.
@@ -337,7 +420,12 @@ namespace SimWorld.God.View
                 availability,
                 reason,
                 def.requiredEra?.defName,
-                def.obsoleteEra?.defName);
+                def.obsoleteEra?.defName,
+                def.durationDays,
+                def.cooldownDays,
+                isActive || isSuspended ? daysRemaining : null,
+                cooldownDaysLeft,
+                EffectsOf(def));
         }
     }
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using SimWorld.Letters;
 using SimWorld.Sim;
 
@@ -23,12 +24,12 @@ namespace SimWorld.Research
         }
 
         /// <summary>
-        /// The chronicle headline for an era. "Reached" is the vocabulary the rest of the module already uses
-        /// (<see cref="ResearchManager.CurrentEra"/> is "the furthest era reached"), and it means the era's
-        /// spine is finished — a civilization reaches the bronze age by having learned bronze, not by
-        /// starting to. The prefixed-headline shape matches the other free-form chronicle lines
-        /// ("Quest offered: …", "Birth: …") and, unlike a sentence built around the label, stays grammatical
-        /// whatever content names an era.
+        /// The chronicle headline for an era. "Reached" means entered: the civilization has mastered the era
+        /// before (its research spine and its conditions) and is now in this one, learning it
+        /// (<see cref="ResearchManager.CurrentEra"/>). It used to mean the era's own spine was finished, which
+        /// put a fresh start "in" an era it had not learned and refused an Agrarian village its own edicts. The
+        /// prefixed-headline shape matches the other free-form chronicle lines ("Quest offered: …", "Birth: …")
+        /// and, unlike a sentence built around the label, stays grammatical whatever content names an era.
         /// </summary>
         internal static string ChronicleLine(EraDef? from, EraDef to) =>
             from == null
@@ -45,7 +46,10 @@ namespace SimWorld.Research
         private static string LetterText(EraDef? from, EraDef to)
         {
             string body = ChronicleLine(from, to);
-            return string.IsNullOrEmpty(to.description) ? body : body + "\n\n" + to.description;
+            if (!string.IsNullOrEmpty(to.description)) body += "\n\n" + to.description;
+            List<string> changes = EraUnlocks.Describe(to);
+            if (changes.Count > 0) body += "\n\n" + string.Join("\n", changes);
+            return body;
         }
     }
 }

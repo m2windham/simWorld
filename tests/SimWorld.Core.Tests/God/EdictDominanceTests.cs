@@ -159,7 +159,10 @@ namespace SimWorld.Tests.God
             Assert.Contains(Find.Storyteller.Chronicle, entry => entry.incidentDefName ==
                 "Edict rescinded: " + Edict("HuntersMandate").LabelCap + ", contradicted by " + Edict("TakeUpArms").LabelCap);
 
-            // And back again: the mandate rescinds the call to arms.
+            // And back again, once the mandate's rest has run out (an edict that ends rests, however it ended):
+            // the mandate rescinds the call to arms.
+            Assert.NotEqual(GodCommandOutcome.Done, GodCommands.IssueEdict("HuntersMandate").Outcome);
+            Find.TickManager.DebugSetTicksGame(Find.TickManager.TicksGame + Find.God.CooldownTicksLeft(Edict("HuntersMandate")));
             Assert.Contains("rescinded", GodCommands.IssueEdict("HuntersMandate").Reason);
             Assert.False(Find.God.IsIssued(Edict("TakeUpArms")));
         }

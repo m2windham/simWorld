@@ -11,11 +11,15 @@
     live off this def), except GreatWorksMandate, which exercises the Class= worker seam for something a def
     field can't express on its own — see EdictWorker_ExemptMinors.
 
-    HuntersMandate is the one edict that also carries obsoleteEra: reaching Agrarian is a civilization
-    learning to farm, at which point a standing mandate that pulls every hand into hunting stops being the
-    thing to demand — GodManager retires it on its own the moment that era is reached (see EdictDef.obsoleteEra
-    and GodManager's era-transition handler). No other edict here has an obvious real-content case for
-    obsoleteEra yet, so it stays null for the rest — see GodTests for ad-hoc coverage of the mechanism itself.
+    HuntersMandate carries obsoleteEra: entering the Bronze age is a civilization that has learned to farm and
+    to store, at which point a mandate that pulls every hand into the hunt stops being the thing to demand —
+    GodManager retires it on its own the moment that era is entered (see EdictDef.obsoleteEra and GodManager's
+    era-transition handler). It lasts through the Agrarian age, while the first fields are still uncertain.
+
+    The two exclusive edicts are bursts, not standing orders (era progression, 2026-11-24): each lasts a few days
+    (durationDays) and then rests (cooldownDays), so "nothing else gets done" is a decision about this week
+    rather than a setting left on. The roster across the eras, and what each edict grounds in, is
+    docs/design/era-progression.md section 3.
 
     GreatWorksMandate is also the one edict carrying prioritizedConstruction (building.initiative): "quarry
     and building site before anything else" is exactly SettlementConstructionInitiative's own construction
@@ -26,9 +30,11 @@
   <EdictDef>
     <defName>HuntersMandate</defName>
     <label>hunter's mandate</label>
-    <description>Every able hand turns to the hunt. The band eats better, but nothing else gets done.</description>
+    <description>For three days every able hand goes out after game, and every animal on the land is marked for the hunt. The band eats, but nothing else gets done until they come home.</description>
     <requiredEra>SticksAndStones</requiredEra>
-    <obsoleteEra>Agrarian</obsoleteEra>
+    <obsoleteEra>Bronze</obsoleteEra>
+    <durationDays>3</durationDays>
+    <cooldownDays>7</cooldownDays>
     <researchFocus>Hunting</researchFocus>
     <!-- "Nothing else gets done": every able hand hunts first, past the food gate (EdictDef.exclusiveWork). -->
     <exclusiveWork>true</exclusiveWork>
@@ -41,8 +47,10 @@
   <EdictDef>
     <defName>BreakTheSod</defName>
     <label>break the sod</label>
-    <description>Every field gets turned this season, whatever else waits.</description>
+    <description>For ten days every able hand works the fields: sowing, tending and bringing in the harvest, whatever else waits.</description>
     <requiredEra>Agrarian</requiredEra>
+    <durationDays>10</durationDays>
+    <cooldownDays>20</cooldownDays>
     <researchFocus>Agriculture</researchFocus>
     <!-- "Whatever else waits": every able hand sows first (EdictDef.exclusiveWork). -->
     <exclusiveWork>true</exclusiveWork>
@@ -55,7 +63,7 @@
   <EdictDef>
     <defName>GreatWorksMandate</defName>
     <label>great works mandate</label>
-    <description>Quarry and building site before anything else. Children are spared the mandate's cost, but not its labor shortage.</description>
+    <description>Quarry and building site before anything else, and walls and storehouses before anything else is built. Children are spared the mandate's cost, but not its labor shortage.</description>
     <requiredEra>Bronze</requiredEra>
     <researchFocus>Masonry</researchFocus>
     <prioritizedWork>
@@ -78,7 +86,7 @@
   <EdictDef>
     <defName>IronDiscipline</defName>
     <label>iron discipline</label>
-    <description>The forge does not go cold. Every smith works every shift the mandate demands.</description>
+    <description>The forge does not go cold. Smithing comes before every other kind of work.</description>
     <requiredEra>Medieval</requiredEra>
     <researchFocus>Steel</researchFocus>
     <prioritizedWork>
@@ -90,7 +98,7 @@
   <EdictDef>
     <defName>IndustrialMobilization</defName>
     <label>industrial mobilization</label>
-    <description>The whole civilization tools up for it: crafting and hauling before anything else.</description>
+    <description>The whole town tools up: crafting and hauling come before every other kind of work.</description>
     <requiredEra>Industrial</requiredEra>
     <researchFocus>SteamEngine</researchFocus>
     <prioritizedWork>

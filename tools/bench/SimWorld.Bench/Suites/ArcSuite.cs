@@ -163,6 +163,7 @@ namespace SimWorld.Bench.Suites
             public string Era = "-";
             public string NextEra = "-";
             public float NextEraProgress;
+            public bool ConditionsMet;
             public int ProjectsFinished;
             public string CurrentProject = "-";
             public int Population;
@@ -195,7 +196,10 @@ namespace SimWorld.Bench.Suites
                 Day = day,
                 Era = research.CurrentEra?.defName ?? "-",
                 NextEra = next?.defName ?? "-",
-                NextEraProgress = next?.Progress ?? 1f,
+                // The era the town is in is the one it is learning (docs/design/era-progression.md section 1), so
+                // the progress shown beside the next era is the current era's: how far toward leaving it.
+                NextEraProgress = research.CurrentEra?.Progress ?? 1f,
+                ConditionsMet = research.CurrentEra == null || research.CurrentEra.ConditionsMet(EraConditionContext.Now()),
                 ProjectsFinished = DefDatabase<ResearchProjectDef>.AllDefsListForReading.Count(research.IsFinished),
                 CurrentProject = research.CurrentProj?.defName ?? "-",
                 Population = rollup.TotalPopulation,
@@ -262,7 +266,8 @@ namespace SimWorld.Bench.Suites
             var sb = new StringBuilder();
             sb.Append("sample day ").Append(s.Day).Append(" (year ").Append(Report.Num(s.Day / (double)GenDate.DaysPerYear, 1))
                 .Append("): era ").Append(s.Era).Append(", next ").Append(s.NextEra).Append(' ')
-                .Append(Report.Num(s.NextEraProgress * 100, 0)).Append("%, projects ").Append(s.ProjectsFinished)
+                .Append(Report.Num(s.NextEraProgress * 100, 0)).Append("% learned, conditions ")
+                .Append(s.ConditionsMet ? "met" : "not met").Append(", projects ").Append(s.ProjectsFinished)
                 .Append(", researching ").Append(s.CurrentProject)
                 .Append("; pop ").Append(s.Population).Append(" (full ").Append(s.Full).Append(", interval ")
                 .Append(s.Interval).Append(", statistical ").Append(s.Statistical).Append(", citizens ").Append(s.Citizens)
