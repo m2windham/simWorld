@@ -4,7 +4,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 
+using SimWorld.AI;
 using SimWorld.Building;
+using SimWorld.Conditions;
 using SimWorld.Defs;
 using SimWorld.Director;
 using SimWorld.Health;
@@ -41,15 +43,29 @@ namespace SimWorld.Bench.Suites
                 ?? throw new InvalidOperationException("no settlement with a map");
             Map.Map map = home.InteriorMap ?? throw new InvalidOperationException("the seat has no map");
             Console.WriteLine("resumed day " + Day(Find.TickManager.TicksGame) + ", pop " + home.Citizens.Count(p => !p.Dead));
+            if (map.settlementCompound is SettlementCompound compound)
+            {
+                Room? dorm = map.roomTracker.RoomAt(compound.BedCells.First());
+                Console.WriteLine("dormitory: interior " + compound.Interior + ", room " + (dorm == null ? "none" : dorm.Cells.Count + " cells, outdoor air " + dorm.Group.UsesOutdoorTemperature)
+                    + ", beds " + compound.Interior.Cells.Count(c => map.thingGrid.ThingsListAt(c).Any(t => t.def == ConstructionThingDefOf.Bed))
+                    + ", hearth cell " + compound.HearthCell + " holds " + string.Join(",", map.thingGrid.ThingsListAt(compound.HearthCell).Select(t => t.def.defName)));
+            }
 
             var watch = new ExposureWatch();
             int quakesBefore = Fired(game, "Earthquake");
-            bool forced = false;
+            bool forced = false, frosted = false;
             int end = Find.TickManager.TicksGame + opt.Days * GenDate.TicksPerDay;
             while (Find.TickManager.TicksGame < end)
             {
                 game.TickManager.DoSingleTick();
                 int now = Find.TickManager.TicksGame;
+                if (!frosted && opt.FrostAt >= 0 && now >= opt.FrostAt * GenDate.TicksPerDay)
+                {
+                    frosted = true;
+                    GameConditionDef snap = DefDatabase<GameConditionDef>.GetNamed("ColdSnap");
+                    for (int k = 0; k < 2; k++) map.gameConditionManager.RegisterCondition(GameConditionMaker.MakeCondition(snap, opt.Days * GenDate.TicksPerDay));
+                    Console.WriteLine("frost from day " + Day(now) + ": two cold snaps on the seat's map");
+                }
                 if (!forced && opt.QuakeAt >= 0 && now >= opt.QuakeAt * GenDate.TicksPerDay)
                 {
                     forced = true;
@@ -99,7 +115,23 @@ namespace SimWorld.Bench.Suites
                 + " | houses open " + open + "/" + houses.Count + " parts waiting " + waiting + " framed " + frames
                 + " | worst hypo child " + Worst(Child) + " baby " + Worst(Baby) + " adult " + Worst(Adult)
                 + " | alive c" + alive.Count(Child) + " b" + alive.Count(Baby) + " a" + alive.Count(Adult)
-                + " | children worn " + worn + " | adults: " + jobs;
+                + " | children worn " + worn + " | adults: " + jobs + Coldest(alive.Where(Child), map);
+        }
+
+        /// <summary>Where the coldest of <paramref name="who"/> is and what it is doing.</summary>
+        private static string Coldest(IEnumerable<Pawn> who, Map.Map map)
+        {
+            Pawn? p = who.Where(c => c.Spawned).OrderByDescending(c => c.health.hediffSet.GetFirstHediffOfDef(TemperatureDefOf.Hypothermia)?.Severity ?? 0f).FirstOrDefault();
+            if (p == null) return "";
+            Thing? bed = p.CurrentBed();
+            string where = bed == null ? (map.roomTracker.RoomAt(p.Position)?.Group.UsesOutdoorTemperature != false ? "outdoors" : "indoors")
+                : DwellingUtility.DwellingOfBed(bed) is Dwelling d ? (d.householdId == p.relations.familyId ? "ownbed" : "otherhouse") : "dormbed";
+            return Environment.NewLine + "      coldest child " + p.Label + " sev "
+                + (p.health.hediffSet.GetFirstHediffOfDef(TemperatureDefOf.Hypothermia)?.Severity ?? 0f).ToString("0.00", CultureInfo.InvariantCulture)
+                + " " + where + " air " + TemperatureInjuryUtility.AmbientTemperature(p).ToString("0.0", CultureInfo.InvariantCulture)
+                + " comfyMin " + TemperatureInjuryUtility.ComfortableTemperatureRange(p).min.ToString("0.0", CultureInfo.InvariantCulture)
+                + " job " + (p.jobs?.curJob?.def.defName ?? "-") + (p.Downed ? " DOWNED" : "") + (p.Awake() ? "" : " asleep")
+                + " worn " + string.Join("+", p.apparel?.WornApparel.Select(a => a.def.defName) ?? Enumerable.Empty<string>());
         }
 
         private static string Day(int tick) => (tick / (double)GenDate.TicksPerDay).ToString("0.00", CultureInfo.InvariantCulture);

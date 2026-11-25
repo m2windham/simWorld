@@ -216,6 +216,9 @@ namespace SimWorld.Bench
                     case "--quake-at":
                         opt.QuakeAt = ParseDouble(Next(args, ref i), "--quake-at");
                         break;
+                    case "--frost-at":
+                        opt.FrostAt = ParseDouble(Next(args, ref i), "--frost-at");
+                        break;
                     case "--death-detail":
                         opt.DeathDetail = ParseBool(Next(args, ref i), "--death-detail");
                         break;
