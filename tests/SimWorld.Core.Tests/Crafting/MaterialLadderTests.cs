@@ -417,9 +417,18 @@ namespace SimWorld.Tests.Crafting
             Assert.Equal(new[] { "Steel" }, BillOn(smithy, "Make_MeleeWeapon_LongSword")!.ingredientFilter.AllowedThingDefs.Select(d => d.defName));
 
             SmeltingInitiative.Run(map);
-            // The newest technique needs its own bench: one is planned, and the old bill is not kept meanwhile.
+            // The smelter is built of steel and there is none: the bloomery goes on cementing, and no smelter is
+            // planned that nothing could build (it was, and the bloomery's bill was deleted for it).
+            Assert.DoesNotContain(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>(), b => b.EntityToBuild.defName == "ElectricSmelter");
+            Assert.Contains("Make_Steel_Cementation", MetallurgyBills(map));
+
+            // With the smelter's steel on hand it is planned, and the bloomery keeps its bill until it stands.
+            for (int i = 0; i < 4; i++) Citizen(map, 3 + i, 2, "MeleeWeapon_Spear", "Bronze", "Spearman" + i);
+            Spawn(map, "Steel", 24, 24, 60);
+            OutfittingInitiative.Run(map);
+            SmeltingInitiative.Run(map);
             Assert.Contains(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).OfType<Blueprint>(), b => b.EntityToBuild.defName == "ElectricSmelter");
-            Assert.Empty(MetallurgyBills(map));
+            Assert.Contains("Make_Steel_Cementation", MetallurgyBills(map));
 
             map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).ToList().ForEach(b => b.Destroy());
             ThingWithComps smelter = Bench(map, "ElectricSmelter", 18, 20);

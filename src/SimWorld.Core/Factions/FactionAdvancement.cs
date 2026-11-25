@@ -106,14 +106,41 @@ namespace SimWorld.Factions
 
         /// <summary>
         /// The tech level <paramref name="faction"/>'s gear is capped at: its def's, raised to its arms era's for
-        /// a rival (a Neolithic tribe in a Medieval world forges steel). The player keeps its def's.
+        /// a rival (a Neolithic tribe in a Medieval world forges steel). The player's is the tech level of the era
+        /// its civilization is in (<see cref="PlayerEra"/>), not its def's: <c>PlayerCivilization</c> is Industrial
+        /// because RimWorld's colony faction is, and capped at that a sticks-and-stones band was founded with
+        /// revolvers it carried into the Exotic age (era-arc §12.4). RimWorld caps a pawn's gear at its faction's
+        /// level; here the player's faction lives through eight of them, so its level is its era's.
         /// </summary>
         public static TechLevel TechLevelOf(Faction faction)
         {
             if (faction == null) throw new ArgumentNullException(nameof(faction));
             TechLevel own = faction.def.techLevel;
+            if (faction.def.isPlayer) return PlayerEra()?.techLevel ?? own;
             EraDef? era = ArmsEra(EraOf(faction));
             return era != null && era.techLevel > own ? era.techLevel : own;
+        }
+
+        /// <summary>
+        /// The era the player's civilization is in: <see cref="ResearchManager.CurrentEra"/>, or the scenario's
+        /// starting era while that is later. A new game founds its settlement before the scenario seeds the
+        /// research of the eras before its start (<c>Game.NewGame</c>), so the founders are generated while research
+        /// still reads the first era; the game's scenario says where history begins. Null with no eras loaded.
+        /// </summary>
+        public static EraDef? PlayerEra()
+        {
+            EraDef? era = Find.ResearchManager?.CurrentEra;
+            EraDef? start = null;
+            // The game's own scenario, not the static Scenario.Current, which outlives the game that set it.
+            IReadOnlyList<Scenario.ScenPart>? parts = Find.CurrentGame?.Scenario.AllParts;
+            if (parts != null)
+            {
+                for (int i = 0; i < parts.Count; i++)
+                {
+                    if (parts[i] is Scenario.ScenPart_StartingEra starting && starting.era != null) start = starting.era;
+                }
+            }
+            return start != null && (era == null || start.order > era.order) ? start : era;
         }
 
         /// <summary>

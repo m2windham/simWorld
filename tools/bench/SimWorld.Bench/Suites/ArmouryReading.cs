@@ -74,7 +74,50 @@ namespace SimWorld.Bench.Suites
                 + string.Join(", ", bills) + "]";
         }
 
+        /// <summary>What the armoury's materials come from: each ore, metal and raw material on the map (+ in the
+        /// ledger), whether the settlement can get more (a reachable vein or a smelting chain), the furnaces standing
+        /// and their bills. Printed under <see cref="Line"/>.</summary>
+        public static string MaterialsLine(SimWorld.World.Settlement settlement)
+        {
+            Map.Map? map = settlement.InteriorMap;
+            if (map == null) return "materials: (settlement has no map)";
+            var parts = new List<string>();
+            foreach (string name in new[] { "WoodLog", "Leather_Plain", "CopperOre", "Copper", "Tin", "Bronze", "IronOre", "Iron", "Steel", "Coal" })
+            {
+                ThingDef? def = DefDatabase<ThingDef>.GetNamedSilentFail(name);
+                if (def == null) continue;
+                parts.Add(name + " " + MaterialLadder.OnMap(map, def) + "+" + settlement.StoreCountOf(def)
+                    + (Laddered(def) && !MaterialLadder.CanGet(map, def) ? " (no source)" : ""));
+            }
+            var benches = new List<string>();
+            foreach (Thing bench in map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver))
+            {
+                CompBillGiver? comp = (bench as ThingWithComps)?.GetComp<CompBillGiver>();
+                if (comp == null || !bench.def.AllRecipes.Any(MaterialLadder.IsMetallurgy)) continue;
+                benches.Add(bench.def.defName + "{" + string.Join(",", comp.BillStack.Bills.OfType<Bill_Production>()
+                    .Select(b => b.recipe.defName + " " + b.targetCount + (b.ShouldDoNow() ? "" : " paused"))) + "}");
+            }
+            // Ore veins on the map by yield: cells a miner can stand beside now / all cells.
+            var veins = new SortedDictionary<string, int[]>(System.StringComparer.Ordinal);
+            foreach (Thing rock in map.listerThings.ThingsInGroup(ThingRequestGroup.Building))
+            {
+                if (!rock.Spawned || !rock.def.mineable || rock.def.mineableThing == null) continue;
+                string yield = rock.def.mineableThing.defName;
+                if (yield.StartsWith("Chunk", System.StringComparison.Ordinal)) continue;
+                if (!veins.TryGetValue(yield, out int[]? n)) veins[yield] = n = new int[2];
+                n[1]++;
+                if (SimWorld.AI.WorkGiver_Miner.MayBeAccessible(rock.Position, map)) n[0]++;
+            }
+            return "materials: " + string.Join(", ", parts) + "; veins [" + string.Join(", ", veins.Select(v => v.Key + " " + v.Value[0] + "/" + v.Value[1]))
+                + "]; furnaces [" + string.Join(" ", benches) + "]";
+        }
+
         private static string Tally(IEnumerable<string> names) =>
             string.Join(",", names.GroupBy(n => n).OrderBy(g => g.Key).Select(g => g.Key + "x" + g.Count()));
+
+        // CanGet answers for the material ladder only (a vein, or smelting); wood and leather come from elsewhere.
+        private static bool Laddered(ThingDef def) =>
+            def.stuffProps?.categories?.Contains(MaterialLadderDefOf.Metallic) == true
+            || DefDatabase<ThingDef>.AllDefsListForReading.Any(t => t.mineableThing == def);
     }
 }

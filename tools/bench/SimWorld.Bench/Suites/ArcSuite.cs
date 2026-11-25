@@ -128,6 +128,7 @@ namespace SimWorld.Bench.Suites
 
                 Console.WriteLine("  " + armoury.Line(current));
                 Console.WriteLine("  " + DwellingReading.SampleLine(current));
+                Console.WriteLine("  " + ArmouryReading.MaterialsLine(current));
                 IReadOnlyList<ChronicleEntry> moments = game.Storyteller.Moments;
                 for (int m = momentsSeen; m < moments.Count; m++) Console.WriteLine("  moment " + Moment(moments[m]));
                 momentsSeen = moments.Count;
