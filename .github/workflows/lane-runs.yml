@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: r4, sha: 3f54228c4e29b7e90157b34fac9840d953b80761 }
+          - { name: r5, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -44,8 +44,8 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: base, sha: 28ebae2e08f7a58d12db2c5ca280250b8a562e97 }
-          - { name: r4, sha: 3f54228c4e29b7e90157b34fac9840d953b80761 }
+          - { name: base, sha: a83f128b93b50291404ed2044384ee66b1e42de7 }
+          - { name: r5, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a }
         threats: ["false", "true"]
         shard:
           - { n: 1, runs: "20:105 20:99 20:777 20:2024 20:12345 20:31337 20:101" }
@@ -79,10 +79,10 @@ jobs:
       fail-fast: false
       matrix:
         run:
-          - { name: r4-20-99-on, sha: 3f54228c4e29b7e90157b34fac9840d953b80761, threats: "true", pop: "20:99" }
-          - { name: r4-40-201-on, sha: 3f54228c4e29b7e90157b34fac9840d953b80761, threats: "true", pop: "40:201" }
-          - { name: r4-20-101-on, sha: 3f54228c4e29b7e90157b34fac9840d953b80761, threats: "true", pop: "20:101" }
-          - { name: r4-40-201-off, sha: 3f54228c4e29b7e90157b34fac9840d953b80761, threats: "false", pop: "40:201" }
+          - { name: r5-20-99-on, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a, threats: "true", pop: "20:99" }
+          - { name: r5-40-201-on, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a, threats: "true", pop: "40:201" }
+          - { name: r5-20-101-on, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a, threats: "true", pop: "20:101" }
+          - { name: r5-40-201-off, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a, threats: "false", pop: "40:201" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
