@@ -91,7 +91,6 @@ namespace SimWorld.Map.View
                 def.LabelCap,
                 string.IsNullOrEmpty(def.description) ? null : def.description,
                 def.size,
-                def.rotatable,
                 era?.defName,
                 era?.LabelCap,
                 reason == null,

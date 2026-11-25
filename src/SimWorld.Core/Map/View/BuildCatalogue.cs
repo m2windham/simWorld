@@ -65,7 +65,7 @@ namespace SimWorld.Map.View
     public sealed class BuildableOption
     {
         internal BuildableOption(
-            string defName, string label, string? description, IntVec2 size, bool rotatable,
+            string defName, string label, string? description, IntVec2 size,
             string? eraDefName, string? eraLabel, bool canPlace, string? reason,
             IReadOnlyList<string> researchNeeded, IReadOnlyList<MaterialCost> cost, int stuffCount,
             IReadOnlyList<MaterialCost> stuffs, string? defaultStuffDefName)
@@ -74,7 +74,6 @@ namespace SimWorld.Map.View
             Label = label;
             Description = description;
             Size = size;
-            Rotatable = rotatable;
             EraDefName = eraDefName;
             EraLabel = eraLabel;
             CanPlace = canPlace;
@@ -93,11 +92,10 @@ namespace SimWorld.Map.View
 
         public string? Description { get; }
 
-        /// <summary>Footprint in cells facing North (a bed is 1x2).</summary>
+        /// <summary>Footprint in cells facing North (a bed is 1x2). Any of the four rotations may be placed: no
+        /// def here forbids one (ThingDef.rotatable is a known dormant seam, Wiring/dormant-seams.txt), so the
+        /// option carries no rotatable flag that would only ever read false.</summary>
         public IntVec2 Size { get; }
-
-        /// <summary>Whether it may be placed facing other than North.</summary>
-        public bool Rotatable { get; }
 
         /// <summary>The era its research belongs to, as an <c>EraDef</c> defName, or null for what any age can
         /// build (a wall of wood, a bed, a door).</summary>
