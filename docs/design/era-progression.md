@@ -99,8 +99,9 @@ the town keeps (`citizensPerScholar`).
 `EraPacingTests.A_nominal_settlement_spends_the_intended_years_in_each_era` recomputes this from content
 and pins it within 10%. The whole ladder to Exotic is about 17.75 years, against 30 to 50 years before.
 
-The old intent spent its first two years in Sticks and stones. Arc runs showed the opening was the dull
-part, so the early eras are now short and the later eras long.
+The old intent spent its first two years in Sticks and stones, an era whose research is a few days. The
+new intent makes the early eras short, where the trees are small, and the later eras long, where they
+are large.
 
 The rival clock uses the same timing (`FactionAdvancement.DayReached`).
 
@@ -110,7 +111,7 @@ The rival clock uses the same timing (`FactionAdvancement.DayReached`).
 | --- | --- | --- | --- | --- | --- | --- |
 | Sticks and stones | A band with fire, stone tools and the hunt | Half the people housed | Edicts: Hunter's mandate, Raise the roofs. Houses: windbreak hut, pit house | Stone-age raiders (rivals have mastered nothing) | 0.25 | 0 |
 | Agrarian | Farming, storage, permanence | Food in store for 10 days | Edicts: Break the sod, Lean rations, Harvest feast. House: longhouse | Raiders still stone-armed; the world clock is in Agrarian by day 15 | 1 | 15 |
-| Bronze age | Smelting; the smith's fire | A smithy stands | Edict: Great works (needs a Steward). House: town house. Hunter's mandate and Raise the roofs retired | Rivals armed with Agrarian gear, then Bronze-age kinds once the town has mastered Bronze | 1.5 | 75 |
+| Bronze age | Smelting; the smith's fire | A smithy stands | Edict: Great works (needs a Steward). House: town house. Hunter's mandate and Raise the roofs retired | Rivals have mastered Agrarian, which has no raider kinds of its own, so still the stone-age band | 1.5 | 75 |
 | Classical | Law, scholars, planned streets | 15 days of food and three in four housed | Edict: Patronage of learning. House: courtyard house | Bronze-age kinds (bowmen, legionaries) | 2 | 165 |
 | Medieval | Iron, castles | 24 people | Edict: Iron discipline. House: stone town house | Classical kinds (longbowmen, men-at-arms) | 2.5 | 285 |
 | Industrial | Steam and the factory | 28 people and 20 days of food | Edict: Industrial mobilization. House: terrace house | Medieval kinds (crossbows, early rifles) | 3 | 435 |
