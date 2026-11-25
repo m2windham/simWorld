@@ -66,8 +66,20 @@ namespace SimWorld.AI
         /// traveler reserves it and must reach it. Distance is measured from the sleeper, where RimWorld's search
         /// starts. Before this overload a rescuer looked for a bed for itself, so a baby picked up by a neighbour
         /// was laid in the neighbour's house, whose hearth nobody lights for a baby.
+        /// <para/>
+        /// <b>A bed out of the cold first</b> (exposure4 lane). RimWorld searches twice, first for a bed whose room is
+        /// no danger to the sleeper and only then for any (<c>for (int k = 0; k &lt; 2; k++) maxDanger = k != 0 ?
+        /// Danger.Deadly : Danger.None</c>, the cell's <c>GetDangerFor</c> read off <c>Region.DangerFor</c>: none while
+        /// the room's temperature is inside the sleeper's <c>SafeTemperatureRange</c>; B18 decompile, read). This port
+        /// had only the second search, so a child in one shirt went to sleep in a dormitory at -3 C beside nothing
+        /// warmer. See <see cref="IsSafeTemperatureBed"/> for what "no danger" means here.
         /// </summary>
-        public static Thing? FindBedFor(Pawn sleeper, Pawn traveler)
+        public static Thing? FindBedFor(Pawn sleeper, Pawn traveler) =>
+            FindBedFor(sleeper, traveler, safeOnly: true) ?? FindBedFor(sleeper, traveler, safeOnly: false);
+
+        /// <summary>One pass of <see cref="FindBedFor(Pawn, Pawn)"/>: with <paramref name="safeOnly"/>, only a bed that
+        /// is <see cref="IsSafeTemperatureBed"/> for the sleeper (RimWorld's <c>Danger.None</c> pass).</summary>
+        public static Thing? FindBedFor(Pawn sleeper, Pawn traveler, bool safeOnly)
         {
             Map.Map? map = sleeper.Map;
             if (map == null || traveler.Map != map) return null;
@@ -82,19 +94,54 @@ namespace SimWorld.AI
                 if (!bed.Spawned) continue;
                 // RimWorld: RestUtility.IsValidBedFor refuses a bed that is on fire (bedThing.IsBurning()).
                 if (bed.IsBurning()) continue;
+                int distSq = (bed.Position - sleeper.Position).LengthHorizontalSquared;
+                if (distSq >= bestDistSq) continue;
                 if (!map.reservationManager.CanReserve(traveler, bed)) continue;
                 // A bed in a household's house is that household's (shelter lane): nobody else sleeps in it,
                 // as a RimWorld pawn does not take a bed another colonist owns.
                 Dwelling? home = DwellingUtility.DwellingOfBed(bed);
                 if (home != null && home.householdId != family) continue;
                 if (OccupiedByAnother(bed, sleeper)) continue;
-                int distSq = (bed.Position - sleeper.Position).LengthHorizontalSquared;
-                if (distSq >= bestDistSq) continue;
+                if (safeOnly && !IsSafeTemperatureBed(sleeper, bed)) continue;
                 if (!Reachability.CanReach(traveler, bed, PathEndMode.OnCell)) continue;
                 best = bed;
                 bestDistSq = distSq;
             }
             return best;
+        }
+
+        /// <summary>
+        /// Whether <paramref name="bed"/> is no danger to <paramref name="sleeper"/> from the air (RimWorld:
+        /// <c>Region.DangerFor</c> is <c>Danger.None</c> while the room's temperature is inside the pawn's
+        /// <c>SafeTemperatureRange</c>, its comfortable range widened by 10 C each side; B18 decompile, read). Also
+        /// safe: a bed too cold now in a room this settlement heats for whoever lies in it
+        /// (<see cref="SettlementClimate.WillWarm"/>), since its hearth is lit for them once they are in it. A room's
+        /// temperature is read as the air at the bed's sleeping slot, which in this port is the room's.
+        /// </summary>
+        public static bool IsSafeTemperatureBed(Pawn sleeper, Thing bed)
+        {
+            Map.Map? map = bed.Map;
+            if (map == null) return false;
+            float air = RotUtility.AmbientTemperatureAt(map, bed.GetSleepingSlotPos());
+            FloatRange safe = Health.TemperatureInjuryUtility.SafeTemperatureRange(sleeper);
+            if (safe.Includes(air)) return true;
+            return air < safe.min && SettlementClimate.WillWarm(map, bed);
+        }
+
+        /// <summary>
+        /// Where <paramref name="sleeper"/> lies down, carried or walking (<paramref name="traveler"/>): the
+        /// household's own bed while it is safe from the cold, else a bed out of the cold anywhere it may sleep, else
+        /// the household's bed anyway, else the nearest. RimWorld takes a pawn's owned bed whatever its room
+        /// (<c>RestUtility.FindBedFor</c> checks only <c>IsValidBedFor</c> on it). Translation (exposure4 lane): a
+        /// household's house is its owned bed here, and a house a quake has opened stands at the frost for days; a
+        /// RimWorld player whose bedroom wall fell would sleep the colonist elsewhere, so the settlement does. With
+        /// nowhere safer, home is still home.
+        /// </summary>
+        public static Thing? FindRestBedFor(Pawn sleeper, Pawn traveler)
+        {
+            Thing? home = DwellingUtility.FindDwellingBedFor(sleeper, traveler);
+            if (home != null && IsSafeTemperatureBed(sleeper, home)) return home;
+            return FindBedFor(sleeper, traveler, safeOnly: true) ?? home ?? FindBedFor(sleeper, traveler, safeOnly: false);
         }
 
         /// <summary>
