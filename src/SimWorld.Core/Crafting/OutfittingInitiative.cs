@@ -114,6 +114,10 @@ namespace SimWorld.Crafting
             }
         }
 
+        /// <summary>True when <paramref name="recipe"/> makes apparel that is not armour: what everybody wears.</summary>
+        private static bool IsClothing(RecipeDef recipe) =>
+            IsOutfitting(recipe) && recipe.products!.TrueForAll(p => p.thingDef.IsApparel) && !Armoury.IsArmourRecipe(recipe);
+
         /// <summary>True when every product <paramref name="recipe"/> makes is apparel or a weapon.</summary>
         public static bool IsOutfitting(RecipeDef recipe)
         {
@@ -171,6 +175,19 @@ namespace SimWorld.Crafting
             {
                 bill = new Bill_Production(recipe) { repeatMode = BillRepeatMode.TargetCount };
                 comp.BillStack.AddBill(bill);
+                if (IsClothing(recipe))
+                {
+                    // Clothes before arms (exposure4 lane). A bench works its bills top down (RimWorld's
+                    // WorkGiver_DoBill), and the hide coat, a dozen deep for the band's fighters, came first and took
+                    // every hide, so the children's parkas waited on the armoury all winter. A RimWorld player drags the
+                    // winter clothes to the top; the settlement does the same.
+                    for (int at = comp.BillStack.Count - 1; at > 0; at--)
+                    {
+                        RecipeDef above = comp.BillStack[at - 1].recipe;
+                        if (IsClothing(above) || !IsOutfitting(above)) break;
+                        comp.BillStack.Reorder(bill, -1);
+                    }
+                }
             }
             bill.targetCount = lacking;
 
