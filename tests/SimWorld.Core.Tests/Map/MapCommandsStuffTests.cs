@@ -53,7 +53,13 @@ namespace SimWorld.Tests.Map
             IntVec3 near = settlement.Citizens.First(p => p.Spawned && p.Map == map).Position;
             ThingDef bed = Def("Bed");
 
+            // Granite blocks belong to the Bronze age (masonry): a stone-age town that holds none cannot build of
+            // them (BuildGate), and one that holds some can, however it came by them.
             IntVec3 granite = FreeCell(map, bed, near);
+            Assert.Equal(MapCommandOutcome.Refused, MapCommands.PlaceBlueprint("Bed", granite, Rot4.North, "BlocksGranite").Outcome);
+            Thing blocks = ThingMaker.MakeThing(Def("BlocksGranite"));
+            blocks.stackCount = bed.costStuffCount;
+            GenSpawn.Spawn(blocks, FreeCell(map, Def("BlocksGranite"), near, skip: 18), map);
             Assert.Equal(MapCommandOutcome.Done, MapCommands.PlaceBlueprint("Bed", granite, Rot4.North, "BlocksGranite").Outcome);
             Blueprint placed = map.thingGrid.ThingsListAt(granite).OfType<Blueprint>().Single();
             Assert.Same(Def("BlocksGranite"), placed.stuffToUse);

@@ -173,18 +173,28 @@ namespace SimWorld.AI
         public static float NutritionWanted(Settlement? settlement, Map.Map map)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
+            return NutritionEatenPerDay(settlement, map) * HuntingTuning.DaysOfFoodWanted;
+        }
 
+        /// <summary>
+        /// Nutrition the settlement's people eat in a day at their current hunger rates: the
+        /// <see cref="NutritionWanted"/> figure before it is multiplied up to a larder. With no
+        /// <paramref name="settlement"/>, the people on <paramref name="map"/>. Statistical population is not among
+        /// the eaters, as it never is (see <c>Economy.SettlementLarder</c>).
+        /// </summary>
+        public static float NutritionEatenPerDay(Settlement? settlement, Map.Map? map)
+        {
             float perDay = 0f;
             foreach (Pawn eater in Eaters(settlement, map))
             {
                 perDay += HuntingTuning.NutritionPerEaterPerDay * eater.HungerRate;
             }
-            return perDay * HuntingTuning.DaysOfFoodWanted;
+            return perDay;
         }
 
         /// <summary>The mouths this hunt is for — see this class's own doc on why Statistical population is
         /// never among them.</summary>
-        private static IEnumerable<Pawn> Eaters(Settlement? settlement, Map.Map map)
+        private static IEnumerable<Pawn> Eaters(Settlement? settlement, Map.Map? map)
         {
             if (settlement != null)
             {
@@ -196,6 +206,7 @@ namespace SimWorld.AI
                 yield break;
             }
 
+            if (map == null) yield break;
             IReadOnlyList<Pawn> onMap = map.mapPawns.AllPawnsSpawned;
             for (int i = 0; i < onMap.Count; i++)
             {

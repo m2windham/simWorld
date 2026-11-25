@@ -182,8 +182,15 @@ namespace SimWorld.Map.View
         /// Refused when it names no ThingDef (<see cref="MapCommandOutcome.UnknownDef"/>), or a stuff the def
         /// cannot be made of, or any stuff at all for a def not made from stuff
         /// (<see cref="MapCommandOutcome.Refused"/>): RimWorld offers only stuffs in the def's
-        /// <c>stuffCategories</c>. Whether the settlement holds any of it is not checked — a blueprint
-        /// waits for its materials like any other.
+        /// <c>stuffCategories</c>. A stuff of a later age than the town's that it holds none of is refused too
+        /// (<see cref="MapCommandOutcome.Refused"/>): nobody here can make it and there is none to haul. Any other
+        /// stuff is accepted whether or not the town holds enough — a blueprint waits for its materials like any
+        /// other.
+        ///
+        /// <para/>A thing whose research is unfinished is refused (<see cref="MapCommandOutcome.Refused"/>), with
+        /// the sentence <see cref="BuildableOption.Reason"/> carries: the build list
+        /// (<see cref="MapViewSnapshot.CaptureBuildables()"/>) and this command read one rule, so a host never
+        /// offers what this refuses. See <c>BuildGate</c>.
         /// </summary>
         public static MapCommandResult PlaceBlueprint(string defName, IntVec3 cell, Rot4 rot = default, string? stuffDefName = null)
         {
@@ -192,6 +199,10 @@ namespace SimWorld.Map.View
 
             ThingDef? entityDef = ResolveThingDef(defName);
             if (entityDef == null) return MapCommandResult.UnknownDef(defName);
+
+            // Not yet learned: nothing downstream asks again, so a blueprint placed here would be built.
+            string? locked = BuildGate.WhyNotBuildable(entityDef);
+            if (locked != null) return MapCommandResult.Refused(locked);
 
             ThingDef? stuff = null;
             if (stuffDefName != null)
@@ -206,6 +217,8 @@ namespace SimWorld.Map.View
                 {
                     return MapCommandResult.Refused(entityDef.LabelCap + " cannot be built of " + stuff.label + ".");
                 }
+                string? unheld = BuildGate.WhyNotStuff(entityDef, stuff, map);
+                if (unheld != null) return MapCommandResult.Refused(unheld);
             }
 
             if (!GenGrid.InBounds(cell, map)) return MapCommandResult.OffMap(cell);

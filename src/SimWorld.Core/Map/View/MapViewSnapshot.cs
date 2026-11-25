@@ -482,7 +482,8 @@ namespace SimWorld.Map.View
                 growth,
                 buildProgress,
                 switchedOn,
-                fuel);
+                fuel,
+                t.def.mineable);
         }
 
         private static List<DwellingView> BuildDwellings(SimWorld.Map.Map map)
