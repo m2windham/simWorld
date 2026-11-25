@@ -299,6 +299,36 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
+        public void A_dormitory_raised_with_a_bed_on_the_hearth_spot_takes_that_bed_down_for_the_hearth()
+        {
+            Village v = NewWinterVillage("dorm-old-bed", 3, dormitoryHearth: false);
+            // A dormitory raised before it kept a place for its hearth: a bed on the spot, as on the arc's day 519.
+            Thing old = ThingMaker.MakeThing(ConstructionThingDefOf.Bed,
+                ConstructionThingDefOf.Bed.MadeFromStuff ? GenStuff.DefaultStuffFor(ConstructionThingDefOf.Bed) : null);
+            old.SetFaction(v.Settlement.faction);
+            IntVec3 slot = v.Compound.HearthCell;
+            IntVec2 size = ConstructionThingDefOf.Bed.size;
+            IntVec3 foot = new IntVec3(v.Compound.Interior.minX + (slot.x - v.Compound.Interior.minX) / size.x * size.x, 0,
+                v.Compound.Interior.minZ + (slot.z - v.Compound.Interior.minZ) / size.z * size.z);
+            GenSpawn.Spawn(old, foot, v.Map, Rot4.North);
+            Assert.Contains(old, v.Map.thingGrid.ThingsListAt(slot));
+            Pawn child = Child(v, v.Houseless, v.Compound.BedCells.First());
+
+            SettlementClimate.Tick(v.Settlement, v.Map);
+            Assert.NotNull(v.Map.designationManager.DesignationOn(old, global::SimWorld.Designations.PlayerDesignationDefOf.Deconstruct));
+
+            int builtAt = -1;
+            for (int hour = 1; hour <= 24 && builtAt < 0; hour++)
+            {
+                Run(v.Game, GenDate.TicksPerHour);
+                if (v.Map.thingGrid.ThingsListAt(slot).Any(t => t.def == ShelterThingDefOf.Campfire || (t is Blueprint b && b.EntityToBuild == ShelterThingDefOf.Campfire)
+                    || (t is Frame f && f.EntityToBuild == ShelterThingDefOf.Campfire))) builtAt = hour;
+            }
+            output.WriteLine("old bed down and the hearth placed at h" + builtAt + "; child at " + child.Position);
+            Assert.True(builtAt > 0, "the hearth was not placed within a day: " + string.Join(",", v.Map.thingGrid.ThingsListAt(slot).Select(t => t.def.defName)));
+        }
+
+        [Fact]
         public void The_dormitory_builds_its_hearth_for_the_winter_and_lights_it_for_a_cold_child_lying_there()
         {
             Village v = NewWinterVillage("dorm-hearth", 2, dormitoryHearth: false);

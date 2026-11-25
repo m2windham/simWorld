@@ -204,7 +204,24 @@ namespace SimWorld.Building
             bool lit = (device as ThingWithComps)?.GetComp<CompFlickable>()?.WantSwitchOn == true;
             bool someoneCold = SomeoneInDormitoryIsCold(settlement, map, compound, lit ? HearthWarmthMargin : 0f);
             bool coldSeason = TryColdestComfort(settlement, out float comfyMin) && outlook.DailyMean < comfyMin;
+            if (device == null && (coldSeason || someoneCold) && ShelterThingDefOf.Campfire.IsResearchFinished) ClearHearthCell(map, spot);
             return TendSpot(map, spot, ShelterThingDefOf.Campfire, someoneCold, coldSeason || someoneCold);
+        }
+
+        /// <summary>A dormitory raised before it kept a place for its hearth has a bed standing there
+        /// (<see cref="SettlementCompound.BedCells"/> no longer lists that slot): the settlement marks it to come down,
+        /// as it marks an old house (<see cref="DwellingPlanner"/>), so the hearth can go in. In the 600-day 40/201
+        /// arc every one of the 40 beds stood, and with the bed on the spot no hearth could ever be placed.</summary>
+        private static void ClearHearthCell(Map.Map map, IntVec3 spot)
+        {
+            IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(spot);
+            for (int i = 0; i < here.Count; i++)
+            {
+                Thing t = here[i];
+                if (t.def != ConstructionThingDefOf.Bed || t is Blueprint || t is Frame) continue;
+                if (map.designationManager.DesignationOn(t, Designations.PlayerDesignationDefOf.Deconstruct) != null) continue;
+                map.designationManager.AddDesignation(new Designations.Designation(new AI.LocalTargetInfo(t), Designations.PlayerDesignationDefOf.Deconstruct));
+            }
         }
 
         /// <summary>Whether somebody in the dormitory (the compound's interior) is colder than they find comfortable,
@@ -242,7 +259,7 @@ namespace SimWorld.Building
         }
 
         /// <summary>The warmest comfortable minimum among the living citizens: the first of them to feel the cold.</summary>
-        internal static bool TryColdestComfort(Settlement settlement, out float comfyMin)
+        private static bool TryColdestComfort(Settlement settlement, out float comfyMin)
         {
             comfyMin = float.MinValue;
             IReadOnlyList<Pawn> citizens = settlement.Citizens;
