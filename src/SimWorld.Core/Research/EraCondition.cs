@@ -28,8 +28,22 @@ namespace SimWorld.Research
     /// (a headless research run, a unit test with no world) has nothing to measure, and is judged on research
     /// alone: <see cref="EraConditionContext.Measurable"/> is false and every condition is met.
     /// </summary>
+    /// <summary>What an <see cref="EraCondition"/>'s reading counts, so a view can write "100%" for a share of
+    /// one rather than guess "1 of 1".</summary>
+    public enum EraConditionUnit
+    {
+        /// <summary>A fraction, 0-1.</summary>
+        Share,
+        Days,
+        People,
+        Buildings,
+    }
+
     public abstract class EraCondition
     {
+        /// <summary>The units <see cref="Target"/> and <see cref="Current"/> are in.</summary>
+        public abstract EraConditionUnit Unit { get; }
+
         /// <summary>Whether the condition holds now.</summary>
         public bool IsMet(EraConditionContext context) => !context.Measurable || Current(context) >= Target;
 
@@ -115,6 +129,8 @@ namespace SimWorld.Research
         /// <summary>0-1.</summary>
         public float share = 0.5f;
 
+        public override EraConditionUnit Unit => EraConditionUnit.Share;
+
         public override float Target => share;
 
         public override float Current(EraConditionContext context) =>
@@ -140,6 +156,8 @@ namespace SimWorld.Research
     {
         public float days = 10f;
 
+        public override EraConditionUnit Unit => EraConditionUnit.Days;
+
         public override float Target => days;
 
         /// <summary>Days of food per head: stored nutrition over what the people eat in a day at hunger rate 1
@@ -156,6 +174,8 @@ namespace SimWorld.Research
     public sealed class EraCondition_Population : EraCondition
     {
         public int count = 20;
+
+        public override EraConditionUnit Unit => EraConditionUnit.People;
 
         public override float Target => count;
 
@@ -174,6 +194,8 @@ namespace SimWorld.Research
         /// <summary>The player-facing name of the building ("a smithy"); content writes it, since a list of
         /// defs has no single label.</summary>
         public string? label;
+
+        public override EraConditionUnit Unit => EraConditionUnit.Buildings;
 
         public override float Target => count;
 

@@ -47,8 +47,9 @@ namespace SimWorld.God.View
     /// (<see cref="EraDef.conditions"/>), and where it stands.</summary>
     public sealed class EraConditionLine
     {
-        internal EraConditionLine(string label, float current, float target, bool met)
+        internal EraConditionLine(string label, float current, float target, bool met, EraConditionUnit unit)
         {
+            Unit = unit;
             Label = label;
             Current = current;
             Target = target;
@@ -63,6 +64,10 @@ namespace SimWorld.God.View
         public float Current { get; }
 
         public float Target { get; }
+
+        /// <summary>What <see cref="Current"/> and <see cref="Target"/> count. A <see cref="EraConditionUnit.Share"/>
+        /// is 0-1, to be shown as a percentage ("Everyone housed" at 1 reads 100%, not "1 of 1").</summary>
+        public EraConditionUnit Unit { get; }
 
         public bool IsMet { get; }
     }
@@ -284,7 +289,7 @@ namespace SimWorld.God.View
                 for (int i = 0; i < current.conditions.Count; i++)
                 {
                     EraCondition c = current.conditions[i];
-                    conditions.Add(new EraConditionLine(c.Label, c.Current(context), c.Target, c.IsMet(context)));
+                    conditions.Add(new EraConditionLine(c.Label, c.Current(context), c.Target, c.IsMet(context), c.Unit));
                 }
             }
 
