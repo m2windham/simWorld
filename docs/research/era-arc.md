@@ -1244,3 +1244,35 @@ both ways, but it changes nothing in 40/201.
 - For the exposure lane: armour sits on the Middle layer and replaces the
   tribal robe. The flak vest is Shell and replaces a parka. The optimizer
   ignores insulation.
+
+### 12.5 Ingredient delivery (2026-11-24)
+
+Added by the `craft-delivery` lane (branch `craft-delivery`). It closes the
+crafting seam in 12.3 the way RimWorld does:
+
+- `WorkGiver_DoBill` searches out to the bill's own `ingredientSearchRadius`
+  (999 by default), nearest the bench first, for stacks the crafter can
+  reserve and walk to. It moves on to the next bill when one has no
+  ingredients.
+- `JobDriver_DoBill` carries each chosen stack to a free cell beside the
+  bench before it works the recipe.
+- `Economy/SettlementBillStock` issues a standing bill one iteration of
+  anything the map cannot pay for, out of the ledger and beside the bench.
+  `Armoury` counts ledger stock as in reach.
+
+With the radius capped back at 12, the real-map crossbow test makes no
+crossbow in 30,000 ticks. That confirms the cause on a generated map.
+
+A 120-day arc on 40/201 (threats on, populated world, one run):
+
+| day | era | citizens in armour | made since day 0 | held |
+| --- | --- | --- | --- | --- |
+| 60 | Bronze | 0/43 | none, no armoury bills yet | 24 short bows, 17 revolvers |
+| 75 | Bronze | 38/44 hide coats | 38 hide coats | 24 short bows, 18 revolvers |
+| 90 | Bronze | 37/43 | 38 coats, 25 recurve bows | 23 recurve bows, 18 revolvers |
+| 120 | Classical | 42/48 | 44 coats, 26 recurve bows | 24 recurve bows, 18 revolvers |
+
+The day-120 deaths were three, all injury. "Made" also counted five short
+bows and revolvers that newcomers carried in; the reading now leaves out
+gear a newcomer arrives with. One run, 120 days. The 600-day arcs that
+would say whether a town that keeps up holds better are for CI.

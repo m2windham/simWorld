@@ -24,15 +24,15 @@ namespace SimWorld.Economy
     /// none. This is the bill's half of the crossing, shaped like the food half: the ledger stands in for the
     /// colony's storeroom, and a crafter still walks to the stack and carries it.
     ///
-    /// <para/><b>Bounded by one iteration per bill.</b> A bill is supplied only when the map, counting every
-    /// stack in its search radius the band can walk to whoever has claimed it, cannot pay for one iteration;
-    /// then each ingredient the map is short of is issued for one iteration. The next pass sees it on the map and
+    /// <para/><b>Bounded by one iteration per bill.</b> An ingredient is issued only when the map's stacks of it
+    /// inside the bill's search radius, where the band can walk and whoever has claimed them, cannot pay for one
+    /// iteration, and then only one iteration's worth. The next pass sees it on the map and
     /// issues nothing more until it is spent, so a large ledger cannot empty itself onto the map. Counting
     /// claimed stacks too means a crafter already at work on the last batch does not draw a second.
     ///
     /// <para/><b>What it leaves alone.</b> Food, which <see cref="SettlementStockInitiative.IssueFromStores"/>
     /// issues against the larder the settlement wants and banking takes back above it; issuing it for a cooking
-    /// bill as well would have the two rules move the same meal back and forth. A bill whose every short
+    /// bill as well would have the two rules move the same meal back and forth. A bill with any short
     /// ingredient the ledger cannot cover issues nothing: half a recipe on the map is a pile nobody can use. A map
     /// none of the settlement's citizens stands on issues nothing either, since nobody is there to craft.
     ///
