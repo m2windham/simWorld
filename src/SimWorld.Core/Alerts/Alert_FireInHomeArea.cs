@@ -15,7 +15,7 @@ namespace SimWorld.Alerts
     {
         public override AlertPriority Priority => AlertPriority.Critical;
 
-        public override string DefaultLabel => "Fire in home area";
+        public override string DefaultLabel => "Fire within the town bounds";
 
         public override AlertReport GetReport(AlertContext context)
         {
@@ -31,7 +31,7 @@ namespace SimWorld.Alerts
         }
 
         public override string GetExplanation(AlertContext context, AlertReport report) =>
-            "There is a fire in the home area. Citizens with Firefighter work will try to put it out; if " +
+            "There is a fire within the town bounds. Citizens on fire watch will try to put it out; if " +
             "nobody does, it will spread.";
     }
 }

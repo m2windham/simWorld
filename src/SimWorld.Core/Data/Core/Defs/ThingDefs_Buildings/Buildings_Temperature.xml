@@ -14,7 +14,7 @@
 
   <ThingDef>
     <defName>PassiveCooler</defName>
-    <label>passive cooler</label>
+    <label>clay cooler</label>
     <description>A traditional unpowered cooler that works by water evaporation. Must be regularly replenished with wood. Not efficient enough to refrigerate food.</description>
     <category>Building</category>
     <thingClass>SimWorld.Building.Building</thingClass>
@@ -58,7 +58,7 @@
 
   <ThingDef>
     <defName>Blueprint_PassiveCooler</defName>
-    <label>passive cooler (blueprint)</label>
+    <label>clay cooler (blueprint)</label>
     <category>Blueprint</category>
     <thingClass>SimWorld.Building.Blueprint</thingClass>
     <passability>Standable</passability>
@@ -67,7 +67,7 @@
 
   <ThingDef>
     <defName>Frame_PassiveCooler</defName>
-    <label>passive cooler (under construction)</label>
+    <label>clay cooler (under construction)</label>
     <category>Frame</category>
     <thingClass>SimWorld.Building.Frame</thingClass>
     <passability>PassThroughOnly</passability>

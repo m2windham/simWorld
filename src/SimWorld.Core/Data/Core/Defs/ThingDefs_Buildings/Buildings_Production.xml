@@ -69,7 +69,7 @@
     <researchPrerequisites>
       <li>Masonry</li>
     </researchPrerequisites>
-    <label>stonecutter's table</label>
+    <label>masons' bench</label>
     <description>A table for cutting stone chunks into blocks suitable for construction.</description>
     <category>Building</category>
     <thingClass>SimWorld.Building.Building</thingClass>

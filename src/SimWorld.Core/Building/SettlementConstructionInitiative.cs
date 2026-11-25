@@ -596,8 +596,8 @@ namespace SimWorld.Building
             string what = waiting.Count == 1
                 ? waiting[0]
                 : string.Join(", ", waiting.Take(waiting.Count - 1)) + " and " + waiting[waiting.Count - 1];
-            return settlement.name + " has run out of room in its home area: " + what
-                + " waiting for space. It will not build outside the home area; widen it to make room.";
+            return settlement.name + " has run out of room within its town bounds: " + what
+                + " waiting for space. It will not build outside its town bounds; widen them to make room.";
         }
 
         /// <summary>

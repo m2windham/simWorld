@@ -18,7 +18,7 @@
   <ThingDef ParentName="BasePlantCrop">
     <defName>Plant_Healroot</defName>
     <label>comfrey</label>
-    <description>A medicinal herb. Its roots and leaves are dried and made into herbal medicine. It takes a skilled grower to raise.</description>
+    <description>A medicinal herb. Its roots and leaves are dried and made into herbal salve. It takes a skilled grower to raise.</description>
     <plant>
       <growDays>7</growDays>
       <harvestedThingDef>MedicineHerbal</harvestedThingDef>

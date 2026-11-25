@@ -162,7 +162,7 @@
 
   <ThingDef>
     <defName>Blueprint_TableStonecutter</defName>
-    <label>stonecutter's table (blueprint)</label>
+    <label>masons' bench (blueprint)</label>
     <category>Blueprint</category>
     <thingClass>SimWorld.Building.Blueprint</thingClass>
     <passability>Standable</passability>
@@ -171,7 +171,7 @@
 
   <ThingDef>
     <defName>Frame_TableStonecutter</defName>
-    <label>stonecutter's table (under construction)</label>
+    <label>masons' bench (under construction)</label>
     <category>Frame</category>
     <thingClass>SimWorld.Building.Frame</thingClass>
     <passability>Standable</passability>

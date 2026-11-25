@@ -100,7 +100,7 @@
 
   <JobDef>
     <defName>FeedPatient</defName>
-    <label>feed patient</label>
+    <label>feed the sick</label>
     <driverClass>SimWorld.AI.JobDriver_Warden_Feed</driverClass>
     <reportString>feeding.</reportString>
   </JobDef>
@@ -109,9 +109,9 @@
 
   <JobDef>
     <defName>TendPatient</defName>
-    <label>tend patient</label>
+    <label>treat the sick</label>
     <driverClass>SimWorld.AI.JobDriver_TendPatient</driverClass>
-    <reportString>tending to a patient.</reportString>
+    <reportString>treating the sick.</reportString>
   </JobDef>
 
   <JobDef>

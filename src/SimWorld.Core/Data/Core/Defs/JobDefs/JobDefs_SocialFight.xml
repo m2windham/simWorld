@@ -16,7 +16,7 @@
 
   <JobDef>
     <defName>SocialFight</defName>
-    <label>social fight</label>
+    <label>brawl</label>
     <driverClass>SimWorld.AI.JobDriver_SocialFight</driverClass>
     <reportString>fighting.</reportString>
   </JobDef>

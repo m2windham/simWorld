@@ -27,7 +27,7 @@
     <stackLimitForSameOtherPawn>1</stackLimitForSameOtherPawn>
     <stages>
       <li>
-        <label>had a deep talk</label>
+        <label>had a heart-to-heart</label>
         <description>We really talked. I feel closer to them.</description>
         <baseMoodEffect>5</baseMoodEffect>
         <baseOpinionOffset>6</baseOpinionOffset>
@@ -42,7 +42,7 @@
     <stackLimitForSameOtherPawn>2</stackLimitForSameOtherPawn>
     <stages>
       <li>
-        <label>was slighted</label>
+        <label>was snubbed</label>
         <description>That was a bit rude.</description>
         <baseMoodEffect>-2</baseMoodEffect>
         <baseOpinionOffset>-3</baseOpinionOffset>

@@ -6,9 +6,9 @@
 
   <JobDef>
     <defName>ExtinguishSelf</defName>
-    <label>put out own fire</label>
+    <label>put out own flames</label>
     <driverClass>SimWorld.AI.JobDriver_ExtinguishSelf</driverClass>
-    <reportString>extinguishing self.</reportString>
+    <reportString>patting out flames.</reportString>
   </JobDef>
 
 </Defs>

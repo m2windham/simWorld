@@ -15,8 +15,8 @@
     <researchPrerequisites>
       <li>Cooking</li>
     </researchPrerequisites>
-    <label>cook simple meal</label>
-    <jobString>Cooking a simple meal.</jobString>
+    <label>cook a plain meal</label>
+    <jobString>Cooking a plain meal.</jobString>
     <workAmount>300</workAmount>
     <workSkill>Cooking</workSkill>
     <workSpeedStat>CookSpeed</workSpeedStat>
@@ -38,8 +38,8 @@
     <researchPrerequisites>
       <li>Cooking</li>
     </researchPrerequisites>
-    <label>cook fine meal</label>
-    <jobString>Cooking a fine meal.</jobString>
+    <label>cook a hearty meal</label>
+    <jobString>Cooking a hearty meal.</jobString>
     <workAmount>450</workAmount>
     <workSkill>Cooking</workSkill>
     <workSpeedStat>CookSpeed</workSpeedStat>
@@ -63,8 +63,8 @@
     <researchPrerequisites>
       <li>FoodScience</li>
     </researchPrerequisites>
-    <label>cook lavish meal</label>
-    <jobString>Cooking a lavish meal.</jobString>
+    <label>cook a feast platter</label>
+    <jobString>Cooking a feast platter.</jobString>
     <workAmount>600</workAmount>
     <workSkill>Cooking</workSkill>
     <workSpeedStat>CookSpeed</workSpeedStat>
@@ -88,8 +88,8 @@
     <researchPrerequisites>
       <li>FoodPreservation</li>
     </researchPrerequisites>
-    <label>make pemmican</label>
-    <jobString>Making pemmican.</jobString>
+    <label>make trail cakes</label>
+    <jobString>Making trail cakes.</jobString>
     <workAmount>500</workAmount>
     <workSkill>Cooking</workSkill>
     <workSpeedStat>CookSpeed</workSpeedStat>

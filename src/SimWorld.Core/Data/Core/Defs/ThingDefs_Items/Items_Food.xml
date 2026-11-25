@@ -63,7 +63,7 @@
 
   <ThingDef ParentName="BaseFoodItem">
     <defName>MealSimple</defName>
-    <label>simple meal</label>
+    <label>plain meal</label>
     <description>A meal cooked from raw ingredients. Not fancy, but nutritious and won't upset anyone.</description>
     <category>Item</category>
     <thingCategories><li>FoodMeals</li></thingCategories>
@@ -78,7 +78,7 @@
 
   <ThingDef ParentName="BaseFoodItem">
     <defName>MealFine</defName>
-    <label>fine meal</label>
+    <label>hearty meal</label>
     <description>A meal cooked with a bit more care, from separate portions of meat and vegetables.</description>
     <category>Item</category>
     <thingCategories><li>FoodMeals</li></thingCategories>
@@ -93,7 +93,7 @@
 
   <ThingDef ParentName="BaseFoodItem">
     <defName>MealLavish</defName>
-    <label>lavish meal</label>
+    <label>feast platter</label>
     <description>An elaborate, generous meal. A treat for anyone who eats it.</description>
     <category>Item</category>
     <thingCategories><li>FoodMeals</li></thingCategories>
@@ -108,7 +108,7 @@
 
   <ThingDef ParentName="BaseFoodItem">
     <defName>Pemmican</defName>
-    <label>pemmican</label>
+    <label>trail cake</label>
     <description>A dense, long-lasting ration of pounded meat and fat mixed with dried plant food. Bland, but keeps almost forever.</description>
     <category>Item</category>
     <thingCategories><li>Foods</li></thingCategories>

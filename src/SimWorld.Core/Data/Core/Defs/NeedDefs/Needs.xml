@@ -38,8 +38,8 @@
 
   <NeedDef>
     <defName>Joy</defName>
-    <label>recreation</label>
-    <description>Recreation. Falls steadily; restored by varied activities, each with its own tolerance.</description>
+    <label>leisure</label>
+    <description>Time for oneself. Falls steadily; restored by varied pastimes, each of which grows stale if repeated.</description>
     <needClass>SimWorld.Needs.Need_Joy</needClass>
     <listPriority>90</listPriority>
     <major>true</major>
@@ -64,7 +64,7 @@
   <NeedDef>
     <defName>Mood</defName>
     <label>mood</label>
-    <description>Overall mood: 50% plus the sum of all active thoughts. Drives mental breaks.</description>
+    <description>Overall mood: 50% plus the sum of all active thoughts. Drives breakdowns.</description>
     <needClass>SimWorld.Needs.Need_Mood</needClass>
     <listPriority>1000</listPriority>
     <major>true</major>
@@ -95,7 +95,7 @@
   -->
   <NeedDef ParentName="EnvironmentNeedBase">
     <defName>Beauty</defName>
-    <label>beauty</label>
+    <label>surroundings</label>
     <description>How pleasant the surroundings look.</description>
     <needClass>SimWorld.Needs.Need_Beauty</needClass>
     <listPriority>80</listPriority>
@@ -120,8 +120,8 @@
   -->
   <NeedDef ParentName="EnvironmentNeedBase">
     <defName>Comfort</defName>
-    <label>comfort</label>
-    <description>Comfort from furniture used recently. Holds at its starting level until something pushes comfort at it.</description>
+    <label>ease</label>
+    <description>Ease from good furniture used recently.</description>
     <listPriority>75</listPriority>
     <seekerRisePerHour>0.5</seekerRisePerHour>
     <seekerFallPerHour>0.2</seekerFallPerHour>
@@ -140,8 +140,8 @@
   -->
   <NeedDef>
     <defName>Outdoors</defName>
-    <label>outdoors</label>
-    <description>Time spent under open sky. Refills quickly outdoors and drains under a roof; a citizen kept inside too long gets cabin fever. Starts full (Need_Outdoors.SetInitialLevel), not at baseLevel.</description>
+    <label>open air</label>
+    <description>Time under open sky. Refills quickly outside and drains under a roof; a citizen kept in too long grows restless. Starts full.</description>
     <needClass>SimWorld.Needs.Need_Outdoors</needClass>
     <listPriority>70</listPriority>
     <minIntelligence>Humanlike</minIntelligence>
@@ -156,8 +156,8 @@
 
   <NeedDef ParentName="EnvironmentNeedBase">
     <defName>RoomSize</defName>
-    <label>space</label>
-    <description>How spacious the current room feels. Holds at its starting level until a room sampler answers for it.</description>
+    <label>elbow room</label>
+    <description>How roomy the current room feels.</description>
     <listPriority>65</listPriority>
   </NeedDef>
 
