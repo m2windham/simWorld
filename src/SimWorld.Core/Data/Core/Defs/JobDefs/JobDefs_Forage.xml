@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!-- Gathering wild food (WorkGiver_ForageWild): the harvest driver on a plant outside any field. -->
+  <JobDef>
+    <defName>Forage</defName>
+    <label>forage</label>
+    <driverClass>SimWorld.Building.JobDriver_Harvest</driverClass>
+    <reportString>foraging.</reportString>
+  </JobDef>
+
+</Defs>

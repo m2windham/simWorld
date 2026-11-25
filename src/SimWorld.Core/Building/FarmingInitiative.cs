@@ -151,11 +151,15 @@ namespace SimWorld.Building
             int wanted = FieldCellsWantedFor(settlement, map);
             if (wanted <= 0) return;
 
+            // An edict breaking new ground (Break the sod) sizes the field up and sows it whatever the store holds.
+            float edictFactor = EdictFieldSizeFactor();
+            wanted = (int)Math.Ceiling(wanted * edictFactor);
+
             // A store already holding a year's food sows nothing more: what stands is harvested and the
             // field lies fallow until the store is drawn down. Without this the field (sized at
             // FieldSizeMargin times what the mouths burn) out-produced them every year, banked food never
             // spoils, and the ledger and the storage huts sized from it grew for as long as the game ran.
-            if (StoreIsFull(settlement, map))
+            if (edictFactor <= 1f && StoreIsFull(settlement, map))
             {
                 Zone_Growing? fallow = FieldOf(map);
                 if (fallow != null) fallow.allowSow = false;
@@ -180,6 +184,15 @@ namespace SimWorld.Building
         // -------------------------------------------------------------------------------------------
         // How big, and of what.
         // -------------------------------------------------------------------------------------------
+
+        /// <summary>The largest <see cref="God.EdictDef.fieldSizeFactor"/> among the edicts in force; 1 with none.</summary>
+        public static float EdictFieldSizeFactor()
+        {
+            float factor = 1f;
+            IReadOnlyList<God.EdictDef> active = Find.God.ActiveEdicts;
+            for (int i = 0; i < active.Count; i++) factor = Math.Max(factor, active[i].fieldSizeFactor);
+            return factor;
+        }
 
         /// <summary>
         /// Cells of field this settlement wants: enough that the crop's own yield per cell per day covers

@@ -63,6 +63,18 @@ namespace SimWorld.God
         /// </summary>
         public List<ThingDef> prioritizedConstruction = new List<ThingDef>();
 
+        /// <summary>
+        /// New ground broken while the edict stands: the settlement's own field
+        /// (<see cref="Building.FarmingInitiative"/>) is sized at this multiple of what its mouths want, and is
+        /// sown even when the store is full. 1 (the default) leaves the field alone. A RimWorld player answers a
+        /// call to farm by dragging out more growing zone; there is no player here, so the settlement does it
+        /// for them, the same stand-in <see cref="Building.FarmingInitiative"/> already is. Without it Break the
+        /// sod's hands sowed the standing field in an afternoon and spent the rest of its ten days cleaning
+        /// (third playtest). The field keeps the new ground when the edict lapses: it is sown again whenever
+        /// the store runs down.
+        /// </summary>
+        public float fieldSizeFactor = 1f;
+
         /// <summary>Gates activation: null means every era can issue this edict. The era ladder controls which
         /// edicts a civilization can issue at all (<see cref="GodManager.CanActivate"/>).</summary>
         public EraDef? requiredEra;
@@ -184,6 +196,7 @@ namespace SimWorld.God
             }
             if (durationDays < 0f) yield return "durationDays must be >= 0.";
             if (cooldownDays < 0f) yield return "cooldownDays must be >= 0.";
+            if (fieldSizeFactor < 1f) yield return "fieldSizeFactor must be >= 1: an edict breaks ground, it does not abandon it.";
             if (completedThought != null && durationDays <= 0f)
             {
                 yield return "completedThought needs a durationDays: it is granted when the edict runs its course.";
