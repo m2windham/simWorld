@@ -437,11 +437,17 @@ namespace SimWorld.Building
         /// <c>RestUtility.FindBedFor</c> tries the pawn's owned bed first in the same way; the household owns the
         /// beds here, not the pawn, so any free one of them will do.
         /// </summary>
-        public static Thing? FindDwellingBedFor(Pawn pawn)
+        public static Thing? FindDwellingBedFor(Pawn pawn) => FindDwellingBedFor(pawn, pawn);
+
+        /// <summary>A bed in <paramref name="sleeper"/>'s own household's house that <paramref name="traveler"/>
+        /// can reserve and reach, with nobody else lying in it, or null (RimWorld: <c>RestUtility.FindBedFor</c>'s
+        /// owned-bed check, asked for the sleeper and walked by the traveler, as a rescuer carries a patient to the
+        /// patient's own bed).</summary>
+        public static Thing? FindDwellingBedFor(Pawn sleeper, Pawn traveler)
         {
-            Map.Map? map = pawn.Map;
-            int family = pawn.relations.familyId;
-            if (map == null || family == Pawn_RelationsTracker.None) return null;
+            Map.Map? map = sleeper.Map;
+            int family = sleeper.relations.familyId;
+            if (map == null || traveler.Map != map || family == Pawn_RelationsTracker.None) return null;
 
             IReadOnlyList<Dwelling> dwellings = DwellingsOn(map);
             for (int i = 0; i < dwellings.Count; i++)
@@ -452,8 +458,9 @@ namespace SimWorld.Building
                 for (int b = 0; b < beds.Count; b++)
                 {
                     Thing bed = beds[b];
-                    if (!map.reservationManager.CanReserve(pawn, bed)) continue;
-                    if (!Reachability.CanReach(pawn, new LocalTargetInfo(bed.Position), PathEndMode.OnCell)) continue;
+                    if (!map.reservationManager.CanReserve(traveler, bed)) continue;
+                    if (RestUtility.OccupiedByAnother(bed, sleeper)) continue;
+                    if (!Reachability.CanReach(traveler, new LocalTargetInfo(bed.Position), PathEndMode.OnCell)) continue;
                     return bed;
                 }
             }

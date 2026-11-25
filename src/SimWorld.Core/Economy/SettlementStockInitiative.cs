@@ -365,6 +365,11 @@ namespace SimWorld.Economy
             // planned house leaves the map and the ledger cannot hand it back, so the house waits on felling for
             // timber the settlement already cut. In RimWorld a stockpiled log stays where a builder can fetch it.
             HashSet<ThingDef> construction = ConstructionMaterialsWanted(map);
+            // And what a lit hearth on this map burns. Banked, the logs that should have fed a household's fire
+            // in winter left the map, and the fire burned out with its switch still on: every hearth of the
+            // exposure arcs stood lit and empty while the baby beside it froze. RimWorld's colonists refuel a
+            // campfire from the stockpile; here that wood has to stay in it while a fire wants it.
+            HashSet<ThingDef> fuel = FuelWanted(map);
 
             int banked = 0;
             for (int z = 0; z < zones.Count; z++)
@@ -384,6 +389,7 @@ namespace SimWorld.Economy
                     // armed, the bill never sees its count reached, and it eats material without end.
                     if ((stack.def.IsWeapon || stack.def.IsApparel) && AnyMakes(billed, stack.def)) continue;
                     if (construction.Contains(stack.def)) continue;
+                    if (fuel.Contains(stack.def)) continue;
 
                     int take = BankableUnits(stack, ref nutritionSurplus);
                     if (take <= 0) continue;
@@ -430,6 +436,24 @@ namespace SimWorld.Economy
         /// drawn down from <paramref name="nutritionSurplus"/> as it is spent, so one pass cannot bank the same
         /// surplus twice across several stacks.
         /// </summary>
+        /// <summary>Every fuel a refuelable building on <paramref name="map"/> burns while it is on or asked to
+        /// be (<see cref="CompFlickable"/>): a hearth switched off for the summer holds nothing back.</summary>
+        private static HashSet<ThingDef> FuelWanted(Map.Map map)
+        {
+            var wanted = new HashSet<ThingDef>();
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial);
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                var building = buildings[i] as ThingWithComps;
+                CompRefuelable? refuelable = building?.GetComp<CompRefuelable>();
+                if (refuelable == null) continue;
+                CompFlickable? flick = building!.GetComp<CompFlickable>();
+                if (flick != null && !flick.SwitchIsOn && !flick.WantSwitchOn) continue;
+                foreach (ThingDef def in refuelable.Props.fuelFilter.AllowedThingDefs) wanted.Add(def);
+            }
+            return wanted;
+        }
+
         /// <summary>Every material a <see cref="Blueprint"/> on <paramref name="map"/> will need or a
         /// <see cref="Frame"/> on it still lacks (<see cref="Frame.MaterialStillNeeded"/>).</summary>
         private static HashSet<ThingDef> ConstructionMaterialsWanted(Map.Map map)

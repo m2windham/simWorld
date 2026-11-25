@@ -56,13 +56,25 @@ namespace SimWorld.AI
         /// <summary>Nearest reachable, unclaimed spawned <see cref="ConstructionThingDefOf.Bed"/> on
         /// <paramref name="pawn"/>'s own map, or null when it has no map or no bed qualifies — the caller
         /// falls back to sleeping on the ground exactly as before this method existed.</summary>
-        public static Thing? FindBedFor(Pawn pawn)
+        public static Thing? FindBedFor(Pawn pawn) => FindBedFor(pawn, pawn);
+
+        /// <summary>
+        /// The bed for <paramref name="sleeper"/>, walked to by <paramref name="traveler"/> (RimWorld:
+        /// <c>RestUtility.FindBedFor(Pawn sleeper, Pawn traveler, ...)</c>, the overload <c>WorkGiver_RescueDowned</c>
+        /// calls with the patient as sleeper and the rescuer as traveler). Whose bed it may be is the sleeper's
+        /// question: a household's bed is only its own household's. Whether it can be had is the traveler's: the
+        /// traveler reserves it and must reach it. Distance is measured from the sleeper, where RimWorld's search
+        /// starts. Before this overload a rescuer looked for a bed for itself, so a baby picked up by a neighbour
+        /// was laid in the neighbour's house, whose hearth nobody lights for a baby.
+        /// </summary>
+        public static Thing? FindBedFor(Pawn sleeper, Pawn traveler)
         {
-            Map.Map? map = pawn.Map;
-            if (map == null) return null;
+            Map.Map? map = sleeper.Map;
+            if (map == null || traveler.Map != map) return null;
 
             Thing? best = null;
             int bestDistSq = int.MaxValue;
+            int family = sleeper.relations?.familyId ?? Pawns.Pawn_RelationsTracker.None;
             IReadOnlyList<Thing> beds = map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed);
             for (int i = 0; i < beds.Count; i++)
             {
@@ -70,18 +82,36 @@ namespace SimWorld.AI
                 if (!bed.Spawned) continue;
                 // RimWorld: RestUtility.IsValidBedFor refuses a bed that is on fire (bedThing.IsBurning()).
                 if (bed.IsBurning()) continue;
-                if (!map.reservationManager.CanReserve(pawn, bed)) continue;
+                if (!map.reservationManager.CanReserve(traveler, bed)) continue;
                 // A bed in a household's house is that household's (shelter lane): nobody else sleeps in it,
                 // as a RimWorld pawn does not take a bed another colonist owns.
                 Dwelling? home = DwellingUtility.DwellingOfBed(bed);
-                if (home != null && home.householdId != (pawn.relations?.familyId ?? Pawns.Pawn_RelationsTracker.None)) continue;
-                int distSq = (bed.Position - pawn.Position).LengthHorizontalSquared;
+                if (home != null && home.householdId != family) continue;
+                if (OccupiedByAnother(bed, sleeper)) continue;
+                int distSq = (bed.Position - sleeper.Position).LengthHorizontalSquared;
                 if (distSq >= bestDistSq) continue;
-                if (!Reachability.CanReach(pawn, bed, PathEndMode.OnCell)) continue;
+                if (!Reachability.CanReach(traveler, bed, PathEndMode.OnCell)) continue;
                 best = bed;
                 bestDistSq = distSq;
             }
             return best;
+        }
+
+        /// <summary>
+        /// Somebody other than <paramref name="sleeper"/> already lies in <paramref name="bed"/> (RimWorld:
+        /// <c>RestUtility.IsValidBedFor</c> refuses a bed with no unoccupied sleeping slot). A sleeper holds the
+        /// bed by reservation, but a patient or a baby laid there holds none, so it is read off the cell.
+        /// </summary>
+        public static bool OccupiedByAnother(Thing bed, Pawn sleeper)
+        {
+            Map.Map? map = bed.Map;
+            if (map == null) return false;
+            IReadOnlyList<Thing> here = map.thingGrid.ThingsListAt(bed.GetSleepingSlotPos());
+            for (int i = 0; i < here.Count; i++)
+            {
+                if (here[i] is Pawn p && !ReferenceEquals(p, sleeper) && p.Downed) return true;
+            }
+            return false;
         }
     }
 }

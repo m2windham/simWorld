@@ -190,6 +190,34 @@ namespace SimWorld.Tests.Building
             Assert.Null(ChopJobFor(builder));
         }
 
+        /// <summary>
+        /// A lit hearth is wood demand too: its empty tank and a spare tank are felled for, as a site's cost is.
+        /// Switched off it wants nothing, and the forest stands. Before this, nothing ever felled for fuel, and every
+        /// hearth of the exposure arcs burned its first tank and stood lit and empty through the winter.
+        /// </summary>
+        [Fact]
+        public void A_builder_fells_a_tree_for_a_lit_hearth_short_of_wood_and_not_for_one_put_out()
+        {
+            CoreMap map = NewMap(16, 16);
+            Pawn builder = SpawnBuilder(map, new IntVec3(1, 0, 1));
+            Plant tree = SpawnTree(map, new IntVec3(12, 0, 12));
+            var hearth = (ThingWithComps)ThingMaker.MakeThing(Def("Campfire"));
+            GenSpawn.Spawn(hearth, new IntVec3(5, 0, 5), map);
+            CompRefuelable tank = hearth.GetComp<CompRefuelable>()!;
+            tank.ConsumeFuel(tank.Fuel);
+
+            Assert.True(WorkGiver_ConstructChopWood.WoodShortfall(map, Wood) >= (int)tank.TargetFuelLevel);
+            Job? job = ChopJobFor(builder);
+            Assert.NotNull(job);
+            Assert.Same(tree, job!.targetA.Thing);
+
+            CompFlickable flick = hearth.GetComp<CompFlickable>()!;
+            flick.SetWantSwitchOn(false);
+            flick.DoFlick();
+            Assert.Equal(0, WorkGiver_ConstructChopWood.WoodShortfall(map, Wood));
+            Assert.Null(ChopJobFor(builder));
+        }
+
         [Fact]
         public void A_tree_already_being_felled_counts_as_wood_on_its_way()
         {

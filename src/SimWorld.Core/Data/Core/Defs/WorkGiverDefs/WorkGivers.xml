@@ -81,8 +81,9 @@
       <li>Manipulation</li>
     </requiredCapacities>
     <!-- Wired to a real scanner (system: health — tending): finds a downed patient of the rescuer's own
-         faction (or a prisoner it holds) and carries them to RestUtility.FindBedFor's nearest reachable bed
-         — see WorkGiver_RescueDowned's own doc for what happens with no bed on the map at all. -->
+         faction (or a prisoner it holds) and carries them to a bed found for the patient: its household's
+         own first, else RestUtility.FindBedFor's nearest reachable one — see WorkGiver_RescueDowned's own doc
+         for what happens with no bed on the map at all. -->
     <giverClass>SimWorld.AI.WorkGiver_RescueDowned</giverClass>
   </WorkGiverDef>
 
