@@ -552,4 +552,21 @@ Choices the spec left open, recorded as they were made, in build order.
 - **The material gate skips wood.** The reserve rule (1.5 times the new house's cost, over what sites already
   claim, `MaterialLadder.Spare`) holds for every material except logs: builders fell a tree for a blueprint that
   wants wood (`WorkGiver_ConstructChopWood`), and no one keeps a woodpile, so gating on logs would stall every
-  wooden rung.
+  wooden rung. Doors and beds are priced in their default stuff: their stuff is picked at placement from what lies
+  on hand and falls back to the default, so pricing them in what was on hand let every part claim the same few
+  steel bars and no house looked affordable.
+- **Step 6: the founding house is the first house finished.** `DwellingPlanner` stamps each dwelling's
+  `completedTick` the pass it is first whole; the first one stamped becomes `SettlementCompound.foundingDwellingId`
+  and is marked heritage on the spot. A save from before the field marks the first finished house it sees.
+- **The exemplar is taken when a rung is down to two.** Before renewal starts on a house whose rung has at most two
+  unreplaced houses left and none kept, the oldest of them (lowest id) is marked heritage instead; if that is the
+  house picked, the next candidate goes. The cap (one structure in ten, counted over every faction building on the
+  map, at least one) is checked before marking; at the cap a rung is renewed out entirely.
+- **A kept house remembers its wall.** Marking a house copies the def and stuff of its first standing wall onto the
+  dwelling (`heritageWall`, `heritageWallStuff`), so a lost wall is put back as it was rather than in the era's
+  wall. Wood is always used as remembered (a tree can be felled for it); any other stuff only while a wall's worth
+  is on hand, else the era's affordable stuff, so a kept house never waits forever on a stone the map has lost.
+- **The god's mark is per house.** `GodCommands.SetHeritage(thingId, bool)` takes any building's id; on a house it
+  marks the whole dwelling. It refuses a house already being replaced and a mark past the cap. Unmarking frees the
+  house for renewal and for the era's repairs. Chronicle lines are free text: "The town begins to rebuild in the
+  forms of ..." once per era, and "The last ... is pulled down" when a rung's last unkept house goes.

@@ -562,12 +562,14 @@ namespace SimWorld.Building
             {
                 case DwellingPartKind.Wall:
                 {
-                    // A heritage house is put back as it was built (§7.6), while the stuff can be had.
+                    // A heritage house is put back as it was built (§7.6), while the stuff can be had. Wood always
+                    // can: a builder fells a tree for a blueprint that wants logs, so it is not held in stock first.
                     if (dwelling.isHeritage && dwelling.heritageWall != null)
                     {
-                        return (dwelling.heritageWall, dwelling.heritageWall.MadeFromStuff
-                            ? GenStuff.AffordableStuffFor(map, dwelling.heritageWall, dwelling.heritageWallStuff)
-                            : null);
+                        if (!dwelling.heritageWall.MadeFromStuff) return (dwelling.heritageWall, null);
+                        return (dwelling.heritageWall, ReferenceEquals(dwelling.heritageWallStuff, StuffDefOf.WoodLog)
+                            ? StuffDefOf.WoodLog
+                            : GenStuff.AffordableStuffFor(map, dwelling.heritageWall, dwelling.heritageWallStuff));
                     }
                     ThingDef wall = dwelling.def.wallDef ?? StoneWallMaterials.PreferredWallDef(map);
                     ThingDef? stuff = null;

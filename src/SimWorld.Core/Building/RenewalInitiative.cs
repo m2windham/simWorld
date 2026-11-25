@@ -226,7 +226,8 @@ namespace SimWorld.Building
 
         /// <summary>
         /// Whether the stock holds the new house's full cost with <see cref="RenewalTuning.MaterialReserve"/> to
-        /// spare, over what blueprints and frames already claim (§7.4's gate). Wood is the exception: a builder fells a
+        /// spare, over what blueprints and frames already claim (§7.4's gate). Doors and beds are priced in their
+        /// default stuff, which they fall back to when nothing else is on hand. Wood is the exception: a builder fells a
         /// tree for a blueprint that wants logs (<see cref="WorkGiver_ConstructChopWood"/>), so logs are got on
         /// demand rather than held, and holding them first would stall every wooden rung behind a woodpile nobody
         /// keeps.
@@ -239,6 +240,10 @@ namespace SimWorld.Building
             {
                 (ThingDef partDef, ThingDef? stuff) = DwellingUtility.PartDef(map, probe, kind);
                 if (partDef.MadeFromStuff) stuff ??= GenStuff.DefaultStuffFor(partDef);
+                // A door's or bed's stuff is picked when it is placed, from whatever lies on hand, and falls back to
+                // its default when nothing does; priced in what is on hand now, every part claimed the same few
+                // steel bars and the house never looked affordable. Priced in its default, as it would be built.
+                if (kind != DwellingPartKind.Wall && partDef.MadeFromStuff) stuff = GenStuff.DefaultStuffFor(partDef) ?? stuff;
                 List<ThingDefCountClass> list = partDef.CostListAdjusted(stuff);
                 for (int i = 0; i < list.Count; i++)
                 {

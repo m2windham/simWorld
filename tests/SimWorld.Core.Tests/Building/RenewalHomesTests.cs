@@ -332,5 +332,123 @@ namespace SimWorld.Tests.Building
             }
             Assert.Same(v.Houses[1], RenewalInitiative.TryRenewOne(v.Settlement, v.Map));
         }
+        // ---- step 6: what the town keeps ----
+
+        /// <summary>
+        /// Renews every house the initiative will take, one pass after another, with the building done at once: each
+        /// new house's parts finished where they were planned, the move, and the old house's parts deconstructed as
+        /// marked. The map, the band, the planner and the initiative are the real ones; only the builders' time is
+        /// skipped. Returns how many houses were renewed.
+        /// </summary>
+        private static int RenewAllInstantly(Village v)
+        {
+            CoreMap map = v.Map;
+            Pawn builder = v.Settlement.Citizens.First(p => p.Spawned && !p.Dead);
+            int renewed = 0;
+            for (int pass = 0; pass < 40; pass++)
+            {
+                Dwelling? old = RenewalInitiative.TryRenewOne(v.Settlement, map);
+                if (old == null) return renewed;
+                renewed++;
+                Dwelling replacement = v.Compound.DwellingById(old.replacedById)!;
+                foreach (IntVec3 c in replacement.footprint.Cells)
+                {
+                    foreach (Blueprint bp in map.thingGrid.ThingsListAt(c).OfType<Blueprint>().ToList()) bp.ReplaceWithFrame().CompleteConstruction(builder);
+                }
+                foreach (Pawn p in map.mapPawns.AllPawnsSpawned.ToList()) GenConstruct.StepOffUnwalkableCell(p);
+                DwellingUtility.AssignHomes(v.Settlement, map);
+                Assert.True(old.beingDemolished, "the household did not move into its finished house");
+                DwellingPlanner.Plan(v.Settlement, map, dormitoryCovered: false);
+                foreach (global::SimWorld.Designations.Designation des in map.designationManager.SpawnedDesignationsOfDef(global::SimWorld.Designations.PlayerDesignationDefOf.Deconstruct).ToList())
+                {
+                    if (des.target.Thing is Thing t && t.Spawned) JobDriver_Deconstruct.Deconstruct(t);
+                }
+                DwellingPlanner.Plan(v.Settlement, map, dormitoryCovered: false);
+                Assert.DoesNotContain(old, v.Compound.dwellings);
+            }
+            Assert.Fail("still renewing after 40 passes");
+            return renewed;
+        }
+
+        [Fact]
+        public void The_founding_house_survives_a_full_renewal_of_its_rung()
+        {
+            Village v = Founded("renewal-founding", 4, "House_Paleo");
+            Dwelling founding = v.Compound.DwellingById(v.Compound.foundingDwellingId)!;
+            Assert.Same(v.Houses[0], founding);
+            int household = founding.householdId;
+            List<int> renewedHouseholds = v.Houses.Skip(1).Select(d => d.householdId).ToList();
+
+            Assert.Equal(3, RenewAllInstantly(v));
+
+            Assert.Contains(founding, v.Compound.dwellings);
+            Assert.True(founding.isHeritage);
+            Assert.True(founding.IsComplete(v.Map));
+            Assert.Equal(household, founding.householdId);
+            Assert.Equal("House_Paleo", founding.def.defName);
+            Assert.Single(v.Compound.dwellings, d => d.def.defName == "House_Paleo");
+            Assert.All(renewedHouseholds, h => Assert.Single(v.Compound.dwellings, d => d.def.defName == "House_Neo" && d.householdId == h));
+        }
+
+        [Fact]
+        public void One_house_of_each_obsolete_rung_is_kept_and_it_is_the_oldest()
+        {
+            Village v = Founded("renewal-exemplar", 4, "House_Paleo", "House_Meso", "House_Meso", "House_Meso");
+            int chronicleBefore = Find.Storyteller.Chronicle.Count;
+
+            Assert.Equal(2, RenewAllInstantly(v));
+
+            Dwelling kept = Assert.Single(v.Compound.dwellings, d => d.def.defName == "House_Meso");
+            // Renewal takes the oldest first, so the first pit house went; when the last-but-one was due, the oldest
+            // still standing was kept instead (section 7.6).
+            Assert.Same(v.Houses[2], kept);
+            Assert.True(kept.isHeritage);
+            Assert.True(kept.IsComplete(v.Map));
+            Assert.Single(v.Compound.dwellings, d => d.def.defName == "House_Paleo" && d.isHeritage); // the founding house
+            Assert.Single(Find.Storyteller.Chronicle.Skip(chronicleBefore), e => e.incidentDefName.Contains("last pit house"));
+            Assert.Single(Find.Storyteller.Chronicle.Skip(chronicleBefore), e => e.incidentDefName.StartsWith("The town begins to rebuild"));
+        }
+
+        [Fact]
+        public void A_god_marked_house_is_repaired_in_its_own_stuff_and_never_renewed()
+        {
+            Village v = Founded("renewal-god-mark", 3, "House_Paleo");
+            CoreMap map = v.Map;
+            Dwelling marked = v.Houses[1], plain = v.Houses[2];
+            IntVec3 markedWall = marked.Parts.First(p => p.Kind == DwellingPartKind.Wall).Cell;
+            IntVec3 plainWall = plain.Parts.First(p => p.Kind == DwellingPartKind.Wall).Cell;
+            Assert.Equal(Def("Wall"), map.edificeGrid[markedWall]!.def);
+            Assert.Equal(Def("WoodLog"), map.edificeGrid[markedWall]!.Stuff);
+
+            Assert.Equal(GodCommandOutcome.Done, GodCommands.SetHeritage(map.edificeGrid[markedWall]!.thingIDNumber, true).Outcome);
+            Assert.True(marked.isHeritage);
+            Assert.Equal(GodCommandOutcome.NoChange, GodCommands.SetHeritage(map.edificeGrid[markedWall]!.thingIDNumber, true).Outcome);
+
+            // The town now builds in granite: a plain house's lost wall goes back in granite, the kept house's in wood.
+            foreach (ResearchProjectDef p in Def("WallGranite").researchPrerequisites ?? new List<ResearchProjectDef>()) Find.ResearchManager.SetProjectFinishedForSetup(p);
+            Thing blocks = ThingMaker.MakeThing(Def("BlocksGranite"));
+            blocks.stackCount = 75;
+            GenSpawn.Spawn(blocks, map.AllCells.First(c => GenGrid.Standable(c, map) && map.thingGrid.ThingsListAt(c).Count == 0 && map.areaManager.Home[c]), map);
+            Assert.Equal(Def("WallGranite"), StoneWallMaterials.PreferredWallDef(map));
+
+            map.edificeGrid[markedWall]!.Destroy();
+            map.edificeGrid[plainWall]!.Destroy();
+            DwellingPlanner.Repair(map);
+            Blueprint markedBp = map.thingGrid.ThingsListAt(markedWall).OfType<Blueprint>().Single();
+            Blueprint plainBp = map.thingGrid.ThingsListAt(plainWall).OfType<Blueprint>().Single();
+            Assert.Equal(Def("Wall"), markedBp.EntityToBuild);
+            Assert.Equal(Def("WoodLog"), markedBp.stuffToUse);
+            Assert.Equal(Def("WallGranite"), plainBp.EntityToBuild);
+
+            // Put back up, the kept house is never the one renewed.
+            Pawn builder = v.Settlement.Citizens.First(p => p.Spawned && !p.Dead);
+            markedBp.ReplaceWithFrame().CompleteConstruction(builder);
+            plainBp.ReplaceWithFrame().CompleteConstruction(builder);
+            Assert.Equal(1, RenewAllInstantly(v)); // the plain house, and nothing after it
+            Assert.Contains(marked, v.Compound.dwellings);
+            Assert.Equal("House_Paleo", marked.def.defName);
+            Assert.Equal(0, marked.replacedById);
+            Assert.DoesNotContain(plain, v.Compound.dwellings);
+        }
     }
 }
