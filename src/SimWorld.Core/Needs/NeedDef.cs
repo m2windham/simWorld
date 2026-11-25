@@ -51,6 +51,10 @@ namespace SimWorld.Needs
         public bool colonistAndPrisonersOnly;
         public bool colonistsOnly;
         public bool neverOnPrisoner;
+        /// <summary>The life phases that have this need; null for every phase (RimWorld:
+        /// <c>NeedDef.developmentalStageFilter</c>, a flags field there, recalled rather than read). Re-asked when a
+        /// pawn enters a new life stage (<see cref="Pawn_NeedsTracker.Notify_LifeStageStarted"/>).</summary>
+        public List<DevelopmentalStage>? developmentalStageFilter;
         public bool scaleBar;
 
         /// <summary>UI threshold markers, as fractions of the bar.</summary>

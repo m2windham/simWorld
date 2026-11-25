@@ -53,6 +53,12 @@
       and release each re-run that sweep, so the need goes and comes back with the prisoner's status.
     -->
     <neverOnPrisoner>true</neverOnPrisoner>
+    <!-- No recreation for a baby: it cannot walk to any, and RimWorld gives a baby play instead (recalled, not
+         checked). A baby here starved of it read Recreation-starved -20 for three years (third playtest). -->
+    <developmentalStageFilter>
+      <li>Child</li>
+      <li>Adult</li>
+    </developmentalStageFilter>
     <threshPercents>
       <li>0.15</li>
       <li>0.3</li>

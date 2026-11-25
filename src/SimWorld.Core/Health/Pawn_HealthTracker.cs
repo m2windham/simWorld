@@ -424,14 +424,23 @@ namespace SimWorld.Health
 
         public bool ShouldBeDeadFromLethalDamageThreshold() => hediffSet.TotalInjurySeverityCached >= HealthTuning.LethalDamageThreshold;
 
-        public bool ShouldBeDowned()
+        public bool ShouldBeDowned() => LifeStageForcesDowned || ShouldBeDownedIgnoringAge();
+
+        /// <summary>
+        /// Every reason <see cref="ShouldBeDowned"/> has but the life stage: forced, pain shock, unconscious, or
+        /// unable to move. A baby is down because it is a baby (<see cref="LifeStageForcesDowned"/>); this says
+        /// whether it is also hurt, which is what a health readout and a roster mean by "down".
+        /// </summary>
+        public bool ShouldBeDownedIgnoringAge()
         {
             if (forceDowned) return true;
-            if (LifeStageForcesDowned) return true;
             if (InPainShock) return true;
             if (!capacities.CanBeAwake) return true;
             return !capacities.CapableOf(PawnCapacityDefOf.Moving);
         }
+
+        /// <summary>Downed, and for more than being too young to walk (<see cref="ShouldBeDownedIgnoringAge"/>).</summary>
+        public bool DownedOtherThanByAge => Downed && (!LifeStageForcesDowned || ShouldBeDownedIgnoringAge());
 
         /// <summary>
         /// Guarded against re-entry, not only against its caller's own <c>if (!Downed)</c>: reading a life

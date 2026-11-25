@@ -93,6 +93,9 @@ namespace SimWorld.Needs
 
             if (def.neverOnPrisoner && PawnUtility.IsPrisoner(pawn)) return false;
 
+            if (def.developmentalStageFilter != null && pawn.ageTracker?.CurLifeStage is LifeStageDef stage
+                && !def.developmentalStageFilter.Contains(stage.developmentalStage)) return false;
+
             return true;
         }
 
@@ -138,6 +141,8 @@ namespace SimWorld.Needs
         /// </summary>
         public void Notify_LifeStageStarted()
         {
+            // A need some life phases do not have (NeedDef.developmentalStageFilter) comes or goes at the crossing.
+            AddOrRemoveNeedsAsAppropriate();
             for (int i = 0; i < needs.Count; i++)
             {
                 // Through the setter on purpose: that is where the clamp to [0, MaxLevel] lives, and

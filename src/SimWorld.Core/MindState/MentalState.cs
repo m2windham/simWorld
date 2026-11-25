@@ -225,12 +225,18 @@ namespace SimWorld.MindState
 
         public float CurMood => pawn.needs.mood?.CurLevel ?? 0.5f;
 
-        public bool CanDoRandomMentalBreaks => pawn.RaceProps.Humanlike && !pawn.Dead;
+        /// <summary>A living humanlike past babyhood. A baby has no mental breaks (RimWorld's Biotech babies cry
+        /// when unhappy instead, recalled rather than read; this port has no crying yet), so it is never at risk
+        /// of one either (<see cref="CurMoodBreakIntensity"/>): the third playtest's babies showed "extreme break
+        /// risk" on the roster and in the alerts for three years.</summary>
+        public bool CanDoRandomMentalBreaks =>
+            pawn.RaceProps.Humanlike && !pawn.Dead && pawn.ageTracker?.CurLifeStage?.developmentalStage != DevelopmentalStage.Baby;
 
         public MentalBreakIntensity CurMoodBreakIntensity
         {
             get
             {
+                if (!CanDoRandomMentalBreaks) return MentalBreakIntensity.None;
                 float mood = CurMood;
                 if (mood < BreakThresholdExtreme) return MentalBreakIntensity.Extreme;
                 if (mood < BreakThresholdMajor) return MentalBreakIntensity.Major;
