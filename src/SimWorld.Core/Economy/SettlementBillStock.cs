@@ -78,7 +78,6 @@ namespace SimWorld.Economy
             List<Thing> onMap = WorkGiver_DoBill.IngredientCandidates(bill, bench, t => map.reachability.CanReachCells(band, t.Position));
             var stacks = new List<ItemStack>(onMap.Count);
             for (int i = 0; i < onMap.Count; i++) stacks.Add(new ItemStack(onMap[i].def, onMap[i].stackCount));
-            if (BillIngredientsFinder.TryFindBestIngredients(bill, stacks, new List<ItemStack>())) return 0;
 
             // Plan every short ingredient before placing any, so a recipe the ledger cannot finish issues nothing.
             var plan = new List<(ThingDef def, int units)>();
