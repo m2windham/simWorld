@@ -139,7 +139,10 @@ namespace SimWorld.Tests.Social
             Game withIdeo = NewSoloGame("ideo-mood-seed");
             Pawn founderWithIdeo = withIdeo.World!.Settlements.First().Citizens[0];
             for (int i = 0; i < Ticks; i++) withIdeo.TickManager.DoSingleTick();
-            float moodWithIdeo = founderWithIdeo.needs.mood!.CurLevel;
+            // The level mood is moving toward, not where it has got to: a fresh band's expectations put both arms
+            // well above their starting mood, so both climb at the seeker's capped rise per hour and read the
+            // same after 6000 ticks; the +3 is in the target they climb toward (playtest-bugs4).
+            float moodWithIdeo = founderWithIdeo.needs.mood!.CurInstantLevel;
 
             Game withoutIdeo = NewSoloGame("ideo-mood-seed"); // same seed: identical founding band and tile.
             Find.Ideo = null; // the one input this test isolates — cleared before a single tick runs.
@@ -149,7 +152,7 @@ namespace SimWorld.Tests.Social
             Assert.Equal(founderWithIdeo.Name?.ToStringFull, founderWithoutIdeo.Name?.ToStringFull);
 
             for (int i = 0; i < Ticks; i++) withoutIdeo.TickManager.DoSingleTick();
-            float moodWithoutIdeo = founderWithoutIdeo.needs.mood!.CurLevel;
+            float moodWithoutIdeo = founderWithoutIdeo.needs.mood!.CurInstantLevel;
 
             // The belonging precept is a flat +3 mood points under either shipped ideoligion and asks nothing
             // about the citizen, so this direction holds regardless of which one the seed drew.
