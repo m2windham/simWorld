@@ -34,7 +34,7 @@ namespace SimWorld.Tests.God
         [Fact]
         public void An_exclusive_edict_still_names_the_work_as_a_doing()
         {
-            Assert.Contains("Every able hand turns to growing before anything else.", EdictOption.EffectsOf(Edict("BreakTheSod")));
+            Assert.Contains("Every able hand turns to farming before anything else.", EdictOption.EffectsOf(Edict("BreakTheSod")));
         }
 
         [Theory]
