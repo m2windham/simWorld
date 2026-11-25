@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: r5, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a }
+          - { name: r6, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5 }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -44,8 +44,8 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: base, sha: a83f128b93b50291404ed2044384ee66b1e42de7 }
-          - { name: r5, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a }
+          - { name: base, sha: 52f0459eb7aebe2b0f275ed37b04ec1297b9a89c }
+          - { name: r6, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5 }
         threats: ["false", "true"]
         shard:
           - { n: 1, runs: "20:105 20:99 20:777 20:2024 20:12345 20:31337 20:101" }
@@ -79,10 +79,10 @@ jobs:
       fail-fast: false
       matrix:
         run:
-          - { name: r5-20-99-on, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a, threats: "true", pop: "20:99" }
-          - { name: r5-40-201-on, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a, threats: "true", pop: "40:201" }
-          - { name: r5-20-101-on, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a, threats: "true", pop: "20:101" }
-          - { name: r5-40-201-off, sha: b8c1117db9833b15898c461811b5e6b0ed25db1a, threats: "false", pop: "40:201" }
+          - { name: r6-20-99-on, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5, threats: "true", pop: "20:99" }
+          - { name: r6-40-201-on, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5, threats: "true", pop: "40:201" }
+          - { name: r6-20-101-on, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5, threats: "true", pop: "20:101" }
+          - { name: r6-40-201-off, sha: 687339b1698d52d14e585f4a2a5938a14bc38ee5, threats: "false", pop: "40:201" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
@@ -97,7 +97,7 @@ jobs:
           POP: ${{ matrix.run.pop }}
         run: |
           set -o pipefail +e
-          timeout 300m dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite arc --days 600 --arc-every 30 --solo false --threats ${{ matrix.run.threats }} --band "${POP%%:*}" --seed "${POP##*:}" 2>&1 | tee arc.txt; rc=$?; echo "arc exit $rc" | tee -a arc.txt; exit $rc
+          timeout 300m dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite arc --days 600 --arc-every 30 --solo false --threats ${{ matrix.run.threats }} --band "${POP%%:*}" --seed "${POP##*:}" --death-detail true 2>&1 | tee arc.txt; rc=$?; echo "arc exit $rc" | tee -a arc.txt; exit $rc
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: "arc-${{ matrix.run.name }}", path: arc.txt }
