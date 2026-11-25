@@ -4,7 +4,14 @@ Branch `era-progression`. This doc covers four things. Section 1 defines the era
 Section 2 gives each era's gates, unlocks and pace. Section 3 lists the edicts the god can issue in each
 era. Section 4 sets how fast the rival factions advance.
 
-Section 5 lists the work left, in order. Section 6 gives the runs that will test it.
+Section 5 lists the work left, in order. Section 6 gives the runs that will test it. Section 7 is a buildable
+spec for the next lane: a town that rebuilds itself as it climbs.
+
+**Core principle.** Progression should be accurate and realistic, which means rebuilding everything over
+time, as real towns do. An era is not only what the town can build next. It is also what the town tears
+down and puts back in the new form: homes, walls, workshops, storage, roads. Wood gives way to stone and
+stone to brick; paths become roads. Sections 1 to 4 decide when an era turns. Section 7 makes the turn show
+in the streets.
 
 Sources are named inline:
 
@@ -223,6 +230,9 @@ The cap is that rule applied to arms. The clock keeps time real, so idling is ne
 
 ## 5. Next, in order
 
+First, in its own lane: **renewal (section 7)**. It is the largest item and the one the player sees.
+The rest, for this lane or the next:
+
 1. **Tune the conditions from CI.** Read the arc runs in section 6, look at how long each era holds on its
    conditions after its research is done, and move the bars. Tune the Housed share first: it decides the
    whole opening.
@@ -289,3 +299,210 @@ dotnet run -c Release --project tools/bench/SimWorld.Bench -- --suite probe --da
 ### Local check
 
 The one local check allowed is the 60-day probe above, run once.
+
+## 7. Renewal: the town rebuilds itself
+
+Status: a spec for a dedicated redevelopment lane. Nothing here is implemented on `era-progression`.
+
+### 7.1 Principle and the question it answers
+
+A real town is never finished. Over a few generations most of its houses, walls, stores and streets are
+pulled down and put back in the materials and forms of the day. Some old things are kept on purpose. A
+settlement here should do the same: across eight eras almost nothing from the founding should still stand,
+except what the town chose to keep.
+
+A UX audit asked whether settlements rebuild their homes as the era's `House_<Era>`. Today they do not.
+`DwellingPlanner` builds each new house in the newest rung the civilization knows, and its own doc says
+"nothing standing is rebuilt" (port, `Building/DwellingPlanner.cs`). Under this spec the answer is yes, and
+the same holds for walls, workshops, storage and roads.
+
+### 7.2 What the port already has
+
+| Piece | What it does today | Where |
+| --- | --- | --- |
+| New houses in the newest rung | A household without a house gets the newest `DwellingDef` the civilization knows | `DwellingPlanner.Plan`, `DwellingUtility.PreferredDwellingDef` |
+| Repair | A missing wall, door or bed of a planned house is planned again, in whatever the town builds with by then | `DwellingPlanner.Repair` |
+| Material upgrade of plans | Wall and door blueprints not yet started switch from wood to a spare metal | `MaterialLadder.UpgradeBlueprints` |
+| Wear | Things left under open sky deteriorate. Buildings do not age. | `Weather/SteadyEnvironmentEffects.cs` |
+| Streets | Three local road terrains, `StreetDirtPath`, `StreetDirtRoad` and `StreetStoneRoad`, painted at map generation from the world road and never upgraded | `TerrainDefs/Terrain_Roads.xml`, `MapGen.GenStep_Roads` |
+| Era of a thing | The era of a buildable def, from its research | `EraAvailability.EraOf`, `EraUnlocks.Buildings` |
+| Dwelling view | Def, rung, footprint, completeness, beds, household, roof | `Map/View/DwellingView.cs` |
+
+The pieces to build on exist. What is missing is the decision to replace something that still stands, and
+a way to do it without putting the household out of doors.
+
+### 7.3 RimWorld grounding
+
+There is little to port.
+
+- **Damage only, no age** (recalled). RimWorld buildings lose hit points only to damage. They do not age,
+  and a player replaces an outdated wall by hand.
+- **Replace in place** (recalled; added around version 1.3). A blueprint of a different stuff can be placed
+  over an existing wall or floor. Builders raise the new frame while the old building stands, and the old
+  one is swapped out when the new one is finished. This is the one mechanism worth porting as it is
+  (step 2 in 7.9).
+- **Item deterioration** (port). Things outdoors wear down, faster when unroofed
+  (`SteadyEnvironmentEffects.UnroofedDeteriorationFactor`). Building wear (7.4) reuses that shape.
+- **Wealth and beauty** (recalled). Room impressiveness and colony wealth reward better materials, but
+  nothing makes a colony renew on its own.
+
+Everything else in this section is **original design**: the drivers, the scores, the pace, heritage, and
+the town acting on its own.
+
+### 7.4 What drives renewal
+
+Each structure the settlement owns gets a renewal score once a day. The highest scores are renewed first,
+within the budget in 7.5.
+
+| Driver | Reads | Effect | Grounding |
+| --- | --- | --- | --- |
+| **Obsolescence** | The form's era (`EraAvailability.EraOf(def)`, or `DwellingDef.era` for a house) against `ResearchManager.CurrentEra`; its stuff against the best the town can afford (`GenStuff.AffordableStuffFor`, `MaterialLadder.BestBuildingMetal`) | The main term. Zero in the current era's form. Rises with each era behind and each step down the material ladder | Original |
+| **Condition** | Hit-point fraction | Below half its hit points, a structure with a newer form available is renewed in the new form, not repaired in the old one. With no newer form, repair stays as it is today | Original; the damage itself is RimWorld's |
+| **Age** | Ticks since built (new `CompBuilt.builtTick`, saved). Past `serviceYears`, the structure wears: it slowly loses hit points, faster unroofed | A small term, so an old form is renewed eventually even in a quiet town | Original; the curve borrows `FinalDeteriorationRate`'s shape |
+| **Crowding** | Household size against the house's beds; storage fill against capacity | Raises homes and stores that are too small. Crowding alone can renew a house within an era, as a bigger house of the same rung | Original |
+| **Wealth and resources** | Stock of the new form's material, after what blueprints and frames already claim (the accounting `MaterialLadder` already does) | A gate, not a term. Nothing is renewed unless its full cost is in store above a reserve | Original |
+| **Damage events** | A structure destroyed by a raid, fire or quake | Rebuilt at once in the current form, through the existing repair path, instead of the old form | Extends `DwellingPlanner.Repair` |
+
+Renewal never outranks the things that keep people alive. The initiative waits while any of these hold:
+
+- someone has no bed;
+- food in store is under 5 days, or under the current era's food condition if that is lower;
+- a raid is on the map.
+
+### 7.5 How fast it happens
+
+The aim is a town that is mostly in its current era's forms by the time it leaves that era, and not much
+sooner. The measure is the **share of structures in the current or previous era's form**:
+
+- about 50% by the middle of an era;
+- at least 80% when the era is left;
+- never 100%, because of heritage (7.6).
+
+The budget that should deliver it, in a new `RenewalTuning`:
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| `PassIntervalTicks` | One day | Renewal is slow, and a daily pass is cheap |
+| `MaxUnderway` | One per 15 citizens, at least one | The shape of `DwellingTuning.MaxUnderway`: a band renews one thing at a time, a city several |
+| `MaxHomesUnderwayShare` | A quarter of homes | No more than a quarter of households live in a house being replaced |
+| `MaterialReserve` | 1.5 × the structure's cost | A renewal never takes the last of a material |
+| `ObsoleteAfterEras` | 1 | A form is due once it is one era behind; two eras behind doubles its score |
+
+A rough check against section 2: a 20-person Bronze town has about 6 houses, 40 wall cells and a few
+workshops. With one structure underway at a time and a house taking 2 to 4 days, its homes turn over in
+about a month of the 90-day Bronze age. The arc runs (section 6) decide whether that is too fast. If it is,
+lower `MaxUnderway`, not the scores.
+
+**Order.** The score decides. Ties break in this order: homes, storage, workshops, walls, roads. People
+notice homes first, and roads are the cheapest thing to leave as they are.
+
+### 7.6 What is kept as heritage
+
+Some old structures are kept on purpose. A heritage structure is repaired in its own form and material,
+never renewed, and wears at half the rate.
+
+- **The founding house.** The first complete dwelling the settlement built.
+- **One exemplar per obsolete rung.** When the last-but-one house of a rung would be renewed, the oldest
+  remaining one is marked heritage instead. The town keeps an old quarter.
+- **Monuments and graves.** Sculptures, graves where the port has them, and anything with a new
+  `building.isMonument` flag.
+- **Places of record.** A structure that a chronicle moment names as its location (`EventLocationView`):
+  the house a ruler was born in, the wall that held a siege.
+- **The god's choice.** A new command marks or unmarks any structure: `GodCommands.SetHeritage(thingId,
+  bool)`.
+
+Heritage is capped at about one structure in ten, so the town is not frozen. Losing a heritage structure to
+damage writes a chronicle line.
+
+### 7.7 Mechanisms and defs touched
+
+| Item | Kind | Notes |
+| --- | --- | --- |
+| `Building/RenewalInitiative.cs` | New | The daily pass: score, budget, plan. A settlement initiative beside `SettlementConstructionInitiative` and `SettlementWorksInitiative` |
+| `Building/RenewalTuning.cs` | New | The constants in 7.5 |
+| `Building/CompBuilt.cs` | New comp | `builtTick` and `isHeritage`, saved. Attached when a frame completes, so no def needs editing |
+| Replace in place | New, in `GenConstruct` and `Frame` | The port of RimWorld's replace. A blueprint may stand on a building of a different def or stuff. When the frame completes, the old building is despawned and the new one spawned, with a fresh `builtTick` |
+| `DwellingPlanner.Renew` | New method | Build the new rung on a free plot along the street, move the household when it is complete (`DwellingUtility.AssignHomes`), then deconstruct the old house. With no free plot, replace in place part by part, walls before beds |
+| `MaterialLadder.UpgradeStanding` | New, beside `UpgradeBlueprints` | Plans replace-in-place blueprints for standing walls and doors whose stuff is below the best the town can afford |
+| `DwellingDef.serviceYears`, `ThingDef.building.serviceYears` | New fields | Default: twice the form era's `intendedYears` |
+| `ThingDef.building.supersededBy` | New optional field | The next form where the era ladder alone does not say it: `StorageHut` to a granary, `WallEarth` to `Wall`. When empty, the next form is the newest def of the same designation category and role |
+| `TerrainDef.renewsTo`, `TerrainDef.era` | New fields on road terrains | `StreetDirtPath` (Sticks and stones) to `StreetDirtRoad` (Agrarian) to `StreetStoneRoad` (Classical). A paved Industrial street needs a new terrain def |
+| `Weather/SteadyEnvironmentEffects` | Extend | Building wear past `serviceYears` |
+| `GodCommands.SetHeritage` | New command | 7.6 |
+
+### 7.8 View data the host needs
+
+Every handle is a defName or a thing id, as the view rule requires.
+
+On `DwellingView`, and on a new `StructureView` for walls, workshops and storage carried in
+`MapViewChunk` and `MapViewDelta`:
+
+- `EraDefName`: the era of the form;
+- `BuiltTick` and `AgeYears`;
+- `Condition`: the hit-point fraction;
+- `IsObsolete`: the form is behind the current era;
+- `IsHeritage`;
+- `Renewal`: `None`, `Planned`, `Underway` or `Replaced`;
+- `ReplacedByThingId` and `ReplacesThingId`, so the host can cross-fade one into the other.
+
+On `EraOutlook`, a `RenewalSummary` for the town:
+
+- per category (homes, storage, workshops, walls, roads): the count, the count in the current era's form,
+  and the count underway;
+- the share in the current or previous form, the 7.5 measure;
+- the heritage count.
+
+In the chronicle:
+
+- a moment when the last non-heritage structure of a rung goes ("The last pit house is pulled down");
+- one letter per era, on its first renewal ("The town begins to rebuild in stone").
+
+With these the host can show an old quarter beside new streets, scaffolding on the house being replaced,
+and the share climbing in the era panel.
+
+### 7.9 Ordered steps and their tests
+
+Each step can ship on its own. Every test runs on a generated map, as `EdictProgressionMapTests` does, and
+every new guard gets a mutation proof.
+
+1. **`CompBuilt` and its Scribe round trip.**
+   - A building finished on tick N reports `builtTick` N after a save and load.
+   - A scenario's starting buildings carry the start tick.
+2. **Replace in place.**
+   - A stone wall blueprint over a wood wall leaves the wood wall standing, and pathing unchanged, until the
+     frame completes. Then exactly one wall stands, in the new stuff.
+   - A cancelled replacement leaves the old wall untouched.
+3. **`MaterialLadder.UpgradeStanding` within the budget.**
+   - With spare stone, wood walls are planned for replacement, at most `MaxUnderway` at once, never taking
+     stock below `MaterialReserve`.
+   - With no spare stone, nothing is planned.
+4. **`DwellingPlanner.Renew`.**
+   - In Bronze, with a free plot, a pit-house household gets a town house and moves in when it is complete.
+     The pit house is deconstructed after the move, never before.
+   - Nobody is without a bed at any sampled tick.
+5. **`RenewalInitiative`: scores and waits.**
+   - Nothing is planned while someone lacks a bed, food is short or a raid is on the map.
+   - Of two obsolete houses, the more crowded is renewed first.
+6. **Heritage.**
+   - The founding house survives a full renewal of its rung.
+   - One exemplar per rung is kept.
+   - A god-marked structure is repaired in its own stuff.
+7. **Wear.**
+   - A structure past `serviceYears` loses hit points, faster unroofed.
+   - A heritage structure loses them at half the rate.
+8. **Roads.**
+   - Entering Agrarian schedules path cells for upgrade to dirt road, through the same budget.
+9. **View fields and chronicle.**
+   - `DwellingView` and `StructureView` carry every field in 7.8.
+   - `RenewalSummary` counts match the map.
+   - The "last pit house" moment is written once.
+10. **Measurement.**
+    - Run the section 6 arcs with renewal on, and report the 7.5 share at mid-era and at each turn.
+    - Tune `MaxUnderway`, not the scores, to land it.
+
+### 7.10 How it meets this lane
+
+- The `Housed` condition counts houses of any rung, so renewal never blocks an era. A later condition could
+  ask for "half the homes in this era's form", but only once step 10 shows renewal gets there unaided.
+- `EraUnlocks.Describe` already lists each era's houses and buildings in the era letter. Renewal makes that
+  list a promise the town keeps.
