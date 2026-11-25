@@ -509,6 +509,8 @@ namespace SimWorld.Tests.Building
             Assert.True(budget < walls.Count);
             Assert.Equal(budget, MaterialLadder.UpgradeStanding(v.Map, RenewalTuning.MaxUnderway(v.Settlement.Citizens.Count(p => !p.Dead))));
             Assert.Equal(budget, Replacements(v.Map));
+            Assert.All(v.Map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint).Where(b => GenConstruct.ThingToReplace(b) != null),
+                b => Assert.Contains(GenConstruct.ThingToReplace(b), walls)); // the free-standing walls, not a house's
             Assert.All(walls, w => Assert.True(w.Spawned)); // every wood wall still stands
             Assert.All(v.Houses, h => Assert.True(h.IsComplete(v.Map))); // and no house wall was touched
             Assert.Equal(0, MaterialLadder.UpgradeStanding(v.Map, 1)); // the budget is full
