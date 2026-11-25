@@ -51,12 +51,58 @@ stores a quadrum.
 
 - `TechLevel.Spacer` / `TechLevel.Archotech` on research projects and eras: enum
   values, never shown by the view or the host.
-- Generic words RimWorld also uses: trait names (too smart, iron-willed, gourmand),
-  mental breaks (sadistic rage, catharsis), interactions (chitchat, deep talk),
-  biomes, "orbital" traders and visitors, IED trap, ancient asphalt, steel, silver,
-  jade, uranium, pemmican.
+- Generic words RimWorld also uses: biomes, "orbital" traders and visitors, IED
+  trap, ancient asphalt, steel, silver, jade, uranium. (Round 2 below revisited the
+  trait, mental-break, interaction and pemmican names this line used to list.)
 - "pawn" in debug output (`Lord.ToString`, the host renderer's status line) and in
   test messages; the player-visible "pawns" in scenario summaries and the rescue
   work-giver label were reworded anyway.
 - `EraDefs` and `EdictDefs` belong to the `era-progression` lane. The only hits
   there are the `Spacer` / `Archotech` tech levels above.
+
+## Round 2 (2026-11-24): system vocabulary
+
+A playtester who knows the source game still recognised its vocabulary: not proper
+names but its coined terms and exact phrasings. Plain words used plainly (Cooking,
+Hunting, Mining, Hauling, Cleaning, Doctor, Research) stay. Area labels are not
+saved, so renaming them needs no save migration; no other renamed text is saved.
+
+| Where | Old | New |
+| --- | --- | --- |
+| Alerts | Minor / Major / Extreme break risk | Low spirits / Near breaking / At breaking point |
+| Alerts, need and stat text | mental break(s), mental break threshold | breakdown(s), breakdown threshold |
+| Alert | Fire in home area | Fire within the town bounds |
+| Areas | Home area / Snow clear / Build roof | Town bounds / Snow shovelling / Roofing |
+| Work columns | Firefight / Patient / Bed rest / Basic | Fire watch / Seek care / Convalesce / Chores |
+| Work columns | Warden / Handling / Constr. / Growing / Plants | Captives / Husbandry / Building / Farming / Felling |
+| Work columns | Smith / Tailor / Art / Craft | Smithing / Tailoring / Artistry / Crafting |
+| Work refusal | X is incapable of firefighting because of being pyromaniac. | X will never take on fire watch, owing to a pyromaniac nature. |
+| Mental breaks | sad wander, hide in room, food binge, insulting spree | aimless grief, shut away, gorging, lashing out |
+| Mental breaks | tantrum, sadistic rage, fire starting spree, berserk | smashing fit, cruel streak, fire-setting frenzy, blood frenzy |
+| Mental breaks | murderous rage, catatonic breakdown, give up and leave | killing grudge, stupor, walking away |
+| Mental states | Mental state: X; social fighting; hiding in room | State of mind: X; brawling; shut away |
+| Thought | catharsis | weight lifted |
+| Needs | recreation, beauty, comfort, outdoors, space | leisure, surroundings, ease, open air, elbow room |
+| Thoughts | recreation-starved etc.; hideous/ugly/pretty/beautiful environment | leisure-starved etc.; ... surroundings |
+| Traits | too smart; industriousness (very industrious, industrious) | overclever; work ethic (tireless, diligent) |
+| Traits | natural mood (sanguine, optimist, pessimist, depressive) | temperament (sunny, hopeful, gloomy, melancholic) |
+| Traits | nerves (iron-willed, steadfast, volatile) | composure (unshakeable, level-headed, brittle) |
+| Interactions | chitchat, deep talk, slight | small talk, heart-to-heart, snub |
+| Jobs | beat fire, put out own fire, tend patient, feed patient | smother fire, put out own flames, treat the sick, feed the sick |
+| Jobs | clear snow, skygaze, social fight, "doing a bill." | shovel snow, watch the sky, brawl, "working an order." |
+| Work givers | tend patients (emergency), X bills, refuel fuelable buildings | treat the sick (urgent), X orders, refuel buildings |
+| Bench commands | bill(s) | work order(s) |
+| Food | simple / fine / lavish meal, pemmican | plain meal / hearty meal / feast platter, trail cake |
+| Items | herbal medicine | herbal salve |
+| Buildings | stonecutter's table, passive cooler | masons' bench, clay cooler |
+| Plants | potato / rice / cotton plant | potato / rice / cotton crop |
+| People | tribesperson, tribespeople | clan member, clansfolk |
+| Stat | bed rest effectiveness | convalescence effectiveness |
+| Storytellers | descriptions | rewritten in each teller's own voice |
+| Host | Break risk; Home; Snow clearing; Bills | Breaking point; Town bounds; Snow shovelling; Work orders |
+
+The terms are banned as whole phrases in `player-text-banned.txt`, so "break",
+"home" and "meal" stay free on their own. Left alone: trait names that are plain
+English (pyromaniac, gourmand, brawler), the "incapable" skill marker in the
+citizen panel's skill list, and job defs with no label, which the host shows as
+their defName spaced out.
