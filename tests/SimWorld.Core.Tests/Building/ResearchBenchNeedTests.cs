@@ -122,7 +122,8 @@ namespace SimWorld.Tests.Building
             int atStart = WorksInitiativeTuning.ResearchBenchesWanted(settlement);
             Assert.Equal(WorksInitiativeTuning.ResearchBenchesWanted(25, eras[0]), atStart);
 
-            CompleteLadderThrough(eras[^2]);
+            // Every era before the second-last learned: the civilization is in the second-last, learning it.
+            CompleteLadderThrough(eras[^3]);
             Assert.Same(eras[^2], manager.CurrentEra);
             Assert.True(WorksInitiativeTuning.ResearchBenchesWanted(settlement) > atStart);
         }
