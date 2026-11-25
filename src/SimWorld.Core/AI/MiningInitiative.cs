@@ -95,8 +95,56 @@ namespace SimWorld.AI
                 float coming = DesignatedCellsYielding(map, need.Key) * perCell;
                 int cells = (int)Math.Ceiling((need.Value - coming) / perCell);
                 if (cells <= 0) continue;
+                int before = room;
                 room = Designate(map, faces, room, rock => rock.def.mineableThing == need.Key, cells);
+                if (room < before || coming > 0f || room <= 0) continue;
+                Thing? tunnel = TunnelFace(map, need.Key);
+                if (tunnel == null) continue;
+                map.designationManager.AddDesignation(new Designation(new LocalTargetInfo(tunnel.Position), DesignationDefOf.Mine));
+                faces.Remove(tunnel);
+                room--;
             }
+        }
+
+        /// <summary>
+        /// The rock to mine next to reach a vein of <paramref name="yield"/> that has no open face: the open face
+        /// nearest, through rock and in cardinal steps, to any cell of such a vein. Null when no vein of it lies
+        /// behind rock a miner can stand beside, or when that face is already marked (the tunnel is under way).
+        /// RimWorld's player mines a path to the ore they want; with no player, the settlement does, one face per
+        /// pass, and each cell mined opens the next. Measured: seed 40/201's only iron lay wholly inside rock and
+        /// the settlement never smelted any (era-arc §13). A face whose removal would bring a roof down is passed
+        /// over for the next nearest.
+        /// </summary>
+        public static Thing? TunnelFace(Map.Map map, ThingDef yield)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (yield == null) throw new ArgumentNullException(nameof(yield));
+            IntVec3? band = SettlementReach.BandCell(map);
+            var seen = new HashSet<IntVec3>();
+            var open = new Queue<IntVec3>();
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                Thing t = buildings[i];
+                if (t.Spawned && t.def.mineable && t.def.mineableThing == yield && seen.Add(t.Position)) open.Enqueue(t.Position);
+            }
+            while (open.Count > 0)
+            {
+                IntVec3 c = open.Dequeue();
+                Thing? rock = WorkGiver_Miner.FirstMineable(c, map);
+                if (rock == null) continue;
+                if (FaceReachable(map, c, band))
+                {
+                    if (map.designationManager.DesignationAt(c, DesignationDefOf.Mine) != null) return null;
+                    if (!RoofCollapseUtility.WouldCollapseRoofIfRemoved(rock)) return rock;
+                }
+                for (int d = 0; d < GenAdj.CardinalDirections.Length; d++)
+                {
+                    IntVec3 next = c + GenAdj.CardinalDirections[d];
+                    if (GenGrid.InBounds(next, map) && WorkGiver_Miner.FirstMineable(next, map) != null && seen.Add(next)) open.Enqueue(next);
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -310,10 +358,11 @@ namespace SimWorld.AI
             var keys = new List<long>();
             IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
             DesignationManager dm = map.designationManager;
+            IntVec3? band = SettlementReach.BandCell(map);
             for (int i = 0; i < buildings.Count; i++)
             {
                 Thing t = buildings[i];
-                if (!t.def.mineable || !t.Spawned || !WorkGiver_Miner.MayBeAccessible(t.Position, map)) continue;
+                if (!t.def.mineable || !t.Spawned || !FaceReachable(map, t.Position, band)) continue;
                 if (dm.DesignationAt(t.Position, DesignationDefOf.Mine) != null) continue;
                 keys.Add(((long)(t.Position - anchor).LengthHorizontalSquared << 32) | (uint)faces.Count);
                 faces.Add(t);
@@ -322,6 +371,25 @@ namespace SimWorld.AI
             var ordered = new List<Thing>(faces.Count);
             for (int i = 0; i < keys.Count; i++) ordered.Add(faces[(int)(keys[i] & 0xFFFFFFFF)]);
             return ordered;
+        }
+
+        /// <summary>
+        /// Whether a miner of the settlement could stand beside the rock on <paramref name="cell"/>: some walkable
+        /// neighbour the band at <paramref name="band"/> can walk to (with no band, a bare map, any walkable
+        /// neighbour). <see cref="WorkGiver_Miner.MayBeAccessible"/> asks only for the walkable neighbour, and a face
+        /// across water from the town took up the marks: measured on a generated medieval map, seven iron cells
+        /// on the far bank stood marked for twelve days while no miner could get to them and nothing else was dug.
+        /// </summary>
+        public static bool FaceReachable(Map.Map map, IntVec3 cell, IntVec3? band)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            for (int j = 0; j < GenAdj.AdjacentCells.Length; j++)
+            {
+                IntVec3 nb = cell + GenAdj.AdjacentCells[j];
+                if (!GenGrid.InBounds(nb, map) || !map.pathGrid.Walkable(nb)) continue;
+                if (band == null || map.reachability.CanReachCells(band.Value, nb)) return true;
+            }
+            return false;
         }
 
         /// <summary>Designates up to <paramref name="wanted"/> of <paramref name="faces"/> that <paramref name="accepts"/>,

@@ -405,13 +405,11 @@ namespace SimWorld.Tests.World
 
             Assert.Equal(without.Draws, with.Draws);
 
-            // And for the shipped player civilization the outcome is identical too, not merely equally
-            // expensive: PlayerCivilization is Industrial, which is at or above the techLevel of every weapon
-            // and apparel def Tribesperson's tags can reach, so the ceiling removes no candidate at all. A
-            // civilization further down the ladder is a different matter and deliberately so — an emergent
-            // TribalCivilization (Neolithic) now gets bows where its founders used to be able to roll a
-            // revolver, which is the rule RimWorld applies and the reason the faction belongs in the request.
-            Assert.Equal(without.Gear, with.Gear);
+            // The outcome is not identical, and deliberately so: the player's ceiling is the era its civilization
+            // is in (FactionAdvancement.PlayerEra), here the first, so where an uncapped founder may roll a
+            // revolver the player's founders get bows. It used to be PlayerCivilization's def's Industrial, which
+            // capped nothing, and a sticks-and-stones band carried revolvers into the Exotic age (era-arc §12.4).
+            Assert.DoesNotContain("Gun_", with.Gear);
         }
 
         // ---- the tiering does not pay for it (spec §11.3) ----

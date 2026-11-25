@@ -16,8 +16,10 @@ namespace SimWorld.Crafting
     /// smelter; there is no player here, the same translation <see cref="StonecutterInitiative"/> made for
     /// cutting stone.
     ///
-    /// <para/><b>Demand, not stockpiling.</b> The only demand is <see cref="MaterialLadder.WeaponStuffWanted"/>:
-    /// what the smithy's weapon bill still has to make, in metal, less what is already on the map. Nothing is
+    /// <para/><b>Demand, not stockpiling.</b> The only demand is <see cref="MaterialLadder.MetalWanted"/>: what
+    /// the smithy's weapon bill and the armoury's crossbow, gun and armour bills (<see cref="Armoury.MetalWanted"/>)
+    /// still have to make, in metal, less what is already on the map. Before the armoury's half was counted, plate,
+    /// helmet and rifle bills stood for years in arc runs with no furnace ever raised (era-arc §13). Nothing is
     /// smelted for its own sake, so no ore is dug and no furnace built until a citizen would carry the result.
     /// Each metal is resolved back through <see cref="MaterialLadder.BestRecipeFor"/> — bronze needs copper and
     /// tin, copper needs copper ore — and each step's bill is sized to the step after it. The ore at the bottom
@@ -25,7 +27,10 @@ namespace SimWorld.Crafting
     /// ingredient.
     ///
     /// <para/><b>One bill per step, on one bench.</b> A step's bill goes on the first built bench that lists its
-    /// recipe, newest technique first; when none is built or under way, the newest researched one is placed —
+    /// recipe, newest technique first; when none is built or under way, the newest researched one the town can
+    /// raise from its own metal is placed (<see cref="MaterialLadder.CanRaise"/>: the electric smelter costs the
+    /// steel it makes, so the bloomery makes the first of it, and <see cref="RaiseNewerBench"/> raises the smelter
+    /// once the steel is spare) —
     /// beside the smithy, so the smith and the smelter share their metal (a bill's ingredients are only searched
     /// for within <see cref="WorkGiver_DoBill.IngredientSearchRadius"/> of its bench), with a small stockpile
     /// that takes the bench's inputs, as <see cref="SettlementWorkshops"/> keeps beside a smithy. Every other
@@ -70,6 +75,7 @@ namespace SimWorld.Crafting
                 if (bench == null) continue;
                 EnsureStock(map, bench);
                 SetBill(bench.GetComp<CompBillGiver>()!, step.Key, step.Value);
+                foreach (ThingDefCountClass product in step.Key.products!) RaiseNewerBench(map, product.thingDef);
             }
             DeleteOtherBills(map, plan);
             PutStockedBillsFirst(map);
@@ -144,7 +150,7 @@ namespace SimWorld.Crafting
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             var plan = new Dictionary<RecipeDef, int>();
-            var deficits = new List<KeyValuePair<ThingDef, int>>(MaterialLadder.WeaponStuffWanted(map));
+            var deficits = new List<KeyValuePair<ThingDef, int>>(MaterialLadder.MetalWanted(map));
             deficits.Sort((a, b) => string.CompareOrdinal(a.Key.defName, b.Key.defName));
             foreach (KeyValuePair<ThingDef, int> want in deficits)
             {
@@ -203,11 +209,39 @@ namespace SimWorld.Crafting
             }
             for (int u = 0; u < users.Count; u++)
             {
-                if (!users[u].IsResearchFinished || GenConstruct.BlueprintDefFor(users[u]) == null) continue;
+                if (!MaterialLadder.CanRaise(map, users[u])) continue;
                 Place(map, users[u]);
                 return null;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Raises the bench of a newer way to make <paramref name="metal"/> than the one being worked, once the
+        /// settlement can afford it (<see cref="MaterialLadder.BenchFor"/>): the electric smelter is built from the
+        /// bloomery's steel, and the bloomery keeps its bill until the smelter stands, when
+        /// <see cref="MaterialLadder.BestRecipeFor(Map.Map, ThingDef, int)"/> moves the step to it. Returns whether a
+        /// bench was placed.
+        /// </summary>
+        public static bool RaiseNewerBench(Map.Map map, ThingDef metal)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            RecipeDef? working = MaterialLadder.BestRecipeFor(map, metal);
+            RecipeDef? newest = MaterialLadder.BestRecipeFor(map, metal, MaterialLadder.ChainDepth, preferBuilt: false);
+            if (working == null || newest == null || ReferenceEquals(working, newest)) return false;
+            if (MaterialLadder.BenchFor(map, newest) != MaterialLadder.BenchState.CanRaise) return false;
+            List<ThingDef> users = UsersNewestFirst(newest);
+            for (int u = 0; u < users.Count; u++)
+            {
+                if (SettlementWorksInitiative.CountBuiltOrPlanned(map, users[u]) > 0) return false;
+            }
+            for (int u = 0; u < users.Count; u++)
+            {
+                if (!MaterialLadder.CanRaise(map, users[u])) continue;
+                Place(map, users[u]);
+                return true;
+            }
+            return false;
         }
 
         /// <summary>The bill-giving benches that list <paramref name="recipe"/>, the newest research first (then

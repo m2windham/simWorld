@@ -109,8 +109,9 @@ namespace SimWorld.Tests.Factions
             Assert.Same(Era("Industrial"), FactionAdvancement.EraOf(tribe));
             Assert.Equal(TechLevel.Medieval, FactionAdvancement.TechLevelOf(tribe));
 
+            // The player does not ride the world's clock: its gear is its own era's (Factions.FactionAdvancement.PlayerEra).
             Assert.Null(FactionAdvancement.EraOf(player));
-            Assert.Equal(player.def.techLevel, FactionAdvancement.TechLevelOf(player));
+            Assert.Equal(FactionAdvancement.PlayerEra()!.techLevel, FactionAdvancement.TechLevelOf(player));
         }
 
         [Fact]
