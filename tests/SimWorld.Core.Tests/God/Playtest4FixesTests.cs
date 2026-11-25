@@ -248,7 +248,8 @@ namespace SimWorld.Tests.God
                 if (next == null) break;
                 List<ResearchProjectDef> startable = Find.ResearchManager.AllProjects
                     .Where(p => p.CanStartNow && !EraPacing.IsPastFrontier(p, frontier)).ToList();
-                if (startable.Any(gate.Contains))
+                bool kitLeft = startable.Any(p => ResearchAgenda.Tier(p, frontier, gate) == 0);
+                if (!kitLeft && startable.Any(gate.Contains))
                 {
                     Assert.True(gate.Contains(next), $"step {steps}: {next.defName} picked while gate work {string.Join(", ", startable.Where(gate.Contains).Select(p => p.defName))} could start");
                     if (startable.Any(p => !gate.Contains(p) && p.baseCost < next.baseCost)) offGateCheaper++;

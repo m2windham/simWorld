@@ -89,18 +89,21 @@ namespace SimWorld.Tests.Research
         /// <summary>The policy itself, asserted as a relation against whatever the database holds rather than
         /// against a named project: endless ages are minted into the same database while a game runs, so any
         /// test naming "the cheapest project" by defName would rot the first time one opened. Cheapest among
-        /// its own kind: the era gate's work (<see cref="ResearchAgenda.GateWork"/>) goes before side projects,
-        /// so a cheaper side project may wait behind gate work, never behind another side project.</summary>
+        /// its own kind (<see cref="ResearchAgenda.Tier"/>): earlier eras' leftovers, then the era gate's work,
+        /// then side projects, so a cheaper side project may wait behind gate work, never behind another side
+        /// project.</summary>
         [Fact]
         public void Nothing_startable_is_cheaper_than_what_the_agenda_picked()
         {
             ResearchProjectDef next = ResearchAgenda.NextProject()!;
-            HashSet<ResearchProjectDef> gate = ResearchAgenda.GateWork(EraPacing.FrontierEra());
+            var frontier = EraPacing.FrontierEra();
+            HashSet<ResearchProjectDef> gate = ResearchAgenda.GateWork(frontier);
+            int tier = ResearchAgenda.Tier(next, frontier, gate);
 
-            List<ResearchProjectDef> startable = AllProjects.Where(p => p.CanStartNow).ToList();
+            List<ResearchProjectDef> startable = AllProjects.Where(p => p.CanStartNow && !EraPacing.IsPastFrontier(p, frontier)).ToList();
             Assert.NotEmpty(startable);
-            if (startable.Any(gate.Contains)) Assert.Contains(next, gate);
-            foreach (ResearchProjectDef candidate in startable.Where(p => gate.Contains(p) == gate.Contains(next)))
+            Assert.DoesNotContain(startable, p => ResearchAgenda.Tier(p, frontier, gate) < tier);
+            foreach (ResearchProjectDef candidate in startable.Where(p => ResearchAgenda.Tier(p, frontier, gate) == tier))
             {
                 Assert.True(candidate.baseCost >= next.baseCost,
                     candidate.defName + " (" + candidate.baseCost + ") is startable and cheaper than the chosen "

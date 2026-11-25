@@ -68,13 +68,9 @@ namespace SimWorld.Tests.Building
                     if (!GenGrid.InBounds(new IntVec3(block.minX - 1, 0, block.minZ - 1), map) || !GenGrid.InBounds(new IntVec3(block.maxX + 1, 0, block.maxZ + 1), map)) continue;
                     if (block.ExpandedBy(1).Cells.Any(c => map.thingGrid.ThingsListAt(c).Any(t => t is Pawn))) continue;
                     if (block.ExpandedBy(1).Cells.Any(c => map.roofGrid.Roofed(c))) continue;
-                    if (block.ExpandedBy(7).Cells.Any(c => !GenGrid.InBounds(c, map) || map.roofGrid.Roofed(c))) continue;
-                    // Nothing within a roof's reach outside the block may hold its roof up: only what a test builds.
-                    foreach (IntVec3 c in block.ExpandedBy(7).Cells)
-                    {
-                        Thing? edifice = map.edificeGrid[c];
-                        if (edifice != null && edifice.def.Fillage == FillCategory.Full) edifice.Destroy(DestroyMode.Vanish);
-                    }
+                    // The roof's reach runs along the roof, so only the ring just outside could hold the block's roof
+                    // up; nothing there may, so what holds it is only what a test builds.
+                    if (block.ExpandedBy(1).Cells.Any(c => !block.Contains(c) && map.edificeGrid[c] is Thing e && e.def.Fillage == FillCategory.Full)) continue;
                     foreach (IntVec3 c in block.Cells)
                     {
                         foreach (Thing t in map.thingGrid.ThingsListAt(c).ToList()) t.Destroy(DestroyMode.Vanish);
@@ -135,8 +131,10 @@ namespace SimWorld.Tests.Building
         {
             (Settlement settlement, CoreMap map, List<Pawn> citizens) = Opened("roof-cause-house");
             CellRect hall = ClearedBlock(map, citizens, 9);
-            RoofWithRock(map, hall);
             CellRect footprint = hall.ContractedBy(2);
+            // Rock over the house alone: its walls are all that hold it, so it stands until the last goes and then
+            // falls whole. Over a wider hall the first corners to fall leave rock that holds the middle up.
+            RoofWithRock(map, footprint);
             List<Thing> walls = Ring(map, footprint, citizens[0].Faction!);
             SettlementConstructionInitiative.EnsureCompound(settlement, map);
             SettlementCompound compound = map.settlementCompound!;

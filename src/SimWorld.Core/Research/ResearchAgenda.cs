@@ -92,7 +92,8 @@ namespace SimWorld.Research
         /// Agrarian age stood at 90% with every condition met while the agenda swept up cheaper leaves, and
         /// Selective breeding (600 points, a spine project) waited until the tester chose it by hand. Within the
         /// gate's own work the choice is still cheapest-first, and once it is done the agenda returns to the
-        /// whole shelf.
+        /// whole shelf. What is left of earlier eras still goes first (<see cref="Tier"/>): a band finishes its
+        /// starting kit before it studies the next age.
         /// </summary>
         public static ResearchProjectDef? NextProject()
         {
@@ -100,20 +101,28 @@ namespace SimWorld.Research
             EraDef? frontier = EraPacing.FrontierEra();
             HashSet<ResearchProjectDef> gate = GateWork(frontier);
             ResearchProjectDef? best = null;
-            bool bestOnGate = false;
+            int bestTier = int.MaxValue;
             for (int i = 0; i < all.Count; i++)
             {
                 ResearchProjectDef candidate = all[i];
                 if (!candidate.CanStartNow) continue;
                 if (EraPacing.IsPastFrontier(candidate, frontier)) continue;
-                bool onGate = gate.Contains(candidate);
-                if (best == null || (onGate && !bestOnGate) || (onGate == bestOnGate && IsCheaperThan(candidate, best)))
+                int tier = Tier(candidate, frontier, gate);
+                if (best == null || tier < bestTier || (tier == bestTier && IsCheaperThan(candidate, best)))
                 {
                     best = candidate;
-                    bestOnGate = onGate;
+                    bestTier = tier;
                 }
             }
             return best;
+        }
+
+        /// <summary>The order the agenda works in: what is left of the eras before the frontier (the starting
+        /// kit, priced at its own era's lower rate), then the frontier's gate work, then the rest.</summary>
+        public static int Tier(ResearchProjectDef project, EraDef? frontier, HashSet<ResearchProjectDef> gate)
+        {
+            if (frontier != null && project.era != null && project.era.order < frontier.order) return 0;
+            return gate.Contains(project) ? 1 : 2;
         }
 
         /// <summary>
