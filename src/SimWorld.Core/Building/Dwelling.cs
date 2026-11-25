@@ -67,6 +67,36 @@ namespace SimWorld.Building
         /// by <see cref="DwellingUtility.AssignHomes"/>.</summary>
         public int householdId = Pawn_RelationsTracker.None;
 
+        /// <summary>This house's handle, unique on its map and never reused (<see cref="SettlementCompound.EnsureDwellingIds"/>).
+        /// 0 until it is given one.</summary>
+        public int id;
+
+        /// <summary>The tick every part of the plan first stood (<see cref="IsComplete"/>), or
+        /// <see cref="Building.UnknownBuiltTick"/> while it is still going up. Renewal reads its age from this.</summary>
+        public int completedTick = Building.UnknownBuiltTick;
+
+        /// <summary>Renewal (<c>docs/design/era-progression.md</c> §7): the house being built to replace this one,
+        /// by <see cref="id"/>, or 0. Set by <see cref="DwellingPlanner.Renew"/>.</summary>
+        public int replacedById;
+
+        /// <summary>The house this one is being built to replace, by <see cref="id"/>, or 0. Cleared once the old
+        /// house is gone.</summary>
+        public int replacesId;
+
+        /// <summary>Its household has moved into the house that replaces it, and it is coming down. Nothing of it
+        /// is repaired, nobody is given it, and once nothing of it stands it is struck off.</summary>
+        public bool beingDemolished;
+
+        /// <summary>Kept on purpose (§7.6): never renewed, and repaired in its own wall and stuff
+        /// (<see cref="heritageWall"/>), not the era's.</summary>
+        public bool isHeritage;
+
+        /// <summary>What a heritage house's walls are built of, taken from a standing wall when it was marked, so a
+        /// lost wall goes back as it was. Null: the plan's own choice, as for any house.</summary>
+        public ThingDef? heritageWall;
+
+        public ThingDef? heritageWallStuff;
+
         [Unsaved] private HashSet<IntVec3>? interior;
 
         /// <summary>For Scribe.</summary>
@@ -249,6 +279,14 @@ namespace SimWorld.Building
             Scribe_Values.Look(ref r, "rot");
             rot = new Rot4(r);
             Scribe_Values.Look(ref householdId, "householdId", Pawn_RelationsTracker.None);
+            Scribe_Values.Look(ref id, "id", 0);
+            Scribe_Values.Look(ref completedTick, "completedTick", Building.UnknownBuiltTick);
+            Scribe_Values.Look(ref replacedById, "replacedById", 0);
+            Scribe_Values.Look(ref replacesId, "replacesId", 0);
+            Scribe_Values.Look(ref beingDemolished, "beingDemolished", false);
+            Scribe_Values.Look(ref isHeritage, "isHeritage", false);
+            Scribe_Defs.Look(ref heritageWall, "heritageWall");
+            Scribe_Defs.Look(ref heritageWallStuff, "heritageWallStuff");
             interior = null;
         }
     }
@@ -354,6 +392,7 @@ namespace SimWorld.Building
             if (settlement == null) throw new ArgumentNullException(nameof(settlement));
             if (map == null) throw new ArgumentNullException(nameof(map));
 
+            map.settlementCompound?.EnsureDwellingIds();
             SortedDictionary<int, int> households = Households(settlement);
             IReadOnlyList<Dwelling> dwellings = DwellingsOn(map);
             var housed = new HashSet<int>();
@@ -363,6 +402,8 @@ namespace SimWorld.Building
                 if (d.householdId == Pawn_RelationsTracker.None) continue;
                 if (!households.ContainsKey(d.householdId) || !housed.Add(d.householdId)) d.householdId = Pawn_RelationsTracker.None;
             }
+
+            MoveIntoReplacements(map);
 
             var waiting = new List<int>();
             foreach (int household in households.Keys)
@@ -374,8 +415,43 @@ namespace SimWorld.Building
             for (int i = 0; i < dwellings.Count && next < waiting.Count; i++)
             {
                 Dwelling d = dwellings[i];
-                if (d.householdId == Pawn_RelationsTracker.None && d.IsComplete(map)) d.householdId = waiting[next++];
+                if (d.householdId == Pawn_RelationsTracker.None && d.IsComplete(map) && !IsSpokenFor(map, d)) d.householdId = waiting[next++];
             }
+        }
+
+        /// <summary>
+        /// Renewal's move (<c>docs/design/era-progression.md</c> §7.4): a household whose new house is finished moves
+        /// into it in one step, and only then is the old one marked to come down. So it is never without a house:
+        /// until the move it keeps the old one, repaired as any other, and after it has the new one.
+        /// </summary>
+        private static void MoveIntoReplacements(Map.Map map)
+        {
+            IReadOnlyList<Dwelling> dwellings = DwellingsOn(map);
+            for (int i = 0; i < dwellings.Count; i++)
+            {
+                Dwelling old = dwellings[i];
+                if (old.replacedById == 0 || old.beingDemolished) continue;
+                Dwelling? replacement = map.settlementCompound!.DwellingById(old.replacedById);
+                if (replacement == null)
+                {
+                    old.replacedById = 0;
+                    continue;
+                }
+                if (!replacement.IsComplete(map)) continue;
+                if (replacement.householdId == Pawn_RelationsTracker.None) replacement.householdId = old.householdId;
+                old.householdId = Pawn_RelationsTracker.None;
+                old.beingDemolished = true;
+            }
+        }
+
+        /// <summary>Whether <paramref name="d"/> is not free for a household waiting for a house: an old house
+        /// being replaced or pulled down, or a new one built for a household that has not moved in yet.</summary>
+        internal static bool IsSpokenFor(Map.Map map, Dwelling d)
+        {
+            if (d.replacedById != 0 || d.beingDemolished) return true;
+            if (d.replacesId == 0) return false;
+            Dwelling? old = map.settlementCompound?.DwellingById(d.replacesId);
+            return old != null && !old.beingDemolished;
         }
 
         /// <summary>How many of <paramref name="settlement"/>'s citizens have a bed in their own household's
@@ -396,7 +472,18 @@ namespace SimWorld.Building
         }
 
         /// <summary>Dwellings planned, finished or not: a household with a house going up does not want another.</summary>
-        public static int CountBuiltOrPlanned(Map.Map map) => DwellingsOn(map).Count;
+        public static int CountBuiltOrPlanned(Map.Map map)
+        {
+            // A household's old house and the one replacing it are one home between them, and a house coming down
+            // is nobody's (renewal).
+            int n = 0;
+            IReadOnlyList<Dwelling> dwellings = DwellingsOn(map);
+            for (int i = 0; i < dwellings.Count; i++)
+            {
+                if (dwellings[i].replacedById == 0 && !dwellings[i].beingDemolished) n++;
+            }
+            return n;
+        }
 
         /// <summary>Dwellings not yet finished.</summary>
         public static int CountUnderway(Map.Map map)
@@ -475,6 +562,15 @@ namespace SimWorld.Building
             {
                 case DwellingPartKind.Wall:
                 {
+                    // A heritage house is put back as it was built (§7.6), while the stuff can be had. Wood always
+                    // can: a builder fells a tree for a blueprint that wants logs, so it is not held in stock first.
+                    if (dwelling.isHeritage && dwelling.heritageWall != null)
+                    {
+                        if (!dwelling.heritageWall.MadeFromStuff) return (dwelling.heritageWall, null);
+                        return (dwelling.heritageWall, ReferenceEquals(dwelling.heritageWallStuff, StuffDefOf.WoodLog)
+                            ? StuffDefOf.WoodLog
+                            : GenStuff.AffordableStuffFor(map, dwelling.heritageWall, dwelling.heritageWallStuff));
+                    }
                     ThingDef wall = dwelling.def.wallDef ?? StoneWallMaterials.PreferredWallDef(map);
                     ThingDef? stuff = null;
                     // Only the rung's own stuff, and only when it is on hand: a plain wall otherwise stays wood, so

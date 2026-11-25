@@ -39,7 +39,8 @@ namespace SimWorld.Tests.Work
             Assert.Empty(Content.Result.Errors);
             Assert.Equal(12, DefDatabase<SkillDef>.DefCount);
             Assert.Equal(20, DefDatabase<WorkTypeDef>.DefCount);
-            // 44: the early-heat lane added ConstructDeliverResourcesToShells in its own
+            // 45: the renewal lane added DeconstructRenewal in its own WorkGiverDefs/WorkGivers_Renewal.xml.
+            // Before that, 44 — the early-heat lane added ConstructDeliverResourcesToShells in its own
             // WorkGiverDefs/WorkGivers_Shells.xml. Before that, 43 — the shelter lane added Flick (RimWorld's own BasicWorker giver) in its own
             // WorkGiverDefs/WorkGivers_Flick.xml. Before that, 42 — the temperature lane added Refuel (RimWorld's own Hauling giver) in its own
             // WorkGiverDefs/WorkGivers_Refuel.xml and BuildRoofs (RimWorld's own Construction giver) in its own
@@ -53,7 +54,7 @@ namespace SimWorld.Tests.Work
             // which had been a WorkGiver_Pending placeholder since there was no Corpse class for it to find.
             // Before that, 28 — the capture loop (system 12: Factions) adding WardenAttemptRecruit and wiring
             // WardenFeed. Work/** owns none of that content; only this literal count moves.
-            Assert.Equal(44, DefDatabase<WorkGiverDef>.DefCount);
+            Assert.Equal(45, DefDatabase<WorkGiverDef>.DefCount);
         }
 
         [Fact]

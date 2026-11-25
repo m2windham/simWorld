@@ -506,3 +506,84 @@ every new guard gets a mutation proof.
   ask for "half the homes in this era's form", but only once step 10 shows renewal gets there unaided.
 - `EraUnlocks.Describe` already lists each era's houses and buildings in the era letter. Renewal makes that
   list a promise the town keeps.
+
+### 7.11 Decisions taken building it (lane `renewal`)
+
+Choices the spec left open, recorded as they were made, in build order.
+
+- **Step 1: the built tick lives on `Building`, not in a `CompBuilt`.** Comps are rebuilt from `def.comps` on
+  every load (`ThingWithComps.InitializeComps`), so a comp attached at run time would vanish after a save, and
+  listing it would mean editing every building def. `Building.builtTick` and `Building.isHeritage` are saved
+  fields every building carries. A building's tick is set when it first spawns: a finished frame, or map
+  generation and a scenario's start. A save from before the field loads as `UnknownBuiltTick` (-1).
+- **Step 2: replace in place covers walls only.** `GenConstruct.ReplaceTag` reads the family off what the port
+  already knows (`StoneWallMaterials.IsWall`, the earth bank) instead of adding RimWorld's `replaceTags` to
+  content. Doors are left out: a door's frame is impassable here, so replacing a house's door would shut its
+  household out until it was finished. The replaced building gives back what deconstructing it would, dropped
+  beside the cell rather than inside the new wall. Both buildings are destroyed with `WillReplace`, so the cell
+  never stops holding the roof. A site's target is read off the map (`GenConstruct.ThingToReplace`: a site on an
+  edifice is always a replacement), so a save carries nothing new and either spawn order on load leaves the old
+  building in the edifice slot.
+- **Step 3 was built after the homes.** Steps 4 to 6 (homes) were built before step 3 (`UpgradeStanding`), since a
+  house renewed is what the player sees first.
+- **Step 4: new before old, and only on a free plot.** `DwellingPlanner.Renew` lays the new rung on the first free
+  plot (`TryFindPlot`), linked to the old house both ways by a new `Dwelling.id`. The household keeps the old house,
+  repaired as before, until every part of the new one stands; `DwellingUtility.AssignHomes` (still the one writer of
+  `householdId`) then moves it in one step and marks the old house `beingDemolished`. With no free plot, renewal
+  waits: the spec's fallback, replacing in place part by part, is not built in this lane.
+- **Demolition is RimWorld's deconstruct designation, placed by the settlement.** The player's deconstruct giver
+  works only the player's marks, so a new `WorkGiver_DeconstructRenewal` (`WorkGivers_Renewal.xml`, Construction,
+  `priorityInType` 80) works the settlement's own, below finishing frames (95) and the player's marks (110). The
+  player switching the settlement's deconstruct initiative off stops it.
+- **The old roof is lifted when demolition starts.** The port has no no-roof area or roof-removal job (RimWorld's
+  way, recalled), and a roof whose last wall goes falls on whoever is under it. So the roof and its build-roof
+  marks over the old footprint are cleared at once. Once nothing built stands on the footprint, the house is struck
+  off the plan, which frees its plot.
+- **Ids are given lazily.** Planners and tests add dwellings to the compound directly; every pass that reads ids
+  calls `SettlementCompound.EnsureDwellingIds` first, in plan order, so ids are the same on every replay and load.
+- **Step 5: the waits, the budget and the score.** `RenewalInitiative` runs inside the construction pass, once a
+  day. It waits while built beds are fewer than living citizens, while stored food (the
+  `EraCondition_FoodStores` reading) is under 5 days or the era's own food bar if lower, and while a pawn of a
+  faction hostile to the settlement is up on the map. Its budget is the spec's (`MaxUnderway` one per 15 citizens,
+  a quarter of homes), and it also waits while `DwellingTuning.MaxUnderway` houses are already going up, so new
+  houses for households without one come first. The score is eras behind (once due), crowding into a rung with
+  more beds, walls under half their hit points, and a little age; ties go to the older house. One renewal is
+  started per pass.
+- **The material gate skips wood.** The reserve rule (1.5 times the new house's cost, over what sites already
+  claim, `MaterialLadder.Spare`) holds for every material except logs: builders fell a tree for a blueprint that
+  wants wood (`WorkGiver_ConstructChopWood`), and no one keeps a woodpile, so gating on logs would stall every
+  wooden rung. Doors and beds are priced in their default stuff: their stuff is picked at placement from what lies
+  on hand and falls back to the default, so pricing them in what was on hand let every part claim the same few
+  steel bars and no house looked affordable.
+- **Step 6: the founding house is the first house finished.** `DwellingPlanner` stamps each dwelling's
+  `completedTick` the pass it is first whole; the first one stamped becomes `SettlementCompound.foundingDwellingId`
+  and is marked heritage on the spot. A save from before the field marks the first finished house it sees.
+- **The exemplar is taken when a rung is down to two.** Before renewal starts on a house whose rung has at most two
+  unreplaced houses left and none kept, the oldest of them (lowest id) is marked heritage instead; if that is the
+  house picked, the next candidate goes. The cap (one structure in ten, counted over every faction building on the
+  map, at least one) is checked before marking; at the cap a rung is renewed out entirely.
+- **A kept house remembers its wall.** Marking a house copies the def and stuff of its first standing wall onto the
+  dwelling (`heritageWall`, `heritageWallStuff`), so a lost wall is put back as it was rather than in the era's
+  wall. Wood is always used as remembered (a tree can be felled for it); any other stuff only while a wall's worth
+  is on hand, else the era's affordable stuff, so a kept house never waits forever on a stone the map has lost.
+- **The god's mark is per house.** `GodCommands.SetHeritage(thingId, bool)` takes any building's id; on a house it
+  marks the whole dwelling. It refuses a house already being replaced and a mark past the cap. Unmarking frees the
+  house for renewal and for the era's repairs. Chronicle lines are free text: "The town begins to rebuild in the
+  forms of ..." once per era, and "The last ... is pulled down" when a rung's last unkept house goes.
+- **Step 9: renewal is shown on the house, not the Thing.** `DwellingView` gains `DwellingId` (the dwelling's own
+  id: a house is a plan of many Things, so it has no thing id), `EraDefName`, `BuiltTick`, `AgeYears`, `Condition`,
+  `IsObsolete`, `IsHeritage`, `Renewal` (`None`, `Planned`, `Underway` or `Replaced`, as a string like the
+  snapshot's other stages) and `ReplacedByDwellingId` / `ReplacesDwellingId`, the pair a host cross-fades between.
+  The per-building fields of 7.8 (`StructureView` in chunks and deltas) are not built in this lane.
+- **The era panel's measure is `EraOutlook.Renewal`.** `RenewalSummary` counts homes (by their rung's era) and,
+  outside houses, storage huts, benches that take bills and walls (by `EraAvailability.EraOf`, the era of the
+  research that unlocks them; none means the first era). `Share` is current-or-previous-era structures over all,
+  7.5's measure. It also carries the heritage count and the reason renewal is waiting. Roads are not counted.
+- **Step 3: standing walls are renewed a stretch at a time, after the homes.** `MaterialLadder.UpgradeStanding` runs
+  in the same daily pass, under the same waits, after the house pass. It plans a replace-in-place blueprint over each
+  of the settlement's own walls outside any house whose hit points are below the wall the town would raise today
+  (the era's stone, else a spare bulk metal), heritage walls excepted, in map order. Its budget is
+  `WallCellsPerStructure` (8, the port's own figure) wall cells per unit of `RenewalTuning.MaxUnderway`, counted
+  over replacements already standing, separate from the homes' budget. Each wall needs the reserve (1.5 times its
+  cost, spare over other sites' claims) before it is planned. A cell whose ground cannot bear the new wall is
+  skipped. House walls are left to the house's renewal.

@@ -22,8 +22,20 @@ namespace SimWorld.Map.View
         internal DwellingView(
             string defName, string label, int rung, IntVec3 occupiedMin, IntVec2 occupiedSize, Rot4 rotation,
             bool isComplete, int bedsStanding, int bedsPlanned, int? householdId, string? householdName,
-            float? indoorTemperature, string? roofDefName)
+            float? indoorTemperature, string? roofDefName,
+            int dwellingId, string? eraDefName, int builtTick, float ageYears, float condition, bool isObsolete,
+            bool isHeritage, string renewal, int? replacedByDwellingId, int? replacesDwellingId)
         {
+            DwellingId = dwellingId;
+            EraDefName = eraDefName;
+            BuiltTick = builtTick;
+            AgeYears = ageYears;
+            Condition = condition;
+            IsObsolete = isObsolete;
+            IsHeritage = isHeritage;
+            Renewal = renewal;
+            ReplacedByDwellingId = replacedByDwellingId;
+            ReplacesDwellingId = replacesDwellingId;
             DefName = defName;
             Label = label;
             Rung = rung;
@@ -86,6 +98,43 @@ namespace SimWorld.Map.View
         /// constructed roof. What is actually laid is in <see cref="MapViewSnapshot.Roofs"/>.</summary>
         public string? RoofDefName { get; }
 
+        // ---- renewal (docs/design/era-progression.md §7.8) ----
+
+        /// <summary>This house's handle, unique on the map and never reused. <see cref="ReplacedByDwellingId"/> and
+        /// <see cref="ReplacesDwellingId"/> name houses by it. A house is a plan, not one Thing, so its handle is its
+        /// own id rather than a thing id. 0 for a house planned this very pass, until the next.</summary>
+        public int DwellingId { get; }
+
+        /// <summary>The era of the house's form (<c>DwellingDef.era</c>), as an <c>EraDef</c> defName.</summary>
+        public string? EraDefName { get; }
+
+        /// <summary>The game tick every part of the house first stood, or -1 while it is still going up.</summary>
+        public int BuiltTick { get; }
+
+        /// <summary>Years since <see cref="BuiltTick"/>; 0 while it is still going up.</summary>
+        public float AgeYears { get; }
+
+        /// <summary>Its walls' hit points over their most, 0-1 (1 with no wall standing).</summary>
+        public float Condition { get; }
+
+        /// <summary>The form is behind the era the town is in, so renewal will replace it in time.</summary>
+        public bool IsObsolete { get; }
+
+        /// <summary>Kept on purpose: repaired in its own form, never renewed.</summary>
+        public bool IsHeritage { get; }
+
+        /// <summary>What renewal is doing to it: <c>None</c>, <c>Planned</c> (its replacement is laid out),
+        /// <c>Underway</c> (its replacement is going up and its household still lives here) or <c>Replaced</c> (its
+        /// household has moved out and it is coming down).</summary>
+        public string Renewal { get; }
+
+        /// <summary>The house being built to replace this one, by <see cref="DwellingId"/>, or null.</summary>
+        public int? ReplacedByDwellingId { get; }
+
+        /// <summary>The house this one is being built to replace, by <see cref="DwellingId"/>, or null; cleared once
+        /// the old one is gone. With <see cref="ReplacedByDwellingId"/>, what the host cross-fades between.</summary>
+        public int? ReplacesDwellingId { get; }
+
         internal static DwellingView Of(SimWorld.Map.Map map, Dwelling d)
         {
             int? household = d.householdId == Pawn_RelationsTracker.None ? (int?)null : d.householdId;
@@ -102,7 +151,17 @@ namespace SimWorld.Map.View
                 household,
                 household == null ? null : God.View.CitizenLine.HouseholdNameOf(household.Value),
                 IndoorTemperatureOf(map, d),
-                d.def.roofDef?.defName);
+                d.def.roofDef?.defName,
+                d.id,
+                d.def.era?.defName,
+                d.completedTick,
+                d.completedTick < 0 ? 0f : (float)(Sim.Find.TickManager.TicksGame - d.completedTick) / Sim.GenDate.TicksPerYear,
+                RenewalInitiative.WallCondition(map, d),
+                RenewalInitiative.IsObsolete(d.def),
+                d.isHeritage,
+                RenewalInitiative.StageOf(map, d).ToString(),
+                d.replacedById == 0 ? (int?)null : d.replacedById,
+                d.replacesId == 0 ? (int?)null : d.replacesId);
         }
 
         /// <summary>The room at the plan's first bed, the cell <see cref="Dwelling.Interior"/> floods from.</summary>

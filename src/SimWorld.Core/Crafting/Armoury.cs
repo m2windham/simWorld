@@ -90,18 +90,21 @@ namespace SimWorld.Crafting
             recipe?.products != null && recipe.products.Count == 1 && recipe.products[0].thingDef != null
             && IsRangedWeapon(recipe.products[0].thingDef);
 
-        /// <summary>Whether every ingredient of <paramref name="recipe"/> has some allowed def lying on the map or
-        /// within the settlement's reach (<see cref="MaterialLadder.CanGet"/>: a vein, a smelting chain).</summary>
+        /// <summary>Whether every ingredient of <paramref name="recipe"/> has some allowed def lying on the map, held
+        /// in the settlement's ledger (which <c>Economy.SettlementBillStock</c> issues to a standing bill's bench),
+        /// or within the settlement's reach (<see cref="MaterialLadder.CanGet"/>: a vein, a smelting chain).</summary>
         public static bool IngredientsInReach(Map.Map map, RecipeDef recipe)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (recipe.ingredients == null) return true;
+            SimWorld.World.Settlement? settlement = HuntingInitiative.SettlementFor(map);
             for (int i = 0; i < recipe.ingredients.Count; i++)
             {
                 bool any = false;
                 foreach (ThingDef def in recipe.ingredients[i].filter.AllowedThingDefs)
                 {
-                    if (MaterialLadder.OnMap(map, def) > 0 || MaterialLadder.CanGet(map, def)) { any = true; break; }
+                    if (MaterialLadder.OnMap(map, def) > 0 || (settlement?.StoreCountOf(def) ?? 0) > 0
+                        || MaterialLadder.CanGet(map, def)) { any = true; break; }
                 }
                 if (!any) return false;
             }

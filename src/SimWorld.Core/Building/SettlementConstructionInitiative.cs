@@ -130,6 +130,7 @@ namespace SimWorld.Building
             bool dormitoryCovered = citizenCount > 0
                 && CountBuiltOrPlanned(map, ConstructionThingDefOf.Bed) + DwellingUtility.HousedCitizens(settlement, map) >= citizenCount;
             DwellingPlanner.Plan(settlement, map, dormitoryCovered);
+            RenewalInitiative.TickSettlement(settlement, map);
             SettlementClimate.Tick(settlement, map);
 
             List<Need> needs = ComputeNeeds(settlement, map);

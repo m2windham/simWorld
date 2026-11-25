@@ -92,7 +92,11 @@ namespace SimWorld.Building
             // Frame.def.category is ThingCategory.Frame, not Building, so Thing.SpawnSetup's own
             // def.IsEdifice check (which only ever looks at ThingCategory.Building) never fires for it;
             // register manually against what the *finished* building would occupy instead.
-            if (EntityToBuild.IsEdifice) map.edificeGrid.Register(this);
+            // A replacement (GenConstruct.ThingToReplace) goes up while the building it replaces still stands:
+            // that building keeps the cell's edifice slot, its walls and its roof support until this frame is
+            // finished. On a load the two may spawn in either order; the building spawning second takes the slot
+            // back (EdificeGrid.Register overwrites), and this frame's DeRegister only clears a slot it holds.
+            if (EntityToBuild.IsEdifice && !(map.edificeGrid[Position] is Building)) map.edificeGrid.Register(this);
         }
 
         public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
@@ -110,10 +114,15 @@ namespace SimWorld.Building
             IntVec3 pos = Position;
             Rot4 rot = Rotation;
             ThingDef built = EntityToBuild;
+            Building? replaced = GenConstruct.ThingToReplace(this);
             // WillReplace, not Vanish: the real Building spawns at this exact cell a few lines below, in the
             // same moment — roof-collapse support checking (system 16: Building) must not read the fraction
             // of a call between "Frame gone" and "Building spawned" as this cell's support genuinely lost.
             Destroy(DestroyMode.WillReplace);
+            // Replace in place (RimWorld 1.3's replace, recalled): the old building is taken down only now, in the
+            // same moment the new one goes up, and gives back what deconstructing it would. WillReplace for the
+            // same reason as the frame's: the cell never stops holding the roof.
+            if (replaced != null) AI.JobDriver_Deconstruct.Deconstruct(replaced, DestroyMode.WillReplace, DropCellBeside(map, pos));
 
             Things.Thing building = ThingMaker.MakeThing(built, Stuff);
             // RimWorld hands the frame's faction on (thing.SetFactionDirect(Faction)), and the frame has its
@@ -129,6 +138,21 @@ namespace SimWorld.Building
             // (neither of which ever reaches this method) is never marked.
             AutoHomeAreaMaker.Notify_BuildingSpawned(building);
             return building;
+        }
+
+        /// <summary>The first cell beside <paramref name="pos"/>, cardinal first, that a stack can lie on: where a
+        /// replaced building's leavings go, since the new building takes its cell.</summary>
+        private static IntVec3 DropCellBeside(Map.Map map, IntVec3 pos)
+        {
+            foreach (IntVec3 c in GenAdj.CellsAdjacentCardinal(pos))
+            {
+                if (GenGrid.InBounds(c, map) && GenGrid.Standable(c, map) && map.edificeGrid[c] == null) return c;
+            }
+            foreach (IntVec3 c in GenAdj.CellsAdjacent8Way(pos))
+            {
+                if (GenGrid.InBounds(c, map) && GenGrid.Standable(c, map) && map.edificeGrid[c] == null) return c;
+            }
+            return pos;
         }
 
         /// <summary>

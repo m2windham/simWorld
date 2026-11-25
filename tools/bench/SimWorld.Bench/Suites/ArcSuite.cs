@@ -98,6 +98,8 @@ namespace SimWorld.Bench.Suites
             var rollup = new GodRollup();
             var samples = new List<Sample> { Take(0, 0, home, rollup, game, 0, 0) };
             Print(samples[0], finished, eras);
+            var armoury = new ArmouryReading();
+            Console.WriteLine("  " + armoury.Line(home));
 
             int momentsSeen = game.Storyteller.Moments.Count;
             var interval = Stopwatch.StartNew();
@@ -124,6 +126,7 @@ namespace SimWorld.Bench.Suites
                 finishedSeen = finished.Count;
                 erasSeen = eras.Count;
 
+                Console.WriteLine("  " + armoury.Line(current));
                 IReadOnlyList<ChronicleEntry> moments = game.Storyteller.Moments;
                 for (int m = momentsSeen; m < moments.Count; m++) Console.WriteLine("  moment " + Moment(moments[m]));
                 momentsSeen = moments.Count;

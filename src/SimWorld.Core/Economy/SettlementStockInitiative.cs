@@ -60,8 +60,8 @@ namespace SimWorld.Economy
     /// sitting in one of the settlement's stockpiles (<c>Building.Zone_Stockpile</c>, which
     /// <c>AI.HaulAIUtility.IsInValidStorage</c> already defines as "stored"), which is the same thing a
     /// civilization means by its stock. Everything lying loose is left alone, so the map's own systems keep
-    /// working on it: a chunk beside the stonecutter's table, a meal somebody dropped, the ingredients
-    /// <c>Crafting.WorkGiver_DoBill</c> needs within its own search radius of a bench. Three further guards,
+    /// working on it: a chunk beside the stonecutter's table, a meal somebody dropped, the
+    /// ingredients a crafter has put down beside a bench. Three further guards,
     /// each reading something this codebase already has rather than inventing it:
     /// <list type="bullet">
     /// <item>A stack anybody has <b>reserved</b> is never banked (<c>Map.ReservationManager.IsReserved</c>) —
@@ -152,6 +152,9 @@ namespace SimWorld.Economy
             // banking only ever takes what is above the line and issuing only ever adds up to it.
             IssueFromStores(settlement, map);
             IssueMedicineFromStores(settlement, map);
+            // And what a standing bill on the map is short of; banking already leaves bill ingredients alone, so
+            // this cannot undo it either.
+            SettlementBillStock.IssueBillIngredientsFromStores(settlement, map);
 
             return banked;
         }

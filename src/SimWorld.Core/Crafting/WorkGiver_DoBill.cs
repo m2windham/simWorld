@@ -31,33 +31,30 @@ namespace SimWorld.Crafting
     /// instead of off the giver doing the visiting. See <see cref="CompBillGiver"/>'s own remarks for the
     /// comp-composition half of the same decision.
     /// <para/>
-    /// <b>Ingredients, and the seam this leaves for hauling:</b> a bill's ingredients must already be lying
-    /// within <see cref="IngredientSearchRadius"/> cells of the bench — this giver does not itself walk a
-    /// pawn out to fetch them first. RimWorld's own <c>JobDriver_DoBill</c> carries a queue of chosen
-    /// ingredient Things and hauls each to the bench before working the recipe. The queue half of that is
-    /// ported (<see cref="AI.Job.targetQueueB"/>, <see cref="AI.Job.countQueue"/>, reserved by
-    /// <see cref="AI.Toils_Reserve.ReserveQueue"/>) because the claim it carries is what stops a second
-    /// consumer spending the same pile; the walking-and-fetching half is not, because a second lane is
-    /// concurrently building the general hauling path (<c>HaulGeneral</c>'s
-    /// <see cref="AI.WorkGiver_Haul"/>) this pass must not duplicate. The result mirrors
-    /// <see cref="Building.WorkGiver_ConstructFinishFrame"/>'s own split from
-    /// <c>ConstructDeliverResourcesToFrames</c>: this giver only finishes work whose materials are already
-    /// staged, and getting raw ingredients from wherever they are produced to a stockpile cell beside the
-    /// bench is <see cref="AI.WorkGiver_Haul"/>'s job, already built and merged separately. A future
-    /// "deliver ingredients to a bill" driver — the bill-side counterpart of
-    /// <c>ConstructDeliverResourcesToFrames</c> — is the seam left open for a bench whose stock sits further
-    /// out than that.
+    /// <b>Ingredients are searched for out to the bill's own radius and carried to the bench</b> (RimWorld:
+    /// <c>WorkGiver_DoBill.TryFindBestBillIngredients</c> searches out to <see cref="Bill.ingredientSearchRadius"/>,
+    /// 999 by default, and <c>JobDriver_DoBill</c>'s <c>CollectIngredientsToils</c> fetches each chosen stack).
+    /// The chosen stacks ride on the job as <see cref="AI.Job.targetQueueB"/>/<see cref="AI.Job.countQueue"/>,
+    /// nearest the bench first, and only stacks the crafter can walk to are candidates, so an ingredient in a
+    /// sealed pocket is never chosen. This giver used to look only within 12 cells and the driver fetched
+    /// nothing, so a bench whose stock lay further out was a bench nobody worked: on seed 40/201 a hide-coat
+    /// bill wanted 38 coats with 360 to 497 leather on the map and none within 12 cells of either bench, and
+    /// nothing was ever crafted (era-arc §12.3).
+    /// <para/>
+    /// <b>Each bill in order, the first whose ingredients can be found</b> (RimWorld:
+    /// <c>WorkGiver_DoBill.StartOrResumeBillJob</c> goes on to the next bill when one's ingredients are
+    /// missing). A first bill nobody could supply, such as a shirt with no cloth on the map, used to hold up
+    /// every bill behind it on the same bench.
     /// </summary>
     public sealed class WorkGiver_DoBill : WorkGiver_Scanner
     {
         /// <summary>
-        /// How far from the bench this giver looks for ingredients, in cells. Deliberately not RimWorld's own
-        /// <see cref="Bill.ingredientSearchRadius"/> (default 999 — effectively "anywhere reachable"):
-        /// RimWorld pays for that width with a job that physically carries whatever it finds back to the
-        /// bench, which this port does not build (see class remarks). Capping the scan keeps "ingredients are
-        /// in reach" meaning what it says — placed at the workstation, typically by a stockpile
-        /// <see cref="AI.WorkGiver_Haul"/> keeps filled — instead of quietly summoning a pile from across the
-        /// map. Only ever narrows a bill's own (possibly smaller) radius, never widens it.
+        /// <b>Not this giver's search limit any more</b>: a bill searches out to its own
+        /// <see cref="Bill.ingredientSearchRadius"/> and the crafter carries what it finds. This is the reach the
+        /// settlement's own planners still site a bench within of its stock (<c>StonecutterInitiative</c>,
+        /// <c>CookingInitiative</c>, <c>SmeltingInitiative</c>, <c>Building.SettlementWorkshops</c>): with no
+        /// player to place it, a bench beside its materials saves the trips. The name is kept because those
+        /// planners and their tests read it.
         /// </summary>
         public const int IngredientSearchRadius = 12;
 
@@ -111,16 +108,14 @@ namespace SimWorld.Crafting
             if (!Reachability.CanReach(pawn, thing, PathEndMode)) return false;
             if (!pawn.Map!.reservationManager.CanReserve(pawn, thing)) return false;
 
-            Bill_Production? bill = FindBill(pawn, comp);
-            return bill != null && TryFindBestBillIngredients(bill, pawn, thing, out _);
+            return TryFindBillAndIngredients(pawn, comp, thing, out _, out _);
         }
 
         public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
             CompBillGiver? comp = BillGiverFor(thing);
             if (comp == null) return null;
-            Bill_Production? bill = FindBill(pawn, comp);
-            if (bill == null || !TryFindBestBillIngredients(bill, pawn, thing, out List<(Thing thing, int count)> chosen))
+            if (!TryFindBillAndIngredients(pawn, comp, thing, out _, out List<(Thing thing, int count)> chosen))
             {
                 return null;
             }
@@ -153,17 +148,38 @@ namespace SimWorld.Crafting
             IReadOnlyList<Bill> bills = comp.BillStack.Bills;
             for (int i = 0; i < bills.Count; i++)
             {
-                if (bills[i] is Bill_Production bill && bill.ShouldDoNow()
-                    && bill.recipe.AvailableNow && bill.PawnAllowedToStartAnew(pawn))
-                {
-                    return bill;
-                }
+                if (bills[i] is Bill_Production bill && CanStart(pawn, bill)) return bill;
             }
             return null;
         }
 
+        internal static bool CanStart(Pawn pawn, Bill_Production bill) =>
+            bill.ShouldDoNow() && bill.recipe.AvailableNow && bill.PawnAllowedToStartAnew(pawn);
+
         /// <summary>
-        /// Finds real map Things near <paramref name="billGiver"/> that satisfy <paramref name="bill"/>'s
+        /// The first bill on <paramref name="comp"/>'s stack that <paramref name="pawn"/> may start and whose
+        /// ingredients can be found, with the stacks chosen for it (RimWorld:
+        /// <c>WorkGiver_DoBill.StartOrResumeBillJob</c>'s loop over the bill stack, which moves on past a bill
+        /// whose ingredients are missing rather than stopping there).
+        /// </summary>
+        internal static bool TryFindBillAndIngredients(Pawn pawn, CompBillGiver comp, Thing billGiver,
+            out Bill_Production? found, out List<(Thing thing, int count)> chosen)
+        {
+            IReadOnlyList<Bill> bills = comp.BillStack.Bills;
+            for (int i = 0; i < bills.Count; i++)
+            {
+                if (bills[i] is not Bill_Production bill || !CanStart(pawn, bill)) continue;
+                if (!TryFindBestBillIngredients(bill, pawn, billGiver, out chosen)) continue;
+                found = bill;
+                return true;
+            }
+            found = null;
+            chosen = new List<(Thing, int)>();
+            return false;
+        }
+
+        /// <summary>
+        /// Finds real map Things within the bill's search radius of <paramref name="billGiver"/> that satisfy <paramref name="bill"/>'s
         /// recipe (RimWorld: <c>WorkGiver_DoBill.TryFindBestBillIngredients</c>), through the same
         /// <see cref="BillIngredientsFinder"/> a bench or a guild bill already resolves ingredients with —
         /// that finder answers in (def, piece-count) terms rather than "which physical stack", so this
@@ -185,17 +201,8 @@ namespace SimWorld.Crafting
             Map.Map? map = billGiver.Map;
             if (map == null) return false;
 
-            var candidates = new List<Thing>();
-            CellRect scan = CellRect.CenteredOn(billGiver.Position, IngredientSearchRadius).ClipInsideMap(map);
-            foreach (IntVec3 cell in scan.Cells)
-            {
-                foreach (Thing t in map.thingGrid.ThingsAt(cell))
-                {
-                    if (t.def.category != ThingCategory.Item || t.stackCount <= 0) continue;
-                    if (!map.reservationManager.CanReserve(pawn, t)) continue;
-                    candidates.Add(t);
-                }
-            }
+            List<Thing> candidates = IngredientCandidates(bill, billGiver, t =>
+                map.reservationManager.CanReserve(pawn, t) && Reachability.CanReach(pawn, t, PathEndMode.ClosestTouch));
             if (candidates.Count == 0) return false;
 
             var candidateStacks = new List<ItemStack>(candidates.Count);
@@ -224,6 +231,49 @@ namespace SimWorld.Crafting
                 neededByDef[t.def] = remaining - take;
             }
             return true;
+        }
+
+        /// <summary>
+        /// Every spawned item stack on <paramref name="billGiver"/>'s map that some ingredient of
+        /// <paramref name="bill"/> could use, lying within the bill's <see cref="Bill.ingredientSearchRadius"/>
+        /// of the bench and passing <paramref name="usable"/>, nearest the bench first (thing id breaks a tie, so
+        /// two identical runs choose identically). RimWorld walks regions outward from the bench and stops once
+        /// it has enough; the order it hands the finder is the same, nearest first.
+        /// <para/>
+        /// Walked by def through the lister rather than cell by cell, because the radius is now the whole map.
+        /// </summary>
+        internal static List<Thing> IngredientCandidates(Bill bill, Thing billGiver, Func<Thing, bool> usable)
+        {
+            var candidates = new List<Thing>();
+            Map.Map? map = billGiver.Map;
+            List<IngredientCount>? need = bill.recipe.ingredients;
+            if (map == null || need == null) return candidates;
+
+            float radiusSquared = bill.ingredientSearchRadius * bill.ingredientSearchRadius;
+            IntVec3 bench = billGiver.Position;
+            var seen = new HashSet<ThingDef>();
+            for (int n = 0; n < need.Count; n++)
+            {
+                foreach (ThingDef def in need[n].filter.AllowedThingDefs)
+                {
+                    if (!seen.Add(def) || !bill.ingredientFilter.Allows(def)) continue;
+                    IReadOnlyList<Thing> stacks = map.listerThings.ThingsOfDef(def);
+                    for (int i = 0; i < stacks.Count; i++)
+                    {
+                        Thing t = stacks[i];
+                        if (!t.Spawned || t.def.category != ThingCategory.Item || t.stackCount <= 0) continue;
+                        if ((t.Position - bench).LengthHorizontalSquared > radiusSquared) continue;
+                        if (!usable(t)) continue;
+                        candidates.Add(t);
+                    }
+                }
+            }
+            candidates.Sort((a, b) =>
+            {
+                int byDistance = (a.Position - bench).LengthHorizontalSquared.CompareTo((b.Position - bench).LengthHorizontalSquared);
+                return byDistance != 0 ? byDistance : a.thingIDNumber.CompareTo(b.thingIDNumber);
+            });
+            return candidates;
         }
     }
 }
