@@ -224,6 +224,31 @@ namespace SimWorld.Tests.Crafting
             Assert.Equal(2, BillOn(smithy, "Make_Apparel_ChainShirt")!.targetCount); // not the one already in mail
         }
 
+        /// <summary>
+        /// The armoury's plan carried through to people in armour, on a real generated map: the shape of seed
+        /// 40/201 (era-arc §12.3), where the leather lay far from the tailor and nobody ever wore a coat.
+        /// Nothing here is called by hand after the setup: the outfitting planner queues the coat, a citizen
+        /// fetches the leather and makes it, and the apparel optimizer puts it on.
+        /// </summary>
+        [Fact]
+        public void The_armourys_hide_coats_are_made_from_distant_leather_and_worn_within_two_days()
+        {
+            CraftingTown town = CraftingTown.Open("armoury-worn");
+            Know("Tanning");
+            town.Clear("Leather_Plain", "Apparel_HideArmor");
+            Thing tailor = town.Bench("TableTailor");
+            IntVec3 far = town.FarCell(tailor.Position, 40);
+            town.Stack("Leather_Plain", 75, far);
+            town.Stack("Leather_Plain", 75, town.FarCell(tailor.Position, 40, c => (c - far).LengthHorizontal >= 3));
+            town.Crafter(WorkTypeDefOf.Tailoring);
+
+            int Wearing() => town.Citizens.Count(p => !p.Dead && p.apparel.WornApparel.Any(a => a.def.defName == "Apparel_HideArmor"));
+            int ticks = town.RunUntil(() => Wearing() > 0, 2 * GenDate.TicksPerDay);
+
+            Assert.True(ticks < 2 * GenDate.TicksPerDay, "ran out of time");
+            Assert.True(Wearing() > 0, "nobody wears a hide coat; made " + town.Made("Apparel_HideArmor"));
+        }
+
         // ---- save/load ----
 
         [Fact]
