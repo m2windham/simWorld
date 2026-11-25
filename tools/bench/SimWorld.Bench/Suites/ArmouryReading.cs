@@ -87,7 +87,7 @@ namespace SimWorld.Bench.Suites
                 ThingDef? def = DefDatabase<ThingDef>.GetNamedSilentFail(name);
                 if (def == null) continue;
                 parts.Add(name + " " + MaterialLadder.OnMap(map, def) + "+" + settlement.StoreCountOf(def)
-                    + (MaterialLadder.CanGet(map, def) ? "" : " (no source)"));
+                    + (Laddered(def) && !MaterialLadder.CanGet(map, def) ? " (no source)" : ""));
             }
             var benches = new List<string>();
             foreach (Thing bench in map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver))
@@ -114,5 +114,10 @@ namespace SimWorld.Bench.Suites
 
         private static string Tally(IEnumerable<string> names) =>
             string.Join(",", names.GroupBy(n => n).OrderBy(g => g.Key).Select(g => g.Key + "x" + g.Count()));
+
+        // CanGet answers for the material ladder only (a vein, or smelting); wood and leather come from elsewhere.
+        private static bool Laddered(ThingDef def) =>
+            def.stuffProps?.categories?.Contains(MaterialLadderDefOf.Metallic) == true
+            || DefDatabase<ThingDef>.AllDefsListForReading.Any(t => t.mineableThing == def);
     }
 }
