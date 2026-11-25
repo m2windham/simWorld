@@ -211,6 +211,33 @@ namespace SimWorld.Tests.AI
         }
 
         /// <summary>
+        /// A baby at home in a hard frost beside a hearth with nothing in its tank, as the arc's babies of day 474 lay:
+        /// it is brought to safety in a house whose hearth can burn, rather than left in its own bed to freeze.
+        /// </summary>
+        [Fact]
+        public void A_sleeping_baby_at_home_by_an_empty_hearth_is_carried_somewhere_warm()
+        {
+            Village v = NewWinterVillage("baby-warmth-home", 4);
+            Dwelling mine = ShelterKit.RaiseOnPlot(v.Map, ShelterKit.Rung("House_Meso"), v.Houseless, v.Settlement.faction)!;
+            Assert.NotNull(mine);
+            foreach (IntVec3 spot in mine.Spots(DwellingPartKind.HearthSpot))
+            {
+                Thing hearth = ThingMaker.MakeThing(ShelterThingDefOf.Campfire);
+                hearth.SetFaction(v.Settlement.faction);
+                GenSpawn.Spawn(hearth, spot, v.Map, Rot4.North);
+                CompRefuelable tank = ((ThingWithComps)hearth).GetComp<CompRefuelable>()!;
+                tank.ConsumeFuel(tank.Fuel);
+            }
+            Assert.False(SettlementClimate.HasFueledHearth(v.Map, mine));
+            Thing own = mine.Beds(v.Map).First();
+            Pawn baby = Newborn(v, v.Houseless, own.GetSleepingSlotPos());
+            Assert.True(baby.InBed() && DwellingUtility.IsOwnHomeBed(baby, own));
+            PutToSleep(v, baby);
+
+            AssertWarmedAndLives(v, baby, 4, 12);
+        }
+
+        /// <summary>
         /// The hearth answers whoever lies in the house: a baby of another household laid in its bed for the warmth
         /// keeps the hearth burning for it, with none of the house's own people at home.
         /// </summary>

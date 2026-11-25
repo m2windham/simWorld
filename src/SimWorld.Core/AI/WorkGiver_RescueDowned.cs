@@ -52,7 +52,10 @@ namespace SimWorld.AI
             // is already in bed, over and over, every LookForOtherJobsIntervalTicks.
             // One exception, the household's own bed: a patient lying in a bed that is not its household's is
             // carried home when home has a bed for it (below).
-            if (patient.InBed() && Building.DwellingUtility.IsOwnHomeBed(patient, patient.CurrentBed()!)) return false;
+            // ... unless it is a baby and home has gone cold with nothing to burn (BabySafetyUtility): then it is
+            // brought to safety, as RimWorld moves a baby out of a crib whose room is too cold.
+            if (patient.InBed() && Building.DwellingUtility.IsOwnHomeBed(patient, patient.CurrentBed()!)
+                && !BabySafetyUtility.NeedsMovingForTemperature(patient)) return false;
             if (!DoctorUtility.IsCaredForBy(pawn, patient)) return false;
             if (BedFor(patient, pawn) == null) return false;
             if (!Reachability.CanReach(pawn, patient, PathEndMode)) return false;
@@ -79,21 +82,39 @@ namespace SimWorld.AI
         /// neighbour's house; the hearth that would have kept it alive is lit in its own (<see
         /// cref="Building.SettlementClimate"/>), for it, and it froze in a room heated for robed adults or in none.
         /// <para/>
-        /// With no home bed to give it, a baby lying in the cold (<see cref="BabySafetyUtility.NeedsMovingForTemperature"/>)
-        /// goes to a bed that is safe for it, from the ground or from the cold bed it lies in (RimWorld: bringing a
-        /// baby to safety). Before, a baby of a household still waiting for a house was laid in the nearest bed that
-        /// was nobody's, the unheated dormitory, and left there however cold it got.
+        /// A baby is also brought to safety from the cold (RimWorld: anyone carries a baby somewhere safe, and moves it
+        /// when its crib's room is too cold; see <see cref="BabySafetyUtility"/>). Home still comes first while home is
+        /// safe for it. Lying in the cold (<see cref="BabySafetyUtility.NeedsMovingForTemperature"/>), it goes to the
+        /// nearest bed that is safe: from the ground, from the unheated dormitory bed of a household still waiting
+        /// for a house, or from its own bed when its house has gone cold with an empty hearth. Lying safe somewhere,
+        /// it is not carried home to an unsafe house. The 600-day 40/201 arc lost babies both ways: left in the
+        /// dormitory for days, and left at home beside a hearth with no fuel in a hard frost.
         /// </summary>
         internal static Thing? BedFor(Pawn patient, Pawn rescuer)
         {
             Thing? home = Building.DwellingUtility.FindDwellingBedFor(patient, rescuer);
-            if (home != null) return home;
+            if (!BabySafetyUtility.IsBabyOnMap(patient))
+            {
+                if (home != null) return home;
+                return patient.InBed() ? null : RestUtility.FindBedFor(patient, rescuer);
+            }
+
+            if (home != null && BabySafetyUtility.IsSafeBedFor(patient, home)) return home;
             if (BabySafetyUtility.NeedsMovingForTemperature(patient))
             {
                 Thing? safe = BabySafetyUtility.SafeBedFor(patient, rescuer);
                 if (safe != null) return safe;
             }
-            return patient.InBed() ? null : RestUtility.FindBedFor(patient, rescuer);
+            else if (patient.InBed())
+            {
+                return null;
+            }
+            // Nowhere safer: a bed at home, or, with none, the nearest that is nobody's, as before; never from one
+            // bed of its own house to another.
+            Thing? lying = patient.CurrentBed();
+            if (lying != null && Building.DwellingUtility.IsOwnHomeBed(patient, lying)) return null;
+            if (home != null) return home;
+            return lying != null ? null : RestUtility.FindBedFor(patient, rescuer);
         }
     }
 }

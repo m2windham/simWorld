@@ -34,9 +34,16 @@ namespace SimWorld.AI
         /// comfortable range, and it is not in a bed a lit hearth will warm.</summary>
         public static bool NeedsMovingForTemperature(Pawn baby)
         {
-            if (!baby.Spawned || baby.Map == null || baby.health == null || !baby.health.LifeStageForcesDowned) return false;
+            if (!IsBabyOnMap(baby)) return false;
             return !IsSafeFor(baby, baby.CurrentBed(), baby.Position);
         }
+
+        /// <summary>A baby (down by its life stage, so it moves only when carried) spawned on a map.</summary>
+        public static bool IsBabyOnMap(Pawn pawn) =>
+            pawn.Spawned && pawn.Map != null && pawn.health != null && pawn.health.LifeStageForcesDowned;
+
+        /// <summary>Whether <paramref name="bed"/> is safe for <paramref name="baby"/> to be laid in now.</summary>
+        public static bool IsSafeBedFor(Pawn baby, Thing bed) => IsSafeFor(baby, bed, bed.GetSleepingSlotPos());
 
         /// <summary>The nearest bed (from the baby) that is safe for <paramref name="baby"/>, nobody else lies in, and
         /// <paramref name="traveler"/> can reserve and reach; null when there is none. Never the bed it lies in.</summary>
