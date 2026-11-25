@@ -84,6 +84,10 @@ namespace SimWorld.Bench
         /// <summary>--suite arc: days between samples (default 60, one game year).</summary>
         public int ArcEvery { get; set; } = 60;
 
+        /// <summary>--suite arc: name every death, and follow every citizen who took hypothermia
+        /// (<see cref="Suites.ExposureWatch"/>). Read-only: the run is the same run without it.</summary>
+        public bool DeathDetail { get; set; }
+
         public double GuardMs => GuardSeconds * 1000.0;
     }
 }

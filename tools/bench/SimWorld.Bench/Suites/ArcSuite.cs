@@ -102,6 +102,7 @@ namespace SimWorld.Bench.Suites
             Console.WriteLine("  " + armoury.Line(home));
 
             int momentsSeen = game.Storyteller.Moments.Count;
+            ExposureWatch? watch = opt.DeathDetail ? new ExposureWatch() : null;
             var interval = Stopwatch.StartNew();
             long ticks = 0;
             int finishedSeen = 0;
@@ -112,6 +113,13 @@ namespace SimWorld.Bench.Suites
                 {
                     game.TickManager.DoSingleTick();
                     ticks++;
+                    if (watch != null)
+                    {
+                        SimWorld.World.Settlement watched = game.CivilizationTarget.Seat ?? home;
+                        int now = Find.TickManager.TicksGame;
+                        if (now % ExposureWatch.Every == 0) watch.Sample(watched, now);
+                        if (now % 2500 == 0) watch.SampleBabies(watched);
+                    }
                 }
 
                 if (day % every != 0 && day != opt.Days) continue;
@@ -129,6 +137,7 @@ namespace SimWorld.Bench.Suites
                 Console.WriteLine("  " + armoury.Line(current));
                 Console.WriteLine("  " + DwellingReading.SampleLine(current));
                 Console.WriteLine("  " + ArmouryReading.MaterialsLine(current));
+                if (watch != null) Console.WriteLine(watch.CensusLine());
                 IReadOnlyList<ChronicleEntry> moments = game.Storyteller.Moments;
                 for (int m = momentsSeen; m < moments.Count; m++) Console.WriteLine("  moment " + Moment(moments[m]));
                 momentsSeen = moments.Count;

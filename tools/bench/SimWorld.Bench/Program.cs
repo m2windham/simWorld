@@ -204,6 +204,9 @@ namespace SimWorld.Bench
                     case "--arc-every":
                         opt.ArcEvery = ParseInt(Next(args, ref i), "--arc-every");
                         break;
+                    case "--death-detail":
+                        opt.DeathDetail = ParseBool(Next(args, ref i), "--death-detail");
+                        break;
                     case "--threats":
                         opt.Threats = ParseBool(Next(args, ref i), "--threats");
                         break;

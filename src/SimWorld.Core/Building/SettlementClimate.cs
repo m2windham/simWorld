@@ -118,7 +118,12 @@ namespace SimWorld.Building
         /// 16 C, wearing nothing and unable to walk to warmth, takes hypothermia it cannot shed, because it heals
         /// only in comfortable air. So the hearth answers the room: lit when somebody at home is below
         /// comfort, and kept lit until they are <see cref="HearthWarmthMargin"/> above it. Somebody away from home
-        /// is not counted: the hearth cannot warm them, and an empty house burns no wood.
+        /// is not counted, since the hearth cannot warm them and an empty house burns no wood, unless the cold has
+        /// already hurt them (<see cref="FreezingAway"/>, exposure3 lane): then the house is warmed for them to come
+        /// home to. Before, a house stood at -5 C because nobody was in it, and nobody went in because it stood at
+        /// -5 C; the 600-day 40/201 arc lost ten children in one frost that way, out of doors or asleep in the
+        /// dormitory. Somebody of another household lying in one of the house's beds is counted (exposure3 lane): a baby with no house of its own,
+        /// brought in from the cold (<see cref="AI.BabySafetyUtility"/>), is the house's most vulnerable person.
         /// </summary>
         internal static bool SomeoneHomeIsCold(Settlement settlement, Map.Map map, Dwelling dwelling, float margin)
         {
@@ -126,10 +131,40 @@ namespace SimWorld.Building
             for (int i = 0; i < citizens.Count; i++)
             {
                 Pawn p = citizens[i];
-                if (p.Dead || !p.Spawned || p.Map != map || p.relations.familyId != dwelling.householdId) continue;
-                if (!dwelling.InteriorContains(p.Position)) continue;
+                if (p.Dead || !p.Spawned || p.Map != map) continue;
+                if (!dwelling.InteriorContains(p.Position))
+                {
+                    if (p.relations.familyId == dwelling.householdId && FreezingAway(p)) return true;
+                    continue;
+                }
+                if (p.relations.familyId != dwelling.householdId && !LiesInBedOf(p, dwelling)) continue;
                 float comfyMin = TemperatureInjuryUtility.ComfortableTemperatureRange(p).min;
                 if (TemperatureInjuryUtility.AmbientTemperature(p) < comfyMin + margin) return true;
+            }
+            return false;
+        }
+
+        /// <summary>A member away from home whose hypothermia has reached the minor stage: the hearth is lit for them to
+        /// come home to, as RimWorld's heater keeps a room warm for whoever needs it, so the search for warmth
+        /// (<see cref="AI.JobGiver_SeekSafeTemperature"/>, at the serious stage) has somewhere to go.</summary>
+        private static bool FreezingAway(Pawn p) =>
+            p.health.hediffSet.GetFirstHediffOfDef(TemperatureDefOf.Hypothermia) is Hediff cold
+            && cold.CurStageIndex >= (int)TemperatureInjuryStage.Minor;
+
+        /// <summary>Somebody of another household laid in one of <paramref name="dwelling"/>'s beds: a baby brought in
+        /// from the cold (<see cref="AI.BabySafetyUtility"/>). The hearth burns for the most vulnerable person lying in
+        /// the house, as RimWorld's heater warms whoever is in its room.</summary>
+        private static bool LiesInBedOf(Pawn p, Dwelling dwelling) =>
+            AI.RestUtility.CurrentBed(p) is Thing bed && dwelling.InteriorContains(bed.Position);
+
+        /// <summary>Whether <paramref name="dwelling"/> has a hearth standing with fuel in its tank: one its thermostat
+        /// can light (<see cref="SomeoneHomeIsCold"/>).</summary>
+        public static bool HasFueledHearth(Map.Map map, Dwelling dwelling)
+        {
+            foreach (IntVec3 spot in dwelling.Spots(DwellingPartKind.HearthSpot))
+            {
+                Thing? device = DeviceAt(map, spot, ShelterThingDefOf.Campfire);
+                if ((device as ThingWithComps)?.GetComp<CompRefuelable>()?.HasFuel == true) return true;
             }
             return false;
         }
