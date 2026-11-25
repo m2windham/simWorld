@@ -1316,7 +1316,9 @@ a town that keeps up does not arm itself era by era, and fixes it.
    a generated medieval map, a 15-metal helmet was always ready before a
    50-steel plate coat. Mail, the stop-gap for plate, ate the iron the steel
    is made from. One run made 19 helmets and 4 mail shirts, and no plate,
-   before the only iron vein ran out.
+   before the only iron vein ran out. On the 40/201 arc (13.4), with mail
+   the best armour, 32 iron helmets used up the map's 37 iron cells, and no
+   mail was made.
 6. **Founders kept revolvers.** The player faction's def is Industrial, as
    RimWorld's colony faction is. `PawnWeaponGenerator` caps gear at that
    level, so a sticks-and-stones band was founded with revolvers. In the
@@ -1346,8 +1348,9 @@ electric smelter costing steel.
   town smelts for it. For armour that is the best metal. For a weapon whose
   metal is only a part, it is the cheapest. A bill that can take only one
   metal holds that metal (`HeldMetals`), so while plate is short a helmet is
-  made of iron. A helmet also goes only to a citizen already in plate
-  (`KitFirst`), so one soldier is kitted whole before the next is started.
+  made of iron. A metal helmet also goes only to a citizen who already wears
+  the better metal armour for another slot, mail or plate (`KitFirst`). One
+  soldier is kitted out whole before the next is started.
 - The musket takes iron or steel, as the crossbow does. A steel-only musket
   made the Industrial entry tier depend on the full steel chain.
 - `MaterialLadder` floods through mineable rock from every face the band can
@@ -1388,3 +1391,40 @@ electric smelter costing steel.
 
 Each guard was mutation-proved both ways: the test fails with the change in
 and passes with the file restored byte-identically, touched and rebuilt.
+
+### 13.4 Measured
+
+One 300-day arc of 40/201 with threats on, run locally from `1347205`
+(before the generalised `KitFirst` in `a38ee25`). Gear is as sampled. At the
+base commit, 16 of the 40 founders held revolvers on day 0.
+
+| day | era | in armour | held | made since day 0 | furnaces |
+| --- | --- | --- | --- | --- | --- |
+| 0 | SticksAndStones | 0/40 | 40 short bows | none | none |
+| 90 | Bronze | 12/49 hide | 35 recurve | 12 coats, 46 recurve | none |
+| 150 | Classical | 12/46 hide | 33 recurve | 12 coats, 59 recurve | none |
+| 180 | Classical | 17/51 hide | 34 great bows | 15 coats, 44 great bows | none |
+| 210 | Medieval | 33/49 | 34 great bows | 32 iron helmets | bloomery |
+| 300 | Industrial | 34/49 | 44 great bows | 32 helmets, 21 coats | bloomery |
+
+Seed 40/201 has no copper, so its Bronze age has no metal. Once Iron was
+learned, the town raised a bloomery, tunnelled to the buried vein and dug out
+all 37 iron cells by day 210. That iron went into helmets, which is cause 5
+and is fixed in `a38ee25`. By the Medieval and Industrial ages, plate and
+musket bills stand with no iron left on the map. Hide coats came back as the
+stop-gap. The generated-map tests show the chain completing where the iron
+holds out: plate and a crossbow by day 7.6, a musket by day 4.3.
+
+### 13.5 Not done
+
+- **A map without the metal.** 20/99 has no iron and 40/201 has 37 cells.
+  The only way in is trade, which is a player-ordered god command. No
+  settlement initiative imports metal, so such a town stays at great bows and
+  hide.
+- **Leftover ore counts as a source.** `MaterialLadder.CanGet` treats any ore
+  on the map as an input. After the vein is gone, 8 ore still keeps plate
+  "in reach". The stop-gap covers for it, but the plate bill stands forever.
+- Leather for hide coats comes only from hunting, and hunting runs only when
+  food is short. On 40/201 with threats off, 3 coats were made in the first
+  30 days.
+- The 600-day arcs for this branch are CI's.
