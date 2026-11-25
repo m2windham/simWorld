@@ -42,7 +42,7 @@ namespace SimWorld.Health
                 Thing candidate = items[i];
                 if (!candidate.Spawned || !candidate.def.IsMedicine) continue;
                 if (!care.AllowsMedicine(candidate.def)) continue;
-                if (!map.reservationManager.CanReserve(healer, candidate)) continue;
+                if (!map.reservationManager.CanReserve(healer, candidate, AI.JobDriver_TendPatient.MedicineMaxClaimants, AI.JobDriver_TendPatient.MedicinePerTend)) continue;
                 if (!Reachability.CanReach(healer, candidate, PathEndMode.ClosestTouch)) continue;
 
                 float potency = candidate.def.GetStatValue(HealthStatDefOf.MedicalPotency);

@@ -324,8 +324,9 @@ namespace SimWorld.Tests.World
             // same way: by putting a real game in front of it.
             FoundedTown town = Found("citizen-doctoring");
             List<Pawn> spawned = town.Settlement.Citizens.Where(c => c.Spawned).ToList();
-            Pawn doctor = spawned[0];
             Pawn patient = spawned[1];
+            // Routine tending is the town's healers' (Health.HealerUtility), so the doctor is one of them.
+            Pawn doctor = spawned.First(c => c != patient && global::SimWorld.Health.HealerUtility.IsHealer(c, patient));
 
             DamageDef cut = DefDatabase<DamageDef>.GetNamed("Cut");
             cut.Worker.Apply(new DamageInfo(cut, 6f, hitPart: patient.RaceProps.body!.GetPartByLabel("left arm")), patient);
