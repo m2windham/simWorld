@@ -41,11 +41,10 @@ namespace SimWorld.AI
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
-            for (int i = 0; i < buildings.Count; i++)
-            {
-                if (buildings[i].def == ResearchWorkDefOf.ResearchBench) yield return buildings[i];
-            }
+            // The bench's own list, not every building filtered down to it: the building list holds every rock of
+            // the mountain. Both lists keep spawn order, so the benches come out in the same order either way.
+            IReadOnlyList<Thing> benches = map.listerThings.ThingsOfDef(ResearchWorkDefOf.ResearchBench);
+            for (int i = 0; i < benches.Count; i++) yield return benches[i];
         }
 
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)

@@ -70,10 +70,15 @@ namespace SimWorld.AI
                     order.Add((distSq << 32) | (uint)candidates.Count);
                     candidates.Add(t);
                 }
-                order.Sort();
-                for (int i = 0; i < order.Count; i++)
+                // A heap rather than a sort: the same ascending order, but paid for only as far as the walk goes.
+                // The keys are unique (the list position is in the low bits), so the candidates come out in
+                // exactly the order a full sort gives. Most scans stop at the first or second candidate, and a
+                // wood-short settlement offers every grown tree on the map: sorting all of them for every job
+                // search was a tenth of a Bronze-age town's tick (tools/bench --suite tickcost).
+                Heapify(order);
+                for (int n = order.Count; n > 0; n--)
                 {
-                    Thing t = candidates[(int)(order[i] & 0xFFFFFFFF)];
+                    Thing t = candidates[(int)(PopMin(order, n) & 0xFFFFFFFF)];
                     if (scanner.HasJobOnThing(pawn, t)) return scanner.JobOnThing(pawn, t);
                 }
                 return null;
@@ -84,6 +89,37 @@ namespace SimWorld.AI
                 order.Clear();
                 freeBuffers!.Push(buffers);
             }
+        }
+
+        /// <summary>Makes <paramref name="heap"/> a binary min-heap in place, in linear time.</summary>
+        private static void Heapify(List<long> heap)
+        {
+            for (int i = heap.Count / 2 - 1; i >= 0; i--) SiftDown(heap, i, heap.Count);
+        }
+
+        /// <summary>Removes and returns the least of the first <paramref name="count"/> entries of a min-heap,
+        /// leaving the rest a heap of <paramref name="count"/> - 1.</summary>
+        private static long PopMin(List<long> heap, int count)
+        {
+            long min = heap[0];
+            heap[0] = heap[count - 1];
+            SiftDown(heap, 0, count - 1);
+            return min;
+        }
+
+        private static void SiftDown(List<long> heap, int i, int count)
+        {
+            long item = heap[i];
+            while (true)
+            {
+                int child = 2 * i + 1;
+                if (child >= count) break;
+                if (child + 1 < count && heap[child + 1] < heap[child]) child++;
+                if (heap[child] >= item) break;
+                heap[i] = heap[child];
+                i = child;
+            }
+            heap[i] = item;
         }
 
         /// <summary>The scan's two working lists, reused instead of allocated on every job search. A stack rather

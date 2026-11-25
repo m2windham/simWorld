@@ -133,7 +133,8 @@ namespace SimWorld.Tests.Map
             Assert.Same(hall, buildings.BuildingAt(compound.DoorCell));
 
             // The rooms inside the hall are the hall's, not listed again as rooms of their own.
-            Assert.DoesNotContain(buildings.Buildings, b => b.Role == BuildingRole.Dormitory
+            var roomRoles = new[] { BuildingRole.Dormitory, BuildingRole.Bedroom, BuildingRole.Workshop, BuildingRole.Storeroom, BuildingRole.Room };
+            Assert.DoesNotContain(buildings.Buildings, b => roomRoles.Contains(b.Role)
                 && b.Cells.Any(c => compound.Interior.Contains(c)));
         }
 

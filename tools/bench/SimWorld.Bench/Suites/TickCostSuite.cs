@@ -91,6 +91,8 @@ namespace SimWorld.Bench.Suites
                 + Report.Int(opt.Days) + " day(s)");
             Console.WriteLine("end: " + Readings(game, home, map));
             Console.WriteLine("digest: " + SimDigest.Line(map));
+            Console.WriteLine("factions: " + Find.FactionManager.AllFactionsListForReading.Count
+                + ", things on map: " + map.listerThings.AllThings.Count);
         }
 
         private static int Living(SimWorld.World.Settlement home) => home.Citizens.Count(p => !p.Dead);

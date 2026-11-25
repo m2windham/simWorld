@@ -55,8 +55,13 @@ namespace SimWorld.Building
         private readonly Map.Map map;
         private readonly List<Room> rooms = new List<Room>();
         private readonly List<RoomGroup> groups = new List<RoomGroup>();
-        private Dictionary<IntVec3, Room> cellToRoom = new Dictionary<IntVec3, Room>();
-        private Dictionary<IntVec3, Room> previousCellToRoom = new Dictionary<IntVec3, Room>();
+        // The room of each cell by cell index, and the one before the last rebuild, for the temperature carry-over.
+        // Arrays rather than dictionaries keyed by cell: every rebuild visits every cell of the map, and hashing
+        // forty thousand cells into a dictionary and a visited set was most of what a rebuild cost (perf, host
+        // views lane). Allocated on the first rebuild, when the map's size is known.
+        private Room?[] cellToRoom = Array.Empty<Room?>();
+        private Room?[] previousCellToRoom = Array.Empty<Room?>();
+        private bool[] visited = Array.Empty<bool>();
         private readonly HashSet<RoomGroup> tmpPreviousGroups = new HashSet<RoomGroup>();
         private readonly List<CompHeatPusherPowered> heatPushers = new List<CompHeatPusherPowered>();
         private readonly List<Door> doors = new List<Door>();
@@ -76,7 +81,15 @@ namespace SimWorld.Building
         public IReadOnlyList<Room> Rooms => rooms;
         public IReadOnlyList<RoomGroup> Groups => groups;
 
-        public Room? RoomAt(IntVec3 cell) => cellToRoom.TryGetValue(cell, out Room? r) ? r : null;
+        public Room? RoomAt(IntVec3 cell)
+        {
+            int sizeX = map.Size.x;
+            if (cell.x < 0 || cell.z < 0 || cell.x >= sizeX || cell.z >= map.Size.z) return null;
+            int index = cell.z * sizeX + cell.x;
+            return index < cellToRoom.Length ? cellToRoom[index] : null;
+        }
+
+        private int IndexOf(IntVec3 cell) => cell.z * map.Size.x + cell.x;
 
         public void Notify_Dirty() => dirty = true;
 
@@ -266,24 +279,27 @@ namespace SimWorld.Building
             (previousCellToRoom, cellToRoom) = (cellToRoom, previousCellToRoom);
             rooms.Clear();
             groups.Clear();
-            cellToRoom.Clear();
+            int cellCount = map.Size.x * map.Size.z;
+            if (cellToRoom.Length != cellCount) cellToRoom = new Room?[cellCount];
+            else Array.Clear(cellToRoom, 0, cellCount);
+            if (visited.Length != cellCount) visited = new bool[cellCount];
+            else Array.Clear(visited, 0, cellCount);
 
-            var visited = new HashSet<IntVec3>();
             foreach (IntVec3 seed in map.AllCells)
             {
-                if (visited.Contains(seed)) continue;
+                if (visited[IndexOf(seed)]) continue;
                 if (IsFullEdifice(seed)) continue;
 
                 var room = new Room();
                 var queue = new Queue<IntVec3>();
                 queue.Enqueue(seed);
-                visited.Add(seed);
+                visited[IndexOf(seed)] = true;
 
                 while (queue.Count > 0)
                 {
                     IntVec3 cur = queue.Dequeue();
                     room.cells.Add(cur);
-                    cellToRoom[cur] = room;
+                    cellToRoom[IndexOf(cur)] = room;
                     if (!map.roofGrid.Roofed(cur)) room.anyCellUnroofed = true;
                     if (cur.x == 0 || cur.z == 0 || cur.x == map.Size.x - 1 || cur.z == map.Size.z - 1)
                     {
@@ -303,8 +319,8 @@ namespace SimWorld.Building
                             room.boundaryEdifices.Add(edifice);
                             continue;
                         }
-                        if (visited.Contains(n)) continue;
-                        visited.Add(n);
+                        if (visited[IndexOf(n)]) continue;
+                        visited[IndexOf(n)] = true;
                         queue.Enqueue(n);
                     }
                 }
@@ -370,7 +386,9 @@ namespace SimWorld.Building
                 List<IntVec3> roomCells = group.rooms[r].cells;
                 for (int i = 0; i < roomCells.Count; i++)
                 {
-                    if (!previousCellToRoom.TryGetValue(roomCells[i], out Room? old)) continue;
+                    int index = IndexOf(roomCells[i]);
+                    Room? old = index < previousCellToRoom.Length ? previousCellToRoom[index] : null;
+                    if (old == null) continue;
                     RoomGroup oldGroup = old.Group;
                     if (!tmpPreviousGroups.Add(oldGroup)) continue;
                     int n = oldGroup.CellCount;

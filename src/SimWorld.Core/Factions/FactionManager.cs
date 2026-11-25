@@ -42,15 +42,20 @@ namespace SimWorld.Factions
         /// falls on the exact same tick as this interval judges goodwill that has already moved this tick,
         /// never one that is one tick stale.
         /// </summary>
+        private readonly List<Faction> tickSnapshot = new List<Faction>();
+
         public void FactionManagerTick()
         {
             // Snapshot: a tick could in principle mutate the list (a faction defeated mid-tick); never
             // iterate the live list while that happens.
-            var snapshot = allFactions.Count == 0 ? allFactions : new List<Faction>(allFactions);
-            for (int i = 0; i < snapshot.Count; i++)
+            // The copy reuses one list rather than allocating a new one every tick of the game.
+            tickSnapshot.Clear();
+            tickSnapshot.AddRange(allFactions);
+            for (int i = 0; i < tickSnapshot.Count; i++)
             {
-                snapshot[i].FactionTick();
+                tickSnapshot[i].FactionTick();
             }
+            tickSnapshot.Clear();
 
             DiplomacyAI.Tick(this);
         }
