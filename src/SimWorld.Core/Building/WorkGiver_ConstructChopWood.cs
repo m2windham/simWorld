@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SimWorld.AI;
 using SimWorld.Defs;
@@ -27,7 +28,8 @@ namespace SimWorld.Building
     /// this is the same settlement deciding which trees to fell for it. The designation is replaced by the
     /// reason a player would have had for it, the one <see cref="WorkGiver_PlantsCut"/> already takes for the
     /// designations it translated: <b>the building sites on this map need more wood than is on its way to
-    /// them.</b> See <see cref="WoodShortfall"/>. With no shortfall it fells nothing, so a settlement with
+    /// them</b>, and since the exposure lane, the lit hearths need more than they hold (<see cref="FuelWanted"/>). See
+    /// <see cref="WoodShortfall"/>. With no shortfall it fells nothing, so a settlement with
     /// nothing to build leaves its forest standing.
     /// <para/>
     /// <b>Why under Construction and not PlantCutting.</b> RimWorld's chop is <c>PlantCutting</c> work
@@ -106,6 +108,31 @@ namespace SimWorld.Building
             new Job(PlantCuttingJobDefOf.CutPlant, thing);
 
         /// <summary>
+        /// The <paramref name="material"/> this map's lit fires want: for every refuelable building that is on or
+        /// asked to be (<see cref="CompFlickable"/>) and burns it, what its tank lacks and one full tank besides, to
+        /// lie in the stockpile for the next refuel. A hearth is a building site that never finishes: RimWorld's
+        /// player chops wood for the campfires as well as the walls, and without this the settlement felled trees
+        /// only for construction, so every hearth of the exposure arcs burned its first tank and stood lit and
+        /// empty through the winter. The spare tank is this port's number, not RimWorld's; BabyShelterTests pins
+        /// what it is for, a hearth kept burning through a winter.
+        /// </summary>
+        public static int FuelWanted(Map.Map map, ThingDef material)
+        {
+            float wanted = 0f;
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial);
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                var building = buildings[i] as ThingWithComps;
+                CompRefuelable? refuelable = building?.GetComp<CompRefuelable>();
+                if (refuelable == null || !refuelable.Props.fuelFilter.Allows(material)) continue;
+                CompFlickable? flick = building!.GetComp<CompFlickable>();
+                if (flick != null && !flick.SwitchIsOn && !flick.WantSwitchOn) continue;
+                wanted += refuelable.TargetFuelLevel - refuelable.Fuel + refuelable.TargetFuelLevel;
+            }
+            return (int)Math.Ceiling(wanted);
+        }
+
+        /// <summary>
         /// How much more <paramref name="material"/> this map's building sites need than is already on its way
         /// to them: what every <see cref="Blueprint"/> costs and every <see cref="Frame"/> still lacks, less
         /// every loose stack on the map, every stack a pawn is carrying, and the expected yield of every plant
@@ -129,6 +156,7 @@ namespace SimWorld.Building
             {
                 if (frames[i] is Frame f) needed += f.MaterialStillNeeded(material);
             }
+            needed += FuelWanted(map, material);
             if (needed <= 0) return 0;
 
             int onItsWay = 0;

@@ -77,6 +77,32 @@ namespace SimWorld.Tests.Economy
             Assert.Equal(50, settlement.StoreCountOf(Wood));
         }
 
+        /// <summary>
+        /// A hearth that is lit, or asked to be, keeps the wood it burns on the map; switched off for the summer
+        /// it keeps none. Banked, the logs left the map and every hearth of the exposure arcs stood lit and empty
+        /// (fuel 0, switch on) while the baby beside it froze.
+        /// </summary>
+        [Fact]
+        public void Wood_a_lit_hearth_burns_stays_on_the_map_and_banks_once_the_hearth_is_put_out()
+        {
+            (Settlement settlement, CoreMap map) = WoodInTheGranary(50);
+            var hearth = (ThingWithComps)ThingMaker.MakeThing(Def("Campfire"));
+            GenSpawn.Spawn(hearth, new IntVec3(12, 0, 12), map);
+            CompFlickable flick = hearth.GetComp<CompFlickable>()!;
+            Assert.True(flick.SwitchIsOn);
+
+            Assert.Equal(0, SettlementStockInitiative.BankStoredGoods(settlement, map));
+            Assert.Equal(50, WoodOnMap(map));
+
+            flick.SwitchIsOn = false;
+            flick.SetWantSwitchOn(true); // put out, but asked to be lit again: still wants its wood
+            Assert.Equal(0, SettlementStockInitiative.BankStoredGoods(settlement, map));
+
+            flick.SetWantSwitchOn(false);
+            Assert.Equal(50, SettlementStockInitiative.BankStoredGoods(settlement, map));
+            Assert.Equal(50, settlement.StoreCountOf(Wood));
+        }
+
         [Fact]
         public void With_nothing_planned_the_wood_is_banked_as_before()
         {

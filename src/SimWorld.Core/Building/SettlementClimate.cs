@@ -45,10 +45,12 @@ namespace SimWorld.Building
     /// mean is the climate's annual mean, the season (<see cref="GenTemperature.OffsetFromSeasonCycle"/>), the
     /// weather and every active condition, the sum <c>WeatherManager</c> feeds the map without the sun's swing.
     /// So a heat wave turns the coolers on the day it begins, a warm afternoon does not, and a cooler built for
-    /// summer stops drinking wood when autumn comes. A hearth is also lit, whatever the mean, when somebody at
-    /// home is colder than they find comfortable, and burns until they are warm with a margin
-    /// (<see cref="SomeoneHomeIsCold"/>): RimWorld's player sets the heater's target, and here the settlement sets
-    /// it by the most vulnerable person in the house, which in a house with a baby is the baby.
+    /// summer stops drinking wood when autumn comes. The hearth is built on the same reading, but it burns by the
+    /// people (<see cref="SomeoneHomeIsCold"/>): lit when somebody at home is colder than they find comfortable,
+    /// whatever the mean, and kept burning until they are warm with a margin. RimWorld's player sets a heater's
+    /// target; here the settlement sets it by the most vulnerable person in the house, which in a house with a
+    /// baby is the baby. A fire burning at its 28 C ceiling all winter in an empty house ate the wood a baby's
+    /// hearth needed; a fire that answers the room burns what the room needs.
     /// <para/>
     /// <b>The era is in what can be built.</b> A hearth (<see cref="ShelterThingDefOf.Campfire"/>) needs Fire, a
     /// passive cooler Windcatchers, and only a house with a spot for one gets one: the earth-sheltered rungs keep
@@ -85,11 +87,12 @@ namespace SimWorld.Building
                 Dwelling d = dwellings[i];
                 if (d.householdId == Pawn_RelationsTracker.None || !d.IsComplete(map)) continue;
                 if (!TryComfortOf(settlement, d.householdId, out FloatRange comfy)) continue;
-                bool wantHeat = outlook.DailyMean < comfy.min
-                    || SomeoneHomeIsCold(settlement, map, d, HearthWanted(map, d) ? HearthWarmthMargin : 0f);
+                // The season says a hearth will be needed, and it is built; whether it burns is the thermostat's.
+                bool coldSeason = outlook.DailyMean < comfy.min;
+                bool someoneCold = SomeoneHomeIsCold(settlement, map, d, HearthWanted(map, d) ? HearthWarmthMargin : 0f);
                 bool wantCool = outlook.DailyMean > comfy.max;
-                placed += Tend(map, d, DwellingPartKind.HearthSpot, ShelterThingDefOf.Campfire, wantHeat);
-                placed += Tend(map, d, DwellingPartKind.CoolerSpot, ShelterThingDefOf.PassiveCooler, wantCool);
+                placed += Tend(map, d, DwellingPartKind.HearthSpot, ShelterThingDefOf.Campfire, someoneCold, coldSeason || someoneCold);
+                placed += Tend(map, d, DwellingPartKind.CoolerSpot, ShelterThingDefOf.PassiveCooler, wantCool, wantCool);
             }
             return placed;
         }
@@ -110,13 +113,12 @@ namespace SimWorld.Building
         /// <para/>
         /// <b>Why the people and not only the weather.</b> The season's mean says when a robed adult needs a fire,
         /// and that was the whole of the decision: a household lit its hearth when the day's mean fell under its
-        /// coldest-blooded member's comfortable minimum. A day can average above that and still drop eight degrees
+        /// coldest-blooded member's comfortable minimum. A day can average above that and still drop seven degrees
         /// overnight (<see cref="TemperatureTuning.DailyTempVariationAmplitude"/>), and a baby, comfortable only from
         /// 16 C, wearing nothing and unable to walk to warmth, takes hypothermia it cannot shed, because it heals
-        /// only in comfortable air. So the hearth also answers the room: lit when somebody at home is below
+        /// only in comfortable air. So the hearth answers the room: lit when somebody at home is below
         /// comfort, and kept lit until they are <see cref="HearthWarmthMargin"/> above it. Somebody away from home
-        /// is not counted: the hearth cannot warm them.
-        /// </para>
+        /// is not counted: the hearth cannot warm them, and an empty house burns no wood.
         /// </summary>
         internal static bool SomeoneHomeIsCold(Settlement settlement, Map.Map map, Dwelling dwelling, float margin)
         {
@@ -163,7 +165,7 @@ namespace SimWorld.Building
             return any;
         }
 
-        private static int Tend(Map.Map map, Dwelling dwelling, DwellingPartKind spotKind, ThingDef deviceDef, bool wanted)
+        private static int Tend(Map.Map map, Dwelling dwelling, DwellingPartKind spotKind, ThingDef deviceDef, bool wanted, bool build)
         {
             int placed = 0;
             foreach (IntVec3 spot in dwelling.Spots(spotKind))
@@ -171,7 +173,7 @@ namespace SimWorld.Building
                 Thing? device = DeviceAt(map, spot, deviceDef);
                 if (device == null)
                 {
-                    if (!wanted || !deviceDef.IsResearchFinished || DwellingPlanner.SiteAt(map, spot)) continue;
+                    if (!build || !deviceDef.IsResearchFinished || DwellingPlanner.SiteAt(map, spot)) continue;
                     if (!GenConstruct.CanPlaceBlueprintAt(deviceDef, spot, map, out _)) continue;
                     ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(deviceDef);
                     if (blueprintDef == null) continue;
