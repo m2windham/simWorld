@@ -90,13 +90,12 @@ namespace SimWorld.Tests.God
             return (idle, total, jobs);
         }
 
-        /// <summary>Break the sod needs the Agrarian era reached, which an Agrarian village's start does not
-        /// complete (<c>ResearchManager.CurrentEra</c> is the last era finished); the playtest had researched it.</summary>
+        /// <summary>Break the sod needs the civilization in the Agrarian age, which is where an Agrarian village
+        /// starts (<c>ResearchManager.CurrentEra</c> is the era it is in, docs/design/era-progression.md §1).</summary>
         private static void ReachAgrarian(CoreMap map)
         {
             _ = map;
-            EraDef agrarian = DefDatabase<EraDef>.GetNamed("Agrarian");
-            foreach (var project in agrarian.Projects) Find.ResearchManager.SetProjectFinishedForSetup(project);
+            Assert.Same(DefDatabase<EraDef>.GetNamed("Agrarian"), Find.ResearchManager.CurrentEra);
         }
 
         /// <summary>Every wild animal gone: the hunt has nothing to find.</summary>
