@@ -605,7 +605,8 @@ namespace SimWorld.Building
         /// is the door, so the settlement builds one wall fewer than it wanted and one door. At the founding
         /// band's size the wall count is at <see cref="ConstructionInitiativeTuning.MaxWallShelterCount"/> and
         /// the ring it closes holds a bed for the largest band <c>SettlementTuning.FoundingBandRange</c>
-        /// founds. Pinned by <c>SettlementCompoundTests</c> as "every citizen's bed fits inside", never as
+        /// founds but one: one slot is the dormitory's hearth (<see cref="HearthCell"/>), and that band's last
+        /// bed goes outside, as a bigger settlement's do. Pinned by <c>SettlementCompoundTests</c> as "every citizen's bed fits inside", never as
         /// those literals.
         /// <para/>
         /// A band too small for its walls to go round its beds gets no compound and places as before. A

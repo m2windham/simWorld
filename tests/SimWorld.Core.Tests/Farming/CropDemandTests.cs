@@ -123,7 +123,9 @@ namespace SimWorld.Tests.Farming
             Zone_Growing field = CropDemandFields.FieldOf(map, Cotton.fieldLabel)!;
             Assert.True(field.allowSow);
 
+            // Dressed in every cloth garment the tailor makes (pants too since exposure4), so no gap is left.
             citizens[0].apparel.Wear((ThingWithComps)ThingMaker.MakeThing(Def("Apparel_Shirt"), Def("Cloth")));
+            citizens[0].apparel.Wear((ThingWithComps)ThingMaker.MakeThing(Def("Apparel_Pants"), Def("Cloth")));
             CropDemandFields.Run(map, null);
             Assert.False(field.allowSow);
         }
