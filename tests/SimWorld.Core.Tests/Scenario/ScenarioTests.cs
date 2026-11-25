@@ -49,7 +49,7 @@ namespace SimWorld.Tests.Scenario
 
             string text = scenario.GetFullInformationText().ToLowerInvariant();
 
-            Assert.Contains("5 pawns", text);
+            Assert.Contains("5 citizens", text);
             Assert.Contains("player civilization", text);
             Assert.Contains("sticks and stones era", text);
         }
