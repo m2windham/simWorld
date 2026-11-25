@@ -534,22 +534,24 @@ namespace SimWorld.Crafting
         }
 
         /// <summary>
-        /// The armour <paramref name="recipe"/> waits behind: another of the best, for another slot, made of one
-        /// metal only (<see cref="HeldMetals"/>) and still wanted by someone, while <paramref name="recipe"/> takes
-        /// metal too. Null when it waits on none. While plate is short, a metal helmet goes to a citizen already in
-        /// plate, so a soldier is kitted out whole before the next is started: a fifteen-metal helmet is always
-        /// ready before a fifty-steel coat, and helmets for the whole town used up a generated medieval map's only
-        /// iron vein with no plate made (measured: nineteen helmets and four mail shirts, no plate, in fifteen days).
+        /// The armour <paramref name="recipe"/> waits behind: another of the best, for another slot, that also
+        /// takes metal, scores higher (<see cref="ArmourScore"/>) and is still wanted by someone. Null when it
+        /// waits on none. While mail or plate is short, a metal helmet goes only to a citizen already wearing it,
+        /// so a soldier is kitted out whole before the next is started. A fifteen-metal helmet is always ready
+        /// before a thirty-iron mail shirt or a fifty-steel coat, and helmets for the whole town used up the iron:
+        /// on a generated medieval map nineteen helmets and four mail shirts and no plate in fifteen days, and on
+        /// 40/201's arc thirty-two iron helmets and no mail from the only vein on the map.
         /// </summary>
         private static RecipeDef? KitFirst(RecipeDef recipe, List<RecipeDef> best, IReadOnlyList<Pawn> citizens)
         {
             if (!TakesMetal(recipe) || OneMetalOnly(recipe)) return null;
-            ApparelProperties worn = recipe.products![0].thingDef.apparel!;
+            ThingDef own = recipe.products![0].thingDef;
+            float score = ArmourScore(own);
             foreach (RecipeDef other in best)
             {
-                if (ReferenceEquals(other, recipe) || !OneMetalOnly(other)) continue;
+                if (ReferenceEquals(other, recipe) || !TakesMetal(other)) continue;
                 ThingDef product = other.products![0].thingDef;
-                if (product.apparel!.ConflictsWith(worn)) continue;
+                if (product.apparel!.ConflictsWith(own.apparel!) || ArmourScore(product) <= score) continue;
                 if (WouldWear(product, citizens) > 0) return other;
             }
             return null;

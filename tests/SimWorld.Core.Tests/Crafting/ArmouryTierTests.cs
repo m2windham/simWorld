@@ -391,6 +391,26 @@ namespace SimWorld.Tests.Crafting
             Assert.Contains(Def("Steel"), Armoury.HeldMetals(map));
         }
 
+        /// <summary>The classical twin: mail is the best armour, and a helmet goes only to a citizen already in
+        /// mail, so the iron makes whole kits before helmets for all.</summary>
+        [Fact]
+        public void While_mail_is_short_helmets_go_to_those_in_mail()
+        {
+            Know("StoneTools", "Copper", "Bronze", "BronzeWeapons", "Phalanx", "Iron", "StandingArmies");
+            CoreMap map = NewMap();
+            ThingWithComps smithy = Bench(map, "Smithy", 20, 20);
+            Spawn(map, "MineableSteel", 33, 33);
+            Spawn(map, "Iron", 12, 12, 75);
+            Pawn veteran = Citizen(map, 2, 2, "Bow_Short", "Veteran");
+            for (int i = 0; i < 3; i++) Citizen(map, 3 + i, 2, "Bow_Short", "Archer" + i);
+            veteran.apparel!.Wear((ThingWithComps)ThingMaker.MakeThing(Def("Apparel_ChainShirt"), Def("Iron")));
+
+            OutfittingInitiative.Run(map);
+
+            Assert.Equal(3, BillOn(smithy, "Make_Apparel_ChainShirt")?.targetCount);
+            Assert.Equal(1, BillOn(smithy, "Make_Apparel_SimpleHelmet")?.targetCount);
+        }
+
         // ---- buried ore ----
 
         /// <summary>A face across deep water from the band is no face: the town cannot get a miner to it.</summary>
