@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Mood for the edicts in EdictDefs/Edicts_Progression.xml. The situational ones follow Thoughts_Edicts.xml:
+    ThoughtWorker_UnderEdict, active exactly while the edict is in force. The feast's memory is the one edict
+    consequence that outlasts its edict, on purpose: it is granted only when the feast runs its full day
+    (EdictDef.completedThought), so cutting it short forfeits it. Values are this port's, not sourced.
+  -->
+
+  <ThoughtDef>
+    <defName>UnderRaiseTheRoofs</defName>
+    <workerClass>SimWorld.God.ThoughtWorker_UnderEdict</workerClass>
+    <stages>
+      <li>
+        <label>raise the roofs</label>
+        <description>Timber and thatch from first light. At least we will sleep dry.</description>
+        <baseMoodEffect>-2</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>UnderLeanRations</defName>
+    <workerClass>SimWorld.God.ThoughtWorker_UnderEdict</workerClass>
+    <stages>
+      <li>
+        <label>lean rations</label>
+        <description>A thin bowl and a long wait for it. The stores are for later, they say.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>UnderHarvestFeast</defName>
+    <workerClass>SimWorld.God.ThoughtWorker_UnderEdict</workerClass>
+    <stages>
+      <li>
+        <label>feast day</label>
+        <description>No work today. Music, food, and nobody asking where I have been.</description>
+        <baseMoodEffect>4</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>RememberedHarvestFeast</defName>
+    <durationDays>6</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>remembered the feast</label>
+        <description>That was a good day. We should have more of them.</description>
+        <baseMoodEffect>8</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

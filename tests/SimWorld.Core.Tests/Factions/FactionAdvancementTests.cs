@@ -24,6 +24,7 @@ namespace SimWorld.Tests.Factions
         public FactionAdvancementTests(CoreContentFixture content) : base(content)
         {
             Find.FactionManager = new FactionManager();
+            Find.ResearchManager = new ResearchManager();
         }
 
         private static FactionDef Def(string name) => DefDatabase<FactionDef>.GetNamed(name);
@@ -35,6 +36,36 @@ namespace SimWorld.Tests.Factions
         private static void SetDay(float day) => Find.TickManager.DebugSetTicksGame((int)(day * GenDate.TicksPerDay));
 
         private static void AtEra(string era) => SetDay(FactionAdvancement.DayReached(Era(era)) + 1f);
+
+        /// <summary>The player's civilization is in <paramref name="era"/>: every era before it learned, as a
+        /// scenario seeds it.</summary>
+        private static void PlayerIn(string era)
+        {
+            foreach (ResearchProjectDef p in DefDatabase<ResearchProjectDef>.AllDefsListForReading)
+            {
+                if (p.era != null && p.era.order < Era(era).order) Find.ResearchManager.SetProjectFinishedForSetup(p);
+            }
+            Assert.Same(Era(era), Find.ResearchManager.CurrentEra);
+        }
+
+        private static EraDef After(string era) =>
+            DefDatabase<EraDef>.AllDefsListForReading.Where(e => e.order > Era(era).order).OrderBy(e => e.order).First();
+
+        /// <summary>Rivals that have mastered <paramref name="era"/>: the world is in the era after it, and the
+        /// player keeps up, in that same era, so the bound on the clock does not come into it.</summary>
+        private static void ArmedWith(string era)
+        {
+            EraDef next = After(era);
+            SetDay(FactionAdvancement.DayReached(next) + 1f);
+            PlayerIn(next.defName);
+        }
+
+        private static List<string> TribeRoster()
+        {
+            Faction tribe = NewFaction("TribalCivilization");
+            return FactionAdvancement.CurrentRoster(Def("TribalCivilization").GetGroupMaker(PawnGroupKindDefOf.Combat)!.options!, tribe)
+                .Select(o => o.kind.defName).ToList();
+        }
 
         private static List<Pawn> Squad(Faction faction, float points, int seed)
         {
@@ -73,8 +104,9 @@ namespace SimWorld.Tests.Factions
             Faction player = NewFaction("PlayerCivilization");
 
             Assert.Equal(TechLevel.Neolithic, FactionAdvancement.TechLevelOf(tribe));
-            AtEra("Medieval");
-            Assert.Same(Era("Medieval"), FactionAdvancement.EraOf(tribe));
+            ArmedWith("Medieval");
+            // In the Industrial age, fighting with the Medieval age it has mastered, as the player does.
+            Assert.Same(Era("Industrial"), FactionAdvancement.EraOf(tribe));
             Assert.Equal(TechLevel.Medieval, FactionAdvancement.TechLevelOf(tribe));
 
             Assert.Null(FactionAdvancement.EraOf(player));
@@ -105,7 +137,7 @@ namespace SimWorld.Tests.Factions
         [InlineData("Industrial")]
         public void A_rival_fields_only_the_kinds_of_the_era_the_world_has_reached(string era)
         {
-            AtEra(era);
+            ArmedWith(era);
             foreach (string def in new[] { "TribalCivilization", "RoughOutlanders" })
             {
                 PawnGroupMaker maker = Def(def).GetGroupMaker(PawnGroupKindDefOf.Combat)!;
@@ -118,7 +150,7 @@ namespace SimWorld.Tests.Factions
         [Fact]
         public void A_roster_of_kinds_with_no_era_is_left_whole()
         {
-            AtEra("Medieval");
+            ArmedWith("Medieval");
             PawnGroupMaker maker = Def("OutlanderCivilization").GetGroupMaker(PawnGroupKindDefOf.Combat)!;
             Assert.Same(maker.options, FactionAdvancement.CurrentRoster(maker.options!, NewFaction("OutlanderCivilization")));
         }
@@ -128,7 +160,7 @@ namespace SimWorld.Tests.Factions
         [Fact]
         public void A_medieval_raid_carries_medieval_arms()
         {
-            AtEra("Medieval");
+            ArmedWith("Medieval");
             Faction tribe = NewFaction("TribalCivilization");
             List<Pawn> squad = Squad(tribe, 1000f, 404);
             Assert.NotEmpty(squad);
@@ -150,7 +182,10 @@ namespace SimWorld.Tests.Factions
             float prevArmour = -1f;
             foreach (string era in new[] { "SticksAndStones", "Bronze", "Classical", "Medieval" })
             {
-                AtEra(era);
+                // The stone-age band is what a rival fields before it has mastered any era: day 0.
+                Find.ResearchManager = new ResearchManager();
+                if (era == "SticksAndStones") SetDay(0f);
+                else ArmedWith(era);
                 int count = 0, squads = 0;
                 float armour = 0f;
                 for (int seed = 0; seed < 10; seed++)
@@ -208,12 +243,51 @@ namespace SimWorld.Tests.Factions
                 .Where(d => Armoury.IsArmour(d) && d.apparel!.tags != null && d.apparel.tags.Any(kind.apparelTags!.Contains))
                 .Sum(d => d.GetStatValueAbstract(ArmouryDefOf.ArmorRating_Sharp));
 
+        // ---- the clock, bounded by the player (docs/design/era-progression.md section 4) ----
+
+        [Fact]
+        public void A_town_that_keeps_up_meets_rivals_armed_with_the_era_it_has_mastered()
+        {
+            AtEra("Classical");
+            PlayerIn("Classical");
+            Assert.Same(Era("Classical"), FactionAdvancement.RivalEra());
+            Assert.Same(Find.ResearchManager.MasteredEra, FactionAdvancement.ArmsEra(FactionAdvancement.RivalEra()));
+            Assert.All(TribeRoster(), k => Assert.Same(Era("Bronze"), DefDatabase<PawnKindDef>.GetNamed(k).era));
+        }
+
+        [Fact]
+        public void A_town_far_behind_the_clock_meets_rivals_only_one_era_ahead()
+        {
+            // The clock says Medieval; the town is still in Sticks and stones. Uncapped, it would meet
+            // Classical spearmen and longbowmen with its founding bows. It meets rivals one age ahead.
+            AtEra("Medieval");
+            Assert.Same(Era("Medieval"), FactionAdvancement.WorldEra());
+            Assert.Same(Era("SticksAndStones"), Find.ResearchManager.CurrentEra);
+
+            Assert.Same(Era("Agrarian"), FactionAdvancement.RivalEra());
+            Assert.Equal(new[] { "Raider_Melee", "Raider_Bow" }, TribeRoster());
+
+            // Catching up two eras moves the rivals with it, still one ahead of the town.
+            PlayerIn("Bronze");
+            Assert.Same(Era("Classical"), FactionAdvancement.RivalEra());
+            Assert.All(TribeRoster(), k => Assert.Same(Era("Bronze"), DefDatabase<PawnKindDef>.GetNamed(k).era));
+        }
+
+        [Fact]
+        public void A_town_ahead_of_the_clock_keeps_its_lead()
+        {
+            SetDay(FactionAdvancement.DayReached(Era("Bronze")) + 1f);
+            PlayerIn("Medieval");
+            Assert.Same(Era("Bronze"), FactionAdvancement.RivalEra());
+            Assert.Equal(new[] { "Raider_Melee", "Raider_Bow" }, TribeRoster());
+        }
+
         // ---- save/load ----
 
         [Fact]
         public void A_saved_and_loaded_game_clock_gives_a_rival_the_same_era_and_roster()
         {
-            AtEra("Classical");
+            ArmedWith("Classical");
             Faction tribe = NewFaction("TribalCivilization");
             EraDef? before = FactionAdvancement.EraOf(tribe);
             List<string> rosterBefore = FactionAdvancement.CurrentRoster(

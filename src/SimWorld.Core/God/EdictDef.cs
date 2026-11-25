@@ -112,6 +112,48 @@ namespace SimWorld.God
         /// </summary>
         public ThoughtDef? moodThought;
 
+        /// <summary>
+        /// Days the edict stands before it lapses on its own; 0 stands until rescinded. A lapse is the edict
+        /// running its course: it is when <see cref="completedThought"/> is granted. RimWorld's nearest shape is
+        /// a ritual or a royal permit, both of which act for a span and are then spent (recalled, not checked).
+        /// </summary>
+        public float durationDays;
+
+        /// <summary>
+        /// Days after the edict ends, by lapse, rescission or contradiction, before it can be issued again; 0 for
+        /// none. RimWorld's royal permits carry exactly this (<c>RoyalTitlePermitDef.cooldownDays</c>, recalled
+        /// from the Royalty defs, not checked against source here), and so do its rituals: a cost paid in time, so
+        /// a lever cannot be flicked on every time it pays and off every time it costs.
+        /// </summary>
+        public float cooldownDays;
+
+        /// <summary>
+        /// Lean rations: a citizen it applies to eats only once urgently hungry, not merely hungry. The food it
+        /// saves is RimWorld's own: a hungry pawn's need falls at half the fed rate and an urgently hungry one's
+        /// at a quarter (<see cref="Needs.Need_Food.FoodFallPerTickAssumingCategory"/>), so waiting longer to eat
+        /// burns less. The price is the hunger thoughts the wait brings, on top of <see cref="moodThought"/>.
+        /// Read by <see cref="AI.ThinkNode_ConditionalHungry"/>; starving still eats at once.
+        /// </summary>
+        public bool rationFood;
+
+        /// <summary>
+        /// A day of rest: a citizen it applies to does no routine work, an edict's included, and takes
+        /// recreation until the need is nearly full rather than only once it runs low. Emergencies are still
+        /// answered (fire, the urgently wounded), and needs still come first. RimWorld's party gathering and its
+        /// recreation timetable block are the two shapes this joins: time given over to recreation by decree,
+        /// work stopped for it. Read by <see cref="AI.JobGiver_Work"/>, <see cref="AI.JobGiver_Edicts"/> and
+        /// <see cref="AI.ThinkNode_ConditionalLowJoy"/>.
+        /// </summary>
+        public bool restDay;
+
+        /// <summary>
+        /// A memory granted to every living citizen the edict applies to when it runs its full
+        /// <see cref="durationDays"/>; not when it is rescinded early. The good half of a festival is the memory
+        /// of it, as RimWorld's party leaves an "attended party" memory behind (recalled, not checked).
+        /// Must be a memory thought: a <see cref="Thoughts.ThoughtDef.durationDays"/>, not a worker.
+        /// </summary>
+        public ThoughtDef? completedThought;
+
         private EdictWorker? workerInt;
 
         /// <summary>Lazily constructed, cached worker instance (same pattern as <see cref="Work.WorkGiverDef.Worker"/>).</summary>
@@ -139,6 +181,16 @@ namespace SimWorld.God
             {
                 yield return "moodThought must be a situational thought (a workerClass, not a duration) so it " +
                     "tracks edict activation automatically instead of needing to be granted and revoked by hand.";
+            }
+            if (durationDays < 0f) yield return "durationDays must be >= 0.";
+            if (cooldownDays < 0f) yield return "cooldownDays must be >= 0.";
+            if (completedThought != null && durationDays <= 0f)
+            {
+                yield return "completedThought needs a durationDays: it is granted when the edict runs its course.";
+            }
+            if (completedThought != null && completedThought.IsSituational)
+            {
+                yield return "completedThought must be a memory (durationDays), not a situational thought.";
             }
             if (requiredEra != null && obsoleteEra != null && requiredEra.order >= obsoleteEra.order)
             {

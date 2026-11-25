@@ -72,17 +72,17 @@ namespace SimWorld.Tests.Research
             var reached = new List<EraDef>();
             manager.EraReached += (from, to) => reached.Add(to);
 
-            // The ladder's first era is where a civilization starts, so completing it is not yet a transition:
-            // CurrentEra is "the furthest era reached", and that is already the first era from tick zero.
+            // A civilization starts in the first era. Learning it is the way into the second: CurrentEra is the
+            // era the civilization is in, and finishing the first era's research moves it on (with no world,
+            // there is no settlement for the era's conditions to read, so research alone decides).
+            Assert.Equal(OrderedEras()[0], manager.CurrentEra);
             CompleteEra(OrderedEras()[0]);
-            Assert.Empty(reached);
-
-            CompleteEra(OrderedEras()[1]);
             Assert.Single(reached);
             Assert.Equal(OrderedEras()[1], reached[0]);
+            Assert.Equal(OrderedEras()[1], manager.CurrentEra);
 
-            // Finishing more projects inside an era already reached is not a second transition.
-            CompleteEra(OrderedEras()[1]);
+            // Finishing more projects of an era already left is not a second transition.
+            CompleteEra(OrderedEras()[0]);
             Assert.Single(reached);
         }
 
@@ -93,7 +93,6 @@ namespace SimWorld.Tests.Research
             manager.EraReached += (f, t) => from = f;
 
             CompleteEra(OrderedEras()[0]);
-            CompleteEra(OrderedEras()[1]);
 
             Assert.Equal(OrderedEras()[0], from);
         }
@@ -110,10 +109,11 @@ namespace SimWorld.Tests.Research
             CompleteEra(OrderedEras()[2]);
             Assert.Empty(reached);
 
-            // Completing the first era now lets the ladder run all the way to the third in one project finish.
+            // Completing the first era now lets the ladder run on, one era at a time, into the fourth: the
+            // first, second and third are all learned.
             CompleteEra(OrderedEras()[0]);
 
-            Assert.Equal(new[] { OrderedEras()[1], OrderedEras()[2] }, reached);
+            Assert.Equal(new[] { OrderedEras()[1], OrderedEras()[2], OrderedEras()[3] }, reached);
         }
 
         [Fact]
@@ -127,9 +127,8 @@ namespace SimWorld.Tests.Research
 
             EraDef first = OrderedEras()[0];
             EraDef second = OrderedEras()[1];
-            CompleteEra(first);
-            ResearchProjectDef last = second.SpineProjects[second.SpineProjects.Count - 1];
-            foreach (ResearchProjectDef project in second.Projects)
+            ResearchProjectDef last = first.SpineProjects[first.SpineProjects.Count - 1];
+            foreach (ResearchProjectDef project in first.Projects)
             {
                 if (project != last && !manager.IsFinished(project)) manager.FinishProject(project);
             }
@@ -153,7 +152,6 @@ namespace SimWorld.Tests.Research
         public void Reaching_an_era_records_a_chronicle_line_and_a_letter()
         {
             CompleteEra(OrderedEras()[0]);
-            CompleteEra(OrderedEras()[1]);
 
             EraDef reached = OrderedEras()[1];
             string headline = EraTransitionUtility.ChronicleLine(OrderedEras()[0], reached);
@@ -164,6 +162,9 @@ namespace SimWorld.Tests.Research
             List<Letter> letters = EraLetters();
             Assert.Single(letters);
             Assert.Contains(reached.LabelCap, letters[0].text);
+            // The letter says what the era changed, from content: Agrarian opens edicts and asks for a surplus.
+            foreach (string line in EraUnlocks.Describe(reached)) Assert.Contains(line, letters[0].text);
+            Assert.Contains("New edicts:", letters[0].text);
         }
 
         /// <summary>The second playtest's era letter read "agrarian": content writes labels lower case for
@@ -173,7 +174,6 @@ namespace SimWorld.Tests.Research
         public void An_era_is_named_capitalised_in_its_letter_and_its_moment()
         {
             CompleteEra(OrderedEras()[0]);
-            CompleteEra(OrderedEras()[1]);
             EraDef reached = OrderedEras()[1];
             Assert.NotEqual(reached.label, reached.LabelCap); // content's label is lower case, or this proves nothing
 
@@ -190,6 +190,7 @@ namespace SimWorld.Tests.Research
         {
             CompleteEra(OrderedEras()[0]);
             CompleteEra(OrderedEras()[1]);
+            Assert.Equal(OrderedEras()[2], manager.CurrentEra);
             int chronicleEntriesBefore = Find.Storyteller.Chronicle.Count;
             int lettersBefore = EraLetters().Count;
             Assert.True(lettersBefore > 0, "the setup should have announced at least one era.");
@@ -199,7 +200,7 @@ namespace SimWorld.Tests.Research
             Find.ResearchManager = loaded;
 
             Assert.Empty(errors);
-            Assert.Equal(OrderedEras()[1], loaded.CurrentEra);
+            Assert.Equal(OrderedEras()[2], loaded.CurrentEra);
             Assert.Equal(chronicleEntriesBefore, Find.Storyteller.Chronicle.Count);
             Assert.Equal(lettersBefore, EraLetters().Count);
         }
@@ -219,8 +220,10 @@ namespace SimWorld.Tests.Research
             Assert.Empty(reached);
             Assert.Empty(EraLetters());
 
-            // …but the seeding is real: the ladder has moved, and the civilization researches at its level.
-            Assert.Equal(Era("Agrarian"), manager.CurrentEra);
+            // …but the seeding is real: the civilization is in the Bronze age, and researches at the level of
+            // the era it has mastered, the one before.
+            Assert.Equal(Era("Bronze"), manager.CurrentEra);
+            Assert.Equal(Era("Agrarian"), manager.MasteredEra);
             Assert.Equal(Era("Agrarian").techLevel, manager.ResearcherTechLevel);
         }
 
@@ -284,7 +287,9 @@ namespace SimWorld.Tests.Research
             var parms = new IncidentParms { target = new CivilizationTarget(Find.Storyteller) };
             Assert.False(fallout.Worker.CanFireNow(parms));
 
-            CompleteLadderThrough(fallout.minEra!);
+            // It needs the civilization in its era, which is entered once every era before it is learned.
+            CompleteLadderThrough(OrderedEras().Last(e => e.order < fallout.minEra!.order));
+            Assert.Equal(fallout.minEra, manager.CurrentEra);
 
             Assert.True(fallout.Worker.CanFireNow(parms));
         }
@@ -329,10 +334,10 @@ namespace SimWorld.Tests.Research
             var parms = new IncidentParms { target = new CivilizationTarget(Find.Storyteller) };
             Assert.True(earlyOnly.Worker.CanFireNow(parms));
 
-            CompleteLadderThrough(Era("Bronze"));
+            CompleteLadderThrough(Era("Agrarian")); // in the Bronze age: still inside the window
             Assert.True(earlyOnly.Worker.CanFireNow(parms));
 
-            CompleteLadderThrough(Era("Classical"));
+            CompleteLadderThrough(Era("Bronze")); // in the Classical age: outgrown
             Assert.False(earlyOnly.Worker.CanFireNow(parms));
         }
 

@@ -129,7 +129,7 @@ namespace SimWorld.World
         public static IReadOnlyList<FactionDef> EligibleFactionDefs(World world)
         {
             if (world == null) throw new ArgumentNullException(nameof(world));
-            TechLevel ceiling = Find.ResearchManager.CurrentEra?.techLevel ?? TechLevel.Neolithic;
+            TechLevel ceiling = (Find.ResearchManager.MasteredEra ?? Find.ResearchManager.CurrentEra)?.techLevel ?? TechLevel.Neolithic;
             var result = new List<FactionDef>();
             foreach (FactionDef def in DefDatabase<FactionDef>.AllDefsListForReading)
             {

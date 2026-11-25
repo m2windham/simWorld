@@ -28,9 +28,10 @@ namespace SimWorld.Tests.Research
     /// </summary>
     public class EraPacingTests : ContentTestBase
     {
-        /// <summary>The intended years with each era current, from the era pacing translation in
-        /// <c>docs/status.json</c> (research). The last era has none: it is lived in from its turn onward.</summary>
-        private static readonly float[] IntendedYears = { 2f, 3f, 4f, 5f, 6f, 7f, 8f };
+        /// <summary>The intended years a nominal settlement spends in each era, learning it, from
+        /// <c>docs/design/era-progression.md</c> §2 and <c>Eras.xml</c>. The first era is the starting kit: its
+        /// research is a few days, and its conditions (a roof over half the band) take the rest.</summary>
+        private static readonly float[] IntendedYears = { 0.25f, 1f, 1.5f, 2f, 2.5f, 3f, 3.5f, 4f };
 
         /// <summary>The settlement the costs were derived for (<c>Eras.xml</c>): a founding band grown a little.</summary>
         private const int NominalCitizens = 25;
@@ -88,18 +89,15 @@ namespace SimWorld.Tests.Research
         }
 
         [Fact]
-        public void The_first_era_is_the_bands_starting_kit_and_every_later_era_is_priced_above_RimWorlds_rate()
+        public void The_first_era_is_the_bands_starting_kit_at_RimWorlds_price()
         {
             // The first era gates the first house and stove. Priced up, a founding band waited two months for a
-            // roof and one bench seed lost everyone to a heat wave, so it stays at RimWorld's price. Every era
-            // after it is priced above, the finding the multiplier answers: at RimWorld's prices the arc went by
-            // in months.
+            // roof and one bench seed lost everyone to a heat wave, so it stays at RimWorld's price. The later
+            // factors are derived from the intended era lengths (the test below), not pinned here: Industrial,
+            // the largest authored tree on two benches, comes out under RimWorld's rate.
             List<EraDef> eras = OrderedEras();
             Assert.Equal(1f, eras[0].researchCostFactor);
-            foreach (EraDef era in eras.Skip(1))
-            {
-                Assert.True(era.researchCostFactor > 1f, $"{era.defName} is priced at {era.researchCostFactor}x.");
-            }
+            Assert.All(eras, e => Assert.True(e.researchCostFactor > 0f, e.defName));
         }
 
         [Fact]
@@ -122,34 +120,39 @@ namespace SimWorld.Tests.Research
         // ---- the shape it produces ----
 
         /// <summary>
-        /// Recomputes, from the loaded content, how long a nominal settlement spends with each era current:
-        /// the effective cost of the era after it, over the scholars it has and the points each earns. The
-        /// first era also pays for its own content. Pinned to the intent within 10%, so a project added to an
-        /// era, or a ratio changed, that moves an era off its intended length fails here rather than in a
-        /// ten-hour arc run.
+        /// Recomputes, from the loaded content, how long a nominal settlement spends in each era: the effective
+        /// cost of the era's own research, priced at the tech level of the era before it (the one mastered), over
+        /// the scholars the settlement keeps in it and the points each earns. Pinned to the intent within 10%, so
+        /// a project added to an era, or a ratio changed, that moves an era off its intended length fails here
+        /// rather than in a ten-hour arc run. The first era's research is its starting kit: it must fit well inside
+        /// the era, whose conditions take the rest.
         /// </summary>
         [Fact]
         public void A_nominal_settlement_spends_the_intended_years_in_each_era()
         {
             List<EraDef> eras = OrderedEras();
-            Assert.Equal(IntendedYears.Length + 1, eras.Count);
+            Assert.Equal(IntendedYears.Length, eras.Count);
 
-            float total = 0f;
-            for (int i = 0; i < IntendedYears.Length; i++)
+            float kit = EffectiveCost(eras[0], eras[0].techLevel) / PointsPerDay(1) / DaysPerYear;
+            Assert.True(kit <= IntendedYears[0] * 0.6f,
+                $"The starting kit takes {kit:0.00} years of the first era's {IntendedYears[0]}; its conditions need the rest.");
+
+            float total = IntendedYears[0];
+            for (int i = 1; i < IntendedYears.Length; i++)
             {
-                EraDef current = eras[i];
-                EraDef next = eras[i + 1];
-                float cost = EffectiveCost(next, current.techLevel);
-                if (i == 0) cost += EffectiveCost(current, current.techLevel);
-                int scholars = WorksInitiativeTuning.ResearchBenchesWanted(NominalCitizens, current);
+                EraDef era = eras[i];
+                EraDef mastered = eras[i - 1];
+                float cost = EffectiveCost(era, mastered.techLevel);
+                int scholars = WorksInitiativeTuning.ResearchBenchesWanted(NominalCitizens, era);
                 float years = cost / PointsPerDay(scholars) / DaysPerYear;
                 total += years;
 
                 Assert.True(years >= IntendedYears[i] * 0.9f && years <= IntendedYears[i] * 1.1f,
-                    $"{current.defName} lasts {years:0.00} years for a nominal settlement; the intent is {IntendedYears[i]}.");
+                    $"{era.defName} lasts {years:0.00} years for a nominal settlement; the intent is {IntendedYears[i]}.");
+                Assert.Equal(IntendedYears[i], era.intendedYears);
             }
 
-            Assert.InRange(total, 30f, 50f);
+            Assert.InRange(total, 15f, 22f);
         }
 
         // ---- the agenda ----

@@ -20,10 +20,16 @@ namespace SimWorld.AI
     /// </summary>
     public sealed class ThinkNode_ConditionalLowJoy : ThinkNode_Conditional
     {
+        /// <summary>How full recreation is let run on a day of rest (<see cref="God.EdictDef.restDay"/>): nearly to
+        /// the top, so the day is spent at it. Not sourced; RimWorld's recreation block simply runs the hour.</summary>
+        public const float RestDayJoyTarget = 0.9f;
+
         protected override bool Satisfied(Pawn pawn)
         {
             Need_Joy? joy = pawn.needs.joy;
-            return joy != null && joy.CurLevel < Need_Joy.ThreshLow;
+            if (joy == null) return false;
+            if (joy.CurLevel < Need_Joy.ThreshLow) return true;
+            return joy.CurLevel < RestDayJoyTarget && God.EdictWorkUtility.OnRestDay(pawn);
         }
     }
 }

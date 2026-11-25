@@ -31,6 +31,8 @@ namespace SimWorld.AI
 
             IReadOnlyList<EdictDef> active = Find.God.ActiveEdicts;
             if (active.Count == 0) return null;
+            // A day of rest outranks every other edict's work push: the day is the decree.
+            if (EdictWorkUtility.OnRestDay(pawn)) return null;
 
             List<WorkGiverDef>? givers = null;
             for (int e = 0; e < active.Count; e++)

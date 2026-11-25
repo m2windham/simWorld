@@ -20,13 +20,18 @@ namespace SimWorld.Research
         private Dictionary<ResearchProjectDef, float> progress = new Dictionary<ResearchProjectDef, float>();
         private TechLevel researcherTechLevel = TechLevel.Neolithic;
 
+        /// <summary>The era the civilization is in (<see cref="CurrentEra"/>). Null until first read, and then
+        /// derived from research alone: a new game, or a save from before the era was kept.</summary>
+        private EraDef? currentEra;
+
         /// <summary>Raised whenever a project finishes, whether from work, <see cref="FinishProject"/>, or debug.</summary>
         public event Action<ResearchProjectDef>? ProjectFinished;
 
         /// <summary>
         /// Raised when the civilization enters a new era: the era left behind (null only when the ladder had
-        /// no era below the one reached) and the era reached. Fires exactly once per era crossed, and only
-        /// from a project actually finishing — never from loading a save.
+        /// no era below the one reached) and the era entered. Fires exactly once per era crossed, from a project
+        /// finishing or from <see cref="TryAdvanceEra"/> finding an era's conditions met — never from loading a
+        /// save and never from setting a game up.
         /// </summary>
         public event Action<EraDef?, EraDef>? EraReached;
 
@@ -117,17 +122,16 @@ namespace SimWorld.Research
         {
             if (def == null) throw new ArgumentNullException(nameof(def));
 
-            // Read the era before the progress write, not from a persisted "last era" field: the era a
-            // civilization is in is derived from what it has finished, so the honest before/after pair is
-            // the one that brackets the mutation. It also means loading a save can never re-fire history —
-            // nothing outside this method moves the ladder.
-            EraDef? eraBefore = CurrentEra;
+            // Read before the progress write, so a new game's first read derives the era from the research it
+            // had, not from this project. Loading a save can never re-fire history: the era is kept, and only
+            // TryAdvanceEra moves it.
+            _ = CurrentEra;
 
             progress[def] = def.baseCost;
             if (currentProj == def) currentProj = null;
             Notify_ResearchProjectFinished(def);
             ProjectFinished?.Invoke(def);
-            CheckEraTransition(eraBefore);
+            TryAdvanceEra();
             // After the era check, so a crossing is announced against the authored ladder before anything is
             // minted past its end (research.endless).
             EnsureSomethingToResearch();
@@ -142,29 +146,61 @@ namespace SimWorld.Research
         }
 
         /// <summary>
-        /// Fires <see cref="EraReached"/> once for every era the civilization crossed by finishing a project.
-        /// One project can complete more than one era at a time — a later era whose spine was already done
-        /// becomes reachable the moment the era below it completes — and each of those is a separate moment
-        /// in the civilization's history, so each gets its own event rather than one event for the jump.
+        /// Moves the civilization on from <see cref="CurrentEra"/> while the way out of it is open
+        /// (<see cref="EraDef.GateOpen"/>: its research spine finished and its conditions met), firing
+        /// <see cref="EraReached"/> once for every era entered. One call can cross more than one era (the player
+        /// may have researched ahead), and each is its own moment, so each gets its own event. Called when a
+        /// project finishes and on the god layer's long tick (<see cref="God.GodManager.GodTick"/>), which is how
+        /// an era whose research was done turns once the town meets its conditions. The ladder never runs
+        /// backwards: a condition that fails after the turn does not take the era away.
         /// </summary>
-        private void CheckEraTransition(EraDef? eraBefore)
+        /// <returns>Whether the civilization entered at least one era.</returns>
+        public bool TryAdvanceEra()
         {
-            EraDef? eraNow = CurrentEra;
-            if (eraNow == null || eraNow == eraBefore) return;
-
-            List<EraDef> ordered = OrderedEras();
-            int fromIndex = eraBefore != null ? ordered.IndexOf(eraBefore) : -1;
-            int toIndex = ordered.IndexOf(eraNow);
-            if (toIndex <= fromIndex) return; // the ladder never runs backwards; progress only ever grows.
-
-            EraDef? previous = eraBefore;
-            for (int i = fromIndex + 1; i <= toIndex; i++)
+            EraDef? from = CurrentEra;
+            if (from == null) return false;
+            EraConditionContext? context = null;
+            bool advanced = false;
+            while (true)
             {
-                EraDef reached = ordered[i];
-                Notify_EraReached(previous, reached);
-                EraReached?.Invoke(previous, reached);
-                previous = reached;
+                EraDef? next = NextEra;
+                if (next == null || !from.IsComplete) break;
+                if (from.conditions.Count > 0)
+                {
+                    context ??= EraConditionContext.Now();
+                    if (!from.ConditionsMet(context)) break;
+                }
+                currentEra = next;
+                advanced = true;
+                AdvanceTechLevelToEra();
+                Notify_EraReached(from, next);
+                EraReached?.Invoke(from, next);
+                from = next;
             }
+            return advanced;
+        }
+
+        /// <summary>The era research alone puts a civilization in: walking the ladder from the start, the
+        /// earliest era whose research spine is not finished, or the last era once every one is.</summary>
+        private static EraDef? ResearchEra()
+        {
+            List<EraDef> ordered = OrderedEras();
+            if (ordered.Count == 0) return null;
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                if (!ordered[i].IsComplete) return ordered[i];
+            }
+            return ordered[ordered.Count - 1];
+        }
+
+        /// <summary>Setting a game up skips the conditions: it says where history begins, it does not live
+        /// through it. Silent, as <see cref="SetProjectFinishedForSetup"/> is, and never backwards.</summary>
+        private void AdvanceEraForSetup()
+        {
+            EraDef? research = ResearchEra();
+            if (research == null) return;
+            EraDef? current = CurrentEra;
+            if (current == null || research.order > current.order) currentEra = research;
         }
 
         /// <summary>
@@ -178,8 +214,10 @@ namespace SimWorld.Research
         }
 
         /// <summary>
-        /// Raises <see cref="ResearcherTechLevel"/> to the tech level of the era the civilization has actually
-        /// reached, never lowering it.
+        /// Raises <see cref="ResearcherTechLevel"/> to the tech level of the era the civilization has mastered
+        /// (<see cref="MasteredEra"/>, the one before the era it is in), never lowering it. Mastered, not current:
+        /// a civilization in the Bronze age is learning bronze, and pays RimWorld's above-your-level premium on
+        /// it until it has, which is the price the era pacing was derived with.
         ///
         /// Without this the level was set once at scenario start and never again, so a civilization that
         /// climbed from a tribal start went on paying <see cref="ResearchProjectDef.CostFactor"/>'s
@@ -189,7 +227,7 @@ namespace SimWorld.Research
         /// </summary>
         public void AdvanceTechLevelToEra()
         {
-            TechLevel eraLevel = CurrentEra?.techLevel ?? TechLevel.Undefined;
+            TechLevel eraLevel = MasteredEra?.techLevel ?? TechLevel.Undefined;
             if (eraLevel > researcherTechLevel) researcherTechLevel = eraLevel;
         }
 
@@ -207,6 +245,7 @@ namespace SimWorld.Research
             if (def == null) throw new ArgumentNullException(nameof(def));
             progress[def] = def.baseCost;
             if (currentProj == def) currentProj = null;
+            AdvanceEraForSetup();
             AdvanceTechLevelToEra();
         }
 
@@ -253,39 +292,47 @@ namespace SimWorld.Research
         }
 
         /// <summary>
-        /// The furthest era reached by unbroken progression from the start of the ladder: the last era in
-        /// order such that it and every era before it are complete, or the earliest era when even that one
-        /// is not complete yet. Walking from the start (rather than simply taking the highest complete era)
-        /// matters because an era past the authored seed content has no projects and so is vacuously
-        /// "complete" (see <see cref="EraDef.Progress"/>) without a civilization ever having reached it.
+        /// <b>The era the civilization is in</b>: the age whose research it is learning and whose edicts it may
+        /// issue (<c>docs/design/era-progression.md</c> §1). A new game is in the first era. The civilization
+        /// leaves an era for the next once that era's research spine is finished and its conditions are met
+        /// (<see cref="EraDef.GateOpen"/>, <see cref="TryAdvanceEra"/>), so the next era is the one it is working
+        /// toward (<see cref="NextEra"/>) and the one before is the one it has mastered (<see cref="MasteredEra"/>).
+        /// A scenario that starts in an era has finished every era before it.
+        /// <para/>
+        /// Kept as state, not re-derived on every read: conditions read the settlement, which can fall back, and
+        /// an age once entered is not taken away. The first read of a new game, or of a save from before the era
+        /// was kept, derives it from research alone: the earliest era whose spine is unfinished, walking from the
+        /// start of the ladder (an era past the authored content has no projects and is vacuously complete, so
+        /// the walk must not skip ahead to it).
+        /// <para/>
+        /// <b>Was</b> the last era complete, falling back to the first while even that one was not, so a fresh
+        /// start was "in" an era it had not finished and every later game was "in" the last one it had. An
+        /// Agrarian village start was then in Sticks and stones and refused the Agrarian edicts.
         /// </summary>
         public EraDef? CurrentEra
         {
             get
             {
-                List<EraDef> ordered = OrderedEras();
-                if (ordered.Count == 0) return null;
-                EraDef current = ordered[0];
-                for (int i = 0; i < ordered.Count; i++)
-                {
-                    if (!ordered[i].IsComplete) break;
-                    current = ordered[i];
-                }
-                return current;
+                currentEra ??= ResearchEra();
+                return currentEra;
             }
         }
 
-        /// <summary>The era immediately after <see cref="CurrentEra"/> by order, or null at (or past) the last era.</summary>
-        public EraDef? NextEra
+        /// <summary>The era the civilization is working toward: the one immediately after <see cref="CurrentEra"/>
+        /// by order, or null in the last era.</summary>
+        public EraDef? NextEra => Adjacent(+1);
+
+        /// <summary>The era the civilization has mastered: the one immediately before <see cref="CurrentEra"/>, or
+        /// null in the first era. Research is priced at its tech level (<see cref="AdvanceTechLevelToEra"/>).</summary>
+        public EraDef? MasteredEra => Adjacent(-1);
+
+        private EraDef? Adjacent(int step)
         {
-            get
-            {
-                List<EraDef> ordered = OrderedEras();
-                EraDef? current = CurrentEra;
-                if (current == null) return null;
-                int index = ordered.IndexOf(current);
-                return index >= 0 && index + 1 < ordered.Count ? ordered[index + 1] : null;
-            }
+            EraDef? current = CurrentEra;
+            if (current == null) return null;
+            List<EraDef> ordered = OrderedEras();
+            int index = ordered.IndexOf(current) + step;
+            return index >= 0 && index < ordered.Count ? ordered[index] : null;
         }
 
         public void ExposeData()
@@ -312,6 +359,8 @@ namespace SimWorld.Research
             if (Scribe.mode == LoadSaveMode.LoadingVars) progress = FromNameKeyed(progressByName);
 
             Scribe_Values.Look(ref researcherTechLevel, "researcherTechLevel", TechLevel.Neolithic);
+            // Absent from a save made before the era was kept: left null, and the first read derives it.
+            Scribe_Defs.Look(ref currentEra, "currentEra");
         }
 
         /// <summary>Saves/loads a single research project reference by defName, resolving against

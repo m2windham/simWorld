@@ -32,8 +32,8 @@ namespace SimWorld.Research
 
         /// <summary>
         /// True when <paramref name="def"/>'s era (<see cref="EraOf"/>) is no later than the era the
-        /// civilization is working through: the first era it has not completed, so the things its current
-        /// research is about to unlock are already in view.
+        /// civilization is in (<see cref="ResearchManager.CurrentEra"/>), so the things its current research is
+        /// about to unlock are already in view.
         /// </summary>
         public static bool IsAvailableInCurrentEra(ThingDef def)
         {
@@ -51,14 +51,9 @@ namespace SimWorld.Research
             return def == null || IsAvailableInCurrentEra(def);
         }
 
-        /// <summary>The first era not yet complete, or the last era when every one is.</summary>
-        public static EraDef? WorkingEra()
-        {
-            ResearchManager research = Find.ResearchManager;
-            EraDef? current = research.CurrentEra;
-            if (current == null || !current.IsComplete) return current;
-            return research.NextEra ?? current;
-        }
+        /// <summary>The era the civilization is in: <see cref="ResearchManager.CurrentEra"/>, the one whose
+        /// research it is learning. Kept as a name of its own because the view and the tests ask for it.</summary>
+        public static EraDef? WorkingEra() => Find.ResearchManager.CurrentEra;
 
         private static EraDef? MadeIn(ThingDef def)
         {

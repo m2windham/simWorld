@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Edicts added by era progression (docs/design/era-progression.md section 3). Their own file, so the edicts
+    another lane may be editing are not touched (CLAUDE.md, "Add a file rather than edit a shared one").
+
+    Each one is a lever the simulation carries to its consequence through machinery it already has:
+      RaiseTheRoofs        the edict tier's work push (JobGiver_Edicts), Construction first.
+      LeanRations          the hunger tier's own gate (ThinkNode_ConditionalHungry): eat at urgent hunger, when
+                           RimWorld's need falls at a quarter of the fed rate. Hunger thoughts are its price.
+      HarvestFeast         the recreation tier (ThinkNode_ConditionalLowJoy) opened, routine work stopped
+                           (JobGiver_Work), and a memory granted when the day runs its course.
+      PatronageOfLearning  the edict tier's work push, Research first, so every bench is kept staffed.
+    None is a setter: each changes what a citizen's think tree tries, and leaves nothing behind when it ends
+    except the memory a feast is meant to leave.
+  -->
+
+  <EdictDef>
+    <defName>RaiseTheRoofs</defName>
+    <label>raise the roofs</label>
+    <description>For five days building comes before every other kind of work, so the band's houses go up before the weather turns.</description>
+    <requiredEra>SticksAndStones</requiredEra>
+    <obsoleteEra>Bronze</obsoleteEra>
+    <researchFocus>PitDwellings</researchFocus>
+    <prioritizedWork>
+      <li>Construction</li>
+    </prioritizedWork>
+    <durationDays>5</durationDays>
+    <cooldownDays>10</cooldownDays>
+    <moodThought>UnderRaiseTheRoofs</moodThought>
+  </EdictDef>
+
+  <EdictDef>
+    <defName>LeanRations</defName>
+    <label>lean rations</label>
+    <description>Grown folk eat only once they are truly hungry. The stores last longer and everyone goes hungry for it. Children eat as they always have.</description>
+    <requiredEra>Agrarian</requiredEra>
+    <rationFood>true</rationFood>
+    <workerClass>SimWorld.God.EdictWorker_ExemptMinors</workerClass>
+    <moodThought>UnderLeanRations</moodThought>
+  </EdictDef>
+
+  <EdictDef>
+    <defName>HarvestFeast</defName>
+    <label>harvest feast</label>
+    <description>A day given over to feasting and games. No routine work is done, and everyone remembers it fondly for days after. It cannot be held again for twenty days.</description>
+    <requiredEra>Agrarian</requiredEra>
+    <restDay>true</restDay>
+    <durationDays>1</durationDays>
+    <cooldownDays>20</cooldownDays>
+    <moodThought>UnderHarvestFeast</moodThought>
+    <completedThought>RememberedHarvestFeast</completedThought>
+  </EdictDef>
+
+  <EdictDef>
+    <defName>PatronageOfLearning</defName>
+    <label>patronage of learning</label>
+    <description>Study comes before every other kind of work, so no bench in the town stands empty. The hands it takes are missed elsewhere.</description>
+    <requiredEra>Classical</requiredEra>
+    <prioritizedWork>
+      <li>Research</li>
+    </prioritizedWork>
+  </EdictDef>
+
+</Defs>

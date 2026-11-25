@@ -43,7 +43,15 @@ namespace SimWorld.AI
     /// <summary>True while the pawn's food need has fallen below "fed".</summary>
     public sealed class ThinkNode_ConditionalHungry : ThinkNode_Conditional
     {
-        protected override bool Satisfied(Pawn pawn) => pawn.needs.food != null && pawn.needs.food.CurCategory != HungerCategory.Fed;
+        protected override bool Satisfied(Pawn pawn)
+        {
+            if (pawn.needs.food == null) return false;
+            HungerCategory hunger = pawn.needs.food.CurCategory;
+            // Lean rations (EdictDef.rationFood): wait for urgent hunger, when the need falls at a quarter of the
+            // fed rate instead of a half. Only a citizen an edict in force applies to; animals never.
+            if (pawn.RaceProps.Humanlike && God.EdictWorkUtility.Rationed(pawn)) return hunger >= HungerCategory.UrgentlyHungry;
+            return hunger != HungerCategory.Fed;
+        }
     }
 
     /// <summary>True while the pawn's rest need has fallen below "rested" and it is not already resting.</summary>
