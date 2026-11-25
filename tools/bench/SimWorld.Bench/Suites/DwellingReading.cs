@@ -20,7 +20,19 @@ namespace SimWorld.Bench.Suites
             return "dwellings: " + built + " built, " + DwellingUtility.CountUnderway(map) + " under way [" + rungs + "]; households "
                 + housedHouseholds + "/" + households.Count + " housed; citizens housed "
                 + DwellingUtility.HousedCitizens(settlement, map) + "/" + settlement.Citizens.Count(p => !p.Dead)
-                + "; beds " + map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count;
+                + "; beds " + map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed).Count
+                + "\n" + RenewalLine();
+        }
+
+        /// <summary>The town's renewal (era-progression.md 7.5): structures in the current or previous era's form
+        /// over all, by category, with the heritage count and why renewal waits, if it does.</summary>
+        private static string RenewalLine()
+        {
+            God.View.RenewalSummary r = God.View.GodViewSnapshot.Capture().Era.Renewal;
+            string categories = string.Join(", ", r.Categories.Select(c =>
+                c.Category + " " + c.InCurrentEra + "/" + c.InCurrentOrPreviousEra + "/" + c.Count + (c.Underway > 0 ? " (" + c.Underway + " renewing)" : "")));
+            return "renewal: share " + (r.Share * 100f).ToString("0") + "% [current/recent/all: " + categories + "]; heritage "
+                + r.HeritageCount + (r.WaitingFor != null ? "; waiting: " + r.WaitingFor : "");
         }
     }
 }
