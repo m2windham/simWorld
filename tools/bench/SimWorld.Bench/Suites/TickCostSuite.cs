@@ -72,6 +72,11 @@ namespace SimWorld.Bench.Suites
 
             var perDay = new List<double>();
             var watch = new Stopwatch();
+            // Garbage and CPU beside the wall clock: the host runs Mono, where a collection costs more than it does
+            // here, and on a shared PC process CPU time moves less with the neighbours' load than the wall does.
+            long allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+            int gen0Before = GC.CollectionCount(0);
+            TimeSpan cpuBefore = Process.GetCurrentProcess().TotalProcessorTime;
             for (int day = 0; day < opt.Days; day++)
             {
                 watch.Restart();
@@ -89,6 +94,10 @@ namespace SimWorld.Bench.Suites
             Console.WriteLine("timed: median " + Report.Num(median, 4) + " ms/tick, mean "
                 + Report.Num(perDay.Count == 0 ? 0 : perDay.Average(), 4) + " ms/tick over "
                 + Report.Int(opt.Days) + " day(s)");
+            double timedTicks = Math.Max(1, opt.Days * (double)GenDate.TicksPerDay);
+            Console.WriteLine("cpu: " + Report.Num((Process.GetCurrentProcess().TotalProcessorTime - cpuBefore).TotalMilliseconds / timedTicks, 4)
+                + " ms/tick; alloc: " + Report.Num((GC.GetAllocatedBytesForCurrentThread() - allocatedBefore) / timedTicks, 1)
+                + " bytes/tick, gen0 collections " + Report.Int(GC.CollectionCount(0) - gen0Before));
             Console.WriteLine("end: " + Readings(game, home, map));
             Console.WriteLine("digest: " + SimDigest.Line(map));
             Console.WriteLine("factions: " + Find.FactionManager.AllFactionsListForReading.Count
