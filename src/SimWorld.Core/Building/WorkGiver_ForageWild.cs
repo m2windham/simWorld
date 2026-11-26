@@ -28,8 +28,10 @@ namespace SimWorld.Building
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
             // Only what MayBeForageWork keeps, for the reason WorkGiver_GrowerHarvest gives: the tests HasJobOnThing
-            // starts with, so the scan takes the same plant without sorting the map's whole undergrowth first.
-            IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.Plant);
+            // starts with, so the scan takes the same plant without sorting the map's whole undergrowth first; and
+            // only over the plants that yield anything (HarvestablePlant, Plant's order), the rest never being
+            // HarvestableNow.
+            IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.HarvestablePlant);
             for (int i = 0; i < plants.Count; i++)
             {
                 if (plants[i] is Plant plant && MayBeForageWork(plant)) yield return plant;

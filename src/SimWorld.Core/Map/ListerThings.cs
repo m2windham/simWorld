@@ -29,6 +29,13 @@ namespace SimWorld.Map
         /// benches and not every wall and storage hut on the map. Membership is read off the def alone, and the
         /// list keeps spawn order, so it is always an order-preserving subsequence of <see cref="Building"/>.</summary>
         PotentialBillGiver,
+
+        /// <summary>Plants whose def yields something when harvested or felled, and every tree: what the harvest,
+        /// forage and felling scans look for, without the scrub and grass that make up most of a map's plants (perf,
+        /// tick-cost lane; RimWorld's own scans walk designations and growing zones instead of every plant).
+        /// Membership is read off the def alone, so like <see cref="PotentialBillGiver"/> it is always an
+        /// order-preserving subsequence of <see cref="Plant"/>.</summary>
+        HarvestablePlant,
     }
 
     /// <summary>Every spawned Thing on the map, indexed by def and by broad category (RimWorld: <c>Verse.ListerThings</c>).</summary>
@@ -40,7 +47,7 @@ namespace SimWorld.Map
 
         /// <summary>Bumped on every add to or removal from a group, by group (<see cref="ThingRequestGroup.Everything"/>:
         /// any thing at all), so a cache built from one group's list can tell whether that list has changed since.</summary>
-        private readonly int[] groupVersions = new int[(int)ThingRequestGroup.PotentialBillGiver + 1];
+        private readonly int[] groupVersions = new int[(int)ThingRequestGroup.HarvestablePlant + 1];
 
         public IReadOnlyList<Thing> AllThings => allThings;
 
@@ -134,6 +141,7 @@ namespace SimWorld.Map
                     break;
                 case ThingCategory.Plant:
                     groups[n++] = ThingRequestGroup.Plant;
+                    if (thing.def.plant != null && (thing.def.plant.harvestedThingDef != null || thing.def.plant.IsTree)) groups[n++] = ThingRequestGroup.HarvestablePlant;
                     break;
                 case ThingCategory.Filth:
                     groups[n++] = ThingRequestGroup.Filth;

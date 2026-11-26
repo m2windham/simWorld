@@ -41,8 +41,9 @@ namespace SimWorld.Building
             // Only what MayBeHarvestWork keeps: the first, side-effect-free tests HasJobOnThing runs, so dropping
             // the rest here leaves the survivors in the same relative order and the scan takes the same plant.
             // RimWorld's grower walks only its zones' cells; this one offered every plant on the map, and measured,
-            // sorted and refused nearly all of them on every job search (tools/bench --suite tickcost).
-            IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.Plant);
+            // sorted and refused nearly all of them on every job search (tools/bench --suite tickcost). It walks the
+            // plants that yield anything, Plant's own order without the scrub: nothing else is HarvestableNow.
+            IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.HarvestablePlant);
             for (int i = 0; i < plants.Count; i++)
             {
                 if (plants[i] is Plant plant && MayBeHarvestWork(plant)) yield return plant;
