@@ -197,6 +197,7 @@ namespace SimWorld.Bench.Suites
             public long Ticks;
             public Dictionary<string, int> Built = new Dictionary<string, int>();
             public Dictionary<string, int> Planned = new Dictionary<string, int>();
+            public string Gate = "";
         }
 
         private static Sample Take(
@@ -232,6 +233,7 @@ namespace SimWorld.Bench.Suites
                 Ticks = ticks,
             };
             _ = previousDay;
+            s.Gate = GateText(research.CurrentEra, home);
 
             Map.Map? map = home.InteriorMap;
             if (map != null)
@@ -263,6 +265,28 @@ namespace SimWorld.Bench.Suites
         private static void Bump(Dictionary<string, int> counts, string key) =>
             counts[key] = counts.TryGetValue(key, out int n) ? n + 1 : 1;
 
+        /// <summary>The current era's way-out conditions, each with its reading against its target, and what the
+        /// housed count rests on: the gate line the sample's "conditions not met" stands for.</summary>
+        private static string GateText(EraDef? era, SimWorld.World.Settlement home)
+        {
+            if (era == null) return "-";
+            EraConditionContext context = EraConditionContext.Now();
+            IEnumerable<string> conditions = era.conditions.Select(c =>
+                c.Label + " " + Report.Num(c.Current(context), 2) + "/" + Report.Num(c.Target, 2) + (c.IsMet(context) ? " met" : " NOT MET"));
+            string housing = "";
+            Map.Map? map = home.InteriorMap;
+            if (map != null)
+            {
+                IReadOnlyList<SimWorld.Building.Dwelling> dwellings = SimWorld.Building.DwellingUtility.DwellingsOn(map);
+                SortedDictionary<int, int> households = SimWorld.Building.DwellingUtility.Households(home);
+                housing = "; housed " + context.Housed + "/" + context.Citizens + ", households " + households.Count
+                    + ", dwellings " + dwellings.Count + " (complete " + dwellings.Count(d => d.IsComplete(map))
+                    + ", complete with a household " + dwellings.Count(d => d.IsComplete(map) && households.ContainsKey(d.householdId))
+                    + ", demolishing " + dwellings.Count(d => d.beingDemolished) + ")";
+            }
+            return string.Join("; ", conditions) + housing;
+        }
+
         private static float StoresNutrition(SimWorld.World.Settlement home)
         {
             float total = 0f;
@@ -292,6 +316,7 @@ namespace SimWorld.Bench.Suites
                 .Append("; moments ").Append(s.Moments)
                 .Append("; wall ").Append(Report.Num(s.Seconds, 1)).Append(" s");
             Console.WriteLine(sb.ToString());
+            Console.WriteLine("  gate: " + s.Gate);
             Console.WriteLine("  ledger: " + s.Ledger);
             Console.WriteLine("  built: " + CountsText(s.Built));
             Console.WriteLine("  planned: " + CountsText(s.Planned));
