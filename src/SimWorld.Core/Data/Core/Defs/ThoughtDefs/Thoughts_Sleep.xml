@@ -8,10 +8,12 @@
     Thoughts_Memories.xml, for the reason CLAUDE.md gives.
 
     RimWorld scales both by the room's impressiveness (Thought_MemoryRoomImpressiveness), from "awful" to
-    "unbelievably impressive". This port has no room stats, so each carries the one stage a room with none
-    would sit at, the mediocre one. Its values are RimWorld's recalled, not sourced: a mediocre bedroom 0,
-    a mediocre barracks -4. The sleep-thought tests pin that a home beats a dormitory and that a dormitory
-    beats the ground, never these literals.
+    "wondrously impressive". SleptInBedroom now does (comfort lane): one stage per impressiveness stage of
+    Building.RoomStats, read off the room the bed stands in, the mediocre one (stage 2) where the house is not
+    yet a closed room. The values are RimWorld's recalled, not sourced: an awful bedroom -3, a dull one -2, a
+    mediocre one 0, then +2 rising to +8. SleptInBarracks keeps its one mediocre stage, -4: a dormitory is the
+    compound's, nobody furnishes it, and a hovel of one's own is still better than a bench in a hall. The sleep-thought tests pin that a home beats a dormitory, that a
+    dormitory beats the ground and that a better house is a better night, never these literals.
   -->
 
   <ThoughtDef>
@@ -20,9 +22,54 @@
     <stackLimit>1</stackLimit>
     <stages>
       <li>
+        <label>slept in a hovel</label>
+        <description>My room is a miserable hole.</description>
+        <baseMoodEffect>-3</baseMoodEffect>
+      </li>
+      <li>
+        <label>slept in a bare room</label>
+        <description>My room is cramped and bare. It will do.</description>
+        <baseMoodEffect>-2</baseMoodEffect>
+      </li>
+      <li>
         <label>slept at home</label>
         <description>I slept in my own household's home.</description>
         <baseMoodEffect>0</baseMoodEffect>
+      </li>
+      <li>
+        <label>slept in a decent room</label>
+        <description>A decent room of my own to sleep in.</description>
+        <baseMoodEffect>2</baseMoodEffect>
+      </li>
+      <li>
+        <label>slept in a pleasant room</label>
+        <description>My room is pleasant to wake up in.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+      <li>
+        <label>slept in a fine room</label>
+        <description>I sleep in a fine room. Not everybody can say so.</description>
+        <baseMoodEffect>4</baseMoodEffect>
+      </li>
+      <li>
+        <label>slept in a handsome room</label>
+        <description>My room is handsome, and I am proud of it.</description>
+        <baseMoodEffect>5</baseMoodEffect>
+      </li>
+      <li>
+        <label>slept in a splendid room</label>
+        <description>I woke up somewhere splendid.</description>
+        <baseMoodEffect>6</baseMoodEffect>
+      </li>
+      <li>
+        <label>slept in a grand room</label>
+        <description>A grand room to sleep in. It still surprises me.</description>
+        <baseMoodEffect>7</baseMoodEffect>
+      </li>
+      <li>
+        <label>slept in a magnificent room</label>
+        <description>I sleep in a room people would travel to see.</description>
+        <baseMoodEffect>8</baseMoodEffect>
       </li>
     </stages>
   </ThoughtDef>

@@ -21,6 +21,10 @@ namespace SimWorld.Building
         HearthSpot,
         /// <summary>Floor kept for a cooler (<see cref="ShelterThingDefOf.PassiveCooler"/>), built when the heat calls for one.</summary>
         CoolerSpot,
+        /// <summary>Floor kept for the household's table, furnished once the town can make one (<see cref="HouseFurnishing"/>).</summary>
+        TableSpot,
+        /// <summary>Floor kept for the furnishings of the household's age, placed once the town can make one (<see cref="HouseFurnishing"/>).</summary>
+        FurnishingSpot,
     }
 
     /// <summary>
@@ -40,7 +44,7 @@ namespace SimWorld.Building
     /// <para/><b>The layout.</b> Rows of characters, the back of the house first and the front (the side that faces
     /// the street) last; a house turned North is drawn as written, north up. <c>#</c> wall, <c>D</c> door,
     /// <c>B</c> a bed's head and <c>b</c> its foot (the cell behind it), <c>h</c> a hearth spot, <c>c</c> a cooler
-    /// spot, <c>.</c> floor, and <c>,</c> or a space for ground the house keeps clear but does not enclose.
+    /// spot, <c>t</c> a table spot, <c>f</c> a furnishing spot, <c>.</c> floor, and <c>,</c> or a space for ground the house keeps clear but does not enclose.
     /// </summary>
     public class DwellingDef : Def
     {
@@ -130,6 +134,8 @@ namespace SimWorld.Building
             'b' => DwellingPartKind.BedFoot,
             'h' => DwellingPartKind.HearthSpot,
             'c' => DwellingPartKind.CoolerSpot,
+            't' => DwellingPartKind.TableSpot,
+            'f' => DwellingPartKind.FurnishingSpot,
             '.' => DwellingPartKind.Floor,
             _ => DwellingPartKind.Outside,
         };
@@ -143,7 +149,7 @@ namespace SimWorld.Building
                 if (layout[i].Length != layout[0].Length) yield return defName + ": layout row " + i + " is not as wide as the first";
                 foreach (char c in layout[i])
                 {
-                    if ("#DBbhc., ".IndexOf(c) < 0) yield return defName + ": layout has an unknown character '" + c + "'";
+                    if ("#DBbhctf., ".IndexOf(c) < 0) yield return defName + ": layout has an unknown character '" + c + "'";
                 }
             }
             if (layout.Count == 0) yield break;

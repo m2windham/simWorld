@@ -178,6 +178,8 @@ namespace SimWorld.Building
             // Renewal lane 2: a store is replaced by the era's store, and a workbench by itself in a better stuff.
             if (StorageForms.IsStorage(def)) return "Storage";
             if (StructureRenewal.IsBench(def)) return "Bench:" + def.defName;
+            // Comfort lane: a household's furnishings are replaced by the next age's (HouseFurnishing).
+            if (HouseFurnishing.IsFurnishing(def)) return "Furnishing";
             return null;
         }
 

@@ -132,6 +132,7 @@ namespace SimWorld.Building
             DwellingPlanner.Plan(settlement, map, dormitoryCovered);
             RenewalInitiative.TickSettlement(settlement, map);
             SettlementClimate.Tick(settlement, map);
+            HouseFurnishing.Tick(settlement, map);
 
             List<Need> needs = ComputeNeeds(settlement, map);
             if (needs.Count == 0) return;
