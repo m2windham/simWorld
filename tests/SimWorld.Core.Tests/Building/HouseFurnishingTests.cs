@@ -24,7 +24,7 @@ namespace SimWorld.Tests.Building
     /// <summary>
     /// A household furnishes its own house as the town learns how (<see cref="HouseFurnishing"/>), on a real generated
     /// settlement: no table before the town knows tables, one once it does, the furnishings of its age on the
-    /// furnishing spot, and the next age's put in place of the last.
+    /// furnishing spot, and the next age's put in place of the last; a shortage of beds does not hold it back.
     /// </summary>
     [Collection("GlobalDefs")]
     public class HouseFurnishingTests : ContentTestBase
@@ -56,16 +56,10 @@ namespace SimWorld.Tests.Building
             int household = DwellingUtility.Households(settlement).Keys.First();
             Dwelling home = ShelterKit.RaiseOnPlot(map, ShelterKit.Rung("House_Neo"), household, faction)!;
             Assert.NotNull(home);
-            // Every citizen has a bed and the larder is full, so nothing more urgent holds the furnishing back.
-            foreach (var p in settlement.Citizens.Where(p => !p.Dead))
-            {
-                Thing bed = ThingMaker.MakeThing(ConstructionThingDefOf.Bed, StuffDefOf.WoodLog);
-                IntVec3 c = map.AllCells.First(x => x.x > 2 && x.z > 2 && GenConstruct.CanPlaceBlueprintAt(ConstructionThingDefOf.Bed, x, map, out _)
-                    && GenAdj.OccupiedRect(x, Rot4.North, ConstructionThingDefOf.Bed.size).ExpandedBy(1).Cells.All(n => GenGrid.InBounds(n, map) && GenGrid.Standable(n, map) && map.thingGrid.ThingsListAt(n).Count == 0));
-                GenSpawn.Spawn(bed, c, map);
-            }
+            // The larder is full, but most of the band still sleeps on the ground: a town short of beds furnishes the
+            // houses it has all the same, as it is short of beds for years at a time while it grows.
             settlement.AddStore(DefDatabase<ThingDef>.GetNamed("MealSimple"), 600);
-            Assert.Null(RenewalInitiative.WaitReason(settlement, map));
+            Assert.Equal(RenewalInitiative.BedsShort, RenewalInitiative.WaitReason(settlement, map));
 
             IntVec3 tableSpot = home.Spots(DwellingPartKind.TableSpot).Single();
             IntVec3 furnishingSpot = home.Spots(DwellingPartKind.FurnishingSpot).Single();
@@ -75,11 +69,17 @@ namespace SimWorld.Tests.Building
             Assert.Null(PlannedAt(map, tableSpot));
             Assert.Null(PlannedAt(map, furnishingSpot));
 
-            // Shelter brings the table.
+            // Shelter brings the table, and the settlement's own building rounds plan it without being asked.
             research.SetProjectFinishedForSetup(Project("Shelter"));
+            for (int i = 0; i <= 2 * GenTicks.TickRareInterval && map.thingGrid.ThingsListAt(tableSpot).All(x => x.def.category != ThingCategory.Blueprint && x.def.category != ThingCategory.Frame && x.def != FurnitureThingDefOf.DiningTable); i++)
+            {
+                game.TickManager.DoSingleTick();
+            }
+            Assert.Contains(map.thingGrid.ThingsListAt(tableSpot), x => x.def == FurnitureThingDefOf.DiningTable || x.def.entityToBuild == FurnitureThingDefOf.DiningTable);
+            Assert.Null(PlannedAt(map, furnishingSpot));
+            foreach (Thing x in map.thingGrid.ThingsListAt(tableSpot).Where(x => x.def.category == ThingCategory.Blueprint || x.def.category == ThingCategory.Frame).ToList()) x.Destroy();
             HouseFurnishing.Tick(settlement, map);
             Assert.Same(FurnitureThingDefOf.DiningTable, PlannedAt(map, tableSpot)?.EntityToBuild);
-            Assert.Null(PlannedAt(map, furnishingSpot));
             PlannedAt(map, tableSpot)!.ReplaceWithFrame().CompleteConstruction(NewHuman("Builder"));
             Assert.Contains(map.thingGrid.ThingsListAt(tableSpot), x => x.def == FurnitureThingDefOf.DiningTable);
 
