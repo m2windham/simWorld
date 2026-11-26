@@ -115,23 +115,36 @@ namespace SimWorld.MapGen
         }
 
         /// <summary>
-        /// The part of <paramref name="pool"/> the settlement's own age could have known: anything whose era
+        /// <paramref name="pool"/> as the settlement's own age could have known it: anything whose era
         /// (<see cref="EraAvailability.EraOf"/>, read from what makes it) is later than the player's
-        /// (<see cref="FactionAdvancement.PlayerEra"/>) is left out. RimWorld's ruins are an industrial world's
-        /// leavings because its colony lives in one; here the ruins are of the people before this one, and the
-        /// fourth playtest's sticks-and-stones band found 21 steel lying in them on its first day, which the
-        /// stock panel then counted as theirs. Raw stuff no recipe makes (silver, wood, stone) has no era and stays.
+        /// (<see cref="FactionAdvancement.PlayerEra"/>) gives its place to the pool's first entry of the age that is
+        /// as stackable as it is. RimWorld's ruins are an industrial world's leavings because its colony lives in
+        /// one; here the ruins are of the people before this one, and the fourth playtest's sticks-and-stones band
+        /// found 21 steel lying in them on its first day, which the stock panel then counted as theirs. Raw stuff no
+        /// recipe makes (silver, wood, stone) has no era and stays.
+        /// <para/>
+        /// <b>Replaced, not dropped.</b> The pool keeps its length, and a stack stays a stack, so every draw from the
+        /// stream lands as it would in any other age: the era changes what a ruin is made of and holds, never where
+        /// ruins stand or what the rest of the map is. Dropping the entries shortened the pool and moved every ruin
+        /// after the first; on the arc's seed 201 the new layout left the street short of house plots for good, and
+        /// the town never again housed three quarters of its people and stood in the Classical age to day 600.
         /// </summary>
         private static List<ThingDef> OfTheAge(ThingDef[] pool)
         {
             EraDef? now = FactionAdvancement.PlayerEra();
-            var kept = new List<ThingDef>(pool.Length);
+            var ofTheAge = new List<ThingDef>(pool.Length);
             foreach (ThingDef def in pool)
             {
-                EraDef? era = EraAvailability.EraOf(def);
-                if (now == null || era == null || era.order <= now.order) kept.Add(def);
+                // Both pools hold wood, which no age is without, so a stand-in is always found.
+                ofTheAge.Add(Known(def, now) ? def : Array.Find(pool, d => Known(d, now) && d.stackLimit > 1 == def.stackLimit > 1)!);
             }
-            return kept;
+            return ofTheAge;
+        }
+
+        private static bool Known(ThingDef def, EraDef? now)
+        {
+            EraDef? era = EraAvailability.EraOf(def);
+            return now == null || era == null || era.order <= now.order;
         }
 
         private static CellRect PickRuinRect(Map.Map map, RandomStream rand)
