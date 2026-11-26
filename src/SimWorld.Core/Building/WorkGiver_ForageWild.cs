@@ -27,13 +27,28 @@ namespace SimWorld.Building
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.Plant)) yield return t;
+            // Only what MayBeForageWork keeps, for the reason WorkGiver_GrowerHarvest gives: the tests HasJobOnThing
+            // starts with, so the scan takes the same plant without sorting the map's whole undergrowth first.
+            IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.Plant);
+            for (int i = 0; i < plants.Count; i++)
+            {
+                if (plants[i] is Plant plant && MayBeForageWork(plant)) yield return plant;
+            }
+        }
+
+        /// <summary>A spawned, harvestable-now plant that is no tree and stands in no field, fully grown or one
+        /// <see cref="WorkGiver_GrowerHarvest.EarlyHarvestWanted"/> could still want (short of its once-a-tick food
+        /// figure, which the scan must read only when it reaches such a plant).</summary>
+        private static bool MayBeForageWork(Plant plant)
+        {
+            if (!plant.Spawned || !plant.HarvestableNow) return false;
+            if (plant.def.plant!.IsTree || plant.Map!.zoneManager.ZoneAt(plant.Position) is Zone_Growing) return false;
+            return plant.FullyGrown || WorkGiver_GrowerHarvest.MayBeWantedEarly(plant);
         }
 
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
-            if (!(thing is Plant plant) || !plant.Spawned || !plant.HarvestableNow) return false;
-            if (plant.def.plant!.IsTree || plant.Map!.zoneManager.ZoneAt(plant.Position) is Zone_Growing) return false;
+            if (!(thing is Plant plant) || !MayBeForageWork(plant)) return false;
             if (!plant.FullyGrown && !WorkGiver_GrowerHarvest.EarlyHarvestWanted(plant)) return false;
             if (!Reachability.CanReach(pawn, plant, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, plant);

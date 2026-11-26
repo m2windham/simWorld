@@ -37,7 +37,14 @@ namespace SimWorld.AI
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial)) yield return t;
+            // Only what IsRepairable keeps, HasJobOnThing's first and side-effect-free test (RimWorld walks
+            // ListerBuildingsRepairable, not every building): the survivors keep their order, so the scan takes the
+            // same building without measuring and sorting every whole wall on the map first.
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingArtificial);
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                if (IsRepairable(buildings[i])) yield return buildings[i];
+            }
         }
 
         /// <summary>

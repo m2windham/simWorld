@@ -20,13 +20,22 @@ namespace SimWorld.AI
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.HaulableEver)) yield return t;
+            // Only what NeedsHauling keeps (RimWorld walks ListerHaulables, the haulables not already in valid
+            // storage, not every haulable thing): the side-effect-free tests HasJobOnThing starts with, so the
+            // survivors keep their order and the scan takes the same stack.
+            IReadOnlyList<Thing> haulables = map.listerThings.ThingsInGroup(ThingRequestGroup.HaulableEver);
+            for (int i = 0; i < haulables.Count; i++)
+            {
+                if (NeedsHauling(haulables[i])) yield return haulables[i];
+            }
         }
+
+        private static bool NeedsHauling(Thing thing) =>
+            thing.Spawned && thing.stackCount > 0 && !HaulAIUtility.IsInValidStorage(thing);
 
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
-            if (!thing.Spawned || thing.stackCount <= 0) return false;
-            if (HaulAIUtility.IsInValidStorage(thing)) return false;
+            if (!NeedsHauling(thing)) return false;
             if (!Reachability.CanReach(pawn, thing, PathEndMode)) return false;
             if (!pawn.Map!.reservationManager.CanReserve(pawn, thing)) return false;
             return HaulAIUtility.TryFindBestStockpileCell(pawn, thing, out _);
