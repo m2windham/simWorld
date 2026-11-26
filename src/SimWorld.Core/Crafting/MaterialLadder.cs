@@ -235,10 +235,13 @@ namespace SimWorld.Crafting
             var seen = new HashSet<IntVec3>();
             var open = new Queue<IntVec3>();
             IntVec3? band = SettlementReach.BandCell(map);
-            for (int i = 0; i < buildings.Count; i++)
+            // The open faces from the mining initiative's kept list: the same rock in the same order as a walk of
+            // every building, without walking the buried rock (perf, tick-cost lane).
+            IReadOnlyList<Thing> faces = MiningInitiative.FaceCandidates(map);
+            for (int i = 0; i < faces.Count; i++)
             {
-                Thing rock = buildings[i];
-                if (!rock.def.mineable || !rock.Spawned || !MiningInitiative.FaceReachable(map, rock.Position, band)) continue;
+                Thing rock = faces[i];
+                if (!rock.Spawned || !MiningInitiative.FaceReachable(map, rock.Position, band)) continue;
                 if (seen.Add(rock.Position)) open.Enqueue(rock.Position);
             }
             while (open.Count > 0)
@@ -611,7 +614,8 @@ namespace SimWorld.Crafting
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             var wanted = new Dictionary<ThingDef, int>();
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            // Benches only: every CompBillGiver building, in Building's order, without the rock (perf, tick-cost lane).
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             for (int b = 0; b < buildings.Count; b++)
             {
                 if (!buildings[b].Spawned || !(buildings[b] is ThingWithComps bench) || bench.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;
@@ -692,7 +696,8 @@ namespace SimWorld.Crafting
         /// stood short of it).</summary>
         private static bool FeedsStandingSmelting(Map.Map map, ThingDef stuff)
         {
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            // Benches only: every CompBillGiver building, in Building's order, without the rock (perf, tick-cost lane).
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             for (int b = 0; b < buildings.Count; b++)
             {
                 if (buildings[b] is not ThingWithComps bench || bench.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;
