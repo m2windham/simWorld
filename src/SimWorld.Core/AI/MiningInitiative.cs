@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using SimWorld.Building;
 using SimWorld.Crafting;
@@ -356,13 +357,13 @@ namespace SimWorld.AI
         {
             var faces = new List<Thing>();
             var keys = new List<long>();
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            IReadOnlyList<Thing> candidates = FaceCandidates(map);
             DesignationManager dm = map.designationManager;
             IntVec3? band = SettlementReach.BandCell(map);
-            for (int i = 0; i < buildings.Count; i++)
+            for (int i = 0; i < candidates.Count; i++)
             {
-                Thing t = buildings[i];
-                if (!t.def.mineable || !t.Spawned || !FaceReachable(map, t.Position, band)) continue;
+                Thing t = candidates[i];
+                if (!t.Spawned || !FaceReachable(map, t.Position, band)) continue;
                 if (dm.DesignationAt(t.Position, DesignationDefOf.Mine) != null) continue;
                 keys.Add(((long)(t.Position - anchor).LengthHorizontalSquared << 32) | (uint)faces.Count);
                 faces.Add(t);
@@ -371,6 +372,56 @@ namespace SimWorld.AI
             var ordered = new List<Thing>(faces.Count);
             for (int i = 0; i < keys.Count; i++) ordered.Add(faces[(int)(keys[i] & 0xFFFFFFFF)]);
             return ordered;
+        }
+
+        /// <summary>The mineable rock of <see cref="FaceCandidates"/>, valid while the two versions it was built at
+        /// still stand.</summary>
+        private sealed class FaceCache
+        {
+            public readonly List<Thing> rocks = new List<Thing>();
+            // The grids the versions belong to: a load builds new ones, whose counters start again.
+            public ListerThings? lister;
+            public PathGrid? pathGrid;
+            public int buildingsVersion = -1;
+            public int walkabilityVersion = -1;
+        }
+
+        /// <summary>Per map, and let go with it: a test builds hundreds of maps.</summary>
+        private static readonly ConditionalWeakTable<Map.Map, FaceCache> faceCaches = new ConditionalWeakTable<Map.Map, FaceCache>();
+
+        /// <summary>
+        /// Every mineable rock with at least one walkable cell beside it, in the building list's order: the part of
+        /// <see cref="FaceReachable"/> that does not depend on where the band stands, so the open faces are exactly
+        /// those of these the band can also reach. The building list is mostly rock buried in rock, and walking all
+        /// of it, eight neighbours each, on every rare tick was about a twelfth of a Bronze-age town's tick (perf,
+        /// tick-cost lane). RimWorld keeps such lists up to date as things come and go (<c>ListerBuildings</c>);
+        /// this one is rebuilt only once the building list or some cell's walkability has changed
+        /// (<see cref="ListerThings.GroupVersion"/>, <see cref="PathGrid.WalkabilityVersion"/>), the only two
+        /// things it is made of.
+        /// </summary>
+        internal static IReadOnlyList<Thing> FaceCandidates(Map.Map map)
+        {
+            FaceCache cache = faceCaches.GetValue(map, _ => new FaceCache());
+            int buildingsVersion = map.listerThings.GroupVersion(ThingRequestGroup.Building);
+            int walkabilityVersion = map.pathGrid.WalkabilityVersion;
+            if (ReferenceEquals(cache.lister, map.listerThings) && ReferenceEquals(cache.pathGrid, map.pathGrid)
+                && cache.buildingsVersion == buildingsVersion && cache.walkabilityVersion == walkabilityVersion)
+            {
+                return cache.rocks;
+            }
+
+            cache.rocks.Clear();
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                Thing t = buildings[i];
+                if (t.def.mineable && t.Spawned && FaceReachable(map, t.Position, null)) cache.rocks.Add(t);
+            }
+            cache.lister = map.listerThings;
+            cache.pathGrid = map.pathGrid;
+            cache.buildingsVersion = buildingsVersion;
+            cache.walkabilityVersion = walkabilityVersion;
+            return cache.rocks;
         }
 
         /// <summary>

@@ -38,7 +38,14 @@ namespace SimWorld.Map
         private readonly Dictionary<ThingDef, List<Thing>> byDef = new Dictionary<ThingDef, List<Thing>>();
         private readonly Dictionary<ThingRequestGroup, List<Thing>> byGroup = new Dictionary<ThingRequestGroup, List<Thing>>();
 
+        /// <summary>Bumped on every add to or removal from a group, by group (<see cref="ThingRequestGroup.Everything"/>:
+        /// any thing at all), so a cache built from one group's list can tell whether that list has changed since.</summary>
+        private readonly int[] groupVersions = new int[(int)ThingRequestGroup.PotentialBillGiver + 1];
+
         public IReadOnlyList<Thing> AllThings => allThings;
+
+        /// <summary>Changes whenever <see cref="ThingsInGroup"/> of <paramref name="group"/> gains or loses a thing.</summary>
+        public int GroupVersion(ThingRequestGroup group) => groupVersions[(int)group];
 
         public IReadOnlyList<Thing> ThingsOfDef(ThingDef def)
         {
@@ -56,20 +63,27 @@ namespace SimWorld.Map
         {
             if (thing == null) throw new ArgumentNullException(nameof(thing));
             allThings.Add(thing);
+            groupVersions[(int)ThingRequestGroup.Everything]++;
             DefList(thing.def).Add(thing);
             int n = GroupsFor(thing, groupBuffer);
-            for (int i = 0; i < n; i++) GroupList(groupBuffer[i]).Add(thing);
+            for (int i = 0; i < n; i++)
+            {
+                GroupList(groupBuffer[i]).Add(thing);
+                groupVersions[(int)groupBuffer[i]]++;
+            }
         }
 
         public void Remove(Thing thing)
         {
             if (thing == null) throw new ArgumentNullException(nameof(thing));
             RemoveFirst(allThings, thing);
+            groupVersions[(int)ThingRequestGroup.Everything]++;
             if (byDef.TryGetValue(thing.def, out List<Thing>? defList)) RemoveFirst(defList, thing);
             int n = GroupsFor(thing, groupBuffer);
             for (int i = 0; i < n; i++)
             {
                 if (byGroup.TryGetValue(groupBuffer[i], out List<Thing>? groupList)) RemoveFirst(groupList, thing);
+                groupVersions[(int)groupBuffer[i]]++;
             }
         }
 
