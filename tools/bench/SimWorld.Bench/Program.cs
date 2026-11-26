@@ -105,6 +105,9 @@ namespace SimWorld.Bench
                 case "mining":
                     MiningSuite.Run(opt);
                     break;
+                case "tickcost":
+                    TickCostSuite.Run(opt);
+                    break;
                 case "all":
                     RunAll(opt);
                     break;
@@ -316,7 +319,7 @@ USAGE
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- [options]
 
 OPTIONS
-  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | storyteller | layout | band | mining | all
+  --suite <name>          tick (default) | scaling | attribution | hediffs | alloc | worldgen | saveload | pathing | interrupts | phasing | targets | mapview | probe | tension | storyteller | layout | band | mining | tickcost | all
   --pawns <N>             pawn count (default 1000). Used by: tick, attribution, hediffs, alloc, saveload.
   --days <N>              in-game days to tick (default 1). Used by: tick, scaling, attribution, hediffs, alloc, probe, tension, storyteller.
                           For --suite tension the span is read in years: 60 days to the year, which is also
@@ -349,6 +352,7 @@ OPTIONS
   --threats <true|false>  for --suite storyteller: false runs the same world with big and intro threats
                           disallowed and everything else as Medium, the baseline a threat reading is read
                           against (default true).
+  --warmup <N>            for --suite tickcost: days ticked untimed before --days are timed.
   --arc-every <N>         for --suite arc: sample interval in days (default 60, one game year).
   --layout-seed <s>       for --suite layout and band: new-game seed string (default simworld-host, the Unity host's).
   --layout-ticks <N>      for --suite layout and mining: ticks to run before reporting (default 60000).
@@ -406,7 +410,11 @@ SUITES
                 for --days and sampled every --arc-every days: era turns, research finished, population and
                 full-pawn count, buildings by def and by the era of their research gate, deaths by cause, food,
                 moments, threat points and wall clock per interval. Not in `all`: slow, and run on purpose.
-  all           Runs every suite in sequence (scaling first; attribution's N is derived from its result).
+  tickcost      Wall clock per tick of a watched Bronze-age town: a --band founding band with research set up
+                to the Bronze age, --warmup days untimed, then --days timed day by day. Prints population,
+                deaths, houses, moments and SimDigest, so a performance change is checked for no behaviour
+                change by diffing two runs on one seed.
+  all          Runs every suite in sequence (scaling first; attribution's N is derived from its result).
 
 EXAMPLES
   dotnet run -c Release --project tools/bench/SimWorld.Bench -- --pawns 1000 --days 1

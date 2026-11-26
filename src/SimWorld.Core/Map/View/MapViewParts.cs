@@ -189,8 +189,9 @@ namespace SimWorld.Map.View
             int thingId, string defName, string? stuffDefName, IntVec3 position, Rot4 rotation,
             IntVec3 occupiedMin, IntVec2 occupiedSize, int stackCount,
             ThingCategory category, AltitudeLayer altitude, float healthFraction, float plantGrowth,
-            float buildProgress, bool? switchedOn, float fuelFraction)
+            float buildProgress, bool? switchedOn, float fuelFraction, bool isNaturalRock)
         {
+            IsNaturalRock = isNaturalRock;
             ThingId = thingId;
             DefName = defName;
             StuffDefName = stuffDefName;
@@ -285,6 +286,12 @@ namespace SimWorld.Map.View
 
         /// <summary>True when <see cref="FuelFraction"/> means something.</summary>
         public bool BurnsFuel => FuelFraction >= 0f;
+
+        /// <summary>Natural rock: the mountain itself, or an ore vein in it — anything a miner digs out
+        /// (<c>ThingDef.mineable</c>), as opposed to a wall somebody built. The terrain under it is whatever the
+        /// map generated before the rock was laid and nobody can stand on it, so an inspector names the rock, not
+        /// the ground (host UX request after playtest 4: "Shallow water" under a cliff).</summary>
+        public bool IsNaturalRock { get; }
     }
 
     /// <summary>

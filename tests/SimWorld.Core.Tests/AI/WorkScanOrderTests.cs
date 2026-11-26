@@ -75,5 +75,36 @@ namespace SimWorld.Tests.AI
 
             Assert.Same(north, job!.targetA.Thing);
         }
+
+        /// <summary>The walk is a heap, not a sort; over many candidates with many ties it must still ask about
+        /// them in exactly the order a full sort by (distance, list position) gives.</summary>
+        [Fact]
+        public void A_long_refused_scan_asks_in_full_nearest_then_listed_order()
+        {
+            var map = new CoreMap(30, 30, TerrainDefOf.Soil);
+            Pawn pawn = NewHuman();
+            GenSpawn.Spawn(pawn, new IntVec3(15, 0, 15), map);
+            var scanner = new ListScanner();
+            // 150 distinct cells in a scattered order (37 is coprime to 900), many at equal distances.
+            for (int i = 0; scanner.Offered.Count < 150; i++)
+            {
+                int index = i * 37 % 900;
+                var c = new IntVec3(index % 30, 0, index / 30);
+                if (c != pawn.Position) scanner.Offered.Add(Wall(map, c.x, c.z));
+            }
+            foreach (Thing t in scanner.Offered) scanner.Refused.Add(t);
+
+            Assert.Null(WorkGiverScanUtility.TryFindJobOnScanner(pawn, scanner));
+
+            var expected = new List<Thing>(scanner.Offered);
+            var position = new Dictionary<Thing, int>();
+            for (int i = 0; i < expected.Count; i++) position[expected[i]] = i;
+            expected.Sort((a, b) =>
+            {
+                int byDistance = (a.Position - pawn.Position).LengthHorizontalSquared.CompareTo((b.Position - pawn.Position).LengthHorizontalSquared);
+                return byDistance != 0 ? byDistance : position[a].CompareTo(position[b]);
+            });
+            Assert.Equal(expected, scanner.Asked);
+        }
     }
 }

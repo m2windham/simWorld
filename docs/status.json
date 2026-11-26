@@ -539,6 +539,21 @@
           "id": "mapcore.dwellingplots",
           "label": "Map/View dwellings, rooms and climate state, asked for by the host (REQ-007): MapViewSnapshot.Dwellings and MapViewDelta.Dwellings carry every planned house in DwellingUtility.DwellingsOn order as a DwellingView (rung defName, label and number, plot OccupiedMin/OccupiedSize, Rot4, IsComplete, beds standing and planned, household id and CitizenLine's household name or null while vacant, the bedroom's IndoorTemperature or null when it is open to the outdoors, the rung's roof defName), re-read whole on every capture like the pawns. OutdoorTemperature rides on both. MapViewSnapshot.TemperatureAt(cell) (focus, tile or map overloads) returns CellTemperatureView: the closed room's temperature and cell count, or null outdoors, beside the outdoor air - a click-time query, not a 40,000-float layer. RoofView.IsEarthen carries RoofDef.isEarthen. ThingView.SwitchedOn (CompFlickable, null without one) and FuelFraction (CompRefuelable fuel over target, -1 without one); a flip and each 5% fuel step or the fire going out bump the chunk, so the delta carries them without a re-send every tick. Nothing new is saved: every field derives from saved state (MapViewDwellingTests).",
           "done": true
+        },
+        {
+          "id": "mapcore.buildables",
+          "label": "Map/View build list, asked for by the host after playtest 4: MapViewSnapshot.CaptureBuildables() (focus, tile or map overloads) returns BuildCatalogue - the working era and every buildable (each Blueprint's entityToBuild) as a BuildableOption: defName, label, description, size, rotatable, the era it belongs to, CanPlace with the reason it cannot and the research it still needs, its fixed cost and its stuff count with the stuffs this age can use (each MaterialCost carrying what the settlement holds) and the default stuff. Gated as the simulation gates, by one rule shared with the command (Map/View/BuildGate): a building whose research is finished is offered; one of the working era or earlier but not yet learned is listed greyed with the projects it needs; a later era's is not listed at all (RimWorld's architect menu hides what is not researched, Designator_Build.Visible, recalled). A stuff of a later age is offered only once some is held, on the map or in the settlement's books. Decision: MapCommands.PlaceBlueprint now refuses an unresearched building and an unheld later-age stuff with the list's own reason. Before, nothing downstream checked research, so a blueprint for a building the town had never learned would simply have been built. The default stuff is not gated (it is wood) (MapViewBuildablesTests; MapCommandsStuffTests updated: a granite bed is refused in the stone age until granite blocks are held).",
+          "done": true
+        },
+        {
+          "id": "mapcore.buildings",
+          "label": "Map/View buildings and rooms, asked for by the host after playtest 4: MapViewSnapshot.CaptureBuildings() (focus, tile or map overloads) returns SettlementBuildings, every building of the settlement as a BuildingView with a role (Hall, House, Dormitory, Bedroom, Workshop, Storeroom, Room, Store, Bench, Research), role label, label, defName, thing or dwelling id, bounds, cells, roofed and complete; BuildingAt(cell) gives the smallest building holding a cell, so a clicked roof resolves to a named building. The hall and the houses are named by the settlement's own plan (SettlementCompound, Dwelling), not guessed from walls. Any other closed room some wall of which the settlement built is named by what stands in and against it - RimWorld's RoomRoleDef idea (barracks, bedroom, workshop, storeroom by contents, recalled), trimmed to the roles this port's buildings fill. Stores, workbenches and research benches standing alone are named by what they are; a cave or a ruin is nobody's building (MapViewBuildingsTests).",
+          "done": true
+        },
+        {
+          "id": "mapcore.naturalrock",
+          "label": "ThingView.IsNaturalRock, asked for by the host after playtest 4: true for a mineable thing (the mountain), false for a built wall, on the snapshot and the delta alike (MapViewBuildingsTests).",
+          "done": true
         }
       ],
       "verifiedBy": "Release player -verify (host 6ac0bf1, build rc6, core b49674a, 2026-11-19): solo + populated scenarios, 61 days each, exit 0"
@@ -1231,6 +1246,11 @@
         {
           "id": "ai.reachcache",
           "label": "Mining bands no longer slow 10x: a newly opened cell joins its one bordering region instead of re-flooding, reachability is cached per region component (RimWorld's ReachabilityCache idea), and work scans test candidates nearest first. Same outcomes at a fixed tick; mining stretch 4,200 to 21,700 ticks/s. Regions stay uncapped (the 12x12 extentsLimit changed paths and broke the corridor cache).",
+          "done": true
+        },
+        {
+          "id": "ai.tickcost",
+          "label": "Tick cost of a Bronze-age town, asked for by the host after playtest 4 (host reads ~0.37 ms/tick under Unity Mono): tools/bench --suite tickcost poses a 22-citizen TribalStart band at the Bronze age, ticks warmup days untimed and then times days, and prints the end state and SimDigest so a change can be shown to leave behaviour untouched. Under .NET 8 it reads 0.05-0.12 ms/tick, with as much as 30% run-to-run spread on a shared PC. dotnet-trace on seed 2: the work-giver scan is 45% of the tick (TryFindJobOnScanner: sorting every candidate 12%, PlantsCut and ChopWood offering every plant on the map 10%, ForageWild.HasJobOnThing 3%), the per-tick FactionManager list copy 5%, and RoomTracker regenerating every room whenever anything is dirty 10%. Four changes, none to behaviour, with identical end state and digest on seeds 1-3: the scan picks its first three candidates by linear pass and sorts only if it walks further (a heap was tried first and measured slower), the room map and visited set are arrays, not dictionaries, the faction tick reuses one list, and the research giver reads the bench's own list. Main-thread tick CPU in the trace went from 158 s to 134 s. Wall-clock ABBA runs could not resolve the difference against noise. Left as larger work: candidate pruning in PlantsCut/ChopWood (ShouldBeCut over every plant per scan), job searches after every CleanFilth toil, RoomTracker's whole-map regeneration on any dirty flag, MiningInitiative's open-face scan and SteadyEnvironmentEffects.",
           "done": true
         }
       ],
@@ -2287,6 +2307,11 @@
         {
           "id": "god.playtest-view",
           "label": "Playtest view data (2026-11-23 fresh-eyes playtest): CitizenView.Thoughts (mood reasons per thought group with stacked offsets, read without recomputing the situational cache), break thresholds, job/activity/mental state/role in words, HediffLine immunity, lethal severity and tend-now; GodViewSnapshot.Era (EraOutlook: progress on the frontier era's spine, the gating projects still missing); EventLocation on letters and chronicle entries (tile, centre cell, up to 24 affected cells) from quakes, raids, manhunter packs, wanderers and deaths, with GodViewSnapshot.RecentEvents; incident chronicle lines by label, no animal death letters, a titled game-start letter, a capitalised era-fitting player faction name, no raw coordinates or defNames in command results.",
+          "done": true
+        },
+        {
+          "id": "god.fooddays",
+          "label": "SettlementSummary.NutritionPerDay and FoodDays, asked for by the host after playtest 4 (\"Food (days)\" on the stock panel): what the living citizens eat in a day at their own hunger rates (HuntingInitiative.NutritionEatenPerDay, the figure the hunters already plan by, now shared rather than recomputed) and the stored nutrition over it, null when nobody eats (FoodDaysTests).",
           "done": true
         }
       ],

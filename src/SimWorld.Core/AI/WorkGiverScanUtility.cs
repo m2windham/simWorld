@@ -70,8 +70,32 @@ namespace SimWorld.AI
                     order.Add((distSq << 32) | (uint)candidates.Count);
                     candidates.Add(t);
                 }
+                // Nearest first without sorting what the walk never reaches. Most scans take one of the first few
+                // candidates, and a wood-short settlement offers every grown tree on the map: sorting all of them for
+                // every job search was a tenth of a Bronze-age town's tick (tools/bench --suite tickcost). So the
+                // first few are picked by linear passes, each the least key above the last, and the list is sorted
+                // only when the walk gets past them. The keys are unique (the list position is in the low bits),
+                // so the walk visits candidates in exactly the order a full sort gives. (A heap was tried first and
+                // measured slower: many scans do walk deep, refused at every candidate, and popping a heap through
+                // List<long> costs more than one sort.)
+                int count = order.Count;
+                long last = long.MinValue;
+                for (int pick = 0; pick < LinearPicks && pick < count; pick++)
+                {
+                    long next = long.MaxValue;
+                    for (int i = 0; i < count; i++)
+                    {
+                        long key = order[i];
+                        if (key > last && key < next) next = key;
+                    }
+                    last = next;
+                    Thing t = candidates[(int)(next & 0xFFFFFFFF)];
+                    if (scanner.HasJobOnThing(pawn, t)) return scanner.JobOnThing(pawn, t);
+                }
+                if (count <= LinearPicks) return null;
+
                 order.Sort();
-                for (int i = 0; i < order.Count; i++)
+                for (int i = LinearPicks; i < count; i++)
                 {
                     Thing t = candidates[(int)(order[i] & 0xFFFFFFFF)];
                     if (scanner.HasJobOnThing(pawn, t)) return scanner.JobOnThing(pawn, t);
@@ -85,6 +109,11 @@ namespace SimWorld.AI
                 freeBuffers!.Push(buffers);
             }
         }
+
+        /// <summary>How many candidates <see cref="TryFindJobOnScanner"/> picks by linear pass before it sorts the
+        /// rest. Not a sourced number: three keeps a shallow scan from sorting at all while costing a deep one only
+        /// three extra passes beside its sort.</summary>
+        private const int LinearPicks = 3;
 
         /// <summary>The scan's two working lists, reused instead of allocated on every job search. A stack rather
         /// than one pair because a scan can re-enter itself — <see cref="WorkGiver_PatientGoToBed"/> asks the

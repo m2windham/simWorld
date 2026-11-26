@@ -87,8 +87,9 @@ namespace SimWorld.God.View
             string name, int tile, int foundingTick,
             int totalPopulation, int citizenCount, int statisticalPopulation, bool hasInteriorMap,
             float meanMood, float meanHealth, float meanFoodNeed,
-            IReadOnlyList<StockLine> stock, int storedUnits, float storedNutrition)
+            IReadOnlyList<StockLine> stock, int storedUnits, float storedNutrition, float nutritionPerDay)
         {
+            NutritionPerDay = nutritionPerDay;
             Name = name;
             Tile = tile;
             FoundingTick = foundingTick;
@@ -153,6 +154,16 @@ namespace SimWorld.God.View
         /// <c>Economy.SettlementLarder.StoredNutrition</c> for a settlement that has no map.</summary>
         public float StoredNutrition { get; }
 
+        /// <summary>Nutrition this settlement's citizens eat in a day at their current hunger rates
+        /// (<c>AI.HuntingInitiative.NutritionEatenPerDay</c>, the figure its hunters and farmers plan against), each
+        /// at their own <c>Pawn.HungerRate</c>, so a town of children and a town of adults differ. Statistical population is not counted,
+        /// as it never eats from the stores. 0 with nobody to feed.</summary>
+        public float NutritionPerDay { get; }
+
+        /// <summary>Days the food in <see cref="Stock"/> lasts at <see cref="NutritionPerDay"/>: "Food (days)" on a
+        /// stock panel. Null with nobody to feed, where a number of days means nothing.</summary>
+        public float? FoodDays => NutritionPerDay > 0f ? StoredNutrition / NutritionPerDay : (float?)null;
+
         internal static SettlementSummary From(World.Settlement settlement)
         {
             // A rollup of this settlement alone rather than a second way of averaging: the per-settlement
@@ -179,7 +190,8 @@ namespace SimWorld.God.View
                 settlement.StatisticalPopulation,
                 settlement.InteriorMap != null,
                 rollup.MeanMood, rollup.MeanHealth, rollup.MeanFoodNeed,
-                StockLine.AllOf(held), storedUnits, storedNutrition);
+                StockLine.AllOf(held), storedUnits, storedNutrition,
+                AI.HuntingInitiative.NutritionEatenPerDay(settlement, null));
         }
     }
 
