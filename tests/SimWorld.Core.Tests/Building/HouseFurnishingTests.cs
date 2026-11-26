@@ -6,6 +6,7 @@ using SimWorld.Defs;
 using SimWorld.Factions;
 using SimWorld.God.View;
 using SimWorld.Map;
+using SimWorld.Pawns;
 using SimWorld.Pawns.Generation;
 using SimWorld.Research;
 using SimWorld.Scenario;
@@ -42,7 +43,7 @@ namespace SimWorld.Tests.Building
         public void A_household_gets_a_table_once_tables_are_known_and_each_age_furnishes_over_the_last()
         {
             CoreMap.ResetMapIdCounter();
-            Game game = Game.NewGame(DefDatabase<ScenarioDef>.GetNamed("TribalStart").scenario, "comfort-furnish", subdivisionOverride: 3, soloStart: true, bandSize: 12);
+            Game game = Game.NewGame(DefDatabase<ScenarioDef>.GetNamed("TribalStart").scenario, "comfort-furnish", subdivisionOverride: 3, soloStart: true, bandSize: 20);
             Settlement settlement = game.World!.worldObjects.OfType<Settlement>().First();
             Assert.Equal(GodCommandOutcome.Done, GodCommands.OpenSettlement(settlement.tile).Outcome);
             CoreMap map = settlement.InteriorMap!;

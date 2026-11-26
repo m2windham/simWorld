@@ -46,9 +46,9 @@ namespace SimWorld.Tests.Building
             return (map, d);
         }
 
-        /// <summary>The house's best room: where its table stands if it has one, else where its beds are.</summary>
+        /// <summary>The house's best room: its parlour where it has one, else the room round its beds.</summary>
         private static float BestRoom(CoreMap map, Dwelling d) =>
-            map.roomTracker.Rooms.Where(r => RoomStats.IsEnclosed(r) && r.Cells.Any(d.InteriorContains)).Max(r => RoomStats.Impressiveness(r, map));
+            map.roomTracker.Rooms.Where(r => RoomStats.IsEnclosed(r) && r.Cells.Any(c => d.footprint.Contains(c))).Max(r => RoomStats.Impressiveness(r, map));
 
         [Fact]
         public void Each_age_furnishes_a_better_room_than_the_age_before()

@@ -202,7 +202,9 @@ namespace SimWorld.Tests.Thoughts
         public void A_hungry_citizen_walks_past_raw_meat_for_a_hearty_meal_and_remembers_each()
         {
             Town t = Founded("comfort-meal", "Agrarian", 20);
-            Pawn p = MemberOf(t, t.Households[0]);
+            // Somebody who minds what they eat: an ascetic feels neither meal.
+            Pawn p = t.Settlement.Citizens.First(c => !c.Dead && c.Spawned && c.needs?.mood != null
+                && !ThoughtUtility.ThoughtNullified(c, IngestThoughtDefOf.AteFineMeal) && !ThoughtUtility.ThoughtNullified(c, IngestThoughtDefOf.AteRawFood));
             // Everything edible already lying about is put out of the question.
             foreach (Thing f in t.Map.listerThings.ThingsInGroup(ThingRequestGroup.Item).Where(x => x.def.IsNutritionGivingIngestible).ToList()) f.Destroy();
 

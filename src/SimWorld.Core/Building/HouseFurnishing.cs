@@ -37,8 +37,8 @@ namespace SimWorld.Building
     /// no spot for either, which is the point.
     ///
     /// <para/>Only a finished house a household lives in is furnished, and nothing is planned while
-    /// <see cref="RenewalInitiative.WaitReason"/> says the town has something more urgent to do: comfort never
-    /// outranks beds, food or a raid. At most <see cref="MaxUnderwayPerCitizens"/> sites at a time, the shape of
+    /// <see cref="RenewalInitiative.WaitReason"/> says the town is short of food or under attack: comfort never
+    /// outranks either. A bed shortage alone does not wait it, as it does not wait a renewal that adds beds. At most <see cref="MaxUnderwayPerCitizens"/> sites at a time, the shape of
     /// <see cref="RenewalTuning.MaxUnderway"/>, so a town furnishes a house or two at a time rather than diverting
     /// every builder at once. No state of its own: everything is read off the map each pass.
     /// </summary>
@@ -90,7 +90,10 @@ namespace SimWorld.Building
             if (map == null) throw new ArgumentNullException(nameof(map));
             IReadOnlyList<Dwelling> dwellings = DwellingUtility.DwellingsOn(map);
             if (dwellings.Count == 0) return 0;
-            if (RenewalInitiative.WaitReason(settlement, map) != null) return 0;
+            // A bed shortage does not hold a table back: a growing town is short of beds for years at a time, and
+            // its beds are planned by their own pass. Hunger and a raid do.
+            string? wait = RenewalInitiative.WaitReason(settlement, map);
+            if (wait != null && wait != RenewalInitiative.BedsShort) return 0;
 
             int budget = Math.Max(1, settlement.Citizens.Count(p => !p.Dead) / MaxUnderwayPerCitizens) - SitesUnderway(map, dwellings);
             ThingDef? furnishing = BestKnownFurnishing();
