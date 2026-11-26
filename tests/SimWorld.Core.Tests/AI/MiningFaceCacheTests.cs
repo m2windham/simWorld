@@ -15,7 +15,7 @@ namespace SimWorld.Tests.AI
     /// (tick-cost lane), rebuilt when the building list or some cell's walkability changes. Each test changes the map
     /// one way and holds the kept list to a fresh walk of the building list: a rock spawned, a rock mined (which
     /// opens the one behind it), and ground turned to deep water round a face (walkability alone, no building
-    /// coming or going) — and a rock spawned on water, the building list alone, no walkability flip.
+    /// coming or going) — and a rock spawned on water and mined away, the building list alone, no walkability flip.
     /// </summary>
     public class MiningFaceCacheTests : ContentTestBase
     {
@@ -102,7 +102,7 @@ namespace SimWorld.Tests.AI
         }
 
         [Fact]
-        public void A_rock_spawned_on_water_is_a_face_with_no_walkability_changed()
+        public void A_rock_on_water_comes_and_goes_with_no_walkability_changed()
         {
             CoreMap map = Quarry();
             var pool = new IntVec3(3, 0, 3);
@@ -114,6 +114,13 @@ namespace SimWorld.Tests.AI
 
             Assert.Equal(walkability, map.pathGrid.WalkabilityVersion);
             Assert.Contains(islet, MiningInitiative.FaceCandidates(map));
+            Assert.Equal(Fresh(map), MiningInitiative.FaceCandidates(map));
+
+            // And mined away again: the water stays unwalkable, so only the building list says it is gone.
+            islet.Destroy();
+
+            Assert.Equal(walkability, map.pathGrid.WalkabilityVersion);
+            Assert.DoesNotContain(islet, MiningInitiative.FaceCandidates(map));
             Assert.Equal(Fresh(map), MiningInitiative.FaceCandidates(map));
         }
     }
