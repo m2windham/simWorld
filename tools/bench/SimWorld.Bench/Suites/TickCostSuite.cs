@@ -100,11 +100,38 @@ namespace SimWorld.Bench.Suites
                 + " bytes/tick, gen0 collections " + Report.Int(GC.CollectionCount(0) - gen0Before));
             Console.WriteLine("end: " + Readings(game, home, map));
             Console.WriteLine("digest: " + SimDigest.Line(map));
+            Console.WriteLine("rooms: " + RoomsLine(map));
             Console.WriteLine("factions: " + Find.FactionManager.AllFactionsListForReading.Count
                 + ", things on map: " + map.listerThings.AllThings.Count);
         }
 
         private static int Living(SimWorld.World.Settlement home) => home.Citizens.Count(p => !p.Dead);
+
+        /// <summary>What <see cref="SimDigest"/> does not see and a change to the room tracker could move: every
+        /// room in order, its cells in order, whether it is outdoors, and its air to the bit.</summary>
+        private static string RoomsLine(Map.Map map)
+        {
+            ulong hash = 14695981039346656037UL;
+            void Mix(int value)
+            {
+                unchecked
+                {
+                    hash ^= (uint)value;
+                    hash *= 1099511628211UL;
+                }
+            }
+            IReadOnlyList<Room> rooms = map.roomTracker.Rooms;
+            for (int r = 0; r < rooms.Count; r++)
+            {
+                Room room = rooms[r];
+                Mix(room.Cells.Count);
+                for (int i = 0; i < room.Cells.Count; i++) Mix(room.Cells[i].x * 4096 + room.Cells[i].z);
+                Mix(room.TouchesOutside ? 1 : 0);
+                Mix(BitConverter.SingleToInt32Bits(room.Group.Temperature));
+            }
+            return "count=" + rooms.Count.ToString(CultureInfo.InvariantCulture)
+                + " hash=" + hash.ToString("x16", CultureInfo.InvariantCulture);
+        }
 
         /// <summary>What a performance change must not move: the era, population, deaths by cause, finished
         /// houses and the moments the curator kept.</summary>
