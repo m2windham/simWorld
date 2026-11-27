@@ -1867,6 +1867,11 @@
           "done": true
         },
         {
+          "id": "building.backstreets",
+          "label": "Translation (second-street lane): a town opens a back street when no plot on its streets is left. Back streets run parallel to the first, behind its rows of houses, alternating north and south and outward, their plots filling nearest the compound first (SettlementCompound.BackStreetPlots). Opening one (DwellingPlanner.TryOpenStreet, only when TryFindPlot finds nothing) claims its first PlannedDwellings plots as home, once (SettlementCompound.openedStreets, saved), and a back-street plot keeps off zones. The first street was bounded by the home area the compound claimed, so ruins, rock or the map edge on a few planned plots capped housing for good (era arc seed 201: about 19 houses for 26 households, Classical gate shut). Clearing plots was not chosen: it would quarry outcrops and pull down the map's ruins, and an edge cannot be cleared. RimWorld has nothing to port: its player lays out the base. BackStreetTests.",
+          "done": true
+        },
+        {
           "id": "building.reach",
           "label": "Every settlement planner (compound siting, Fits, works placement, field growth, granary) sites only cells reachable from a citizen, and the band spawns on the largest open ground. Seed 2024 (46 sealed rock pockets) went from 89 unworked frames to 90 buildings and 642 field cells by day 10. Buildings carry a faction; repair skips ruins and other factions. StructureCount and the structure ledger count only the settlement faction's own buildings (2026-11-17); pocket tests fail if the Fits or works-placement reach gate is removed.",
           "done": true

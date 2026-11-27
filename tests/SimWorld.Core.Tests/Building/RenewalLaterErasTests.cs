@@ -159,7 +159,13 @@ namespace SimWorld.Tests.Building
                 .Select(p => p.Plot).Where(p => t.Houses.Any(h => p.Contains(new IntVec3(h.footprint.minX, 0, h.footprint.minZ)))).ToList();
             Assert.Equal(4, plots.Count);
             foreach (IntVec3 c in map.AllCells.ToList()) map.areaManager.Home[c] = plots.Any(p => p.Contains(c));
+            // Every back street it could open is open already, its ground since taken out of the home area: a town
+            // with a free plot on a back street renews there instead (BackStreetTests).
+            int streets = 0;
+            while (!t.Compound.BackStreetBlock(streets + 1, map.Size).IsEmpty || !t.Compound.BackStreetBlock(streets + 2, map.Size).IsEmpty) streets++;
+            t.Compound.openedStreets = streets;
             Assert.Null(DwellingPlanner.TryFindPlot(map, t.Compound, target));
+            Assert.Null(DwellingPlanner.TryOpenStreet(map, t.Compound, target));
             Assert.Null(RenewalInitiative.WaitReason(t.Settlement, map));
 
             PassNow(t);
