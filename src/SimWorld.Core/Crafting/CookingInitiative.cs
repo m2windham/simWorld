@@ -21,10 +21,20 @@ namespace SimWorld.Crafting
         /// <summary>Self-gate cadence — the same rare bucket every other initiative here uses.</summary>
         public const int IntervalTicks = GenTicks.TickRareInterval;
 
-        /// <summary>How many stoves a settlement wants. One: a bill is worked by one cook at a time, and a
-        /// second bench would only help if the first were the bottleneck, which it is not — raw food is. The
-        /// day a settlement's kitchen is the constraint this becomes a real per-capita figure.</summary>
-        public const int StovesWanted = 1;
+        /// <summary>
+        /// Citizens one stove cooks for. A bill is worked by one cook at a time, so past a village the kitchen,
+        /// not the raw food, is what keeps the larder short of meals. Measured on the era arc (band 40, seed 201,
+        /// threats off): with one stove a town of 60 held 5,000-13,000 raw nutrition on its map and under 60
+        /// meals at every sample, and half of it ate raw food each day (comfort lane, once eating raw left its
+        /// memory). This port's own figure, not RimWorld's (whose player builds the stoves): a citizen eats
+        /// about two plain meals a day, and a cook at one bench turns out about fifty between the other work.
+        /// Pinned by behaviour (a bigger town keeps more stoves), never by the literal.
+        /// </summary>
+        public const int CitizensPerStove = 20;
+
+        /// <summary>How many stoves a settlement of <paramref name="citizens"/> wants: one, and one more for
+        /// every <see cref="CitizensPerStove"/> past the first.</summary>
+        public static int StovesWanted(int citizens) => Math.Max(1, (citizens + CitizensPerStove - 1) / CitizensPerStove);
 
         /// <summary>
         /// How far from the raw food a new stove may be placed, in cells. The binding constraint is
@@ -112,8 +122,9 @@ namespace SimWorld.Crafting
             List<RecipeDef> recipes = CookableRecipesOn(map);
             if (recipes.Count == 0) return; // Nothing researched, or nothing raw on the map to cook.
 
-            EnsureStove(map, recipes);
-            EnsureBills(map, recipes);
+            Settlement? settlement = HuntingInitiative.SettlementFor(map);
+            EnsureStove(map, recipes, settlement);
+            EnsureBills(map, recipes, settlement);
         }
 
         // -------------------------------------------------------------------------------------------
@@ -223,11 +234,12 @@ namespace SimWorld.Crafting
         // The bench.
         // -------------------------------------------------------------------------------------------
 
-        private static void EnsureStove(Map.Map map, List<RecipeDef> recipes)
+        private static void EnsureStove(Map.Map map, List<RecipeDef> recipes, Settlement? settlement)
         {
             ThingDef? stoveDef = StoveDefFor(recipes);
             if (stoveDef == null || !stoveDef.IsResearchFinished) return;
-            if (CountBuiltOrPlanned(map, stoveDef) >= CookingTuning.StovesWanted) return;
+            int citizens = settlement?.Citizens.Count ?? map.mapPawns.ColonistCount;
+            if (CountBuiltOrPlanned(map, stoveDef) >= CookingTuning.StovesWanted(citizens)) return;
 
             Thing? food = RawFoodOn(map, recipes);
             if (food == null) return;
@@ -333,9 +345,8 @@ namespace SimWorld.Crafting
         // The bills.
         // -------------------------------------------------------------------------------------------
 
-        private static void EnsureBills(Map.Map map, List<RecipeDef> recipes)
+        private static void EnsureBills(Map.Map map, List<RecipeDef> recipes, Settlement? settlement)
         {
-            Settlement? settlement = HuntingInitiative.SettlementFor(map);
 
             IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
             for (int b = 0; b < buildings.Count; b++)

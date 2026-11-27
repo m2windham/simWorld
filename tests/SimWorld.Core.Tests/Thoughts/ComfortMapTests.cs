@@ -287,6 +287,7 @@ namespace SimWorld.Tests.Thoughts
                     .Select(g => g[0].def.defName + " " + ThoughtHandler.StackedMoodOffset(g).ToString("0.0"))));
             }
             Assert.True(comforted * 2 >= housed.Count, $"only {comforted} of {housed.Count} housed citizens felt any comfort");
+            Assert.True(housed.Any(p => Holds(p, IngestThoughtDefOf.AteLavishMeal)), "nobody who ate from a feast platter remembers it");
             Assert.True(mean >= 0.55f, $"mean mood {mean:0.00} of the housed");
         }
     }

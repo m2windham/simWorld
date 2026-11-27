@@ -231,5 +231,27 @@ namespace SimWorld.Tests.Crafting
 
             Assert.True(many.targetCount > few.targetCount);
         }
+
+        [Fact]
+        public void A_town_raises_more_stoves_than_a_village_and_each_gets_the_bill()
+        {
+            // One cook works one bench at a time, so past a village the kitchen is what keeps the larder short
+            // of meals (measured on the era arc; CookingTuning.CitizensPerStove).
+            int StovesFor(int mouths)
+            {
+                CoreMap map = NewMap(40);
+                KnowCooking();
+                SpawnStack(map, new IntVec3(20, 0, 20), "RawBerries", 75);
+                for (int i = 0; i < mouths; i++) GenSpawn.Spawn(NewHuman("Eater" + i), new IntVec3(2 + i % 30, 0, 2 + i / 30), map);
+                for (int pass = 0; pass < 6; pass++) CookingInitiative.Run(map);
+                return BlueprintEntities(map).Count(d => ReferenceEquals(d, Def("FueledStove")));
+            }
+
+            int village = StovesFor(5);
+            int town = StovesFor(50);
+            Assert.Equal(1, village);
+            Assert.True(town > village, $"a town of 50 keeps {town} stoves, a village of 5 keeps {village}");
+            Assert.Equal(1, CookingTuning.StovesWanted(0));
+        }
     }
 }

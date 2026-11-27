@@ -28,7 +28,7 @@ namespace SimWorld.Bench.Suites
             int houses = 0, tables = 0;
             var furnishings = new SortedDictionary<string, int>(System.StringComparer.Ordinal);
             var stages = new int[RoomStats.ImpressivenessStages.Length];
-            float sum = 0f;
+            float sum = 0f, wealth = 0f, beauty = 0f, space = 0f, clean = 0f;
             int scored = 0;
             foreach (Dwelling d in DwellingUtility.DwellingsOn(map))
             {
@@ -50,6 +50,10 @@ namespace SimWorld.Bench.Suites
                 Room? room = map.roomTracker.RoomAt(beds[0].Position);
                 if (!RoomStats.IsEnclosed(room)) continue;
                 float score = RoomStats.Impressiveness(room!, map);
+                wealth += RoomStats.Wealth(room!, map);
+                beauty += RoomStats.Beauty(room!, map);
+                space += RoomStats.Space(room!, map);
+                clean += RoomStats.Cleanliness(room!, map);
                 sum += score;
                 scored++;
                 stages[RoomStats.StageOf(score)]++;
@@ -57,7 +61,25 @@ namespace SimWorld.Bench.Suites
             return "comfort: houses " + houses + ", tables " + tables + ", furnishings ["
                 + string.Join(", ", furnishings.Select(kv => kv.Key + " " + kv.Value)) + "], bedrooms scored " + scored
                 + (scored > 0 ? ", mean impressiveness " + (sum / scored).ToString("0.0", CultureInfo.InvariantCulture) : "")
-                + ", by stage [" + string.Join(" ", stages) + "]";
+                + ", by stage [" + string.Join(" ", stages) + "]"
+                + (scored > 0 ? ", mean wealth/beauty/space/cleanliness " + F(wealth / scored, "0") + "/" + F(beauty / scored, "0.00")
+                    + "/" + F(space / scored, "0.0") + "/" + F(clean / scored, "0.00") : "")
+                + "; food on map by preferability [" + FoodByPreferability(map) + "]";
+        }
+
+        private static string F(float v, string format) => v.ToString(format, CultureInfo.InvariantCulture);
+
+        /// <summary>Spawned ingestible food on the map, stack counts summed by its preferability.</summary>
+        private static string FoodByPreferability(Map.Map map)
+        {
+            var counts = new SortedDictionary<SimWorld.Crafting.FoodPreferability, int>();
+            foreach (var t in map.listerThings.AllThings)
+            {
+                var pref = t.def.ingestible?.preferability;
+                if (pref == null || t.def.category != SimWorld.Defs.ThingCategory.Item) continue;
+                counts[pref.Value] = counts.TryGetValue(pref.Value, out int n) ? n + t.stackCount : t.stackCount;
+            }
+            return string.Join(", ", counts.Select(kv => kv.Key + " " + kv.Value));
         }
 
         public static string Line(SimWorld.World.Settlement settlement)
