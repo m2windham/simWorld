@@ -645,6 +645,11 @@ namespace SimWorld.Building
                     default:
                         continue;
                 }
+                if (!entity.MadeFromStuff && StoneWallMaterials.IsWall(entity))
+                {
+                    if (ReplanStrandedStoneWall(map, site, entity, band, settlement)) replanned++;
+                    continue;
+                }
                 if (stuff == null || need <= 0 || !entity.MadeFromStuff || StoneWallMaterials.IsWall(entity)) continue;
                 if (StuffWithinReach(map, stuff, band) + (settlement?.StoreCountOf(stuff) ?? 0) >= need) continue;
 
@@ -669,6 +674,71 @@ namespace SimWorld.Building
                 replanned++;
             }
             return replanned;
+        }
+
+        /// <summary>
+        /// A stone wall site (<see cref="StoneworkThingDefOf"/>: a Def of its own whose cost is blocks, not a
+        /// stuff) whose blocks are gone: short of what it still needs within reach, in hand and in the ledger,
+        /// with no chunk of that stone within reach for a mason to cut (<see cref="StonecutterInitiative"/>).
+        /// It is cancelled, a frame giving back what it was given, and planned again on the same cell as
+        /// <see cref="StoneWallMaterials.PreferredWallDef"/>'s wall, as a new wall would be; a renewal site is only
+        /// called off, as for a stuff-built one. A site whose answer is its own wall is left alone.
+        /// <para/>
+        /// <b>Why</b> (exposure5 lane). A wall planned while the town had limestone kept wanting limestone after the
+        /// last block went into other walls, and nothing could make more: two new houses in the 600-day 40/201
+        /// arc each waited on one limestone wall from day 230 to day 600, and with both of
+        /// <see cref="DwellingTuning.MaxUnderway"/>'s places held, no house was renewed for 360 days. RimWorld's
+        /// player would cancel the blueprint and draw the wall in a stone they have; the settlement is the player.
+        /// No draw.
+        /// </summary>
+        private static bool ReplanStrandedStoneWall(Map.Map map, Thing site, ThingDef wall, IntVec3? band, World.Settlement? settlement)
+        {
+            bool stranded = false;
+            List<ThingDefCountClass> cost = wall.CostListAdjusted(null);
+            for (int i = 0; i < cost.Count && !stranded; i++)
+            {
+                ThingDef block = cost[i].thingDef;
+                int need = site is Frame f ? f.MaterialStillNeeded(block) : ((Blueprint)site).ThingCountNeeded(block);
+                if (need <= 0) continue;
+                if (StuffWithinReach(map, block, band) + (settlement?.StoreCountOf(block) ?? 0) >= need) continue;
+                stranded = !CanCutWithinReach(map, block, band, settlement);
+            }
+            if (!stranded) return false;
+
+            bool renewal = GenConstruct.ThingToReplace(site) != null;
+            ThingDef? replacement = renewal ? null : StoneWallMaterials.PreferredWallDef(map);
+            if (!renewal && ReferenceEquals(replacement, wall)) return false;
+
+            IntVec3 cell = site.Position;
+            Rot4 rot = site.Rotation;
+            if (site is Frame stalled) stalled.Cancel();
+            else site.Destroy(DestroyMode.Cancel);
+            if (replacement == null) return true;
+
+            ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(replacement);
+            if (blueprintDef == null) return true;
+            // A plain wall goes up in its default stuff, wood, as PlaceBlueprint plans one.
+            GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), cell, map, rot);
+            return true;
+        }
+
+        /// <summary>Whether a researched recipe makes <paramref name="block"/> out of something lying within the
+        /// band's reach or held in the ledger: a chunk a mason can still cut.</summary>
+        private static bool CanCutWithinReach(Map.Map map, ThingDef block, IntVec3? band, World.Settlement? settlement)
+        {
+            foreach (RecipeDef recipe in DefDatabase<RecipeDef>.AllDefsListForReading)
+            {
+                if (recipe.ingredients == null || recipe.products == null || !recipe.AvailableNow) continue;
+                if (!recipe.products.Any(p => ReferenceEquals(p.thingDef, block))) continue;
+                foreach (IngredientCount ingredient in recipe.ingredients)
+                {
+                    foreach (ThingDef input in ingredient.filter.AllowedThingDefs)
+                    {
+                        if (StuffWithinReach(map, input, band) + (settlement?.StoreCountOf(input) ?? 0) > 0) return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>Units of <paramref name="stuff"/> lying on <paramref name="map"/> where the band can walk to

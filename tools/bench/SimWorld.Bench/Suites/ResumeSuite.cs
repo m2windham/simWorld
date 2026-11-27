@@ -51,6 +51,7 @@ namespace SimWorld.Bench.Suites
                     + ", hearth cell " + compound.HearthCell + " holds " + string.Join(",", map.thingGrid.ThingsListAt(compound.HearthCell).Select(t => t.def.defName)));
             }
 
+            Console.WriteLine(OpenHouses(map));
             var watch = new ExposureWatch();
             int quakesBefore = Fired(game, "Earthquake");
             bool forced = false, frosted = false;
@@ -77,7 +78,40 @@ namespace SimWorld.Bench.Suites
                 }
                 if (now % ExposureWatch.Every == 0) watch.Sample(home, now);
                 if (now % (3 * GenDate.TicksPerHour) == 0) Console.WriteLine(Line(home, map, now));
+                if (now % GenDate.TicksPerDay == 0) Console.WriteLine(OpenHouses(map));
             }
+        }
+
+        /// <summary>Every lived-in or planned house that is not whole: what of it is missing, and what stands on each
+        /// missing part's cell (blueprint and its stuff, frame and what it still needs, anything else, and who is
+        /// on it or working it). Read-only.</summary>
+        private static string OpenHouses(Map.Map map)
+        {
+            var sb = new System.Text.StringBuilder();
+            List<Pawn> pawns = map.mapPawns.AllPawnsSpawned.ToList();
+            foreach (Dwelling d in DwellingUtility.DwellingsOn(map))
+            {
+                if (d.IsComplete(map)) continue;
+                sb.Append("  open house id " + d.id + " " + d.def.defName + " at " + d.footprint + " household " + d.householdId
+                    + " replaces " + d.replacesId + " replacedBy " + d.replacedById + " demolish " + d.beingDemolished + Environment.NewLine);
+                foreach ((DwellingPartKind kind, IntVec3 cell, Rot4 _) in d.Parts)
+                {
+                    if (Dwelling.IsBuilt(map, kind, cell)) continue;
+                    string things = string.Join(",", map.thingGrid.ThingsListAt(cell).Select(t => t switch
+                    {
+                        Frame f => "FRAME(" + f.def.defName + "/" + f.Stuff?.defName + " work " + f.workDone.ToString("0") + "/" + f.WorkToBuild.ToString("0")
+                            + " need " + string.Join("+", f.TotalMaterialCost().Select(c => c.thingDef.defName + " " + f.MaterialStillNeeded(c.thingDef))) + (map.reservationManager.IsReserved(f) ? " reserved" : "") + ")",
+                        Blueprint b => "BP(" + b.def.defName + "/" + b.stuffToUse?.defName + (map.reservationManager.IsReserved(b) ? " reserved" : "") + ")",
+                        Pawn p => "PAWN(" + p.Label + " " + (p.jobs?.curJob?.def.defName ?? "-") + (p.Downed ? " downed" : "") + ")",
+                        _ => t.def.defName,
+                    }));
+                    string workers = string.Join(",", pawns.Where(p => p.jobs?.curJob is Job j && (j.targetA.Cell == cell || j.targetB.Cell == cell))
+                        .Select(p => p.Label + ":" + p.jobs!.curJob!.def.defName));
+                    sb.Append("    missing " + kind + " " + cell + " edifice " + (map.edificeGrid[cell]?.def.defName ?? "-") + " : " + (things.Length == 0 ? "(nothing)" : things)
+                        + (workers.Length > 0 ? " workers " + workers : "") + Environment.NewLine);
+                }
+            }
+            return sb.Length == 0 ? "  open houses: none" : sb.ToString().TrimEnd();
         }
 
         private static int Fired(Game game, string defName) => game.Storyteller.resourceImpact.StructuresDestroyedBy(defName);
