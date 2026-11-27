@@ -69,6 +69,14 @@ namespace SimWorld.Tests.Building
             {
                 (CoreMap map, Dwelling d) = Raise(rung, furnishing);
                 float score = BestRoom(map, d);
+                // From the stone town house on, the room a household sleeps in is no hovel: the terrace once
+                // packed its four beds wall to wall and slept its household worse than a pit house.
+                float bedroom = RoomStats.Impressiveness(map.roomTracker.RoomAt(d.Beds(map)[0].Position)!, map);
+                output.WriteLine($"{"",-18} {"",-24} bedroom   {bedroom:0.0}, stage {RoomStats.StageOf(bedroom)}");
+                if (scores.Count >= 4) // House_Medieval onward
+                {
+                    Assert.True(RoomStats.StageOf(bedroom) > RoomStats.MediocreStage, $"{rung}'s bedroom scores {bedroom:0.0}");
+                }
                 output.WriteLine($"{rung,-18} {furnishing ?? "-",-24} best room {score:0.0}, stage {RoomStats.StageOf(score)}");
                 scores.Add(score);
             }

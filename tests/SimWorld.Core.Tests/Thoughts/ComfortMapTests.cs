@@ -228,19 +228,19 @@ namespace SimWorld.Tests.Thoughts
         }
 
         [Fact]
-        public void A_meal_in_a_furnished_parlour_is_remembered_and_one_in_a_pit_house_is_not()
+        public void A_meal_in_a_furnished_room_is_remembered_and_one_out_of_doors_is_not()
         {
-            Town t = Founded("comfort-dining", "Industrial", 20, "UrbanSanitation", "IndustrialCapitalism");
-            Dwelling terrace = House(t, "House_Industrial", t.Households[0], "Furnishing_Industrial");
+            Town t = Founded("comfort-dining", "Information", 20, "Suburbs", "Plastics");
+            Dwelling house = House(t, "House_Information", t.Households[0], "Furnishing_Information");
             Pawn p = MemberOf(t, t.Households[0]);
             Thing table = t.Map.listerThings.ThingsOfDef(FurnitureThingDefOf.DiningTable).Single();
 
             IngestThoughtUtility.ApplyThoughts(p, Def("MealSimple"), table);
-            Assert.True(MemoryMood(p, IngestThoughtDefOf.AteInImpressiveDiningRoom) > 0f, "a furnished parlour left no memory");
+            Assert.True(MemoryMood(p, IngestThoughtDefOf.AteInImpressiveDiningRoom) > 0f, "a furnished room left no memory");
 
             // A bare table out of doors is a table, and nothing more.
             p.needs.mood!.thoughts.memories.RemoveMemoriesOfDef(IngestThoughtDefOf.AteInImpressiveDiningRoom);
-            Thing outdoors = Spawn(t, FurnitureThingDefOf.DiningTable, OpenCellNear(t, Centre(terrace)), StuffDefOf.WoodLog);
+            Thing outdoors = Spawn(t, FurnitureThingDefOf.DiningTable, OpenCellNear(t, Centre(house)), StuffDefOf.WoodLog);
             Rooms(t.Map);
             IngestThoughtUtility.ApplyThoughts(p, Def("MealSimple"), outdoors);
             Assert.False(Holds(p, IngestThoughtDefOf.AteInImpressiveDiningRoom));
