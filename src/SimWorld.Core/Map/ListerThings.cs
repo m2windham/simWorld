@@ -51,6 +51,10 @@ namespace SimWorld.Map
 
         public IReadOnlyList<Thing> AllThings => allThings;
 
+        /// <summary>Every def <see cref="ThingsOfDef"/> has ever held a thing of on this map, now present or not: a
+        /// scan that wants to know which kinds of a thing stand here, without walking them (perf, tick-cost lane).</summary>
+        public Dictionary<ThingDef, List<Thing>>.KeyCollection DefsEverListed => byDef.Keys;
+
         /// <summary>Changes whenever <see cref="ThingsInGroup"/> of <paramref name="group"/> gains or loses a thing.</summary>
         public int GroupVersion(ThingRequestGroup group) => groupVersions[(int)group];
 

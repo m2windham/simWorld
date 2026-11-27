@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-11-22",
-  "testsTotal": 3731,
+  "testsTotal": 3734,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1256,6 +1256,11 @@
         {
           "id": "ai.tickcost2",
           "label": "Second tick-cost pass, again with no change to behaviour: identical end state, SimDigest and rooms fingerprint on seeds 1-3, and the 120-day arc of seed 1 identical line for line. The harvest, forage, repair, haul and clean-filth scans offer only plausible candidates; rooms flood through one index queue and skip equalization data for outdoor groups; ListerThings removes by reference; MiningInitiative keeps its open rock faces until buildings or walkability change; the initiatives look for benches among bill givers; harvest, forage and felling walk a HarvestablePlant group. CPU per tick on seeds 1/2/3: 0.110/0.144/0.143 ms to 0.055/0.055/0.061 ms; allocation 9.1/9.4/20.1 to 4.6/3.0/6.4 KB per tick; a Mono ABBA run agrees. Full suite 3730 passed. Held back as changing behaviour: a CleanFilth queue of up to 15 piles per job, incremental room rebuilds, skipping rebuilds on non-Full edifice changes, other cadences for steady effects and initiatives.",
+          "done": true
+        },
+        {
+          "id": "ai.tickcost3",
+          "label": "Third tick-cost pass, no change to behaviour: identical end state, SimDigest and rooms fingerprint on seeds 1-3, and the 120-day arc of seed 1 identical line for line outside its timing. PlantsCut and ChopWood look for their plants on the cells that can hold one (sowing growing zones, blueprint and frame footprints, the compound interior) and walk the plant list, for its order, only when two or more turn up; ChopWood reads the wood shortfall first, for every kind of tree on the map. MiningInitiative reads what blueprints, frames and benches need from their three groups instead of every thing, and tests band reachability only for faces it could mark (in the village, or of a yield that is short). Two ABBA rounds against pass two: CPU per tick 16-19% lower, allocation 11% lower. Full suite 3733 passed.",
           "done": true
         }
       ],

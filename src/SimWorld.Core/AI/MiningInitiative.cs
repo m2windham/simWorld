@@ -80,15 +80,19 @@ namespace SimWorld.AI
 
             SettlementCompound? compound = map.settlementCompound;
             IntVec3 anchor = compound != null ? Center(compound.Interior) : new IntVec3(map.Size.x / 2, 0, map.Size.z / 2);
-            List<Thing> faces = OpenFacesByDistance(map, anchor);
+            // Read before the village marks rather than after: it reads blueprints, frames, bills and stores, none of
+            // which a mark changes. Read first, it says which faces could ever be marked below (perf, tick-cost lane).
+            List<KeyValuePair<ThingDef, int>> shortfalls = YieldShortfall(settlement, map);
+            CellRect? village = compound?.Village;
+            List<Thing> faces = OpenFacesByDistance(map, anchor, village, shortfalls);
 
-            if (compound != null)
+            if (village != null)
             {
-                CellRect village = compound.Village;
-                room = Designate(map, faces, room, rock => village.Contains(rock.Position), int.MaxValue);
+                CellRect v = village.Value;
+                room = Designate(map, faces, room, rock => v.Contains(rock.Position), int.MaxValue);
             }
 
-            foreach (KeyValuePair<ThingDef, int> need in YieldShortfall(settlement, map))
+            foreach (KeyValuePair<ThingDef, int> need in shortfalls)
             {
                 if (room <= 0) break;
                 float perCell = ExpectedYieldPerCell(need.Key);
@@ -188,10 +192,24 @@ namespace SimWorld.AI
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             var needs = new Dictionary<ThingDef, int>();
-            IReadOnlyList<Thing> all = map.listerThings.AllThings;
-            for (int i = 0; i < all.Count; i++)
+            // The three groups that hold every blueprint, frame and bench, rather than every thing on the map: walking
+            // twenty thousand things for their type was a quarter of this initiative (perf, tick-cost lane). A thing
+            // joins one group by its def's category, so none is counted twice; the sums do not depend on the order,
+            // and YieldShortfall sorts what it returns.
+            AddMaterialsNeeded(map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint), needs);
+            AddMaterialsNeeded(map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame), needs);
+            AddMaterialsNeeded(map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver), needs);
+            // A weapon bill takes any stuff on the ladder, so it names no fixed def above; the ladder says which
+            // mined stuff (flint, for a stone-age knife) it is short of (crafting.materialladder).
+            foreach (KeyValuePair<ThingDef, int> raw in MaterialLadder.RawWanted(map)) Add(needs, raw.Key, raw.Value);
+            return needs;
+        }
+
+        private static void AddMaterialsNeeded(IReadOnlyList<Thing> things, Dictionary<ThingDef, int> needs)
+        {
+            for (int i = 0; i < things.Count; i++)
             {
-                Thing t = all[i];
+                Thing t = things[i];
                 if (t is Blueprint blueprint)
                 {
                     foreach (ThingDefCountClass c in blueprint.TotalMaterialCost()) Add(needs, c.thingDef, c.count);
@@ -214,10 +232,6 @@ namespace SimWorld.AI
                     }
                 }
             }
-            // A weapon bill takes any stuff on the ladder, so it names no fixed def above; the ladder says which
-            // mined stuff (flint, for a stone-age knife) it is short of (crafting.materialladder).
-            foreach (KeyValuePair<ThingDef, int> raw in MaterialLadder.RawWanted(map)) Add(needs, raw.Key, raw.Value);
-            return needs;
         }
 
         /// <summary>Is <paramref name="def"/> what some rock yields when mined?</summary>
@@ -352,8 +366,12 @@ namespace SimWorld.AI
         }
 
         /// <summary>Undesignated mineable rock a miner could stand next to now, nearest <paramref name="anchor"/>
-        /// first (ties in list order).</summary>
-        private static List<Thing> OpenFacesByDistance(Map.Map map, IntVec3 anchor)
+        /// first (ties in list order), of those <see cref="Run"/> could mark: inside <paramref name="village"/>, or
+        /// yielding one of <paramref name="shortfalls"/>. Every pass of <see cref="Designate"/> takes the first faces its
+        /// test accepts, and each test accepts only such faces, so leaving the rest out leaves every pass the same
+        /// faces in the same order; it spares the band's reachability test for every far face of a rock nobody wants,
+        /// most of this initiative's cost (perf, tick-cost lane).</summary>
+        private static List<Thing> OpenFacesByDistance(Map.Map map, IntVec3 anchor, CellRect? village, List<KeyValuePair<ThingDef, int>> shortfalls)
         {
             var faces = new List<Thing>();
             var keys = new List<long>();
@@ -363,6 +381,7 @@ namespace SimWorld.AI
             for (int i = 0; i < candidates.Count; i++)
             {
                 Thing t = candidates[i];
+                if (!(village?.Contains(t.Position) ?? false) && !YieldsAny(t.def.mineableThing, shortfalls)) continue;
                 if (!t.Spawned || !FaceReachable(map, t.Position, band)) continue;
                 if (dm.DesignationAt(t.Position, DesignationDefOf.Mine) != null) continue;
                 keys.Add(((long)(t.Position - anchor).LengthHorizontalSquared << 32) | (uint)faces.Count);
@@ -372,6 +391,16 @@ namespace SimWorld.AI
             var ordered = new List<Thing>(faces.Count);
             for (int i = 0; i < keys.Count; i++) ordered.Add(faces[(int)(keys[i] & 0xFFFFFFFF)]);
             return ordered;
+        }
+
+        private static bool YieldsAny(ThingDef? yield, List<KeyValuePair<ThingDef, int>> shortfalls)
+        {
+            if (yield == null) return false;
+            for (int i = 0; i < shortfalls.Count; i++)
+            {
+                if (ReferenceEquals(shortfalls[i].Key, yield)) return true;
+            }
+            return false;
         }
 
         /// <summary>The mineable rock of <see cref="FaceCandidates"/>, valid while the two versions it was built at
