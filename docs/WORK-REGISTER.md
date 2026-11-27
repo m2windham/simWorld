@@ -23,10 +23,11 @@ Unclaimed items below are open. Taking one means claiming it first.
 
 ## Claimed
 
-| Owner                   | Repo            | Paths                                                     | Work                                                        |
-| ----------------------- | --------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
-| `simworld-37` (cloud)   | `simWorld`      | `src/SimWorld.Core/**`, `tests/**`, `tools/**`, `docs/**` | The engine-free core, its tests, and these docs             |
-| `mcp-bridge-fc` (local) | `simWorld.Host` | `Assets/**`, `Packages/**`, `ProjectSettings/**`          | The Unity host: the god view, read and write, and its tests |
+| Owner                   | Repo            | Paths                                                                                                                                        | Work                                                                                                          |
+| ----------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `simworld-37` (cloud)   | `simWorld`      | `src/SimWorld.Core/**`, `tests/**`, `tools/**`, `docs/**`                                                                                    | The engine-free core, its tests, and these docs                                                               |
+| `mcp-bridge-fc` (local) | `simWorld.Host` | `Assets/**`, `Packages/**`, `ProjectSettings/**`                                                                                             | The Unity host: the god view, read and write, and its tests                                                   |
+| `second-street` (local) | `simWorld`      | `src/SimWorld.Core/Building/DwellingPlanner.cs`, `src/SimWorld.Core/Building/SettlementCompound.cs`, `tests/SimWorld.Core.Tests/Building/**` | A town opens a second street when the first fills; not house blueprints or `HouseFurnishing` (`comfort-mood`) |
 
 `docs/status.json` has exactly one writer: whoever runs the suite and measures
 `testsTotal`. It conflicts on every merge otherwise.

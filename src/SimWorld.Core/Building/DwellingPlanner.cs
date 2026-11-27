@@ -19,7 +19,8 @@ namespace SimWorld.Building
     /// the newest rung the civilization knows (<see cref="DwellingUtility.PreferredDwellingDef"/>), on the first
     /// plot along the street (<see cref="SettlementCompound.DwellingPlots"/>) where the whole plan fits, with at
     /// most <see cref="DwellingTuning.MaxUnderway"/> houses going up at once. A rung learned later changes what is
-    /// built next; nothing standing is rebuilt.
+    /// built next; nothing standing is rebuilt. When no plot on the street is left, the town opens a back street
+    /// behind it (<see cref="TryOpenStreet"/>).
     /// <para/>
     /// <b>Repair.</b> Every pass, any wall, door or bed of a planned house that is missing and has nothing planned
     /// in its place is planned again, in whatever the settlement builds with by then. So a house burned, broken by
@@ -51,7 +52,7 @@ namespace SimWorld.Building
             int households = DwellingUtility.Households(settlement).Count;
             while (DwellingUtility.CountBuiltOrPlanned(map) < households && DwellingUtility.CountUnderway(map) < DwellingTuning.MaxUnderway)
             {
-                Dwelling? dwelling = TryFindPlot(map, compound, def);
+                Dwelling? dwelling = TryFindPlot(map, compound, def) ?? TryOpenStreet(map, compound, def);
                 if (dwelling == null) break;
                 compound.dwellings.Add(dwelling);
                 placed += PlaceMissingParts(map, dwelling);
@@ -158,7 +159,7 @@ namespace SimWorld.Building
         /// the street's plots.</summary>
         private static (CellRect Plot, Rot4 Rot)? PlotOf(Map.Map map, SettlementCompound compound, Dwelling d)
         {
-            foreach ((CellRect plot, Rot4 rot) in compound.DwellingPlots(int.MaxValue, map.Size))
+            foreach ((CellRect plot, Rot4 rot) in AllPlots(map, compound))
             {
                 if (plot.Contains(new IntVec3(d.footprint.minX, 0, d.footprint.minZ))
                     && plot.Contains(new IntVec3(d.footprint.maxX, 0, d.footprint.maxZ)))
@@ -264,7 +265,9 @@ namespace SimWorld.Building
         /// <summary>
         /// The house of <paramref name="def"/> on the first free plot where every cell of it is open, walkable
         /// ground in the home area that the band can walk to, and every wall, door and bed can be planned, or
-        /// null. A plot is free when no planned house overlaps it.
+        /// null. A plot is free when no planned house overlaps it. The first street's plots come first, then
+        /// those of every back street the town has opened (<see cref="TryOpenStreet"/>), in the order it opened
+        /// them; a back-street plot must also stay off every zone, so a new street never takes a field.
         /// </summary>
         public static Dwelling? TryFindPlot(Map.Map map, SettlementCompound compound, DwellingDef def)
         {
@@ -280,7 +283,90 @@ namespace SimWorld.Building
                 var dwelling = new Dwelling(def, footprint, rot);
                 if (CanPlaceAll(map, dwelling)) return dwelling;
             }
+            for (int street = 1; street <= compound.openedStreets; street++)
+            {
+                Dwelling? onBackStreet = TryFindBackStreetPlot(map, compound, def, street, homeBinds ? home : null, band);
+                if (onBackStreet != null) return onBackStreet;
+            }
             return null;
+        }
+
+        /// <summary>
+        /// Opens back streets (<see cref="SettlementCompound.BackStreetPlots"/>) one after another until one takes a
+        /// house of <paramref name="def"/>, and returns that house, or null once no street is left on the map. Only
+        /// called when no plot on any street already open is free (<see cref="TryFindPlot"/>), so a town whose
+        /// first street still has room places exactly as it did before back streets existed.
+        /// <para/>
+        /// <b>Opening a street claims its ground.</b> A plot must lie in the home area, and the home area is the
+        /// village the compound claimed at its founding (<see cref="SettlementCompound.ClaimHome"/>) and what has
+        /// grown round what was built since. That is what really bounded the first street: past its planned plots
+        /// none is ever wholly home, so a ruin, an outcrop or the map edge on a few of the planned ones is a
+        /// ceiling on houses. On the era arc's seed 201 it left room for about 19 houses for 26 households, and the
+        /// Classical gate ("three in four sleep under their own roof") could not be met. Opening a street marks its
+        /// first <see cref="SettlementCompound.PlannedDwellings"/> plots home, as the founding marked the village,
+        /// once (<see cref="SettlementCompound.openedStreets"/> is saved), so a cell the player takes out of it
+        /// later stays out. A street with no plot that could take the house is passed over and claims nothing.
+        /// <para/>
+        /// <b>Why a new street, not clearing the old one.</b> The first street is blocked by what the map holds:
+        /// ruins, rock, water, the edge. Clearing would mean a town pulling down the ruins of the people before it
+        /// and quarrying outcrops to build on, work no initiative here does and which takes the ruins out of the
+        /// map's story, and an edge cannot be cleared at all. A real town in that place lays out its next street.
+        /// RimWorld has nothing to port: its player lays out every base by hand.
+        /// </summary>
+        internal static Dwelling? TryOpenStreet(Map.Map map, SettlementCompound compound, DwellingDef def)
+        {
+            Area home = map.areaManager.Home;
+            IntVec3? band = SettlementReach.BandCell(map);
+            for (;;)
+            {
+                int street = compound.openedStreets + 1;
+                CellRect block = compound.BackStreetBlock(street, map.Size);
+                // Back streets alternate north and south and run outward, so once the next on both sides is off
+                // the map, every later one is too.
+                if (block.IsEmpty && compound.BackStreetBlock(street + 1, map.Size).IsEmpty) return null;
+                compound.openedStreets = street;
+                if (block.IsEmpty || TryFindBackStreetPlot(map, compound, def, street, null, band) == null) continue;
+                bool homeBinds = home.TrueCount > 0;
+                if (homeBinds)
+                {
+                    foreach (IntVec3 c in block.ExpandedBy(AutoHomeAreaMaker.BorderWidth).ClipInsideMap(map).Cells) home[c] = true;
+                }
+                Dwelling? dwelling = TryFindBackStreetPlot(map, compound, def, street, homeBinds ? home : null, band);
+                if (dwelling != null) return dwelling;
+            }
+        }
+
+        private static Dwelling? TryFindBackStreetPlot(Map.Map map, SettlementCompound compound, DwellingDef def, int street, Area? within, IntVec3? band)
+        {
+            IntVec2 size = def.Size;
+            foreach ((CellRect plot, Rot4 rot) in compound.BackStreetPlots(street, map.Size))
+            {
+                CellRect footprint = FootprintOn(plot, rot, size);
+                if (Overlaps(map, footprint)) continue;
+                if (!Open(map, footprint, within, band) || OnAZone(map, plot)) continue;
+                var dwelling = new Dwelling(def, footprint, rot);
+                if (CanPlaceAll(map, dwelling)) return dwelling;
+            }
+            return null;
+        }
+
+        /// <summary>Every plot a house can stand on: the first street's, then each opened back street's.</summary>
+        private static IEnumerable<(CellRect Plot, Rot4 Rot)> AllPlots(Map.Map map, SettlementCompound compound)
+        {
+            foreach ((CellRect, Rot4) plot in compound.DwellingPlots(int.MaxValue, map.Size)) yield return plot;
+            for (int street = 1; street <= compound.openedStreets; street++)
+            {
+                foreach ((CellRect, Rot4) plot in compound.BackStreetPlots(street, map.Size)) yield return plot;
+            }
+        }
+
+        private static bool OnAZone(Map.Map map, CellRect plot)
+        {
+            foreach (IntVec3 c in plot.Cells)
+            {
+                if (map.zoneManager.ZoneAt(c) != null) return true;
+            }
+            return false;
         }
 
         private static bool Overlaps(Map.Map map, CellRect footprint)

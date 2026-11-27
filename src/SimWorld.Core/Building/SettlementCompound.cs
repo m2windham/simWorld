@@ -271,6 +271,101 @@ namespace SimWorld.Building
             }
         }
 
+        // ---------------------------------------------------------------------------------------------
+        // Back streets: what a town opens once the first street fills (second-street lane).
+        //
+        //   n n . n n . n n . n n . n n      street 1 (north), its own two rows of plots
+        //   = = = = = = = = = = = = = = =
+        //   u u . u u . u u . u u . u u
+        //   . . . . . . . . . . . . . . .    a one-cell lane behind the street-1 houses
+        //   n n . n n   s s s s   n n . n n  the first street: the compound in the middle
+        //   = = = = = = # b b D = = = = = =
+        //   u u . u u   s s s s   u u . u u
+        //   . . . . . . . . . . . . . . .
+        //   n n . n n . n n . n n . n n      street 2 (south), mirrored
+        //   = = = = = = = = = = = = = = =
+        //   u u . u u . u u . u u . u u
+        //
+        // A back street runs parallel to the first, behind a row of its houses, so every street is the
+        // same shape and every house still opens onto one. The alleys line up with the first street's,
+        // so they are the lanes between streets. Nothing stands in the middle of a back street, so its
+        // plots run across the compound's width too, and the plots nearest the compound fill first.
+        // ---------------------------------------------------------------------------------------------
+
+        /// <summary>How many back streets the town has opened (<see cref="BackStreetPlots"/>): 0 while every
+        /// house is on the first street. Saved, so a street is opened, and its ground claimed as home, once.</summary>
+        internal int openedStreets;
+
+        /// <summary>
+        /// The plots of back street <paramref name="street"/> (1 is the first north of the first street, 2 the
+        /// first south of it, 3 the next north, and so on), in the order the street fills them: by distance from
+        /// the door along the street, east first on a tie, the north row of each column before the south. Only
+        /// plots inside a map of <paramref name="mapSize"/>; none once the street's rows leave it.
+        /// </summary>
+        public IEnumerable<(CellRect Plot, Rot4 Rot)> BackStreetPlots(int street, IntVec3 mapSize)
+        {
+            if (street < 1) yield break;
+            IntVec2 size = DwellingSize;
+            int streetZ = BackStreetZ(street);
+            int northMinZ = streetZ + 2;
+            int southMinZ = streetZ - 1 - size.z;
+            var columns = new List<int>();
+            int step = size.x + 1;
+            for (int x = FirstEastPlotX; x < mapSize.x; x += step) columns.Add(x);
+            for (int x = FirstWestPlotX; x + size.x > 0; x -= step) columns.Add(x);
+            // Across the middle, on the west street's grid, while a lane is still left before the east column.
+            for (int x = FirstWestPlotX + step; x + size.x < FirstEastPlotX; x += step) columns.Add(x);
+            int door = DoorCell.x;
+            columns.Sort((a, b) =>
+            {
+                int da = Math.Abs(2 * a + size.x - 1 - 2 * door), db = Math.Abs(2 * b + size.x - 1 - 2 * door);
+                return da != db ? da.CompareTo(db) : b.CompareTo(a);
+            });
+            foreach (int minX in columns)
+            {
+                var north = new CellRect(minX, northMinZ, size.x, size.z);
+                var south = new CellRect(minX, southMinZ, size.x, size.z);
+                if (InsideMap(north, mapSize)) yield return (north, Rot4.North);
+                if (InsideMap(south, mapSize)) yield return (south, Rot4.South);
+            }
+        }
+
+        /// <summary>The first <see cref="PlannedDwellings"/> plots of back street <paramref name="street"/> that lie
+        /// on a map of <paramref name="mapSize"/>, as one rectangle: what opening the street claims as home, as
+        /// <see cref="ClaimHome"/> claims the <see cref="Village"/>. Empty when none does.</summary>
+        public CellRect BackStreetBlock(int street, IntVec3 mapSize)
+        {
+            CellRect bounds = CellRect.Empty;
+            int n = 0;
+            foreach ((CellRect plot, Rot4 _) in BackStreetPlots(street, mapSize))
+            {
+                if (n++ >= PlannedDwellings) break;
+                bounds = bounds.IsEmpty ? plot : Union(bounds, plot);
+            }
+            return bounds;
+        }
+
+        /// <summary>The row back street <paramref name="street"/> is centred on. Each lies behind the rows of the one
+        /// before it on its side, and clear of the compound and the work yard, past a one-cell lane.</summary>
+        private int BackStreetZ(int street)
+        {
+            IntVec2 size = DwellingSize;
+            int depth = (street + 1) / 2; // the 1st, 2nd, ... back street on its side
+            int span = 2 * size.z + 4;    // two rows of plots, the street between them, the lane behind
+            if (street % 2 == 1)
+            {
+                int behind = Math.Max(StreetZ + 1 + size.z, Math.Max(Footprint.maxZ, WorkYard.maxZ));
+                // The south row of the first back street starts past the lane: behind + 2.
+                return behind + 2 + size.z + 1 + (depth - 1) * span;
+            }
+            int below = Math.Min(StreetZ - 1 - size.z, Math.Min(Footprint.minZ, WorkYard.minZ));
+            // The north row of the first back street ends before the lane: below - 2.
+            return below - 2 - size.z - 1 - (depth - 1) * span;
+        }
+
+        private static bool InsideMap(CellRect r, IntVec3 mapSize) =>
+            r.minX >= 0 && r.minZ >= 0 && r.maxX < mapSize.x && r.maxZ < mapSize.z;
+
         /// <summary>The cell a thing of <paramref name="size"/> turned <paramref name="rot"/> is placed on to
         /// cover exactly <paramref name="rect"/> (the inverse of <see cref="GenAdj.OccupiedRect"/>, which turns
         /// even spans about the placed cell).</summary>
@@ -687,6 +782,7 @@ namespace SimWorld.Building
             Scribe_Values.Look(ref nextDwellingId, "nextDwellingId", 1);
             Scribe_Values.Look(ref foundingDwellingId, "foundingDwellingId", 0);
             Scribe_Values.Look(ref renewalAnnouncedEraOrder, "renewalAnnouncedEraOrder", -1);
+            Scribe_Values.Look(ref openedStreets, "openedStreets", 0);
         }
     }
 }
