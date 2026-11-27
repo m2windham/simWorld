@@ -486,16 +486,20 @@ namespace SimWorld.Building
             return n;
         }
 
-        /// <summary>Dwellings not yet finished. A house coming down is not one going up: counted, the old houses
-        /// renewal was demolishing held <see cref="DwellingTuning.MaxUnderway"/> and stopped every new house and
-        /// every renewal behind them until the last wall was gone (renewal lane 2).</summary>
+        /// <summary>Dwellings going up: never yet finished. A house coming down is not one going up: counted, the old
+        /// houses renewal was demolishing held <see cref="DwellingTuning.MaxUnderway"/> and stopped every new house
+        /// and every renewal behind them until the last wall was gone (renewal lane 2). Nor is a finished house being
+        /// repaired: counted, two houses shaken down by a quake whose stone walls stalled held the cap for hundreds of
+        /// days, and the town built no house and renewed none while its households moved into the dormitory
+        /// (integ-r11, seeds 20:99 and 20:101). Repair has no cap of its own (<see cref="DwellingPlanner.Repair"/>).</summary>
         public static int CountUnderway(Map.Map map)
         {
             int n = 0;
             IReadOnlyList<Dwelling> dwellings = DwellingsOn(map);
             for (int i = 0; i < dwellings.Count; i++)
             {
-                if (!dwellings[i].beingDemolished && !dwellings[i].IsComplete(map)) n++;
+                Dwelling d = dwellings[i];
+                if (!d.beingDemolished && d.completedTick == Building.UnknownBuiltTick && !d.IsComplete(map)) n++;
             }
             return n;
         }
