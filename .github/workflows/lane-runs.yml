@@ -84,6 +84,9 @@ jobs:
           - { name: fix-20-99-on, sha: c1e5249262e0b9d55d9d9621aa66824c2aaf49fd, threats: "true", pop: "20:99" }
           - { name: fix-40-201-on, sha: c1e5249262e0b9d55d9d9621aa66824c2aaf49fd, threats: "true", pop: "40:201" }
           - { name: fix-40-201-off, sha: c1e5249262e0b9d55d9d9621aa66824c2aaf49fd, threats: "false", pop: "40:201" }
+          - { name: tc3-40-201-off, sha: bde643e924aaad8354cfa649a3e2835d85abdf3d, threats: "false", pop: "40:201" }
+          - { name: street-40-201-off, sha: 6f79f6b6a40f7f320068ae51e2a50caeb11032a9, threats: "false", pop: "40:201" }
+          - { name: comfort-40-201-off, sha: 3360a9555cf7f53d512c06feaff2ee073141380a, threats: "false", pop: "40:201" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
