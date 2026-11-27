@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   suite:
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -40,6 +41,7 @@ jobs:
         with: { name: "suite-${{ matrix.ref.name }}", path: suite.log }
 
   bench:
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -79,10 +81,12 @@ jobs:
       fail-fast: false
       matrix:
         run:
-          - { name: r11-20-99-on, sha: dbe22ed96fe733dcebd732e29ccb94b98656ff32, threats: "true", pop: "20:99" }
-          - { name: r11-40-201-on, sha: dbe22ed96fe733dcebd732e29ccb94b98656ff32, threats: "true", pop: "40:201" }
-          - { name: r11-20-101-on, sha: dbe22ed96fe733dcebd732e29ccb94b98656ff32, threats: "true", pop: "20:101" }
-          - { name: r11-40-201-off, sha: dbe22ed96fe733dcebd732e29ccb94b98656ff32, threats: "false", pop: "40:201" }
+          - { name: tc3-20-101-on, sha: bde643e924aaad8354cfa649a3e2835d85abdf3d, threats: "true", pop: "20:101" }
+          - { name: tc3-20-99-on, sha: bde643e924aaad8354cfa649a3e2835d85abdf3d, threats: "true", pop: "20:99" }
+          - { name: street-20-101-on, sha: 6f79f6b6a40f7f320068ae51e2a50caeb11032a9, threats: "true", pop: "20:101" }
+          - { name: street-20-99-on, sha: 6f79f6b6a40f7f320068ae51e2a50caeb11032a9, threats: "true", pop: "20:99" }
+          - { name: comfort-20-101-on, sha: 3360a9555cf7f53d512c06feaff2ee073141380a, threats: "true", pop: "20:101" }
+          - { name: comfort-20-99-on, sha: 3360a9555cf7f53d512c06feaff2ee073141380a, threats: "true", pop: "20:99" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
