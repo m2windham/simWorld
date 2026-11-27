@@ -55,16 +55,25 @@ namespace SimWorld.Filth
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            foreach (Filth f in FilthMaker.AllFilthOn(map)) yield return f;
+            // Only what IsCleanFilthWork keeps (RimWorld walks listerFilthInHomeArea, not all filth): the
+            // side-effect-free tests HasJobOnThing starts with, so the survivors keep their order and the scan
+            // takes the same pile.
+            foreach (Filth f in FilthMaker.AllFilthOn(map))
+            {
+                if (IsCleanFilthWork(f)) yield return f;
+            }
         }
+
+        /// <summary>It is filth, it is somewhere we clean, and it has settled.</summary>
+        private static bool IsCleanFilthWork(Filth filth) =>
+            filth.Spawned && !filth.Destroyed && CleaningBounds.IsCleanable(filth)
+            && filth.TicksSinceThickened >= MinTicksSinceThickened;
 
         /// <summary>The whole eligibility test, in RimWorld's own order: it is filth, it is somewhere we
         /// clean, it has settled, we can get to it, and nobody else has claimed it.</summary>
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
-            if (!(thing is Filth filth) || !filth.Spawned || filth.Destroyed) return false;
-            if (!CleaningBounds.IsCleanable(filth)) return false;
-            if (filth.TicksSinceThickened < MinTicksSinceThickened) return false;
+            if (!(thing is Filth filth) || !IsCleanFilthWork(filth)) return false;
             if (!Reachability.CanReach(pawn, filth, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, filth);
         }

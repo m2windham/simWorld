@@ -488,7 +488,8 @@ namespace SimWorld.Economy
         private static List<RecipeDef> StandingBillRecipes(Map.Map map)
         {
             var recipes = new List<RecipeDef>();
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            // Benches only: every CompBillGiver building, in Building's order, without the rock (perf, tick-cost lane).
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             for (int b = 0; b < buildings.Count; b++)
             {
                 if (!buildings[b].Spawned || (buildings[b] as ThingWithComps)?.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;

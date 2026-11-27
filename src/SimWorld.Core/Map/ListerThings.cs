@@ -29,6 +29,13 @@ namespace SimWorld.Map
         /// benches and not every wall and storage hut on the map. Membership is read off the def alone, and the
         /// list keeps spawn order, so it is always an order-preserving subsequence of <see cref="Building"/>.</summary>
         PotentialBillGiver,
+
+        /// <summary>Plants whose def yields something when harvested or felled, and every tree: what the harvest,
+        /// forage and felling scans look for, without the scrub and grass that make up most of a map's plants (perf,
+        /// tick-cost lane; RimWorld's own scans walk designations and growing zones instead of every plant).
+        /// Membership is read off the def alone, so like <see cref="PotentialBillGiver"/> it is always an
+        /// order-preserving subsequence of <see cref="Plant"/>.</summary>
+        HarvestablePlant,
     }
 
     /// <summary>Every spawned Thing on the map, indexed by def and by broad category (RimWorld: <c>Verse.ListerThings</c>).</summary>
@@ -38,7 +45,14 @@ namespace SimWorld.Map
         private readonly Dictionary<ThingDef, List<Thing>> byDef = new Dictionary<ThingDef, List<Thing>>();
         private readonly Dictionary<ThingRequestGroup, List<Thing>> byGroup = new Dictionary<ThingRequestGroup, List<Thing>>();
 
+        /// <summary>Bumped on every add to or removal from a group, by group (<see cref="ThingRequestGroup.Everything"/>:
+        /// any thing at all), so a cache built from one group's list can tell whether that list has changed since.</summary>
+        private readonly int[] groupVersions = new int[(int)ThingRequestGroup.HarvestablePlant + 1];
+
         public IReadOnlyList<Thing> AllThings => allThings;
+
+        /// <summary>Changes whenever <see cref="ThingsInGroup"/> of <paramref name="group"/> gains or loses a thing.</summary>
+        public int GroupVersion(ThingRequestGroup group) => groupVersions[(int)group];
 
         public IReadOnlyList<Thing> ThingsOfDef(ThingDef def)
         {
@@ -56,53 +70,91 @@ namespace SimWorld.Map
         {
             if (thing == null) throw new ArgumentNullException(nameof(thing));
             allThings.Add(thing);
+            groupVersions[(int)ThingRequestGroup.Everything]++;
             DefList(thing.def).Add(thing);
-            foreach (ThingRequestGroup group in GroupsFor(thing))
+            int n = GroupsFor(thing, groupBuffer);
+            for (int i = 0; i < n; i++)
             {
-                GroupList(group).Add(thing);
+                GroupList(groupBuffer[i]).Add(thing);
+                groupVersions[(int)groupBuffer[i]]++;
             }
         }
 
         public void Remove(Thing thing)
         {
             if (thing == null) throw new ArgumentNullException(nameof(thing));
-            allThings.Remove(thing);
-            if (byDef.TryGetValue(thing.def, out List<Thing>? defList)) defList.Remove(thing);
-            foreach (ThingRequestGroup group in GroupsFor(thing))
+            RemoveFirst(allThings, thing);
+            groupVersions[(int)ThingRequestGroup.Everything]++;
+            if (byDef.TryGetValue(thing.def, out List<Thing>? defList)) RemoveFirst(defList, thing);
+            int n = GroupsFor(thing, groupBuffer);
+            for (int i = 0; i < n; i++)
             {
-                if (byGroup.TryGetValue(group, out List<Thing>? groupList)) groupList.Remove(thing);
+                if (byGroup.TryGetValue(groupBuffer[i], out List<Thing>? groupList)) RemoveFirst(groupList, thing);
+                groupVersions[(int)groupBuffer[i]]++;
             }
         }
 
-        private static IEnumerable<ThingRequestGroup> GroupsFor(Thing thing)
+        /// <summary>
+        /// <see cref="List{T}.Remove"/> by reference: the first entry that is <paramref name="thing"/> goes, and the
+        /// rest keep their order, exactly as before (<see cref="Thing"/> does not override <c>Equals</c>, so the two
+        /// find the same entry). List.Remove goes through the default equality comparer, a virtual <c>Equals</c> per
+        /// entry it passes, and on a map of twenty thousand things every despawn walks most of the list: a pile of
+        /// filth scrubbed away cost that walk (perf, tick-cost lane). A plain reference comparison removes about twice
+        /// as fast under .NET 8 (measured on a 28,000-entry list).
+        /// </summary>
+        private static void RemoveFirst(List<Thing> list, Thing thing)
         {
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (ReferenceEquals(list[i], thing))
+                {
+                    list.RemoveAt(i);
+                    return;
+                }
+            }
+        }
+
+        /// <summary>The most groups one thing joins: a building, artificial, a bill giver and haulable.</summary>
+        private const int MaxGroupsPerThing = 4;
+
+        /// <summary>Reused by <see cref="Add"/> and <see cref="Remove"/>, which call nothing that comes back here.</summary>
+        private readonly ThingRequestGroup[] groupBuffer = new ThingRequestGroup[MaxGroupsPerThing];
+
+        /// <summary>The groups <paramref name="thing"/> belongs to, in a fixed order, written to
+        /// <paramref name="groups"/>; returns how many. Written out rather than yielded, so a spawn or a despawn
+        /// allocates no iterator.</summary>
+        private static int GroupsFor(Thing thing, ThingRequestGroup[] groups)
+        {
+            int n = 0;
             switch (thing.def.category)
             {
                 case ThingCategory.Pawn:
-                    yield return ThingRequestGroup.Pawn;
+                    groups[n++] = ThingRequestGroup.Pawn;
                     break;
                 case ThingCategory.Building:
-                    yield return ThingRequestGroup.Building;
-                    if (thing.def.mineable == false) yield return ThingRequestGroup.BuildingArtificial;
-                    if (thing.def.HasComp(typeof(CompBillGiver)) || thing.def.AllRecipes.Count > 0) yield return ThingRequestGroup.PotentialBillGiver;
+                    groups[n++] = ThingRequestGroup.Building;
+                    if (thing.def.mineable == false) groups[n++] = ThingRequestGroup.BuildingArtificial;
+                    if (thing.def.HasComp(typeof(CompBillGiver)) || thing.def.AllRecipes.Count > 0) groups[n++] = ThingRequestGroup.PotentialBillGiver;
                     break;
                 case ThingCategory.Item:
-                    yield return ThingRequestGroup.Item;
+                    groups[n++] = ThingRequestGroup.Item;
                     break;
                 case ThingCategory.Plant:
-                    yield return ThingRequestGroup.Plant;
+                    groups[n++] = ThingRequestGroup.Plant;
+                    if (thing.def.plant != null && (thing.def.plant.harvestedThingDef != null || thing.def.plant.IsTree)) groups[n++] = ThingRequestGroup.HarvestablePlant;
                     break;
                 case ThingCategory.Filth:
-                    yield return ThingRequestGroup.Filth;
+                    groups[n++] = ThingRequestGroup.Filth;
                     break;
                 case ThingCategory.Blueprint:
-                    yield return ThingRequestGroup.Blueprint;
+                    groups[n++] = ThingRequestGroup.Blueprint;
                     break;
                 case ThingCategory.Frame:
-                    yield return ThingRequestGroup.BuildingFrame;
+                    groups[n++] = ThingRequestGroup.BuildingFrame;
                     break;
             }
-            if (thing.def.EverHaulable) yield return ThingRequestGroup.HaulableEver;
+            if (thing.def.EverHaulable) groups[n++] = ThingRequestGroup.HaulableEver;
+            return n;
         }
 
         private List<Thing> DefList(ThingDef def)

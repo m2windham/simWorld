@@ -72,7 +72,9 @@ namespace SimWorld.Building
             if (map == null) yield break;
 
             Dictionary<ThingDef, int>? shortfall = null;
-            IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.Plant);
+            // Every tree is a HarvestablePlant, in Plant's own order: the felling scan walks no grass (perf, tick-cost
+            // lane).
+            IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.HarvestablePlant);
             for (int i = 0; i < plants.Count; i++)
             {
                 if (!(plants[i] is Plant plant) || !plant.Spawned) continue;

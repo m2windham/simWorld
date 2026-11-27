@@ -58,7 +58,8 @@ namespace SimWorld.Crafting
             if (map == null) throw new ArgumentNullException(nameof(map));
 
             List<Pawn> citizens = CitizensOn(map);
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            // Benches only: every CompBillGiver building, in Building's order, without the rock (perf, tick-cost lane).
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             for (int b = 0; b < buildings.Count; b++)
             {
                 if (!buildings[b].Spawned) continue;

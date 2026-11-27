@@ -88,9 +88,15 @@ namespace SimWorld.Things
             if (thing is Pawn) return false;
 
             Map.Map map = thing.Map!;
-            foreach (IntVec3 c in thing.OccupiedRect().Cells)
+            // CellRect.Cells' order by hand: a sleeper's toil asks this of the bed every tick, and the iterator
+            // was an allocation per sleeper per tick (perf, tick-cost lane).
+            CellRect rect = thing.OccupiedRect();
+            for (int z = rect.minZ; z <= rect.maxZ; z++)
             {
-                if (StaticFireIn(c, map) != null) return true;
+                for (int x = rect.minX; x <= rect.maxX; x++)
+                {
+                    if (StaticFireIn(new IntVec3(x, 0, z), map) != null) return true;
+                }
             }
             return false;
         }

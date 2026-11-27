@@ -62,6 +62,9 @@ namespace SimWorld.Building
         private Room?[] cellToRoom = Array.Empty<Room?>();
         private Room?[] previousCellToRoom = Array.Empty<Room?>();
         private bool[] visited = Array.Empty<bool>();
+        private int[] floodQueue = Array.Empty<int>();
+        private readonly HashSet<Door> seenDoors = new HashSet<Door>();
+        private readonly HashSet<IntVec3> tmpWalls = new HashSet<IntVec3>();
         private readonly HashSet<RoomGroup> tmpPreviousGroups = new HashSet<RoomGroup>();
         private readonly List<CompHeatPusherPowered> heatPushers = new List<CompHeatPusherPowered>();
         private readonly List<Door> doors = new List<Door>();
@@ -284,47 +287,69 @@ namespace SimWorld.Building
             else Array.Clear(cellToRoom, 0, cellCount);
             if (visited.Length != cellCount) visited = new bool[cellCount];
             else Array.Clear(visited, 0, cellCount);
+            if (floodQueue.Length != cellCount) floodQueue = new int[cellCount];
 
-            foreach (IntVec3 seed in map.AllCells)
+            // Seeds in map.AllCells order (z, then x: cell-index order) and a first-in-first-out flood, so every
+            // room, its cell order and its boundary order come out as they always have; the order matters, since
+            // the wall sums and the roof offers below walk them. What changed is the bookkeeping (perf, tick-cost
+            // lane): every cell is queued at most once per rebuild, so one array of cell indices serves as every
+            // room's queue, and once a room's flood ends the run it queued is that room's cells in visiting order,
+            // copied into a list of exactly that size. The flood used to allocate a neighbour iterator per cell, a
+            // queue per room and a doubling cell list — most of the garbage a Bronze-age town made per tick.
+            int sizeX = map.Size.x;
+            int sizeZ = map.Size.z;
+            IntVec3[] dirs = GenAdj.CardinalDirections;
+            int tail = 0;
+            for (int seed = 0; seed < cellCount; seed++)
             {
-                if (visited[IndexOf(seed)]) continue;
-                if (IsFullEdifice(seed)) continue;
+                if (visited[seed]) continue;
+                if (IsFullEdifice(new IntVec3(seed % sizeX, 0, seed / sizeX))) continue;
 
                 var room = new Room();
-                var queue = new Queue<IntVec3>();
-                queue.Enqueue(seed);
-                visited[IndexOf(seed)] = true;
+                int head = tail;
+                int start = tail;
+                floodQueue[tail++] = seed;
+                visited[seed] = true;
 
-                while (queue.Count > 0)
+                while (head < tail)
                 {
-                    IntVec3 cur = queue.Dequeue();
-                    room.cells.Add(cur);
-                    cellToRoom[IndexOf(cur)] = room;
+                    int index = floodQueue[head++];
+                    int x = index % sizeX;
+                    int z = index / sizeX;
+                    var cur = new IntVec3(x, 0, z);
+                    cellToRoom[index] = room;
                     if (!map.roofGrid.Roofed(cur)) room.anyCellUnroofed = true;
-                    if (cur.x == 0 || cur.z == 0 || cur.x == map.Size.x - 1 || cur.z == map.Size.z - 1)
-                    {
-                        room.touchesMapEdge = true;
-                    }
+                    if (x == 0 || z == 0 || x == sizeX - 1 || z == sizeZ - 1) room.touchesMapEdge = true;
 
-                    foreach (IntVec3 n in GenAdj.CellsAdjacentCardinal(cur))
+                    for (int d = 0; d < dirs.Length; d++)
                     {
-                        if (!GenGrid.InBounds(n, map))
+                        int nx = x + dirs[d].x;
+                        int nz = z + dirs[d].z;
+                        if (nx < 0 || nx >= sizeX || nz < 0 || nz >= sizeZ)
                         {
                             room.touchesMapEdge = true;
                             continue;
                         }
-                        if (IsFullEdifice(n))
+                        var n = new IntVec3(nx, 0, nz);
+                        Thing? edifice = map.edificeGrid[n];
+                        if (edifice != null && edifice.def.Fillage == FillCategory.Full)
                         {
-                            Thing edifice = map.edificeGrid[n]!;
                             room.boundaryEdifices.Add(edifice);
                             continue;
                         }
-                        if (visited[IndexOf(n)]) continue;
-                        visited[IndexOf(n)] = true;
-                        queue.Enqueue(n);
+                        int nIndex = nz * sizeX + nx;
+                        if (visited[nIndex]) continue;
+                        visited[nIndex] = true;
+                        floodQueue[tail++] = nIndex;
                     }
                 }
 
+                room.cells.Capacity = tail - start;
+                for (int i = start; i < tail; i++)
+                {
+                    int index = floodQueue[i];
+                    room.cells.Add(new IntVec3(index % sizeX, 0, index / sizeX));
+                }
                 rooms.Add(room);
             }
 
@@ -346,13 +371,16 @@ namespace SimWorld.Building
         private void BuildRoomGroups()
         {
             doors.Clear();
-            var seenDoors = new HashSet<Door>();
+            seenDoors.Clear();
             foreach (Room room in rooms)
             {
                 var group = new RoomGroup(map);
                 group.AddRoom(room);
                 groups.Add(group);
-                RegenerateEqualizationData(group, room);
+                // An outdoor group takes outdoor air outright and nothing reads its roof shares or walls (only
+                // RoomTrackerTick's indoor half does), and a group stays outdoor until the next rebuild replaces it.
+                // Skipping it skips the map's largest room, the open ground, on every rebuild.
+                if (!group.UsesOutdoorTemperature) RegenerateEqualizationData(group, room);
                 if (!group.UsesOutdoorTemperature && TryGetAverageCachedRoomGroupTemp(group, out float carried))
                 {
                     group.temperature = carried;
@@ -363,6 +391,7 @@ namespace SimWorld.Building
                 }
             }
             doors.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
+            seenDoors.Clear();
         }
 
         /// <summary>
@@ -407,7 +436,8 @@ namespace SimWorld.Building
         private void RegenerateEqualizationData(RoomGroup group, Room room)
         {
             int thick = 0, thin = 0;
-            var walls = new HashSet<IntVec3>();
+            HashSet<IntVec3> walls = tmpWalls;
+            walls.Clear();
             group.wallBeyondCells.Clear();
             group.earthBankedWallCells = 0;
             foreach (IntVec3 cell in room.cells)

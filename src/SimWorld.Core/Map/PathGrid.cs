@@ -25,6 +25,11 @@ namespace SimWorld.Map
         /// change" signal since a test already asserts on it directly.</summary>
         public int Version { get; private set; }
 
+        /// <summary>Bumped only when some cell turns walkable or unwalkable (and by a full recalculation), not on a
+        /// mere change of cost: what a cache of "which cells can be stood on" needs to watch, where
+        /// <see cref="Version"/> would throw it away every time an item is dropped on open ground.</summary>
+        public int WalkabilityVersion { get; private set; }
+
         public PathGrid(Map map)
         {
             this.map = map ?? throw new ArgumentNullException(nameof(map));
@@ -98,6 +103,7 @@ namespace SimWorld.Map
             bool isWalkable = perceivedPathCost[i] < ImpassableCost;
             if (wasWalkable != isWalkable)
             {
+                WalkabilityVersion++;
                 map.regionAndRoomUpdater.Notify_DirtyCell(c);
             }
         }
@@ -109,6 +115,7 @@ namespace SimWorld.Map
                 perceivedPathCost[map.cellIndices.CellToIndex(c)] = CalculatedCostAt(c, perceivedStatic: true);
             }
             Version++;
+            WalkabilityVersion++;
         }
 
         public bool Walkable(IntVec3 c) => GenGrid.InBounds(c, map) && PerceivedPathCostAt(c) < ImpassableCost;

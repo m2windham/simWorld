@@ -379,7 +379,8 @@ namespace SimWorld.Crafting
         /// <summary>Deletes every metallurgy bill on the map that is not this pass's plan for that bench.</summary>
         private static void DeleteOtherBills(Map.Map map, Dictionary<RecipeDef, int> plan)
         {
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            // Benches only: every CompBillGiver building, in Building's order, without the rock (perf, tick-cost lane).
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             for (int b = 0; b < buildings.Count; b++)
             {
                 if (!(buildings[b] is ThingWithComps bench) || bench.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;
@@ -404,7 +405,8 @@ namespace SimWorld.Crafting
         /// </summary>
         internal static void PutStockedBillsFirst(Map.Map map)
         {
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            // Benches only: every CompBillGiver building, in Building's order, without the rock (perf, tick-cost lane).
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             for (int b = 0; b < buildings.Count; b++)
             {
                 if (!(buildings[b] is ThingWithComps bench) || bench.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;

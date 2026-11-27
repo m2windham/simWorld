@@ -212,7 +212,8 @@ namespace SimWorld.Crafting
             if (map == null) throw new ArgumentNullException(nameof(map));
             var wanted = new Dictionary<ThingDef, int>();
             SimWorld.World.Settlement? settlement = HuntingInitiative.SettlementFor(map);
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            // Benches only: every CompBillGiver building, in Building's order, without the rock (perf, tick-cost lane).
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             var metals = new List<ThingDef>();
             for (int b = 0; b < buildings.Count; b++)
             {
@@ -323,7 +324,8 @@ namespace SimWorld.Crafting
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             var held = new HashSet<ThingDef>();
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            // Benches only: every CompBillGiver building, in Building's order, without the rock (perf, tick-cost lane).
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             for (int b = 0; b < buildings.Count; b++)
             {
                 if (!buildings[b].Spawned || !(buildings[b] is ThingWithComps bench) || bench.GetComp<CompBillGiver>() is not CompBillGiver comp) continue;
@@ -422,7 +424,8 @@ namespace SimWorld.Crafting
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             var available = new List<RecipeDef>();
-            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.Building);
+            // Benches only: every CompBillGiver building, in Building's order, without the rock (perf, tick-cost lane).
+            IReadOnlyList<Thing> buildings = map.listerThings.ThingsInGroup(ThingRequestGroup.PotentialBillGiver);
             for (int b = 0; b < buildings.Count; b++)
             {
                 if (!buildings[b].Spawned || (buildings[b] as ThingWithComps)?.GetComp<CompBillGiver>() == null) continue;

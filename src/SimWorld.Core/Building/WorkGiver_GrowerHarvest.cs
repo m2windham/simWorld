@@ -38,14 +38,37 @@ namespace SimWorld.Building
         {
             Map.Map? map = pawn.Map;
             if (map == null) yield break;
-            foreach (Thing t in map.listerThings.ThingsInGroup(ThingRequestGroup.Plant)) yield return t;
+            // Only what MayBeHarvestWork keeps: the first, side-effect-free tests HasJobOnThing runs, so dropping
+            // the rest here leaves the survivors in the same relative order and the scan takes the same plant.
+            // RimWorld's grower walks only its zones' cells; this one offered every plant on the map, and measured,
+            // sorted and refused nearly all of them on every job search (tools/bench --suite tickcost). It walks the
+            // plants that yield anything, Plant's own order without the scrub: nothing else is HarvestableNow.
+            IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.HarvestablePlant);
+            for (int i = 0; i < plants.Count; i++)
+            {
+                if (plants[i] is Plant plant && MayBeHarvestWork(plant)) yield return plant;
+            }
         }
+
+        /// <summary>A spawned plant harvestable now in a growing zone, fully grown or one
+        /// <see cref="EarlyHarvestWanted"/> could still want. Stops short of that method's food figure, which is
+        /// read once a tick and so must be read when, and only when, the scan reaches such a plant.</summary>
+        private static bool MayBeHarvestWork(Plant plant)
+        {
+            if (!plant.Spawned || !plant.HarvestableNow) return false;
+            // Only what stands in a field. A wild tree is WorkGiver_ConstructChopWood's, wild food is foraged.
+            if (!(plant.Map!.zoneManager.ZoneAt(plant.Position) is Zone_Growing)) return false;
+            return plant.FullyGrown || MayBeWantedEarly(plant);
+        }
+
+        /// <summary>The part of <see cref="EarlyHarvestWanted"/> that reads only the plant: false only where that
+        /// method is false whatever the food figure says.</summary>
+        internal static bool MayBeWantedEarly(Plant plant) =>
+            plant.def.plant!.IsTree || (plant.def.plant.harvestedThingDef?.IsNutritionGivingIngestible ?? false);
 
         public override bool HasJobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
-            if (!(thing is Plant plant) || !plant.Spawned || !plant.HarvestableNow) return false;
-            // Only what stands in a field. A wild tree is WorkGiver_ConstructChopWood's, wild food is foraged.
-            if (!(plant.Map!.zoneManager.ZoneAt(plant.Position) is Zone_Growing)) return false;
+            if (!(thing is Plant plant) || !MayBeHarvestWork(plant)) return false;
             if (!plant.FullyGrown && !EarlyHarvestWanted(plant)) return false;
             if (!Reachability.CanReach(pawn, plant, PathEndMode)) return false;
             return pawn.Map!.reservationManager.CanReserve(pawn, plant);
