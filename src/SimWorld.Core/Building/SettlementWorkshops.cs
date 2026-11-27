@@ -27,8 +27,9 @@ namespace SimWorld.Building
     /// target), and with no tailor's table standing no cotton field is sown either, so this is the gate that
     /// starts the clothing chain.</item>
     /// </list>
-    /// One of each, like the stove (<c>CookingTuning.StovesWanted</c>) and the stonecutter, for the same
-    /// reason: the bench is not the bottleneck. Research prerequisites are honoured.
+    /// One of each, like the stonecutter, for the same reason: the bench is not the bottleneck. (The stove
+    /// was one of each too until a town of sixty showed its kitchen was: <c>CookingTuning.StovesWanted</c>.)
+    /// Research prerequisites are honoured.
     ///
     /// <para/><b>Content looked up by name.</b> Every bench is found by defName and one with no Blueprint
     /// content is skipped, so a pack without the workshops simply gets none.

@@ -1,3 +1,4 @@
+using System;
 using SimWorld.Building;
 using SimWorld.Defs;
 using SimWorld.Pawns;
@@ -36,6 +37,10 @@ namespace SimWorld.AI
     /// dormitory sleeper outside. Here it is the ground sleeper's alone.</item>
     /// <item><b>Applied as the pawn falls asleep</b>, not when they get up: a job driver here keeps no saved
     /// state, so a sleep that started before a save would otherwise end without its memory.</item>
+    /// <item><b>The bedroom is staged by its room</b> (comfort lane), RimWorld's
+    /// <c>Thought_MemoryRoomImpressiveness</c>: the impressiveness of the room the bed stands in
+    /// (<see cref="RoomStats"/>), so a household that moves from a pit house to a furnished stone town house
+    /// sleeps better for it. The barracks is not staged.</item>
     /// </list>
     /// </summary>
     public static class BedThoughtUtility
@@ -58,7 +63,27 @@ namespace SimWorld.AI
                 return;
             }
 
-            memories.TryGainMemory(IsOwnHome(pawn, bed) ? SleepThoughtDefOf.SleptInBedroom : SleepThoughtDefOf.SleptInBarracks);
+            if (!IsOwnHome(pawn, bed))
+            {
+                memories.TryGainMemory(SleepThoughtDefOf.SleptInBarracks);
+                return;
+            }
+            var memory = (Thought_Memory)Activator.CreateInstance(SleepThoughtDefOf.SleptInBedroom.ThoughtClass)!;
+            memory.def = SleepThoughtDefOf.SleptInBedroom;
+            memory.forcedStage = Math.Min(BedroomStage(bed), memory.def.stages.Count - 1);
+            memories.TryGainMemory(memory);
+        }
+
+        /// <summary>The impressiveness stage of the room <paramref name="bed"/> stands in (comfort lane,
+        /// <see cref="RoomStats"/>), or the mediocre stage when it is not yet a closed room: a house without its
+        /// roof on is neither a hovel nor a palace.</summary>
+        public static int BedroomStage(Thing bed)
+        {
+            Map.Map? map = bed.Map;
+            Room? room = map?.roomTracker.RoomAt(bed.Position);
+            return map != null && RoomStats.IsEnclosed(room)
+                ? RoomStats.StageOf(RoomStats.Impressiveness(room!, map))
+                : RoomStats.MediocreStage;
         }
 
         /// <summary>A bed in the sleeper's own household's house (shelter lane: a house is real walls round

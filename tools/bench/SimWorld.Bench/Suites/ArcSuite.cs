@@ -136,6 +136,8 @@ namespace SimWorld.Bench.Suites
 
                 Console.WriteLine("  " + armoury.Line(current));
                 Console.WriteLine("  " + DwellingReading.SampleLine(current));
+                Console.WriteLine("  " + MoodReading.Line(current));
+                Console.WriteLine("  " + MoodReading.ComfortLine(current));
                 Console.WriteLine("  " + ArmouryReading.MaterialsLine(current));
                 if (watch != null) Console.WriteLine(watch.CensusLine());
                 IReadOnlyList<ChronicleEntry> moments = game.Storyteller.Moments;
