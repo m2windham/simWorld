@@ -24,11 +24,11 @@ namespace SimWorld.AI
     }
 
     /// <summary>
-    /// Finds the nearest reachable, unclaimed, edible spawned Thing and issues a job to eat it (RimWorld:
-    /// <c>RimWorld.JobGiver_GetFood</c>, trimmed). <b>Deviation:</b> real RimWorld scores candidates by a
-    /// preferability/distance/perishability blend (<c>FoodUtility.BestFoodSourceOnMap</c>); this port picks
-    /// the nearest reachable edible item outright, which is enough to prove the loop (find → path → eat →
-    /// need falls) without porting that whole scoring function.
+    /// Finds the best reachable, unclaimed, edible spawned Thing and issues a job to eat it (RimWorld:
+    /// <c>RimWorld.JobGiver_GetFood</c>, trimmed). Best is RimWorld's food optimality
+    /// (<see cref="IngestThoughtUtility.FoodOptimality"/>): nearer is better, and a meal that will leave a good
+    /// memory is worth walking further for, so a hearty meal beats raw meat lying closer (comfort lane; before it
+    /// this picked the nearest item outright). Not ported: perishability and the desperate-only tiers.
     /// </summary>
     public sealed class JobGiver_GetFood : ThinkNode_JobGiver
     {
@@ -39,18 +39,18 @@ namespace SimWorld.AI
             if (food == null || map == null) return null;
 
             Thing? best = null;
-            int bestDistSq = int.MaxValue;
+            float bestScore = float.MinValue;
             IReadOnlyList<Thing> items = map.listerThings.ThingsInGroup(ThingRequestGroup.Item);
             for (int i = 0; i < items.Count; i++)
             {
                 Thing t = items[i];
                 if (!t.def.IsNutritionGivingIngestible) continue;
                 if (!map.reservationManager.CanReserve(pawn, t)) continue;
-                int distSq = (t.Position - pawn.Position).LengthHorizontalSquared;
-                if (distSq >= bestDistSq) continue;
+                float score = IngestThoughtUtility.FoodOptimality(pawn, t, (t.Position - pawn.Position).LengthHorizontal);
+                if (score <= bestScore) continue;
                 if (!Reachability.CanReach(pawn, t, PathEndMode.OnCell)) continue;
                 best = t;
-                bestDistSq = distSq;
+                bestScore = score;
             }
             return best != null ? new Job(JobDefOf.Ingest, best) : null;
         }

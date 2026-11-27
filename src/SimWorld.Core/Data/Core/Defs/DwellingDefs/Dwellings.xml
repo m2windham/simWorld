@@ -30,13 +30,24 @@
                                                               through a gateway, the bedroom off it, 4 beds.
       House_Medieval     GuildHalls          Medieval         stone town house: one large room, 5 beds; the
                                                               larger the room, the less wall per cell of air.
-      House_Industrial   UrbanSanitation     Industrial       terrace house: a parlour between the street and
+      House_Industrial   UrbanSanitation     Industrial       terrace house: a front room between the street and
                                                               the bedroom, so the bedroom's door opens onto air
                                                               that has already been inside. Cut stone stands in
                                                               for brick, which has no material in this content.
-      House_Information  Suburbs             Information      suburban house: the terrace plan in steel where the
-                                                              settlement has steel.
+                                                              The bedroom keeps a row of floor and the
+                                                              furnishing (comfort lane: four beds wall to wall
+                                                              made it a hovel to sleep in, 19 against 50).
+                                                              The front room is where the household eats.
+      House_Information  Suburbs             Information      suburban house: one open room in steel where the
+                                                              settlement has steel, five by four like the stone
+                                                              town house, the terrace's parlour and bedroom made one.
       House_Exotic       Arcologies          Exotic           arcology apartment: one room, 5 beds, steel.
+
+    From the longhouse on, a house keeps a table spot (t) and a furnishing spot (f), which
+    Building.HouseFurnishing fills once the town can make a table and the furnishings of its age
+    (Buildings_Furniture.xml). The rooms they furnish are what Building.RoomStats scores, and where a household
+    sleeps and eats is what it thinks of them (Thoughts_Comfort.xml): a pit house is a mean room, a stone town
+    house a decent one, and the terrace's bedroom, given its row of floor, a pleasant one.
 
     Every rung keeps a hearth spot and every above-ground rung a cooler spot: SettlementClimate builds a campfire
     or a passive cooler there when the season or a heat wave or cold snap calls for one, and switches it off when
@@ -100,8 +111,8 @@
       <li>#######</li>
       <li>#bbbb.#</li>
       <li>#BBBB.#</li>
-      <li>#....h#</li>
-      <li>#.....#</li>
+      <li>#t...h#</li>
+      <li>#f....#</li>
       <li>###D###</li>
     </layout>
   </DwellingDef>
@@ -121,7 +132,7 @@
       <li>#bbbb#</li>
       <li>#BBBB#</li>
       <li>#c..h#</li>
-      <li>#....#</li>
+      <li>#f..t#</li>
       <li>##D###</li>
     </layout>
   </DwellingDef>
@@ -139,8 +150,8 @@
       <li>#######</li>
       <li>#bbbbc#</li>
       <li>#BBBBh#</li>
+      <li>#f...t#</li>
       <li>###D###</li>
-      <li>#,,,,,#</li>
       <li>#,,,,,#</li>
       <li>###,###</li>
     </layout>
@@ -160,7 +171,7 @@
       <li>#bbbbb#</li>
       <li>#BBBBB#</li>
       <li>#c...h#</li>
-      <li>#.....#</li>
+      <li>#f...t#</li>
       <li>###D###</li>
     </layout>
   </DwellingDef>
@@ -168,7 +179,7 @@
   <DwellingDef>
     <defName>House_Industrial</defName>
     <label>terrace house</label>
-    <description>A parlour on the street and the bedroom behind it, in cut stone where the brickworks would be.</description>
+    <description>A front room on the street where the household eats, and the bedroom behind it, in cut stone where the brickworks would be.</description>
     <rung>6</rung>
     <era>Industrial</era>
     <researchPrerequisites>
@@ -178,9 +189,9 @@
       <li>#######</li>
       <li>#bbbbc#</li>
       <li>#BBBBh#</li>
+      <li>#f....#</li>
       <li>###D###</li>
-      <li>#.....#</li>
-      <li>#.....#</li>
+      <li>#....t#</li>
       <li>###D###</li>
     </layout>
   </DwellingDef>
@@ -188,7 +199,7 @@
   <DwellingDef>
     <defName>House_Information</defName>
     <label>suburban house</label>
-    <description>A detached house on its own plot: a front room and a bedroom behind it, framed in steel.</description>
+    <description>A detached house on its own plot, framed in steel: one open room to live, eat and sleep in.</description>
     <rung>7</rung>
     <era>Information</era>
     <researchPrerequisites>
@@ -199,8 +210,7 @@
       <li>#######</li>
       <li>#bbbbc#</li>
       <li>#BBBBh#</li>
-      <li>###D###</li>
-      <li>#.....#</li>
+      <li>#f...t#</li>
       <li>#.....#</li>
       <li>###D###</li>
     </layout>
@@ -221,7 +231,7 @@
       <li>#bbbbb#</li>
       <li>#BBBBB#</li>
       <li>#c...h#</li>
-      <li>#.....#</li>
+      <li>#f...t#</li>
       <li>###D###</li>
     </layout>
   </DwellingDef>

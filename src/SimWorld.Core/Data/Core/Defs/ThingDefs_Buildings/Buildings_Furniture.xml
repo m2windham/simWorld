@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    What a household keeps in its house besides its beds (comfort lane): a table to eat at, and the furnishings
+    of its age. HouseFurnishing places them on a house's table spot (t) and furnishing spot (f) once the town
+    knows how to make them; Dwellings.xml says which rungs keep which spots.
+
+    The table is RimWorld's (a dining table a colonist carries a meal to, Toils_Ingest's chew spot, recalled),
+    1x1 here and with no chair: the seat is folded into it. It comes with the longhouse's research, Shelter:
+    the first house built for a settled household is the first with a table in it, and nobody misses a table
+    who has never had one (Thoughts_Comfort.xml).
+
+    The furnishings are this port's own and stand for everything RimWorld's colonists make a room impressive
+    with that this port does not model one by one: floors, quality furniture, art on the walls. One rung per
+    era from Agrarian, each worth more and better to look at than the last, and each replaces the one before it
+    in place (GenConstruct.ReplaceTag "Furnishing"). Beauty, MarketValue, WorkToBuild and the wood they cost
+    are SimWorld's figures, not sourced; RoomStatsTests pins that each era's house makes a better room than
+    the one before, never the numbers. Wood for all of them, because a builder can always fell a tree for a
+    blueprint that wants logs: a furnishing the town cannot pay for in the material it has would be a comfort
+    that never arrives.
+  -->
+
+  <ThingDef>
+    <defName>DiningTable</defName>
+    <label>table</label>
+    <description>A table and somewhere to sit at it. A meal is better eaten at one.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>PassThroughOnly</passability>
+    <pathCost>30</pathCost>
+    <fillPercent>0.4</fillPercent>
+    <statBases>
+      <MaxHitPoints>100</MaxHitPoints>
+      <WorkToBuild>500</WorkToBuild>
+      <Flammability>1</Flammability>
+    </statBases>
+    <stuffCategories>
+      <li>Woody</li>
+      <li>Stony</li>
+      <li>Metallic</li>
+    </stuffCategories>
+    <costStuffCount>20</costStuffCount>
+    <researchPrerequisites>
+      <li>Shelter</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_DiningTable</defName>
+    <label>table (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>DiningTable</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_DiningTable</defName>
+    <label>table (under construction)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>PassThroughOnly</passability>
+    <fillPercent>0.4</fillPercent>
+    <entityToBuild>DiningTable</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Furnishing_Agrarian</defName>
+    <label>woven hangings</label>
+    <description>Mats underfoot and woven hangings on the walls: the first things a household owns for the look of them.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>PassThroughOnly</passability>
+    <pathCost>30</pathCost>
+    <fillPercent>0.3</fillPercent>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <WorkToBuild>400</WorkToBuild>
+      <Flammability>1</Flammability>
+      <Beauty>12</Beauty>
+      <MarketValue>40</MarketValue>
+    </statBases>
+    <costList>
+      <WoodLog>15</WoodLog>
+    </costList>
+    <researchPrerequisites>
+      <li>Weaving</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Furnishing_Agrarian</defName>
+    <label>woven hangings (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Furnishing_Agrarian</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Furnishing_Agrarian</defName>
+    <label>woven hangings (being made)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>PassThroughOnly</passability>
+    <fillPercent>0.3</fillPercent>
+    <entityToBuild>Furnishing_Agrarian</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Furnishing_Bronze</defName>
+    <label>dyed hangings and chests</label>
+    <description>Dyed cloth on the walls and a carved chest for the household's goods.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>PassThroughOnly</passability>
+    <pathCost>30</pathCost>
+    <fillPercent>0.3</fillPercent>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <WorkToBuild>500</WorkToBuild>
+      <Flammability>1</Flammability>
+      <Beauty>18</Beauty>
+      <MarketValue>90</MarketValue>
+    </statBases>
+    <costList>
+      <WoodLog>20</WoodLog>
+    </costList>
+    <researchPrerequisites>
+      <li>Dyeing</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Furnishing_Bronze</defName>
+    <label>dyed hangings and chests (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Furnishing_Bronze</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Furnishing_Bronze</defName>
+    <label>dyed hangings and chests (being made)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>PassThroughOnly</passability>
+    <fillPercent>0.3</fillPercent>
+    <entityToBuild>Furnishing_Bronze</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Furnishing_Classical</defName>
+    <label>painted plaster</label>
+    <description>Walls plastered smooth and painted with scenes, and a couch to recline on.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>PassThroughOnly</passability>
+    <pathCost>30</pathCost>
+    <fillPercent>0.3</fillPercent>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <WorkToBuild>600</WorkToBuild>
+      <Flammability>1</Flammability>
+      <Beauty>26</Beauty>
+      <MarketValue>180</MarketValue>
+    </statBases>
+    <costList>
+      <WoodLog>25</WoodLog>
+    </costList>
+    <researchPrerequisites>
+      <li>MonumentalArchitecture</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Furnishing_Classical</defName>
+    <label>painted plaster (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Furnishing_Classical</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Furnishing_Classical</defName>
+    <label>painted plaster (being made)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>PassThroughOnly</passability>
+    <fillPercent>0.3</fillPercent>
+    <entityToBuild>Furnishing_Classical</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Furnishing_Medieval</defName>
+    <label>carved furniture</label>
+    <description>A carved settle, a dresser of good plates and a tapestry against the draught.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>PassThroughOnly</passability>
+    <pathCost>30</pathCost>
+    <fillPercent>0.3</fillPercent>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <WorkToBuild>700</WorkToBuild>
+      <Flammability>1</Flammability>
+      <Beauty>36</Beauty>
+      <MarketValue>320</MarketValue>
+    </statBases>
+    <costList>
+      <WoodLog>30</WoodLog>
+    </costList>
+    <researchPrerequisites>
+      <li>GuildSystem</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Furnishing_Medieval</defName>
+    <label>carved furniture (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Furnishing_Medieval</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Furnishing_Medieval</defName>
+    <label>carved furniture (being made)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>PassThroughOnly</passability>
+    <fillPercent>0.3</fillPercent>
+    <entityToBuild>Furnishing_Medieval</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Furnishing_Industrial</defName>
+    <label>parlour suite</label>
+    <description>Upholstered chairs, a patterned carpet, prints in frames and a clock on the mantel.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>PassThroughOnly</passability>
+    <pathCost>30</pathCost>
+    <fillPercent>0.3</fillPercent>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <WorkToBuild>800</WorkToBuild>
+      <Flammability>1</Flammability>
+      <Beauty>50</Beauty>
+      <MarketValue>600</MarketValue>
+    </statBases>
+    <costList>
+      <WoodLog>35</WoodLog>
+    </costList>
+    <researchPrerequisites>
+      <li>IndustrialCapitalism</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Furnishing_Industrial</defName>
+    <label>parlour suite (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Furnishing_Industrial</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Furnishing_Industrial</defName>
+    <label>parlour suite (being made)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>PassThroughOnly</passability>
+    <fillPercent>0.3</fillPercent>
+    <entityToBuild>Furnishing_Industrial</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Furnishing_Information</defName>
+    <label>fitted furnishings</label>
+    <description>Fitted cupboards, soft seating and a screen to gather round.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>PassThroughOnly</passability>
+    <pathCost>30</pathCost>
+    <fillPercent>0.3</fillPercent>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <WorkToBuild>900</WorkToBuild>
+      <Flammability>1</Flammability>
+      <Beauty>70</Beauty>
+      <MarketValue>1000</MarketValue>
+    </statBases>
+    <costList>
+      <WoodLog>40</WoodLog>
+    </costList>
+    <researchPrerequisites>
+      <li>Plastics</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Furnishing_Information</defName>
+    <label>fitted furnishings (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Furnishing_Information</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Furnishing_Information</defName>
+    <label>fitted furnishings (being made)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>PassThroughOnly</passability>
+    <fillPercent>0.3</fillPercent>
+    <entityToBuild>Furnishing_Information</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Furnishing_Exotic</defName>
+    <label>adaptive furnishings</label>
+    <description>Furniture that shapes itself to whoever sits in it, and walls that show whatever the household likes to look at.</description>
+    <category>Building</category>
+    <thingClass>SimWorld.Building.Building</thingClass>
+    <passability>PassThroughOnly</passability>
+    <pathCost>30</pathCost>
+    <fillPercent>0.3</fillPercent>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <WorkToBuild>1000</WorkToBuild>
+      <Flammability>1</Flammability>
+      <Beauty>95</Beauty>
+      <MarketValue>1600</MarketValue>
+    </statBases>
+    <costList>
+      <WoodLog>45</WoodLog>
+    </costList>
+    <researchPrerequisites>
+      <li>Nanomaterials</li>
+    </researchPrerequisites>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Blueprint_Furnishing_Exotic</defName>
+    <label>adaptive furnishings (blueprint)</label>
+    <category>Blueprint</category>
+    <thingClass>SimWorld.Building.Blueprint</thingClass>
+    <passability>Standable</passability>
+    <entityToBuild>Furnishing_Exotic</entityToBuild>
+  </ThingDef>
+
+  <ThingDef>
+    <defName>Frame_Furnishing_Exotic</defName>
+    <label>adaptive furnishings (being made)</label>
+    <category>Frame</category>
+    <thingClass>SimWorld.Building.Frame</thingClass>
+    <passability>PassThroughOnly</passability>
+    <fillPercent>0.3</fillPercent>
+    <entityToBuild>Furnishing_Exotic</entityToBuild>
+  </ThingDef>
+
+</Defs>

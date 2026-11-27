@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    What a richer life gives back (comfort lane). The era sets what a citizen expects (Thoughts_Expectations.xml),
+    falling from +30 to nothing as the town climbs; these are what answer it, and each grows with the age: the
+    meals its cooks can make, and the rooms its houses are furnished into (Building.HouseFurnishing,
+    Building.RoomStats).
+
+    RimWorld's thoughts, recalled and not read from a decompile in this lane: AteLavishMeal +12 for a day, and
+    AteInImpressiveDiningRoom, one stage per impressiveness stage above mediocre, +2 rising to +8 (decent,
+    slightly, somewhat, very, extremely, unbelievably and wondrously impressive). The ate-raw, hearty-meal and
+    no-table memories already ship in Thoughts_Memories.xml; the bedroom's stages are in Thoughts_Sleep.xml.
+    MealThoughtTests and RoomThoughtTests pin the order of these (a better meal or room is a better memory),
+    never the literals. Labels are this port's own words.
+  -->
+
+  <ThoughtDef>
+    <defName>AteLavishMeal</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <nullifyingTraits>
+      <li>Ascetic</li>
+    </nullifyingTraits>
+    <stages>
+      <li>
+        <label>ate a feast platter</label>
+        <description>A meal fit for a festival, and on an ordinary day.</description>
+        <baseMoodEffect>12</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>AteInImpressiveDiningRoom</defName>
+    <durationDays>1</durationDays>
+    <stackLimit>1</stackLimit>
+    <stages>
+      <li>
+        <label>ate in a decent room</label>
+        <description>A proper room to eat in, and a table to eat at.</description>
+        <baseMoodEffect>2</baseMoodEffect>
+      </li>
+      <li>
+        <label>ate in a pleasant room</label>
+        <description>It is good to sit down to a meal somewhere pleasant.</description>
+        <baseMoodEffect>3</baseMoodEffect>
+      </li>
+      <li>
+        <label>ate in a fine room</label>
+        <description>A fine room makes any meal better.</description>
+        <baseMoodEffect>4</baseMoodEffect>
+      </li>
+      <li>
+        <label>ate in a handsome room</label>
+        <description>I ate somewhere handsome, and lingered over it.</description>
+        <baseMoodEffect>5</baseMoodEffect>
+      </li>
+      <li>
+        <label>ate in a splendid room</label>
+        <description>Eating in a room like that, I felt like somebody.</description>
+        <baseMoodEffect>6</baseMoodEffect>
+      </li>
+      <li>
+        <label>ate in a grand room</label>
+        <description>A grand room for a meal. I could get used to this.</description>
+        <baseMoodEffect>7</baseMoodEffect>
+      </li>
+      <li>
+        <label>ate in a magnificent room</label>
+        <description>I have never eaten anywhere so magnificent.</description>
+        <baseMoodEffect>8</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>
