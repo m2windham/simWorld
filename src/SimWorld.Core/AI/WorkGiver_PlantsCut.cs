@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SimWorld.Building;
 using SimWorld.Defs;
@@ -57,16 +58,85 @@ namespace SimWorld.AI
         /// <see cref="HasJobOnThing"/> runs, so dropping the rest here leaves the surviving candidates in the
         /// same relative order and the scan picks the same plant — without measuring and sorting every tree on
         /// the map, almost all of which it would only have rejected.
+        /// <para/>
+        /// A plant <see cref="ShouldBeCut"/> marks stands in a sowing growing zone or under a blueprint or frame, so
+        /// those cells are looked at first. Almost always they hold none such, or one, and that is the whole answer;
+        /// only when they hold two or more is the plant list walked, for its order. Walking every plant on the map for
+        /// nothing, the grass included, was a twentieth of a Bronze-age town's tick (perf, tick-cost lane; RimWorld's
+        /// own giver walks designations, not plants).
         /// </summary>
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
             Map.Map? map = pawn.Map;
-            if (map == null) yield break;
+            if (map == null) return Array.Empty<Thing>();
+            switch (CandidatesAtSites(map, out Plant? sole))
+            {
+                case 0: return Array.Empty<Thing>();
+                case 1: return new Thing[] { sole! };
+                default: return EveryPlantToCut(map);
+            }
+        }
+
+        private static IEnumerable<Thing> EveryPlantToCut(Map.Map map)
+        {
             IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.Plant);
             for (int i = 0; i < plants.Count; i++)
             {
                 if (plants[i] is Plant plant && ShouldBeCut(plant)) yield return plant;
             }
+        }
+
+        /// <summary>How many distinct plants of the plant list <see cref="ShouldBeCut"/> marks, counted no further
+        /// than two, found from the only cells such a plant can stand on: the cells of every growing zone that sows a
+        /// crop, and the footprint of every blueprint and frame. <paramref name="sole"/> is the one, when there is
+        /// exactly one.</summary>
+        private static int CandidatesAtSites(Map.Map map, out Plant? sole)
+        {
+            sole = null;
+            IReadOnlyList<Zone> zones = map.zoneManager.AllZones;
+            for (int z = 0; z < zones.Count; z++)
+            {
+                if (!(zones[z] is Zone_Growing growing) || !growing.allowSow || growing.plantDefToGrow == null) continue;
+                IReadOnlyList<IntVec3> cells = growing.Cells;
+                for (int i = 0; i < cells.Count; i++)
+                {
+                    if (!CountAt(map, cells[i], ref sole)) return 2;
+                }
+            }
+            if (!CountUnderSites(map, map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint), ref sole)) return 2;
+            if (!CountUnderSites(map, map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame), ref sole)) return 2;
+            return sole == null ? 0 : 1;
+        }
+
+        private static bool CountUnderSites(Map.Map map, IReadOnlyList<Thing> sites, ref Plant? sole)
+        {
+            for (int s = 0; s < sites.Count; s++)
+            {
+                CellRect rect = sites[s].OccupiedRect();
+                for (int z = rect.minZ; z <= rect.maxZ; z++)
+                {
+                    for (int x = rect.minX; x <= rect.maxX; x++)
+                    {
+                        if (!CountAt(map, new IntVec3(x, 0, z), ref sole)) return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /// <summary>Notes the plant-list plant on <paramref name="cell"/> that <see cref="ShouldBeCut"/> marks; false
+        /// once a second, different one turns up.</summary>
+        private static bool CountAt(Map.Map map, IntVec3 cell, ref Plant? sole)
+        {
+            if (!GenGrid.InBounds(cell, map)) return true;
+            IReadOnlyList<Thing> things = map.thingGrid.ThingsListAt(cell);
+            for (int i = 0; i < things.Count; i++)
+            {
+                if (!(things[i] is Plant plant) || plant.def.category != ThingCategory.Plant || !ShouldBeCut(plant)) continue;
+                if (sole == null) sole = plant;
+                else if (!ReferenceEquals(sole, plant)) return false;
+            }
+            return true;
         }
 
         /// <summary>

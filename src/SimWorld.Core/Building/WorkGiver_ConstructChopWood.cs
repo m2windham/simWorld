@@ -65,13 +65,98 @@ namespace SimWorld.Building
         /// demand is read here, once per scan, rather than per candidate in <see cref="HasJobOnThing"/>: it
         /// walks every site and every stack of the material, and the scan would otherwise pay that for every
         /// tree it considered.
+        /// <para/>
+        /// Mostly the sites have their wood, and then only a tree on a site is offered. So the demand is read first,
+        /// for every kind of wood the map's trees give, and while none is short the trees are looked for on the sites
+        /// themselves: none, or one, is the whole answer, and only two or more send the scan down the tree list for
+        /// its order. Walking every tree for nothing was a sixteenth of a Bronze-age town's tick (perf, tick-cost
+        /// lane).
         /// </summary>
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
             Map.Map? map = pawn.Map;
-            if (map == null) yield break;
+            if (map == null) return Array.Empty<Thing>();
 
+            Dictionary<ThingDef, int>? shortfall = TreeWoodShortfalls(map, out bool anyShort);
+            if (!anyShort)
+            {
+                switch (TreesOnSites(map, out Plant? sole))
+                {
+                    case 0: return Array.Empty<Thing>();
+                    case 1: return new Thing[] { sole! };
+                }
+            }
+            return EveryTreeToFell(map, shortfall);
+        }
+
+        /// <summary><see cref="WoodShortfall"/> for what every kind of tree standing on the map gives, and whether
+        /// any is short. Null when no tree there gives anything.</summary>
+        private static Dictionary<ThingDef, int>? TreeWoodShortfalls(Map.Map map, out bool anyShort)
+        {
+            anyShort = false;
             Dictionary<ThingDef, int>? shortfall = null;
+            foreach (ThingDef def in map.listerThings.DefsEverListed)
+            {
+                if (def.category != ThingCategory.Plant || def.plant == null || !def.plant.IsTree) continue;
+                ThingDef? wood = def.plant.harvestedThingDef;
+                if (wood == null || map.listerThings.ThingsOfDef(def).Count == 0) continue;
+                shortfall ??= new Dictionary<ThingDef, int>();
+                if (!shortfall.TryGetValue(wood, out int missing))
+                {
+                    missing = WoodShortfall(map, wood);
+                    shortfall[wood] = missing;
+                }
+                if (missing > 0) anyShort = true;
+            }
+            return shortfall;
+        }
+
+        /// <summary>How many distinct trees of the plant list stand on a site (<see cref="StandsOnASite"/>), counted
+        /// no further than two, found from the footprint of every blueprint and frame and the compound's interior.
+        /// <paramref name="sole"/> is the one, when there is exactly one.</summary>
+        private static int TreesOnSites(Map.Map map, out Plant? sole)
+        {
+            sole = null;
+            if (!CountUnderSites(map, map.listerThings.ThingsInGroup(ThingRequestGroup.Blueprint), ref sole)) return 2;
+            if (!CountUnderSites(map, map.listerThings.ThingsInGroup(ThingRequestGroup.BuildingFrame), ref sole)) return 2;
+            if (map.settlementCompound != null && !CountIn(map, map.settlementCompound.Interior, ref sole)) return 2;
+            return sole == null ? 0 : 1;
+        }
+
+        private static bool CountUnderSites(Map.Map map, IReadOnlyList<Thing> sites, ref Plant? sole)
+        {
+            for (int s = 0; s < sites.Count; s++)
+            {
+                if (!CountIn(map, sites[s].OccupiedRect(), ref sole)) return false;
+            }
+            return true;
+        }
+
+        /// <summary>Notes each tree of the plant list in <paramref name="rect"/> standing on a site; false once a
+        /// second, different one turns up.</summary>
+        private static bool CountIn(Map.Map map, CellRect rect, ref Plant? sole)
+        {
+            for (int z = rect.minZ; z <= rect.maxZ; z++)
+            {
+                for (int x = rect.minX; x <= rect.maxX; x++)
+                {
+                    var cell = new IntVec3(x, 0, z);
+                    if (!GenGrid.InBounds(cell, map)) continue;
+                    IReadOnlyList<Thing> things = map.thingGrid.ThingsListAt(cell);
+                    for (int i = 0; i < things.Count; i++)
+                    {
+                        if (!(things[i] is Plant plant) || plant.def.category != ThingCategory.Plant || !plant.Spawned) continue;
+                        if (plant.def.plant == null || !plant.def.plant.IsTree || !StandsOnASite(plant, map)) continue;
+                        if (sole == null) sole = plant;
+                        else if (!ReferenceEquals(sole, plant)) return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private static IEnumerable<Thing> EveryTreeToFell(Map.Map map, Dictionary<ThingDef, int>? shortfall)
+        {
             // Every tree is a HarvestablePlant, in Plant's own order: the felling scan walks no grass (perf, tick-cost
             // lane).
             IReadOnlyList<Thing> plants = map.listerThings.ThingsInGroup(ThingRequestGroup.HarvestablePlant);
