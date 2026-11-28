@@ -20,6 +20,7 @@ jobs:
       matrix:
         ref:
           - { name: quake-roof, sha: aa2724932caba8a1b5ea96916b77e49b57337289 }
+          - { name: tick-cost4, sha: 60cb90e28523c3898d70e5b81dfce67cc6e28f60 }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -88,6 +89,10 @@ jobs:
           - { name: merge-40-201-on, sha: c196b9348c9de79a8ceab6f82d8c3a94b13882ff, threats: "true", pop: "40:201" }
           - { name: merge-20-101-on, sha: c196b9348c9de79a8ceab6f82d8c3a94b13882ff, threats: "true", pop: "20:101" }
           - { name: merge-40-201-off, sha: c196b9348c9de79a8ceab6f82d8c3a94b13882ff, threats: "false", pop: "40:201" }
+          - { name: tc4-20-99-on, sha: 60cb90e28523c3898d70e5b81dfce67cc6e28f60, threats: "true", pop: "20:99" }
+          - { name: tc4-40-201-on, sha: 60cb90e28523c3898d70e5b81dfce67cc6e28f60, threats: "true", pop: "40:201" }
+          - { name: tc4-20-101-on, sha: 60cb90e28523c3898d70e5b81dfce67cc6e28f60, threats: "true", pop: "20:101" }
+          - { name: tc4-40-201-off, sha: 60cb90e28523c3898d70e5b81dfce67cc6e28f60, threats: "false", pop: "40:201" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
