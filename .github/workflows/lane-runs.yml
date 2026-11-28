@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: r11fix-e5, sha: 9bd5132b3baa3dd50aa4de2bd90f1a2278c3b6f6 }
+          - { name: quake-roof, sha: aa2724932caba8a1b5ea96916b77e49b57337289 }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -80,14 +80,14 @@ jobs:
       fail-fast: false
       matrix:
         run:
-          - { name: fixe5-20-101-on, sha: 9bd5132b3baa3dd50aa4de2bd90f1a2278c3b6f6, threats: "true", pop: "20:101" }
-          - { name: fixe5-20-99-on, sha: 9bd5132b3baa3dd50aa4de2bd90f1a2278c3b6f6, threats: "true", pop: "20:99" }
-          - { name: fixe5-40-201-on, sha: 9bd5132b3baa3dd50aa4de2bd90f1a2278c3b6f6, threats: "true", pop: "40:201" }
-          - { name: fixe5-40-201-off, sha: 9bd5132b3baa3dd50aa4de2bd90f1a2278c3b6f6, threats: "false", pop: "40:201" }
-          - { name: e5-20-101-on, sha: 15d734911c30655ea61fbe309158724cbe78c46c, threats: "true", pop: "20:101" }
-          - { name: e5-20-99-on, sha: 15d734911c30655ea61fbe309158724cbe78c46c, threats: "true", pop: "20:99" }
-          - { name: e5-40-201-on, sha: 15d734911c30655ea61fbe309158724cbe78c46c, threats: "true", pop: "40:201" }
-          - { name: e5-40-201-off, sha: 15d734911c30655ea61fbe309158724cbe78c46c, threats: "false", pop: "40:201" }
+          - { name: quake-20-99-on, sha: aa2724932caba8a1b5ea96916b77e49b57337289, threats: "true", pop: "20:99" }
+          - { name: quake-40-201-on, sha: aa2724932caba8a1b5ea96916b77e49b57337289, threats: "true", pop: "40:201" }
+          - { name: quake-20-101-on, sha: aa2724932caba8a1b5ea96916b77e49b57337289, threats: "true", pop: "20:101" }
+          - { name: quake-40-201-off, sha: aa2724932caba8a1b5ea96916b77e49b57337289, threats: "false", pop: "40:201" }
+          - { name: merge-20-99-on, sha: c196b9348c9de79a8ceab6f82d8c3a94b13882ff, threats: "true", pop: "20:99" }
+          - { name: merge-40-201-on, sha: c196b9348c9de79a8ceab6f82d8c3a94b13882ff, threats: "true", pop: "40:201" }
+          - { name: merge-20-101-on, sha: c196b9348c9de79a8ceab6f82d8c3a94b13882ff, threats: "true", pop: "20:101" }
+          - { name: merge-40-201-off, sha: c196b9348c9de79a8ceab6f82d8c3a94b13882ff, threats: "false", pop: "40:201" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
