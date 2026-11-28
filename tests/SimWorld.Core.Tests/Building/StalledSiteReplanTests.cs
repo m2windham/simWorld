@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.Linq;
 using SimWorld.Building;
 using SimWorld.Defs;
 using SimWorld.Map;
+using SimWorld.Research;
 using SimWorld.Sim;
 using SimWorld.Tests.Content;
 using SimWorld.Things;
@@ -136,6 +138,49 @@ namespace SimWorld.Tests.Building
             var map = new CoreMap(20, 20, TerrainDefOf.Soil);
             SpawnStack(map, Def("BlocksLimestone"), 5, new IntVec3(3, 0, 3));
             var blueprint = (Blueprint)ThingMaker.MakeThing(Def("Blueprint_WallLimestone"));
+            GenSpawn.Spawn(blueprint, new IntVec3(15, 0, 15), map);
+
+            Assert.Equal(0, SettlementConstructionInitiative.ReplanStalledSites(map));
+            Assert.True(blueprint.Spawned);
+        }
+        /// <summary>baby-warmth lane: after an Industrial-era quake in the 600-day 20/101 arc on integ-r13, 108 lost
+        /// walls went back as wooden walls on a map whose wood was gone, while the masons cut 209 limestone blocks that
+        /// nothing spent; 18 of the town's 20 houses stood open for 60 days, until a frost killed the babies in them.
+        /// A wooden wall with no wood is planned again in the stone the town holds, a frame giving back what it got.</summary>
+        [Fact]
+        public void A_wooden_wall_with_no_wood_is_planned_again_in_the_stone_the_town_holds()
+        {
+            var map = new CoreMap(20, 20, TerrainDefOf.Soil);
+            foreach (ResearchProjectDef p in Def("WallLimestone").researchPrerequisites ?? new List<ResearchProjectDef>()) Find.ResearchManager.SetProjectFinishedForSetup(p);
+            SpawnStack(map, Def("BlocksLimestone"), 20, new IntVec3(3, 0, 3));
+            var frameCell = new IntVec3(12, 0, 12);
+            var frame = (Frame)ThingMaker.MakeThing(Def("Frame_Wall"), Def("WoodLog"));
+            GenSpawn.Spawn(frame, frameCell, map);
+            frame.AddMaterial(Def("WoodLog"), 2);
+            var blueprintCell = new IntVec3(15, 0, 15);
+            var blueprint = (Blueprint)ThingMaker.MakeThing(Def("Blueprint_Wall"));
+            GenSpawn.Spawn(blueprint, blueprintCell, map);
+            Assert.Same(Def("WoodLog"), blueprint.stuffToUse);
+            uint shared = Rand.Current.Iterations;
+
+            Assert.Equal(2, SettlementConstructionInitiative.ReplanStalledSites(map));
+
+            Assert.False(frame.Spawned);
+            Assert.False(blueprint.Spawned);
+            Assert.Same(Def("WallLimestone"), map.thingGrid.ThingsListAt(frameCell).OfType<Blueprint>().Single().EntityToBuild);
+            Assert.Same(Def("WallLimestone"), map.thingGrid.ThingsListAt(blueprintCell).OfType<Blueprint>().Single().EntityToBuild);
+            Assert.Equal(2, OnMap(map, Def("WoodLog"))); // the frame gives back what it was given
+            Assert.Equal(shared, Rand.Current.Iterations);
+            Assert.Equal(0, SettlementConstructionInitiative.ReplanStalledSites(map));
+        }
+
+        [Fact]
+        public void A_wooden_wall_with_no_wood_and_no_stone_to_spare_is_left_waiting()
+        {
+            var map = new CoreMap(20, 20, TerrainDefOf.Soil);
+            foreach (ResearchProjectDef p in Def("WallLimestone").researchPrerequisites ?? new List<ResearchProjectDef>()) Find.ResearchManager.SetProjectFinishedForSetup(p);
+            SpawnStack(map, Def("BlocksLimestone"), 4, new IntVec3(3, 0, 3)); // short of one stone wall (5)
+            var blueprint = (Blueprint)ThingMaker.MakeThing(Def("Blueprint_Wall"));
             GenSpawn.Spawn(blueprint, new IntVec3(15, 0, 15), map);
 
             Assert.Equal(0, SettlementConstructionInitiative.ReplanStalledSites(map));

@@ -603,7 +603,9 @@ namespace SimWorld.Building
 
         /// <summary>
         /// Re-plans a stuff-built site whose stuff is not there to finish it: a bed, door or bench blueprint or
-        /// frame (never a wall — <see cref="StoneWallMaterials"/> owns what a wall is made of) that still needs
+        /// frame (never a wall in a lesser stuff — <see cref="StoneWallMaterials"/> owns what a wall is made of, and a wall
+        /// is re-planned only as the wall it would choose: <see cref="ReplanStrandedStoneWall"/>,
+        /// <see cref="ReplanStrandedStuffWall"/>) that still needs
         /// more of its chosen stuff than the map holds within the band's reach plus what anyone is carrying, plus
         /// what the settlement's ledger holds: that is issued to the site (<see cref="Economy.SettlementBuildStock"/>),
         /// and without it a steel site whose steel was banked went back to wood the pass after it was planned
@@ -649,6 +651,11 @@ namespace SimWorld.Building
                 if (!entity.MadeFromStuff && StoneWallMaterials.IsWall(entity))
                 {
                     if (ReplanStrandedStoneWall(map, site, entity, band, settlement)) replanned++;
+                    continue;
+                }
+                if (StoneWallMaterials.IsWall(entity))
+                {
+                    if (ReplanStrandedStuffWall(map, site, stuff, need, band, settlement)) replanned++;
                     continue;
                 }
                 if (stuff == null || need <= 0 || !entity.MadeFromStuff || StoneWallMaterials.IsWall(entity)) continue;
@@ -719,6 +726,37 @@ namespace SimWorld.Building
             ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(replacement);
             if (blueprintDef == null) return true;
             // A plain wall goes up in its default stuff, wood, as PlaceBlueprint plans one.
+            GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), cell, map, rot);
+            return true;
+        }
+
+        /// <summary>
+        /// The other half of <see cref="ReplanStrandedStoneWall"/>: a plain wall site (<see cref="ConstructionThingDefOf.Wall"/>,
+        /// made from stuff, wood by default) short of its stuff within reach, in hand and in the ledger, while the town
+        /// holds a whole stone wall's worth of blocks to spare (<see cref="StoneWallMaterials.PreferredWallDef"/>). It is
+        /// cancelled and planned again on the same cell as that stone wall. A renewal site is left to renewal.
+        /// <para/>
+        /// <b>Why</b> (baby-warmth lane). An Industrial-era quake in the 600-day 20/101 arc on integ-r13 brought down 108
+        /// walls of 18 of the town's 20 houses. The stone ran short as they were laid out again, so most went back as
+        /// wooden walls (<c>IncidentWorker_Earthquake.PlaceRebuildBlueprint</c>), on a map whose wood was gone since day
+        /// 450. The masons cut 209 limestone blocks after; nothing spent them, because only a stone wall was ever re-planned,
+        /// and the houses stood open for 60 days, until a frost killed five babies and a child lying in them. RimWorld's
+        /// player redraws a wall in a stuff they have; the settlement is the player. No draw.
+        /// </summary>
+        private static bool ReplanStrandedStuffWall(Map.Map map, Thing site, ThingDef? stuff, int need, IntVec3? band, World.Settlement? settlement)
+        {
+            if (stuff == null || need <= 0) return false;
+            if (StuffWithinReach(map, stuff, band) + (settlement?.StoreCountOf(stuff) ?? 0) >= need) return false;
+            if (GenConstruct.ThingToReplace(site) != null) return false;
+            ThingDef replacement = StoneWallMaterials.PreferredWallDef(map);
+            if (replacement.MadeFromStuff) return false;
+            ThingDef? blueprintDef = GenConstruct.BlueprintDefFor(replacement);
+            if (blueprintDef == null) return false;
+
+            IntVec3 cell = site.Position;
+            Rot4 rot = site.Rotation;
+            if (site is Frame stalled) stalled.Cancel();
+            else site.Destroy(DestroyMode.Cancel);
             GenSpawn.Spawn(ThingMaker.MakeThing(blueprintDef), cell, map, rot);
             return true;
         }

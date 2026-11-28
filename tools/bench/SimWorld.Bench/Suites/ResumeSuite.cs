@@ -149,7 +149,35 @@ namespace SimWorld.Bench.Suites
                 + " | houses open " + open + "/" + houses.Count + " parts waiting " + waiting + " framed " + frames
                 + " | worst hypo child " + Worst(Child) + " baby " + Worst(Baby) + " adult " + Worst(Adult)
                 + " | alive c" + alive.Count(Child) + " b" + alive.Count(Baby) + " a" + alive.Count(Adult)
-                + " | children worn " + worn + " | adults: " + jobs + Coldest(alive.Where(Child), map);
+                + " | children worn " + worn + " | adults: " + jobs + Coldest(alive.Where(Child), map) + Babies(alive.Where(Baby), map);
+        }
+
+        /// <summary>Each cold baby: whether it needs moving, the safe bed a rescuer would find for it, and every bed that
+        /// could warm it (finished house, fuel in the hearth) or whose air is already comfortable.</summary>
+        private static string Babies(IEnumerable<Pawn> babies, Map.Map map)
+        {
+            var sb = new System.Text.StringBuilder();
+            Pawn? carer = map.mapPawns.AllPawnsSpawned.FirstOrDefault(p => p.RaceProps.Humanlike && !p.Downed && p.ageTracker.CurLifeStage?.developmentalStage == DevelopmentalStage.Adult);
+            foreach (Pawn b in babies.Where(b => b.Spawned))
+            {
+                if (!BabySafetyUtility.NeedsMovingForTemperature(b)) continue;
+                Thing? safe = carer == null ? null : BabySafetyUtility.SafeBedFor(b, carer);
+                sb.Append(Environment.NewLine + "      cold baby " + b.Label + " at " + b.Position + " air " + TemperatureInjuryUtility.AmbientTemperature(b).ToString("0.0", CultureInfo.InvariantCulture)
+                    + " rescuer " + (map.mapPawns.AllPawnsSpawned.FirstOrDefault(p => p.jobs?.curJob is Job j && j.def == JobDefOf.Rescue && j.targetA.Thing == b)?.Label ?? "-") + " safe bed " + (safe == null ? "none" : safe.Position.ToString()));
+            }
+            if (sb.Length == 0) return "";
+            int warmable = 0, comfy = 0, beds = 0;
+            foreach (Thing bed in map.listerThings.ThingsOfDef(ConstructionThingDefOf.Bed))
+            {
+                beds++;
+                if (SettlementClimate.WillWarm(map, bed)) warmable++;
+                if (RotUtility.AmbientTemperatureAt(map, bed.GetSleepingSlotPos()) >= 16f) comfy++;
+            }
+            string hearths = string.Join(",", DwellingUtility.DwellingsOn(map).Where(d => d.IsComplete(map) && d.householdId != Pawn_RelationsTracker.None)
+                .Select(d => d.def.defName + (SettlementClimate.HasFueledHearth(map, d) ? ":fuel" : ":nofuel")));
+            sb.Append(Environment.NewLine + "      beds " + beds + ", warmable " + warmable + ", air>=16 " + comfy + "; finished houses " + hearths
+                + "; carer " + (carer?.Label ?? "none"));
+            return sb.ToString();
         }
 
         /// <summary>Where the coldest of <paramref name="who"/> is and what it is doing.</summary>

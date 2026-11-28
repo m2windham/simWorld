@@ -237,6 +237,47 @@ namespace SimWorld.Tests.AI
             AssertWarmedAndLives(v, baby, 4, 12);
         }
 
+        /// <summary>A house of <paramref name="family"/> on the planner's plot with one of its walls knocked down, as a quake
+        /// leaves it: open to the frost, not finished, so its hearth is not lit.</summary>
+        private static Dwelling OpenedHouse(Village v, int family)
+        {
+            Dwelling house = ShelterKit.RaiseOnPlot(v.Map, ShelterKit.Rung("House_Meso"), family, v.Settlement.faction)!;
+            Assert.NotNull(house);
+            IntVec3 wall = house.Parts.First(p => p.Kind == DwellingPartKind.Wall).Cell;
+            v.Map.edificeGrid[wall]!.Destroy();
+            Assert.False(house.IsComplete(v.Map));
+            return house;
+        }
+
+        /// <summary>
+        /// A baby asleep in its own bed in a house a quake has opened, in a hard frost, with a warm house standing: it is
+        /// carried to the warm house's bed (RimWorld, Biotech: a baby is brought to safety when its bed's room is too
+        /// cold). The 600-day 20/101 arc on integ-r13 lost five babies in one night lying in their own beds in opened
+        /// houses at -4 to -9 C.
+        /// </summary>
+        [Fact]
+        public void A_sleeping_baby_at_home_in_an_opened_house_is_carried_to_a_warm_bed()
+        {
+            Village v = NewWinterVillage("baby-warmth-opened", 3);
+            Dwelling opened = OpenedHouse(v, v.Houseless);
+            Thing own = opened.Beds(v.Map).First();
+            Pawn baby = Newborn(v, v.Houseless, own.GetSleepingSlotPos());
+            Assert.True(baby.InBed() && DwellingUtility.IsOwnHomeBed(baby, own));
+            PutToSleep(v, baby);
+            Assert.True(TemperatureInjuryUtility.AmbientTemperature(baby) < TemperatureInjuryUtility.ComfortableTemperatureRange(baby).min,
+                "the opened house is not cold");
+
+            int carriedAt = -1;
+            for (int hour = 0; hour < 12 && carriedAt < 0; hour++)
+            {
+                Run(v.Game, GenDate.TicksPerHour);
+                output.WriteLine(Line(v, baby, hour));
+                if (baby.InBed() && !ReferenceEquals(baby.CurrentBed(), own)) carriedAt = hour;
+            }
+            Assert.True(carriedAt >= 0, "the baby was left in its own bed in the opened house");
+            Assert.True(v.House.InteriorContains(baby.Position), "the baby was not carried to the warm house");
+        }
+
         /// <summary>
         /// One of the house's own out in the frost with hypothermia, nobody at home: the house lights its hearth for them
         /// to come home to, and within hours it is somewhere warm to go. The arc's children of day 520 froze out of
