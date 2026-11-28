@@ -52,6 +52,7 @@ namespace SimWorld.Bench.Suites
             }
 
             Console.WriteLine(OpenHouses(map));
+            Console.WriteLine(Wood(map));
             var watch = new ExposureWatch();
             int quakesBefore = Fired(game, "Earthquake");
             bool forced = false, frosted = false;
@@ -78,7 +79,7 @@ namespace SimWorld.Bench.Suites
                 }
                 if (now % ExposureWatch.Every == 0) watch.Sample(home, now);
                 if (now % (3 * GenDate.TicksPerHour) == 0) Console.WriteLine(Line(home, map, now));
-                if (now % GenDate.TicksPerDay == 0) Console.WriteLine(OpenHouses(map));
+                if (now % GenDate.TicksPerDay == 0) { Console.WriteLine(OpenHouses(map)); Console.WriteLine(Wood(map)); }
             }
         }
 
@@ -112,6 +113,47 @@ namespace SimWorld.Bench.Suites
                 }
             }
             return sb.Length == 0 ? "  open houses: none" : sb.ToString().TrimEnd();
+        }
+
+        /// <summary>The map's trees and wood: how many stand, how many could be felled now, how many of those a citizen
+        /// can reach, and the wood the sites and hearths are short of.</summary>
+        private static string Wood(Map.Map map)
+        {
+            ThingDef log = DefDatabase<ThingDef>.GetNamed("WoodLog");
+            List<Plant> trees = map.listerThings.ThingsInGroup(ThingRequestGroup.HarvestablePlant).OfType<Plant>()
+                .Where(t => t.Spawned && t.def.plant?.IsTree == true).ToList();
+            Pawn? walker = map.mapPawns.AllPawnsSpawned.FirstOrDefault(p => p.RaceProps.Humanlike && !p.Downed && p.ageTracker.CurLifeStage?.developmentalStage == DevelopmentalStage.Adult && HuntingInitiative.SettlementFor(map)?.Citizens.Contains(p) == true);
+            List<Plant> ready = trees.Where(t => t.HarvestableNow).ToList();
+            int reachable = walker == null ? -1 : ready.Count(t => Reachability.CanReach(walker, t, PathEndMode.Touch));
+            int inBounds = ready.Count(t => SettlementReach.CanReach(map, SettlementReach.BandCell(map), t.Position));
+            return "  wood: trees " + trees.Count + ", fellable now " + ready.Count + " (reachable " + reachable + ", in band reach " + inBounds
+                + "), mean growth " + (trees.Count == 0 ? 0f : trees.Average(t => t.Growth)).ToString("0.00", CultureInfo.InvariantCulture)
+                + ", shortfall " + WorkGiver_ConstructChopWood.WoodShortfall(map, log) + ", on map " + map.listerThings.ThingsOfDef(log).Sum(t => t.stackCount)
+                + ", cut-plant initiative " + map.designationManager.SettlementInitiativeOn(Designations.PlayerDesignationDefOf.CutPlant)
+                + Geometry(map, trees, walker);
+        }
+
+        /// <summary>Where the trees stand against where the walker can go: the trees' bounding box, the walker's cell, and
+        /// how much of the map's standable ground it can reach.</summary>
+        private static string Geometry(Map.Map map, List<Plant> trees, Pawn? walker)
+        {
+            if (walker == null || trees.Count == 0) return "";
+            int standable = 0, reach = 0;
+            foreach (IntVec3 c in map.AllCells)
+            {
+                if (!GenGrid.Standable(c, map)) continue;
+                standable++;
+                if (map.reachability.CanReachCells(walker.Position, c)) reach++;
+            }
+            return Environment.NewLine + "    trees x " + trees.Min(t => t.Position.x) + ".." + trees.Max(t => t.Position.x) + " z " + trees.Min(t => t.Position.z) + ".." + trees.Max(t => t.Position.z)
+                + "; map " + map.Size.x + "x" + map.Size.z + "; walker " + walker.Label + " at " + walker.Position + " reaches " + reach + "/" + standable + " standable cells"
+                + "; tree cells standable " + trees.Count(t => GenGrid.Standable(t.Position, map))
+                + "; trees with a reachable neighbour " + trees.Count(t => GenAdj.CellsAdjacent8Way(t.Position).Any(c => GenGrid.InBounds(c, map) && GenGrid.Standable(c, map) && map.reachability.CanReachCells(walker.Position, c)))
+                + "; tree terrain " + string.Join(",", trees.GroupBy(t => map.terrainGrid.TerrainAt(t.Position).defName).Select(g => g.Key + " " + g.Count()))
+                + "; tree defs " + string.Join(",", trees.GroupBy(t => t.def.defName).Select(g => g.Key + " " + g.Count()))
+                + "; walker moving " + walker.health.capacities.CapableOf(PawnCapacityDefOf.Moving) + " downed " + walker.Downed
+                + "; edge trees reached by Touch " + trees.Count(t => GenAdj.CellsAdjacent8Way(t.Position).Any(c => GenGrid.InBounds(c, map) && GenGrid.Standable(c, map) && map.reachability.CanReachCells(walker.Position, c)) && Reachability.CanReach(walker, t, PathEndMode.Touch))
+                + "; edge tree sample " + string.Join(" ", trees.Where(t => GenAdj.CellsAdjacent8Way(t.Position).Any(c => GenGrid.InBounds(c, map) && GenGrid.Standable(c, map) && map.reachability.CanReachCells(walker.Position, c))).Take(4).Select(t => t.Position + (t.HarvestableNow ? "h" : "g")));
         }
 
         private static int Fired(Game game, string defName) => game.Storyteller.resourceImpact.StructuresDestroyedBy(defName);
