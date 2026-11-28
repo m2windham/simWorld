@@ -279,6 +279,35 @@ namespace SimWorld.Tests.AI
         }
 
         /// <summary>
+        /// The other side: a healthy baby asleep in its own bed in a finished house whose hearth has warmed it is left
+        /// where it lies, nobody offered a job to carry it and nobody picking it up, as RimWorld leaves a baby whose crib
+        /// is safe.
+        /// </summary>
+        [Fact]
+        public void A_healthy_baby_warm_in_its_own_bed_is_left_alone()
+        {
+            Village v = NewWinterVillage("baby-warmth-left", 2);
+            Thing own = v.House.Beds(v.Map).First();
+            Pawn baby = Newborn(v, v.Housed, own.GetSleepingSlotPos());
+            Assert.True(baby.InBed() && DwellingUtility.IsOwnHomeBed(baby, own));
+            for (int hour = 0; hour < 12 && !Comfortable(baby); hour++) Run(v.Game, GenDate.TicksPerHour);
+            Assert.True(Comfortable(baby), "the house's hearth did not warm the baby: " + Line(v, baby, 0));
+            PutToSleep(v, baby);
+            Assert.Equal(0f, Hypothermia(baby));
+
+            var giver = new WorkGiver_RescueDowned();
+            foreach (Pawn adult in v.Settlement.Citizens.Where(p => p.Spawned && !p.Downed && !ReferenceEquals(p, baby)))
+            {
+                Assert.False(giver.HasJobOnThing(adult, baby), adult.Label + " is offered a rescue of a warm baby");
+            }
+            for (int hour = 0; hour < 12; hour++)
+            {
+                Run(v.Game, GenDate.TicksPerHour);
+                Assert.True(baby.Spawned && ReferenceEquals(baby.CurrentBed(), own), "the warm baby was moved on hour " + hour + ": " + Line(v, baby, hour));
+            }
+        }
+
+        /// <summary>
         /// One of the house's own out in the frost with hypothermia, nobody at home: the house lights its hearth for them
         /// to come home to, and within hours it is somewhere warm to go. The arc's children of day 520 froze out of
         /// doors and in the dormitory while their houses stood at -5 C, because nobody was home to want the fire.
