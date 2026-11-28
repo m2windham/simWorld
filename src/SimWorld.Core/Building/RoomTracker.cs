@@ -113,6 +113,18 @@ namespace SimWorld.Building
 
         private int IndexOf(IntVec3 cell) => cell.z * map.Size.x + cell.x;
 
+        /// <summary>
+        /// Whether an edifice of <paramref name="def"/> coming or going can change what a room rebuild produces.
+        /// A room is bounded by Fillage-Full edifices only, and its walls, doors and pit walls are all Full, so
+        /// anything less — a bed, a table, a conduit — changes no room, no wall sum and no door. One thing
+        /// besides walls reads the edifice grid when rooms are rebuilt: the roof offers
+        /// (<see cref="AutoBuildRoofAreaSetter"/>) count an impassable thing on a room's border as a holder
+        /// whose faction can claim or veto the roof, so an impassable edifice counts too. Every other edifice
+        /// change used to re-flood the map regardless (RoomSkipRebuildTests holds the skip to that).
+        /// </summary>
+        public static bool CanAlterRooms(ThingDef def) =>
+            def.Fillage == FillCategory.Full || def.passability == Traversability.Impassable;
+
         /// <summary>Re-flood the whole map on the next tick.</summary>
         public void Notify_Dirty() => dirty = true;
 

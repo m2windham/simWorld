@@ -79,7 +79,7 @@ namespace SimWorld.Tests.Building
 
         private static List<IntVec3> Positions(IEnumerable<Thing> things) => things.Select(t => t.Position).ToList();
 
-        private static void AssertSameRooms(CoreMap incremental, CoreMap full, int step)
+        internal static void AssertSameRooms(CoreMap incremental, CoreMap full, int step)
         {
             IReadOnlyList<Room> a = incremental.roomTracker.Rooms;
             IReadOnlyList<Room> b = full.roomTracker.Rooms;
