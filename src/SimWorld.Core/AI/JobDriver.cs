@@ -84,6 +84,15 @@ namespace SimWorld.AI
             }
         }
 
+        /// <summary>Makes <paramref name="to"/> the current toil, running its <c>initAction</c> (RimWorld:
+        /// <c>JobDriver.JumpToToil</c>). How a driver loops over a target queue: its last toil jumps back to the
+        /// one that takes the next target.</summary>
+        public void JumpToToil(Toil to)
+        {
+            curToilIndex = toils.IndexOf(to) - 1;
+            ReadyForNextToil();
+        }
+
         /// <summary>Runs one tick of the current toil (RimWorld: <c>JobDriver.DriverTick</c>).</summary>
         public void DriverTick()
         {

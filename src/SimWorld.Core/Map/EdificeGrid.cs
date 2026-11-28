@@ -21,19 +21,31 @@ namespace SimWorld.Map
         public void Register(Thing edifice)
         {
             if (edifice == null) throw new ArgumentNullException(nameof(edifice));
+            bool altersRooms = Building.RoomTracker.CanAlterRooms(edifice.def);
             foreach (IntVec3 c in edifice.OccupiedRect().Cells)
             {
                 if (!GenGrid.InBounds(c, map)) continue;
-                grid[map.cellIndices.CellToIndex(c)] = edifice;
+                int i = map.cellIndices.CellToIndex(c);
+                Thing? replaced = grid[i];
+                grid[i] = edifice;
                 // A door spawning/despawning changes whether this cell should be its own Portal region even
                 // when walkability itself doesn't flip (a Door replacing plain floor is still Standable
                 // either way) — PathGrid's own walkability-flip hook would miss exactly that case, so the
                 // region graph needs its own notification here regardless of pathCost.
                 map.regionAndRoomUpdater.Notify_DirtyCell(c);
+                // A wall or door spawning can create or split a room (system 16: Building) — the room tracker
+                // re-floods the rooms round these cells lazily off this, not every tick. A bed or a table
+                // cannot, so it only asks for the roof offers again (RoomTracker.CanAlterRooms) — as does one
+                // replacing another.
+                if (altersRooms || (replaced != null && Building.RoomTracker.CanAlterRooms(replaced.def)))
+                {
+                    map.roomTracker.Notify_DirtyCell(c);
+                }
+                else
+                {
+                    map.roomTracker.Notify_EdificeChanged();
+                }
             }
-            // An edifice spawning can create or split a room (system 16: Building) — the room tracker
-            // recomputes lazily off this, not every tick.
-            map.roomTracker.Notify_Dirty();
         }
 
         /// <summary>
@@ -47,14 +59,19 @@ namespace SimWorld.Map
         {
             if (edifice == null) throw new ArgumentNullException(nameof(edifice));
             CellRect occupied = edifice.OccupiedRect();
+            bool altersRooms = Building.RoomTracker.CanAlterRooms(edifice.def);
             foreach (IntVec3 c in occupied.Cells)
             {
                 if (!GenGrid.InBounds(c, map)) continue;
                 int i = map.cellIndices.CellToIndex(c);
-                if (ReferenceEquals(grid[i], edifice)) grid[i] = null;
+                if (ReferenceEquals(grid[i], edifice))
+                {
+                    grid[i] = null;
+                    if (altersRooms) map.roomTracker.Notify_DirtyCell(c);
+                    else map.roomTracker.Notify_EdificeChanged();
+                }
                 map.regionAndRoomUpdater.Notify_DirtyCell(c);
             }
-            map.roomTracker.Notify_Dirty();
 
             if (mode != DestroyMode.WillReplace && edifice.def.Fillage == FillCategory.Full)
             {
