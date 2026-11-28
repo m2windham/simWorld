@@ -41,15 +41,24 @@ namespace SimWorld.Tests.Building
             foreach (CoreMap map in maps)
             {
                 Thing? edifice = map.edificeGrid[cell];
-                if (kind < 45)
+                if (kind < 40)
                 {
                     if (edifice != null) continue;
-                    string def = kind < 30 ? "Wall" : kind < 36 ? "Door" : kind < 41 ? "WallEarth" : "Bed";
+                    string def = kind < 26 ? "Wall" : kind < 31 ? "Door" : kind < 36 ? "WallEarth" : "Bed";
                     if (def == "Bed" && cell.z + 1 >= SizeZ) continue;
                     if (def == "Bed" && map.edificeGrid[cell + new IntVec3(0, 0, 1)] != null) continue;
                     Thing thing = ThingMaker.MakeThing(Def(def));
                     // Most of the walls are a settlement's, so the room offers have rooms to roof.
                     if (kind % 3 != 0) thing.SetFaction(builders);
+                    GenSpawn.Spawn(thing, cell, map);
+                }
+                else if (kind < 50)
+                {
+                    // A wall swapped for another in one go, as a frame becomes the wall it was for.
+                    if (edifice == null || edifice.def.Fillage != FillCategory.Full) continue;
+                    edifice.Destroy();
+                    Thing thing = ThingMaker.MakeThing(Def(kind < 44 ? "Door" : kind < 47 ? "WallEarth" : "Wall"));
+                    thing.SetFaction(builders);
                     GenSpawn.Spawn(thing, cell, map);
                 }
                 else if (kind < 70)
@@ -88,8 +97,20 @@ namespace SimWorld.Tests.Building
             for (int r = 0; r < b.Count; r++)
             {
                 Room x = a[r], y = b[r];
-                Assert.Equal(y.Cells, x.Cells);
-                Assert.Equal(Positions(y.boundaryEdifices), Positions(x.boundaryEdifices));
+                if (y.touchesMapEdge)
+                {
+                    // A room open to the map's edge is patched in place, so its cells are the same cells in another
+                    // order (RoomTracker.TryPatchEdgeRoom); its first cell, which places it in the list, is the same.
+                    Assert.Equal(y.Cells[0], x.Cells[0]);
+                    Assert.Equal(y.Cells.OrderBy(c => c.z).ThenBy(c => c.x), x.Cells.OrderBy(c => c.z).ThenBy(c => c.x));
+                    Assert.Equal(Positions(y.boundaryEdifices).OrderBy(c => c.z).ThenBy(c => c.x),
+                        Positions(x.boundaryEdifices).OrderBy(c => c.z).ThenBy(c => c.x));
+                }
+                else
+                {
+                    Assert.Equal(y.Cells, x.Cells);
+                    Assert.Equal(Positions(y.boundaryEdifices), Positions(x.boundaryEdifices));
+                }
                 Assert.Equal(y.touchesMapEdge, x.touchesMapEdge);
                 Assert.Equal(y.anyCellUnroofed, x.anyCellUnroofed);
                 Assert.Same(x.Group, incremental.roomTracker.Groups[r]);
@@ -119,6 +140,11 @@ namespace SimWorld.Tests.Building
         [InlineData(3)]
         [InlineData(4)]
         [InlineData(5)]
+        [InlineData(6)]
+        [InlineData(7)]
+        [InlineData(8)]
+        [InlineData(9)]
+        [InlineData(10)]
         public void An_incremental_rebuild_finds_exactly_the_rooms_a_full_flood_finds(int seed)
         {
             var builders = new Faction(DefDatabase<FactionDef>.GetNamed("PlayerCivilization"), "Settlers", "F_Settlers");
@@ -130,10 +156,12 @@ namespace SimWorld.Tests.Building
             foreach (CoreMap map in maps) map.roomTracker.RoomTrackerTick();
             var rand = new RandomStream(seed);
             int roomsKept = 0;
+            int edgeRoomPatched = 0;
 
             for (int step = 0; step < 400; step++)
             {
                 var before = new HashSet<Room>(maps[0].roomTracker.Rooms);
+                var edgeSizes = maps[0].roomTracker.Rooms.Where(r => r.touchesMapEdge).ToDictionary(r => r, r => r.Cells.Count);
                 int changes = rand.Range(1, 5);
                 for (int i = 0; i < changes; i++) RandomChange(rand, maps, builders);
 
@@ -144,6 +172,7 @@ namespace SimWorld.Tests.Building
                     foreach (CoreMap map in maps) map.roomTracker.RoomTrackerTick();
                 }
                 if (maps[0].roomTracker.Rooms.Any(before.Contains)) roomsKept++;
+                if (maps[0].roomTracker.Rooms.Any(r => edgeSizes.TryGetValue(r, out int n) && n != r.Cells.Count)) edgeRoomPatched++;
                 AssertSameRooms(maps[0], maps[1], step);
             }
 
@@ -152,6 +181,8 @@ namespace SimWorld.Tests.Building
             Assert.Contains(maps[0].AllCells, c => maps[0].areaManager.BuildRoof[c]);
             // And if the incremental map really kept rooms across changes rather than re-flooding them all.
             Assert.True(roomsKept > 200, $"only {roomsKept} of 400 bursts kept any room");
+            // And patched the open ground in place, the case that matters most on a real map.
+            Assert.True(edgeRoomPatched > 50, $"only {edgeRoomPatched} of 400 bursts patched the edge room");
         }
 
         [Fact]

@@ -18,10 +18,14 @@ namespace SimWorld.Building
     /// <see cref="Room"/>, its <see cref="RoomGroup"/> and its temperature. A room is a connected run of
     /// non-wall cells, so a change can only join or split the rooms beside it, and re-flooding them from their
     /// lowest cell gives the rooms a whole-map flood would, in the same order with the same cells, walls and
-    /// roofs (RoomIncrementalRebuildTests holds it to that). What differs is the temperature of a room nothing
+    /// roofs (RoomIncrementalRebuildTests holds it to that). Two things differ. The temperature of a room nothing
     /// touched: a whole-map rebuild recomputed it as its own weighted mean, a rounding step away from where it
-    /// was, and now it simply stays. <see cref="Notify_Dirty"/> still asks for the whole map, for a load and a
-    /// roof collapse.
+    /// was, and now it simply stays. And the order of the cells in a room open to the map's edge: that room is
+    /// most of the map, and nearly every change borders it (a rock face mined, a wall raised in the open), so a
+    /// cell joining or leaving it is patched in rather than the whole map re-flooded
+    /// (<see cref="TryPatchEdgeRoom"/>). Its cells are then the same cells in a different order; it has no
+    /// walls or roof shares to sum, and the roof offers refuse it. <see cref="Notify_Dirty"/> still asks for the
+    /// whole map, for a load and a roof collapse.
     /// <para/>
     /// A region graph now exists (<c>Map.RegionGrid</c>/<c>Map.RegionAndRoomUpdater</c>) and updates
     /// incrementally, so this could be rebuilt on top of it — but rooms and regions answer different
@@ -90,6 +94,15 @@ namespace SimWorld.Building
         private readonly List<Room> tmpAffectedList = new List<Room>();
         private readonly List<Room> tmpNewRooms = new List<Room>();
         private readonly List<Room> tmpMergedRooms = new List<Room>();
+        private readonly List<int> tmpSlowCells = new List<int>();
+        private readonly List<int> tmpPatchCells = new List<int>();
+
+        // The map-edge room TryPatchEdgeRoom patched this rebuild, which the flood leaves alone.
+        private Room? patchedRoom;
+
+        // The eight cells round a cell, clockwise from north; the even ones are its cardinal neighbours.
+        private static readonly int[] RingX = { 0, 1, 1, 1, 0, -1, -1, -1 };
+        private static readonly int[] RingZ = { 1, 1, 0, -1, -1, -1, 0, 1 };
 
         private List<int>? pendingSeedX;
         private List<int>? pendingSeedZ;
@@ -440,9 +453,12 @@ namespace SimWorld.Building
             IntVec3[] dirs = GenAdj.CardinalDirections;
             int lo = int.MaxValue, hi = -1;
 
-            for (int i = 0; i < dirtyCells.Count; i++)
+            patchedRoom = TryPatchEdgeRoom();
+            List<int> slowCells = patchedRoom != null ? tmpSlowCells : dirtyCells;
+
+            for (int i = 0; i < slowCells.Count; i++)
             {
-                int index = dirtyCells[i];
+                int index = slowCells[i];
                 AddAffected(cellToRoom[index]);
                 int x = index % sizeX;
                 int z = index / sizeX;
@@ -454,7 +470,7 @@ namespace SimWorld.Building
                     AddAffected(cellToRoom[nz * sizeX + nx]);
                 }
             }
-            for (int i = 0; i < dirtyCells.Count; i++) MarkReflood(dirtyCells[i], ref lo, ref hi);
+            for (int i = 0; i < slowCells.Count; i++) MarkReflood(slowCells[i], ref lo, ref hi);
             for (int r = 0; r < tmpAffectedList.Count; r++)
             {
                 List<IntVec3> cells = tmpAffectedList[r].cells;
@@ -497,12 +513,204 @@ namespace SimWorld.Building
             tmpNewRooms.Clear();
             tmpAffectedRooms.Clear();
             tmpAffectedList.Clear();
+            tmpSlowCells.Clear();
+            tmpPatchCells.Clear();
+            patchedRoom = null;
             CollectDoors();
         }
 
         private void AddAffected(Room? room)
         {
-            if (room != null && tmpAffectedRooms.Add(room)) tmpAffectedList.Add(room);
+            if (room != null && room != patchedRoom && tmpAffectedRooms.Add(room)) tmpAffectedList.Add(room);
+        }
+
+        /// <summary>
+        /// Patches the room open to the map's edge in place for every dirty cell that borders it, when that can be
+        /// done exactly, and returns it; the cells left for the flood are in <see cref="tmpSlowCells"/>. Null, with
+        /// nothing changed, when it cannot, and every dirty cell is flooded as usual.
+        /// <para/>
+        /// It can when the changes are a few cells apart (so no two of them meet), one edge room is concerned, and
+        /// each change is one of: a cell opening beside that room and no other (it joins); a cell inside it
+        /// closing, away from the map's edge and not its first cell, whose open neighbours still meet round the
+        /// eight cells about it (it leaves, and the room cannot have split); a cell of it whose roof changed; or a
+        /// wall beside it swapped for another (rooms on its far side are flooded as usual). The room keeps its
+        /// first cell, so its place in the list, and stays at the map's edge, so it stays outdoors with no walls
+        /// or roof shares to keep. Its boundary is the set a flood would find: the walls beside a cell that joins
+        /// are added, a wall that left the grid is dropped, and a wall beside a cell that leaves is dropped
+        /// unless it still touches the room.
+        /// </summary>
+        private Room? TryPatchEdgeRoom()
+        {
+            tmpSlowCells.Clear();
+            tmpPatchCells.Clear();
+            int sizeX = map.Size.x;
+            int sizeZ = map.Size.z;
+            IntVec3[] dirs = GenAdj.CardinalDirections;
+
+            for (int i = 0; i < dirtyCells.Count; i++)
+            {
+                for (int j = i + 1; j < dirtyCells.Count; j++)
+                {
+                    int dx = Math.Abs(dirtyCells[i] % sizeX - dirtyCells[j] % sizeX);
+                    int dz = Math.Abs(dirtyCells[i] / sizeX - dirtyCells[j] / sizeX);
+                    if (dx < 3 && dz < 3) return null;
+                }
+            }
+
+            Room? edge = null;
+            for (int i = 0; i < dirtyCells.Count; i++)
+            {
+                int index = dirtyCells[i];
+                int x = index % sizeX;
+                int z = index / sizeX;
+                bool open = !IsFullEdifice(new IntVec3(x, 0, z));
+                Room? old = cellToRoom[index];
+                Room? edgeHere = old != null && old.touchesMapEdge ? old : null;
+                bool other = old != null && !old.touchesMapEdge;
+                for (int d = 0; d < dirs.Length; d++)
+                {
+                    int nx = x + dirs[d].x;
+                    int nz = z + dirs[d].z;
+                    if (nx < 0 || nx >= sizeX || nz < 0 || nz >= sizeZ) continue;
+                    if (IsFullEdifice(new IntVec3(nx, 0, nz))) continue;
+                    Room? r = cellToRoom[nz * sizeX + nx];
+                    if (r == null) return null;
+                    if (!r.touchesMapEdge) other = true;
+                    else if (edgeHere == null) edgeHere = r;
+                    else if (edgeHere != r) return null;
+                }
+                if (edgeHere == null)
+                {
+                    tmpSlowCells.Add(index);
+                    continue;
+                }
+                if (edge == null) edge = edgeHere;
+                else if (edge != edgeHere) return null;
+
+                int first = IndexOf(edge.cells[0]);
+                if (open && old == null)
+                {
+                    if (other || index < first) return null;
+                }
+                else if (!open && old == edge)
+                {
+                    bool onEdge = x == 0 || z == 0 || x == sizeX - 1 || z == sizeZ - 1;
+                    if (other || index == first || onEdge || !OpenNeighboursMeetRoundRing(x, z)) return null;
+                }
+                else if (open && old == edge)
+                {
+                    if (other) return null;
+                }
+                else if (!open && old == null)
+                {
+                    if (other) tmpSlowCells.Add(index);
+                }
+                else
+                {
+                    return null;
+                }
+                tmpPatchCells.Add(index);
+            }
+            if (edge == null) return null;
+
+            bool sweep = false;
+            for (int i = 0; i < tmpPatchCells.Count; i++)
+            {
+                int index = tmpPatchCells[i];
+                int x = index % sizeX;
+                int z = index / sizeX;
+                var cell = new IntVec3(x, 0, z);
+                bool open = !IsFullEdifice(cell);
+                Room? old = cellToRoom[index];
+                if (open && old == null)
+                {
+                    edge.cells.Add(cell);
+                    cellToRoom[index] = edge;
+                    visited[index] = true;
+                    for (int d = 0; d < dirs.Length; d++)
+                    {
+                        IntVec3 n = cell + dirs[d];
+                        if (GenGrid.InBounds(n, map) && IsFullEdifice(n)) edge.boundaryEdifices.Add(map.edificeGrid[n]!);
+                    }
+                    sweep = true;
+                }
+                else if (!open && old == edge)
+                {
+                    edge.cells.Remove(cell);
+                    cellToRoom[index] = null;
+                    visited[index] = false;
+                    edge.boundaryEdifices.Add(map.edificeGrid[cell]!);
+                    for (int d = 0; d < dirs.Length; d++)
+                    {
+                        IntVec3 n = cell + dirs[d];
+                        if (!GenGrid.InBounds(n, map) || !IsFullEdifice(n)) continue;
+                        Thing wall = map.edificeGrid[n]!;
+                        if (!StillBounds(wall, edge)) edge.boundaryEdifices.Remove(wall);
+                    }
+                }
+                else if (!open)
+                {
+                    edge.boundaryEdifices.Add(map.edificeGrid[cell]!);
+                    sweep = true;
+                }
+            }
+            if (sweep) edge.boundaryEdifices.RemoveWhere(t => !t.Spawned || !ReferenceEquals(map.edificeGrid[t.Position], t));
+
+            edge.anyCellUnroofed = false;
+            for (int i = 0; i < edge.cells.Count && !edge.anyCellUnroofed; i++)
+            {
+                if (!map.roofGrid.Roofed(edge.cells[i])) edge.anyCellUnroofed = true;
+            }
+            return edge;
+        }
+
+        /// <summary>Whether the open cardinal neighbours of (<paramref name="x"/>, <paramref name="z"/>) lie on one
+        /// unbroken run of open cells round the eight about it, so they still meet without it. Two runs may still
+        /// meet further off; that is left to a flood.</summary>
+        private bool OpenNeighboursMeetRoundRing(int x, int z)
+        {
+            Span<bool> open = stackalloc bool[8];
+            int start = -1;
+            for (int i = 0; i < 8; i++)
+            {
+                var c = new IntVec3(x + RingX[i], 0, z + RingZ[i]);
+                open[i] = GenGrid.InBounds(c, map) && !IsFullEdifice(c);
+                if (!open[i] && start < 0) start = i;
+            }
+            if (start < 0) return true;
+            int runs = 0;
+            bool inRun = false, runHasCardinal = false;
+            for (int k = 1; k <= 8; k++)
+            {
+                int i = (start + k) % 8;
+                if (open[i])
+                {
+                    if (!inRun) runHasCardinal = false;
+                    inRun = true;
+                    if (i % 2 == 0) runHasCardinal = true;
+                }
+                else if (inRun)
+                {
+                    if (runHasCardinal) runs++;
+                    inRun = false;
+                }
+            }
+            return runs <= 1;
+        }
+
+        /// <summary>Whether some cell of <paramref name="wall"/> still has a cardinal neighbour in <paramref name="room"/>.</summary>
+        private bool StillBounds(Thing wall, Room room)
+        {
+            IntVec3[] dirs = GenAdj.CardinalDirections;
+            foreach (IntVec3 c in wall.OccupiedRect().Cells)
+            {
+                for (int d = 0; d < dirs.Length; d++)
+                {
+                    IntVec3 n = c + dirs[d];
+                    if (GenGrid.InBounds(n, map) && RoomAt(n) == room) return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>Queues a cell for the incremental flood: forgets its room, remembering it for the temperature
