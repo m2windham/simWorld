@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using SimWorld.AI;
+using SimWorld.Building;
+using SimWorld.Map;
 using SimWorld.Pawns;
 using SimWorld.Things;
 using SimWorld.Work;
@@ -24,11 +26,11 @@ namespace SimWorld.Filth
     /// whole <c>listerThings</c> group per scan. If filth counts ever make that hurt, the cached lister is
     /// the fix and it is a drop-in.
     /// <para/>
-    /// <b>Trim — one pile per job.</b> RimWorld's giver packs up to 15 nearby pieces of filth from the same
-    /// room into <c>job.targetQueueA</c> so the pawn cleans a whole patch without re-deciding. This issues one
-    /// job per pile and lets <see cref="WorkGiverScanUtility"/> pick the next nearest immediately afterwards,
-    /// which lands the pawn in the same place by the same route with more job churn and no queue-draining
-    /// toils to get wrong. Noted as a deviation rather than pretended away.
+    /// <b>A patch per job, as in RimWorld.</b> <see cref="JobOnThing"/> packs up to
+    /// <see cref="MaxPilesPerJob"/> nearby piles from the same room into the job, so the pawn cleans a whole
+    /// patch without re-deciding. This port used to issue one job per pile and let
+    /// <see cref="WorkGiverScanUtility"/> find the next nearest one afterwards — the same patch by much the same
+    /// route, but a full work scan after every pile, about a tenth of a Bronze-age town's tick.
     /// </summary>
     public sealed class WorkGiver_CleanFilth : WorkGiver_Scanner
     {
@@ -78,7 +80,85 @@ namespace SimWorld.Filth
             return pawn.Map!.reservationManager.CanReserve(pawn, filth);
         }
 
-        public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false) =>
-            new Job(CleaningJobDefOf.Clean, thing);
+        /// <summary>
+        /// The most piles one job takes (RimWorld: the <c>num = 15</c> in <c>WorkGiver_CleanFilth.JobOnThing</c>,
+        /// recalled rather than read). It is checked after each cell, as there, so a cell holding two piles can
+        /// take a job one past it.
+        /// </summary>
+        public const int MaxPilesPerJob = 15;
+
+        /// <summary>How many cells of <see cref="GenRadial.RadialPattern"/> round the first pile are searched
+        /// for more (RimWorld: the loop to 100 in the same method, recalled), a radius of a little under six.</summary>
+        public const int NearbyCellsSearched = 100;
+
+        /// <summary>A queue at least this long is put in order of distance from the cleaner (RimWorld: the
+        /// <c>Count &gt;= 5</c> before its <c>SortBy</c>, recalled).</summary>
+        public const int SortQueueFrom = 5;
+
+        private static readonly List<LocalTargetInfo> tmpPiles = new List<LocalTargetInfo>();
+
+        /// <summary>
+        /// The pile the scan found, and every other pile of cleaning work this pawn could take in the cells round
+        /// it that belong to the same room or are a door into it (RimWorld: <c>WorkGiver_CleanFilth.JobOnThing</c>
+        /// and its <c>ShouldClean</c>, where a door is its own portal room linked to the rooms either side; here a
+        /// door has no room, so a door cell counts when a cardinal neighbour is in the room). A pile on a door,
+        /// whose room is the door itself, takes only itself.
+        /// </summary>
+        public override Job? JobOnThing(Pawn pawn, Thing thing, bool forced = false)
+        {
+            Map.Map map = thing.Map!;
+            Room? room = map.roomTracker.RoomAt(thing.Position);
+            tmpPiles.Clear();
+            tmpPiles.Add(thing);
+            IReadOnlyList<IntVec3> pattern = GenRadial.RadialPattern;
+            for (int i = 0; room != null && i < NearbyCellsSearched; i++)
+            {
+                IntVec3 c = thing.Position + pattern[i];
+                if (!ShouldClean(map, c, room)) continue;
+                IReadOnlyList<Thing> things = map.thingGrid.ThingsListAt(c);
+                for (int j = 0; j < things.Count; j++)
+                {
+                    Thing t = things[j];
+                    if (t != thing && HasJobOnThing(pawn, t, forced)) tmpPiles.Add(t);
+                }
+                if (tmpPiles.Count >= MaxPilesPerJob) break;
+            }
+
+            // Stable, so equally distant piles keep the order the radial search found them in.
+            if (tmpPiles.Count >= SortQueueFrom)
+            {
+                IntVec3 from = pawn.Position;
+                for (int i = 1; i < tmpPiles.Count; i++)
+                {
+                    LocalTargetInfo pile = tmpPiles[i];
+                    int d = pile.Cell.DistanceToSquared(from);
+                    int k = i - 1;
+                    while (k >= 0 && tmpPiles[k].Cell.DistanceToSquared(from) > d)
+                    {
+                        tmpPiles[k + 1] = tmpPiles[k];
+                        k--;
+                    }
+                    tmpPiles[k + 1] = pile;
+                }
+            }
+
+            var job = new Job(CleaningJobDefOf.Clean, tmpPiles[0]);
+            for (int i = 1; i < tmpPiles.Count; i++) job.AddQueuedTarget(TargetIndex.A, tmpPiles[i]);
+            tmpPiles.Clear();
+            return job;
+        }
+
+        private static bool ShouldClean(Map.Map map, IntVec3 c, Room room)
+        {
+            if (!GenGrid.InBounds(c, map)) return false;
+            if (ReferenceEquals(map.roomTracker.RoomAt(c), room)) return true;
+            if (!(map.edificeGrid[c] is Door)) return false;
+            for (int d = 0; d < 4; d++)
+            {
+                IntVec3 n = c + GenAdj.CardinalDirections[d];
+                if (GenGrid.InBounds(n, map) && ReferenceEquals(map.roomTracker.RoomAt(n), room)) return true;
+            }
+            return false;
+        }
     }
 }
