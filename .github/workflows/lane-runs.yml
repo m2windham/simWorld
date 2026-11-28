@@ -15,12 +15,11 @@ concurrency:
 
 jobs:
   suite:
-    if: false
     strategy:
       fail-fast: false
       matrix:
         ref:
-          - { name: r13, sha: 715d3b2494b8b6290b35da56c2b996c5a7edd692 }
+          - { name: baby, sha: 2a5c220614e48dee5394acb64ffd44d8f15aebc7 }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -77,15 +76,14 @@ jobs:
         with: { name: "bench-${{ matrix.ref.name }}-threats-${{ matrix.threats }}-${{ matrix.shard.n }}", path: out }
 
   arc:
-    if: false
     strategy:
       fail-fast: false
       matrix:
         run:
-          - { name: r13-20-99-on, sha: 715d3b2494b8b6290b35da56c2b996c5a7edd692, threats: "true", pop: "20:99" }
-          - { name: r13-40-201-on, sha: 715d3b2494b8b6290b35da56c2b996c5a7edd692, threats: "true", pop: "40:201" }
-          - { name: r13-20-101-on, sha: 715d3b2494b8b6290b35da56c2b996c5a7edd692, threats: "true", pop: "20:101" }
-          - { name: r13-40-201-off, sha: 715d3b2494b8b6290b35da56c2b996c5a7edd692, threats: "false", pop: "40:201" }
+          - { name: baby-20-99-on, sha: 2a5c220614e48dee5394acb64ffd44d8f15aebc7, threats: "true", pop: "20:99" }
+          - { name: baby-40-201-on, sha: 2a5c220614e48dee5394acb64ffd44d8f15aebc7, threats: "true", pop: "40:201" }
+          - { name: baby-20-101-on, sha: 2a5c220614e48dee5394acb64ffd44d8f15aebc7, threats: "true", pop: "20:101" }
+          - { name: baby-40-201-off, sha: 2a5c220614e48dee5394acb64ffd44d8f15aebc7, threats: "false", pop: "40:201" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
@@ -104,33 +102,3 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: "arc-${{ matrix.run.name }}", path: arc.txt }
-
-  save:
-    strategy:
-      fail-fast: false
-      matrix:
-        run:
-          - { name: r13-20-101-on-d540, sha: 715d3b2494b8b6290b35da56c2b996c5a7edd692, threats: "true", pop: "20:101", day: 540 }
-          - { name: r13-20-101-on-d582, sha: 715d3b2494b8b6290b35da56c2b996c5a7edd692, threats: "true", pop: "20:101", day: 582 }
-    name: save ${{ matrix.run.name }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 330
-    steps:
-      - uses: actions/checkout@v4
-        with: { ref: "${{ matrix.run.sha }}" }
-      - uses: actions/setup-dotnet@v4
-        with: { global-json-file: global.json }
-      - run: dotnet build tools/bench/SimWorld.Bench -c Release
-      - name: Arc to the save day
-        env:
-          POP: ${{ matrix.run.pop }}
-        run: |
-          set -o pipefail +e
-          timeout 300m dotnet run -c Release --no-build --project tools/bench/SimWorld.Bench -- --suite arc --days ${{ matrix.run.day }} --arc-every 30 --solo false --threats ${{ matrix.run.threats }} --band "${POP%%:*}" --seed "${POP##*:}" --death-detail true --save-at ${{ matrix.run.day }} --save-path "$PWD/game.xml" 2>&1 | tee arc.txt; rc=$?; echo "arc exit $rc" | tee -a arc.txt; gzip -k game.xml; exit $rc
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: "save-${{ matrix.run.name }}"
-          path: |
-            arc.txt
-            game.xml.gz
