@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <!--
+    Warm clothes (exposure4 lane). The tailor made only shirts (Recipes_Crafting.xml), so a child born in the
+    settlement grew up in one shirt (Insulation_Cold 4: comfortable from 12 C, in danger below 2 C) while the founders
+    still wore the robes, pants and parkas they were generated in. In the 600-day arc on 40/201 a quake opened the
+    houses in a -11 C frost: every adult lived and eleven children died. The children were not weaker, they were
+    undressed.
+
+    RimWorld's tailor makes tribalwear, pants and the parka (recalled, not read), and Biotech dresses children in
+    child-sized versions of the same garments (rimworldwiki.com Children page, read: "kid tribalwear", "kid pants",
+    "kid parka"). This port has no garment sizes: every garment fits every wearer, so the settlement tailors the
+    adult garment and a child wears it. OutfittingInitiative already sizes each bill by the citizens with nothing
+    on that layer, so these need no code.
+
+    The robe and the parka are of tanned hide, so they wait for Tanning ("cured hide resists rot and cold"), as the
+    hide coat does (Recipes_Armoury.xml), and like it they are made of no stuff. RimWorld's parka needs its own
+    research (recalled); here Tanning stands in for it. Pants are cloth, as the shirt is. The parka's 80 is
+    RimWorld's cost in stuff (recalled); the other counts and every work amount are this port's own, set beside the
+    hide coat's and the shirt's, not sourced.
+  -->
+
+  <RecipeDef>
+    <defName>Make_Apparel_TribalRobe</defName>
+    <researchPrerequisites>
+      <li>Tanning</li>
+    </researchPrerequisites>
+    <label>tailor a tribal robe</label>
+    <jobString>Tailoring a tribal robe.</jobString>
+    <workAmount>900</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Leather_Plain</li></thingDefs></filter>
+        <count>40</count>
+      </li>
+    </ingredients>
+    <products><Apparel_TribalRobe>1</Apparel_TribalRobe></products>
+    <recipeUsers><li>TableTailor</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Apparel_Pants</defName>
+    <label>tailor pants</label>
+    <jobString>Tailoring pants.</jobString>
+    <workAmount>600</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Cloth</li></thingDefs></filter>
+        <count>40</count>
+      </li>
+    </ingredients>
+    <productHasIngredientStuff>true</productHasIngredientStuff>
+    <products><Apparel_Pants>1</Apparel_Pants></products>
+    <recipeUsers><li>TableTailor</li></recipeUsers>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>Make_Apparel_Parka</defName>
+    <researchPrerequisites>
+      <li>Tanning</li>
+    </researchPrerequisites>
+    <label>tailor a parka</label>
+    <jobString>Tailoring a parka.</jobString>
+    <workAmount>1500</workAmount>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter><thingDefs><li>Leather_Plain</li></thingDefs></filter>
+        <count>80</count>
+      </li>
+    </ingredients>
+    <products><Apparel_Parka>1</Apparel_Parka></products>
+    <recipeUsers><li>TableTailor</li></recipeUsers>
+  </RecipeDef>
+
+</Defs>

@@ -67,8 +67,9 @@ namespace SimWorld.AI
         protected override Job? TryGiveJob(Pawn pawn)
         {
             if (pawn.needs.rest == null || pawn.Map == null) return null;
-            // The household's own dwelling first, as RimWorld tries a pawn's owned bed first; then any bed.
-            Thing? bed = Building.DwellingUtility.FindDwellingBedFor(pawn) ?? RestUtility.FindBedFor(pawn);
+            // The household's own dwelling first, as RimWorld tries a pawn's owned bed first, while it is out of the
+            // cold; then a bed that is (exposure4 lane, RestUtility.FindRestBedFor); then home anyway, then any bed.
+            Thing? bed = RestUtility.FindRestBedFor(pawn, pawn);
             return bed != null ? new Job(JobDefOf.LayDown, bed) : new Job(JobDefOf.LayDown, pawn.Position);
         }
     }

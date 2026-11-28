@@ -216,6 +216,10 @@ namespace SimWorld.Tests.Building
 
         // ---- the shape ----
 
+        /// <summary>The beds the biggest ring holds: a bed for the largest founding band but one, whose slot is the
+        /// dormitory's hearth (exposure4 lane).</summary>
+        private static int BiggestRingBeds => SettlementTuning.FoundingBandRange.max - 1;
+
         [Fact]
         public void A_founding_band_plans_its_beds_in_a_block_inside_a_ring_with_a_door_in_the_east_side()
         {
@@ -226,8 +230,9 @@ namespace SimWorld.Tests.Building
                 Settlement settlement = Band(citizens, storedWood: WoodFor(3));
                 RunUntilSettled(settlement, map);
 
-                // Every citizen's bed is inside the ring, and the storage it wanted is against the ring.
-                HashSet<IntVec3> inside = AssertIsACompound(map, bedsInside: citizens);
+                // Every citizen's bed is inside the ring but the biggest band's last (one slot is the dormitory's
+                // hearth, exposure4 lane), and the storage it wanted is against the ring.
+                HashSet<IntVec3> inside = AssertIsACompound(map, bedsInside: Math.Min(citizens, BiggestRingBeds));
                 Assert.Equal(citizens, Sites(map, Bed).Count);
                 HashSet<IntVec3> walls = CellsOf(Sites(map, StoneWallMaterials.IsWall));
                 List<CellRect> huts = Sites(map, Hut);
@@ -589,7 +594,7 @@ namespace SimWorld.Tests.Building
                 BuildEverythingPlanned(map); // so the home area grows the way it does in a game
             }
 
-            HashSet<IntVec3> inside = AssertIsACompound(map, bedsInside: SettlementTuning.FoundingBandRange.max);
+            HashSet<IntVec3> inside = AssertIsACompound(map, bedsInside: BiggestRingBeds);
             List<CellRect> beds = Sites(map, Bed);
             Assert.Equal(citizens, beds.Count);
             HashSet<IntVec3> walls = CellsOf(Sites(map, StoneWallMaterials.IsWall));

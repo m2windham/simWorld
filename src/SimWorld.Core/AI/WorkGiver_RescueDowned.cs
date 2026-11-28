@@ -54,8 +54,11 @@ namespace SimWorld.AI
             // carried home when home has a bed for it (below).
             // ... unless it is a baby and home has gone cold with nothing to burn (BabySafetyUtility): then it is
             // brought to safety, as RimWorld moves a baby out of a crib whose room is too cold.
+            // So is anybody downed in a home the cold has got into (exposure4 lane): BedFor then finds a bed out of
+            // the cold, or none and there is no job.
             if (patient.InBed() && Building.DwellingUtility.IsOwnHomeBed(patient, patient.CurrentBed()!)
-                && !BabySafetyUtility.NeedsMovingForTemperature(patient)) return false;
+                && !BabySafetyUtility.NeedsMovingForTemperature(patient)
+                && (BabySafetyUtility.IsBabyOnMap(patient) || RestUtility.IsSafeTemperatureBed(patient, patient.CurrentBed()!))) return false;
             if (!DoctorUtility.IsCaredForBy(pawn, patient)) return false;
             if (BedFor(patient, pawn) == null) return false;
             if (!Reachability.CanReach(pawn, patient, PathEndMode)) return false;
@@ -93,11 +96,7 @@ namespace SimWorld.AI
         internal static Thing? BedFor(Pawn patient, Pawn rescuer)
         {
             Thing? home = Building.DwellingUtility.FindDwellingBedFor(patient, rescuer);
-            if (!BabySafetyUtility.IsBabyOnMap(patient))
-            {
-                if (home != null) return home;
-                return patient.InBed() ? null : RestUtility.FindBedFor(patient, rescuer);
-            }
+            if (!BabySafetyUtility.IsBabyOnMap(patient)) return PatientBedFor(patient, rescuer, home);
 
             if (home != null && BabySafetyUtility.IsSafeBedFor(patient, home)) return home;
             if (BabySafetyUtility.NeedsMovingForTemperature(patient))
@@ -115,6 +114,26 @@ namespace SimWorld.AI
             if (lying != null && Building.DwellingUtility.IsOwnHomeBed(patient, lying)) return null;
             if (home != null) return home;
             return lying != null ? null : RestUtility.FindBedFor(patient, rescuer);
+        }
+
+        /// <summary>
+        /// The bed for a downed patient who is not a baby: home while home is safe from the cold, as before; else a bed
+        /// that is (<see cref="RestUtility.IsSafeTemperatureBed"/>), RimWorld's <c>Danger.None</c> pass of
+        /// <c>FindBedFor</c>; else home anyway, or with no home the nearest. A patient already lying somewhere safe is
+        /// not carried to an unsafe home, nor moved from one bed of its own house to another. Exposure4 lane: in the
+        /// 600-day 40/201 arc children downed by the frost in the dormitory were carried home to houses a quake had
+        /// opened, at -8 C, and died there.
+        /// </summary>
+        private static Thing? PatientBedFor(Pawn patient, Pawn rescuer, Thing? home)
+        {
+            if (home != null && RestUtility.IsSafeTemperatureBed(patient, home)) return home;
+            Thing? lying = patient.CurrentBed();
+            if (lying != null && RestUtility.IsSafeTemperatureBed(patient, lying)) return null;
+            Thing? safe = RestUtility.FindBedFor(patient, rescuer, safeOnly: true);
+            if (safe != null) return safe;
+            if (lying != null && Building.DwellingUtility.IsOwnHomeBed(patient, lying)) return null;
+            if (home != null) return home;
+            return lying != null ? null : RestUtility.FindBedFor(patient, rescuer, safeOnly: false);
         }
     }
 }

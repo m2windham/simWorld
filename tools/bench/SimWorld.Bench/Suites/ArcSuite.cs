@@ -122,6 +122,12 @@ namespace SimWorld.Bench.Suites
                     }
                 }
 
+                if (opt.SaveAtDay > 0 && day == opt.SaveAtDay && opt.SavePath != null)
+                {
+                    Scribe.SaveToFile(game, "game", opt.SavePath);
+                    Console.WriteLine("saved day " + day + " to " + opt.SavePath);
+                }
+
                 if (day % every != 0 && day != opt.Days) continue;
 
                 SimWorld.World.Settlement current = game.CivilizationTarget.Seat ?? home;
@@ -163,7 +169,7 @@ namespace SimWorld.Bench.Suites
             Console.WriteLine(DwellingReading.Line(game.CivilizationTarget.Seat ?? home));
         }
 
-        private static DifficultyDef MediumWithoutThreats() => new DifficultyDef
+        internal static DifficultyDef MediumWithoutThreats() => new DifficultyDef
         {
             defName = "MediumWithoutThreats",
             threatScale = DifficultyDefOf.Medium.threatScale,
