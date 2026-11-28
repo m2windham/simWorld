@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         ref:
-          - { name: r11fix, sha: c1e5249262e0b9d55d9d9621aa66824c2aaf49fd }
+          - { name: r11fix-e5, sha: 9bd5132b3baa3dd50aa4de2bd90f1a2278c3b6f6 }
     name: suite ${{ matrix.ref.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -80,13 +80,14 @@ jobs:
       fail-fast: false
       matrix:
         run:
-          - { name: fix-20-101-on, sha: c1e5249262e0b9d55d9d9621aa66824c2aaf49fd, threats: "true", pop: "20:101" }
-          - { name: fix-20-99-on, sha: c1e5249262e0b9d55d9d9621aa66824c2aaf49fd, threats: "true", pop: "20:99" }
-          - { name: fix-40-201-on, sha: c1e5249262e0b9d55d9d9621aa66824c2aaf49fd, threats: "true", pop: "40:201" }
-          - { name: fix-40-201-off, sha: c1e5249262e0b9d55d9d9621aa66824c2aaf49fd, threats: "false", pop: "40:201" }
-          - { name: tc3-40-201-off, sha: bde643e924aaad8354cfa649a3e2835d85abdf3d, threats: "false", pop: "40:201" }
-          - { name: street-40-201-off, sha: 6f79f6b6a40f7f320068ae51e2a50caeb11032a9, threats: "false", pop: "40:201" }
-          - { name: comfort-40-201-off, sha: 3360a9555cf7f53d512c06feaff2ee073141380a, threats: "false", pop: "40:201" }
+          - { name: fixe5-20-101-on, sha: 9bd5132b3baa3dd50aa4de2bd90f1a2278c3b6f6, threats: "true", pop: "20:101" }
+          - { name: fixe5-20-99-on, sha: 9bd5132b3baa3dd50aa4de2bd90f1a2278c3b6f6, threats: "true", pop: "20:99" }
+          - { name: fixe5-40-201-on, sha: 9bd5132b3baa3dd50aa4de2bd90f1a2278c3b6f6, threats: "true", pop: "40:201" }
+          - { name: fixe5-40-201-off, sha: 9bd5132b3baa3dd50aa4de2bd90f1a2278c3b6f6, threats: "false", pop: "40:201" }
+          - { name: e5-20-101-on, sha: 15d734911c30655ea61fbe309158724cbe78c46c, threats: "true", pop: "20:101" }
+          - { name: e5-20-99-on, sha: 15d734911c30655ea61fbe309158724cbe78c46c, threats: "true", pop: "20:99" }
+          - { name: e5-40-201-on, sha: 15d734911c30655ea61fbe309158724cbe78c46c, threats: "true", pop: "40:201" }
+          - { name: e5-40-201-off, sha: 15d734911c30655ea61fbe309158724cbe78c46c, threats: "false", pop: "40:201" }
     name: arc ${{ matrix.run.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 330
