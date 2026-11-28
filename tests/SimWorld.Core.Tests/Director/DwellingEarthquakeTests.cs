@@ -17,9 +17,9 @@ using CoreMap = SimWorld.Map.Map;
 namespace SimWorld.Tests.Director
 {
     /// <summary>
-    /// A household's house is walls and beds an earthquake brings down like any other, and whoever sleeps in it is
-    /// hurt by it, the same risk a dormitory bed carries (<see cref="EarthquakeFootprintTests"/>). Set up as that
-    /// file sets up its sleeper; a file of its own rather than an addition to it.
+    /// A household's house is walls and beds an earthquake brings down like any other. Whoever sleeps in it is
+    /// hurt only if its roof falls on them (<see cref="EarthquakeRoofTests"/>): a pit house is six cells across,
+    /// so the banks the quake leaves standing are well inside RimWorld's support distance and hold the roof.
     /// </summary>
     [Collection("GlobalDefs")]
     public class DwellingEarthquakeTests : ContentTestBase
@@ -35,11 +35,12 @@ namespace SimWorld.Tests.Director
         }
 
         [Fact]
-        public void A_house_that_comes_down_hurts_the_household_sleeping_in_it()
+        public void A_house_the_quake_breaks_under_a_standing_roof_hurts_nobody_in_it()
         {
             CoreMap map = new CoreMap(24, 24, TerrainDefOf.Soil);
             var settlement = new Settlement(WorldObjectDefOf.Settlement, 0, null, "Quaketown", 0);
             Dwelling house = SimWorld.Tests.Building.ShelterKit.Raise(map, SimWorld.Tests.Building.ShelterKit.Rung("House_Meso"), new IntVec3(8, 0, 8));
+            SimWorld.Tests.Building.ShelterKit.Roof(map, house);
             var beds = house.Beds(map);
             Assert.Equal(3, beds.Count);
             int earthBefore = map.listerThings.ThingsOfDef(ShelterThingDefOf.WallEarth).Count;
@@ -64,8 +65,11 @@ namespace SimWorld.Tests.Director
             Assert.True(house.Beds(map).Count < 3, "a bed of the house must come down");
             Assert.True(map.listerThings.ThingsOfDef(ShelterThingDefOf.WallEarth).Count < earthBefore, "the dug bank is a structure the quake knows");
             Assert.False(house.IsComplete(map));
-            // Hurt, not killed: a fallen bed is RimWorld's built-roof hit (IncidentWorker_Earthquake).
-            Assert.Contains(sleepers, p => !p.Dead && p.health.hediffSet.hediffs.Count > 0);
+            foreach (Pawn p in sleepers)
+            {
+                Assert.True(map.roofGrid.Roofed(p.Position), "the standing banks hold the roof over every bed");
+                Assert.Empty(p.health.hediffSet.hediffs);
+            }
         }
     }
 }

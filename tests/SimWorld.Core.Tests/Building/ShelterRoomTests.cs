@@ -466,7 +466,8 @@ namespace SimWorld.Tests.Building
             }
 
             map.outdoorTemperature = 0f;
-            Assert.Equal(2, SettlementClimate.Tick(settlement, map));
+            // Each house's hearth, and the dormitory's (exposure4 lane).
+            Assert.Equal(houses.Count + 1, SettlementClimate.Tick(settlement, map));
             Assert.All(houses, d => Assert.Same(ShelterThingDefOf.Campfire,
                 ((Blueprint)At(map, d.Spots(DwellingPartKind.HearthSpot).Single(), t => t is Blueprint)!).EntityToBuild));
         }

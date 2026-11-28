@@ -29,43 +29,34 @@ namespace SimWorld.Director
     /// exists for: a threat that only costs something while the player happens to be looking is free to
     /// ignore, and free-to-ignore is the failure mode <c>docs/design/phase-2-pressure.md</c> is about.
     ///
-    /// <para/><b>Watched-map damage is direct <see cref="Thing.TakeDamage"/>, not
-    /// <see cref="Building.RoofCollapserImmediate"/>.</b> That class is the obvious first reach — tested,
-    /// already crushes whatever a roof falls on — but its <c>DropRoofInCells</c> only acts where
-    /// <c>map.roofGrid.Roofed(cell)</c> is true, and in this port that grid is painted once, at map generation,
-    /// over mountain and cave cells only (<see cref="MapGen.GenStep_Roofs"/>) — a settlement's own constructed
-    /// rooms are never roofed at all (no auto-roof-growth-from-walls exists here). Scattering cells by
-    /// "currently roofed" would therefore almost always miss the very walls and beds a settlement actually
-    /// built, on any map that is not itself a mountain interior — a poor fit for an incident whose whole point
-    /// is to cost a settlement its own buildings. Damaging the buildings directly is the honest answer instead:
-    /// it reaches exactly the <see cref="ThingDef"/>s <see cref="World.Settlement.StructureCount"/> already
-    /// tracks, watched or not, with no dependency on where the map generator happened to paint rock.
+    /// <para/><b>The quake breaks buildings; only a roof hurts people.</b> Watched-map damage is direct
+    /// <see cref="Thing.TakeDamage"/> on the structures <see cref="World.Settlement.StructureCount"/> tracks.
+    /// A wall that goes is a roof holder leaving the map, so <see cref="Map.EdificeGrid"/> asks RimWorld's own
+    /// question of the roof it held (<see cref="Building.RoofCollapseCellsFinder"/>: is a roofed cell now
+    /// farther than <see cref="Building.RoofCollapseUtility.RoofMaxSupportDistance"/> from any holder, or cut
+    /// off from every holder), and whatever falls lands on what is under it through
+    /// <see cref="Building.RoofCollapserImmediate"/>: 15–30 Crush on the head and shoulders for a built roof.
+    /// RimWorld has no earthquake, but this is how RimWorld hurts anyone when walls come down. A bed that
+    /// breaks under a sleeper whose roof still stands hurts nobody: nothing in RimWorld damages a pawn because
+    /// the furniture under them broke. Before (Doug's call, 2026-11-28), a broken bed dealt the roof's hit
+    /// itself, so a baby, who spends most of the day in bed and has a 5 HP neck, was the likeliest person in
+    /// town to die in a quake whether or not anything fell on them.
     ///
-    /// <para/><b>A pawn standing where a destroyed structure stood is hit by it, and usually lives.</b> Only a
-    /// bed or a dwelling can have someone on it (a wall and a <c>StorageHut</c> are <c>Impassable</c>). The
-    /// hit is RimWorld's for a constructed roof coming down
-    /// (<see cref="Building.RoofCollapserImmediate.ThinRoofCrushDamageRange"/>, 15–30 Crush on the head and
-    /// shoulders), not the mountain's certain death: what falls here is something the settlement built, and
-    /// RimWorld's own built roof is "a knock on the head" a healthy colonist walks away from. The injured are
-    /// then tended like any other wound, which is the remedy. Before this, every sleeper under a fallen
-    /// structure died outright, and one quake on a sleeping 20-strong band killed four
-    /// (<c>docs/perf/storyteller-pressure</c>, seed 2024). The deaths that still happen (someone already badly
-    /// hurt) are
-    /// are credited through <see cref="DeathLedger.RecordAttributed"/> from the ledger's own delta, copying
-    /// <see cref="SettlementRaidResolver.Resolve"/>'s own approach — never from this worker's own count of
-    /// who it hit — so attribution can never exceed the deaths the ledger actually counted: a settlement that
-    /// belongs to no registered civilization reaches <c>Pawn_HealthTracker.Kill</c> and is deliberately not
-    /// counted there, and this worker must not claim it anyway.
+    /// <para/>Deaths are credited through <see cref="DeathLedger.RecordAttributed"/> from the ledger's own
+    /// delta across the shake, copying <see cref="SettlementRaidResolver.Resolve"/>'s own approach — never
+    /// from this worker's own count of who it hit — so attribution can never exceed the deaths the ledger
+    /// actually counted: a settlement that belongs to no registered civilization reaches
+    /// <c>Pawn_HealthTracker.Kill</c> and is deliberately not counted there, and this worker must not claim
+    /// it anyway.
     ///
     /// <para/><b>Its dice are its own.</b> Every roll comes from <see cref="NamedRand"/>, never the ambient
     /// stream, and the target settlement and the severity are composed <i>before</i> the
     /// <see cref="Ablation.IsDisabled(string?)"/> check — see <see cref="IncidentWorker_ManhunterPack"/>'s own
-    /// doc for why that ordering is not optional. Applying damage to a pawn can draw from the ambient stream
-    /// internally (<c>Combat.ArmorUtility.ApplyArmor</c>'s deflection roll, for a citizen wearing apparel with
-    /// a nonzero armor rating — the bare pawns this port's own tests build never trigger it, which is exactly
-    /// why it would be easy to miss), so every such call is shielded with <see cref="Rand.PushState(int)"/> /
-    /// <see cref="Rand.PopState"/>, seeded from this incident's own stream, exactly as
-    /// <see cref="IncidentWorker_ManhunterPack.Generate"/> shields <c>PawnGenerator</c>.
+    /// doc for why that ordering is not optional. A falling roof rolls its hit on the ambient stream
+    /// (<see cref="Building.RoofCollapserImmediate"/>), and so does <c>Combat.ArmorUtility.ApplyArmor</c>'s
+    /// deflection roll for a clothed citizen, so the whole shake is shielded with
+    /// <see cref="Rand.PushState(int)"/> / <see cref="Rand.PopState"/>, seeded from this incident's own stream,
+    /// exactly as <see cref="IncidentWorker_ManhunterPack.Generate"/> shields <c>PawnGenerator</c>.
     /// </summary>
     public sealed class IncidentWorker_Earthquake : IncidentWorker
     {
@@ -122,10 +113,24 @@ namespace SimWorld.Director
                 var location = new Letters.EventLocation(settlement.tile);
                 var toll = new QuakeToll();
                 Dictionary<Pawn, int> people = PeopleOn(map, settlement);
-                using (RoofCollapseCause.During("in the earthquake"))
+                DeathLedger? ledger = Find.Storyteller?.deaths;
+                int deadBefore = ledger?.Total ?? 0;
+                int claimedBefore = ledger?.TotalAttributed ?? 0;
+                Rand.PushState(rand.Int);
+                try
                 {
-                    ShakeMap(map, settlement, severity, rand, source, location, toll);
+                    using (RoofCollapseCause.During("in the earthquake"))
+                    {
+                        ShakeMap(map, settlement, severity, rand, location, toll);
+                    }
                 }
+                finally
+                {
+                    Rand.PopState();
+                }
+                // Whoever the shake killed died under a roof, which names no killer of its own: what the ledger
+                // counted and nothing else claimed is the quake's.
+                ledger?.RecordAttributed(source, (ledger.Total - deadBefore) - (ledger.TotalAttributed - claimedBefore));
                 toll.CountPeople(people);
                 CreditStructures(source, toll.Structures);
                 parms.location = location;
@@ -169,12 +174,12 @@ namespace SimWorld.Director
 
         /// <summary>
         /// Destroys a <paramref name="severity"/> share of each known structure def actually standing on
-        /// <paramref name="map"/>, and crushes anyone standing where one of them stood. Returns how many of
-        /// <paramref name="settlement"/>'s own structures were destroyed (a fallen ruin wall is not counted)
-        /// and how many people were killed doing it. Only what is
+        /// <paramref name="map"/>, counting into <paramref name="toll"/> those of
+        /// <paramref name="settlement"/>'s own (a fallen ruin wall is not counted). No structure hits anyone
+        /// itself; a roof whose holders went falls on whoever is under it (see the class doc). Only what is
         /// <paramref name="settlement"/>'s own is laid out again (<see cref="PlaceRebuildBlueprint"/>).
         /// </summary>
-        private static void ShakeMap(Map.Map map, SimWorld.World.Settlement settlement, float severity, RandomStream rand, string? source, Letters.EventLocation location, QuakeToll toll)
+        private static void ShakeMap(Map.Map map, SimWorld.World.Settlement settlement, float severity, RandomStream rand, Letters.EventLocation location, QuakeToll toll)
         {
             IReadOnlyList<ThingDef> defs = KnownStructureDefs();
             for (int d = 0; d < defs.Count; d++)
@@ -192,9 +197,7 @@ namespace SimWorld.Director
                     standing.RemoveAt(index);
                     if (target.Destroyed) continue;
 
-                    // Captured before TakeDamage can invalidate it (DeSpawn resets Position). The whole
-                    // footprint, not Position: a 1x2 bed falls on its foot cell as well as its head.
-                    CellRect footprint = target.OccupiedRect();
+                    // Captured before TakeDamage can invalidate it (DeSpawn resets Position).
                     IntVec3 at = target.Position;
                     Rot4 rot = target.Rotation;
                     ThingDef built = target.def;
@@ -208,7 +211,7 @@ namespace SimWorld.Director
 
                     // Credited from whether the Thing is actually gone, never assumed from the hit alone: a
                     // future ThingDef with destroyable=false would otherwise let this claim a destruction that
-                    // never happened — the same "never over-claim" discipline CrushOnePawn applies to a death.
+                    // never happened — the same "never over-claim" discipline the death credit applies.
                     if (!target.Destroyed) continue;
                     // Only the settlement's own count as its structures lost, in the letter and in
                     // ResourceImpactLedger alike: a ruin's wall falls too, but it was never the settlement's, and
@@ -220,18 +223,13 @@ namespace SimWorld.Director
                         location.AddAffected(at);
                         PlaceRebuildBlueprint(map, built, builtStuff, at, rot);
                     }
-
-                    foreach (IntVec3 cell in footprint.Cells)
-                    {
-                        if (GenGrid.InBounds(cell, map)) CrushOccupants(map, cell, source, rand);
-                    }
                 }
             }
         }
 
         /// <summary>The settlement's own people on the map, alive, with how many injuries each carries now, so
-        /// the letter can say who the quake killed or hurt however it did it: crushed in bed, or under a roof
-        /// that fell when a wall went (which <see cref="CrushOccupants"/> never sees).</summary>
+        /// the letter can say who the quake killed or hurt: whoever was under a roof that fell when a wall
+        /// went.</summary>
         private static Dictionary<Pawn, int> PeopleOn(Map.Map map, SimWorld.World.Settlement settlement)
         {
             var people = new Dictionary<Pawn, int>();
@@ -321,54 +319,6 @@ namespace SimWorld.Director
                 if (parts.Count == 1) return parts[0];
                 return string.Join(", ", parts.GetRange(0, parts.Count - 1)) + " and " + parts[parts.Count - 1];
             }
-        }
-
-        /// <summary>Crushes every living pawn standing on <paramref name="cell"/> — one cell of a destroyed
-        /// structure's own footprint, so this only ever finds someone in a <c>Bed</c> (a wall and a <c>StorageHut</c> are both
-        /// <c>Impassable</c>, never standable). Credits a death exactly when <see cref="DeathLedger.Total"/>
-        /// actually grew from it, never from this method's own count of who it hit — see the class doc for why.</summary>
-        private static int CrushOccupants(Map.Map map, IntVec3 cell, string? source, RandomStream rand)
-        {
-            var occupants = new List<Thing>(map.thingGrid.ThingsListAt(cell));
-            int killed = 0;
-            for (int i = 0; i < occupants.Count; i++)
-            {
-                if (!(occupants[i] is Pawn pawn) || pawn.Dead) continue;
-                killed += CrushOnePawn(pawn, source, rand);
-            }
-            return killed;
-        }
-
-        private static int CrushOnePawn(Pawn pawn, string? source, RandomStream rand)
-        {
-            DeathLedger? ledger = Find.Storyteller?.deaths;
-            int before = ledger?.Total ?? 0;
-
-            // Shielded: DamageWorker_AddInjury -> Combat.ArmorUtility.ApplyArmor rolls Rand.Value once per
-            // armor source with a nonzero rating, which a bare test pawn never has and a clothed citizen does.
-            // Seeded from this incident's own stream so the callee stays deterministic and the ambient stream
-            // comes back to exactly where it was — see IncidentWorker_ManhunterPack.Generate.
-            float amount = rand.Range(RoofCollapserImmediate.ThinRoofCrushDamageRange);
-            Rand.PushState(rand.Int);
-            try
-            {
-                // RimWorld's constructed-roof hit (RoofCollapserImmediate.CrushUnderRoof): Top/Outside, so it
-                // lands on the head and shoulders and never reaches an organ.
-                var dinfo = new DamageInfo(RoofCollapseDefOf.Crush, amount)
-                {
-                    Height = BodyPartHeight.Top,
-                    Depth = BodyPartDepth.Outside,
-                };
-                RoofCollapseDefOf.Crush.Worker.Apply(dinfo, pawn);
-            }
-            finally
-            {
-                Rand.PopState();
-            }
-
-            if (ledger == null || ledger.Total <= before) return 0;
-            ledger.RecordAttributed(source);
-            return 1;
         }
 
         /// <summary>

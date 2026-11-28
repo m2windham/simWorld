@@ -78,9 +78,7 @@ namespace SimWorld.AI
             float air = RotUtility.AmbientTemperatureAt(map, cell);
             if (comfy.Includes(air)) return true;
             if (air > comfy.max || bed == null) return false;
-            Dwelling? house = DwellingUtility.DwellingOfBed(bed);
-            return house != null && !house.beingDemolished && house.householdId != Pawn_RelationsTracker.None
-                && house.IsComplete(map) && SettlementClimate.HasFueledHearth(map, house);
+            return SettlementClimate.WillWarm(map, bed);
         }
     }
 }

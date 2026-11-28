@@ -125,18 +125,30 @@ namespace SimWorld.Building
         /// <summary>The gap in the east side of the ring, halfway up it.</summary>
         public IntVec3 DoorCell => new IntVec3(interior.maxX + 1, 0, interior.minZ + interior.height / 2);
 
+        /// <summary>
+        /// The dormitory's hearth (exposure4 lane): against the back of the ring, on the door's row, so it never
+        /// stands in the way in. The bed slot it stands in is not a bed's (<see cref="BedCells"/>). RimWorld's player
+        /// puts a campfire in the barracks; the settlement keeps the place for one and builds and lights it as it does
+        /// a house's (<see cref="SettlementClimate"/>). Before, the dormitory had no hearth, so a household waiting
+        /// for a house, or one whose house a quake had opened, had nowhere warm in the settlement to go.
+        /// </summary>
+        public IntVec3 HearthCell => new IntVec3(interior.minX, 0, DoorCell.z);
+
         /// <summary>Where each bed goes, as the cell it is placed on, south-west first and row by row. A bed
         /// is placed unrotated (<see cref="RotationAt"/> turns only the door and the storage): it covers this
-        /// cell and the one north of it, and is slept in on this one.</summary>
+        /// cell and the one north of it, and is slept in on this one. The slot <see cref="HearthCell"/> stands in
+        /// holds no bed.</summary>
         public IEnumerable<IntVec3> BedCells
         {
             get
             {
                 IntVec2 bed = ConstructionThingDefOf.Bed.size;
+                IntVec3 hearth = HearthCell;
                 for (int z = interior.minZ; z + bed.z - 1 <= interior.maxZ; z += bed.z)
                 {
                     for (int x = interior.minX; x + bed.x - 1 <= interior.maxX; x += bed.x)
                     {
+                        if (hearth.x >= x && hearth.x < x + bed.x && hearth.z >= z && hearth.z < z + bed.z) continue;
                         yield return new IntVec3(x, 0, z);
                     }
                 }
@@ -688,7 +700,8 @@ namespace SimWorld.Building
         /// is the door, so the settlement builds one wall fewer than it wanted and one door. At the founding
         /// band's size the wall count is at <see cref="ConstructionInitiativeTuning.MaxWallShelterCount"/> and
         /// the ring it closes holds a bed for the largest band <c>SettlementTuning.FoundingBandRange</c>
-        /// founds. Pinned by <c>SettlementCompoundTests</c> as "every citizen's bed fits inside", never as
+        /// founds but one: one slot is the dormitory's hearth (<see cref="HearthCell"/>), and that band's last
+        /// bed goes outside, as a bigger settlement's do. Pinned by <c>SettlementCompoundTests</c> as "every citizen's bed fits inside", never as
         /// those literals.
         /// <para/>
         /// A band too small for its walls to go round its beds gets no compound and places as before. A
@@ -705,13 +718,14 @@ namespace SimWorld.Building
             for (int h = bed.z; h < span; h += bed.z)
             {
                 int w = span - h;
-                int holds = (w / bed.x) * (h / bed.z);
+                // One slot is the hearth's (HearthCell).
+                int holds = (w / bed.x) * (h / bed.z) - 1;
                 if (holds <= beds) continue;
                 beds = holds;
                 width = w;
                 height = h;
             }
-            if (beds == 0) return false;
+            if (beds <= 0) return false;
             return beds >= citizens || wallBudget >= ConstructionInitiativeTuning.MaxWallShelterCount;
         }
 

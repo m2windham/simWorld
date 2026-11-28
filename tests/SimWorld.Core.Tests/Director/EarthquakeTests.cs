@@ -28,10 +28,9 @@ namespace SimWorld.Tests.Director
     /// point: before this, an earthquake against a settlement with no interior map had nothing to touch, so a
     /// settlement was free to ignore it by simply never being looked at.
     ///
-    /// <para/><b>Watched-map damage is direct <see cref="Thing.TakeDamage"/>, not
-    /// <c>Building.RoofCollapserImmediate.DropRoofInCells</c></b> — see <see cref="IncidentWorker_Earthquake"/>'s
-    /// own class doc for why that path is a poor fit here: this port's roof grid only ever covers mountain and
-    /// cave cells, never a settlement's own constructed rooms.
+    /// <para/><b>Watched-map damage is direct <see cref="Thing.TakeDamage"/> on structures; people are hurt
+    /// only by a roof that falls when its holders go</b> — see <see cref="IncidentWorker_Earthquake"/>'s own
+    /// class doc and <see cref="EarthquakeRoofTests"/>.
     /// </summary>
     [Collection("GlobalDefs")]
     public class EarthquakeTests : ContentTestBase
@@ -126,8 +125,7 @@ namespace SimWorld.Tests.Director
             Assert.Equal(count, placed); // fixture sanity: the test map must have room for this many
         }
 
-        /// <summary>One bed with one living citizen standing exactly on its cell — the only way this incident
-        /// ever finds someone to crush, since a wall is never standable.</summary>
+        /// <summary>One bed with one living citizen standing exactly on its cell.</summary>
         private static Pawn SpawnBedWithSleeper(Settlement settlement, CoreMap map, IntVec3 cell)
         {
             GenSpawn.Spawn(ThingMaker.MakeThing(Bed), cell, map);
@@ -137,9 +135,20 @@ namespace SimWorld.Tests.Director
             return sleeper;
         }
 
+        /// <summary>A roof over <paramref name="cell"/> whose only holder is one wall beside it, so the quake
+        /// (which always brings down at least one wall of a map that has one) drops it on whoever is there.</summary>
+        private static void RoofHeldByOneWall(CoreMap map, IntVec3 cell)
+        {
+            GenSpawn.Spawn(ThingMaker.MakeThing(Wall), cell + new IntVec3(-1, 0, 0), map);
+            foreach (IntVec3 c in new CellRect(cell.x - 1, cell.z - 1, 3, 4).Cells)
+            {
+                map.roofGrid.SetRoof(c, SimWorld.Map.RoofDefOf.RoofConstructed);
+            }
+        }
+
         /// <summary>Wounds <paramref name="pawn"/> to just under <c>HealthTuning.LethalDamageThreshold</c> (150)
-        /// without destroying a part, so the collapse's 15–30 hit is what kills them. A healthy sleeper now
-        /// survives a fallen bed, so the death-crediting tests need someone the hit can actually finish.</summary>
+        /// without destroying a part, so the collapse's 15–30 hit is what kills them. A healthy sleeper
+        /// survives a fallen roof, so the death-crediting tests need someone the hit can actually finish.</summary>
         private static void Frail(Pawn pawn)
         {
             DamageDef cut = DefDatabase<DamageDef>.GetNamed("Cut");
@@ -293,11 +302,12 @@ namespace SimWorld.Tests.Director
         // ---- deaths: credited from the ledger's own delta, never over-claimed ----
 
         [Fact]
-        public void A_registered_citizen_crushed_by_the_quake_is_credited_to_it()
+        public void A_registered_citizen_killed_by_a_roof_the_quake_brought_down_is_credited_to_it()
         {
             CoreMap map = NewMap();
             Settlement settlement = PlainSettlement();
             Pawn sleeper = SpawnBedWithSleeper(settlement, map, new IntVec3(5, 0, 5));
+            RoofHeldByOneWall(map, new IntVec3(5, 0, 5));
             Frail(sleeper);
 
             bool fired = Earthquake.Worker.TryExecute(OntoWatchedMap(settlement, map, registerWithStoryteller: true));
@@ -325,6 +335,7 @@ namespace SimWorld.Tests.Director
             CoreMap map = NewMap();
             Settlement settlement = PlainSettlement();
             Pawn sleeper = SpawnBedWithSleeper(settlement, map, new IntVec3(5, 0, 5));
+            RoofHeldByOneWall(map, new IntVec3(5, 0, 5));
             Frail(sleeper);
 
             bool fired = Earthquake.Worker.TryExecute(OntoWatchedMap(settlement, map, registerWithStoryteller: false));
@@ -338,18 +349,15 @@ namespace SimWorld.Tests.Director
         }
 
         /// <summary>
-        /// The remedy: a bed coming down on a healthy sleeper is RimWorld's built-roof hit (15–30 Crush on the
-        /// head and shoulders), not the mountain's certain death. Twenty firings, each on its own tick so each
-        /// rolls its own hit, and the bed always falls (one bed: <c>DestroyCount</c> is at least one). Every
-        /// sleeper is hurt; most live. The few who do not took the hit on the neck (25 HP), as a RimWorld
-        /// colonist under a falling built roof can. Before this, every one of them died.
+        /// A bed coming down with no roof over it hurts nobody (Doug's call, 2026-11-28: a quake hurts sleepers
+        /// only when a roof falls on them). Twenty firings, each on its own tick so each rolls its own shake,
+        /// and the bed always falls (one bed: <c>DestroyCount</c> is at least one). Before, a broken bed dealt
+        /// RimWorld's built-roof hit itself, and babies, who spend most of the day in bed, died of it most.
         /// </summary>
         [Fact]
-        public void A_healthy_sleeper_under_a_fallen_bed_is_hurt_and_usually_lives()
+        public void A_sleeper_whose_bed_falls_with_no_roof_over_it_is_unhurt()
         {
-            const int trials = 20;
-            int hurt = 0, dead = 0;
-            for (int i = 0; i < trials; i++)
+            for (int i = 0; i < 20; i++)
             {
                 Find.TickManager.DebugSetTicksGame(1000 * (i + 1));
                 CoreMap map = NewMap();
@@ -358,12 +366,8 @@ namespace SimWorld.Tests.Director
 
                 Assert.True(Earthquake.Worker.TryExecute(OntoWatchedMap(settlement, map, registerWithStoryteller: true)));
                 Assert.Empty(map.listerThings.ThingsOfDef(Bed));
-
-                if (sleeper.Dead) dead++;
-                else if (sleeper.health.hediffSet.hediffs.Count > 0) hurt++; // a wound, a crack or a lost part
+                Assert.Empty(sleeper.health.hediffSet.hediffs);
             }
-            Assert.Equal(trials, hurt + dead);
-            Assert.True(dead * 4 < trials, $"{dead} of {trials} healthy sleepers died under a fallen bed");
         }
 
         /// <summary>The ruling this answers: one quake must not kill a fifth of a band. Twenty sleepers in twenty
