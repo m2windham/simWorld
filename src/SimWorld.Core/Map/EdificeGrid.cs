@@ -30,10 +30,10 @@ namespace SimWorld.Map
                 // either way) — PathGrid's own walkability-flip hook would miss exactly that case, so the
                 // region graph needs its own notification here regardless of pathCost.
                 map.regionAndRoomUpdater.Notify_DirtyCell(c);
+                // An edifice spawning can create or split a room (system 16: Building) — the room tracker
+                // re-floods the rooms round these cells lazily off this, not every tick.
+                map.roomTracker.Notify_DirtyCell(c);
             }
-            // An edifice spawning can create or split a room (system 16: Building) — the room tracker
-            // recomputes lazily off this, not every tick.
-            map.roomTracker.Notify_Dirty();
         }
 
         /// <summary>
@@ -53,8 +53,8 @@ namespace SimWorld.Map
                 int i = map.cellIndices.CellToIndex(c);
                 if (ReferenceEquals(grid[i], edifice)) grid[i] = null;
                 map.regionAndRoomUpdater.Notify_DirtyCell(c);
+                map.roomTracker.Notify_DirtyCell(c);
             }
-            map.roomTracker.Notify_Dirty();
 
             if (mode != DestroyMode.WillReplace && edifice.def.Fillage == FillCategory.Full)
             {

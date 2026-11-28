@@ -10,9 +10,18 @@ namespace SimWorld.Building
 {
     /// <summary>
     /// Flood-fills <see cref="Room"/>s and <see cref="RoomGroup"/>s from the edifice/roof grids, lazily —
-    /// only when something that could change a room's shape has happened (RimWorld: <c>Verse.RegionAndRoomUpdater</c>,
-    /// simplified: a dirty flag triggers a full re-flood of the whole map rather than an incremental update.
-    /// That is cheap because it happens only on an edifice spawning or despawning, never every tick.
+    /// only when something that could change a room's shape has happened (RimWorld: <c>Verse.RegionAndRoomUpdater</c>).
+    /// <para/>
+    /// <b>Incremental, as RimWorld's is.</b> An edifice or a roof changing marks its cells
+    /// (<see cref="Notify_DirtyCell"/>), and the next tick re-floods only the rooms those cells and their
+    /// cardinal neighbours belonged to (<see cref="RegenerateDirtyRooms"/>); every other room keeps its
+    /// <see cref="Room"/>, its <see cref="RoomGroup"/> and its temperature. A room is a connected run of
+    /// non-wall cells, so a change can only join or split the rooms beside it, and re-flooding them from their
+    /// lowest cell gives the rooms a whole-map flood would, in the same order with the same cells, walls and
+    /// roofs (RoomIncrementalRebuildTests holds it to that). What differs is the temperature of a room nothing
+    /// touched: a whole-map rebuild recomputed it as its own weighted mean, a rounding step away from where it
+    /// was, and now it simply stays. <see cref="Notify_Dirty"/> still asks for the whole map, for a load and a
+    /// roof collapse.
     /// <para/>
     /// A region graph now exists (<c>Map.RegionGrid</c>/<c>Map.RegionAndRoomUpdater</c>) and updates
     /// incrementally, so this could be rebuilt on top of it — but rooms and regions answer different
@@ -72,6 +81,16 @@ namespace SimWorld.Building
 
         private bool dirty = true;
 
+        // Cells changed since the last rebuild (Notify_DirtyCell), marked so each is listed once, and the cells an
+        // incremental rebuild re-floods. Both allocated with the room arrays.
+        private readonly List<int> dirtyCells = new List<int>();
+        private bool[] cellDirty = Array.Empty<bool>();
+        private bool[] refloodCell = Array.Empty<bool>();
+        private readonly HashSet<Room> tmpAffectedRooms = new HashSet<Room>();
+        private readonly List<Room> tmpAffectedList = new List<Room>();
+        private readonly List<Room> tmpNewRooms = new List<Room>();
+        private readonly List<Room> tmpMergedRooms = new List<Room>();
+
         private List<int>? pendingSeedX;
         private List<int>? pendingSeedZ;
         private List<float>? pendingSeedTemp;
@@ -94,7 +113,23 @@ namespace SimWorld.Building
 
         private int IndexOf(IntVec3 cell) => cell.z * map.Size.x + cell.x;
 
+        /// <summary>Re-flood the whole map on the next tick.</summary>
         public void Notify_Dirty() => dirty = true;
+
+        /// <summary>
+        /// Something that decides rooms changed on <paramref name="cell"/>: an edifice came or went, or its roof
+        /// did (RimWorld feeds <c>RegionAndRoomUpdater</c> the same way, through <c>RegionDirtyer</c>). The rooms
+        /// round it are re-flooded on the next tick.
+        /// </summary>
+        public void Notify_DirtyCell(IntVec3 cell)
+        {
+            // Before the first flood there is nothing to patch; the whole map is flooded anyway.
+            if (dirty || cellDirty.Length == 0) return;
+            int index = IndexOf(cell);
+            if (cellDirty[index]) return;
+            cellDirty[index] = true;
+            dirtyCells.Add(index);
+        }
 
         internal void RegisterHeatPusher(CompHeatPusherPowered pusher) => heatPushers.Add(pusher);
         internal void DeregisterHeatPusher(CompHeatPusherPowered pusher) => heatPushers.Remove(pusher);
@@ -111,16 +146,20 @@ namespace SimWorld.Building
         /// </summary>
         public void RoomTrackerTick()
         {
-            if (dirty)
+            if (dirty || dirtyCells.Count > 0)
             {
-                RegenerateAllRooms();
+                if (dirty) RegenerateAllRooms();
+                else RegenerateDirtyRooms();
                 dirty = false;
+                for (int i = 0; i < dirtyCells.Count; i++) cellDirty[dirtyCells[i]] = false;
+                dirtyCells.Clear();
                 ReapplyPendingTemperatures();
 
                 // RimWorld: Room.Notify_RoomShapeOrContainedBedsChanged queues each changed room, and
-                // RoomGroupTempTracker.RoomChanged resolves the queue. Every room here is rebuilt at once, so
-                // each one is offered; AutoBuildRoofAreaSetter refuses what is open to the map's edge, too big,
-                // or not a settlement's.
+                // RoomGroupTempTracker.RoomChanged resolves the queue. Every room is offered here, the ones an
+                // incremental rebuild kept as well as the ones it re-flooded, as this port did when every rebuild
+                // was a whole-map one, so a room is roofed exactly when it was; AutoBuildRoofAreaSetter refuses
+                // what is open to the map's edge, too big, or not a settlement's.
                 for (int i = 0; i < rooms.Count; i++)
                 {
                     if (!rooms[i].touchesMapEdge) map.autoBuildRoofAreaSetter.TryGenerateAreaFor(rooms[i]);
@@ -288,6 +327,10 @@ namespace SimWorld.Building
             if (visited.Length != cellCount) visited = new bool[cellCount];
             else Array.Clear(visited, 0, cellCount);
             if (floodQueue.Length != cellCount) floodQueue = new int[cellCount];
+            if (cellDirty.Length != cellCount) cellDirty = new bool[cellCount];
+            if (refloodCell.Length != cellCount) refloodCell = new bool[cellCount];
+            // The first rebuild swaps in the empty array the tracker started with; an incremental one writes into it.
+            if (previousCellToRoom.Length != cellCount) previousCellToRoom = new Room?[cellCount];
 
             // Seeds in map.AllCells order (z, then x: cell-index order) and a first-in-first-out flood, so every
             // room, its cell order and its boundary order come out as they always have; the order matters, since
@@ -297,63 +340,170 @@ namespace SimWorld.Building
             // copied into a list of exactly that size. The flood used to allocate a neighbour iterator per cell, a
             // queue per room and a doubling cell list — most of the garbage a Bronze-age town made per tick.
             int sizeX = map.Size.x;
-            int sizeZ = map.Size.z;
-            IntVec3[] dirs = GenAdj.CardinalDirections;
             int tail = 0;
             for (int seed = 0; seed < cellCount; seed++)
             {
                 if (visited[seed]) continue;
                 if (IsFullEdifice(new IntVec3(seed % sizeX, 0, seed / sizeX))) continue;
-
-                var room = new Room();
-                int head = tail;
-                int start = tail;
-                floodQueue[tail++] = seed;
-                visited[seed] = true;
-
-                while (head < tail)
-                {
-                    int index = floodQueue[head++];
-                    int x = index % sizeX;
-                    int z = index / sizeX;
-                    var cur = new IntVec3(x, 0, z);
-                    cellToRoom[index] = room;
-                    if (!map.roofGrid.Roofed(cur)) room.anyCellUnroofed = true;
-                    if (x == 0 || z == 0 || x == sizeX - 1 || z == sizeZ - 1) room.touchesMapEdge = true;
-
-                    for (int d = 0; d < dirs.Length; d++)
-                    {
-                        int nx = x + dirs[d].x;
-                        int nz = z + dirs[d].z;
-                        if (nx < 0 || nx >= sizeX || nz < 0 || nz >= sizeZ)
-                        {
-                            room.touchesMapEdge = true;
-                            continue;
-                        }
-                        var n = new IntVec3(nx, 0, nz);
-                        Thing? edifice = map.edificeGrid[n];
-                        if (edifice != null && edifice.def.Fillage == FillCategory.Full)
-                        {
-                            room.boundaryEdifices.Add(edifice);
-                            continue;
-                        }
-                        int nIndex = nz * sizeX + nx;
-                        if (visited[nIndex]) continue;
-                        visited[nIndex] = true;
-                        floodQueue[tail++] = nIndex;
-                    }
-                }
-
-                room.cells.Capacity = tail - start;
-                for (int i = start; i < tail; i++)
-                {
-                    int index = floodQueue[i];
-                    room.cells.Add(new IntVec3(index % sizeX, 0, index / sizeX));
-                }
-                rooms.Add(room);
+                rooms.Add(FloodRoom(seed, ref tail));
             }
 
             BuildRoomGroups();
+        }
+
+        /// <summary>
+        /// Floods one room from <paramref name="seed"/>, its lowest cell, through every cardinally connected cell
+        /// that is not a Fillage-Full edifice and not yet <see cref="visited"/>, queueing into
+        /// <see cref="floodQueue"/> from <paramref name="tail"/>.
+        /// </summary>
+        private Room FloodRoom(int seed, ref int tail)
+        {
+            int sizeX = map.Size.x;
+            int sizeZ = map.Size.z;
+            IntVec3[] dirs = GenAdj.CardinalDirections;
+            var room = new Room();
+            int head = tail;
+            int start = tail;
+            floodQueue[tail++] = seed;
+            visited[seed] = true;
+
+            while (head < tail)
+            {
+                int index = floodQueue[head++];
+                int x = index % sizeX;
+                int z = index / sizeX;
+                var cur = new IntVec3(x, 0, z);
+                cellToRoom[index] = room;
+                if (!map.roofGrid.Roofed(cur)) room.anyCellUnroofed = true;
+                if (x == 0 || z == 0 || x == sizeX - 1 || z == sizeZ - 1) room.touchesMapEdge = true;
+
+                for (int d = 0; d < dirs.Length; d++)
+                {
+                    int nx = x + dirs[d].x;
+                    int nz = z + dirs[d].z;
+                    if (nx < 0 || nx >= sizeX || nz < 0 || nz >= sizeZ)
+                    {
+                        room.touchesMapEdge = true;
+                        continue;
+                    }
+                    var n = new IntVec3(nx, 0, nz);
+                    Thing? edifice = map.edificeGrid[n];
+                    if (edifice != null && edifice.def.Fillage == FillCategory.Full)
+                    {
+                        room.boundaryEdifices.Add(edifice);
+                        continue;
+                    }
+                    int nIndex = nz * sizeX + nx;
+                    if (visited[nIndex]) continue;
+                    visited[nIndex] = true;
+                    floodQueue[tail++] = nIndex;
+                }
+            }
+
+            room.cells.Capacity = tail - start;
+            for (int i = start; i < tail; i++)
+            {
+                int index = floodQueue[i];
+                room.cells.Add(new IntVec3(index % sizeX, 0, index / sizeX));
+            }
+            return room;
+        }
+
+        /// <summary>
+        /// Re-floods the rooms <see cref="dirtyCells"/> touch and leaves the rest alone (RimWorld:
+        /// <c>RegionAndRoomUpdater.TryRebuildDirtyRegionsAndRooms</c>, which does the same over regions).
+        /// <para/>
+        /// A room's cells, walls, edge flag and roof shares are all read off its own cells and their cardinal
+        /// neighbours, so a change to a cell can alter only the room on it and the rooms beside it: those are
+        /// emptied, and their cells and the changed cells are flooded again in cell-index order, which is the
+        /// order the whole-map flood seeds in. Each new room therefore starts from its lowest cell and comes out
+        /// cell for cell as the whole-map flood would make it, and the room list, kept in order of each room's
+        /// first cell, is the list it would make. The flood cannot leak into an untouched room: two
+        /// neighbouring open cells were in one room unless one of them changed, and then both rooms are here.
+        /// </summary>
+        private void RegenerateDirtyRooms()
+        {
+            int sizeX = map.Size.x;
+            int sizeZ = map.Size.z;
+            IntVec3[] dirs = GenAdj.CardinalDirections;
+            int lo = int.MaxValue, hi = -1;
+
+            for (int i = 0; i < dirtyCells.Count; i++)
+            {
+                int index = dirtyCells[i];
+                AddAffected(cellToRoom[index]);
+                int x = index % sizeX;
+                int z = index / sizeX;
+                for (int d = 0; d < dirs.Length; d++)
+                {
+                    int nx = x + dirs[d].x;
+                    int nz = z + dirs[d].z;
+                    if (nx < 0 || nx >= sizeX || nz < 0 || nz >= sizeZ) continue;
+                    AddAffected(cellToRoom[nz * sizeX + nx]);
+                }
+            }
+            for (int i = 0; i < dirtyCells.Count; i++) MarkReflood(dirtyCells[i], ref lo, ref hi);
+            for (int r = 0; r < tmpAffectedList.Count; r++)
+            {
+                List<IntVec3> cells = tmpAffectedList[r].cells;
+                for (int i = 0; i < cells.Count; i++) MarkReflood(cells[i].z * sizeX + cells[i].x, ref lo, ref hi);
+            }
+
+            tmpNewRooms.Clear();
+            int tail = 0;
+            for (int seed = lo; seed <= hi; seed++)
+            {
+                if (!refloodCell[seed] || visited[seed]) continue;
+                if (IsFullEdifice(new IntVec3(seed % sizeX, 0, seed / sizeX))) continue;
+                tmpNewRooms.Add(FloodRoom(seed, ref tail));
+            }
+            for (int seed = lo; seed <= hi; seed++) refloodCell[seed] = false;
+
+            // The kept rooms and the new ones, merged in order of first cell: both lists already are.
+            tmpMergedRooms.Clear();
+            int k = 0;
+            for (int i = 0; i < rooms.Count; i++)
+            {
+                Room kept = rooms[i];
+                if (tmpAffectedRooms.Contains(kept)) continue;
+                int keptFirst = IndexOf(kept.cells[0]);
+                while (k < tmpNewRooms.Count && IndexOf(tmpNewRooms[k].cells[0]) < keptFirst) tmpMergedRooms.Add(tmpNewRooms[k++]);
+                tmpMergedRooms.Add(kept);
+            }
+            while (k < tmpNewRooms.Count) tmpMergedRooms.Add(tmpNewRooms[k++]);
+            rooms.Clear();
+            rooms.AddRange(tmpMergedRooms);
+            tmpMergedRooms.Clear();
+
+            // A kept room keeps its group; a new one has none yet (Room.Group is set by RoomGroup.AddRoom only).
+            groups.Clear();
+            for (int i = 0; i < rooms.Count; i++)
+            {
+                Room room = rooms[i];
+                groups.Add(room.Group ?? MakeGroup(room));
+            }
+            tmpNewRooms.Clear();
+            tmpAffectedRooms.Clear();
+            tmpAffectedList.Clear();
+            CollectDoors();
+        }
+
+        private void AddAffected(Room? room)
+        {
+            if (room != null && tmpAffectedRooms.Add(room)) tmpAffectedList.Add(room);
+        }
+
+        /// <summary>Queues a cell for the incremental flood: forgets its room, remembering it for the temperature
+        /// carry-over, and clears its visit so the flood may take it again.</summary>
+        private void MarkReflood(int index, ref int lo, ref int hi)
+        {
+            if (refloodCell[index]) return;
+            refloodCell[index] = true;
+            previousCellToRoom[index] = cellToRoom[index];
+            cellToRoom[index] = null;
+            visited[index] = false;
+            if (index < lo) lo = index;
+            if (index > hi) hi = index;
         }
 
         private bool IsFullEdifice(IntVec3 cell)
@@ -370,21 +520,32 @@ namespace SimWorld.Building
         /// </summary>
         private void BuildRoomGroups()
         {
+            foreach (Room room in rooms) groups.Add(MakeGroup(room));
+            CollectDoors();
+        }
+
+        private RoomGroup MakeGroup(Room room)
+        {
+            var group = new RoomGroup(map);
+            group.AddRoom(room);
+            // An outdoor group takes outdoor air outright and nothing reads its roof shares or walls (only
+            // RoomTrackerTick's indoor half does), and a group stays outdoor until the next rebuild replaces it.
+            // Skipping it skips the map's largest room, the open ground, on every rebuild.
+            if (!group.UsesOutdoorTemperature) RegenerateEqualizationData(group, room);
+            if (!group.UsesOutdoorTemperature && TryGetAverageCachedRoomGroupTemp(group, out float carried))
+            {
+                group.temperature = carried;
+            }
+            return group;
+        }
+
+        /// <summary>Every door bounding a room, in thing-id order.</summary>
+        private void CollectDoors()
+        {
             doors.Clear();
             seenDoors.Clear();
             foreach (Room room in rooms)
             {
-                var group = new RoomGroup(map);
-                group.AddRoom(room);
-                groups.Add(group);
-                // An outdoor group takes outdoor air outright and nothing reads its roof shares or walls (only
-                // RoomTrackerTick's indoor half does), and a group stays outdoor until the next rebuild replaces it.
-                // Skipping it skips the map's largest room, the open ground, on every rebuild.
-                if (!group.UsesOutdoorTemperature) RegenerateEqualizationData(group, room);
-                if (!group.UsesOutdoorTemperature && TryGetAverageCachedRoomGroupTemp(group, out float carried))
-                {
-                    group.temperature = carried;
-                }
                 foreach (Thing edifice in room.boundaryEdifices)
                 {
                     if (edifice is Door door && seenDoors.Add(door)) doors.Add(door);
