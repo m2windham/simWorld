@@ -2,7 +2,7 @@
   "$comment": "Single source of truth for the SimWorld build tracker. Edit here; tools/blueprint regenerates the page. Item ids are stable keys — the tracker persists human ticks against them.",
   "project": "SimWorld",
   "updated": "2026-11-22",
-  "testsTotal": 3753,
+  "testsTotal": 3773,
   "stack": {
     "language": "C#",
     "host": "Unity (renderer / UI host, added when there is something to render)",
@@ -1266,6 +1266,11 @@
         {
           "id": "ai.tickcost3",
           "label": "Third tick-cost pass, no change to behaviour: identical end state, SimDigest and rooms fingerprint on seeds 1-3, and the 120-day arc of seed 1 identical line for line outside its timing. PlantsCut and ChopWood look for their plants on the cells that can hold one (sowing growing zones, blueprint and frame footprints, the compound interior) and walk the plant list, for its order, only when two or more turn up; ChopWood reads the wood shortfall first, for every kind of tree on the map. MiningInitiative reads what blueprints, frames and benches need from their three groups instead of every thing, and tests band reachability only for faces it could mark (in the village, or of a yield that is short). Two ABBA rounds against pass two: CPU per tick 16-19% lower, allocation 11% lower. Full suite 3733 passed.",
+          "done": true
+        },
+        {
+          "id": "ai.tickcost4",
+          "label": "Fourth tick-cost pass, with changes a player could in principle see, each kept to RimWorld. A clean-filth job takes the patch: up to 15 piles in the room of the first (or a door into it) within 100 radial cells, nearest first, as WorkGiver_CleanFilth.JobOnThing and JobDriver_CleanFilth do (constants recalled, not read). The room tracker re-floods only the rooms a change touches (RimWorld's RegionAndRoomUpdater), patches the room open to the map's edge in place when that is provably exact (its cells are the same set in another order), and skips the flood for an edifice that is neither Fillage-Full nor impassable, though the roof offers still run on it (a town renewing a smithy waited on them). Membership, outdoor flags, boundaries and roofs match a full flood in a randomized test over ten seeds. SteadyEnvironmentEffects and the initiatives were already on RimWorld's own cadences (per-tick cell sampling; TickRare 250, TickLong 2000 for guild and larder), so none moved. ABBA against integ-r12 on seeds 1-3: CPU per tick 10% lower (7-17% by seed), allocation 36% lower. Full suite 3773 passed.",
           "done": true
         }
       ],
