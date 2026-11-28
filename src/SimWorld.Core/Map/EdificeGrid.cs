@@ -35,10 +35,15 @@ namespace SimWorld.Map
                 map.regionAndRoomUpdater.Notify_DirtyCell(c);
                 // A wall or door spawning can create or split a room (system 16: Building) — the room tracker
                 // re-floods the rooms round these cells lazily off this, not every tick. A bed or a table
-                // cannot, so it does not ask (RoomTracker.CanAlterRooms) — nor does one replacing another.
+                // cannot, so it only asks for the roof offers again (RoomTracker.CanAlterRooms) — as does one
+                // replacing another.
                 if (altersRooms || (replaced != null && Building.RoomTracker.CanAlterRooms(replaced.def)))
                 {
                     map.roomTracker.Notify_DirtyCell(c);
+                }
+                else
+                {
+                    map.roomTracker.Notify_EdificeChanged();
                 }
             }
         }
@@ -63,6 +68,7 @@ namespace SimWorld.Map
                 {
                     grid[i] = null;
                     if (altersRooms) map.roomTracker.Notify_DirtyCell(c);
+                    else map.roomTracker.Notify_EdificeChanged();
                 }
                 map.regionAndRoomUpdater.Notify_DirtyCell(c);
             }

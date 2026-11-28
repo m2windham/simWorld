@@ -100,6 +100,9 @@ namespace SimWorld.Building
         // The map-edge room TryPatchEdgeRoom patched this rebuild, which the flood leaves alone.
         private Room? patchedRoom;
 
+        // Set by Notify_EdificeChanged: the roof offers run on the next tick though no room was rebuilt.
+        private bool offerRoofs;
+
         // The eight cells round a cell, clockwise from north; the even ones are its cardinal neighbours.
         private static readonly int[] RingX = { 0, 1, 1, 1, 0, -1, -1, -1 };
         private static readonly int[] RingZ = { 1, 1, 0, -1, -1, -1, 0, 1 };
@@ -169,9 +172,17 @@ namespace SimWorld.Building
         /// no-roof term is always zero), RimWorld's sampling of a fifth of the wall cells per pass (all are
         /// averaged here every tick), and vents and coolers.
         /// </summary>
+        /// <summary>An edifice that cannot change a room (<see cref="CanAlterRooms"/>) came or went: no room is
+        /// re-flooded, but the roof offers run again on the next tick. They read more than a room's shape (which
+        /// cells are roofed already, and how far each is from a holder), and when every edifice change rebuilt the
+        /// map they ran on each one; a town renewing its benches relied on those second offers to roof what an
+        /// earlier offer had found out of reach (RenewalLaterErasTests).</summary>
+        public void Notify_EdificeChanged() => offerRoofs = true;
+
         public void RoomTrackerTick()
         {
-            if (dirty || dirtyCells.Count > 0)
+            bool rebuilt = dirty || dirtyCells.Count > 0;
+            if (rebuilt)
             {
                 if (dirty) RegenerateAllRooms();
                 else RegenerateDirtyRooms();
@@ -179,6 +190,10 @@ namespace SimWorld.Building
                 for (int i = 0; i < dirtyCells.Count; i++) cellDirty[dirtyCells[i]] = false;
                 dirtyCells.Clear();
                 ReapplyPendingTemperatures();
+            }
+            if (rebuilt || offerRoofs)
+            {
+                offerRoofs = false;
 
                 // RimWorld: Room.Notify_RoomShapeOrContainedBedsChanged queues each changed room, and
                 // RoomGroupTempTracker.RoomChanged resolves the queue. Every room is offered here, the ones an

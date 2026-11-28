@@ -110,6 +110,36 @@ namespace SimWorld.Tests.Building
             Assert.True(placed > 50 && removed > 10, $"placed {placed}, removed {removed}");
         }
 
+        [Fact]
+        public void A_bed_coming_or_going_offers_the_roof_again_though_no_room_is_rebuilt()
+        {
+            var builders = new Faction(DefDatabase<FactionDef>.GetNamed("PlayerCivilization"), "Settlers", "F_Settlers");
+            CoreMap map = Towns(builders)[0];
+            // The third house is walled but half open: its first offer marked the open half for roofing.
+            var open = new IntVec3(23, 0, 7);
+            Assert.Null(map.roofGrid.RoofAt(open));
+            Assert.True(map.areaManager.BuildRoof[open]);
+            var rooms = new List<Room>(map.roomTracker.Rooms);
+
+            // Whatever undid that mark, a bed moving in offers the room again, as a rebuild of the whole map did.
+            foreach (IntVec3 c in map.AllCells) map.areaManager.BuildRoof[c] = false;
+            ThingDef bed = Def("Bed");
+            Thing thing = ThingMaker.MakeThing(bed, bed.MadeFromStuff ? GenStuff.DefaultStuffFor(bed) : null);
+            thing.SetFaction(builders);
+            GenSpawn.Spawn(thing, new IntVec3(21, 0, 3), map);
+            map.roomTracker.RoomTrackerTick();
+
+            Assert.Equal(rooms, map.roomTracker.Rooms);
+            Assert.True(map.areaManager.BuildRoof[open], "the half-open house was not offered its roof again");
+
+            // And moving out.
+            foreach (IntVec3 c in map.AllCells) map.areaManager.BuildRoof[c] = false;
+            thing.Destroy();
+            map.roomTracker.RoomTrackerTick();
+            Assert.Equal(rooms, map.roomTracker.Rooms);
+            Assert.True(map.areaManager.BuildRoof[open], "the half-open house was not offered its roof again when the bed left");
+        }
+
         [Theory]
         [InlineData("Wall")]
         [InlineData("Door")]
